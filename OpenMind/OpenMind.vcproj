@@ -205,10 +205,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\GeneralGoalGenerator.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Mind.h"
 				>
 			</File>
@@ -278,9 +274,21 @@
 				RelativePath=".\Goal.h"
 				>
 			</File>
+			<File
+				RelativePath=".\SolveProportion.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SolveProportion.h"
+				>
+			</File>
 			<Filter
 				Name="GoalGenerators"
 				>
+				<File
+					RelativePath=".\GeneralGoalGenerator.h"
+					>
+				</File>
 				<File
 					RelativePath=".\GoalGenerator.cpp"
 					>

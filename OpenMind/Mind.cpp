@@ -16,12 +16,14 @@ void Mind::Run()
 {
 	do
 	{
+		bool someRiched = false;
 		//BOOST_FOREACH(Goal::ptr_t goal, goals_)
 		for(goals_collection_t::iterator it = goals_.begin(); it != goals_.end(); ++it)
 		{
 			Goal::ptr_t goal = *it;
 			bool isRiched = std::find(richedGoals_.begin(), richedGoals_.end(), goal) != richedGoals_.end();
-			if (isRiched || goal->Rich() )
+			someRiched = isRiched || goal->Rich();
+			if (someRiched)
 			{
 				if (!isRiched) // it is riched by now
 				{
@@ -37,10 +39,10 @@ void Mind::Run()
 			}
 		}
 
-		//if (!goals_.empty())
+		BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_)
 		{
-			std::for_each(goalGenerators_.begin(), goalGenerators_.end(), 
-				boost::bind(&GoalGenerator::GenerateGoal, _1) );
+			goals_.push_back(
+				generator->GenerateGoal() );
 		}
 	}
 	while (!goals_.empty());

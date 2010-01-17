@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "ProportionGenerator.h"
+#include "SolveProportion.h"
 
 ProportionGenerator::ProportionGenerator(void)
 {
@@ -15,5 +16,5 @@ Goal::ptr_t ProportionGenerator::GenerateGoal()
 	std::wcout << L"C = "; std::wcin >> c; std::wcout << std::endl;
 	std::wcout << L"D = "; std::wcin >> d; std::wcout << std::endl;
 
-	return Goal::ptr_t();
+	return Goal::ptr_t(new SolveProportion(a,b,c,d));
 }
