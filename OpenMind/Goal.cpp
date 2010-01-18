@@ -9,13 +9,13 @@ Goal::~Goal(void)
 {
 }
 
-bool Goal::Rich()
+bool Goal::Reach()
 {
 	assert(!"implemented");
 	return true;
 }
 
-Goal::container_t Goal::ToRich()
+Goal::container_t Goal::ToReach()
 {
 	assert(!"implemented");
 	return container_t();

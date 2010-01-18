@@ -14,18 +14,14 @@ Mind::~Mind(void)
 
 void Mind::Run()
 {
-	do
+	while(!ReachGoals() || goals_.empty())
 	{
-		if (!ReachGoals())
+		BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_)
 		{
-			BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_)
-			{
-				goals_.push_back(
-					generator->GenerateGoal() );
-			}
+			goals_.push_back(
+				generator->GenerateGoal() );
 		}
 	}
-	while (!goals_.empty());
 }
 
 void Mind::AddGoalGenerator( GoalGenerator::ptr_t generator )
@@ -42,27 +38,34 @@ bool Mind::ReachGoals()
 
 	if (goals_.size())
 	{
+		std::vector<goals_collection_t::iterator> toErase;
 		for( goals_collection_t::iterator it = goals_.begin();
 			it != goals_.end(); ++it )
 		{
 			Goal::ptr_t goal = *it;
 			bool isRiched = std::find(richedGoals_.begin(), richedGoals_.end(), goal) != richedGoals_.end();
-			someRiched = isRiched || goal->Rich();
+			someRiched = isRiched || goal->Reach();
 			if (someRiched)
 			{
-				if (!isRiched) // it is riched by now
+				if (!isRiched) // it is reached by now
 				{
-					richedGoals_.insert(richedGoals_.begin(), it, it);
+					richedGoals_.push_front(*it);
+					std::wcout
+						<< std::endl << L"Goal " << (*it)->Name() 
+						<< L" reached. Result: " << (*it)->SerializedResult() << std::endl;
 				}
 
-				goals_.erase( it );
+				toErase.push_back(it);
 			}
 			else
 			{
-				Goal::container_t newGoals = goal->ToRich();
+				Goal::container_t newGoals = goal->ToReach();
 				goals_.insert( it, newGoals.begin(), newGoals.end() ); 
 			}
 		}
+
+		for_each(toErase.begin(), toErase.end(), 
+			boost::bind(&goals_collection_t::erase, &goals_, _1) );
 	}
 
 	return someRiched;

@@ -16,7 +16,8 @@ namespace
 	}
 }
 
-SolveProportion::SolveProportion(std::wstring a,std::wstring b, std::wstring c, std::wstring d)
+SolveProportion::SolveProportion(std::wstring a, std::wstring b, std::wstring c, std::wstring d)
+: _name(L"Solve proportion: " + a + L'/' +b+ L'=' +c+ L'/' + d)
 {
 	Init(Prepare(a), Prepare(b), Prepare(c), Prepare(d));
 }
@@ -34,8 +35,13 @@ bool SolveProportion::Init(string_t& a, string_t b, string_t c, string_t d)
 	}
 	else
 	{
-		initialized = Init(c,d,a,b) || Init(b,a,d,c);
+		initialized = c==L"x" ? Init(c,d,a,b) : Init(b,a,d,c);
 	}
 
 	return initialized;
+}
+
+SolveProportion::string_t SolveProportion::SerializedResult()
+{
+	return boost::lexical_cast<string_t>(_result);
 }
