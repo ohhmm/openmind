@@ -305,6 +305,26 @@
 					RelativePath=".\ProportionGenerator.h"
 					>
 				</File>
+				<Filter
+					Name="GeneratorProxy"
+					>
+					<File
+						RelativePath=".\ConsoleGeneratorProxy.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ConsoleGeneratorProxy.h"
+						>
+					</File>
+					<File
+						RelativePath=".\GeneratorProxy.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\GeneratorProxy.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
