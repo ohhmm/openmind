@@ -3,15 +3,18 @@
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 #include "Goal.h"
+#include "Named.h"
 
 class GoalGenerator
+	: public Named
 {
-	typedef GoalGenerator self_t;
+	typedef Named			base_t;
+	typedef GoalGenerator	self_t;
 	typedef boost::function<void (Goal::ptr_t)>  adder_t;
-	std::vector<adder_t> adders_;
+	std::vector<adder_t>	adders_;
 
 protected:
-	GoalGenerator(void);
+	GoalGenerator(string_t::const_pointer name);
 
 public:
 	typedef boost::shared_ptr<self_t> ptr_t;

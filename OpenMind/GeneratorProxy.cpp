@@ -2,7 +2,8 @@
 #include "GeneratorProxy.h"
 #include "ConsoleGeneratorProxy.h"
 
-GeneratorProxy::GeneratorProxy(void)
+GeneratorProxy::GeneratorProxy(string_t::pointer name)
+: base_t(name)
 {
 }
 
@@ -10,8 +11,10 @@ GeneratorProxy::~GeneratorProxy(void)
 {
 }
 
-GeneratorProxy::ptr_t GeneratorProxy::Make()
+GoalGenerator::ptr_t GeneratorProxy::Make()
 {
 	// TODO : Detect platform and use corresponding proxy
-	return ptr_t(new ConsoleGeneratorProxy());
+	return GoalGenerator::ptr_t(
+		new ConsoleGeneratorProxy()
+		);
 }

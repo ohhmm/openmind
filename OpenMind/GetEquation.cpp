@@ -3,6 +3,7 @@
 #include "GetEquation.h"
 
 GetEquation::GetEquation(void)
+: base_t(L"Generate Equation")
 {
 }
 

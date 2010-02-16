@@ -1,7 +1,8 @@
 #include "StdAfx.h"
 #include "GoalGenerator.h"
 
-GoalGenerator::GoalGenerator(void)
+GoalGenerator::GoalGenerator(string_t::const_pointer name)
+: base_t(name)
 {
 }
 

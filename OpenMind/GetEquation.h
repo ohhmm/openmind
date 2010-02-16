@@ -4,6 +4,7 @@
 class GetEquation :
 	public GoalGenerator
 {
+	typedef GoalGenerator base_t;
 public:
 	GetEquation(void);
 	~GetEquation(void);
