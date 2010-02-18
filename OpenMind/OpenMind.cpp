@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "OpenMind.h"
 #include "Mind.h"
-#include "ProportionGenerator.h"
+#include "ConsoleGeneratorProxy.h"
 
 /*
 #define MAX_LOADSTRING 100
@@ -196,6 +196,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 void _tmain()
 {
 	Mind mind;
-	mind.AddGoalGenerator(ProportionGenerator::Make());
+	mind.AddGoalGenerator(ConsoleGeneratorProxy::Make());
 	mind.Run();
 }

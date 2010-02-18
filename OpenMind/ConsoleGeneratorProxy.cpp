@@ -50,21 +50,21 @@ ConsoleGeneratorProxy::~ConsoleGeneratorProxy(void)
 Goal::ptr_t ConsoleGeneratorProxy::GenerateGoal()
 {
 	std::wcout << L"Here is list of available goal generators:" << std::endl;
-	std::wcout << L"0. Exit" << std::endl;
+	std::wcout << L"\t0. Exit" << std::endl;
 	size_t generatorsCount = _generators.size();
 	size_t i = 0 ;
 	for ( ; i < generatorsCount; ++i)
 	{
 		std::wcout
-			<< L'\t' << boost::lexical_cast<std::wstring>(i+1) << L' '
+			<< L'\t' << boost::lexical_cast<std::wstring>(i+1) << L". "
 			<< _generators[i]->Name() << std::endl;
 	}
-	std::wcout << L"choose someone:" << std::endl;
+	std::wcout << L"choose: ";
 
 	do
 	{
-		i = boost::lexical_cast<size_t>(std::wcin.get());
-	} while (i != 0 && i > generatorsCount);
+		i = boost::lexical_cast<size_t>(std::cin.get()) - '0';
+	} while (i && i > generatorsCount);
 
 	if (!i)
 	{
