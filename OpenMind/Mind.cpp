@@ -18,8 +18,11 @@ void Mind::Run()
 	{
 		BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_)
 		{
-			goals_.push_back(
-				generator->GenerateGoal() );
+			if (generator->IsNeedToGenerate())
+			{
+				goals_.push_back(
+					generator->GenerateGoal() );
+			}
 		}
 	}
 }

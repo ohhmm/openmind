@@ -175,10 +175,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Named.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\OpenMind.cpp"
 				>
 			</File>
@@ -210,10 +206,6 @@
 			>
 			<File
 				RelativePath=".\Mind.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Named.h"
 				>
 			</File>
 			<File
@@ -290,6 +282,14 @@
 				RelativePath=".\SolveProportion.h"
 				>
 			</File>
+			<File
+				RelativePath=".\WaitForComputerIdle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WaitForComputerIdle.h"
+				>
+			</File>
 			<Filter
 				Name="GoalGenerators"
 				>
@@ -303,6 +303,14 @@
 				</File>
 				<File
 					RelativePath=".\GoalGenerator.h"
+					>
+				</File>
+				<File
+					RelativePath=".\IdleTimeGoalGenerator.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\IdleTimeGoalGenerator.h"
 					>
 				</File>
 				<File
@@ -360,12 +368,28 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="GeneralClasses"
+			Name="Generic"
 			>
 		</Filter>
 		<Filter
-			Name="Generic"
+			Name="Util"
 			>
+			<Filter
+				Name="GeneralClasses"
+				>
+				<File
+					RelativePath=".\Named.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Named.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Sync"
+				>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

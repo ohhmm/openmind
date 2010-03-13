@@ -24,5 +24,6 @@ public:
 	void Bind(adder_t adder);
 	void Unbind(adder_t adder);
 
+	virtual bool IsNeedToGenerate();
 	virtual Goal::ptr_t GenerateGoal() = 0;
 };

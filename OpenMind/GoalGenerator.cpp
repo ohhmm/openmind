@@ -21,3 +21,8 @@ void GoalGenerator::Unbind( adder_t adder )
 	//adders_.remove(
 	//adders_.find(adder) );
 }
+
+bool GoalGenerator::IsNeedToGenerate()
+{
+	return true;
+}
