@@ -8,7 +8,7 @@ class Goal;
 class Goal
 {
 public:
-	typedef boost::shared_ptr<Goal>		ptr_t;
+	typedef boost::shared_ptr<Goal>	ptr_t;
 	typedef std::list<ptr_t>		container_t;
 	typedef std::wstring			string_t;
 
@@ -22,6 +22,6 @@ public:
 	virtual string_t	Name() = 0;
 
 protected:
-	std::list<Facility>		usingFacilities;
+	std::list<Facility>		_facilities;
 	std::set<Goal::ptr_t>	_dependencies;
 };
