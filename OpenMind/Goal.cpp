@@ -17,6 +17,6 @@ bool Goal::Reach()
 
 Goal::container_t Goal::ToReach()
 {
-	assert(!"implemented");
+	//assert(!"implemented");
 	return container_t();
 }

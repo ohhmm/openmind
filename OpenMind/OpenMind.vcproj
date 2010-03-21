@@ -217,6 +217,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SingletonGoalGenerator.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
@@ -303,6 +307,10 @@
 				</File>
 				<File
 					RelativePath=".\GoalGenerator.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GoalGeneratorBase.h"
 					>
 				</File>
 				<File

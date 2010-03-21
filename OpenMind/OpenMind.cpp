@@ -5,7 +5,7 @@
 #include "OpenMind.h"
 #include "Mind.h"
 #include "ConsoleGeneratorProxy.h"
-
+#include "IdleTimeGoalGenerator.h"
 /*
 #define MAX_LOADSTRING 100
 
@@ -196,6 +196,9 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 void _tmain()
 {
 	Mind mind;
-	mind.AddGoalGenerator(ConsoleGeneratorProxy::Make());
+	mind.AddGoalGenerator(
+        IdleTimeGoalGenerator::Make()
+        //ConsoleGeneratorProxy::Make()
+        );
 	mind.Run();
 }

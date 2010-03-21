@@ -1,10 +1,12 @@
 #include "StdAfx.h"
 #include <boost/bind.hpp>
+#include <boost/function.hpp>
 #include "WaitForComputerIdle.h"
 
 namespace
 {
 	const DWORD IdleMillisecondsCount = 25000;
+    void None(bool)    {    }
 }
 
 //WaitForComputerIdle::WaitForComputerIdle( boost::function<void()> cmd ) : command_(cmd)
@@ -33,7 +35,7 @@ bool WaitForComputerIdle::Reach()
 	if (reached)
 	{
         for_each(facilities_->begin(), facilities_->end(), 
-            boost::bind(&Facility::AsyncInvoke, _1) );
+            boost::bind(&Facility::AsyncInvoke, _1, None) );
 	}
 
 	return reached;

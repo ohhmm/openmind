@@ -1,15 +1,11 @@
 #pragma once
-#include "goalgenerator.h"
+#include "goalgeneratorbase.h"
 #include <boost/detail/lightweight_mutex.hpp>
 
 class IdleTimeGoalGenerator :
-    public GoalGenerator
+    public GoalGeneratorBase<IdleTimeGoalGenerator>
 {
-	typedef GoalGenerator base_t;
-	volatile bool generated_;
-
-    typedef boost::detail::lightweight_mutex  mutex_t;
-    volatile mutex_t goalPresenseControl_;
+	typedef GoalGeneratorBase<IdleTimeGoalGenerator>  base_t;
 public:
 	IdleTimeGoalGenerator(void);
 	~IdleTimeGoalGenerator(void);
