@@ -1,11 +1,11 @@
 #pragma once
-#include "goalgeneratorbase.h"
+#include "SingletonGoalGenerator.h"
 #include <boost/detail/lightweight_mutex.hpp>
 
 class IdleTimeGoalGenerator :
-    public GoalGeneratorBase<IdleTimeGoalGenerator>
+    public SingletonGoalGenerator<IdleTimeGoalGenerator>
 {
-	typedef GoalGeneratorBase<IdleTimeGoalGenerator>  base_t;
+	typedef SingletonGoalGenerator<IdleTimeGoalGenerator>  base_t;
 public:
 	IdleTimeGoalGenerator(void);
 	~IdleTimeGoalGenerator(void);
