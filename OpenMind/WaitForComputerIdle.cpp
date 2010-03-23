@@ -27,10 +27,11 @@ WaitForComputerIdle::~WaitForComputerIdle(void)
 bool WaitForComputerIdle::Reach()
 {
 	// return true if user didn't access computer for a minute by keyboard&mouse
-	LASTINPUTINFO ii;
+    LASTINPUTINFO ii = {sizeof(ii),0};
 	bool reached = 
-		GetLastInputInfo(&ii) &&
-		ii.dwTime > IdleMillisecondsCount;
+		GetLastInputInfo(&ii);
+    DWORD idleMsec = GetTickCount() - ii.dwTime;
+    reached &= idleMsec >= IdleMillisecondsCount;
 
 	if (reached)
 	{
