@@ -1,45 +1,33 @@
 #include "StdAfx.h"
+#include <algorithm>
 #include <boost/bind.hpp>
+#include <boost/lambda/lambda.hpp>
 #include <boost/function.hpp>
+#include "IdleTimeGoalGenerator.h"
 #include "WaitForComputerIdle.h"
 
 namespace
 {
-	const DWORD IdleMillisecondsCount = 25000;
-    void None(bool)    {    }
+	const DWORD IdleMillisecondsCount = 5000;//25000;
 }
 
-//WaitForComputerIdle::WaitForComputerIdle( boost::function<void()> cmd ) : command_(cmd)
-//{
-//
-//}
 
-WaitForComputerIdle::WaitForComputerIdle( facility_collection_ptr_t facilities )
-: facilities_(facilities)
-{
-
-}
-
-WaitForComputerIdle::~WaitForComputerIdle(void)
-{
-}
+WaitForComputerIdle::WaitForComputerIdle( GoalGenerator::ptr_t parent )
+: base_t(parent)
+, _state(None)
+{ }
 
 bool WaitForComputerIdle::Reach()
 {
-	// return true if user didn't access computer for a minute by keyboard&mouse
-    LASTINPUTINFO ii = {sizeof(ii),0};
-	bool reached = 
-		GetLastInputInfo(&ii);
-    DWORD idleMsec = GetTickCount() - ii.dwTime;
-    reached &= idleMsec >= IdleMillisecondsCount;
+    typedef void (WaitForComputerIdle::*reach_meth_t)();
+    static const reach_meth_t ReachByState[] = {
+        &WaitForComputerIdle::ReachNone,
+        &WaitForComputerIdle::DoNothing,
+        &WaitForComputerIdle::ReachIdleWork,
+        &WaitForComputerIdle::DoNothing };
 
-	if (reached)
-	{
-        for_each(facilities_->begin(), facilities_->end(), 
-            boost::bind(&Facility::AsyncInvoke, _1, None) );
-	}
-
-	return reached;
+    (this->*(ReachByState[_state]))();
+	return _state == Stopped;
 }
 
 WaitForComputerIdle::string_t WaitForComputerIdle::Name()
@@ -52,8 +40,75 @@ void WaitForComputerIdle::GetResult( void* )
     assert(!"Not Implemented");
 }
 
-WaitForComputerIdle::string_t WaitForComputerIdle::SerializedResult()
+void WaitForComputerIdle::ProcessStartedNotification( bool procRunSuccess )
 {
-    assert(!"Not Implemented");
-    return string_t();
+    if (procRunSuccess)
+    {
+        _state = IdleWork;
+        _result << L"Processes Creation successfull" << std::endl;
+    }
+    else
+    {
+        _result << L"Processes Creation failed" << std::endl;
+    }
+}
+
+void WaitForComputerIdle::ReachNone()
+{
+    LASTINPUTINFO ii = {sizeof(ii),0};
+    if (!! GetLastInputInfo(&ii) 
+        && (GetTickCount() - ii.dwTime) >= IdleMillisecondsCount)
+    {
+        Facility::result_notification_f processStartedNotification =
+            boost::bind(&WaitForComputerIdle::ProcessStartedNotification, this, _1);
+
+        _parentGenerator->UseFacilities(
+            boost::bind(&Facility::AsyncInvoke, _1, processStartedNotification) );
+
+        _state = RunningProcesses;
+    }
+}
+
+void WaitForComputerIdle::ReachIdleWork()
+{
+    LASTINPUTINFO ii = {sizeof(ii),0};
+    if (!! GetLastInputInfo(&ii) 
+        && (GetTickCount() - ii.dwTime) < IdleMillisecondsCount)
+    {
+        bool stopped = true;
+        struct TryStop 
+        {
+            bool& stopped_;
+            TryStop(bool& stopped)
+                : stopped_(stopped)
+            {}
+            void operator()(Facility::ptr_t f)
+            {
+                stopped_ = stopped_ && f->TryShutdown();
+            }
+        };
+        
+        TryStop tryStop(stopped);
+        _parentGenerator->UseFacilities(tryStop);
+        if (!tryStop.stopped_)
+        {
+            _parentGenerator->UseFacilities(
+                boost::bind(&Facility::ForceShutdown, _1));
+
+        }
+                
+        _result << L"Processes are stopped" << std::endl;
+
+        _state = Stopped;
+    }
+}
+
+void WaitForComputerIdle::DoNothing()
+{
+
+}
+
+bool WaitForComputerIdle::Archivable()
+{
+    return true;
 }

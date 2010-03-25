@@ -52,7 +52,13 @@ bool Mind::ReachGoals()
 			{
 				if (!isRiched) // it is reached by now
 				{
-					richedGoals_.push_front(*it);
+                    (*it)->OnReach();
+
+                    if ((*it)->Archivable())
+                    {
+                        richedGoals_.push_front(*it);
+                    }
+					
 					std::wcout
 						<< std::endl << L"Goal " << (*it)->Name() 
 						<< L" reached. Result: " << (*it)->SerializedResult() << std::endl;

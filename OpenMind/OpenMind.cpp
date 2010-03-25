@@ -6,6 +6,7 @@
 #include "Mind.h"
 #include "ConsoleGeneratorProxy.h"
 #include "IdleTimeGoalGenerator.h"
+#include "RunProcess.h"
 /*
 #define MAX_LOADSTRING 100
 
@@ -196,9 +197,12 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 void _tmain()
 {
 	Mind mind;
-	mind.AddGoalGenerator(
-        IdleTimeGoalGenerator::Make()
+
+    GoalGenerator::ptr_t goalGenerator = 
         //ConsoleGeneratorProxy::Make()
-        );
+        IdleTimeGoalGenerator::Make();
+    goalGenerator->AddFacility(RunProcess::Make(L"calc"));
+    
+	mind.AddGoalGenerator(goalGenerator);
 	mind.Run();
 }

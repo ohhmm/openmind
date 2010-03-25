@@ -34,3 +34,5 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
+
+#define PTRT(T) boost::shared_ptr<T>

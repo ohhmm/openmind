@@ -33,7 +33,7 @@ bool Facility::Invoke()
     return true;
 }
 
-void Facility::AsyncInvoke( boost::function< void(bool) > callbackNotifyResult )
+void Facility::AsyncInvoke( result_notification_f callbackNotifyResult )
 {
     boost::thread(
         boost::bind( &Facility::CbResultFunctionThread, this, callbackNotifyResult) );
@@ -42,4 +42,15 @@ void Facility::AsyncInvoke( boost::function< void(bool) > callbackNotifyResult )
 void Facility::CbResultFunctionThread( boost::function< void(bool) > callbackNotifyResult )
 {
     callbackNotifyResult( Invoke() );
+}
+
+bool Facility::TryShutdown()
+{
+    assert(!"implemented");
+    return false;
+}
+
+void Facility::ForceShutdown()
+{
+    assert(!"implemented");
 }

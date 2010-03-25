@@ -217,10 +217,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SingletonGoalGenerator.h"
-				>
-			</File>
-			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
@@ -259,11 +255,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FunctorFacility.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FunctorFacility.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ReachGoal.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\ReachGoal.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RunProcess.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RunProcess.h"
 				>
 			</File>
 		</Filter>
@@ -327,6 +339,10 @@
 				</File>
 				<File
 					RelativePath=".\ProportionGenerator.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SingletonGoalGenerator.h"
 					>
 				</File>
 				<Filter

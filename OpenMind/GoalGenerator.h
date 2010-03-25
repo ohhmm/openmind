@@ -2,9 +2,12 @@
 #include <vector>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/intrusive_ptr.hpp>
 #include "Goal.h"
 #include "Named.h"
 #include "Facility.h"
+
+class Goal;
 
 class GoalGenerator
 	: public Named
@@ -30,6 +33,10 @@ public:
 	void Bind(adder_t adder);
     void Bind(Facility::ptr_t facility);
 	void Unbind(adder_t adder);
+    void PushGoal(Goal::ptr_t goal);
+
+    void AddFacility(Facility::ptr_t facility);
+    void UseFacilities(boost::function<void (Facility::ptr_t)> f);
 
 	virtual bool IsNeedToGenerate();
 	virtual Goal::ptr_t GenerateGoal() = 0;

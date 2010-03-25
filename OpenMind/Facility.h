@@ -1,7 +1,6 @@
 #pragma once
 #include <list>
 #include <boost/function.hpp>
-#include "Goal.h"
 
 class Goal;
 class Facility
@@ -10,8 +9,8 @@ class Facility
 
 public:
 
-    typedef boost::shared_ptr<Facility> ptr_t;
-	typedef boost::shared_ptr<Goal>     goal_ptr_t;
+    typedef PTRT(Facility) ptr_t;
+	typedef PTRT(Goal)     goal_ptr_t;
 	Facility(void);
 	virtual bool Use(goal_ptr_t goal);
 	virtual std::list<goal_ptr_t> ToUse();
@@ -19,5 +18,12 @@ public:
 	virtual ~Facility(void);
 
     void AsyncInvoke();
-    void AsyncInvoke(boost::function< void(bool) > callbackNotifyResult);
+    typedef boost::function< void(bool) >  result_notification_f;
+    void AsyncInvoke(result_notification_f callbackNotifyResult);
+
+    virtual bool TryShutdown();
+    virtual void ForceShutdown();
+
 };
+
+#include "Goal.h"

@@ -32,3 +32,24 @@ bool GoalGenerator::IsNeedToGenerate()
 {
 	return true;
 }
+
+void GoalGenerator::AddFacility( Facility::ptr_t facility )
+{
+    facilities_->push_back(facility);
+}
+
+void GoalGenerator::PushGoal( Goal::ptr_t goal )
+{
+    BOOST_FOREACH(adder_t adder, adders_)
+    {
+        adder(goal);
+    }
+}
+
+void GoalGenerator::UseFacilities( boost::function<void (Facility::ptr_t)> f )
+{
+    BOOST_FOREACH(Facility::ptr_t facility, *facilities_)
+    {
+        f(facility);
+    }
+}
