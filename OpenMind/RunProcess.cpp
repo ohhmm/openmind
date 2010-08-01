@@ -3,6 +3,28 @@
 
 #include <cstring>
 
+
+
+void RunProcess::SetNoWindow() {
+}
+
+bool RunProcess::Invoke() {
+	return false;
+}
+
+bool RunProcess::TryShutdown() {
+	return false;
+}
+
+void RunProcess::ForceShutdown() {
+}
+
+RunProcess::RunProcess(const string_t& cmd) :
+		cmd_(cmd) {
+}
+
+
+
 #ifdef _WIN32
 class RunWinProcess : public RunProcess {
 	PROCESS_INFORMATION procInfo_;
@@ -79,13 +101,6 @@ public:
 };
 #endif
 
-void RunProcess::SetNoWindow() {
-}
-
-bool RunProcess::Invoke() {
-	return false;
-}
-
 Facility::ptr_t RunProcess::Make(const string_t& cmd) {
 	return Facility::ptr_t(
 #ifdef _WIN32
@@ -93,16 +108,6 @@ Facility::ptr_t RunProcess::Make(const string_t& cmd) {
 #else
 	new RunPosixProcess(cmd)
 #endif
-		);
+	);
 }
 
-bool RunProcess::TryShutdown() {
-	return false;
-}
-
-void RunProcess::ForceShutdown() {
-}
-
-RunProcess::RunProcess(const string_t& cmd) :
-		cmd_(cmd) {
-}

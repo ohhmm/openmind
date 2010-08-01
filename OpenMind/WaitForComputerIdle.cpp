@@ -108,7 +108,8 @@ void WaitForComputerIdle::ReachIdleWork()
 
 		if (!stopped)
             _parentGenerator->UseFacilities(
-                std::bind(&Facility::ForceShutdown, std::placeholders::_1));
+				[] (Facility::ptr_t facility) { facility->ForceShutdown(); }
+			);
                 
         _result << L"Workers are stopped" << std::endl;
 

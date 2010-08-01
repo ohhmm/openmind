@@ -147,7 +147,7 @@ SOURCE_GROUP("Facilities" FILES
 	Facility.cpp
 	FunctorFacility.cpp
 	ReachGoal.cpp
-	#RunProcess.cpp
+	RunProcess.cpp
 	Facility.h
 	FunctorFacility.h
 	ReachGoal.h
@@ -169,6 +169,8 @@ SOURCE_GROUP("Solvers\\Equation" FILES
 	SolveEquation.cpp
 	GetEquation.h
 	SolveEquation.h
+	)
+SOURCE_GROUP("Solvers\\Generic" FILES 
 	)
 
 ## section: precompiled header	

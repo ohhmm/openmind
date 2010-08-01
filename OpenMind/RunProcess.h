@@ -5,7 +5,7 @@
 class RunProcess: public Facility {
 public:
     typedef std::string string_t;
-    
+
     RunProcess(const string_t& cmd);
     
     static Facility::ptr_t Make(const string_t& cmd);
