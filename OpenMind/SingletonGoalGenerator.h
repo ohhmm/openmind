@@ -26,8 +26,14 @@ public:
 
     void Reached()
     {
-        //mutex_t::scoped_lock lock(*const_cast<mutex_t*>(&goalPresenseControl_));
         generated_ = false;
+		if (IsNeedToGenerate())
+		{
+			BOOST_FOREACH(need_generate_notification_fn_t& fn, needGenerationNotificators_)
+			{
+				fn();
+			}
+		}
     }
 
 };

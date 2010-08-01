@@ -2,9 +2,12 @@
 #include <algorithm>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lambda/lambda.hpp>
 #include "Mind.h"
+#include "RiseEventFn.h"
 
 Mind::Mind(void)
+: interval_(0)
 {
 }
 
@@ -14,17 +17,75 @@ Mind::~Mind(void)
 
 void Mind::Run()
 {
+	//boost::mutex generationNeed;
+	enum {GenerationNeedEventIndex, RichGoalNeedEventIndex};
+	HANDLE events[] = { 
+		CreateEvent(0,0,false,0),
+		CreateEvent(0,0,false,0) };
+
+	bool someNeedToGenerateGoal = true;
 	while(!ReachGoals() || goals_.empty())
 	{
-		BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_)
+		bool generationNeeded = false;
+		if (someNeedToGenerateGoal)
 		{
-			if (generator->IsNeedToGenerate())
+			BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_)
 			{
-				goals_.push_back(
-					generator->GenerateGoal() );
+				if (generator->IsNeedToGenerate())
+				{
+					generationNeeded = true;
+					goals_.push_back(
+						generator->GenerateGoal() );
+				}
+			}
+			if(!generationNeeded)
+			{
+				someNeedToGenerateGoal = false;
+				BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_)
+				{
+					struct AssignFn 
+					{
+						bool& target_;
+						HANDLE syncObj_;
+					public:
+						AssignFn(bool& target, HANDLE m)
+							: target_(target), syncObj_(m)
+						{ }
+
+						void operator()()
+						{
+							target_ = true;
+							PulseEvent(syncObj_);
+						}
+					};
+
+					generator->SubscribeGeneration(
+						AssignFn(someNeedToGenerateGoal, events[GenerationNeedEventIndex]));
+				}
 			}
 		}
+		else
+		{
+			BOOST_FOREACH(Goal::ptr_t goal, goals_)
+			{
+				goal->SubscribeOnReach(RiseEventFn(events[RichGoalNeedEventIndex]));
+				goal->StartReachingAsync();
+			}
+
+			WaitForMultipleObjects(_countof(events), events, false, INFINITE);
+		}
+
+		if (interval_)
+		{
+			Sleep(interval_);
+		}
 	}
+}
+
+void Mind::Run( Goal::ptr_t goal )
+{
+	goals_.push_back(goal);
+	Run();
 }
 
 void Mind::AddGoalGenerator( GoalGenerator::ptr_t generator )
@@ -78,4 +139,14 @@ bool Mind::ReachGoals()
 	}
 
 	return someRiched;
+}
+
+void Mind::SetInterval( int msec )
+{
+	interval_ = msec;
+}
+
+void Mind::AddGoal( Goal::ptr_t goal )
+{
+	goals_.push_front(goal);
 }

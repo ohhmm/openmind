@@ -45,3 +45,8 @@ SolveProportion::string_t SolveProportion::SerializedResult()
 {
 	return boost::lexical_cast<string_t>(_result);
 }
+
+void* SolveProportion::GetResult()
+{
+	return &_result;
+}

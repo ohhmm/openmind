@@ -2,6 +2,7 @@
 #include <sstream>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include "Facility.h"
 
 class GoalGenerator;
@@ -24,12 +25,14 @@ public:
 	virtual bool		Reach() = 0;
 	virtual container_t ToReach();
     virtual void		GetResult(void*) = 0;
-	virtual string_t	SerializedResult()
-    {
-        return _result.str();
-    }
+	virtual void*		GetResult() = 0;
+	virtual string_t	SerializedResult();
 	virtual string_t	Name() = 0;
+	virtual bool		IsReachable();
     virtual bool        Archivable() { return false; }
+
+	void StartReachingAsync();
+	bool CompleteReaching();
 
 protected:
     typedef PTRT(GoalGenerator)    parent_generator_ptr_t;
@@ -43,6 +46,7 @@ protected:
 private:
     void* res_;
     std::vector<boost::function <void()> > _onReach;
+	boost::thread _reaching;
 };
 
 #include "GoalGenerator.h"

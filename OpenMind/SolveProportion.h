@@ -14,6 +14,7 @@ public:
 	//Goal 
 	bool Reach()				{ return true; }
 	void GetResult(void* res)	{ res = &_result; }
+	void* GetResult();
 
 	string_t	SerializedResult();
 	string_t Name() { return _name; }

@@ -25,6 +25,8 @@ public:
 
 	bool        Reach();
     void		GetResult(void*);
+	void*		GetResult();
+
     string_t	Name();
 };
 

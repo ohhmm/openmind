@@ -53,3 +53,8 @@ void GoalGenerator::UseFacilities( boost::function<void (Facility::ptr_t)> f )
         f(facility);
     }
 }
+
+void GoalGenerator::SubscribeGeneration( need_generate_notification_fn_t fn )
+{
+	needGenerationNotificators_.push_back(fn);
+}

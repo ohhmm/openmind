@@ -414,6 +414,18 @@
 				Name="Sync"
 				>
 			</Filter>
+			<Filter
+				Name="HelperFunctors"
+				>
+				<File
+					RelativePath=".\RiseEventFn.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\RiseEventFn.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

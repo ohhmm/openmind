@@ -40,12 +40,18 @@ void WaitForComputerIdle::GetResult( void* )
     assert(!"Not Implemented");
 }
 
+void* WaitForComputerIdle::GetResult()
+{
+	assert(!"Not Implemented");
+	return 0;
+}
+
 void WaitForComputerIdle::ProcessStartedNotification( bool procRunSuccess )
 {
     if (procRunSuccess)
     {
         _state = IdleWork;
-        _result << L"Processes Creation successfull" << std::endl;
+        _result << L"Processes Creation successful" << std::endl;
     }
     else
     {
@@ -97,9 +103,10 @@ void WaitForComputerIdle::ReachIdleWork()
 
         }
                 
-        _result << L"Processes are stopped" << std::endl;
+        _result << L"Workers are stopped" << std::endl;
 
         _state = Stopped;
+		base_t::Reach();
     }
 }
 
