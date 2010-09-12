@@ -32,6 +32,7 @@
 #include <boost/detail/lightweight_mutex.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
+#include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 

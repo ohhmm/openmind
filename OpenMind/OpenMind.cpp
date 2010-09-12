@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include <boost/program_options.hpp>
 #include "OpenMind.h"
 #include "Mind.h"
 #include "ConsoleGeneratorProxy.h"
@@ -194,14 +195,28 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 */
 
-void _tmain()
+
+int _tWinMain(__in HINSTANCE hInstance,
+           __in_opt HINSTANCE hPrevInstance,
+           __in LPWSTR lpCmdLine,
+           __in int nShowCmd
+)
 {
 	Mind mind;
+    typedef std::wstring    string_t;
 
+    namespace po = boost::program_options;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("", "")
+        ("compression", po::value<int>(), "set compression level")
+        ;
+
+    //string_t s = boost::program_options::get_single_string(string_t(L""));
     GoalGenerator::ptr_t goalGenerator = 
         //ConsoleGeneratorProxy::Make()
         IdleTimeGoalGenerator::Make();
-    goalGenerator->AddFacility(RunProcess::Make(L"calc"));
+    goalGenerator->AddFacility(RunProcess::Make(L"c:\\Program Files\\uTorrent\\uTorrent.exe"));
     
 	mind.AddGoalGenerator(goalGenerator);
 	mind.Run();

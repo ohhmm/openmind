@@ -15,3 +15,13 @@ bool RunProcess::Invoke()
     return !! CreateProcessW(0, const_cast<wchar_t*>(cmd_.c_str()),
         0, 0, 0, creationFlags_, 0,0, &si, &procInfo_);
 }
+
+bool RunProcess::TryShutdown()
+{
+    return false;
+}
+
+void RunProcess::ForceShutdown()
+{
+    TerminateProcess(procInfo_.hProcess, 0);
+}

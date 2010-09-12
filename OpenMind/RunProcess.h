@@ -3,7 +3,7 @@
 #include "facility.h"
 
 class RunProcess :
-    public Facility
+    public GenericFacility<RunProcess>
 {
     PROCESS_INFORMATION procInfo_;
     DWORD creationFlags_;
@@ -27,14 +27,6 @@ public:
 
     void SetNoWindow();
     bool Invoke();
-
-    bool TryShutdown()
-    {
-        return false;
-    }
-
-    void ForceShutdown()
-    {
-        TerminateProcess(procInfo_.hProcess, 0);
-    }
+    bool TryShutdown();
+    void ForceShutdown();
 };
