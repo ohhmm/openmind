@@ -187,9 +187,9 @@ LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 #   add prefix -D. example> -DSHP
 #  - DO NOT add  the following definitions(already defined in ${OSP_DEFINITIONS}:
 #   -DSHP, -DWIN32, -D_WINDOWS, -D_DEBUG, -D_USRDLL, -D_CRT_SECURE_NO_DEPRECATE
-#IF(NOT MSVC)
+IF(NOT MSVC)
 	ADD_DEFINITIONS(-std=c++11)
-#ENDIF(MSVC)
+ENDIF(MSVC)
 #    -DWIN32
 #	-D_DEBUG
 #	-D_WINDOWS
@@ -198,4 +198,7 @@ LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 ## section: add target
 
 ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
-target_link_libraries(${this_target}  boost_system-mt X11 Xss)
+
+if(linux)
+	target_link_libraries(${this_target} X11 Xss)
+endif(linux)

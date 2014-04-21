@@ -20,14 +20,15 @@ void Mind::Run() {
 //	HANDLE events[] = {
 //		CreateEvent(0,0,false,0),
 //		CreateEvent(0,0,false,0) };
-	std::mutex processing;
+	typedef std::recursive_mutex processing_mutex_t;
+	processing_mutex_t processing;
 	processing.lock();
 
 	bool someNeedToGenerateGoal = true;
 	while (!ReachGoals() || goals_.empty()) {
 		bool generationNeeded = false;
 		if (someNeedToGenerateGoal) {
-			BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_) {
+			for(GoalGenerator::ptr_t generator : goalGenerators_) {
 				if (generator->IsNeedToGenerate()) {
 					generationNeeded = true;
 					goals_.push_back(generator->GenerateGoal());
@@ -35,7 +36,7 @@ void Mind::Run() {
 			}
 			if (!generationNeeded) {
 				someNeedToGenerateGoal = false;
-				BOOST_FOREACH(GoalGenerator::ptr_t generator, goalGenerators_) {
+				for(GoalGenerator::ptr_t generator : goalGenerators_) {
 //					struct AssignFn
 //					{
 //						bool& target_;
@@ -62,10 +63,9 @@ void Mind::Run() {
 				}
 			}
 		} else {
-			BOOST_FOREACH(Goal::ptr_t goal, goals_) {
+			for(Goal::ptr_t goal : goals_) {
 				goal->SubscribeOnReach( //RiseEventFn(events[RichGoalNeedEventIndex])
-						std::bind(&decltype(processing)::unlock, &processing)
-
+						std::bind(&processing_mutex_t::unlock, &processing)
 				);
 				goal->StartReachingAsync();
 			}
@@ -77,7 +77,6 @@ void Mind::Run() {
 		if (interval_) {
 			std::chrono::milliseconds duration(interval_);
 			std::this_thread::sleep_for(duration);
-//			Sleep(interval_);
 		}
 	}
 }

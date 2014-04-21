@@ -19,7 +19,7 @@ public:
 	Goal();
 	virtual ~Goal(void);
 
-    void SubscribeOnReach(boost::function <void()> f);
+    void SubscribeOnReach(std::function <void()> f);
     void OnReach();
 
 	virtual bool		Reach() = 0;
@@ -45,7 +45,7 @@ protected:
 
 private:
     void* res_;
-    std::vector<boost::function <void()> > _onReach;
+    std::vector<std::function <void()> > _onReach;
 	std::thread _reaching;
 };
 

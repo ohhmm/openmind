@@ -39,7 +39,7 @@ void Facility::AsyncInvoke( result_notification_f callbackNotifyResult )
         boost::bind( &Facility::CbResultFunctionThread, this, callbackNotifyResult) );
 }
 
-void Facility::CbResultFunctionThread( boost::function< void(bool) > callbackNotifyResult )
+void Facility::CbResultFunctionThread( std::function< void(bool) > callbackNotifyResult )
 {
     callbackNotifyResult( Invoke() );
 }

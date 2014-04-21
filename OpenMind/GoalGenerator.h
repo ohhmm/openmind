@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <boost/function.hpp>
+#include <functional>
 #include <boost/shared_ptr.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include "Goal.h"
@@ -17,7 +17,7 @@ class GoalGenerator
 
 public:
 	typedef boost::shared_ptr<self_t> ptr_t;
-	typedef boost::function<void (Goal::ptr_t)>  adder_t;
+	typedef std::function<void (Goal::ptr_t)>  adder_t;
 
 	virtual ~GoalGenerator(void);
 
@@ -27,11 +27,11 @@ public:
     void PushGoal(Goal::ptr_t goal);
 
     void AddFacility(Facility::ptr_t facility);
-    void UseFacilities(boost::function<void (Facility::ptr_t)> f);
+    void UseFacilities(std::function<void (Facility::ptr_t)> f);
 
 	virtual bool IsNeedToGenerate();
 	virtual Goal::ptr_t GenerateGoal() = 0;
-	typedef boost::function<void()> need_generate_notification_fn_t;
+	typedef std::function<void()> need_generate_notification_fn_t;
 	virtual void SubscribeGeneration(need_generate_notification_fn_t fn);
 
 protected:

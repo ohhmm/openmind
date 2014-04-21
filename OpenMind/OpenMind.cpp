@@ -200,8 +200,8 @@ int main()
 	Mind mind;
 
     GoalGenerator::ptr_t goalGenerator = 
-        ConsoleGeneratorProxy::Make()
-        //IdleTimeGoalGenerator::Make()
+        //ConsoleGeneratorProxy::Make()
+        IdleTimeGoalGenerator::Make()
     	;
     goalGenerator->AddFacility(RunProcess::Make("calc"));
     

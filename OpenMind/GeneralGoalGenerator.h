@@ -24,7 +24,7 @@ public:
 	{
 		return base_t::ptr_t(
 			new ChildT(
-				const_cast<wchar_t*>(boost::lexical_cast<std::wstring>(typeid(ChildT).name()).c_str())
+				boost::lexical_cast<string_t>(typeid(ChildT).name())
 			));
 	}
 };

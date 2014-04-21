@@ -1,7 +1,7 @@
 #pragma once
 #include "SingletonGoalGenerator.h"
 #include "WaitForComputerIdle.h"
-#include <boost/detail/lightweight_mutex.hpp>
+#include <mutex>
 
 class IdleTimeGoalGenerator :
     public SingletonGoalGenerator<IdleTimeGoalGenerator>

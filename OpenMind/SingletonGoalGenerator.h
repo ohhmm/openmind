@@ -7,8 +7,9 @@ class SingletonGoalGenerator: public GoalGeneratorBase<SelfT> {
 	volatile bool generated_;
 
 protected:
-	typedef boost::detail::lightweight_mutex mutex_t;
+	typedef std::mutex mutex_t;
 	volatile mutex_t goalPresenseControl_;
+	typedef std::lock_guard<mutex_t> lock_t;
 
 public:
 

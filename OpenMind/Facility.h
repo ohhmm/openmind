@@ -1,11 +1,11 @@
 #pragma once
 #include <list>
-#include <boost/function.hpp>
+#include <functional>
 
 class Goal;
 class Facility
 {
-    void CbResultFunctionThread(boost::function< void(bool) > callbackNotifyResult);
+    void CbResultFunctionThread(std::function< void(bool) > callbackNotifyResult);
 
 public:
 
@@ -18,7 +18,7 @@ public:
 	virtual ~Facility(void);
 
     void AsyncInvoke();
-    typedef boost::function< void(bool) >  result_notification_f;
+    typedef std::function< void(bool) >  result_notification_f;
     void AsyncInvoke(result_notification_f callbackNotifyResult);
 
     virtual bool TryShutdown();

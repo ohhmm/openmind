@@ -1,13 +1,13 @@
 #pragma once
-#include <boost/function.hpp>
+#include <functional>
 #include "Facility.h"
 
 
 class FunctorFacility :
     public Facility
 {
-    boost::function<bool ()> _f;
+    std::function<bool ()> _f;
 public:
-    FunctorFacility(boost::function<bool ()> f);
+    FunctorFacility(std::function<bool ()> f);
     bool Invoke();
 };

@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/function.hpp>
+#include <functional>
 #include "Goal.h"
 #include "Facility.h"
 

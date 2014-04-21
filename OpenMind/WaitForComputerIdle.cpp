@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/function.hpp>
+#include <functional>
 #include "IdleTimeGoalGenerator.h"
 #include "WaitForComputerIdle.h"
 
@@ -59,7 +59,7 @@ void WaitForComputerIdle::ProcessStartedNotification( bool procRunSuccess )
     }
 }
 
-#ifdef MSVC
+#ifdef _WIN32
 bool getIdleMsec(unsigned& idleTime) {
 	LASTINPUTINFO ii = {sizeof(ii),0};
 	bool result = !! GetLastInputInfo(&ii);

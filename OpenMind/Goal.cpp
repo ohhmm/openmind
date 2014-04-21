@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <boost/lambda/lambda.hpp>
-#include <boost/static_assert.hpp>
 #include <boost/bind.hpp>
 #include "Goal.h"
 #include "Mind.h"
@@ -32,14 +31,14 @@ Goal::container_t Goal::ToReach()
 	return container_t();
 }
 
-void Goal::SubscribeOnReach( boost::function <void()> f )
+void Goal::SubscribeOnReach( std::function <void()> f )
 {
     _onReach.push_back(f);
 }
 
 void Goal::OnReach()
 {
-    BOOST_FOREACH(boost::function <void()> f, _onReach)
+    BOOST_FOREACH(std::function <void()> f, _onReach)
     {
         f();
     }

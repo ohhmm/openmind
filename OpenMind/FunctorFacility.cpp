@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FunctorFacility.h"
 
-FunctorFacility::FunctorFacility( boost::function<bool ()> f ) : _f(f)
+FunctorFacility::FunctorFacility( std::function<bool ()> f ) : _f(f)
 {
 
 }

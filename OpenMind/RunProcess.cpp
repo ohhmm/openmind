@@ -1,15 +1,15 @@
 #include "stdafx.h"
 #include "RunProcess.h"
 
-#ifdef MSVC
-class RunWindProcess : public RunProcess {
+#ifdef _WIN32
+class RunWinProcess : public RunProcess {
 	PROCESS_INFORMATION procInfo_;
 	DWORD creationFlags_;
 
 public:
 	using RunProcess::RunProcess;
 
-    RunWindProcess(const string_t& cmd)
+    RunWinProcess(const string_t& cmd)
 	: RunProcess(cmd)
 	, creationFlags_(DETACHED_PROCESS)
 	{
@@ -23,10 +23,11 @@ public:
 
 	bool Invoke()
 	{
-		STARTUPINFO si;
+		STARTUPINFOA si;
 		ZeroMemory(&si, sizeof(si));
 		si.cb = sizeof(si);
-		return !! CreateProcessW(0, const_cast<wchar_t*>(cmd_.c_str()),
+		return !! CreateProcessA(0, 
+				const_cast<LPSTR>(cmd_.c_str()), // we reserved MAX_PATH in constructor
 				0, 0, 0, creationFlags_, 0,0, &si, &procInfo_);
 	}
 
@@ -85,7 +86,7 @@ bool RunProcess::Invoke() {
 
 Facility::ptr_t RunProcess::Make(const string_t& cmd) {
 	return Facility::ptr_t(
-#ifdef MSVC
+#ifdef _WIN32
 	new RunWinProcess(cmd)
 #else
 	new RunPosixProcess(cmd)

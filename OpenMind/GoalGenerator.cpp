@@ -46,7 +46,7 @@ void GoalGenerator::PushGoal( Goal::ptr_t goal )
     }
 }
 
-void GoalGenerator::UseFacilities( boost::function<void (Facility::ptr_t)> f )
+void GoalGenerator::UseFacilities( std::function<void (Facility::ptr_t)> f )
 {
     BOOST_FOREACH(Facility::ptr_t facility, *facilities_)
     {
