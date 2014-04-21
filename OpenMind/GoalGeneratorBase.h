@@ -1,5 +1,5 @@
 #pragma once
-#include "goalgenerator.h"
+#include "GoalGenerator.h"
 
 template <class SelfT>
 class GoalGeneratorBase :

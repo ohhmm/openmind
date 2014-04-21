@@ -1,12 +1,13 @@
 #pragma once
-#include "goalgenerator.h"
+#include "GeneralGoalGenerator.h"
 
 class GetEquation :
-	public GoalGenerator
+	public GeneralGoalGenerator<GetEquation>
 {
-	typedef GoalGenerator base_t;
+	typedef GeneralGoalGenerator<GetEquation> base_t;
 public:
-	GetEquation(void);
+	using GeneralGoalGenerator::GeneralGoalGenerator;
+	//GetEquation(void);
 	~GetEquation(void);
 	Goal::ptr_t GenerateGoal();
 };

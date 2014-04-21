@@ -5,17 +5,23 @@
 
 #pragma once
 
+#ifdef _MSVC_VER
 #include "targetver.h"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
+#endif
+
 
 // C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
+
+#ifdef _MSVC_VER
 #include <tchar.h>
+#endif
 
 // STL
 #include <algorithm>
@@ -26,14 +32,17 @@
 #include <list>
 #include <map>
 #include <vector>
+#include <mutex>
+#include <functional>
+#include <chrono>
+#include <thread>
 
 // boost
 #include <boost/bind.hpp>
 #include <boost/detail/lightweight_mutex.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
-#include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
+#include <thread>
 
 #define PTRT(T) boost::shared_ptr<T>

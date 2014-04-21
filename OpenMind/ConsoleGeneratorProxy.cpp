@@ -1,10 +1,11 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "ConsoleGeneratorProxy.h"
 
 #include "ProportionGenerator.h"
+#include "GetEquation.h"
 
 #include <iostream>
-#include <loki/Typelist.h>
+//#include <FerrisLoki/loki/Typelist.h>
 #include <boost/lexical_cast.hpp>
 
 namespace
@@ -13,12 +14,13 @@ namespace
 
 	const GeneratorMaker_t Generators[] =
 	{
-		ProportionGenerator::Make
+//		ProportionGenerator::Make,
+		GetEquation::Make
 	};
 
-	typedef	Loki::TL::MakeTypelist<
-		ProportionGenerator
-	>::Result generators_tl;
+//	typedef	Loki::TL::MakeTypelist<
+//		ProportionGenerator
+//	>::Result generators_tl;
 
 
 //#define StartTypeList ;\

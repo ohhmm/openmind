@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "SolveProportion.h"
 #include <locale>
 #include <boost/lexical_cast.hpp>
@@ -9,9 +9,11 @@ namespace
 	template <class StrT>
 	StrT& Prepare(StrT& s)
 	{
+		typedef typename StrT::value_type char_t;
 		static const std::locale l;
-		std::for_each(s.begin(), s.end(), 
-			boost::bind(&std::tolower<StrT::value_type>, _1, l));
+		std::for_each(s.begin(), s.end(),
+				[&] (char_t& s) { s = std::tolower(s,l); }
+				);
 		return s;
 	}
 }

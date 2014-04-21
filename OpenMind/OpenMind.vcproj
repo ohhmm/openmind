@@ -247,14 +247,6 @@
 			Name="Facilities"
 			>
 			<File
-				RelativePath=".\CollectKnowledge.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CollectKnowledge.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Facility.cpp"
 				>
 			</File>
@@ -397,10 +389,6 @@
 					RelativePath=".\SolveEquation.h"
 					>
 				</File>
-			</Filter>
-			<Filter
-				Name="Wiki"
-				>
 			</Filter>
 		</Filter>
 		<Filter

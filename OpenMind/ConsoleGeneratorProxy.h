@@ -1,5 +1,5 @@
 #pragma once
-#include "generatorproxy.h"
+#include "GeneratorProxy.h"
 
 class ConsoleGeneratorProxy :
 	public GeneratorProxy

@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include <boost/lambda/lambda.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/bind.hpp>
@@ -52,7 +52,7 @@ Goal::string_t Goal::SerializedResult()
 
 void Goal::StartReachingAsync()
 {
-	_reaching = boost::thread(
+	_reaching = std::thread(
 		boost::bind(&Goal::CompleteReaching, this));
 }
 
@@ -62,7 +62,8 @@ bool Goal::CompleteReaching()
 	mind.AddGoal(Goal::ptr_t(this));
 	while(!mind.ReachGoals() && IsReachable())
 	{
-		Sleep(1000);
+		std::chrono::milliseconds duration(1000);
+		std::this_thread::sleep_for(duration);
 	}
 
 	return true;

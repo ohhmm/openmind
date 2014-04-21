@@ -1,5 +1,5 @@
 #pragma once
-#include "facility.h"
+#include "Facility.h"
 
 class ReachGoal :
 	public Facility

@@ -1,32 +1,22 @@
 #pragma once
 #include <string>
-#include "facility.h"
+#include "Facility.h"
 
-class RunProcess :
-    public GenericFacility<RunProcess>
-{
-    PROCESS_INFORMATION procInfo_;
-    DWORD creationFlags_;
-    std::wstring cmd_;
-
-    template <class StrT>
-    RunProcess(const StrT& cmd)
-        : cmd_(cmd),
-        creationFlags_(DETACHED_PROCESS)
-    {
-        cmd_.reserve(MAX_PATH); // for be passed to CreateProcessW
-    }
-
+class RunProcess: public Facility {
 public:
+    typedef std::string string_t;
+    
+    RunProcess(const string_t& cmd);
+    
+    static Facility::ptr_t Make(const string_t& cmd);
 
-    template <class StrT>
-    static Facility::ptr_t Make(const StrT& cmd)
-    {
-        return Facility::ptr_t( new RunProcess(cmd) );
-    }
+	virtual void SetNoWindow();
+	bool Invoke();
 
-    void SetNoWindow();
-    bool Invoke();
-    bool TryShutdown();
-    void ForceShutdown();
+	virtual bool TryShutdown();
+
+	virtual void ForceShutdown();
+    
+protected:
+    string_t cmd_;
 };

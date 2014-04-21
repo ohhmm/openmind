@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "FunctorFacility.h"
 
 FunctorFacility::FunctorFacility( boost::function<bool ()> f ) : _f(f)

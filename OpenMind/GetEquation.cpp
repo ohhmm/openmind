@@ -1,11 +1,11 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include <iostream>
 #include "GetEquation.h"
 
-GetEquation::GetEquation(void)
-: base_t(L"Generate Equation")
-{
-}
+//GetEquation::GetEquation(void)
+//: base_t(L"Generate Equation")
+//{
+//}
 
 GetEquation::~GetEquation(void)
 {

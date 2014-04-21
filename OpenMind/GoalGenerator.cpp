@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "GoalGenerator.h"
 
 GoalGenerator::GoalGenerator(string_t::const_pointer name)

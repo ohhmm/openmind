@@ -1,6 +1,6 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
+#include <thread>
 #include "Facility.h"
 
 namespace
@@ -35,7 +35,7 @@ bool Facility::Invoke()
 
 void Facility::AsyncInvoke( result_notification_f callbackNotifyResult )
 {
-    boost::thread(
+    std::thread(
         boost::bind( &Facility::CbResultFunctionThread, this, callbackNotifyResult) );
 }
 

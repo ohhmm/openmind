@@ -1,8 +1,8 @@
 #pragma once
 #include <sstream>
+#include <thread>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
 #include "Facility.h"
 
 class GoalGenerator;
@@ -46,7 +46,7 @@ protected:
 private:
     void* res_;
     std::vector<boost::function <void()> > _onReach;
-	boost::thread _reaching;
+	std::thread _reaching;
 };
 
 #include "GoalGenerator.h"

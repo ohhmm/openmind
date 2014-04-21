@@ -1,5 +1,5 @@
 #pragma once
-#include "goalgenerator.h"
+#include "GoalGenerator.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -7,9 +7,8 @@ template <class ChildT>
 class GeneralGoalGenerator :
 	public GoalGenerator
 {
-public:
-
 	typedef GoalGenerator base_t;
+public:
 	typedef boost::shared_ptr<ChildT>	ptr_t;
 
 	GeneralGoalGenerator(const string_t& name)

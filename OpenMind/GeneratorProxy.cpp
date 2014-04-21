@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "GeneratorProxy.h"
 #include "ConsoleGeneratorProxy.h"
 

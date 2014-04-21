@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include <algorithm>
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -8,7 +8,7 @@
 
 namespace
 {
-	const DWORD IdleMillisecondsCount = 5000;//25000;
+	const unsigned int IdleMillisecondsCount = 5000;//25000;
 }
 
 
@@ -59,11 +59,35 @@ void WaitForComputerIdle::ProcessStartedNotification( bool procRunSuccess )
     }
 }
 
+#ifdef MSVC
+bool getIdleMsec(unsigned& idleTime) {
+	LASTINPUTINFO ii = {sizeof(ii),0};
+	bool result = !! GetLastInputInfo(&ii);
+	if(result)
+		idleTime = GetTickCount() - ii.dwTime;
+	return result;
+}
+#else
+# include <X11/extensions/scrnsaver.h>
+bool getIdleMsec(unsigned& idleTime) {
+	XScreenSaverInfo info;
+    Display *dpy = XOpenDisplay(NULL);
+	bool result = dpy && XScreenSaverQueryInfo(dpy,RootWindow(dpy, DefaultScreen(dpy)),&info);
+	if(result)
+		idleTime = info.idle; //msec
+	return result;
+}
+unsigned int getIdleTime() {
+	unsigned int result = (unsigned int)-1;
+
+	return result;
+}
+#endif
+
 void WaitForComputerIdle::ReachNone()
 {
-    LASTINPUTINFO ii = {sizeof(ii),0};
-    if (!! GetLastInputInfo(&ii) 
-        && (GetTickCount() - ii.dwTime) >= IdleMillisecondsCount)
+	unsigned msec;
+	if (getIdleMsec(msec) && msec >= IdleMillisecondsCount)
     {
         Facility::result_notification_f processStartedNotification =
             boost::bind(&WaitForComputerIdle::ProcessStartedNotification, this, _1);
@@ -77,9 +101,8 @@ void WaitForComputerIdle::ReachNone()
 
 void WaitForComputerIdle::ReachIdleWork()
 {
-    LASTINPUTINFO ii = {sizeof(ii),0};
-    if (!! GetLastInputInfo(&ii) 
-        && (GetTickCount() - ii.dwTime) < IdleMillisecondsCount)
+	unsigned msec;
+    if (getIdleMsec(msec) && msec < IdleMillisecondsCount)
     {
         bool stopped = true;
         struct TryStop 
