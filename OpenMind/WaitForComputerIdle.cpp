@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include <algorithm>
-#include <boost/bind.hpp>
-#include <boost/lambda/lambda.hpp>
 #include <functional>
 #include "IdleTimeGoalGenerator.h"
 #include "WaitForComputerIdle.h"
@@ -90,12 +88,11 @@ void WaitForComputerIdle::ReachNone()
 	if (getIdleMsec(msec) && msec >= IdleMillisecondsCount)
     {
         Facility::result_notification_f processStartedNotification =
-            boost::bind(&WaitForComputerIdle::ProcessStartedNotification, this, _1);
+            std::bind(&WaitForComputerIdle::ProcessStartedNotification, this, std::placeholders::_1);
 
-        _parentGenerator->UseFacilities(
-            boost::bind(&Facility::AsyncInvoke, _1, processStartedNotification) );
+		_state = RunningProcesses;
 
-        _state = RunningProcesses;
+		_parentGenerator->UseFacilities([&](Facility::ptr_t f) {f->AsyncInvoke(processStartedNotification); });
     }
 }
 
@@ -105,30 +102,18 @@ void WaitForComputerIdle::ReachIdleWork()
     if (getIdleMsec(msec) && msec < IdleMillisecondsCount)
     {
         bool stopped = true;
-        struct TryStop 
-        {
-            bool& stopped_;
-            TryStop(bool& stopped)
-                : stopped_(stopped)
-            {}
-            void operator()(Facility::ptr_t f)
-            {
-                stopped_ = stopped_ && f->TryShutdown();
-            }
-        };
-        
-        TryStop tryStop(stopped);
-        _parentGenerator->UseFacilities(tryStop);
-        if (!tryStop.stopped_)
-        {
-            _parentGenerator->UseFacilities(
-                boost::bind(&Facility::ForceShutdown, _1));
 
-        }
+		_parentGenerator->UseFacilities(
+			[&](Facility::ptr_t f){ stopped = stopped && f->TryShutdown(); });
+
+		if (!stopped)
+            _parentGenerator->UseFacilities(
+                std::bind(&Facility::ForceShutdown, std::placeholders::_1));
                 
         _result << L"Workers are stopped" << std::endl;
 
         _state = Stopped;
+
 		base_t::Reach();
     }
 }

@@ -1,6 +1,5 @@
 #include "stdafx.h"
-#include <boost/lambda/lambda.hpp>
-#include <boost/bind.hpp>
+
 #include "Goal.h"
 #include "Mind.h"
 
@@ -38,7 +37,7 @@ void Goal::SubscribeOnReach( std::function <void()> f )
 
 void Goal::OnReach()
 {
-    BOOST_FOREACH(std::function <void()> f, _onReach)
+    for(std::function <void()> f : _onReach)
     {
         f();
     }
@@ -52,13 +51,13 @@ Goal::string_t Goal::SerializedResult()
 void Goal::StartReachingAsync()
 {
 	_reaching = std::thread(
-		boost::bind(&Goal::CompleteReaching, this));
+		std::bind(&Goal::CompleteReaching, this));
 }
 
 bool Goal::CompleteReaching()
 {
 	Mind mind;
-	mind.AddGoal(Goal::ptr_t(this));
+	mind.AddGoal(shared_from_this());
 	while(!mind.ReachGoals() && IsReachable())
 	{
 		std::chrono::milliseconds duration(1000);

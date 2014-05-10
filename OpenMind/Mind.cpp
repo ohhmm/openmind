@@ -4,8 +4,8 @@
 #include <functional>
 #include <chrono>
 #include <thread>
-#include <boost/foreach.hpp>
-#include <boost/bind.hpp>
+
+
 #include "Mind.h"
 
 Mind::Mind(void) :
@@ -16,64 +16,17 @@ Mind::~Mind(void) {
 }
 
 void Mind::Run() {
-//	enum {GenerationNeedEventIndex, RichGoalNeedEventIndex};
-//	HANDLE events[] = {
-//		CreateEvent(0,0,false,0),
-//		CreateEvent(0,0,false,0) };
-	typedef std::recursive_mutex processing_mutex_t;
-	processing_mutex_t processing;
-	processing.lock();
-
-	bool someNeedToGenerateGoal = true;
-	while (!ReachGoals() || goals_.empty()) {
-		bool generationNeeded = false;
-		if (someNeedToGenerateGoal) {
-			for(GoalGenerator::ptr_t generator : goalGenerators_) {
-				if (generator->IsNeedToGenerate()) {
-					generationNeeded = true;
-					goals_.push_back(generator->GenerateGoal());
-				}
-			}
-			if (!generationNeeded) {
-				someNeedToGenerateGoal = false;
-				for(GoalGenerator::ptr_t generator : goalGenerators_) {
-//					struct AssignFn
-//					{
-//						bool& target_;
-//						HANDLE syncObj_;
-//					public:
-//						AssignFn(bool& target, HANDLE m)
-//							: target_(target), syncObj_(m)
-//						{ }
-//
-//						void operator()()
-//						{
-//							target_ = true;
-//							processing.unlock();
-//							//PulseEvent(syncObj_);
-//						}
-//					};
-
-					generator->SubscribeGeneration([&]() {
-						someNeedToGenerateGoal=true;
-						processing.unlock();
-					}
-//							AssignFn(someNeedToGenerateGoal, events[GenerationNeedEventIndex])
-							);
-				}
-			}
-		} else {
-			for(Goal::ptr_t goal : goals_) {
-				goal->SubscribeOnReach( //RiseEventFn(events[RichGoalNeedEventIndex])
-						std::bind(&processing_mutex_t::unlock, &processing)
-				);
+	for (auto generator : goalGenerators_) {
+		generator->SubscribeGeneration([&](GoalGenerator::ptr_t goalGenerator) {
+			if (goalGenerator->IsNeedToGenerate()) {
+				auto goal = goalGenerator->GenerateGoal();
+				goals_.push_back(goal);
 				goal->StartReachingAsync();
 			}
+		});
+	}
 
-			processing.lock();
-			//WaitForMultipleObjects(_countof(events), events, false, INFINITE);
-		}
-
+	while (!ReachGoals() || goals_.empty()) {
 		if (interval_) {
 			std::chrono::milliseconds duration(interval_);
 			std::this_thread::sleep_for(duration);
@@ -99,14 +52,12 @@ bool Mind::ReachGoals() {
 		for (goals_collection_t::iterator it = goals_.begin();
 				it != goals_.end(); ++it) {
 			Goal::ptr_t goal = *it;
-			bool isRiched = std::find(richedGoals_.begin(), richedGoals_.end(),
+			bool isReached = std::find(richedGoals_.begin(), richedGoals_.end(),
 					goal) != richedGoals_.end();
-			someRiched = isRiched || goal->Reach();
+			someRiched = isReached || goal->Reach();
 			if (someRiched) {
-				if (!isRiched) // it is reached by now
+				if (!isReached) // it is reached by now
 				{
-					(*it)->OnReach();
-
 					if ((*it)->Archivable()) {
 						richedGoals_.push_front(*it);
 					}

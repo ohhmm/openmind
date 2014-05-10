@@ -9,7 +9,7 @@ class GeneralGoalGenerator :
 {
 	typedef GoalGenerator base_t;
 public:
-	typedef boost::shared_ptr<ChildT>	ptr_t;
+	typedef std::shared_ptr<ChildT>	ptr_t;
 
 	GeneralGoalGenerator(const string_t& name)
 		: base_t(name.c_str())

@@ -27,11 +27,12 @@ public:
 
 	void Reached() {
 		generated_ = false;
-		if (IsNeedToGenerate()) {
-			BOOST_FOREACH(GoalGenerator::need_generate_notification_fn_t & fn,
+		if (IsNeedToGenerate())
+		{
+			for(GoalGenerator::need_generate_notification_fn_t & fn :
 					GoalGenerator::needGenerationNotificators_)
 			{
-				fn();
+				fn(shared_from_this());
 			}
 		}
 	}

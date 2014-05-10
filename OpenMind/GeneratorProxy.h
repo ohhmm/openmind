@@ -7,7 +7,7 @@ class GeneratorProxy
 	typedef GoalGenerator	base_t;
 
 public:
-	typedef boost::shared_ptr<GeneratorProxy> ptr_t;
+	typedef std::shared_ptr<GeneratorProxy> ptr_t;
 	static GoalGenerator::ptr_t Make();
 protected:
 	GeneratorProxy(string_t::pointer name);

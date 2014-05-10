@@ -189,7 +189,7 @@ LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 #   -DSHP, -DWIN32, -D_WINDOWS, -D_DEBUG, -D_USRDLL, -D_CRT_SECURE_NO_DEPRECATE
 IF(NOT MSVC)
 	ADD_DEFINITIONS(-std=c++11)
-ENDIF(MSVC)
+ENDIF(NOT MSVC)
 #    -DWIN32
 #	-D_DEBUG
 #	-D_WINDOWS
@@ -199,6 +199,6 @@ ENDIF(MSVC)
 
 ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 
-if(linux)
+if(NOT MSVC)
 	target_link_libraries(${this_target} X11 Xss)
-endif(linux)
+endif(NOT MSVC)

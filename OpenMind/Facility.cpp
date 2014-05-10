@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <boost/bind.hpp>
+
 #include <thread>
 #include "Facility.h"
 
@@ -36,7 +36,7 @@ bool Facility::Invoke()
 void Facility::AsyncInvoke( result_notification_f callbackNotifyResult )
 {
     std::thread(
-        boost::bind( &Facility::CbResultFunctionThread, this, callbackNotifyResult) );
+        std::bind( &Facility::CbResultFunctionThread, this, callbackNotifyResult) ).detach();
 }
 
 void Facility::CbResultFunctionThread( std::function< void(bool) > callbackNotifyResult )

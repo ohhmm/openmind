@@ -9,7 +9,7 @@ class WaitForComputerIdle :
 	public Goal
 {
     typedef Goal    base_t;
-    //typedef boost::shared_ptr< std::vector<Facility::ptr_t> >       facility_collection_ptr_t;
+    //typedef std::shared_ptr< std::vector<Facility::ptr_t> >       facility_collection_ptr_t;
 	enum State {None, RunningProcesses, IdleWork, Stopped};
     volatile State _state;
 

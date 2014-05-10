@@ -14,8 +14,8 @@ IdleTimeGoalGenerator::~IdleTimeGoalGenerator(void)
 Goal::ptr_t IdleTimeGoalGenerator::GenerateGoal()
 {
 	lock_t lock(*const_cast<mutex_t*>(&goalPresenseControl_));
-    Goal::ptr_t goal(new WaitForComputerIdle(static_cast<GoalGenerator::ptr_t>(this))); // FIXME : Wrong use of shared pointer
-    goal->SubscribeOnReach( boost::bind(&base_t::Reached, this) );
+    Goal::ptr_t goal(new WaitForComputerIdle(this->shared_from_this()));
+    goal->SubscribeOnReach( std::bind(&base_t::Reached, this) );
     Generated();
     return goal;
 }

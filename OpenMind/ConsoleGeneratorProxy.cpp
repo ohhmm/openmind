@@ -39,7 +39,7 @@ namespace
 ConsoleGeneratorProxy::ConsoleGeneratorProxy(void)
 : base_t(L"ConsoleGeneratorProxy_Menu")
 {
-	BOOST_FOREACH(GeneratorMaker_t generator, Generators)
+	for(GeneratorMaker_t generator : Generators)
 	{
 		_generators.push_back(generator());
 	}

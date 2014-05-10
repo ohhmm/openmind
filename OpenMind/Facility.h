@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <functional>
+#include <memory>
 
 class Goal;
 class Facility

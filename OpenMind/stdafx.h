@@ -11,6 +11,7 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
+#include <assert.h>
 #endif
 
 // C RunTime Header Files
@@ -36,10 +37,4 @@
 #include <chrono>
 #include <thread>
 
-// boost
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/shared_ptr.hpp>
-#include <thread>
-
-#define PTRT(T) boost::shared_ptr<T>
+#define PTRT(T) std::shared_ptr<T>

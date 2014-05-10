@@ -1,8 +1,8 @@
 #pragma once
+#include <functional>
 #include <sstream>
 #include <thread>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "Facility.h"
 
 class GoalGenerator;
@@ -10,6 +10,7 @@ class Facility;
 class Goal;
 
 class Goal
+	: public std::enable_shared_from_this<Goal>
 {
 public:
 	typedef PTRT(Goal)      	ptr_t;
