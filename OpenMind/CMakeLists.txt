@@ -188,7 +188,7 @@ LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 #  - DO NOT add  the following definitions(already defined in ${OSP_DEFINITIONS}:
 #   -DSHP, -DWIN32, -D_WINDOWS, -D_DEBUG, -D_USRDLL, -D_CRT_SECURE_NO_DEPRECATE
 IF(NOT MSVC)
-	ADD_DEFINITIONS(-std=c++11)
+	ADD_DEFINITIONS(-Wl,--as-needed -std=c++11 -pthread -Wl,--no-as-needed)
 ENDIF(NOT MSVC)
 #    -DWIN32
 #	-D_DEBUG
@@ -200,5 +200,5 @@ ENDIF(NOT MSVC)
 ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 
 if(NOT MSVC)
-	target_link_libraries(${this_target} X11 Xss)
+	target_link_libraries(${this_target} X11 Xss pthread)
 endif(NOT MSVC)

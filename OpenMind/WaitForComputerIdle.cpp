@@ -69,7 +69,7 @@ bool getIdleMsec(unsigned& idleTime) {
 # include <X11/extensions/scrnsaver.h>
 bool getIdleMsec(unsigned& idleTime) {
 	XScreenSaverInfo info;
-    Display *dpy = XOpenDisplay(NULL);
+    Display *dpy = XOpenDisplay(":0");
 	bool result = dpy && XScreenSaverQueryInfo(dpy,RootWindow(dpy, DefaultScreen(dpy)),&info);
 	if(result)
 		idleTime = info.idle; //msec

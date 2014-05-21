@@ -32,7 +32,7 @@ public:
 			for(GoalGenerator::need_generate_notification_fn_t & fn :
 					GoalGenerator::needGenerationNotificators_)
 			{
-				fn(shared_from_this());
+				fn(this->shared_from_this());
 			}
 		}
 	}

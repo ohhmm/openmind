@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "RunProcess.h"
 
+#include <cstring>
+
 #ifdef _WIN32
 class RunWinProcess : public RunProcess {
 	PROCESS_INFORMATION procInfo_;
@@ -55,7 +57,7 @@ public:
         string_t::const_pointer argv[] = { cmd_.c_str(), (string_t::const_pointer) 0 };
 		int status;
 		fflush(NULL);
-		status = posix_spawn(&pid, cmd_.c_str(), NULL, NULL, 0, environ);
+		status = posix_spawn(&pid, cmd_.c_str(), nullptr, nullptr, nullptr, nullptr);
 		if (status == 0) {
 			printf("Child id: %i\n", pid);
 			fflush(NULL);

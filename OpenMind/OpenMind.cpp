@@ -203,7 +203,12 @@ int main()
         //ConsoleGeneratorProxy::Make()
         IdleTimeGoalGenerator::Make()
     	;
-    goalGenerator->AddFacility(RunProcess::Make("calc"));
+    goalGenerator->AddFacility(RunProcess::Make(
+#ifndef _WIN32
+    		"k"
+#endif
+    		"calc"
+    		));
     
 	mind.AddGoalGenerator(goalGenerator);
 	mind.Run();
