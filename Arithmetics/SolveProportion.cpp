@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SolveProportion.h"
 #include <locale>
 #include <boost/lexical_cast.hpp>

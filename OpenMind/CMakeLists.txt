@@ -39,28 +39,7 @@ INCLUDE_DIRECTORIES(
   
   )
 
-## section: source files
-# Add your source files here (one file per line), please SORT in alphabetical order for future maintenance
-SET (${this_target}_SOURCE_FILES
-    Mind.cpp
-	OpenMind.cpp
-	stdafx.cpp
-	Facility.cpp
-	FunctorFacility.cpp
-	ReachGoal.cpp
-	Goal.cpp
-	SolveProportion.cpp
-	WaitForComputerIdle.cpp
-	GoalGenerator.cpp
-	IdleTimeGoalGenerator.cpp
-	ProportionGenerator.cpp
-	ConsoleGeneratorProxy.cpp
-	GeneratorProxy.cpp
-	GetEquation.cpp
-	SolveEquation.cpp
-	Named.cpp
-	RunProcess.cpp
-    )
+file(GLOB ${this_target}_SOURCE_FILES *.cpp)
 
 if(MSVC)
 	list(APPEND ${this_target}_SOURCE_FILES RunProcess.cpp)
@@ -70,8 +49,7 @@ endif(MSVC)
 # Add your header files here(one file per line), please SORT in alphabetical order for future maintenance!
 SET(${this_target}_HEADER_FILES
     Mind.h
-	OpenMind.h
-	Resource.h
+    ArithmeticFacility.h
 	stdafx.h
 	targetver.h
 	Facility.h
@@ -79,24 +57,20 @@ SET(${this_target}_HEADER_FILES
 	ReachGoal.h
 	RunProcess.h
 	Goal.h
-	SolveProportion.h
+	Solver.h
 	WaitForComputerIdle.h
 	GeneralGoalGenerator.h
 	GoalGenerator.h
 	GoalGeneratorBase.h
 	IdleTimeGoalGenerator.h
-	ProportionGenerator.h
 	SingletonGoalGenerator.h
 	ConsoleGeneratorProxy.h
 	GeneratorProxy.h
-	GetEquation.h
-	SolveEquation.h
 	Named.h
     )
 
 SOURCE_GROUP("Header Files" FILES 
 	Mind.h
-	OpenMind.h
 	Resource.h
 	stdafx.h
 	targetver.h
@@ -109,7 +83,8 @@ SOURCE_GROUP("Util\\Sync" FILES
 	
 	)
 SOURCE_GROUP("Generic" FILES 
-	
+	trie.cpp
+	trie.h
 	)
 SOURCE_GROUP("Util" FILES 
 	
@@ -130,24 +105,22 @@ SOURCE_GROUP("Source Files" FILES
 	stdafx.cpp
 	)
 SOURCE_GROUP("Solvers" FILES 
-	
+	Solver.cpp
+	Solver.h
 	)
 SOURCE_GROUP("Goals" FILES 
 	Goal.cpp
-	SolveProportion.cpp
 	WaitForComputerIdle.cpp
 	Goal.h
-	SolveProportion.h
 	WaitForComputerIdle.h
 	)
-SOURCE_GROUP("Resource Files" FILES 
-	
-	)
-SOURCE_GROUP("Facilities" FILES 
+SOURCE_GROUP("Facilities" FILES
 	Facility.cpp
 	FunctorFacility.cpp
 	ReachGoal.cpp
 	RunProcess.cpp
+	ArithmeticFacility.cpp
+	ArithmeticFacility.h
 	Facility.h
 	FunctorFacility.h
 	ReachGoal.h
@@ -156,21 +129,13 @@ SOURCE_GROUP("Facilities" FILES
 SOURCE_GROUP("Goals\\GoalGenerators" FILES 
 	GoalGenerator.cpp
 	IdleTimeGoalGenerator.cpp
-	ProportionGenerator.cpp
 	GeneralGoalGenerator.h
 	GoalGenerator.h
 	GoalGeneratorBase.h
 	IdleTimeGoalGenerator.h
-	ProportionGenerator.h
 	SingletonGoalGenerator.h
 	)
-SOURCE_GROUP("Solvers\\Equation" FILES 
-	GetEquation.cpp
-	SolveEquation.cpp
-	GetEquation.h
-	SolveEquation.h
-	)
-SOURCE_GROUP("Solvers\\Generic" FILES 
+SOURCE_GROUP("Solvers\\Generic" FILES
 	)
 
 ## section: precompiled header	
@@ -199,8 +164,12 @@ ENDIF(NOT MSVC)
 
 ## section: add target
 
-ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
+
+add_library(lib${this_target} ${${this_target}_SOURCE_FILES})
+#ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 
 if(NOT MSVC)
-	target_link_libraries(${this_target} X11 Xss pthread)
+	set(libs X11 Xss pthread)
+	target_link_libraries(lib${this_target} ${libs})
+#	target_link_libraries(${this_target} lib${this_target})
 endif(NOT MSVC)

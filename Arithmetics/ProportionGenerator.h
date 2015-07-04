@@ -1,8 +1,7 @@
 #pragma once
 #include <string>
 #include <iostream>
-#include "GeneralGoalGenerator.h"
-
+#include <OpenMind/GeneralGoalGenerator.h>
 
 class ProportionGenerator :
 	public GeneralGoalGenerator<ProportionGenerator>

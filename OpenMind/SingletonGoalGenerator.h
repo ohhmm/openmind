@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 #include "GoalGeneratorBase.h"
 
 template<class SelfT>

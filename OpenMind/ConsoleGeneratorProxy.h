@@ -6,9 +6,9 @@ class ConsoleGeneratorProxy :
 {
 	typedef GeneratorProxy	base_t;
 
-	std::vector<GoalGenerator::ptr_t> _generators;
+	goal_generator_collection_t _generators;
 public:
-	ConsoleGeneratorProxy(void);
+	ConsoleGeneratorProxy(const goal_generator_collection_t& goalGeneratorCollection);
 	~ConsoleGeneratorProxy(void);
 	Goal::ptr_t GenerateGoal();
 };

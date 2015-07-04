@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <algorithm>
 #include <functional>
 #include "IdleTimeGoalGenerator.h"
 #include "WaitForComputerIdle.h"
@@ -127,4 +126,8 @@ void WaitForComputerIdle::DoNothing()
 bool WaitForComputerIdle::Archivable()
 {
     return true;
+}
+
+bool WaitForComputerIdle::IsReachable()
+{
 }

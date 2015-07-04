@@ -11,10 +11,10 @@ GeneratorProxy::~GeneratorProxy(void)
 {
 }
 
-GoalGenerator::ptr_t GeneratorProxy::Make()
+GoalGenerator::ptr_t GeneratorProxy::Make(const goal_generator_collection_t& goalGeneratorCollection)
 {
 	// TODO : Detect platform and use corresponding proxy
 	return GoalGenerator::ptr_t(
-		new ConsoleGeneratorProxy()
+		new ConsoleGeneratorProxy(goalGeneratorCollection)
 		);
 }

@@ -8,4 +8,13 @@ IF (Boost_FOUND)
     ADD_DEFINITIONS( "-DHAS_BOOST" )
 ENDIF()
 
+IF(NOT MSVC)
+    ADD_DEFINITIONS(-std=c++11)
+ENDIF(NOT MSVC)
+
+include_directories(${CMAKE_SOURCE_DIR})
+
 add_subdirectory(OpenMind)
+add_subdirectory(ChatBot)
+add_subdirectory(IdleTimeWorker)
+add_subdirectory(Arithmetics)

@@ -1,48 +1,15 @@
 #include "stdafx.h"
 #include "ConsoleGeneratorProxy.h"
 
-#include "ProportionGenerator.h"
-#include "GetEquation.h"
 
 #include <iostream>
 //#include <FerrisLoki/loki/Typelist.h>
 #include <boost/lexical_cast.hpp>
 
-namespace
-{
-	typedef GoalGenerator::ptr_t (*GeneratorMaker_t)();
-
-	const GeneratorMaker_t Generators[] =
-	{
-//		ProportionGenerator::Make,
-		GetEquation::Make
-	};
-
-//	typedef	Loki::TL::MakeTypelist<
-//		ProportionGenerator
-//	>::Result generators_tl;
-
-
-//#define StartTypeList ;\
-//#define , <TypeList
-	//typedef 
-
-	//Loki::TL::
-
-	//template class T;
-	//struct AddGeneratorType
-	//{
-
-	//};
-}
-
-ConsoleGeneratorProxy::ConsoleGeneratorProxy(void)
+ConsoleGeneratorProxy::ConsoleGeneratorProxy(const goal_generator_collection_t& goalGeneratorCollection)
 : base_t(L"ConsoleGeneratorProxy_Menu")
+, _generators(goalGeneratorCollection)
 {
-	for(GeneratorMaker_t generator : Generators)
-	{
-		_generators.push_back(generator());
-	}
 }
 
 ConsoleGeneratorProxy::~ConsoleGeneratorProxy(void)

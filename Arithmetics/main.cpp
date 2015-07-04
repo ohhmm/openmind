@@ -1,12 +1,16 @@
 // OpenMind.cpp : Defines the entry point for the application.
 //
 
-#include "stdafx.h"
-#include "OpenMind.h"
-#include "Mind.h"
-#include "ConsoleGeneratorProxy.h"
-#include "IdleTimeGoalGenerator.h"
-#include "RunProcess.h"
+#include <OpenMind/Mind.h>
+#include <OpenMind/ConsoleGeneratorProxy.h>
+#include <OpenMind/IdleTimeGoalGenerator.h>
+#include <OpenMind/RunProcess.h>
+#include "ProportionGenerator.h"
+#include "GetEquation.h"
+
+#ifdef _WIN_32
+#include "resource.h"
+#endif
 
 /*
 #define MAX_LOADSTRING 100
@@ -197,19 +201,15 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 int main()
 {
-	Mind mind;
-
-    GoalGenerator::ptr_t goalGenerator = 
-        //ConsoleGeneratorProxy::Make()
-        IdleTimeGoalGenerator::Make()
-    	;
+	auto goalGenerator = ConsoleGeneratorProxy::Make( { GetEquation::Make() } );
     goalGenerator->AddFacility(RunProcess::Make(
 #ifndef _WIN32
     		"k"
 #endif
     		"calc"
     		));
-    
+
+	Mind mind;
 	mind.AddGoalGenerator(goalGenerator);
 	mind.Run();
     return 0;

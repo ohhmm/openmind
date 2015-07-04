@@ -1,5 +1,6 @@
 #pragma once
-#include "Goal.h"
+
+#include <OpenMind/Goal.h>
 
 class SolveProportion :
 	public Goal

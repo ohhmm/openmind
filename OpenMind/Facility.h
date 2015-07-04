@@ -10,8 +10,8 @@ class Facility
 
 public:
 
-    typedef PTRT(Facility) ptr_t;
-	typedef PTRT(Goal)     goal_ptr_t;
+    typedef std::shared_ptr<Facility> ptr_t;
+	typedef std::shared_ptr<Goal>     goal_ptr_t;
 	Facility(void);
 	virtual bool Use(goal_ptr_t goal);
 	virtual std::list<goal_ptr_t> ToUse();

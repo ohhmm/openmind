@@ -1,5 +1,6 @@
 #pragma once
-#include "GoalGenerator.h"
+#include <string>
+#include <OpenMind/Goal.h>
 
 class SolveEquation :
 	public Goal

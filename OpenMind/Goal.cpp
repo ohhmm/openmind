@@ -50,12 +50,17 @@ Goal::string_t Goal::SerializedResult()
 
 void Goal::StartReachingAsync()
 {
-	_reaching = std::thread(
-		std::bind(&Goal::CompleteReaching, this));
+	assert(this);
+	auto sharedFromThis = shared_from_this();
+	auto completeReaching = [](decltype(sharedFromThis) this_) {
+		this_->CompleteReaching();
+	};
+	_reaching = std::thread(completeReaching, sharedFromThis);
 }
 
 bool Goal::CompleteReaching()
 {
+	assert(this);
 	Mind mind;
 	mind.AddGoal(shared_from_this());
 	while(!mind.ReachGoals() && IsReachable())

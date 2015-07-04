@@ -36,5 +36,3 @@
 #include <functional>
 #include <chrono>
 #include <thread>
-
-#define PTRT(T) std::shared_ptr<T>
