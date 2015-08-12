@@ -23,7 +23,6 @@ class WaitForComputerIdle :
 public:
     WaitForComputerIdle( GoalGenerator::ptr_t parent );
 
-    bool        IsReachable();
     bool        Reach();
     void		GetResult(void*);
 	void*		GetResult();

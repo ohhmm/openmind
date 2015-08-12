@@ -28,8 +28,10 @@ IF (Boost_FOUND)
     ADD_DEFINITIONS( "-DHAS_BOOST" )
     SET(Boost_USE_STATIC_LIBS ON)
 ENDIF()
-    
 
+IF(${UNIX})
+    FIND_PACKAGE(X11 REQUIRED)
+ENDIF()
 
 add_definitions(-DUNICODE -D_UNICODE)
 
@@ -168,8 +170,8 @@ ENDIF(NOT MSVC)
 add_library(lib${this_target} ${${this_target}_SOURCE_FILES})
 #ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 
-if(NOT MSVC)
+if(${UNIX})
 	set(libs X11 Xss pthread)
 	target_link_libraries(lib${this_target} ${libs})
 #	target_link_libraries(${this_target} lib${this_target})
-endif(NOT MSVC)
+endif(${UNIX})

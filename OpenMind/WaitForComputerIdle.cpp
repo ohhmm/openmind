@@ -127,7 +127,3 @@ bool WaitForComputerIdle::Archivable()
 {
     return true;
 }
-
-bool WaitForComputerIdle::IsReachable()
-{
-}

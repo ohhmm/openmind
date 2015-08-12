@@ -20,7 +20,8 @@
 #include "stdafx.h"
 #include "trie.h"
 
+#ifndef _MSC_VER
 constexpr EnglishTrieTraits::range_t EnglishTrieTraits::alphabet[];
 constexpr EnglishTrieTraits::char_t EnglishTrieTraits::word_delimeters[];
 constexpr EnglishTrieTraits::char_t EnglishTrieTraits::sentence_delimeters[];
-
+#endif

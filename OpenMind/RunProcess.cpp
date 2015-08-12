@@ -65,6 +65,7 @@ public:
 #else
 #include <spawn.h>
 #include <signal.h>
+#include <stdio.h>
 
 class RunPosixProcess: public RunProcess {
 	pid_t pid;

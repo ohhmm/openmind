@@ -1,4 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(_IS_DEBUG TRUE)
+else()
+	set(_IS_DEBUG FALSE)
+endif()
+
+option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
@@ -15,6 +23,8 @@ ENDIF(NOT MSVC)
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory(OpenMind)
-add_subdirectory(ChatBot)
-add_subdirectory(IdleTimeWorker)
-add_subdirectory(Arithmetics)
+if(${OPENMIND_BUILD_SAMPLES})
+	add_subdirectory(ChatBot)
+	add_subdirectory(IdleTimeWorker)
+	add_subdirectory(Arithmetics)
+ENDIF()
