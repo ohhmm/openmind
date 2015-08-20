@@ -54,25 +54,17 @@ struct EnglishTrieTraits : public AlphabetSizeMixin<EnglishTrieTraits> {
             { L'A',L'Z' },
             { L'a',L'z' }
     };
-
-    static constexpr const char_t word_delimeters[] = {
-            L',', L':', L';', L' '
-    };
-
-    static constexpr const char_t sentence_delimeters[] = {
-            L'.', L'!', L'?'
-    };
-
 };
 
 template<class ObjectT, class LangTraitsT = EnglishTrieTraits>
 class Trie : public LangTraitsT
 {
     typedef Trie<ObjectT, LangTraitsT> self_t;
-    typedef std::shared_ptr<self_t> ptr_t;
-    typedef typename LangTraitsT::char_t char_t;
-    typedef const char_t const_char_t;
-
+public:
+    typedef typename std::shared_ptr<self_t> ptr_t;
+    typedef typename LangTraitsT::char_t    char_t;
+    typedef const char_t                    const_char_t;
+private:
     using LangTraitsT::ranges_count;
     using LangTraitsT::alphabet_size;
     using LangTraitsT::alphabet;
@@ -139,7 +131,4 @@ public:
 
     }
 
-    void AddSentences(){
-
-    }
 };

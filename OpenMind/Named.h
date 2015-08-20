@@ -6,6 +6,8 @@ class Named
 public:
 	typedef std::wstring  string_t;
 
+	typedef std::shared_ptr<Named> ptr_t;
+
 	string_t Name() const { return _name; }
 	//void Name(string_t val) { _name = val; }
 

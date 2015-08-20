@@ -69,6 +69,7 @@ SET(${this_target}_HEADER_FILES
 	ConsoleGeneratorProxy.h
 	GeneratorProxy.h
 	Named.h
+	trie.h
     )
 
 SOURCE_GROUP("Header Files" FILES 
@@ -87,6 +88,8 @@ SOURCE_GROUP("Util\\Sync" FILES
 SOURCE_GROUP("Generic" FILES 
 	trie.cpp
 	trie.h
+	Context.cpp
+	Context.h
 	)
 SOURCE_GROUP("Util" FILES 
 	
