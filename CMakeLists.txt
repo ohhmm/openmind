@@ -17,7 +17,7 @@ IF (Boost_FOUND)
 ENDIF()
 
 IF(NOT MSVC)
-    ADD_DEFINITIONS(-std=c++11)
+    ADD_DEFINITIONS(-std=c++14)
 ENDIF(NOT MSVC)
 
 include_directories(${CMAKE_SOURCE_DIR})

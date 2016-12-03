@@ -4,7 +4,9 @@
 
 #include "Context.h"
 
-#ifndef _MSC_VER
+#ifdef __GNUC__
+#ifndef __clang__
 constexpr EnglishLanguageTraits::char_t EnglishLanguageTraits::word_delimeters[];
 constexpr EnglishLanguageTraits::char_t EnglishLanguageTraits::sentence_delimeters[];
+#endif
 #endif
