@@ -14,7 +14,7 @@ protected:
 
 public:
 
-	SingletonGoalGenerator(Named::string_t::pointer name) :
+	SingletonGoalGenerator(Named::string_t::const_pointer name) :
 			base_t(name), generated_(false) {
 	}
 

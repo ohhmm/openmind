@@ -21,5 +21,5 @@
 #include "trie.h"
 
 #ifndef _MSC_VER
-constexpr EnglishTrieTraits::range_t EnglishTrieTraits::alphabet[];
+//constexpr EnglishTrieTraits::range_t EnglishTrieTraits::alphabet[];
 #endif

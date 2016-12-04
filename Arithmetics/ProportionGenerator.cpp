@@ -1,7 +1,7 @@
 #include "ProportionGenerator.h"
 #include "SolveProportion.h"
 
-ProportionGenerator::ProportionGenerator(string_t::pointer name)
+ProportionGenerator::ProportionGenerator(string_t::const_pointer name)
 : base_t(name)
 {
 }

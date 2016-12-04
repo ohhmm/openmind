@@ -8,7 +8,7 @@ class ProportionGenerator :
 {
 	typedef GeneralGoalGenerator<ProportionGenerator> base_t; 
 public:
-	ProportionGenerator(string_t::pointer name);
+	ProportionGenerator(string_t::const_pointer name);
 	Goal::ptr_t GenerateGoal();
 
 	//Goal::ptr_t GenerateGoal()

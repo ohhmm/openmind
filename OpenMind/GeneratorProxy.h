@@ -10,7 +10,7 @@ class GeneratorProxy
 protected:
 	typedef std::vector<GoalGenerator::ptr_t> goal_generator_collection_t;
 
-	GeneratorProxy(string_t::pointer name);
+	GeneratorProxy(string_t::const_pointer name);
 	virtual ~GeneratorProxy(void);
 
 public:

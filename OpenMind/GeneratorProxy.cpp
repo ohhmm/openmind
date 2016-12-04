@@ -2,7 +2,7 @@
 #include "GeneratorProxy.h"
 #include "ConsoleGeneratorProxy.h"
 
-GeneratorProxy::GeneratorProxy(string_t::pointer name)
+GeneratorProxy::GeneratorProxy(string_t::const_pointer name)
 : base_t(name)
 {
 }
