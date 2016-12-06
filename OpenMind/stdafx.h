@@ -36,3 +36,15 @@
 #include <functional>
 #include <chrono>
 #include <thread>
+#include <locale>
+#include <clocale>
+
+// boost
+#include <boost/mpl/accumulate.hpp>
+#include <boost/mpl/at.hpp>
+#include <boost/mpl/for_each.hpp>
+#include <boost/mpl/range_c.hpp>
+#include <boost/mpl/size.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/vector_c.hpp>
+#include <boost/serialization/serialization.hpp>

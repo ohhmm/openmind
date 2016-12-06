@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
+SET (this_target OpenMind)
+PROJECT(${this_target})
+
+
 ## section: Macro
 MACRO(ADD_MSVC_PRECOMPILED_HEADER PrecompiledHeader PrecompiledSource SourcesVar)
   IF(MSVC)
@@ -17,10 +21,6 @@ MACRO(ADD_MSVC_PRECOMPILED_HEADER PrecompiledHeader PrecompiledSource SourcesVar
     LIST(APPEND ${SourcesVar} ${PrecompiledSource})
   ENDIF(MSVC)
 ENDMACRO(ADD_MSVC_PRECOMPILED_HEADER)
-
-## start setting
-SET (this_target OpenMind)
-PROJECT(${this_target})
 
 FIND_PACKAGE(Boost REQUIRED)
 IF (Boost_FOUND)
@@ -160,7 +160,7 @@ LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 #  - DO NOT add  the following definitions(already defined in ${OSP_DEFINITIONS}:
 #   -DSHP, -DWIN32, -D_WINDOWS, -D_DEBUG, -D_USRDLL, -D_CRT_SECURE_NO_DEPRECATE
 IF(NOT MSVC)
-	ADD_DEFINITIONS(-Wl,--as-needed -std=c++14 -pthread -Wl,--no-as-needed)
+	ADD_DEFINITIONS(-pthread)
 ENDIF(NOT MSVC)
 #    -DWIN32
 #	-D_DEBUG
@@ -170,13 +170,18 @@ ENDIF(NOT MSVC)
 ## section: add target
 
 
-add_library(lib${this_target} ${${this_target}_SOURCE_FILES})
+add_library(${this_target} ${${this_target}_SOURCE_FILES})
 #ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 
 if(${UNIX})
-	include_directories(/opt/local/include)
-	link_directories(/opt/local/lib)
-	set(libs X11 Xss pthread)
-	target_link_libraries(lib${this_target} ${libs})
+	find_package(X11 REQUIRED)
+
+	set(${this_target}_Incs ${X11_X11_INCLUDE_PATH} ${X11_Xscreensaver_INCLUDE_PATH}
+			CACHE INTERNAL "${this_target}: Include Directories" FORCE)
+	include_directories(${${this_target}_Incs})
+
+	set(${this_target}_Libs ${X11_X11_LIB} ${X11_Xscreensaver_LIB} pthread
+			CACHE INTERNAL "${this_target}: Libraries" FORCE)
+	target_link_libraries(${this_target} ${${this_target}_Libs})
 #	target_link_libraries(${this_target} lib${this_target})
 endif(${UNIX})

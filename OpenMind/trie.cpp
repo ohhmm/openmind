@@ -1,6 +1,6 @@
 /*
- * <one line to give the program's name and a brief idea of what it does.>
- * Copyright (C) 2014  <copyright holder> <email>
+ * openmind - AI framework
+ * Copyright (C) 2014  Sergej Krivonos sergeikrivonos@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,3 +23,22 @@
 #ifndef _MSC_VER
 //constexpr EnglishTrieTraits::range_t EnglishTrieTraits::alphabet[];
 #endif
+
+template <>
+std::basic_string<char> String(const char* str, std::size_t sz) {
+    return std::string(str);
+}
+
+template <>
+std::basic_string<wchar_t> String(const char* str, std::size_t sz) {
+    if(!sz)
+    {
+        if(!*str)
+            return std::basic_string<wchar_t>();
+        else
+            sz = strlen(str);
+    }
+    std::wstring res( sz, L'#' );
+    mbstowcs( &res[0], str, sz );
+    return res;
+}

@@ -1,6 +1,6 @@
 /*
- * <one line to give the program's name and a brief idea of what it does.>
- * Copyright (C) 2015  <copyright holder> <email>
+ * openmind
+ * Copyright (C) 2015-2016  Sergej Krivonos sergeikrivonos@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 
 #pragma once
 
-#include <boost/serialization/serialization.hpp>
 #include <tuple>
 #include <array>
 #include <functional>
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <string>
 
 #include <boost/mpl/accumulate.hpp>
 #include <boost/mpl/at.hpp>
@@ -35,6 +35,9 @@
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/vector_c.hpp>
 
+#include <boost/serialization/serialization.hpp>
+
+
 struct BaseLanguageTraits {
     typedef wchar_t char_t;
 
@@ -43,16 +46,8 @@ struct BaseLanguageTraits {
     using range_t = boost::mpl::range_c<char_t, Start, End>;
 };
 
-struct ramges_plus_mpl
-{
-    template <class T1, class T2>
-    struct apply
-    {
-        typedef typename boost::mpl::plus<
-			boost::mpl::size<T1>,
-			boost::mpl::size<T2> >::type type;
-    };
-};
+template <class CharT>
+/*constexpr */std::basic_string<CharT> String(const char* str, std::size_t sz = 0);
 
 template<typename T>
 struct AlphabetSizeMixin : public BaseLanguageTraits {
@@ -66,6 +61,11 @@ struct AlphabetSizeMixin : public BaseLanguageTraits {
 			>::type::value;
     }
 
+    typedef std::basic_string<char_t>	string_t;
+
+    static /*constexpr*/ string_t STR(const char* str) {
+        return String<char_t>(str);
+    }
 };
 
 struct EnglishTrieTraits : public AlphabetSizeMixin<EnglishTrieTraits> {
@@ -75,7 +75,9 @@ struct EnglishTrieTraits : public AlphabetSizeMixin<EnglishTrieTraits> {
 		boost::mpl::range_c<char_t, L'$', L'9'>,
 		boost::mpl::range_c<char_t, L'A', L'Z'>,
 		boost::mpl::range_c<char_t, L'a', L'z'> > alphabet_ranges_t;
+
     static constexpr std::size_t sz = boost::mpl::size<alphabet_ranges_t>::value;
+
 };
 
 template<class ObjectT, class LangTraitsT = EnglishTrieTraits>
@@ -92,7 +94,8 @@ public:
 private:
 	char_t ch;
 //    ptr_t root, parent;
-	using LangTraitsT::alphabet_size;
+	using LangTraitsT::STR;
+    using LangTraitsT::alphabet_size;
 	std::array<ptr_t, alphabet_size()> children;
 	
 	typedef std::shared_ptr<ObjectT> obj_ptr_t;
@@ -131,7 +134,7 @@ private:
 		boost::mpl::for_each<alphabet_ranges_t>(t);
 
 		if(!isInAlphabet)
-			throw string_t(L"The symbol ")+c+L" is not part of the context alphabet. Ypu may want to try dynamic context instead.";
+			throw STR("The symbol ")+c+STR(" is not part of the context alphabet. Ypu may want to try dynamic context instead.");
 
 		return children[index];
     }

@@ -1,5 +1,5 @@
 project(ChatBot)
-
 file(GLOB src *.cpp)
 add_executable(chatbot ${src})
-target_link_libraries(chatbot libOpenMind)
+include_directories(${OpenMind_Incs})
+target_link_libraries(chatbot OpenMind ${OpenMind_Libs})

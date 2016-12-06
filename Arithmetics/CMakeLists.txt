@@ -10,4 +10,5 @@ SOURCE_GROUP("Solvers\\Equation" FILES
 	)
 
 add_executable(arithm ${src})
-target_link_libraries(arithm libOpenMind)
+include_directories(${OpenMind_Incs})
+target_link_libraries(arithm OpenMind ${OpenMind_Libs})
