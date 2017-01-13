@@ -15,11 +15,7 @@ struct EnglishLanguageTraits : public EnglishTrieTraits {
             L'.', L'!', L'?'
     };
 
-    static constexpr const char_t word_delimeters[] = {
-            L',', L':', L';', L' ', L'\t', L'\n', L'\x10'
-            , L'.', L'!', L'?' //sentence_delimeters (needs array concat)
-    }/* TODO : .concat(sentence_delimeters)*/;
-
+    static constexpr const char_t word_delimeters[] = L",;.!? \t\n\x10";
 };
 
 /**
@@ -37,6 +33,7 @@ template<
 class Context {
     typedef Trie<ObjectT, LanguageTraitsT> words_trie_t;
     static words_trie_t Words;  // all words
+    using LanguageTraitsT::word_delimeters;
 
     typedef typename Trie<typename words_trie_t::ptr_t, LanguageTraitsT>::ptr_t  sentence_t;
     typedef std::list<sentence_t>   sentences_t;
@@ -54,7 +51,7 @@ public:
 
         std::thread updateGlobalWordsAndSentences([](strstr_t text) {
             typedef std::istream_iterator<str_t>  token_iterator_t;
-            std::for_each(token_iterator_t(text, ",;.!? \t\n\x10"), //begin
+            std::for_each(token_iterator_t(text, word_delimeters), //begin
                           token_iterator_t(), //end
                           [&](token_iterator_t it){
                               Words.AddToRoot(*it);

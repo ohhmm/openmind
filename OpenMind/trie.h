@@ -90,6 +90,7 @@ public:
     typedef const char_t                    const_char_t;
 	typedef std::basic_string<char_t>		string_t;
     using typename LangTraitsT::alphabet_ranges_t;
+    typedef std::shared_ptr<ObjectT> obj_ptr_t;
 
 private:
 	char_t ch;
@@ -98,7 +99,6 @@ private:
     using LangTraitsT::alphabet_size;
 	std::array<ptr_t, alphabet_size()> children;
 	
-	typedef std::shared_ptr<ObjectT> obj_ptr_t;
 	obj_ptr_t object;
 
     struct VisitRangesT{
@@ -156,11 +156,13 @@ public:
 
 	void AddToRoot(const_char_t* text, obj_ptr_t object=nullptr) {
         if(*text) {
-            ptr_t next = operator[](*text);
-            if(static_cast<ptr_t>(next))
+            auto next = operator[](*text);
+            if (next)
                 next->AddToRoot(text+1, object);
             else
                 operator[](*text).reset(new Trie(text, object));
+        } else {
+            this->object = object;
         }
     }
     
