@@ -170,7 +170,7 @@ ENDIF(NOT MSVC)
 ## section: add target
 
 
-add_library(${this_target} ${${this_target}_SOURCE_FILES} ../omnn/Neuron.h ../Examples/Mnist/main.cpp ../Examples/Mnist/TrainedUnit/main.cpp ../omnn/omnn.h)
+add_library(${this_target} ${${this_target}_SOURCE_FILES})
 #ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 
 if(${UNIX})
