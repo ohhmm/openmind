@@ -11,41 +11,77 @@
 
 namespace omnn {
     namespace rt {
+
+
       
         class Neuron
         {
         public:
-            using ptr_t = std::shared_ptr<Neuron>;
-            void bind(ptr_t neuron) {
-                inputNeurons.push_back(std::make_pair(.5,neuron));
-            }
-
             // bind receptors through all layers
             // potentially may be any source
             template <class InputsT> // put trait strategy here to override inputs source
             void bindInputs(const InputsT& inputs) {
                 readInput = [&](size_t num) { return inputs[num]; };
                 getInputsNum = [&]() { return inputs.size(); };
-            }
 
-            double operator() {
-                double res = 1.;
-                if(inputNeurons.size())
-                    res = std::accumulate(inputNeurons.begin(), inputNeurons.end(), res, [this](auto& p) {
-                        return p.first * (*p.second)();
+                for(auto i = getInputsNum(); i-->0; )
+                {
+                    Neuron* n = dynamic_cast<Neuron*>(&inputs[num]);
+                    if (n)
+                    {
+                        n->subscribe([i](double d) {fix(i, d); });
                     }
-
-                return res;
+                }
             }
+
+            void setSum(double s)
+            {
+                sum = s;
+                setActivation();
+            }
+
+            void setActivation()
+            {
+                double prev = activation;
+                activation = sigmoid(sum);
+                notify(activation - prev);
+            }
+
+            void notify(double d) {
+                for (auto& s : subscribers)
+                    s(d);
+            }
+
+            void fix(int n, double d) {
+                sum += d*w[n];
+                setActivation();
+            }
+
+            //double operator() {
+            //    double res = 1.;
+            //    res = std::accumulate(inputNeurons.begin(), inputNeurons.end(), res, [this](auto& p) {
+            //        return p.first * (*p.second)();
+            //    }
+            //    return res;
+            //}
+
+            // using subscribe = subscribers.push_back; // maybe in next std
+            void subscribe(std::function<void(double)> updated) {
+                subscribers.push_back(updated);
+            }
+
+            virtual ~Neuron() {}
 
         private:
-            double val = 0.;
-            size_t hitpoints = 100;
-            std::vector<std::pair<double,ptr_t>> inputNeurons;
+            double sum = 0;
+            double activation = 0;
+            std::vector<double> w; // weights 
             std::function<double(size_t)> readInput;
             std::function<size_t()> getInputsNum;
             double lastSuccessfulValue = 0;
             double lastFailedValue = 0;
+            std::vector<std::function<void(double)>> subscribers;
+            std::function<double(double)> sigmoid = [](double d) {return d / (1 + d); };
         };
 
     }
