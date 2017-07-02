@@ -10,10 +10,17 @@ option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
-FIND_PACKAGE(Boost)
+libfind_package(Boost)
 IF (Boost_FOUND)
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
     ADD_DEFINITIONS( "-DHAS_BOOST" )
+ELSEIF(WIN32)
+    find_program(NUGET nuget HINTS $ENV{ProgramFiles})
+    if(NOT NUGET)
+        message(FATAL "Cannot find nuget command line tool.\nInstall it with e.g. choco install nuget.commandline")
+    else()
+        execute_process(COMMAND ${NUGET} install boost)
+    endif()
 ENDIF()
 
 IF(NOT MSVC)
