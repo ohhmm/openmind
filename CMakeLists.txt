@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
+set(PRODUCT_NAME "OpenMind")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(_IS_DEBUG TRUE)
@@ -9,8 +10,7 @@ endif()
 option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
-
-libfind_package(Boost)
+find_package(Boost)
 IF (Boost_FOUND)
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
     ADD_DEFINITIONS( "-DHAS_BOOST" )
@@ -36,4 +36,6 @@ if(${OPENMIND_BUILD_SAMPLES})
 	add_subdirectory(Examples/IdleTimeWorker)
 	add_subdirectory(Examples/Arithmetics)
     add_subdirectory(Examples/Mnist)
+    add_subdirectory(Examples/opengl-rt-laby)
 ENDIF()
+

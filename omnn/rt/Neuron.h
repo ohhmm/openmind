@@ -21,15 +21,15 @@ namespace omnn {
             // potentially may be any source
             template <class InputsT> // put trait strategy here to override inputs source
             void bindInputs(const InputsT& inputs) {
-                readInput = [&](size_t num) { return inputs[num]; };
+                readInput = [&](size_t i) { return inputs[i]; };
                 getInputsNum = [&]() { return inputs.size(); };
 
                 for(auto i = getInputsNum(); i-->0; )
                 {
-                    Neuron* n = dynamic_cast<Neuron*>(&inputs[num]);
+                    Neuron* n = dynamic_cast<Neuron*>(&inputs[i]);
                     if (n)
                     {
-                        n->subscribe([i](double d) {fix(i, d); });
+                        n->subscribe([i,this](double d) {fix(i, d); });
                     }
                 }
             }
@@ -70,18 +70,28 @@ namespace omnn {
                 subscribers.push_back(updated);
             }
 
+            /// add ref to file or http data to learn asynchronously to the network work
+            void addToLearn(std::function<double(size_t)> readInput,
+                std::function<size_t()> getInputsNum,
+                double activationSupposed) {
+
+
+            }
             virtual ~Neuron() {}
 
         private:
             double sum = 0;
             double activation = 0;
             std::vector<double> w; // weights 
-            std::function<double(size_t)> readInput;
+            std::function<double(size_t)> readInput; // parent inputs here too?
             std::function<size_t()> getInputsNum;
             double lastSuccessfulValue = 0;
             double lastFailedValue = 0;
             std::vector<std::function<void(double)>> subscribers;
-            std::function<double(double)> sigmoid = [](double d) {return d / (1 + d); };
+            std::function<double(double)> sigmoid = [](double d) {
+                //double y = d;
+                return d / (1 + d);
+            };
         };
 
     }
