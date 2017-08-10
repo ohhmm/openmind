@@ -8,6 +8,7 @@ else()
 endif()
 
 option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
+option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 find_package(Boost)
@@ -28,6 +29,10 @@ IF(NOT MSVC)
 ENDIF(NOT MSVC)
 
 include_directories(${CMAKE_SOURCE_DIR})
+
+if (${OPENMIND_BUILD_TESTS})
+    enable_testing()
+endif ()
 
 add_subdirectory(OpenMind)
 add_subdirectory(omnn)
