@@ -3,13 +3,14 @@
 //
 
 #pragma once
-
+#include <algorithm>
 #include <initializer_list>
 #include <limits>
 #include <limits.h>
 #include <type_traits>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
+#include "Expression.h"
 
 namespace omnn{
 namespace extrapolator{
@@ -50,18 +51,22 @@ using extrapolator_base_matrix = boost::numeric::ublas::matrix<int>;
 
 template<class T = int>
 class Extrapolator
-        : public boost::numeric::ublas::matrix<T>
+        : public ublas::matrix<T>
 {
-    using base = boost::numeric::ublas::matrix<T>;
+    using base = ublas::matrix<T>;
+    using solution_t = typename ublas::matrix_vector_solve_traits<base, ublas::vector<T>>::result_type;
+
+    solution_t solution;
 
 public:
     using base::base;
 
-    Extrapolator(std::initializer_list<std::vector<T>>&& list)
-            : base(list.size(), list.begin()->size())
+
+    Extrapolator(std::initializer_list<std::vector<T>>&& dependancy_matrix)
+            : base(dependancy_matrix.size(), dependancy_matrix.begin()->size())
     {
-        auto rows = list.size();
-        auto r = list.begin();
+        auto rows = dependancy_matrix.size();
+        auto r = dependancy_matrix.begin();
         auto columns = r->size();
         for (unsigned i = 0; i < rows; ++ i)
         {
@@ -73,6 +78,21 @@ public:
             }
             ++r;
         }
+
+    }
+
+    template<class RawContainerT>
+    solution_t Solve(const RawContainerT& augment){
+        using calc_matr_t = typename std::conditional<
+                std::is_floating_point<T>::value,
+                T,
+                long double>::type;
+        static_assert( -std::numeric_limits<calc_matr_t>::max() <= std::numeric_limits<T>::min() &&
+                       std::numeric_limits<calc_matr_t>::max() >= std::numeric_limits<T>::max(),
+                       "use long double for this type or add arbitrary aritmetics implementation" );
+        ublas::matrix<calc_matr_t> mLu(*this);
+        solution = ublas::solve(*this, augment, ublas::upper_tag());
+        return solution;
     }
 
     T Determinant()
@@ -106,21 +126,47 @@ public:
 
     /**
      * If possible, make the matrix consistent
-     * @return is consistent
+     * @return true if it is
      * **/
     bool Consistent()
     {
-        using calc_matr_t = typename std::conditional<
-                std::is_floating_point<T>::value,
-                T,
-                long double>::type;
-        static_assert( -std::numeric_limits<calc_matr_t>::max() <= std::numeric_limits<T>::min() &&
-                       std::numeric_limits<calc_matr_t>::max() >= std::numeric_limits<T>::max(),
-                       "use long double for this type or add arbitrary aritmetics implementation" );
-        ublas::matrix<calc_matr_t> mLu(*this);
-        auto r = ublas::solve(*this, ublas::vector<T>(this->size1()), ublas::upper_tag());
+        auto det = Determinant();
+        //todo: implement
+        //auto copy = this->
+        //Solve();
         return true;
     }
+
+    /**
+     * this is to complete it with other deducible variables
+     * @param e expression with known varable values INCLUDING ZEROS
+     * @return expression with additional deducted variables
+     */
+    Expression Complete(const Expression& e)
+    {
+        // search for the row
+        throw "Implement now!";
+    }
+
+    /**
+     * this is to complete it with other deducible variables
+     * @param e expression with known varable values INCLUDING ZEROS
+     * @return expression with additional deducted variables
+     */
+    template<template <class> class RawContainerT>
+    Expression Complete(const RawContainerT<T>& data) {
+        // search for the row
+        auto it1 = this->begin1();
+        for (; it1 != this->end1(); ++it1) {
+            if (std::equal(data.begin(), data.end(), it1.begin())) {
+                break; // found it1
+            }
+        }
+
+
+    }
+
+    
 };
 
 }

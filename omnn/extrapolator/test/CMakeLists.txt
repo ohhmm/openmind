@@ -1,6 +1,7 @@
 SET (this_target test_extrapolator)
 project(${this_target})
 file(GLOB src *.cpp)
+link_directories(${Boost_LIBRARIES} /usr/local/lib)
 foreach(TEST ${src})
     get_filename_component(TEST_NAME ${TEST} NAME_WE)
     add_executable(${TEST_NAME} ${TEST_NAME})

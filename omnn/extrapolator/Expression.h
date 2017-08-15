@@ -5,9 +5,11 @@
 #include <string>
 #include <type_traits>
 
+
+// todo: template<from variable_id type>
 class Expression {
 public:
-    using variable_id = std::string;
+    using variable_id = int;
     using default_num_type = int;
     using value = double;
 
@@ -18,6 +20,17 @@ public:
     using solution = std::map<variable_id, value>;
     using express_result = std::function<value(const value_set &)>; // f(x1,x2,...)
 
+    Expression() = default;
+
+    template<class T>
+    Expression(const T& iterable) {
+        int i=0;
+        for(const auto& var : iterable) {
+            polynom p;
+            p[1] = var;
+            polynoms[i++] = p;
+        }
+    }
 //    solution Solve() {
 //
 //    }
@@ -99,6 +112,7 @@ public:
     {
         *this = Sqr() + e.Sqr();
     }
+
 private:
     std::map<variable_id, polynom> polynoms;
 };
