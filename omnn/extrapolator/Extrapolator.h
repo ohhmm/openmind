@@ -8,40 +8,32 @@
 #include <limits>
 #include <limits.h>
 #include <type_traits>
+#include "Expression.h"
+#include "Number.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
-#include "Expression.h"
 
 namespace omnn{
 namespace extrapolator{
 
 namespace ublas = boost::numeric::ublas;
 
-template<typename ValType>
-ValType det_fast(const ublas::matrix<ValType>& matrix)
+
+Number det_fast(ublas::matrix<Number> matrix)
 {
-    // create a working copy of the input
-    using calc_matr_t = std::conditional<
-            std::is_floating_point<ValType>::value,
-            ValType,
-            double>;
-    static_assert( std::numeric_limits<calc_matr_t>::min() <= std::numeric_limits<ValType>::min() &&
-                   std::numeric_limits<calc_matr_t>::max() >= std::numeric_limits<ValType>::max(),
-                   "use long double for this type or add arbitrary aritmetics implementation" );
-    ublas::matrix<calc_matr_t> mLu(matrix);
     ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
 
-    auto isSingular = ublas::lu_factorize(mLu, pivots);
+    auto isSingular = ublas::lu_factorize(matrix, pivots);
     if (isSingular)
-        return static_cast<ValType>(0);
+        return static_cast<Number>(0);
 
-    ValType det = static_cast<ValType>(1);
+    Number det = static_cast<Number>(1);
     for (std::size_t i = 0; i < pivots.size(); ++i)
     {
         if (pivots(i) != i)
-            det *= static_cast<ValType>(-1);
+            det *= static_cast<Number>(-1);
 
-        det *= mLu(i, i);
+        det *= matrix(i, i);
     }
 
     return det;
@@ -49,11 +41,13 @@ ValType det_fast(const ublas::matrix<ValType>& matrix)
 
 using extrapolator_base_matrix = boost::numeric::ublas::matrix<int>;
 
-template<class T = int>
+
 class Extrapolator
-        : public ublas::matrix<T>
+        : public ublas::matrix<Number>
 {
-    using base = ublas::matrix<T>;
+    using T = Number;
+    using base = ublas::matrix<Number>;
+    
     using solution_t = typename ublas::matrix_vector_solve_traits<base, ublas::vector<T>>::result_type;
 
     solution_t solution;
@@ -81,32 +75,15 @@ public:
 
     }
 
-    template<class RawContainerT>
-    solution_t Solve(const RawContainerT& augment){
-        using calc_matr_t = typename std::conditional<
-                std::is_floating_point<T>::value,
-                T,
-                long double>::type;
-        static_assert( -std::numeric_limits<calc_matr_t>::max() <= std::numeric_limits<T>::min() &&
-                       std::numeric_limits<calc_matr_t>::max() >= std::numeric_limits<T>::max(),
-                       "use long double for this type or add arbitrary aritmetics implementation" );
-        ublas::matrix<calc_matr_t> mLu(*this);
+    solution_t Solve(const ublas::vector<T>& augment){
         solution = ublas::solve(*this, augment, ublas::upper_tag());
         return solution;
     }
 
     T Determinant()
     {
-        using calc_matr_t = typename std::conditional<
-                std::is_floating_point<T>::value,
-                T,
-                long double>::type;
-        static_assert( -std::numeric_limits<calc_matr_t>::max() <= std::numeric_limits<T>::min() &&
-                       std::numeric_limits<calc_matr_t>::max() >= std::numeric_limits<T>::max(),
-                       "use long double for this type or add arbitrary aritmetics implementation" );
-        ublas::matrix<calc_matr_t> mLu(*this);
         ublas::permutation_matrix<std::size_t> pivots(this->size1());
-
+        auto mLu = *this;
         auto isSingular = ublas::lu_factorize(mLu, pivots);
         if (isSingular)
             return static_cast<T>(0);

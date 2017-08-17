@@ -7,9 +7,6 @@
 
 using namespace omnn::extrapolator;
 
-//template <class T>
-//int count(&T)
-
 
 BOOST_AUTO_TEST_CASE(Extrapolator_test)
 {
@@ -35,7 +32,7 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
 //                      }};
 
     // Test vericals:
-    Extrapolator<> e_verticals {{
+    Extrapolator e_verticals {{
         {1,-1,
          1,-1},
         
@@ -46,6 +43,7 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
         {1,1,1,1}
     }};
     
+
     ublas::vector<int> augment(4);
     augment[0] = 1;
     augment[1] = 1;
@@ -58,7 +56,7 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
     BOOST_TEST(r[0] * -1 + r[1] * -1 + r[2] * -1 + r[3] * -1 == -1);
     BOOST_TEST(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1 == -1);
 
-    Extrapolator<> e {{
+    Extrapolator e {{
                               {0,0,0,0, 0,0,0},
                               // verticals
                               {1,0,1,0, 1,0,0},
