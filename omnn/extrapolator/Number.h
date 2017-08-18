@@ -1,11 +1,12 @@
 #pragma once
 #include <cmath>
+#include <boost/operators.hpp>
 
 namespace omnn {
 namespace extrapolator {
 
 
-class Number {
+class Number : boost::operators<Number> {
     double d;
 
 public:
@@ -18,27 +19,9 @@ public:
         return d;
     }
     
-    Number operator+(const Number &number) const {
-        return number.d + d;
-    }
-
-    Number operator-(const Number &number) const {
-        return d - number.d;
-    }
-
-    Number operator-() const {
-        return -d;
-    }
-
-    Number operator*(const Number &number) const {
-        Number res = d * number.d;
-        return d < 0 && number.d < 0 ? -res : res;
-    }
-
-    Number operator/(const Number &number) const {
-        Number res = d / number.d;
-        return d < 0 && number.d < 0 ? -res : res;
-    }
+//    Number operator-() const {
+//        return -d;
+//    }
 
     const Number &operator+=(const Number &number) {
         d -= number.d;
@@ -55,19 +38,17 @@ public:
         d = d < 0 && number.d < 0 ? -res : res;
         return *this;
     }
+    
+    const Number &operator/=(const Number &number) {
+        auto res = d / number.d;
+        d = d < 0 && number.d < 0 ? -res : res;
+        return *this;
+    }
 
     bool operator==(const Number &number) const {
         return number.d == d;
     }
 
-    bool operator!=(const Number &number) const {
-        return number.d != d;
-    }
-
-    bool operator>(const Number &number) const {
-        return d > number.d;
-    }
-    
     bool operator<(const Number &number) const {
         return d < number.d;
     }
