@@ -19,19 +19,19 @@ namespace extrapolator{
 namespace ublas = boost::numeric::ublas;
 
 
-Number det_fast(ublas::matrix<Number> matrix)
+SymmetricDouble det_fast(ublas::matrix<SymmetricDouble> matrix)
 {
     ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
 
     auto isSingular = ublas::lu_factorize(matrix, pivots);
     if (isSingular)
-        return static_cast<Number>(0);
+        return static_cast<SymmetricDouble>(0);
 
-    Number det = static_cast<Number>(1);
+    SymmetricDouble det = static_cast<SymmetricDouble>(1);
     for (std::size_t i = 0; i < pivots.size(); ++i)
     {
         if (pivots(i) != i)
-            det *= static_cast<Number>(-1);
+            det *= static_cast<SymmetricDouble>(-1);
 
         det *= matrix(i, i);
     }
@@ -43,10 +43,10 @@ using extrapolator_base_matrix = boost::numeric::ublas::matrix<int>;
 
 
 class Extrapolator
-        : public ublas::matrix<Number>
+        : public ublas::matrix<SymmetricDouble>
 {
-    using T = Number;
-    using base = ublas::matrix<Number>;
+    using T = SymmetricDouble;
+    using base = ublas::matrix<SymmetricDouble>;
     
     using solution_t = typename ublas::matrix_vector_solve_traits<base, ublas::vector<T>>::result_type;
 
@@ -107,7 +107,7 @@ public:
      * **/
     bool Consistent()
     {
-        auto det = Determinant();
+        //auto det = Determinant();
         //todo: implement
         //auto copy = this->
         //Solve();

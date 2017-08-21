@@ -4,10 +4,12 @@
 #include <set>
 #include <string>
 #include <type_traits>
-
+#include <boost/operators.hpp>
 
 // todo: template<from variable_id type>
-class Expression {
+class Expression
+        : boost::operators<Expression>
+{
 public:
     using variable_id = int;
     using default_num_type = int;
@@ -65,7 +67,7 @@ public:
         }
     }
 
-    Expression& operator + (const Expression& e) //Todo:check
+    Expression& operator += (const Expression& e)
     {
         for(auto& varPolynom : e.polynoms)
         {
@@ -75,11 +77,15 @@ public:
         return *this;
     }
 
-    Expression& operator += (const Expression& e)
+    Expression& operator *= (const Expression& e)
     {
-        return operator+(e);
+        for(auto& varPolynom : e.polynoms)
+        {
+            auto& target = polynoms[varPolynom.first];
+            EmergePolynom(target, varPolynom.second);
+        }
+        return *this;
     }
-
 //    Expression& operator ^ (power_of_var pow)
 //    {
 //        for(auto& varPolynom : polynoms)
@@ -100,8 +106,6 @@ public:
             for(auto& member : varPolynom.second)
             {
                 power_of_var* power = const_cast<power_of_var*>(&member.first);
-                using nconst = std::remove_const<decltype(power)>::type;
-
                 *power*=2;
             }
         }
