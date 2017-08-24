@@ -9,7 +9,7 @@
 #include <limits.h>
 #include <type_traits>
 #include "Expression.h"
-#include "Number.h"
+//#include "Number.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
@@ -18,20 +18,22 @@ namespace extrapolator{
 
 namespace ublas = boost::numeric::ublas;
 
+using extrapolator_base_matrix = boost::numeric::ublas::matrix<double>;
+    
 
-SymmetricDouble det_fast(ublas::matrix<SymmetricDouble> matrix)
+auto det_fast(extrapolator_base_matrix matrix)
 {
     ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
 
     auto isSingular = ublas::lu_factorize(matrix, pivots);
     if (isSingular)
-        return static_cast<SymmetricDouble>(0);
+        return static_cast<double>(0);
 
-    SymmetricDouble det = static_cast<SymmetricDouble>(1);
+    auto det = static_cast<double>(1);
     for (std::size_t i = 0; i < pivots.size(); ++i)
     {
         if (pivots(i) != i)
-            det *= static_cast<SymmetricDouble>(-1);
+            det *= static_cast<double>(-1);
 
         det *= matrix(i, i);
     }
@@ -39,14 +41,12 @@ SymmetricDouble det_fast(ublas::matrix<SymmetricDouble> matrix)
     return det;
 }
 
-using extrapolator_base_matrix = boost::numeric::ublas::matrix<int>;
-
 
 class Extrapolator
-        : public ublas::matrix<SymmetricDouble>
+        : public extrapolator_base_matrix
 {
-    using T = SymmetricDouble;
-    using base = ublas::matrix<SymmetricDouble>;
+    using T = double;
+    using base = extrapolator_base_matrix;
     
     using solution_t = typename ublas::matrix_vector_solve_traits<base, ublas::vector<T>>::result_type;
 
@@ -105,13 +105,23 @@ public:
      * If possible, make the matrix consistent
      * @return true if it is
      * **/
-    bool Consistent()
+    bool Consistent(const ublas::vector<T>& augment)
     {
-        //auto det = Determinant();
-        //todo: implement
-        //auto copy = this->
-        //Solve();
-        return true;
+        auto sz = augment.size();
+        extrapolator_base_matrix augmentedMatrix(sz, 1);
+        for (int i = sz; i-->0; ) {
+            augmentedMatrix(i,0) = augment[i];
+        }
+        return Consistent(augmentedMatrix);
+    }
+    
+    /**
+     * If possible, make the matrix consistent
+     * @return true if it is
+     * **/
+    bool Consistent(const extrapolator_base_matrix& augment)
+    {
+        return Determinant() == det_fast(augment);
     }
 
     /**

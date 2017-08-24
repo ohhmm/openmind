@@ -25,8 +25,10 @@ class System
 
     bool IsPossible(const Expression& e) const
     {
-        auto m = BuildMatrix(expressions, e);
-        return m.Consistent();
+//        auto m = BuildMatrix(expressions, e);
+//        return m.Consistent();
+         throw "not implemented!";
+        return true;
     }
 public:
     operator Expression()

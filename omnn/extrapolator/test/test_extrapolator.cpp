@@ -39,30 +39,31 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
         {-1,1,
          -1,1},
         
-        {-1,-1,-1,-1},
-        {1,1,1,1}
+//        {-1,-1,-1,-1},
+//        {1,1,1,1}
     }};
-    
 
-    ublas::vector<int> augment(4);
-    augment[0] = 1;
+    ublas::vector<double> augment(4);
+    augment[0] = 2;
     augment[1] = 1;
-    augment[2] = -1;
-    augment[3] = -1;
+//    augment[2] = -1;
+//    augment[3] = -2;
+    //BOOST_TEST(e_verticals.Consistent(augment));
+
     auto r = e_verticals.Solve(augment);
     std::cout << r[0] << ' ' << r[1] << ' ' << r[2] << ' ' << r[3] << std::endl;
     auto val = r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1;
     std::cout << "(r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1) is " << val << std::endl;
-    BOOST_TEST(r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1 == SymmetricDouble(1.));
+    BOOST_TEST(r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1 == 1.);
     val = r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1;
     std::cout << "(r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1) is " << val << std::endl;
-    BOOST_TEST(r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1 == SymmetricDouble(1));
+    BOOST_TEST(r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1 == 2);
     val = r[0] * -1 + r[1] * -1 + r[2] * -1 + r[3] * -1;
     std::cout << "(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1) is " << val << std::endl;
-    BOOST_TEST(r[0] * -1 + r[1] * -1 + r[2] * -1 + r[3] * -1 == SymmetricDouble(-1));
+    BOOST_TEST(r[0] * -1 + r[1] * -1 + r[2] * -1 + r[3] * -1 == -1);
     val = r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1;
     std::cout << "(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1) is " << val << std::endl;
-    BOOST_TEST(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1 == SymmetricDouble(-1));
+    BOOST_TEST(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1 == -2);
 
     Extrapolator e {{
                               {0,0,0,0, 0,0,0},
@@ -78,5 +79,5 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
                       }};
     BOOST_CHECK_NO_THROW(e.Determinant());
 
-    BOOST_TEST(e.Consistent());
+    //BOOST_TEST(e.Consistent());
 }

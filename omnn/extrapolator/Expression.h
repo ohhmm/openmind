@@ -5,6 +5,7 @@
 #include <string>
 #include <type_traits>
 #include <boost/operators.hpp>
+//#include "VarHost.h"
 
 // todo: template<from variable_id type>
 class Expression
