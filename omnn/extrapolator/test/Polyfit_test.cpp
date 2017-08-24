@@ -12,13 +12,16 @@
 
 using namespace std;
 using f128 = long double;
+using namespace boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(Polyfit_test_sinus)
+const f128 TestPrecision = 0.000001;
+
+
+BOOST_AUTO_TEST_CASE(Polyfit_test_sinus, *tolerance(TestPrecision))
 {
     const int SZ = 73;
     const f128  PI2 = 6.283185307179586476925286766559,
-                SZf = SZ,
-                TestPrecision = 0.0000001;
+                SZf = SZ;
     
     
     // generate the data
@@ -35,12 +38,11 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus)
     std::vector<f128> oFittedY = polyval( oCoeff, oX );
     for ( unsigned int i = 0; i < SZ; i++ )
     {
-        f128 s = sin( (f128)i/SZf * PI2 );
-        BOOST_TEST(fabs(s-oFittedY[i]) < TestPrecision);
+        BOOST_TEST(oY[i]==oFittedY[i]);
     }
 }
 
-BOOST_AUTO_TEST_CASE(Polyfit_test_verticals)
+BOOST_AUTO_TEST_CASE(Polyfit_test_classification, *tolerance(TestPrecision))
 {
     // generate the data
     std::vector<f128> oX = {{
@@ -69,17 +71,12 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_verticals)
     }};
     BOOST_TEST(oX.size() == oY.size());
     auto SZ = oX.size();
-    const f128 TestPrecision = 0.0000001;
 
     // polynomial fitting
     std::vector<f128> oCoeff = polyfit( oX, oY, SZ );
     std::vector<f128> oFittedY = polyval( oCoeff, oX );
     for ( unsigned int i = 0; i < SZ; i++ )
     {
-        auto r = round(oFittedY[i]);
-        auto diff = oY[i]-r;
-        auto absolute = fabs(diff);
-        auto fit = oY[i] == oFittedY[i];
-        BOOST_TEST(absolute < TestPrecision);
+        BOOST_TEST(oY[i] == oFittedY[i]);
     }
 }
