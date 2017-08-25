@@ -6,9 +6,9 @@
 #include "Extrapolator.h"
 
 using namespace omnn::extrapolator;
+using namespace boost::unit_test;
 
-
-BOOST_AUTO_TEST_CASE(Extrapolator_test)
+BOOST_AUTO_TEST_CASE(Extrapolator_test, *disabled())
 {
     // lets define extrapolator vars:
     // TODO : link to youtube video with description of the sample for deep learning
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
 //        {1,1,1,1}
     }};
 
-    ublas::vector<double> augment(4);
+    ublas::vector<double> augment(e_verticals.size1());
     augment[0] = 2;
     augment[1] = 1;
 //    augment[2] = -1;

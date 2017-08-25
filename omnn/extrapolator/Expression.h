@@ -70,6 +70,7 @@ public:
 
     Expression& operator += (const Expression& e)
     {
+        // varhost  `
         for(auto& varPolynom : e.polynoms)
         {
             auto& target = polynoms[varPolynom.first];

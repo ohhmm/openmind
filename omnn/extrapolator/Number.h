@@ -23,14 +23,17 @@ class ops
 };
 
 class SymmetricDouble : ops {
-    double d;
+    using value_type = long double;
+    using reference_type = value_type&;
+    using const_reference_type = const value_type&;
+    value_type d;
 
 public:
     SymmetricDouble() : d(0.) {}
 
-    SymmetricDouble(double number) : d(number) {}
+    SymmetricDouble(const_reference_type number) : d(number) {}
 
-    const double& AsDouble() const
+    const_reference_type AsDouble() const
     {
         return d;
     }
@@ -75,10 +78,9 @@ public:
         return out;
     }
     
-    friend SymmetricDouble operator "" _sd(long double d)
+    friend SymmetricDouble operator "" _sd(value_type d)
     {
-        double val = d;
-        return SymmetricDouble(val);
+        return SymmetricDouble(d);
     }
     
 };

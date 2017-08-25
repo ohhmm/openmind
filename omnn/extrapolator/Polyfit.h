@@ -10,6 +10,8 @@
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
+#include <iomanip>
+#include <limits>
 #include <vector>
 #include <stdexcept>
 
@@ -115,4 +117,24 @@ std::vector<T> polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
     }
     
     return oY;
+}
+
+#include <boost/algorithm/string/replace.hpp>
+
+#include <boost/lexical_cast.hpp>
+
+template <class T>
+std::string polystr(const std::vector<T>& coeff)
+{
+    std::stringstream s;
+    auto it = std::begin(coeff);
+    auto e = std::end(coeff);
+    int p = 0;
+    s << std::setprecision(100) << 0;
+    for (; it != e; ++it) {
+        s << '+';
+        s << '(' << *it << ')';
+        s << "*x^" << p++;
+    }
+    return boost::replace_all_copy(s.str(), "e", "*10^");
 }
