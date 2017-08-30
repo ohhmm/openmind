@@ -9,6 +9,7 @@ endif()
 
 option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
+option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS" FALSE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 find_package(Boost)
