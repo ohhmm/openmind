@@ -14,7 +14,7 @@ class Expression
 public:
     using variable_id = int;
     using default_num_type = int;
-    using value = double;
+    using value = Expression;
 
     using power_of_var = default_num_type;
     using num = default_num_type;

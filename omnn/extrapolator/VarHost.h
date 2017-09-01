@@ -13,7 +13,9 @@ namespace extrapolator {
 template<class T>
 class VarHost : public std::set<T>
 {
-
+    using base = std::set<T>;
+public:
+    using base::base;
 };
 
 } /* namespace extrapolator */

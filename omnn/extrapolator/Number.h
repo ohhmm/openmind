@@ -1,28 +1,15 @@
 #pragma once
 #include <cmath>
 #include <iostream>
-#include <boost/operators.hpp>
+#include "OpenOps.h"
 
 namespace omnn {
 namespace extrapolator {
 
-class SymmetricDouble;
 
-
-class ops
-        : public boost::operators<SymmetricDouble>
+class SymmetricDouble
+        : OpenOps<SymmetricDouble>
 {
-    template<class T>
-    friend bool operator<=(const T& x, const SymmetricDouble& y) { return !static_cast<bool>(x > y); }
-    template<class T> friend bool operator>=(const T& x, const SymmetricDouble& y) { return !static_cast<bool>(x < y); }
-    template<class T> friend bool operator>(const SymmetricDouble& x, const T& y)  { return y < x; }
-    template<class T> friend bool operator<(const SymmetricDouble& x, const T& y)  { return y > x; }
-    template<class T> friend bool operator<=(const SymmetricDouble& x, const T& y) { return !static_cast<bool>(y < x); }
-    template<class T> friend bool operator>=(const SymmetricDouble& x, const T& y) { return !static_cast<bool>(y > x); }
-
-};
-
-class SymmetricDouble : ops {
     using value_type = long double;
     using reference_type = value_type&;
     using const_reference_type = const value_type&;

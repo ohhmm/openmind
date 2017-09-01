@@ -8,12 +8,15 @@
 #	define _USE_MATH_DEFINES
 #endif
 
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/lu.hpp>
 #include <iomanip>
+#include <stdexcept>
 #include <limits>
 #include <vector>
-#include <stdexcept>
+
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/lu.hpp>
 
 /*
 	Finds the coefficients of a polynomial p(x) of degree n that fits the data,
@@ -119,9 +122,6 @@ std::vector<T> polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
     return oY;
 }
 
-#include <boost/algorithm/string/replace.hpp>
-
-#include <boost/lexical_cast.hpp>
 
 template <class T>
 std::string polystr(const std::vector<T>& coeff)
