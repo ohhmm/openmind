@@ -9,7 +9,6 @@
 #include <limits.h>
 #include <type_traits>
 #include "Expression.h"
-//#include "Number.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 

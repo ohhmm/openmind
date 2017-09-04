@@ -8,7 +8,7 @@
 //#include <boost/multiprecision/float128.hpp>
 #define BOOST_TEST_MODULE Polyfit test
 #include <boost/test/unit_test.hpp>
-#include "Number.h"
+#include "SymmetricDouble.h"
 #include "Polyfit.h"
 
 using namespace std;

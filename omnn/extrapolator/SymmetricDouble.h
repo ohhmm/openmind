@@ -8,7 +8,7 @@ namespace extrapolator {
 
 
 class SymmetricDouble
-        : OpenOps<SymmetricDouble>
+        : public OpenOps<SymmetricDouble>
 {
     using value_type = long double;
     using reference_type = value_type&;
@@ -29,23 +29,18 @@ public:
         return -d;
     }
 
-    const SymmetricDouble &operator+=(const SymmetricDouble &number) {
+    SymmetricDouble &operator+=(const SymmetricDouble &number) {
         d += number.d;
         return *this;
     }
     
-    const SymmetricDouble &operator-=(const SymmetricDouble &number) {
-        d -= number.d;
-        return *this;
-    }
-
-    const SymmetricDouble &operator*=(const SymmetricDouble &number) {
+    SymmetricDouble &operator*=(const SymmetricDouble &number) {
         auto res = d * number.d;
         d = d < 0 && number.d < 0 ? -res : res;
         return *this;
     }
     
-    const SymmetricDouble &operator/=(const SymmetricDouble &number) {
+    SymmetricDouble &operator/=(const SymmetricDouble &number) {
         auto res = d / number.d;
         d = d < 0 && number.d < 0 ? -res : res;
         return *this;

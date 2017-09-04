@@ -11,7 +11,15 @@ namespace extrapolator {
 class Valuable
         : public OpenOps<Valuable>
 {
-    virtual ~Valuable() {}
+	using self = Valuable;
+public:
+    virtual ~Valuable();
+    virtual self operator -(const self& v);
+    virtual Valuable& operator +=(const Valuable& number);
+    virtual Valuable& operator *=(const Valuable& number);
+    virtual Valuable& operator /=(const Valuable& number);
+    virtual Valuable& operator %=(const Valuable& number);
+	virtual Valuable operator--(int);
 };
 
 }}

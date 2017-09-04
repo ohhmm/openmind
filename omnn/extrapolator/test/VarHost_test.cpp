@@ -9,7 +9,7 @@
 
 #define BOOST_TEST_MODULE Varhost test
 #include <boost/test/unit_test.hpp>
-#include "Number.h"
+#include "SymmetricDouble.h"
 #include "Polyfit.h"
 
 using namespace std;
