@@ -11,37 +11,37 @@ namespace extrapolator {
 
 class Integer
     : public Valuable
-    , public boost::multiprecision::cpp_int
 {
     using base = Valuable;
     using base_int = boost::multiprecision::cpp_int;
+    base_int arbitrary = 0;
 public:
     using base::base;
-    using base_int::base_int;
-    Integer(const base_int& i) {
-        *this = i;
+//    using base_int::base_int;
+    template<class T>
+    Integer(const T& i) {
+        arbitrary = i;
     }
 
-    Valuable operator -(const Valuable& v) override {return Integer(base_int(0) - v);}
-    Valuable& operator +=(const Valuable& v) override {
-        base_int::operator+=(dynamic_cast<const base_int&>(dynamic_cast<const Integer&>(v)));
-        return *this;
-    }
-    Valuable& operator *=(const Valuable& v) override {
-        base_int::operator*=(dynamic_cast<const base_int&>(dynamic_cast<const Integer&>(v)));
-        return *this;
-    }
-    Valuable& operator /=(const Valuable& v) override {
-        base_int::operator/=(dynamic_cast<const base_int&>(dynamic_cast<const Integer&>(v)));
-        return *this;
-    }
-    Valuable& operator %=(const Valuable& v) override {
-        base_int::operator%=(dynamic_cast<const base_int&>(dynamic_cast<const Integer&>(v)));
-        return *this;
-    }
-//    Valuable operator--(int) override {
-//        return base_int::operator--(int());
+    Valuable operator -(const Valuable& v) const override;
+    Valuable& operator +=(const Valuable& v) override;
+    Valuable& operator *=(const Valuable& v) override;
+    Valuable& operator /=(const Valuable& v) override;
+    Valuable& operator %=(const Valuable& v) override;
+    Valuable& operator --() override;
+    Valuable& operator ++() override;
+    
+    bool operator <(const Valuable& v) const override;
+            
+//    bool operator>(int v) const  {
+//        return arbitrary > v;
 //    }
+            
+    bool operator ==(const Valuable& v) const override;
+            
+    friend std::ostream& operator <<(std::ostream& out, const Integer& obj);
 };
 
-}}
+
+}
+}

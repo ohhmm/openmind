@@ -3,3 +3,114 @@
 //
 
 #include "Integer.h"
+
+
+namespace omnn{
+namespace extrapolator {
+
+Valuable Integer::operator -(const Valuable& v) const
+{
+    return Integer(base_int(0) - v);
+}
+
+omnn::extrapolator::Valuable& Integer::operator +=(const Valuable& v)
+{
+    auto i = dynamic_cast<const Integer*>(&v);
+    if (i)
+    arbitrary += i->arbitrary;
+    else
+    {
+        // try other type
+        // no type matched
+        base::operator +=(v);
+    }
+    return *this;
+}
+
+omnn::extrapolator::Valuable& Integer::operator *=(const Valuable& v)
+{
+    auto i = dynamic_cast<const Integer*>(&v);
+    if (i)
+    arbitrary *= i->arbitrary;
+    else
+    {
+        // try other type
+        // no type matched
+        base::operator +=(v);
+    }
+    return *this;
+}
+
+omnn::extrapolator::Valuable& Integer::operator /=(const Valuable& v)
+{
+    auto i = dynamic_cast<const Integer*>(&v);
+    if (i)
+    arbitrary += i->arbitrary;
+    else
+    {
+        // try other type
+        // no type matched
+        base::operator /=(v);
+    }
+    return *this;
+}
+
+omnn::extrapolator::Valuable& Integer::operator %=(const Valuable& v)
+{
+    auto i = dynamic_cast<const Integer*>(&v);
+    if (i)
+    arbitrary += i->arbitrary;
+    else
+    {
+        // try other type
+        // no type matched
+        base::operator %=(v);
+    }
+    return *this;
+}
+
+omnn::extrapolator::Valuable& Integer::operator --()
+{
+    arbitrary--;
+    return *this;
+}
+
+omnn::extrapolator::Valuable& Integer::operator ++()
+{
+    arbitrary++;
+    return *this;
+}
+
+bool Integer::operator <(const Valuable& v) const
+{
+    auto i = dynamic_cast<const Integer*>(&v);
+    if (i)
+    return arbitrary < i->arbitrary;
+    else
+    {
+        // try other type
+    }
+    // no type matched
+    return base::operator <(v);
+}
+
+bool Integer::operator ==(const Valuable& v) const
+{
+    auto i = dynamic_cast<const Integer*>(&v);
+    if (i)
+    return arbitrary == i->arbitrary;
+    else
+    {
+        // try other type
+    }
+    // no type matched
+    return base::operator ==(v);
+}
+
+std::ostream& operator <<(std::ostream& out, const Integer& obj)
+{
+    out << obj.arbitrary;
+    return out;
+}
+
+}}

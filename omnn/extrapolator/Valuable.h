@@ -14,12 +14,21 @@ class Valuable
 	using self = Valuable;
 public:
     virtual ~Valuable();
-    virtual self operator -(const self& v);
+    virtual self operator -(const self& v) const;
     virtual Valuable& operator +=(const Valuable& number);
     virtual Valuable& operator *=(const Valuable& number);
     virtual Valuable& operator /=(const Valuable& number);
     virtual Valuable& operator %=(const Valuable& number);
-	virtual Valuable operator--(int);
+    virtual Valuable& operator--();
+    virtual Valuable& operator++();
+    virtual bool operator<(const Valuable& number) const;
+    virtual bool operator==(const Valuable& number) const;
+    
+    template<class T>
+    T* As()
+    { return dynamic_cast<T*>(this); }
+    
+    friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
 };
 
 }}

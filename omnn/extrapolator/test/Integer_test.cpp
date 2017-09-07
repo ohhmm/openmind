@@ -9,12 +9,17 @@
 BOOST_AUTO_TEST_CASE(Integer_tests)
 {
     omnn::extrapolator::Integer a = 2, b = 31;
-//    for(;b-->0;)
+    ++a;
+    --a;
+    a++;
+    a--;
+    
+    //for(;b-->0;)
     {
         a *= a;
     }
 
     std::stringstream s;
     s << a;
-    BOOST_TEST(s.str() == "");
+    BOOST_TEST(s.str() == "4");
 }
