@@ -12,7 +12,7 @@ Valuable Integer::operator -(const Valuable& v) const
 {
     return Integer(base_int(0) - v);
 }
-
+    
 omnn::extrapolator::Valuable& Integer::operator +=(const Valuable& v)
 {
     auto i = dynamic_cast<const Integer*>(&v);
@@ -31,12 +31,12 @@ omnn::extrapolator::Valuable& Integer::operator *=(const Valuable& v)
 {
     auto i = dynamic_cast<const Integer*>(&v);
     if (i)
-    arbitrary *= i->arbitrary;
+        arbitrary *= i->arbitrary;
     else
     {
         // try other type
         // no type matched
-        base::operator +=(v);
+        base::operator *=(v);
     }
     return *this;
 }
@@ -59,7 +59,7 @@ omnn::extrapolator::Valuable& Integer::operator %=(const Valuable& v)
 {
     auto i = dynamic_cast<const Integer*>(&v);
     if (i)
-    arbitrary += i->arbitrary;
+    arbitrary %= i->arbitrary;
     else
     {
         // try other type
@@ -83,15 +83,30 @@ omnn::extrapolator::Valuable& Integer::operator ++()
 
 bool Integer::operator <(const Valuable& v) const
 {
-    auto i = dynamic_cast<const Integer*>(&v);
-    if (i)
-    return arbitrary < i->arbitrary;
+    Valuable* vp = const_cast<Valuable*>(&v);
+    Integer* ip = dynamic_cast<Integer*>(vp);
+    if (ip)
+        return arbitrary < ip->arbitrary;
     else
     {
         // try other type
     }
-    // no type matched
-    return base::operator <(v);
+    
+    
+    if (v.getEncapsulatedInstance().empty()) {
+        // not implemented comparison to this Valuable descent
+        return base::operator <(v);
+    }
+    else
+    {
+        // encapsulated Valuable descent
+        if(v.getEncapsulatedInstance().type() == typeid(Integer))
+        {
+            return arbitrary < getEncapsulatedInstance(v)->arbitrary;
+        }
+    }
+    
+    
 }
 
 bool Integer::operator ==(const Valuable& v) const
