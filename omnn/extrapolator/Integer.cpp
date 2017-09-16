@@ -83,30 +83,16 @@ omnn::extrapolator::Valuable& Integer::operator ++()
 
 bool Integer::operator <(const Valuable& v) const
 {
-    Valuable* vp = const_cast<Valuable*>(&v);
-    Integer* ip = dynamic_cast<Integer*>(vp);
+    auto ip = dynamic_cast<Integer*>(v.operator->());
     if (ip)
         return arbitrary < ip->arbitrary;
     else
     {
         // try other type
     }
-    
-    
-    if (v.getEncapsulatedInstance().empty()) {
-        // not implemented comparison to this Valuable descent
-        return base::operator <(v);
-    }
-    else
-    {
-        // encapsulated Valuable descent
-        if(v.getEncapsulatedInstance().type() == typeid(Integer))
-        {
-            return arbitrary < getEncapsulatedInstance(v)->arbitrary;
-        }
-    }
-    
-    
+
+    // not implemented comparison to this Valuable descent
+    return base::operator <(v);
 }
 
 bool Integer::operator ==(const Valuable& v) const

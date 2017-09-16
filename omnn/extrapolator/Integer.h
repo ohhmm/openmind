@@ -20,18 +20,21 @@ class Integer
 public:
     using base::base;
 
-    template<class T>
-    Integer(const T& i) {
-        arbitrary = i;
-    }
-
-    Integer(base_int&& i) : arbitrary(i)
-    {
+    Integer(const Integer& i)
+        : arbitrary(i.arbitrary)
+    { 
     }
     
-    Integer(int&& i) : arbitrary(i)
+    Integer(int i)
+        : arbitrary(i)
     {
     }
+
+    Integer(const base_int& i)
+        : arbitrary(i)
+    {
+    }
+
     
     operator base_int() const {
         return arbitrary;
@@ -41,6 +44,7 @@ public:
         return boost::numeric_cast<int>(arbitrary);
     }
 
+    // virtual operators proxy
     Valuable operator -(const Valuable& v) const override;
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator *=(const Valuable& v) override;
@@ -48,9 +52,11 @@ public:
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override;
     Valuable& operator ++() override;
-    
     bool operator <(const Valuable& v) const override;
-            
+    
+    // concrete operators
+    bool operator <(const Integer& v) const { return arbitrary < v.arbitrary; }
+    bool operator >(const Integer& v) const { return arbitrary > v.arbitrary; }
 //    bool operator>(int v) const  {
 //        return arbitrary > v;
 //    }

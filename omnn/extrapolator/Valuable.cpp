@@ -13,9 +13,8 @@ static void implement()
     throw "Implement!";
 }
     
-#define IMPLEMENT implement(); throw;
+#define IMPLEMENT { implement(); throw; }
 
-boost::any Valuable::getSelf() const { IMPLEMENT }
     
 Valuable::~Valuable()
 {
@@ -48,12 +47,18 @@ Valuable& Valuable::operator %=(const Valuable& number)
 
 Valuable& Valuable::operator--()
 {
-    IMPLEMENT
+    if(exp)
+        return exp->operator--();
+    else
+        IMPLEMENT
 }
     
 Valuable& Valuable::operator++()
 {
-    IMPLEMENT
+    if(exp)
+        return exp->operator++();
+    else
+        IMPLEMENT
 }
  
 bool Valuable::operator<(const Valuable& number) const
