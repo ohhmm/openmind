@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_CASE(Integer_tests)
     using int_t = omnn::extrapolator::Integer;
     const int_t initial_a = 2;
     int_t a = initial_a, b = 18, z=0;
-
+    
     BOOST_TEST(++a==initial_a+1);
     BOOST_TEST(--a==initial_a);
     BOOST_TEST(a++==initial_a);

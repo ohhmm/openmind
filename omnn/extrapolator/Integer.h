@@ -40,13 +40,14 @@ public:
         return arbitrary;
     }
     
-    operator int() const {
-        return boost::numeric_cast<int>(arbitrary);
-    }
+//    operator int() const {
+//        return boost::numeric_cast<int>(arbitrary);
+//    }
 
     // virtual operators proxy
-    Valuable operator -(const Valuable& v) const override;
+    Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
+    Valuable& operator +=(int v) override;
     Valuable& operator *=(const Valuable& v) override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;

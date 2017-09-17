@@ -14,7 +14,7 @@ namespace extrapolator {
             : public boost::operators<CT>
     {
     public:
-        CT& operator-=(const CT& number) { return *static_cast<CT*>(this) += -number; }
+        CT& operator-=(const CT& v) { return *static_cast<CT*>(this) += -v; }
 
         template<class T>
         friend bool operator<=(const T &x, const CT &y) { return !static_cast<bool>(x > y); }
@@ -35,11 +35,17 @@ namespace extrapolator {
         friend bool operator>=(const CT &x, const T &y) { return !static_cast<bool>(y > x); }
 
         template<class T>
-        friend T operator-(const CT &x, const T &y) { return x - y; }
+        friend CT operator-(const CT &x, const T &y) { return x - y; }
 
         template<class T>
         friend T operator-(const T &x, const CT &y) { return x - y; }
 
+        template<class T>
+        friend CT operator+(const CT &x, const T &y) { return CT(x) += y; }
+        
+        template<class T>
+        friend T operator+(const T &x, const CT &y) { return x + y; }
+        
     };
 
 }}

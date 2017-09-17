@@ -26,8 +26,20 @@ class Valuable
     encapsulated_instance exp = nullptr;
 
 protected:
-    virtual Valuable* Clone() const { return new Valuable(*this); }
+    virtual Valuable* Clone() const {
+        if(exp)
+            return exp->Clone();
+        else
+            return new Valuable(*this);
+    }
     Valuable() = default;
+    
+    template<class T>
+    static const T* cast(const Valuable& v)
+    {
+        return v.exp? dynamic_cast<const T*>(v.exp.get())
+                    : dynamic_cast<const T*>(&v);
+    }
 
 public:
     Valuable(Valuable* v) : exp(v) { }
@@ -45,11 +57,12 @@ public:
     {}
     
     virtual ~Valuable();
-    virtual self operator -(const self& v) const;
-    virtual Valuable& operator +=(const Valuable& number);
-    virtual Valuable& operator *=(const Valuable& number);
-    virtual Valuable& operator /=(const Valuable& number);
-    virtual Valuable& operator %=(const Valuable& number);
+    virtual Valuable operator -() const;
+    virtual Valuable& operator +=(const Valuable&);
+    virtual Valuable& operator +=(int);
+    virtual Valuable& operator *=(const Valuable&);
+    virtual Valuable& operator /=(const Valuable&);
+    virtual Valuable& operator %=(const Valuable&);
     virtual Valuable& operator--();
     virtual Valuable& operator++();
     virtual bool operator<(const Valuable& number) const;
@@ -60,6 +73,7 @@ public:
 
 template <class Chld>
 class ValuableDescendantContract : public Valuable
+    //, public OpenOps<Chld>
 {
     friend Chld;
 protected:
@@ -70,6 +84,10 @@ protected:
 
 public:
     using Valuable::Valuable;
+    static const Chld* cast(const Valuable& v){
+        return Valuable::cast<Chld>(v);
+    }
+    //friend Chld operator+(const Chld& c, int i) { return c+Chld(i); }
 };
 
 }}

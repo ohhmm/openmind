@@ -8,14 +8,14 @@
 namespace omnn{
 namespace extrapolator {
 
-Valuable Integer::operator -(const Valuable& v) const
+Valuable Integer::operator -() const
 {
-    return Integer(base_int(0) - v);
+    return Integer(-arbitrary);
 }
     
 omnn::extrapolator::Valuable& Integer::operator +=(const Valuable& v)
 {
-    auto i = dynamic_cast<const Integer*>(&v);
+    auto i = cast(v);
     if (i)
     arbitrary += i->arbitrary;
     else
@@ -27,9 +27,15 @@ omnn::extrapolator::Valuable& Integer::operator +=(const Valuable& v)
     return *this;
 }
 
+omnn::extrapolator::Valuable& Integer::operator +=(int v)
+{
+    arbitrary += v;
+    return *this;
+}
+
 omnn::extrapolator::Valuable& Integer::operator *=(const Valuable& v)
 {
-    auto i = dynamic_cast<const Integer*>(&v);
+    auto i = cast(v);
     if (i)
         arbitrary *= i->arbitrary;
     else
@@ -43,7 +49,7 @@ omnn::extrapolator::Valuable& Integer::operator *=(const Valuable& v)
 
 omnn::extrapolator::Valuable& Integer::operator /=(const Valuable& v)
 {
-    auto i = dynamic_cast<const Integer*>(&v);
+    auto i = cast(v);
     if (i)
     arbitrary += i->arbitrary;
     else
@@ -57,7 +63,7 @@ omnn::extrapolator::Valuable& Integer::operator /=(const Valuable& v)
 
 omnn::extrapolator::Valuable& Integer::operator %=(const Valuable& v)
 {
-    auto i = dynamic_cast<const Integer*>(&v);
+    auto i = cast(v);
     if (i)
     arbitrary %= i->arbitrary;
     else
@@ -83,9 +89,9 @@ omnn::extrapolator::Valuable& Integer::operator ++()
 
 bool Integer::operator <(const Valuable& v) const
 {
-    auto ip = dynamic_cast<Integer*>(v.operator->());
-    if (ip)
-        return arbitrary < ip->arbitrary;
+    auto i = cast(v);
+    if (i)
+        return arbitrary < i->arbitrary;
     else
     {
         // try other type
@@ -97,7 +103,7 @@ bool Integer::operator <(const Valuable& v) const
 
 bool Integer::operator ==(const Valuable& v) const
 {
-    auto i = dynamic_cast<const Integer*>(&v);
+    auto i = cast(v);
     if (i)
     return arbitrary == i->arbitrary;
     else

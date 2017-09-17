@@ -20,29 +20,54 @@ Valuable::~Valuable()
 {
 }
 
-Valuable Valuable::operator -(const self& v) const
+Valuable Valuable::operator -() const
 {
-    IMPLEMENT
+    if(exp)
+        return exp->operator-();
+    else
+        IMPLEMENT
 }
 
-Valuable& Valuable::operator +=(const Valuable& number)
+Valuable& Valuable::operator +=(const Valuable& v)
 {
-    IMPLEMENT
+    if(exp)
+        return exp->operator+=(v);
+    else
+        IMPLEMENT
+}
+    
+Valuable& Valuable::operator +=(int v)
+{
+    if(exp)
+        return exp->operator+=(v);
+    else
+        IMPLEMENT
+    }
+
+Valuable& Valuable::operator *=(const Valuable& v)
+{
+    if(exp)
+        return exp->operator*=(v);
+    else
+        IMPLEMENT
+
 }
 
-Valuable& Valuable::operator *=(const Valuable& number)
+Valuable& Valuable::operator /=(const Valuable& v)
 {
-    IMPLEMENT
+    if(exp)
+        return exp->operator/=(v);
+    else
+        IMPLEMENT
+
 }
 
-Valuable& Valuable::operator /=(const Valuable& number)
+Valuable& Valuable::operator %=(const Valuable& v)
 {
-    IMPLEMENT
-}
-
-Valuable& Valuable::operator %=(const Valuable& number)
-{
-    IMPLEMENT
+    if(exp)
+        return exp->operator%=(v);
+    else
+        IMPLEMENT
 }
 
 Valuable& Valuable::operator--()
@@ -61,14 +86,22 @@ Valuable& Valuable::operator++()
         IMPLEMENT
 }
  
-bool Valuable::operator<(const Valuable& number) const
+bool Valuable::operator<(const Valuable& v) const
 {
-    IMPLEMENT
+    if(exp)
+        return exp->operator<(v);
+    else
+        IMPLEMENT
+
 }
 
-bool Valuable::operator==(const Valuable& number) const
+bool Valuable::operator==(const Valuable& v) const
 {
-    IMPLEMENT
+    if(exp)
+        return exp->operator==(v);
+    else
+        IMPLEMENT
+
 }
     
 std::ostream& operator<<(std::ostream& out, const Valuable& obj)
