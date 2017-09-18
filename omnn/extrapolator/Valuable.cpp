@@ -8,111 +8,118 @@
 namespace omnn{
 namespace extrapolator {
 
-static void implement()
-{
-    throw "Implement!";
-}
+    static void implement()
+    {
+        throw "Implement!";
+    }
     
-#define IMPLEMENT { implement(); throw; }
+    #define IMPLEMENT { implement(); throw; }
 
     
-Valuable::~Valuable()
-{
-}
-
-Valuable Valuable::operator -() const
-{
-    if(exp)
-        return exp->operator-();
-    else
-        IMPLEMENT
-}
-
-Valuable& Valuable::operator +=(const Valuable& v)
-{
-    if(exp)
-        return exp->operator+=(v);
-    else
-        IMPLEMENT
-}
-    
-Valuable& Valuable::operator +=(int v)
-{
-    if(exp)
-        return exp->operator+=(v);
-    else
-        IMPLEMENT
+    Valuable::~Valuable()
+    {
     }
 
-Valuable& Valuable::operator *=(const Valuable& v)
-{
-    if(exp)
-        return exp->operator*=(v);
-    else
-        IMPLEMENT
+    Valuable Valuable::operator -() const
+    {
+        if(exp)
+            return exp->operator-();
+        else
+            IMPLEMENT
+    }
 
-}
-
-Valuable& Valuable::operator /=(const Valuable& v)
-{
-    if(exp)
-        return exp->operator/=(v);
-    else
-        IMPLEMENT
-
-}
-
-Valuable& Valuable::operator %=(const Valuable& v)
-{
-    if(exp)
-        return exp->operator%=(v);
-    else
-        IMPLEMENT
-}
-
-Valuable& Valuable::operator--()
-{
-    if(exp)
-        return exp->operator--();
-    else
-        IMPLEMENT
-}
+    Valuable& Valuable::operator +=(const Valuable& v)
+    {
+        if(exp)
+            return exp->operator+=(v);
+        else
+            IMPLEMENT
+    }
     
-Valuable& Valuable::operator++()
-{
-    if(exp)
-        return exp->operator++();
-    else
-        IMPLEMENT
-}
- 
-bool Valuable::operator<(const Valuable& v) const
-{
-    if(exp)
-        return exp->operator<(v);
-    else
-        IMPLEMENT
+    Valuable& Valuable::operator +=(int v)
+    {
+        if(exp)
+            return exp->operator+=(v);
+        else
+            IMPLEMENT
+        }
 
-}
+    Valuable& Valuable::operator *=(const Valuable& v)
+    {
+        if(exp)
+            return exp->operator*=(v);
+        else
+            IMPLEMENT
 
-bool Valuable::operator==(const Valuable& v) const
-{
-    if(exp)
-        return exp->operator==(v);
-    else
-        IMPLEMENT
+    }
 
-}
+    Valuable& Valuable::operator /=(const Valuable& v)
+    {
+        if(exp)
+            return exp->operator/=(v);
+        else
+            IMPLEMENT
+
+    }
+
+    Valuable& Valuable::operator %=(const Valuable& v)
+    {
+        if(exp)
+            return exp->operator%=(v);
+        else
+            IMPLEMENT
+    }
+
+    Valuable& Valuable::operator--()
+    {
+        if(exp)
+            return exp->operator--();
+        else
+            IMPLEMENT
+    }
     
-std::ostream& operator<<(std::ostream& out, const Valuable& obj)
-{
-    auto i = dynamic_cast<const Integer*>(&obj);
-    if(i)
-        return out << *i;
+    Valuable& Valuable::operator++()
+    {
+        if(exp)
+            return exp->operator++();
+        else
+            IMPLEMENT
+    }
     
-    // no type matched
-    IMPLEMENT
-}
+    bool Valuable::operator<(const Valuable& v) const
+    {
+        if(exp)
+            return exp->operator<(v);
+        else
+            IMPLEMENT
+
+    }
+
+    bool Valuable::operator==(const Valuable& v) const
+    {
+        if(exp)
+            return exp->operator==(v);
+        else
+            IMPLEMENT
+
+    }
+    
+    std::ostream& Valuable::print(std::ostream& out) const
+    {
+        if(exp)
+            return exp->print(out);
+        else
+            IMPLEMENT
+    }
+    
+    std::ostream& operator<<(std::ostream& out, const Valuable& obj)
+    {
+        return obj.print(out);
+    }
+
+    void Valuable::optimize() {
+        IMPLEMENT
+    }
 
 
 }}

@@ -41,6 +41,8 @@ protected:
                     : dynamic_cast<const T*>(&v);
     }
 
+    virtual std::ostream& print(std::ostream& out) const;
+    
 public:
     Valuable(Valuable* v) : exp(v) { }
     Valuable* operator->() const
@@ -67,7 +69,7 @@ public:
     virtual Valuable& operator++();
     virtual bool operator<(const Valuable& number) const;
     virtual bool operator==(const Valuable& number) const;
-
+    virtual void optimize();
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
 };
 
@@ -75,6 +77,7 @@ template <class Chld>
 class ValuableDescendantContract : public Valuable
     //, public OpenOps<Chld>
 {
+    using self = ValuableDescendantContract;
     friend Chld;
 protected:
     Valuable* Clone() const override
@@ -84,6 +87,8 @@ protected:
 
 public:
     using Valuable::Valuable;
+    ValuableDescendantContract(ValuableDescendantContract&&){}
+    ValuableDescendantContract(const ValuableDescendantContract&){}
     static const Chld* cast(const Valuable& v){
         return Valuable::cast<Chld>(v);
     }

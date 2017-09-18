@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 set(PRODUCT_NAME "OpenMind")
 set (CMAKE_CXX_STANDARD 17)
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(_IS_DEBUG TRUE)
 else()

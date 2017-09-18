@@ -17,13 +17,14 @@ class Integer
     using base_int = boost::multiprecision::cpp_int;
     using const_base_int_ref = const base_int&;
     base_int arbitrary = 0;
+protected:
+    std::ostream& print(std::ostream& out) const override;
+
 public:
     using base::base;
 
-    Integer(const Integer& i)
-        : arbitrary(i.arbitrary)
-    { 
-    }
+    Integer(const Integer&)=default;
+    Integer(Integer&&)=default;
     
     Integer(int i)
         : arbitrary(i)
@@ -34,7 +35,6 @@ public:
         : arbitrary(i)
     {
     }
-
     
     operator base_int() const {
         return arbitrary;
@@ -44,7 +44,7 @@ public:
 //        return boost::numeric_cast<int>(arbitrary);
 //    }
 
-    // virtual operators proxy
+    // virtual operators 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator +=(int v) override;
@@ -54,6 +54,7 @@ public:
     Valuable& operator --() override;
     Valuable& operator ++() override;
     bool operator <(const Valuable& v) const override;
+    bool operator ==(const Valuable& v) const override;
     
     // concrete operators
     bool operator <(const Integer& v) const { return arbitrary < v.arbitrary; }
@@ -62,7 +63,6 @@ public:
 //        return arbitrary > v;
 //    }
             
-    bool operator ==(const Valuable& v) const override;
             
     friend std::ostream& operator <<(std::ostream& out, const Integer& obj);
 };
