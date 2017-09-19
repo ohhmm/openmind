@@ -26,6 +26,13 @@ ELSEIF(WIN32)
     endif()
 ENDIF()
 
+if(MSVC)
+	if(Boost_FOUND)
+		link_directories(${Boost_INCLUDE_DIR}/stage/lib)
+	endif()
+endif()
+
+
 include_directories(${CMAKE_SOURCE_DIR})
 
 if (${OPENMIND_BUILD_TESTS})

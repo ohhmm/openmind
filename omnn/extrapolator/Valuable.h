@@ -87,6 +87,7 @@ protected:
 
 public:
     using Valuable::Valuable;
+	ValuableDescendantContract() {}
     ValuableDescendantContract(ValuableDescendantContract&&){}
     ValuableDescendantContract(const ValuableDescendantContract&){}
     static const Chld* cast(const Valuable& v){

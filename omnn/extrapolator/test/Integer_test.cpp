@@ -1,7 +1,7 @@
 //
 // Created by Сергей Кривонос on 02.09.17.
 //
-#define BOOST_TEST_MODULE Polyfit test
+#define BOOST_TEST_MODULE Integer test
 #include <boost/test/unit_test.hpp>
 
 #include "Integer.h"
