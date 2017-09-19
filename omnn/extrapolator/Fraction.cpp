@@ -30,7 +30,7 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i){
-            auto f = *i;
+			auto f = *i;
             if(denominator != f.denominator) {
                 f.numerator *= denominator;
                 f.denominator *= denominator;
@@ -52,28 +52,39 @@ namespace extrapolator {
 
     Valuable& Fraction::operator +=(int v)
     {
-        //arbitrary += v;
-        return *this;
+		numerator += v*denominator;
+		optimize();
+		return *this;
     }
 
     Valuable& Fraction::operator *=(const Valuable& v)
     {
         auto i = cast(v);
-        if (i) {}
-            //arbitrary *= i->arbitrary;
+        if (i) 
+		{
+			numerator *= i->numerator;
+			denominator *= i->denominator;
+		}
+            
         else
         {
             // try other type
             // no type matched
             base::operator *=(v);
         }
+		
+		optimize();
         return *this;
     }
 
     Valuable& Fraction::operator /=(const Valuable& v)
     {
         auto i = cast(v);
-        if (i){}
+        if (i)
+		{
+			numerator *= i->denominator;
+			denominator *= i->numerator;
+		}
             //arbitrary += i->arbitrary;
         else
         {
@@ -81,40 +92,43 @@ namespace extrapolator {
             // no type matched
             base::operator /=(v);
         }
-        return *this;
+		optimize();
+		return *this;
     }
 
     Valuable& Fraction::operator %=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i) {}
-            //  arbitrary %= i->arbitrary;
-        else
-        {
-            // try other type
-            // no type matched
-            base::operator %=(v);
-        }
-        return *this;
+		return base::operator %=(v);
     }
 
     Valuable& Fraction::operator --()
     {
         //arbitrary--;
-        return *this;
+        return *this+=-1;
     }
 
     Valuable& Fraction::operator ++()
     {
         //arbitrary++;
-        return *this;
+        return *this+=1;
     }
 
     bool Fraction::operator <(const Valuable& v) const
     {
         auto i = cast(v);
-        if (i)
-            return true;//arbitrary < i->arbitrary;
+		if (i)
+		{
+			auto f = *i;
+			auto l = *this;
+			if (l.denominator != f.denominator) {
+				f.numerator *= l.denominator;
+				f.denominator *= l.denominator;
+				l.numerator *= i->denominator;
+				l.denominator *= i->denominator;
+			}
+			return l.numerator < f.numerator;//arbitrary < i->arbitrary;
+		}
+            
         else
         {
             // try other type
@@ -127,8 +141,18 @@ namespace extrapolator {
     bool Fraction::operator ==(const Valuable& v) const
     {
         auto i = cast(v);
-        if (i)
-            return true; //arbitrary == i->arbitrary;
+		if (i)
+		{
+			auto f = *i;
+			auto l = *this;
+			if (l.denominator != f.denominator) {
+				f.numerator *= l.denominator;
+				f.denominator *= l.denominator;
+				l.numerator *= i->denominator;
+				l.denominator *= i->denominator;
+			}
+			return l.numerator == f.numerator;//arbitrary < i->arbitrary;
+		}
         else
         {
             // try other type

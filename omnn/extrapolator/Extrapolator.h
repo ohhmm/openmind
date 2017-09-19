@@ -54,6 +54,7 @@ class Extrapolator
 public:
     using base::base;
 
+	Extrapolator() = default;
 
     Extrapolator(std::initializer_list<std::vector<T>>&& dependancy_matrix)
             : base(dependancy_matrix.size(), dependancy_matrix.begin()->size())
