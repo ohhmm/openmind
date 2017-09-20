@@ -4,7 +4,8 @@
 
 #pragma once
 #include <boost/multiprecision/cpp_int.hpp>
-#include "Valuable.h"
+#include "Integer.h"
+
 namespace omnn{
 namespace extrapolator {
 
@@ -14,7 +15,7 @@ class Fraction
     using base = ValuableDescendantContract<Fraction>;
     using base_int = boost::multiprecision::cpp_int;
     using const_base_int_ref = const base_int&;
-    base_int numerator, denominator;
+    base_int numerator=0, denominator=1;
 protected:
     std::ostream& print(std::ostream& out) const override;
 public:
@@ -32,13 +33,23 @@ public:
     void optimize() override;
     
     using base::base;
-
+    Fraction(int n)
+            : numerator(n), denominator(1)
+    {}
+    Fraction(const_base_int_ref n)
+            : numerator(n), denominator(1)
+    {}
+    Fraction(const Integer& n)
+            : numerator(n), denominator(1)
+    {}
     Fraction(const_base_int_ref n, const_base_int_ref d)
             : numerator(n), denominator(d)
     {}
     
     Fraction(Fraction&&) = default;
     Fraction(const Fraction&)=default;
+    Fraction& operator=(const Fraction& f)=default;
+    Fraction& operator=(Fraction&& f)=default;
 };
 
 }}

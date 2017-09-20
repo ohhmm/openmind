@@ -6,15 +6,19 @@
 #include <string>
 #include <type_traits>
 #include <boost/operators.hpp>
+#include "Fraction.h"
 //#include "VarHost.h"
+
+namespace omnn{
+namespace extrapolator {
 
 // todo: template<from variable_id type>
 class Expression
-        : boost::operators<Expression>
+        : public ValuableDescendantContract<Expression>
 {
 public:
     using variable_id = int;
-    using default_num_type = int;
+    using default_num_type = Fraction;
     using value = Expression;
 
     using power_of_var = default_num_type;
@@ -31,7 +35,7 @@ public:
         int i=0;
         for(const auto& var : iterable) {
             polynom p;
-            p[1] = var;
+            p[1] = num(var);
             polynoms[i++] = p;
         }
     }
@@ -69,26 +73,6 @@ public:
         }
     }
 
-    Expression& operator += (const Expression& e)
-    {
-        // varhost  `
-        for(auto& varPolynom : e.polynoms)
-        {
-            auto& target = polynoms[varPolynom.first];
-            EmergePolynom(target, varPolynom.second);
-        }
-        return *this;
-    }
-
-    Expression& operator *= (const Expression& e)
-    {
-        for(auto& varPolynom : e.polynoms)
-        {
-            auto& target = polynoms[varPolynom.first];
-            EmergePolynom(target, varPolynom.second);
-        }
-        return *this;
-    }
 //    Expression& operator ^ (power_of_var pow)
 //    {
 //        for(auto& varPolynom : polynoms)
@@ -120,6 +104,20 @@ public:
         *this = Sqr() + e.Sqr();
     }
 
+    // virtual operators
+    Valuable operator -() const override;
+    Valuable& operator +=(const Valuable& v) override;
+    Valuable& operator +=(int v) override;
+    Valuable& operator *=(const Valuable& v) override;
+    Valuable& operator /=(const Valuable& v) override;
+    Valuable& operator %=(const Valuable& v) override;
+    Valuable& operator --() override;
+    Valuable& operator ++() override;
+    bool operator <(const Valuable& v) const override;
+    bool operator ==(const Valuable& v) const override;
+    
 private:
     std::map<variable_id, polynom> polynoms;
 };
+
+}}

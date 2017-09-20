@@ -85,7 +85,6 @@ namespace extrapolator {
 			numerator *= i->denominator;
 			denominator *= i->numerator;
 		}
-            //arbitrary += i->arbitrary;
         else
         {
             // try other type
@@ -103,13 +102,11 @@ namespace extrapolator {
 
     Valuable& Fraction::operator --()
     {
-        //arbitrary--;
         return *this+=-1;
     }
 
     Valuable& Fraction::operator ++()
     {
-        //arbitrary++;
         return *this+=1;
     }
 

@@ -1,6 +1,3 @@
-//
-// Created by Сергей Кривонос on 02.09.17.
-//
 #define BOOST_TEST_MODULE Fraction test
 #include <boost/test/unit_test.hpp>
 
@@ -11,7 +8,7 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     using f_t = omnn::extrapolator::Fraction;
     const f_t a (1, 2);
 	f_t c(3, 1);
-    f_t b (2,1);
+    f_t b = a * 4;
 	f_t d(2, 4);
     
     BOOST_TEST(a*b==f_t(1,1));

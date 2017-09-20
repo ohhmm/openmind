@@ -57,7 +57,8 @@ public:
     Valuable(Valuable&& v)
         : Valuable(v.Clone())
     {}
-    
+    Valuable(int i);
+
     virtual ~Valuable();
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
@@ -74,8 +75,8 @@ public:
 };
 
 template <class Chld>
-class ValuableDescendantContract : public Valuable
-    //, public OpenOps<Chld>
+class ValuableDescendantContract
+        : public Valuable
 {
     using self = ValuableDescendantContract;
     friend Chld;
@@ -90,6 +91,8 @@ public:
 	ValuableDescendantContract() {}
     ValuableDescendantContract(ValuableDescendantContract&&){}
     ValuableDescendantContract(const ValuableDescendantContract&){}
+    ValuableDescendantContract& operator=(const ValuableDescendantContract& f){};
+    ValuableDescendantContract& operator=(ValuableDescendantContract&& f){};
     static const Chld* cast(const Valuable& v){
         return Valuable::cast<Chld>(v);
     }
