@@ -7,7 +7,7 @@
 
 BOOST_AUTO_TEST_CASE(Expression_test)
 {
-    Expression e;
+    omnn::extrapolator::Expression e;
     BOOST_TEST( true /* test assertion */ );
 }
 

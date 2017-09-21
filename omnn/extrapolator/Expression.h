@@ -30,9 +30,16 @@ public:
     using express_result = std::function<value(const value_set &)>; // f(x1,x2,...)
 
     Expression() = default;
-
+    Expression(const Expression&) = default;
+    Expression& operator=(const Expression&) = default;
+    Expression(const Valuable& v)
+    : Expression(*cast(v))
+    {
+        auto e = cast(v);
+        if(!e) throw;
+    }
     template<class T>
-    Expression(const T& iterable) {
+    Expression(const std::initializer_list<T>& iterable) {
         int i=0;
         for(const auto& var : iterable) {
             polynom p;
@@ -117,7 +124,7 @@ public:
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
     void optimize() override;
-    std::ostream& print(std::ostream& out) const;
+    std::ostream& print(std::ostream& out) const override;
 private:
     std::map<variable_id, polynom> polynoms;
 };

@@ -40,14 +40,14 @@ namespace extrapolator {
         template<class T>
         friend T operator-(const T &x, const CT &y) { return x - y; }
 
-        template<class T>
-        friend CT operator+(const CT &x, const T &y) { return CT(x) += y; }
-        
-        template<class T>
-        friend T operator+(const T &x, const CT &y) { return x + y; }
+//        template<class T>
+//        friend CT operator+(const CT &x, const T &y) { return CT(x) += y; }
+//        
+//        template<class T>
+//        friend T operator+(const T &x, const CT &y) { return x + y; }
 
-        template<class T>
-        friend T operator+(const T &x, const T &y) { return x + y; }
+//        template<class T>
+//        friend T operator+(const T &x, const T &y) { return x + y; }
     };
 
 }}
