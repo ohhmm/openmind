@@ -16,6 +16,7 @@ namespace extrapolator {
 class Expression
         : public ValuableDescendantContract<Expression>
 {
+    using base = ValuableDescendantContract<Expression>;
 public:
     using variable_id = int;
     using default_num_type = Fraction;
@@ -115,7 +116,8 @@ public:
     Valuable& operator ++() override;
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
-    
+    void optimize() override;
+    std::ostream& print(std::ostream& out) const;
 private:
     std::map<variable_id, polynom> polynoms;
 };

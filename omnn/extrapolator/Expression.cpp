@@ -9,7 +9,9 @@ namespace extrapolator {
 
 Valuable Expression::operator -() const
 {
+    Expression e;
     //all poly vars sign changes
+    return e;
 }
 
 void Expression::optimize()
@@ -19,10 +21,10 @@ void Expression::optimize()
 
 Valuable& Expression::operator +=(const Valuable& v)
 {
-    auto i = cast(v);
-    if (i){
+    auto e = cast(v);
+    if (e){
         // TODO: varhost  `
-        for(auto& varPolynom : e.polynoms)
+        for(auto& varPolynom : e->polynoms)
         {
             auto& target = polynoms[varPolynom.first];
             EmergePolynom(target, varPolynom.second);
@@ -32,8 +34,16 @@ Valuable& Expression::operator +=(const Valuable& v)
     {
         // try other type
         auto f = Fraction::cast(v);
+        Fraction integer;
         if(!f)
-            f = Integer::cast(v);
+        {
+            
+            auto i = Integer::cast(v);
+            if(i){
+                integer = Fraction(*i);
+                f = &integer;
+            }
+        }
         if(f)
         {
             // add to 0 exponentation var
@@ -62,7 +72,7 @@ Valuable& Expression::operator *=(const Valuable& v)
     auto e = cast(v);
     if (e)
     {
-        for(auto& varPolynom : e.polynoms)
+        for(auto& varPolynom : e->polynoms)
         {
             auto& target = polynoms[varPolynom.first];
             EmergePolynom(target, varPolynom.second);

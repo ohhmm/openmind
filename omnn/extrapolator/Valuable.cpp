@@ -15,7 +15,7 @@ namespace extrapolator {
     
     #define IMPLEMENT { implement(); throw; }
 
-    Valuable(int i) : exp(new Integer(i)) {}
+    Valuable::Valuable(int i) : exp(new Integer(i)) {}
 
     Valuable::~Valuable()
     {

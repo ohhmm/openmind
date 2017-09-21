@@ -25,8 +25,8 @@ namespace extrapolator {
 //        template<class T>
 //        friend bool operator>(const CT &x, const T &y) { return y < x; }
 
-        template<class T>
-        friend bool operator<(const CT &x, const T &y) { return y > x; }
+//        template<class T>
+//        friend bool operator<(const CT &x, const T &y) { return y > x; }
 
         template<class T>
         friend bool operator<=(const CT &x, const T &y) { return !static_cast<bool>(y < x); }
@@ -45,7 +45,9 @@ namespace extrapolator {
         
         template<class T>
         friend T operator+(const T &x, const CT &y) { return x + y; }
-        
+
+        template<class T>
+        friend T operator+(const T &x, const T &y) { return x + y; }
     };
 
 }}

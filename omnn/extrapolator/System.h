@@ -10,6 +10,9 @@
 #include "Expression.h"
 #include "Extrapolator.h"
 
+namespace omnn{
+namespace extrapolator {
+
 class System
 {
     using expressions_container = std::vector<Expression>;
@@ -49,3 +52,4 @@ public:
     }
 };
 
+}}
