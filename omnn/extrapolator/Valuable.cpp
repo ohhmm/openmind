@@ -118,7 +118,7 @@ namespace extrapolator {
         return obj.print(out);
     }
 
-    void Valuable::abs() {
+	Valuable Valuable::abs() const {
         if(exp)
             return exp->abs();
         else
@@ -132,12 +132,23 @@ namespace extrapolator {
             IMPLEMENT
     }
 
-    void Valuable::sqrt() {
+	Valuable Valuable::sqrt() const {
         if(exp)
             return exp->sqrt();
         else
             IMPLEMENT
     }
 
-    Valuable ValuableDescendantContract::sqrt() const { IMPLEMENT }
 }}
+
+namespace std
+{
+	omnn::extrapolator::Valuable abs(const omnn::extrapolator::Valuable& v)
+	{
+		return v.abs();
+	}
+	omnn::extrapolator::Valuable sqrt(const omnn::extrapolator::Valuable& v)
+	{
+		return v.sqrt();
+	}
+}

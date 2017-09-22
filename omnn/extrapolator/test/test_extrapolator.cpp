@@ -97,5 +97,5 @@ BOOST_AUTO_TEST_CASE(Codec_test)
                             {1,0,0,1, 0,0,1},
                     }};
 
-    Expression exp = e;
+//    Expression exp = e;
 }

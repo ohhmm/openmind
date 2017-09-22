@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <boost/operators.hpp>
 #include "Fraction.h"
+#include <iterator>
 //#include "VarHost.h"
 
 namespace omnn{
@@ -19,7 +20,7 @@ class Expression
     using base = ValuableDescendantContract<Expression>;
 public:
     using variable_id = int;
-    using default_num_type = Fraction;
+    using default_num_type = double;
     using value = Expression;
 
     using power_of_var = default_num_type;
@@ -32,7 +33,11 @@ public:
     Expression() = default;
     Expression(const Expression&) = default;
     Expression& operator=(const Expression&) = default;
-    Expression(const Valuable& v)
+	Expression(int i)
+	{
+		polynoms[0][0] = i;
+	}
+	Expression(const Valuable& v)
     : Expression(*cast(v))
     {
         auto e = cast(v);
@@ -114,8 +119,10 @@ public:
         *this = Sqr() + e.Sqr();
     }
 
+
+
     // virtual operators
-    Valuable operator -() const override;
+	Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator +=(int v) override;
     Valuable& operator *=(const Valuable& v) override;
@@ -125,6 +132,7 @@ public:
     Valuable& operator ++() override;
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
+	Valuable abs() const override { return Valuable::abs(); }
     void optimize() override;
     std::ostream& print(std::ostream& out) const override;
 private:

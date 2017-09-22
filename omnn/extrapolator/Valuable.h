@@ -106,26 +106,21 @@ public:
 
     Valuable abs() const override
     {
-        auto i = cast(*this);
+        auto i = const_cast<Chld*>(cast(*this));
         if(*i < Chld(0))
         {
-            *i = -*i;
+            return *cast(-*i);
         }
+		return *this;
     }
     void optimize() override { }
-    Valuable sqrt() const;
+	Valuable sqrt() const { throw "Implement!"; }
 };
 
 }}
 
 namespace std
 {
-    omnn::extrapolator::Valuable abs(const omnn::extrapolator::Valuable& v)
-    {
-        return v.abs();
-    }
-    omnn::extrapolator::Valuable sqrt(const omnn::extrapolator::Valuable& v)
-    {
-        return v.sqrt();
-    }
+	omnn::extrapolator::Valuable abs(const omnn::extrapolator::Valuable& v);
+	omnn::extrapolator::Valuable sqrt(const omnn::extrapolator::Valuable& v);
 }

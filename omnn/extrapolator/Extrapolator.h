@@ -17,7 +17,7 @@ namespace extrapolator{
 
 namespace ublas = boost::numeric::ublas;
 
-using extrapolator_base_matrix = boost::numeric::ublas::matrix<Valuable>;
+using extrapolator_base_matrix = boost::numeric::ublas::matrix<double>;
     
 
 auto det_fast(extrapolator_base_matrix matrix)
@@ -168,7 +168,7 @@ public:
             for (auto x = szx; x--; ) {
                 --sz;
                 auto v = operator()(y,x);
-                Expression coordinates {{ x, y, v }};
+                Expression coordinates {{ double(x), double(y), v }};
                 e += coordinates.Sqr();
             }
         }

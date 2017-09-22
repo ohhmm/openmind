@@ -25,7 +25,7 @@ public:
 
     Integer(const Integer&)=default;
     Integer(Integer&&)=default;
-    
+	Integer& operator=(const Integer& f) = default;
     Integer(int i)
         : arbitrary(i)
     {

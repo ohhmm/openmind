@@ -52,7 +52,25 @@ namespace extrapolator {
 
     Valuable& Fraction::operator +=(int v)
     {
-		numerator += v*denominator;
+		auto f = cast(v);
+		if (f)
+		{
+			numerator += v*denominator;
+		}
+		else
+		{
+			auto i = Integer::cast(v);
+			if (i)
+			{
+				numerator += (decltype(numerator))(*i);
+			}
+			else
+			{
+				// try other type
+				// no type matched
+				base::operator +=(v);
+			}
+		}
 		optimize();
 		return *this;
     }
@@ -93,9 +111,18 @@ namespace extrapolator {
 		}
         else
         {
-            // try other type
-            // no type matched
-            base::operator /=(v);
+				auto i = Integer::cast(v);
+				if (i)
+				{
+					denominator *= (decltype(denominator))(*i);
+				}
+				else
+				{
+					// try other type
+					// no type matched
+					base::operator /=(v);
+				}
+			
         }
 		optimize();
 		return *this;
@@ -125,16 +152,26 @@ namespace extrapolator {
 			auto l = *this;
 			if (l.denominator != f.denominator) {
 				f.numerator *= l.denominator;
-				f.denominator *= l.denominator;
 				l.numerator *= i->denominator;
-				l.denominator *= i->denominator;
 			}
 			return l.numerator < f.numerator;//arbitrary < i->arbitrary;
 		}
             
         else
         {
-            // try other type
+			auto i = Integer::cast(v);
+			if (i)
+			{
+				auto f = (decltype(numerator))(*i);
+				auto l = *this;
+				return l.numerator < f*denominator;
+			}
+			else
+			{
+				// try other type
+				// no type matched
+				
+			}
         }
 
         // not implemented comparison to this Valuable descent
@@ -150,15 +187,25 @@ namespace extrapolator {
 			auto l = *this;
 			if (l.denominator != f.denominator) {
 				f.numerator *= l.denominator;
-				f.denominator *= l.denominator;
 				l.numerator *= i->denominator;
-				l.denominator *= i->denominator;
 			}
 			return l.numerator == f.numerator;//arbitrary < i->arbitrary;
 		}
         else
         {
-            // try other type
+			auto i = Integer::cast(v);
+			if (i)
+			{
+				auto f = (decltype(numerator))(*i);
+				auto l = *this;
+				return l.numerator == f*denominator;
+			}
+			else
+			{
+				// try other type
+				// no type matched
+
+			}
         }
         // no type matched
         return base::operator ==(v);
