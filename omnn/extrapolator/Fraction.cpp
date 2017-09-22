@@ -59,18 +59,24 @@ namespace extrapolator {
 
     Valuable& Fraction::operator *=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i) 
-		{
-			numerator *= i->numerator;
-			denominator *= i->denominator;
-		}
-            
-        else
+        auto f = cast(v);
+        if (f)
         {
-            // try other type
-            // no type matched
-            base::operator *=(v);
+            numerator *= f->numerator;
+            denominator *= f->denominator;
+        }
+        else{
+            auto i = Integer::cast(v);
+            if (i)
+            {
+                numerator *= (decltype(numerator))(*i);
+            }
+            else
+            {
+                // try other type
+                // no type matched
+                base::operator *=(v);
+            }
         }
 		
 		optimize();

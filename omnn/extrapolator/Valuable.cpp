@@ -118,9 +118,26 @@ namespace extrapolator {
         return obj.print(out);
     }
 
-    void Valuable::optimize() {
-        IMPLEMENT
+    void Valuable::abs() {
+        if(exp)
+            return exp->abs();
+        else
+            IMPLEMENT
     }
 
+    void Valuable::optimize() {
+        if(exp)
+            return exp->optimize();
+        else
+            IMPLEMENT
+    }
 
+    void Valuable::sqrt() {
+        if(exp)
+            return exp->sqrt();
+        else
+            IMPLEMENT
+    }
+
+    Valuable ValuableDescendantContract::sqrt() const { IMPLEMENT }
 }}

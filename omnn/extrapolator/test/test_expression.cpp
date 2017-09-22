@@ -10,8 +10,3 @@ BOOST_AUTO_TEST_CASE(Expression_test)
     omnn::extrapolator::Expression e;
     BOOST_TEST( true /* test assertion */ );
 }
-
-//void test_main(int, char**)
-//{
-//
-//}

@@ -17,18 +17,19 @@ namespace extrapolator{
 
 namespace ublas = boost::numeric::ublas;
 
-using extrapolator_base_matrix = boost::numeric::ublas::matrix<double>;
+using extrapolator_base_matrix = boost::numeric::ublas::matrix<Valuable>;
     
 
 auto det_fast(extrapolator_base_matrix matrix)
 {
+    using T = extrapolator_base_matrix::value_type;
     ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
 
     auto isSingular = ublas::lu_factorize(matrix, pivots);
     if (isSingular)
-        return static_cast<double>(0);
+        return T(0);
 
-    auto det = static_cast<double>(1);
+    T det = 1;
     for (std::size_t i = 0; i < pivots.size(); ++i)
     {
         if (pivots(i) != i)
@@ -44,8 +45,8 @@ auto det_fast(extrapolator_base_matrix matrix)
 class Extrapolator
         : public extrapolator_base_matrix
 {
-    using T = double;
     using base = extrapolator_base_matrix;
+    using T = extrapolator_base_matrix::value_type;
     
     using solution_t = typename ublas::matrix_vector_solve_traits<base, ublas::vector<T>>::result_type;
 
@@ -153,7 +154,26 @@ public:
 
     }
 
-    
+    /**
+     * returns equivalent expression
+     */
+    operator Expression() const
+    {
+        auto szy = size1();
+        auto szx = size2();
+        auto sz = szx*szy;
+        //Extrapolator e(sz, 3 /* coordinates in the extrapolator matrix: x,y, z=value */);
+        Expression e;
+        for (auto y = szy; y--; ) {
+            for (auto x = szx; x--; ) {
+                --sz;
+                auto v = operator()(y,x);
+                Expression coordinates {{ x, y, v }};
+                e += coordinates.Sqr();
+            }
+        }
+        return e;
+    }
 };
 
 }
