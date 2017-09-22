@@ -91,8 +91,8 @@ public:
 	ValuableDescendantContract() {}
     ValuableDescendantContract(ValuableDescendantContract&&){}
     ValuableDescendantContract(const ValuableDescendantContract&){}
-    ValuableDescendantContract& operator=(const ValuableDescendantContract& f){};
-    ValuableDescendantContract& operator=(ValuableDescendantContract&& f){};
+	ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { return *this; }
+	ValuableDescendantContract& operator=(ValuableDescendantContract&& f) { return *this; }
     static const Chld* cast(const Valuable& v){
         return Valuable::cast<Chld>(v);
     }

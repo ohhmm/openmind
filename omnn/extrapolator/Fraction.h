@@ -12,7 +12,7 @@ namespace extrapolator {
 class Fraction
         : public ValuableDescendantContract<Fraction>
 {
-    using base = ValuableDescendantContract<Fraction>;
+	using base = ValuableDescendantContract<Fraction>;
     using base_int = boost::multiprecision::cpp_int;
     using const_base_int_ref = const base_int&;
     base_int numerator=0, denominator=1;
@@ -33,6 +33,13 @@ public:
     void optimize() override;
     
     using base::base;
+	Fraction() = default;
+	Fraction(const Valuable& v)
+		: Fraction(*cast(v))
+	{
+		auto e = cast(v);
+		if (!e) throw;
+	}
     Fraction(int n)
             : numerator(n), denominator(1)
     {}
@@ -50,6 +57,8 @@ public:
     Fraction(const Fraction&)=default;
     Fraction& operator=(const Fraction& f)=default;
     Fraction& operator=(Fraction&& f)=default;
+	//Fraction& operator=(const Fraction&) = default;
+    
 };
 
 }}
