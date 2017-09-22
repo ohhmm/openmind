@@ -32,8 +32,7 @@ protected:
         else
             return new Valuable(*this);
     }
-    Valuable() = default;
-    
+
     template<class T>
     static const T* cast(const Valuable& v)
     {
@@ -49,7 +48,11 @@ public:
     {
         return exp ? exp.get() : const_cast<Valuable*>(this);
     }
-    
+
+    Valuable& operator=(const Valuable& v)
+    {
+        exp.reset(v.exp ? v.exp.get() : v.Clone());
+    }
     Valuable(const Valuable& v)
     : exp(v.exp ? v.exp.get() : v.Clone())
     {
@@ -58,6 +61,7 @@ public:
         : Valuable(v.Clone())
     {}
     Valuable(int i);
+    Valuable() : Valuable(int(0)){}
 
     virtual ~Valuable();
     virtual Valuable operator -() const;
@@ -70,7 +74,9 @@ public:
     virtual Valuable& operator++();
     virtual bool operator<(const Valuable& number) const;
     virtual bool operator==(const Valuable& number) const;
+    virtual Valuable abs() const;
     virtual void optimize();
+    virtual Valuable sqrt() const;
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
 };
 
@@ -97,6 +103,29 @@ public:
         return Valuable::cast<Chld>(v);
     }
     //friend Chld operator+(const Chld& c, int i) { return c+Chld(i); }
+
+    Valuable abs() const override
+    {
+        auto i = cast(*this);
+        if(*i < Chld(0))
+        {
+            *i = -*i;
+        }
+    }
+    void optimize() override { }
+    Valuable sqrt() const;
 };
 
 }}
+
+namespace std
+{
+    omnn::extrapolator::Valuable abs(const omnn::extrapolator::Valuable& v)
+    {
+        return v.abs();
+    }
+    omnn::extrapolator::Valuable sqrt(const omnn::extrapolator::Valuable& v)
+    {
+        return v.sqrt();
+    }
+}

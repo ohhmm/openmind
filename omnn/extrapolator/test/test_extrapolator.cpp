@@ -81,3 +81,21 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test, *disabled())
 
     //BOOST_TEST(e.Consistent());
 }
+
+BOOST_AUTO_TEST_CASE(Codec_test)
+{
+    Extrapolator e {{
+                            {0,0,0,0, 0,0,0},
+                            // verticals
+                            {1,0,1,0, 1,0,0},
+                            {0,1,0,1, 1,0,0},
+                            // horizontals
+                            {1,1,0,0, 0,1,0},
+                            {0,0,1,1, 0,1,0},
+                            // diagonals
+                            {0,1,1,0, 0,0,1},
+                            {1,0,0,1, 0,0,1},
+                    }};
+
+    Expression exp = e;
+}

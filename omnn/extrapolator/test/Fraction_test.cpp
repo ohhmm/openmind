@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     f_t b = a * 4;
 	f_t d(2, 4);
     
-    BOOST_TEST(a*b==f_t(1,1));
+    BOOST_TEST(a*b==1);
 	BOOST_TEST((c += b) == f_t(5,1));
 	BOOST_TEST((c *= a) == f_t(5,2));
 	BOOST_TEST((c /= a) == f_t(5,1));

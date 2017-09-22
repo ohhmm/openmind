@@ -39,14 +39,16 @@ public:
         if(!e) throw;
     }
     template<class T>
-    Expression(const std::initializer_list<T>& iterable) {
+    Expression(const T& iterable) {
         int i=0;
-        for(const auto& var : iterable) {
+        for(const auto& var_coef : iterable) {
             polynom p;
-            p[1] = num(var);
+            p[1] = var_coef;
             polynoms[i++] = p;
         }
     }
+
+    Expression(std::initializer_list<default_num_type>&& l):Expression(l){}
 //    solution Solve() {
 //
 //    }
