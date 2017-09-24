@@ -39,7 +39,7 @@ public:
         Expression result;
         for(auto& e : expressions)
         {
-            result += e.Sqr();
+            result += e*e;
         }
         return result;
     }

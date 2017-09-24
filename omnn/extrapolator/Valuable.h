@@ -52,6 +52,7 @@ public:
     Valuable& operator=(const Valuable& v)
     {
         exp.reset(v.exp ? v.exp.get() : v.Clone());
+        return *this;
     }
     Valuable(const Valuable& v)
     : exp(v.exp ? v.exp.get() : v.Clone())
@@ -114,7 +115,7 @@ public:
 		return *this;
     }
     void optimize() override { }
-	Valuable sqrt() const { throw "Implement!"; }
+	Valuable sqrt() const override { throw "Implement!"; }
 };
 
 }}

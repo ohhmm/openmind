@@ -9,6 +9,7 @@
 #include <limits.h>
 #include <type_traits>
 #include "Expression.h"
+#include "SymmetricDouble.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
@@ -17,7 +18,7 @@ namespace extrapolator{
 
 namespace ublas = boost::numeric::ublas;
 
-using extrapolator_base_matrix = boost::numeric::ublas::matrix<double>;
+using extrapolator_base_matrix = boost::numeric::ublas::matrix<Fraction>;
     
 
 auto det_fast(extrapolator_base_matrix matrix)
@@ -168,8 +169,8 @@ public:
             for (auto x = szx; x--; ) {
                 --sz;
                 auto v = operator()(y,x);
-                Expression coordinates {{ double(x), double(y), v }};
-                e += coordinates.Sqr();
+                Expression coordinates {{ x, y, v }};
+                e += coordinates*coordinates;
             }
         }
         return e;

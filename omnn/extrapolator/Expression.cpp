@@ -14,11 +14,6 @@ Valuable Expression::operator -() const
     return e;
 }
 
-void Expression::optimize()
-{
-
-}
-
 Valuable& Expression::operator +=(const Valuable& v)
 {
     auto e = cast(v);
@@ -160,10 +155,17 @@ bool Expression::operator ==(const Valuable& v) const
     return base::operator ==(v);
 }
 
+void Expression::optimize()
+{
+    
+}
+
 std::ostream& Expression::print(std::ostream& out) const
 {
     // string representation
     return out << " ";
 }
+
+
 
 }}

@@ -12,12 +12,13 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 	f_t d(2, 4);
     
     BOOST_TEST(a*b==1);
-	BOOST_TEST((c += b) == f_t(5,1));
+	BOOST_TEST((c += b) == 5);
 	BOOST_TEST((c *= a) == f_t(5,2));
-	BOOST_TEST((c /= a) == f_t(5,1));
-	BOOST_TEST((c--) == f_t(5,1));
-	BOOST_TEST((c++) == f_t(4,1));
-	BOOST_TEST((c>a) == true);
-	BOOST_TEST((a==d) == true);
+	BOOST_TEST((c /= a) == 5);
+	BOOST_TEST((c--) == 5);
+	BOOST_TEST((c++) == 4);
+	BOOST_TEST(c > a);
+	BOOST_TEST(a == d);
+	BOOST_TEST(a - d == 0);
 
 }

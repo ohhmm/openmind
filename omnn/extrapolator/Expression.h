@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <boost/operators.hpp>
 #include "Fraction.h"
+#include "SymmetricDouble.h"
 #include <iterator>
 //#include "VarHost.h"
 
@@ -20,7 +21,7 @@ class Expression
     using base = ValuableDescendantContract<Expression>;
 public:
     using variable_id = int;
-    using default_num_type = double;
+    using default_num_type = Fraction;
     using value = Expression;
 
     using power_of_var = default_num_type;
@@ -100,23 +101,9 @@ public:
 //        return *this;
 //    }
 
-    Expression Sqr() const
-    {
-        Expression e = *this;
-        for(auto& varPolynom : e.polynoms)
-        {
-            for(auto& member : varPolynom.second)
-            {
-                power_of_var* power = const_cast<power_of_var*>(&member.first);
-                *power*=2;
-            }
-        }
-        return e;
-    }
-
     void Fit(const Expression& e)
     {
-        *this = Sqr() + e.Sqr();
+        (*this *= *this) += e*e;
     }
 
 
@@ -132,7 +119,8 @@ public:
     Valuable& operator ++() override;
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
-	Valuable abs() const override { return Valuable::abs(); }
+// todo :
+	//Valuable abs() const override { return Valuable::abs(); }
     void optimize() override;
     std::ostream& print(std::ostream& out) const override;
 private:
