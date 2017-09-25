@@ -13,7 +13,9 @@
 
 namespace omnn{
 namespace extrapolator {
-
+    // todo : redisign to store cross-var product members: inherit Sum
+    //        add product valuable and for thus:
+    //        varhost
 // todo: template<from variable_id type>
 class Expression
         : public ValuableDescendantContract<Expression>

@@ -42,6 +42,8 @@ protected:
 
     virtual std::ostream& print(std::ostream& out) const;
     
+    Valuable() = default;
+    
 public:
     Valuable(Valuable* v) : exp(v) { }
     Valuable* operator->() const
@@ -62,7 +64,6 @@ public:
         : Valuable(v.Clone())
     {}
     Valuable(int i);
-    Valuable() : Valuable(int(0)){}
 
     virtual ~Valuable();
     virtual Valuable operator -() const;

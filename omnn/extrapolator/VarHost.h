@@ -10,6 +10,9 @@
 namespace omnn {
 namespace extrapolator {
 
+/**
+ * ensures variable id uniquness in a space of variables
+ */
 template<class T>
 class VarHost : public std::set<T>
 {

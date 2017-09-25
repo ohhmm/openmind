@@ -62,23 +62,24 @@ Valuable& Expression::operator +=(int v)
     return *this;
 }
 
-Valuable& Expression::operator *=(const Valuable& v)
+Valuable& Expression::operator *=(const Valuable& val)
 {
-    auto e = cast(v);
+    auto e = cast(val);
     if (e)
     {
-        for(auto& varPolynom : e->polynoms)
-        {
-            auto& target = polynoms[varPolynom.first];
-            EmergePolynom(target, varPolynom.second);
+        Expression ex;
+        for(auto& a : polynoms) {
+            for(auto& b : e->polynoms) {
+                //TODO : out+=a*b;
+            }
         }
+        *this = ex;
     }
-
     else
     {
         // try other type
         // no type matched
-        base::operator *=(v);
+        base::operator *=(val);
     }
 
     optimize();
