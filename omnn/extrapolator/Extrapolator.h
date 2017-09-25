@@ -169,7 +169,7 @@ public:
             for (auto x = szx; x--; ) {
                 --sz;
                 auto v = operator()(y,x);
-                Expression coordinates {{ x, y, v }};
+                Expression coordinates {{ Fraction(x), Fraction(y), v }};
                 e += coordinates*coordinates;
             }
         }

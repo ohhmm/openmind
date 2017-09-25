@@ -4,16 +4,15 @@
 
 #pragma once
 #include "Fraction.h"
-#Include "Variable.h"
+#include "Variable.h"
 
 namespace omnn{
 namespace extrapolator {
 
-class Product
-        : public ValuableDescentContract<Product>
-{
-    
-};
+//class Product
+//        : public ValuableDescendantContract<Product>
+//{
+//};
 
 
 }}

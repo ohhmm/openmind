@@ -19,9 +19,6 @@ using namespace omnn::extrapolator;
 
 BOOST_AUTO_TEST_CASE(Varhost_test)
 {
-	VarHost<int> vars_int {{ 0, 1 }};
-	BOOST_TEST(vars_int.size() == 2);
-	VarHost<std::string> vars {{ "x1", "x2" }};
-	BOOST_TEST(vars.size() == 2);
+    //TypedVarHost<int>();
 }
 

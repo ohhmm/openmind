@@ -5,17 +5,17 @@
 #pragma once
 #include <memory>
 #include "Valuable.h"
-#Include "VarHost.h"
+#include "VarHost.h"
 
 namespace omnn{
 namespace extrapolator {
 
-class Variable
-        : public ValuableDescentContract<Variable>
-{
-    std::shared_ptr<Varhost> varSetHost;
-public:
-};
+//class Variable
+//        : public ValuableDescendantContract<Variable>
+//{
+//    std::shared_ptr<VarHost> varSetHost;
+//public:
+//};
 
 
 }}
