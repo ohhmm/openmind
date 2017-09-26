@@ -77,7 +77,6 @@ public:
 	}
 
 	bool Invoke() {
-        string_t::const_pointer argv[] = { cmd_.c_str(), (string_t::const_pointer) 0 };
 		int status;
 		fflush(NULL);
 		status = posix_spawn(&pid, cmd_.c_str(), nullptr, nullptr, nullptr, nullptr);

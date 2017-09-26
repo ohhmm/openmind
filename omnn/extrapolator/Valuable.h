@@ -44,12 +44,17 @@ protected:
     
     Valuable() = default;
     
+    Valuable& Become(Valuable&& i)
+    {
+        *this = Valuable(i.Clone());
+        return *this;
+    }
 public:
     Valuable(Valuable* v) : exp(v) { }
-    Valuable* operator->() const
-    {
-        return exp ? exp.get() : const_cast<Valuable*>(this);
-    }
+//    Valuable* operator->() const
+//    {
+//        return exp ? exp.get() : const_cast<Valuable*>(this);
+//    }
 
     Valuable& operator=(const Valuable& v)
     {

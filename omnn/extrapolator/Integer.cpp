@@ -3,7 +3,7 @@
 //
 
 #include "Integer.h"
-
+#include "Fraction.h"
 
 namespace omnn{
 namespace extrapolator {
@@ -51,7 +51,13 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i)
-        arbitrary += i->arbitrary;
+        {
+            auto div = arbitrary/i->arbitrary;
+            if(div*i->arbitrary==arbitrary)
+                arbitrary=div;
+            else
+                Become(Fraction(arbitrary,i->arbitrary));
+        }
         else
         {
             // try other type
@@ -65,7 +71,7 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i)
-        arbitrary %= i->arbitrary;
+            arbitrary %= i->arbitrary;
         else
         {
             // try other type
