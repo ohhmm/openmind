@@ -49,6 +49,13 @@ public:
 //    void optimize() override;
 //    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
+    
+//    Valuable& Become(Valuable&& i) override
+//    {
+//        auto& b = base::Become(std::move(i));
+//        //todo : notify other var instances through varhost
+//        return b;
+//    }
 };
 
 

@@ -30,7 +30,7 @@ public:
 	Valuable& operator ++() override;
 	bool operator <(const Valuable& v) const override;
 	bool operator ==(const Valuable& v) const override;
-	//void optimize() override;
+    void optimize() override;
 
     using base::base;
     

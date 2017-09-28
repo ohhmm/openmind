@@ -44,7 +44,7 @@ protected:
     
     Valuable() = default;
     
-    Valuable& Become(Valuable&& i)
+    virtual Valuable& Become(Valuable&& i)
     {
         *this = Valuable(i.Clone());
         return *this;
@@ -62,7 +62,7 @@ public:
         return *this;
     }
     Valuable(const Valuable& v)
-    : exp(v.exp ? v.exp->Clone() : v.Clone())
+    : exp((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone())
     {
     }
     Valuable(Valuable&& v)
@@ -79,6 +79,7 @@ public:
     virtual Valuable& operator %=(const Valuable&);
     virtual Valuable& operator--();
     virtual Valuable& operator++();
+    //todo: operator^
     virtual bool operator<(const Valuable& number) const;
     virtual bool operator==(const Valuable& number) const;
     virtual Valuable abs() const;

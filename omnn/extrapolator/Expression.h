@@ -1,14 +1,16 @@
 #pragma once
-
 #include <functional>
+#include <iterator>
 #include <map>
 #include <set>
 #include <string>
 #include <type_traits>
 #include <boost/operators.hpp>
 #include "Fraction.h"
+#include "Product.h"
+#include "Sum.h"
 #include "SymmetricDouble.h"
-#include <iterator>
+#include "Variable.h"
 //#include "VarHost.h"
 
 namespace omnn{
@@ -103,7 +105,7 @@ public:
 //        return *this;
 //    }
 
-    void Fit(const Expression& e)
+    void MakeItFitTo(const Expression& e)
     {
         (*this *= *this) += e*e;
     }

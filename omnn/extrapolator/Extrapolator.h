@@ -13,12 +13,13 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
+
 namespace omnn{
 namespace extrapolator{
 
 namespace ublas = boost::numeric::ublas;
 
-using extrapolator_base_matrix = boost::numeric::ublas::matrix<Fraction>;
+    using extrapolator_base_matrix = boost::numeric::ublas::matrix<Fraction>; // TODO : Fraction -> Valuable
     
 
 auto det_fast(extrapolator_base_matrix matrix)
@@ -151,26 +152,22 @@ public:
                 break; // found it1
             }
         }
-
-
     }
 
     /**
      * returns equivalent expression
      */
-    operator Expression() const
+    operator Valuable() const
     {
         auto szy = size1();
         auto szx = size2();
-        auto sz = szx*szy;
-        //Extrapolator e(sz, 3 /* coordinates in the extrapolator matrix: x,y, z=value */);
-        Expression e;
+        Sum e;
+        Variable vx,vy,vv;
         for (auto y = szy; y--; ) {
             for (auto x = szx; x--; ) {
-                --sz;
                 auto v = operator()(y,x);
-                Expression coordinates {{ Fraction(x), Fraction(y), v }};
-                e += coordinates*coordinates;
+                auto co = vx*x + vy*y + vv*v;
+                e += co * co;
             }
         }
         return e;

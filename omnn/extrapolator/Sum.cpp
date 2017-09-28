@@ -10,54 +10,40 @@ namespace extrapolator {
 	{
 		Sum s;
 		for (auto& a : members) 
-			s.members.push_back( - a);
+			s.members.push_back(-a);
 		return s;
 	}
 
-	/*void Sum::optimize()
+	void Sum::optimize()
 	{
-		
-	}*/
+        if (members.size()==1) {
+            Become(std::move(members.front()));
+        }
+        else
+        {
+            // todo : emerge same typed members
+        }
+	}
 
 	Valuable& Sum::operator +=(const Valuable& v)
 	{
 		auto i = cast(v);
 		if (i) {
 			for (auto& a : i->members) {
-				this->members.push_back(a);
+				members.push_back(a);
 			}
-
 		}
 		else
 		{
-			// try other type
-			// no type matched
-			base::operator +=(v);
+			members.push_back(v);
 		}
+        optimize();
 		return *this;
 	}
 
 	Valuable& Sum::operator +=(int v)
 	{
-		auto f = cast(v);
-		if (f)
-		{
-			members.push_back(v);
-		}
-		else
-		{
-			auto i = Integer::cast(v);
-			if (i)
-			{
-				members.push_back(*i);
-			}
-			else
-			{
-				// try other type
-				// no type matched
-				base::operator +=(v);
-			}
-		}
+		members.push_back(v);
 		optimize();
 		return *this;
 	}
@@ -73,33 +59,23 @@ namespace extrapolator {
 					s.members.push_back(a*b);
 				}
 			}
-			*this = s;
+            s.optimize();
+			members = s.members;
 		}
-		else {
-			auto i = Integer::cast(v);
-			if (i)
-			{
-				Sum s;
-				for (auto& a : members) {
-						s.members.push_back(a*(*i));
-					
-				}
-				*this = s;
-			}
-			else
-			{
-				// try other type
-				// no type matched
-				base::operator *=(v);
-			}
+		else
+        {
+            for (auto& a : members) {
+                a*=v;
+            }
+            optimize();
 		}
 
-		optimize();
 		return *this;
 	}
 
 	Valuable& Sum::operator /=(const Valuable& v)
 	{
+        // todo: store valuables in Fraction
 		auto i = cast(v);
 		if (i)
 		{
