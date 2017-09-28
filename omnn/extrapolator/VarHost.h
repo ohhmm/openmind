@@ -103,8 +103,8 @@ namespace extrapolator {
                 std::string name, num;
                 boost::multiprecision::cpp_int n;
                 std::stringstream(num) >> n;
-				std::stringstream s;
-				s<< name << ++n;
+                std::stringstream s;
+                s<< name << ++n;
                 return s.str();
             } else if (std::is_arithmetic<T>::value || std::is_same<boost::multiprecision::cpp_int, T>::value) {
                 auto n = last;
