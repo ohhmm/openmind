@@ -17,14 +17,23 @@ class Variable
         : public ValuableDescendantContract<Variable>
 {
     using base = ValuableDescendantContract<Variable>;
-    std::shared_ptr<VarHost> varSetHost;
+    VarHost::ptr optionalHostPtr;
+    VarHost& varSetHost;
     any::any varId;
-    Variable() = delete;
 public:
-    Variable(std::shared_ptr<VarHost> varHost)
+    Variable(VarHost& varHost = const_cast<VarHost&>(VarHost::Global<>()))
     : varSetHost(varHost)
-    , varId(varHost->NewVarId())
+    , varId(varHost.NewVarId())
     { }
+    
+    Variable(VarHost::ptr varHost)
+    : optionalHostPtr(varHost)
+    , varSetHost(*varHost)
+    , varId(varHost->NewVarId())
+    {
+        if(!varHost)
+            throw "the varHost is mandatory parameter";
+    }
 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable&) override;
@@ -38,7 +47,7 @@ public:
     bool operator==(const Valuable& number) const override;
     Valuable abs() const override { throw "Implement Abs Valuable Descendant to use it here"; }
 //    void optimize() override;
-    Valuable sqrt() const override;
+//    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
 };
 

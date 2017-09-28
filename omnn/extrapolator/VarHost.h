@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -22,8 +23,11 @@ namespace extrapolator {
     class TypedVarHost;
     
     class VarHost
+        : public std::enable_shared_from_this<VarHost>
     {
     public:
+        using ptr = std::shared_ptr<VarHost>;
+        using cref = const VarHost&;
         virtual ~VarHost() = default;
 
         template<class T>
@@ -43,7 +47,19 @@ namespace extrapolator {
             throw "Implement!";
         }
     public:
-        virtual bool Has(any::any id) const;
+        ptr sh() {
+            return shared_from_this();
+        }
+        template<class T>
+        static ptr make(){
+            return new TypedVarHost<T>();
+        }
+        template<class T = boost::multiprecision::cpp_int>
+        static cref Global(){
+            static TypedVarHost<T> host;
+            return host;
+        }
+        virtual bool Has(any::any id) const = 0;
         virtual any::any NewVarId() = 0;
         virtual bool CompareIdsLess(any::any a, any::any b) const = 0;
         virtual bool CompareIdsEqual(any::any a, any::any b) const = 0;
@@ -57,23 +73,29 @@ namespace extrapolator {
     class TypedVarHost : public VarHost
     {
         std::set<T> varIds;
-    public:
         using VarHost::VarHost;
-    
-        virtual void AddNewVarById(void* id) {
-            auto varId = dynamic_cast<T*>(id);
-            if (varId)
-            {
-                varIds.insert(*varId);
-            }
-            else
-            {
-                throw "Wrong param";
+    public:
+
+        void AddNewVarById(void* id) override {
+            if (std::is_class<T>::value) {
+                auto varId = static_cast<T*>(id);
+                if (varId)
+                {
+                    varIds.insert(*varId);
+                }
+                else
+                {
+                    throw "Wrong param";
+                }
+            } else {
+                throw "Implement!";
             }
         }
         
         any::any NewVarId() override {
-            const auto& last = *varIds.rbegin();
+
+            T t = 0;
+            const auto& last = varIds.size() ? *varIds.rbegin() : t;
             if (std::is_same<std::string, T>::value) {
                 // TODO : find first digit to extract var name and num
                 throw "Implement";
@@ -82,16 +104,16 @@ namespace extrapolator {
                 boost::multiprecision::cpp_int n;
                 std::stringstream(num) >> n;
                 return (std::stringstream(name) << ++n).str();
-            } else if (std::is_arithmetic<T>::value) {
+            } else if (std::is_arithmetic<T>::value || std::is_same<boost::multiprecision::cpp_int, T>::value) {
                 auto n = last;
-                std::pair<T, bool> inserted;
-                do{
-                    inserted = varIds.insert(++n);
-                }while(!inserted.second);
+                typename decltype(varIds)::iterator inserted;
+                while(varIds.find(++n)!=varIds.end());
+                varIds.insert(n);
                 return n;
             } else {
                 throw "Implement!";
             }
+            
         }
         
         bool Has(any::any id) const override {
@@ -106,7 +128,7 @@ namespace extrapolator {
             return any::any_cast<T>(a) == any::any_cast<T>(b);
         }
         
-        std::ostream& print(std::ostream& out, any::any v) const {
+        std::ostream& print(std::ostream& out, any::any v) const override {
             return out <<any::any_cast<T>(v);
         }
     };

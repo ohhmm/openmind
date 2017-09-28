@@ -78,10 +78,10 @@ namespace extrapolator {
         auto i = cast(v);
         if (i)
         {
-            if (varSetHost.get() != i->varSetHost.get()) {
+            if (&varSetHost != &i->varSetHost) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }
-            return varSetHost->CompareIdsLess(varId, i->varId);
+            return varSetHost.CompareIdsLess(varId, i->varId);
         }
         else
         {
@@ -97,10 +97,10 @@ namespace extrapolator {
         auto i = cast(v);
         if (i)
         {
-            if (varSetHost.get() != i->varSetHost.get()) {
+            if (&varSetHost != &i->varSetHost) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }
-            return varSetHost->CompareIdsEqual(varId, i->varId);
+            return varSetHost.CompareIdsEqual(varId, i->varId);
         }
         else
         {
@@ -113,7 +113,7 @@ namespace extrapolator {
     
     std::ostream& Variable::print(std::ostream& out) const
     {
-        return varSetHost->print(out, varId);
+        return varSetHost.print(out, varId);
     }
 
 
