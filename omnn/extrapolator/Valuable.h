@@ -62,7 +62,7 @@ public:
         return *this;
     }
     Valuable(const Valuable& v)
-    : exp(v.exp ? v.exp.get() : v.Clone())
+    : exp(v.exp ? v.exp->Clone() : v.Clone())
     {
     }
     Valuable(Valuable&& v)
