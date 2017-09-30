@@ -16,6 +16,19 @@ namespace extrapolator {
     
     Valuable& Variable::operator +=(const Valuable& v)
     {
+        {
+        auto c = cast(v);
+        if(c && *c==*this)
+        {
+            return Become(Product(2, *this));
+        }
+        }
+        
+        auto c = Product::cast(v);
+        if(c && c->HasValueType(typeid(Variable)))
+        {
+            //todo: become +1
+        }
         *static_cast<Valuable*>(this) = Valuable(Sum(*this, v).Clone());
         return *this;
     }

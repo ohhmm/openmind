@@ -98,4 +98,11 @@ BOOST_AUTO_TEST_CASE(Codec_test)
                     }};
 
     Valuable exp = e;
+    
+    
+    for (int i=e.size1(); i--;) {
+        for (int j=e.size2(); j--;) {
+            
+        }
+    }
 }

@@ -8,6 +8,7 @@
 #include <limits>
 #include <limits.h>
 #include <type_traits>
+#include "Equation.h"
 #include "Expression.h"
 #include "SymmetricDouble.h"
 #include <boost/numeric/ublas/matrix.hpp>
@@ -157,7 +158,7 @@ public:
     /**
      * returns equivalent expression
      */
-    operator Valuable() const
+    operator Formula() const
     {
         auto szy = size1();
         auto szx = size2();
@@ -170,7 +171,8 @@ public:
                 e += co * co;
             }
         }
-        return e;
+
+        return e.FormulaOfVa(vv);
     }
 };
 

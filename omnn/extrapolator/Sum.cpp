@@ -3,6 +3,8 @@
 //
 
 #include "Sum.h"
+#include "Product.h"
+#include "Variable.h"
 
 namespace omnn{
 namespace extrapolator {
@@ -30,22 +32,29 @@ namespace extrapolator {
 		auto i = cast(v);
 		if (i) {
 			for (auto& a : i->members) {
-				members.push_back(a);
+				*this += a;
 			}
 		}
 		else
 		{
+            for (const Valuable& a : i->members) {
+                if(a.OfSameType(v))
+                {
+                    const_cast<Valuable&>(a) += v;
+                    goto yes;
+                }
+            }
+            // add new member
 			members.push_back(v);
 		}
+    yes:
         optimize();
 		return *this;
 	}
 
 	Valuable& Sum::operator +=(int v)
 	{
-		members.push_back(v);
-		optimize();
-		return *this;
+		return *this+=(Integer(v));
 	}
 
 	Valuable& Sum::operator *=(const Valuable& v)
@@ -135,7 +144,7 @@ namespace extrapolator {
 
 	bool Sum::operator ==(const Valuable& v) const
 	{
-		
+
 		return base::operator ==(v);
 	}
 
@@ -143,9 +152,68 @@ namespace extrapolator {
 	{
 		for (auto& b : members) 
 			out << b << "+";
-			return out;// << "" << '/' << "";
+		return out;// << "" << '/' << "";
 	}
 
-
+    /** fast linear equation formula deduction */
+	Formula Sum::FormulaOfVa(const Variable& v) const
+	{
+		// TODO : make it workfor non-linear as well once Formula ready
+        Valuable e(0);
+        const Variable* cv = nullptr; // the var found
+        const Product* svp = nullptr; // product with var
+        
+		for (auto& m : members)
+		{
+           
+			auto p = Product::cast(m);
+			if(p)
+			{
+				for(auto pm : *p)
+				{
+					auto vp = Variable::cast(pm);
+					if(*vp==v)
+					{
+                        if(cv || svp)
+                            throw "More the one variable occurence need Implement!";
+						cv=vp;
+                        svp = p;
+                        break;;
+					}
+				}
+			}
+			else
+			{
+				auto vp = Variable::cast(m);
+				if(*vp==v)
+				{
+					cv=vp;
+                    // TODO: e = *this - v;
+				}
+				else
+				{
+                    // TODO : other types?
+                    
+					e -= m;
+				}
+			}
+		}
+        
+        if(cv)
+        {
+            if(svp)
+            {
+                Product o;
+                for(auto a : *svp){
+                    if(a!=v)
+                        o*=a;
+                }
+                e /= o;
+            }
+            return Formula::DeclareFormula(v, e);
+        }
+        
+        throw "No such variable";
+	}
 
 }}

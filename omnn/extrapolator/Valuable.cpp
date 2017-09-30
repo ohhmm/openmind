@@ -139,6 +139,12 @@ namespace extrapolator {
             IMPLEMENT
     }
 
+    bool Valuable::OfSameType(const Valuable& v) const
+    {
+        const Valuable& v1 = exp ? *exp : *this;
+        const Valuable& v2 = v.exp ? *v.exp : v;
+        return typeid(v1) == typeid(v2);
+    }
 }}
 
 namespace std

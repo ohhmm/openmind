@@ -4,16 +4,16 @@
 
 #pragma once
 #include <list>
-#include "Fraction.h"
-#include "Variable.h"
+#include "Formula.h"
 
 namespace omnn{
 namespace extrapolator {
 
+
 class Sum
-        : public ValuableDescendantContract<Sum>
+        : public ValuableCollectionDescendantContract<Sum>
 {
-    using base = ValuableDescendantContract<Sum>;
+    using base = ValuableCollectionDescendantContract<Sum>;
     friend class Variable;
     std::list<Valuable> members;
 protected:
@@ -47,6 +47,23 @@ public:
 		{
 			members.push_back(arg);
 		}
+    }
+
+	Formula FormulaOfVa(const Variable& v) const;
+    
+    auto begin() const
+    {
+        return members.begin();
+    }
+    
+    auto end() const
+    {
+        return members.end();
+    }
+    
+    size_t size() const override
+    {
+        return members.size();
     }
 };
 

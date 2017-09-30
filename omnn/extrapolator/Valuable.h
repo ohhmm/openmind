@@ -49,6 +49,7 @@ protected:
         *this = Valuable(i.Clone());
         return *this;
     }
+    
 public:
     Valuable(Valuable* v) : exp(v) { }
 //    Valuable* operator->() const
@@ -86,6 +87,9 @@ public:
     virtual void optimize();
     virtual Valuable sqrt() const;
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
+    
+    bool OfSameType(const Valuable& v) const;
+
 };
 
 template <class Chld>
@@ -94,6 +98,7 @@ class ValuableDescendantContract
 {
     using self = ValuableDescendantContract;
     friend Chld;
+    friend self;
 protected:
     Valuable* Clone() const override
     {
@@ -124,8 +129,31 @@ public:
     }
     void optimize() override { }
 	Valuable sqrt() const override { throw "Implement!"; }
+
+
 };
 
+    template <class Chld>
+    class ValuableCollectionDescendantContract
+        : public ValuableDescendantContract<Chld>
+    {
+        using base = ValuableDescendantContract<Chld>;
+    public:
+        // begin
+        // end
+        virtual size_t size() const = 0;
+        bool HasValueType(const std::type_info& type) const
+        {
+            auto ch = base::cast(*this);
+            for(const auto& a : *ch)
+            {
+                if(typeid(a) == type)
+                    return true;
+            }
+            return false;
+        }
+    };
+    
 }}
 
 namespace std
