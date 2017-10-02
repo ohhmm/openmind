@@ -11,11 +11,15 @@ namespace omnn{
 namespace extrapolator {
 
 class Product
-        : public ValuableCollectionDescendantContract<Product>
+    : public ValuableCollectionDescendantContract<Product, std::set<Variable>>
 {
-    using base = ValuableCollectionDescendantContract<Product>;
+    using base = ValuableCollectionDescendantContract<Product, std::set<Variable>>;
+    using base::cont;
     friend class Variable;
-    std::set<Variable> vars;
+    cont vars;
+    
+protected:
+    const cont& GetCont() const override { return vars; }
     
 public:
     using base::base;
@@ -25,20 +29,6 @@ public:
     {
     }
 
-    auto begin() const
-    {
-        return vars.begin();
-    }
-
-    auto end() const
-    {
-        return vars.end();
-    }
-    
-    size_t size() const override
-    {
-        return vars.size();
-    }
 };
 
 

@@ -11,13 +11,17 @@ namespace extrapolator {
 
 
 class Sum
-        : public ValuableCollectionDescendantContract<Sum>
+        : public ValuableCollectionDescendantContract<Sum, std::list<Valuable>>
 {
-    using base = ValuableCollectionDescendantContract<Sum>;
+    using base = ValuableCollectionDescendantContract<Sum, std::list<Valuable>>;
+    using base::cont;
     friend class Variable;
-    std::list<Valuable> members;
+    cont members;
+    
 protected:
+    const cont& GetCont() const override { return members; }
 	std::ostream& print(std::ostream& out) const override;
+    
 public:
 	// virtual operators
 	Valuable operator -() const override;
@@ -50,21 +54,6 @@ public:
     }
 
 	Formula FormulaOfVa(const Variable& v) const;
-    
-    auto begin() const
-    {
-        return members.begin();
-    }
-    
-    auto end() const
-    {
-        return members.end();
-    }
-    
-    size_t size() const override
-    {
-        return members.size();
-    }
 };
 
 

@@ -138,6 +138,14 @@ namespace extrapolator {
         else
             IMPLEMENT
     }
+    
+    const Variable* Valuable::FindVa() const
+    {
+        if (exp) {
+            return exp->FindVa();
+        }
+        IMPLEMENT
+    }
 
     bool Valuable::OfSameType(const Valuable& v) const
     {

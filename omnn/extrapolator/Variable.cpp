@@ -25,9 +25,13 @@ namespace extrapolator {
         }
         
         auto c = Product::cast(v);
-        if(c && c->HasValueType(typeid(Variable)))
+        if(c)
         {
+            auto va = c->GetFirstOccurence<Variable>();
+            if(va)
+            {
             //todo: become +1
+            }
         }
         *static_cast<Valuable*>(this) = Valuable(Sum(*this, v).Clone());
         return *this;

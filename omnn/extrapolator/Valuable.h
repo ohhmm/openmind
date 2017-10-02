@@ -15,7 +15,8 @@ namespace extrapolator {
     
     namespace ptrs = ::std;
 
-class Integer;
+    class Integer;
+    class Variable;
     
 class Valuable
         : public OpenOps<Valuable>
@@ -86,10 +87,10 @@ public:
     virtual Valuable abs() const;
     virtual void optimize();
     virtual Valuable sqrt() const;
+    virtual const Variable* FindVa() const;
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     
     bool OfSameType(const Valuable& v) const;
-
 };
 
 template <class Chld>
@@ -130,27 +131,64 @@ public:
     void optimize() override { }
 	Valuable sqrt() const override { throw "Implement!"; }
 
-
+    const Variable* FindVa() const
+    {
+        return nullptr;
+    }
 };
 
-    template <class Chld>
+    template <class Chld, class ContT>
     class ValuableCollectionDescendantContract
         : public ValuableDescendantContract<Chld>
     {
         using base = ValuableDescendantContract<Chld>;
+        
+    protected:
+        using cont = ContT;
+        virtual const cont& GetCont() const = 0;
+        
     public:
-        // begin
-        // end
-        virtual size_t size() const = 0;
+        
+        auto begin() const
+        {
+            return GetCont().begin();
+        }
+        
+        auto end() const
+        {
+            return GetCont().end();
+        }
+        
+        size_t size() const
+        {
+            return GetCont().size();
+        }
+
+        template<class T>
+        const T* GetFirstOccurence() const
+        {
+            for(const auto& a : GetCont())
+            {
+                auto v = T::cast(a);
+                if(v)
+                    return v;
+            }
+            return nullptr;
+        }
+        
         bool HasValueType(const std::type_info& type) const
         {
-            auto ch = base::cast(*this);
-            for(const auto& a : *ch)
+            for(const auto& a : GetCont())
             {
                 if(typeid(a) == type)
                     return true;
             }
             return false;
+        }
+        
+        const Variable* FindVa() const
+        {
+            return GetFirstOccurence<Variable>();
         }
     };
     

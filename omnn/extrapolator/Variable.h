@@ -20,6 +20,7 @@ class Variable
     VarHost::ptr optionalHostPtr;
     VarHost& varSetHost;
     any::any varId;
+    
 public:
     Variable(VarHost& varHost = const_cast<VarHost&>(VarHost::Global<>()))
     : varSetHost(varHost)
@@ -50,6 +51,10 @@ public:
 //    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
     
+    const Variable* FindVa() const
+    {
+        return this;
+    }
 //    Valuable& Become(Valuable&& i) override
 //    {
 //        auto& b = base::Become(std::move(i));
