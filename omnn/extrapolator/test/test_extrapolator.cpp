@@ -97,12 +97,11 @@ BOOST_AUTO_TEST_CASE(Codec_test)
                             {1,0,0,1, 0,0,1},
                     }};
 
-    Valuable exp = e;
-    
-    
+    Formula f = e;
+    std::cout<<f<<std::endl;
     for (int i=e.size1(); i--;) {
         for (int j=e.size2(); j--;) {
-            
+//            BOOST_TEST(e(i,j)==f(i,j));
         }
     }
 }

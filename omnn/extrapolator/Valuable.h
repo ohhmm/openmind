@@ -60,7 +60,7 @@ public:
 
     Valuable& operator=(const Valuable& v)
     {
-        exp.reset(v.exp ? v.exp.get() : v.Clone());
+        exp.reset((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone());
         return *this;
     }
     Valuable(const Valuable& v)
@@ -85,7 +85,7 @@ public:
     virtual bool operator<(const Valuable& number) const;
     virtual bool operator==(const Valuable& number) const;
     virtual Valuable abs() const;
-    virtual void optimize();
+    virtual void optimize(); /// if it simplifies than it should become the type
     virtual Valuable sqrt() const;
     virtual const Variable* FindVa() const;
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
@@ -131,7 +131,7 @@ public:
     void optimize() override { }
 	Valuable sqrt() const override { throw "Implement!"; }
 
-    const Variable* FindVa() const
+    const Variable* FindVa() const override
     {
         return nullptr;
     }

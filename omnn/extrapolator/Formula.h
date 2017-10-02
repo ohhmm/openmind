@@ -25,11 +25,20 @@ public:
     static Formula DeduceFormula(const Valuable& e, const Variable& v);
     static Formula DeclareFormula(const Variable& v, const Valuable& e);
     
+    void optimize() override { e.optimize(); }
+    
     template<class VaT, class... T>
-    Valuable operator()(const VaT& v, const T&... vl) const
+    Valuable operator()(const T&... vl) const
     {
-        auto idx = ev.size() - sizeof...(vl) -1;
-//        ev[idx]
+        auto o = *this;
+        auto va = o.ev.begin();
+        for(auto v:{vl...})
+        {
+            (*va)->Become(v);
+            ++va;
+        }
+        o.optimize();
+        return o.e;
     }
 };
 }}

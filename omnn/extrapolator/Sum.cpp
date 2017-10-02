@@ -37,7 +37,7 @@ namespace extrapolator {
 		}
 		else
 		{
-            for (const Valuable& a : i->members) {
+            for (const Valuable& a : members) {
                 if(a.OfSameType(v))
                 {
                     const_cast<Valuable&>(a) += v;

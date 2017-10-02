@@ -51,10 +51,12 @@ public:
 //    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
     
-    const Variable* FindVa() const
+    const Variable* FindVa() const override
     {
         return this;
     }
+    
+    using base::Become;
 //    Valuable& Become(Valuable&& i) override
 //    {
 //        auto& b = base::Become(std::move(i));
