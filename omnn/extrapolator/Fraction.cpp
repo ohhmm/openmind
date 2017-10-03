@@ -13,17 +13,33 @@ namespace std{
 }
 namespace omnn{
 namespace extrapolator {
-
-    Valuable Fraction::operator -() const
+	Fraction::Fraction(const Integer& n)
+		:numerator(n), denominator(1)
+	{
+		
+	}
+    
+	Valuable Fraction::operator -() const
     {
         return Fraction(-numerator, denominator);
     }
 
     void Fraction::optimize()
     {
-        auto d = boost::gcd(numerator, denominator);
-        numerator /= d;
-        denominator /= d;
+		auto n = Integer::cast(numerator);
+		auto dn = Integer::cast(denominator);
+		if (n && dn)
+		{
+			Integer::base_int d = boost::gcd(
+				static_cast<Integer::base_int>(*n),
+				static_cast<Integer::base_int>(*dn));
+			numerator /= Integer(d);
+			denominator /= Integer(d);
+		}
+		else
+		{
+			// TODO : products
+		}
     }
     
     Valuable& Fraction::operator +=(const Valuable& v)

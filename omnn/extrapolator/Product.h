@@ -11,24 +11,46 @@ namespace omnn{
 namespace extrapolator {
 
 class Product
-    : public ValuableCollectionDescendantContract<Product, std::set<Variable>>
+    : public ValuableCollectionDescendantContract<Product, std::set<Valuable>>
 {
-    using base = ValuableCollectionDescendantContract<Product, std::set<Variable>>;
+    using base = ValuableCollectionDescendantContract<Product, std::set<Valuable>>;
     using base::cont;
     friend class Variable;
     cont vars;
     
 protected:
     const cont& GetCont() const override { return vars; }
+	std::ostream& print(std::ostream& out) const override;
     
 public:
     using base::base;
-    
-    template<class... T>
-    Product(const T&... vals)
-    {
-    }
 
+	template<class... T>
+	Product(const T&... vals)
+	{
+		for (const auto& arg : { Valuable(vals)... })
+		{
+			vars.insert(arg);
+		}
+	}
+
+	Product()
+	{
+		vars.insert(1);
+	}
+
+	// virtual operators
+	Valuable operator -() const override;
+	Valuable& operator +=(const Valuable& v) override;
+	Valuable& operator +=(int v) override;
+	Valuable& operator *=(const Valuable& v) override;
+	Valuable& operator /=(const Valuable& v) override;
+	Valuable& operator %=(const Valuable& v) override;
+	Valuable& operator --() override;
+	Valuable& operator ++() override;
+	bool operator <(const Valuable& v) const override;
+	bool operator ==(const Valuable& v) const override;
+	void optimize() override;
 };
 
 

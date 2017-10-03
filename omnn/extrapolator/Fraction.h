@@ -13,9 +13,9 @@ class Fraction
         : public ValuableDescendantContract<Fraction>
 {
 	using base = ValuableDescendantContract<Fraction>;
-    using base_int = boost::multiprecision::cpp_int;
+	using base_int = omnn::extrapolator::Valuable;
     using const_base_int_ref = const base_int&;
-    base_int numerator=0, denominator=1;
+	base_int numerator, denominator;
 protected:
     std::ostream& print(std::ostream& out) const override;
 public:
@@ -33,22 +33,32 @@ public:
     void optimize() override;
     
     using base::base;
-	Fraction() = default;
-	Fraction(const Valuable& v)
-		: Fraction(*cast(v))
+	Fraction() 
 	{
-		auto e = cast(v);
-		if (!e) throw;
+		numerator = 0;
+		denominator = 1;
 	}
+	
     Fraction(int n)
             : numerator(n), denominator(1)
     {}
     Fraction(const_base_int_ref n)
-            : numerator(n), denominator(1)
-    {}
-    Fraction(const Integer& n)
-            : numerator(n), denominator(1)
-    {}
+    {
+		auto e = cast(n);
+		if (e)
+		{
+			numerator = e->numerator;
+			denominator = e->denominator;
+		}
+		else
+		{	
+			numerator= n;
+			denominator = 1;
+		}
+		
+	}
+	Fraction(const Integer& n);
+    
     Fraction(const_base_int_ref n, const_base_int_ref d)
             : numerator(n), denominator(d)
     {}

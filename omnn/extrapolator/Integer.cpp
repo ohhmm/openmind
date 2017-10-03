@@ -41,8 +41,13 @@ namespace extrapolator {
         else
         {
             // try other type
-            // no type matched
-            base::operator *=(v);
+            auto i = Fraction::cast(v);
+            if (i)
+                Become(v**this);
+            else
+                // no type matched
+				// TODO : 
+                base::operator *=(v);
         }
         return *this;
     }
@@ -56,13 +61,11 @@ namespace extrapolator {
             if(div*i->arbitrary==arbitrary)
                 arbitrary=div;
             else
-                Become(Fraction(arbitrary,i->arbitrary));
+                Become(Fraction(*this,*i));
         }
         else
         {
-            // try other type
-            // no type matched
-            base::operator /=(v);
+			Become(Fraction(*this, v));
         }
         return *this;
     }
@@ -111,7 +114,7 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i)
-        return arbitrary == i->arbitrary;
+            return arbitrary == i->arbitrary;
         else
         {
             // try other type

@@ -14,14 +14,15 @@ class Integer
     : public ValuableDescendantContract<Integer>
 {
     using base = ValuableDescendantContract<Integer>;
-    using base_int = boost::multiprecision::cpp_int;
-    using const_base_int_ref = const base_int&;
-    base_int arbitrary = 0;
+
 protected:
     std::ostream& print(std::ostream& out) const override;
 
 public:
-    using base::base;
+	using base_int = boost::multiprecision::cpp_int;
+	using const_base_int_ref = const base_int&;
+	
+	using base::base;
 
     Integer(const Integer&)=default;
     Integer(Integer&&)=default;
@@ -65,6 +66,9 @@ public:
             
             
     friend std::ostream& operator <<(std::ostream& out, const Integer& obj);
+
+private:
+	base_int arbitrary = 0;
 };
 
 
