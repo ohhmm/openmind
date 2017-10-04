@@ -21,7 +21,7 @@ class Product
 protected:
     const cont& GetCont() const override { return vars; }
 	std::ostream& print(std::ostream& out) const override;
-    
+
 public:
     using base::base;
 
@@ -34,10 +34,8 @@ public:
 		}
 	}
 
-	Product()
-	{
-		vars.insert(1);
-	}
+	Product() : vars {{1}}
+	{ }
 
 	// virtual operators
 	Valuable operator -() const override;

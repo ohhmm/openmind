@@ -175,7 +175,7 @@ namespace extrapolator {
 					if(*vp==v)
 					{
                         if(cv || svp)
-                            throw "More the one variable occurence need Implement!";
+                            throw "More then one variable occurence need Implement!";
 						cv=vp;
                         svp = p;
                         break;;
@@ -185,7 +185,7 @@ namespace extrapolator {
 			else
 			{
 				auto vp = Variable::cast(m);
-				if(*vp==v)
+				if(vp && *vp==v)
 				{
 					cv=vp;
                     // TODO: e = *this - v;

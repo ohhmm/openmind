@@ -33,20 +33,18 @@ namespace extrapolator {
             //todo: become +1
             }
         }
-        *static_cast<Valuable*>(this) = Valuable(Sum(*this, v).Clone());
-        return *this;
+
+        return Become(Sum(*this, v));
     }
     
     Valuable& Variable::operator +=(int v)
     {
-        *static_cast<Valuable*>(this) = Valuable(Sum(*this, v).Clone());
-        return *this;
+        return Become(Sum(*this, v));
     }
     
     Valuable& Variable::operator *=(const Valuable& v)
     {
-        *static_cast<Valuable*>(this) = Valuable(Product(*this, v).Clone());
-        return *this;
+        return Become(Product(*this, v));
     }
     
     Valuable& Variable::operator /=(const Valuable& v)

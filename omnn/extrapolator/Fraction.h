@@ -33,16 +33,17 @@ public:
     void optimize() override;
     
     using base::base;
-	Fraction() 
-	{
-		numerator = 0;
-		denominator = 1;
-	}
+    
+	Fraction() : numerator(0), denominator(1)
+	{ }
 	
     Fraction(int n)
             : numerator(n), denominator(1)
     {}
+    
     Fraction(const_base_int_ref n)
+    : numerator(n)
+    , denominator(1)
     {
 		auto e = cast(n);
 		if (e)
@@ -50,12 +51,6 @@ public:
 			numerator = e->numerator;
 			denominator = e->denominator;
 		}
-		else
-		{	
-			numerator= n;
-			denominator = 1;
-		}
-		
 	}
 	Fraction(const Integer& n);
     
