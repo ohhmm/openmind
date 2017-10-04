@@ -22,12 +22,28 @@ namespace extrapolator {
 
 	void Product::optimize()
 	{
-		if (vars.size() == 1) {
+		if (vars.size() == 1)
+		{
 			Become(std::move(*const_cast<Valuable*>(&*vars.begin())));
 		}
 		else
 		{
-			// todo : emerge same typed members
+			for (auto it = vars.begin(); it != vars.end(); ++it)
+			{
+				if (*it == 1)
+					vars.erase(it++);
+				auto t = it;
+				for (auto it2 = ++t; it2 != vars.end();)
+				{
+					if (it2->OfSameType(*it))
+					{
+						const_cast<Valuable&>(*it) *= *it2;
+						vars.erase(it2++);	
+					}
+					else
+						++it2;
+				}
+			}
 		}
 	}
 
@@ -105,8 +121,10 @@ namespace extrapolator {
 
 	std::ostream& Product::print(std::ostream& out) const
 	{
-		for (auto& b : vars)
-			out << b << "*";
+		/*for (auto& b : vars)
+			out << b << "*";*/
+		for (std::set<Valuable>::iterator it = vars.begin(); it != vars.end(); ++it)
+			out << '*' << *it;
 		return out;
 	}
 

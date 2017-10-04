@@ -104,8 +104,17 @@ namespace extrapolator {
         else
         {
             // try other type
+            auto i = Fraction::cast(v);
+            if (i)
+            {
+                return v >= *this;
+            }
+            else
+            {
+                // try other type
+                // no type matched
+            }
         }
-
         // not implemented comparison to this Valuable descent
         return base::operator <(v);
     }
