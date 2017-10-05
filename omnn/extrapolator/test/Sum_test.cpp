@@ -18,8 +18,11 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     s_t a(1,2, f, 3) ;
     s_t b(6, f1);
     a -= b;
-    a += Variable();
-    std::cout << a;
+    auto s=a;
+    s+=v;
+    std::cout << s;
+    
+    BOOST_TEST(s == a+v);
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)
@@ -27,7 +30,10 @@ BOOST_AUTO_TEST_CASE(Become_tests)
     Variable v;
     Fraction f = 1/2;
     auto s = f+v;
+    
     BOOST_TEST(reinterpret_cast<Valuable*>(&s)->exp);
-    BOOST_TEST(typeid(s.exp)==typeid(Sum));
-    BOOST_TEST(typeid(s)==typeid(Valuable));
+    bool isInnerSum = typeid(s.exp)==typeid(Sum);
+    BOOST_TEST(isInnerSum);
+    bool isValuableType = typeid(s)==typeid(Valuable);
+    BOOST_TEST(isValuableType);
 }

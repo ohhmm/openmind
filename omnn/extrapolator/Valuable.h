@@ -134,10 +134,7 @@ public:
     void optimize() override { }
 	Valuable sqrt() const override { throw "Implement!"; }
 
-    const Variable* FindVa() const override
-    {
-        return nullptr;
-    }
+    const Variable* FindVa() const override { return nullptr; }
 };
 
     template <class Chld, class ContT>
