@@ -10,10 +10,16 @@
 namespace omnn{
 namespace extrapolator {
 
+    struct ValuableLessCompare
+    {
+        bool operator()(const Valuable&, const Valuable&);
+    };
+    
+
 class Product
-    : public ValuableCollectionDescendantContract<Product, std::set<Valuable>>
+    : public ValuableCollectionDescendantContract<Product, std::set<Valuable, ValuableLessCompare>>
 {
-    using base = ValuableCollectionDescendantContract<Product, std::set<Valuable>>;
+    using base = ValuableCollectionDescendantContract<Product, std::set<Valuable, ValuableLessCompare>>;
     using base::cont;
     friend class Variable;
     cont vars;

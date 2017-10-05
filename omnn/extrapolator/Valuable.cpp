@@ -33,7 +33,7 @@ namespace extrapolator {
     {
         if(exp) {
             Valuable& o = exp->operator+=(v);
-            optimize();
+            o.optimize();
             return o;
         }
         else
@@ -52,7 +52,7 @@ namespace extrapolator {
     {
         if(exp) {
             Valuable& o = exp->operator*=(v);
-            optimize();
+            o.optimize();
             return o;
         }
         else
@@ -133,6 +133,9 @@ namespace extrapolator {
 
     void Valuable::optimize() {
         if(exp) {
+            if (exp->exp) {
+                throw "ubnormal behaviour";
+            }
             while (exp->exp) {
                 exp = exp->exp;
             }

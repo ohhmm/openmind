@@ -118,8 +118,8 @@ namespace extrapolator {
             return varSetHost.CompareIdsEqual(varId, i->varId);
         }
         else
-        {
-            throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
+        {   // compare with non-va
+            return false;
         }
         
         // not implemented comparison to this Valuable descent

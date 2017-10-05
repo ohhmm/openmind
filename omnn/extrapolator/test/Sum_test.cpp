@@ -5,9 +5,11 @@
 #include "Fraction.h"
 #include "Variable.h"
 
+
+using namespace omnn::extrapolator;
+
 BOOST_AUTO_TEST_CASE(Sum_tests)
 {
-    using namespace omnn::extrapolator;
     using s_t = Sum;
     using f_t = Fraction;
     Variable v;
@@ -18,4 +20,14 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     a -= b;
     a += Variable();
     std::cout << a;
+}
+
+BOOST_AUTO_TEST_CASE(Become_tests)
+{
+    Variable v;
+    Fraction f = 1/2;
+    auto s = f+v;
+    BOOST_TEST(reinterpret_cast<Valuable*>(&s)->exp);
+    BOOST_TEST(typeid(s.exp)==typeid(Sum));
+    BOOST_TEST(typeid(s)==typeid(Valuable));
 }

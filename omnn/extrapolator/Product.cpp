@@ -9,6 +9,73 @@
 namespace omnn{
 namespace extrapolator {
 
+    // store order operator
+    bool ValuableLessCompare::operator()(const Valuable& v1, const Valuable& v2)
+    {
+        auto v1va = Variable::cast(v1);
+        auto v2va = Variable::cast(v2);
+        auto v1fa = v1.FindVa();
+        auto v2fa = v2.FindVa();
+        
+
+        if(v1va)
+        {
+            if(v2va)
+            {
+                return v1 < v2;
+            }
+            else
+            {
+                if (v2fa)
+                {
+                    return true;
+                }
+                else
+                {
+                    auto v2s = Sum::cast(v2);
+                    if (v2s) {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(v2va)
+            {
+                if (v1fa)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if(v1fa)
+                {
+                    return false;
+                }
+                else
+                {
+                    auto v1s = Sum::cast(v1);
+                    if (v1s)
+                    {
+                        return false;
+                    }
+                    else
+                        return v1 < v2;
+                }
+            }
+        }
+    }
+    
 	Valuable Product::operator -() const
 	{
 		Product p;

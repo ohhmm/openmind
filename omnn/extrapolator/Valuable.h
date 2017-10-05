@@ -22,6 +22,9 @@ class Valuable
         : public OpenOps<Valuable>
     
 {
+#ifdef BOOST_TEST_MODULE
+public:
+#endif
 	using self = Valuable;
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
