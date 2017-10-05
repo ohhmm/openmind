@@ -71,8 +71,7 @@ namespace extrapolator {
                     }
                     else
                     {
-                        auto v2s = Sum::cast(v2);
-                        if (v2s) {
+                        if (Sum::cast(v2) || Product::cast(v2)) {
                             return true;
                         }
                         else
@@ -123,7 +122,7 @@ namespace extrapolator {
 
 	Valuable& Product::operator +=(const Valuable& v)
 	{
-		return Become(Sum(this, v));
+		return Become(Sum(*this, v));
 	}
 
 	Valuable& Product::operator +=(int v)
@@ -189,8 +188,8 @@ namespace extrapolator {
 
 	bool Product::operator ==(const Valuable& v) const
 	{
-		// TODO : compare sets
-		return base::operator ==(v);
+        auto p = cast(v);
+        return p && vars==p->vars;
 	}
 
 	std::ostream& Product::print(std::ostream& out) const

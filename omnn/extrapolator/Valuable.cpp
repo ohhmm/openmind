@@ -15,6 +15,52 @@ namespace extrapolator {
     
     #define IMPLEMENT { implement(); throw; }
 
+    Valuable* Valuable::Clone() const
+    {
+        if (exp)
+            return exp->Clone();
+        else
+            return new Valuable(*this);
+    }
+
+    Valuable& Valuable::Become(Valuable&& i)
+    {
+        this->~Valuable();
+        new (this) Valuable(i);
+        return *this;
+    }
+
+    Valuable& Valuable::operator =(const Valuable&& v)
+    {
+        exp = std::move(v.exp);
+        if (!exp)
+            exp.reset(v.Clone());
+        return *this;
+    }
+
+    Valuable& Valuable::operator =(const Valuable& v)
+    {
+        exp.reset((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone());
+        return *this;
+    }
+
+    Valuable::Valuable(Valuable&& v) :
+            exp(std::move(v.exp))
+    {
+        if (!exp)
+            exp.reset(v.Clone());
+    }
+
+    Valuable::Valuable(const Valuable& v) :
+            exp((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone())
+    {
+    }
+
+    Valuable::Valuable(Valuable* v) :
+            exp(v)
+    {
+    }
+
     Valuable::Valuable(int i) : exp(new Integer(i)) {}
 
     Valuable::~Valuable()
@@ -61,7 +107,6 @@ namespace extrapolator {
         }
         else
             IMPLEMENT
-
     }
 
     Valuable& Valuable::operator /=(const Valuable& v)
@@ -74,7 +119,6 @@ namespace extrapolator {
             return *this;
         }
             IMPLEMENT
-
     }
 
     Valuable& Valuable::operator %=(const Valuable& v)
@@ -107,7 +151,6 @@ namespace extrapolator {
             return exp->operator<(v);
         else
             IMPLEMENT
-
     }
 
     bool Valuable::operator==(const Valuable& v) const
@@ -116,7 +159,6 @@ namespace extrapolator {
             return exp->operator==(v);
         else
             IMPLEMENT
-
     }
     
     std::ostream& Valuable::print(std::ostream& out) const
@@ -132,14 +174,16 @@ namespace extrapolator {
         return obj.print(out);
     }
 
-	Valuable Valuable::abs() const {
+    Valuable Valuable::abs() const
+    {
         if(exp)
             return exp->abs();
         else
             IMPLEMENT
     }
 
-    void Valuable::optimize() {
+    void Valuable::optimize()
+    {
         if(exp) {
             if (exp->exp) {
                 throw "ubnormal behaviour";
@@ -178,12 +222,12 @@ namespace extrapolator {
 
 namespace std
 {
-	omnn::extrapolator::Valuable abs(const omnn::extrapolator::Valuable& v)
-	{
-		return v.abs();
-	}
-	omnn::extrapolator::Valuable sqrt(const omnn::extrapolator::Valuable& v)
-	{
-		return v.sqrt();
-	}
+    ::omnn::extrapolator::Valuable abs(const ::omnn::extrapolator::Valuable& v)
+    {
+        return v.abs();
+    }
+    ::omnn::extrapolator::Valuable sqrt(const ::omnn::extrapolator::Valuable& v)
+    {
+        return v.sqrt();
+    }
 }

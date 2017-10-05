@@ -144,8 +144,8 @@ namespace extrapolator {
 
 	bool Sum::operator ==(const Valuable& v) const
 	{
-
-		return base::operator ==(v);
+        auto s = cast(v);
+        return s && members==s->members;
 	}
 
 	std::ostream& Sum::print(std::ostream& out) const

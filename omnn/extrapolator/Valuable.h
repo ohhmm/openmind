@@ -30,12 +30,7 @@ public:
     encapsulated_instance exp = nullptr;
 
 protected:
-    virtual Valuable* Clone() const {
-        if(exp)
-            return exp->Clone();
-        else
-            return new Valuable(*this);
-    }
+    virtual Valuable* Clone() const;
 
     template<class T>
     static const T* cast(const Valuable& v)
@@ -48,42 +43,15 @@ protected:
     
     Valuable() = default;
     
-    virtual Valuable& Become(Valuable&& i)
-    {
-        this->~Valuable();
-        new(this) Valuable(i);
-        return *this;
-    }
+    virtual Valuable& Become(Valuable&& i);
     
 public:
-    explicit Valuable(Valuable* v) : exp(v) { }
-//    Valuable* operator->() const
-//    {
-//        return exp ? exp.get() : const_cast<Valuable*>(this);
-//    }
+    explicit Valuable(Valuable* v);
 
-    Valuable& operator=(const Valuable& v)
-    {
-        exp.reset((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone());
-        return *this;
-    }
-    Valuable& operator=(const Valuable&& v)
-    {
-        exp = std::move(v.exp);
-        if(!exp)
-            exp.reset(v.Clone());
-        return *this;
-    }
-    Valuable(const Valuable& v)
-    : exp((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone())
-    {
-    }
-    Valuable(Valuable&& v)
-    : exp(std::move(v.exp))
-    {
-        if(!exp)
-            exp.reset(v.Clone());
-    }
+    Valuable& operator =(const Valuable& v);
+    Valuable& operator =(const Valuable&& v);
+    Valuable(const Valuable& v);
+    Valuable(Valuable&& v);
     Valuable(int i);
 
     virtual ~Valuable();
@@ -202,7 +170,6 @@ public:
             return GetFirstOccurence<Variable>();
         }
     };
-    
 }}
 
 namespace std
