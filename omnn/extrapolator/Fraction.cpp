@@ -1,9 +1,9 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
-
 #include "Fraction.h"
-#include <boost/rational.hpp>
+#include "Integer.h"
+#include "Sum.h"
 
 namespace std{
     template<>
@@ -59,9 +59,15 @@ namespace extrapolator {
         }
         else
         {
-            // try other type
-            // no type matched
-            base::operator +=(v);
+            auto i = Integer::cast(v);
+            if(i)
+            {
+                *this += Fraction(*i);
+            }
+            else
+            {
+                return Become(Sum(*this, v));
+            }
         }
         return *this;
     }

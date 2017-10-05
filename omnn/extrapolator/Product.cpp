@@ -70,7 +70,14 @@ namespace extrapolator {
                         return false;
                     }
                     else
-                        return v1 < v2;
+                    {
+                        auto v2s = Sum::cast(v2);
+                        if (v2s) {
+                            return true;
+                        }
+                        else
+                            return v1 < v2;
+                    }
                 }
             }
         }

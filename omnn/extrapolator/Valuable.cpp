@@ -33,8 +33,10 @@ namespace extrapolator {
     {
         if(exp) {
             Valuable& o = exp->operator+=(v);
-            o.optimize();
-            return o;
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
         }
         else
             IMPLEMENT
@@ -52,8 +54,10 @@ namespace extrapolator {
     {
         if(exp) {
             Valuable& o = exp->operator*=(v);
-            o.optimize();
-            return o;
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
         }
         else
             IMPLEMENT
@@ -62,9 +66,13 @@ namespace extrapolator {
 
     Valuable& Valuable::operator /=(const Valuable& v)
     {
-        if(exp)
-            return exp->operator/=(v);
-        else
+        if(exp) {
+            Valuable& o = exp->operator/=(v);
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
+        }
             IMPLEMENT
 
     }

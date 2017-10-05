@@ -50,12 +50,13 @@ protected:
     
     virtual Valuable& Become(Valuable&& i)
     {
-        *this = Valuable(i.Clone());
+        this->~Valuable();
+        new(this) Valuable(i);
         return *this;
     }
     
 public:
-    Valuable(Valuable* v) : exp(v) { }
+    explicit Valuable(Valuable* v) : exp(v) { }
 //    Valuable* operator->() const
 //    {
 //        return exp ? exp.get() : const_cast<Valuable*>(this);
@@ -66,13 +67,23 @@ public:
         exp.reset((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone());
         return *this;
     }
+    Valuable& operator=(const Valuable&& v)
+    {
+        exp = std::move(v.exp);
+        if(!exp)
+            exp.reset(v.Clone());
+        return *this;
+    }
     Valuable(const Valuable& v)
     : exp((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone())
     {
     }
     Valuable(Valuable&& v)
-        : Valuable(v.Clone())
-    {}
+    : exp(std::move(v.exp))
+    {
+        if(!exp)
+            exp.reset(v.Clone());
+    }
     Valuable(int i);
 
     virtual ~Valuable();
