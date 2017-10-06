@@ -25,8 +25,9 @@ namespace extrapolator {
 
     Valuable& Valuable::Become(Valuable&& i)
     {
+        Valuable v(std::move(i));
         this->~Valuable();
-        new (this) Valuable(i);
+        new (this) Valuable(std::move(v));
         return *this;
     }
 
