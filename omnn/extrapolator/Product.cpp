@@ -1,10 +1,10 @@
 //
 // Created by Сергей Кривонос on 25.09.17.
 //
-
 #include "Product.h"
 #include "Sum.h"
 #include "Fraction.h"
+#include <type_traits>
 
 namespace omnn{
 namespace extrapolator {
@@ -95,6 +95,8 @@ namespace extrapolator {
 
 	void Product::optimize()
 	{
+        for(auto& it : vars)
+            const_cast<Valuable&>(it).optimize();
 		if (vars.size() == 1)
 		{
 			Become(std::move(*const_cast<Valuable*>(&*vars.begin())));
@@ -103,12 +105,17 @@ namespace extrapolator {
 		{
 			for (auto it = vars.begin(); it != vars.end(); ++it)
 			{
+                if (*it == 0)
+                {
+                    Become(0);
+                    return;
+                }
 				if (*it == 1)
 					vars.erase(it++);
 				auto t = it;
 				for (auto it2 = ++t; it2 != vars.end();)
 				{
-					if (it2->OfSameType(*it))
+                    if (it2->OfSameType(*it) && !Variable::cast(*it))
 					{
 						const_cast<Valuable&>(*it) *= *it2;
 						vars.erase(it2++);	
@@ -194,11 +201,15 @@ namespace extrapolator {
 
 	std::ostream& Product::print(std::ostream& out) const
 	{
-		/*for (auto& b : vars)
-			out << b << "*";*/
-		for (std::set<Valuable>::iterator it = vars.begin(); it != vars.end(); ++it)
-			out << '*' << *it;
-		return out;
+        std::stringstream s;
+        constexpr char sep[] = "*";
+        for (auto& b : vars)
+            s << b << sep;
+        auto str = s.str();
+        auto cstr = const_cast<char*>(str.c_str());
+        cstr[str.size() - sizeof(sep) + 1] = 0;
+        out << cstr;
+        return out;
 	}
 
 	

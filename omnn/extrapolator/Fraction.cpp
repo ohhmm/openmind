@@ -28,13 +28,23 @@ namespace extrapolator {
     {
 		auto n = Integer::cast(numerator);
 		auto dn = Integer::cast(denominator);
-		if (n && dn)
+		if (n)
 		{
-			Integer::base_int d = boost::gcd(
-				static_cast<Integer::base_int>(*n),
-				static_cast<Integer::base_int>(*dn));
-			numerator /= Integer(d);
-			denominator /= Integer(d);
+            if(*n==0)
+            {
+                if(dn && *dn==0)
+                    throw "NaN";
+                Become(0);
+                return;
+            }
+            if(dn)
+            {
+                Integer::base_int d = boost::gcd(
+                    static_cast<Integer::base_int>(*n),
+                    static_cast<Integer::base_int>(*dn));
+                numerator /= Integer(d);
+                denominator /= Integer(d);
+            }
 		}
 		else
 		{
@@ -235,7 +245,18 @@ namespace extrapolator {
 
     std::ostream& Fraction::print(std::ostream& out) const
     {
-        return out << numerator << '/' << denominator;
+        auto n = Integer::cast(numerator);
+        auto dn = Integer::cast(denominator);
+        if(!n)
+            out << '(' << numerator << ')';
+        else
+            out << numerator;
+        out << '/';
+        if(!n)
+            out << '(' << denominator << ')';
+        else
+            out << denominator;
+        return out;
     }
 
 }}

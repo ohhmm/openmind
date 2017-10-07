@@ -138,6 +138,16 @@ public:
             return GetCont().end();
         }
         
+        auto begin()
+        {
+            return GetCont().begin();
+        }
+        
+        auto end()
+        {
+            return GetCont().end();
+        }
+        
         size_t size() const
         {
             return GetCont().size();

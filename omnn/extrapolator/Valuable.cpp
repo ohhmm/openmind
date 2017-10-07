@@ -82,8 +82,9 @@ namespace extrapolator {
             Valuable& o = exp->operator+=(v);
             if (o.exp) {
                 exp = o.exp;
+                return *this;
             }
-            return *this;
+            return o;
         }
         else
             IMPLEMENT

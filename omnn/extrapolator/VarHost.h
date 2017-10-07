@@ -131,7 +131,7 @@ namespace extrapolator {
         }
         
         std::ostream& print(std::ostream& out, any::any v) const override {
-            return out <<any::any_cast<T>(v);
+            return out << 'v' << any::any_cast<T>(v);
         }
     };
 

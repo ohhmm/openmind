@@ -162,7 +162,7 @@ public:
     {
         auto szy = size1();
         auto szx = size2();
-        Sum e;
+        Valuable e(0);
         Variable vx,vy,vv;
         for (auto y = szy; y--; ) {
             for (auto x = szx; x--; ) {

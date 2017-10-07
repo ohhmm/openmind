@@ -23,7 +23,39 @@ namespace extrapolator {
         }
         else
         {
-            // todo : emerge same typed members
+            for (auto it = members.begin(); it != members.end();)
+            {
+                if (*it == 0)
+                {
+                    members.erase(it++);
+                    continue;
+                }
+                auto s = cast(*it);
+                if (s) {
+                    for(auto& m : s->members)
+                    {
+                        members.push_back(std::move(m));
+                    }
+                    members.erase(it++);
+                    continue;
+                }
+                auto t = it;
+                for (auto it2 = ++t; it2 != members.end();)
+                {
+                    if (it2->OfSameType(*it)
+                        && !Variable::cast(*it)
+                        && !Product::cast(*it))
+                    {
+                        const_cast<Valuable&>(*it) += *it2;
+                        members.erase(it2++);
+                    }
+                    else
+                        ++it2;
+                }
+                
+                ++it;
+            }
+
         }
 	}
 
@@ -37,18 +69,18 @@ namespace extrapolator {
 		}
 		else
 		{
-            for (const Valuable& a : members) {
+            for (auto& a : members) {
                 if(a.OfSameType(v))
                 {
                     const_cast<Valuable&>(a) += v;
-                    goto yes;
+                    optimize();
+                    return *this;
                 }
             }
             // add new member
 			members.push_back(v);
 		}
-    yes:
-        optimize();
+
 		return *this;
 	}
 
@@ -150,9 +182,16 @@ namespace extrapolator {
 
 	std::ostream& Sum::print(std::ostream& out) const
 	{
+        std::stringstream s;
+        s << '(';
+        constexpr char sep[] = " + ";
 		for (auto& b : members) 
-			out << b << "+";
-		return out;// << "" << '/' << "";
+            s << b << sep;
+        auto str = s.str();
+        auto cstr = const_cast<char*>(str.c_str());
+        cstr[str.size() - sizeof(sep) + 1] = 0;
+        out << cstr << ')';
+		return out;
 	}
 
     /** fast linear equation formula deduction */
@@ -160,7 +199,7 @@ namespace extrapolator {
 	{
         std::cout << *this;
 		// TODO : make it workfor non-linear as well once Formula ready
-        Sum e;
+        Valuable e(0);
         const Variable* cv = nullptr; // the var found
         const Product* svp = nullptr; // product with var
         
