@@ -158,8 +158,9 @@ namespace extrapolator {
     /** fast linear equation formula deduction */
 	Formula Sum::FormulaOfVa(const Variable& v) const
 	{
+        std::cout << *this;
 		// TODO : make it workfor non-linear as well once Formula ready
-        Valuable e(0);
+        Sum e;
         const Variable* cv = nullptr; // the var found
         const Product* svp = nullptr; // product with var
         

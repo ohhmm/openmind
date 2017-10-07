@@ -4,6 +4,7 @@
 
 #include "Integer.h"
 #include "Fraction.h"
+#include "Sum.h"
 
 namespace omnn{
 namespace extrapolator {
@@ -17,12 +18,10 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i)
-        arbitrary += i->arbitrary;
+            arbitrary += i->arbitrary;
         else
         {
-            // try other type
-            // no type matched
-            base::operator +=(v);
+            return Become(Sum(*this, v));
         }
         return *this;
     }

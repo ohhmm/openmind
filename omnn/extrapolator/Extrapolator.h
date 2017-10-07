@@ -172,7 +172,8 @@ public:
             }
         }
 
-        return e.FormulaOfVa(vv);
+        auto s = Sum::cast(e);
+        return s->FormulaOfVa(vv);
     }
 };
 
