@@ -10,19 +10,17 @@ BOOST_AUTO_TEST_CASE(Product_tests)
 {
 	using namespace std;
 	using namespace omnn::extrapolator;
-	using s_t = Sum;
-	using f_t = Fraction;
-	//Variable v;
-	f_t f(1 , 2);
-	f_t f1(5, 6);
-	Product p(f, f1,5,20);
-	/*s_t a(1,2, f, 3) ;
-	s_t b(6, f1);
-	a -= b;
-	a += Variable();*/
-	p.optimize();
-	cout << p << endl;
-	/*s_t s(f1, 5);
-	p *=s;
-	std::cout << p;*/
+    
+	auto f = 1_v / 2;
+	auto f1 = 5_v / 6;
+	auto v = f * 20 * f1 * 5;
+    BOOST_TEST(v==125_v/3);
+    
+    Variable v1, v2;
+    v *= v1;
+    v += v1*v2;
+    BOOST_TEST(v == (125_v/3*v1 + v1*v2));
+
+    v += v1*v;
+    BOOST_TEST(v == (125_v/3*v1 + v1*v2 + 125_v/3*v1*v1 + v1*v1*v2));
 }

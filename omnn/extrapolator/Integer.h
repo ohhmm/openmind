@@ -75,8 +75,4 @@ private:
 }
 }
 
-//template<class T>
-//bool operator>(const omnn::extrapolator::Integer& integer, int i)
-//{
-//    
-//}
+::omnn::extrapolator::Integer operator"" _v(unsigned long long v);

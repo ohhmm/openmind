@@ -28,6 +28,7 @@ namespace extrapolator {
         Valuable v(std::move(i));
         this->~Valuable();
         new (this) Valuable(std::move(v));
+        optimize();
         return *this;
     }
 
@@ -190,10 +191,11 @@ namespace extrapolator {
             if (exp->exp) {
                 throw "ubnormal behaviour";
             }
+            exp->optimize();
             while (exp->exp) {
                 exp = exp->exp;
             }
-            return exp->optimize();
+            return;
         }
         else
             IMPLEMENT

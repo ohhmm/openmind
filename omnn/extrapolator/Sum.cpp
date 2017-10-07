@@ -5,9 +5,16 @@
 #include "Sum.h"
 #include "Product.h"
 #include "Variable.h"
+#include <map>
 
 namespace omnn{
 namespace extrapolator {
+    
+    void Sum::Add(const Valuable& item)
+    {
+        operator+=(item);
+    }
+
 	Valuable Sum::operator -() const
 	{
 		Sum s;
@@ -20,43 +27,69 @@ namespace extrapolator {
 	{
         if (members.size()==1) {
             Become(std::move(members.front()));
+            return;
         }
-        else
-        {
-            for (auto it = members.begin(); it != members.end();)
-            {
-                if (*it == 0)
-                {
-                    members.erase(it++);
-                    continue;
-                }
-                auto s = cast(*it);
-                if (s) {
-                    for(auto& m : s->members)
-                    {
-                        members.push_back(std::move(m));
-                    }
-                    members.erase(it++);
-                    continue;
-                }
-                auto t = it;
-                for (auto it2 = ++t; it2 != members.end();)
-                {
-                    if (it2->OfSameType(*it)
-                        && !Variable::cast(*it)
-                        && !Product::cast(*it))
-                    {
-                        const_cast<Valuable&>(*it) += *it2;
-                        members.erase(it2++);
-                    }
-                    else
-                        ++it2;
-                }
-                
-                ++it;
-            }
 
+        for (auto it = members.begin(); it != members.end();)
+        {
+            if (*it == 0)
+            {
+                members.erase(it++);
+                continue;
+            }
+            auto s = cast(*it);
+            if (s) {
+                for(auto& m : s->members)
+                {
+                    members.push_back(std::move(m));
+                }
+                members.erase(it++);
+                continue;
+            }
+            auto t = it;
+            for (auto it2 = ++t; it2 != members.end();)
+            {
+                if (it2->OfSameType(*it)
+                    && !Variable::cast(*it)
+                    && !Product::cast(*it))
+                {
+                    const_cast<Valuable&>(*it) += *it2;
+                    members.erase(it2++);
+                }
+                else
+                    ++it2;
+            }
+            
+            ++it;
         }
+
+        // commonize by vars
+        using K = std::multiset<Variable>;
+        using V = Product*;
+        using KV = std::pair<K,V>;
+        std::map<K,V> kv;
+        for (auto it = members.begin(); it != members.end();)
+        {
+            auto p = Product::cast(*it);
+            if(p)
+            {
+                auto k = p->getCommonVars();
+                std::map<K,V>::iterator v = kv.find(k);
+                if (v==kv.end()) {
+                    kv[k] = const_cast<Product*>(p);
+                }
+                else
+                {
+                    *v->second += *p;
+                    members.erase(it++);
+                    continue;
+                }
+            }
+            ++it;
+        }
+        
+        for(auto& item : members)
+            item.optimize();
 	}
 
 	Valuable& Sum::operator +=(const Valuable& v)
@@ -69,14 +102,19 @@ namespace extrapolator {
 		}
 		else
 		{
-            for (auto& a : members) {
-                if(a.OfSameType(v))
+            if(!Product::cast(v))
+            {
+                for (auto& a : members)
                 {
-                    const_cast<Valuable&>(a) += v;
-                    optimize();
-                    return *this;
+                    if(a.OfSameType(v))
+                    {
+                        const_cast<Valuable&>(a) += v;
+                        optimize();
+                        return *this;
+                    }
                 }
             }
+            
             // add new member
 			members.push_back(v);
 		}

@@ -17,31 +17,37 @@ namespace extrapolator {
     
 
 class Product
-    : public ValuableCollectionDescendantContract<Product, std::set<Valuable, ValuableLessCompare>>
+    : public ValuableCollectionDescendantContract<Product, std::multiset<Valuable, ValuableLessCompare>>
 {
-    using base = ValuableCollectionDescendantContract<Product, std::set<Valuable, ValuableLessCompare>>;
+    using base = ValuableCollectionDescendantContract<Product, std::multiset<Valuable, ValuableLessCompare>>;
     using base::cont;
     friend class Variable;
-    cont vars;
+    cont members;
+    std::multiset<Variable> vars;
     
 protected:
-    const cont& GetCont() const override { return vars; }
+    const cont& GetCont() const override { return members; }
 	std::ostream& print(std::ostream& out) const override;
 
 public:
     using base::base;
 
+    void Add(const Valuable& item) override;
+    
 	template<class... T>
 	Product(const T&... vals)
 	{
 		for (const auto& arg : { Valuable(vals)... })
 		{
-			vars.insert(arg);
+			Add(arg);
 		}
 	}
 
-	Product() : vars {{1}}
+	Product() : members {{1}}
 	{ }
+    
+    const std::multiset<Variable>& getCommonVars() const;
+    Valuable varless() const;
 
 	// virtual operators
 	Valuable operator -() const override;

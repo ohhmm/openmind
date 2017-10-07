@@ -4,6 +4,7 @@
 #include "Fraction.h"
 #include "Integer.h"
 #include "Sum.h"
+#include "Product.h"
 
 namespace std{
     template<>
@@ -39,6 +40,11 @@ namespace extrapolator {
             }
             if(dn)
             {
+                if(*dn==1)
+                {
+                    Become(Integer(*n));
+                    return;
+                }
                 Integer::base_int d = boost::gcd(
                     static_cast<Integer::base_int>(*n),
                     static_cast<Integer::base_int>(*dn));
@@ -123,9 +129,7 @@ namespace extrapolator {
             }
             else
             {
-                // try other type
-                // no type matched
-                base::operator *=(v);
+                return Become(Product(*this, v));
             }
         }
 		

@@ -5,6 +5,7 @@
 #include "Integer.h"
 #include "Fraction.h"
 #include "Sum.h"
+#include "Product.h"
 
 namespace omnn{
 namespace extrapolator {
@@ -44,9 +45,7 @@ namespace extrapolator {
             if (i)
                 Become(v**this);
             else
-                // no type matched
-				// TODO : 
-                base::operator *=(v);
+                Become(Product(*this, v));
         }
         return *this;
     }
@@ -142,3 +141,8 @@ namespace extrapolator {
     }
 
 }}
+
+::omnn::extrapolator::Integer operator"" _v(unsigned long long v)
+{
+    return ::omnn::extrapolator::Integer(v);
+}

@@ -8,7 +8,7 @@
 
 namespace omnn{
 namespace extrapolator {
-
+    
     // store order operator
     bool ValuableLessCompare::operator()(const Valuable& v1, const Valuable& v2)
     {
@@ -82,28 +82,52 @@ namespace extrapolator {
         }
     }
     
+    void Product::Add(const Valuable& item)
+    {
+        members.insert(item);
+        auto v = Variable::cast(item);
+        if(v)
+            vars.insert(*v);
+    }
+
 	Valuable Product::operator -() const
 	{
-		Product p;
-		for (auto& a : vars)
-			if (a == *vars.begin())
-				p.vars.insert(-a);
-			else
-				p.vars.insert(a);
-		return p;
+		return *this * -1;
 	}
 
 	void Product::optimize()
 	{
-        for(auto& it : vars)
+        // optimize members, if found a sum then become the sum multiplied by other members
+        Sum* s = nullptr;
+        for(auto& it : members)
+        {
+            s = const_cast<Sum*>(Sum::cast(it));
+            if(s)
+                break;
             const_cast<Valuable&>(it).optimize();
-		if (vars.size() == 1)
+        }
+        if(s)
+        {
+            for(auto& it : members)
+            {
+                if(s == const_cast<Sum*>(Sum::cast(it)))
+                    continue;
+                else
+                    *s *= it;
+            }
+            s->optimize();
+            Become(std::move(*s));
+            return;
+        }
+        
+        // if no sum  then continue optimizing this product
+		if (members.size() == 1)
 		{
-			Become(std::move(*const_cast<Valuable*>(&*vars.begin())));
+			Become(std::move(*const_cast<Valuable*>(&*members.begin())));
 		}
 		else
 		{
-			for (auto it = vars.begin(); it != vars.end(); ++it)
+			for (auto it = members.begin(); it != members.end(); ++it)
 			{
                 if (*it == 0)
                 {
@@ -111,14 +135,14 @@ namespace extrapolator {
                     return;
                 }
 				if (*it == 1)
-					vars.erase(it++);
+					members.erase(it++);
 				auto t = it;
-				for (auto it2 = ++t; it2 != vars.end();)
+				for (auto it2 = ++t; it2 != members.end();)
 				{
                     if (it2->OfSameType(*it) && !Variable::cast(*it))
 					{
 						const_cast<Valuable&>(*it) *= *it2;
-						vars.erase(it2++);	
+						members.erase(it2++);	
 					}
 					else
 						++it2;
@@ -127,8 +151,36 @@ namespace extrapolator {
 		}
 	}
 
+    const std::multiset<Variable>& Product::getCommonVars() const
+    {
+        return vars;
+    }
+    
+    Valuable Product::varless() const
+    {
+        Valuable p(1);
+        for(auto& m : members)
+        {
+            auto v = Variable::cast(m);
+            if(!v)
+                p*=m;
+        }
+        return p;
+    }
+    
 	Valuable& Product::operator +=(const Valuable& v)
 	{
+        auto p = cast(v);
+        if(p && getCommonVars()==p->getCommonVars())
+        {
+            members.clear();
+            auto valuable = varless() + p->varless();
+            for(auto& va : vars)
+            {
+                valuable *= va;
+            }
+            return Become(std::move(valuable));
+        }
 		return Become(Sum(*this, v));
 	}
 
@@ -139,15 +191,25 @@ namespace extrapolator {
 
 	Valuable& Product::operator *=(const Valuable& v)
 	{
-		for (const Valuable& a : vars) {
-				if (a.OfSameType(v))
-				{
-					const_cast<Valuable&>(a) *= v;
-					goto yes;
-				}
-			}
-			// add new member
-			vars.insert(v);
+        auto s = Sum::cast(v);
+        if(s)
+            return Become(v**this);
+        
+        auto va = Variable::cast(v);
+        if (!va)
+        {
+            for (const Valuable& a : members)
+            {
+                if (a.OfSameType(v))
+                {
+                    const_cast<Valuable&>(a) *= v;
+                    goto yes;
+                }
+            }
+        }
+        
+        // add new member
+        Add(v);
 
 	yes:
 		optimize();
@@ -156,20 +218,7 @@ namespace extrapolator {
 
 	Valuable& Product::operator /=(const Valuable& v)
 	{
-		Fraction f(1, v);
-		for (const Valuable& a : vars) {
-			if (a.OfSameType(f))
-			{
-				const_cast<Valuable&>(a) *= f;
-				goto yes;
-			}
-		}
-		// add new member
-		vars.insert(f);
-
-	yes:
-		optimize();
-		return *this;
+        *this *= Fraction(1, v);
 	}
 
 	Valuable& Product::operator %=(const Valuable& v)
@@ -196,14 +245,14 @@ namespace extrapolator {
 	bool Product::operator ==(const Valuable& v) const
 	{
         auto p = cast(v);
-        return p && vars==p->vars;
+        return p && members==p->members;
 	}
 
 	std::ostream& Product::print(std::ostream& out) const
 	{
         std::stringstream s;
         constexpr char sep[] = "*";
-        for (auto& b : vars)
+        for (auto& b : members)
             s << b << sep;
         auto str = s.str();
         auto cstr = const_cast<char*>(str.c_str());

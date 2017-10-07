@@ -152,6 +152,8 @@ public:
         {
             return GetCont().size();
         }
+        
+        virtual void Add(typename ContT::const_reference item) = 0;
 
         template<class T>
         const T* GetFirstOccurence() const

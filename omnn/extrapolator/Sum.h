@@ -23,6 +23,8 @@ protected:
 	std::ostream& print(std::ostream& out) const override;
     
 public:
+    void Add(const Valuable& item) override;
+    
 	// virtual operators
 	Valuable operator -() const override;
 	Valuable& operator +=(const Valuable& v) override;
