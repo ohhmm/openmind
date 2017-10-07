@@ -25,9 +25,9 @@ namespace extrapolator {
 
     Valuable& Valuable::Become(Valuable&& i)
     {
-        Valuable v(std::move(i));
-        this->~Valuable();
-        new (this) Valuable(std::move(v));
+        Valuable v(std::move(i)); // move here in case it moved from the object member
+        this->~Valuable();        // before this call
+        new (this) Valuable(std::move(v)); // todo : not neccesarily wrap into Valuable if there is space. it need to be checked through typeid
         optimize();
         return *this;
     }
@@ -188,8 +188,8 @@ namespace extrapolator {
     void Valuable::optimize()
     {
         if(exp) {
-            if (exp->exp) {
-                throw "ubnormal behaviour";
+            while (exp->exp) {
+                exp = exp->exp;
             }
             exp->optimize();
             while (exp->exp) {

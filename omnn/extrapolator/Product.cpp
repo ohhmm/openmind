@@ -97,6 +97,18 @@ namespace extrapolator {
 
 	void Product::optimize()
 	{
+        // emerge inner products
+        for (auto it = members.begin(); it != members.end();)
+        {
+            auto p = cast(*it);
+            if (p) {
+                for(auto& m : *p)
+                    Add(m);
+                members.erase(it++);
+            }
+            else  ++it;
+        }
+        
         // optimize members, if found a sum then become the sum multiplied by other members
         Sum* s = nullptr;
         for(auto& it : members)
@@ -171,15 +183,17 @@ namespace extrapolator {
 	Valuable& Product::operator +=(const Valuable& v)
 	{
         auto p = cast(v);
-        if(p && getCommonVars()==p->getCommonVars())
+        if(p)
         {
-            members.clear();
-            auto valuable = varless() + p->varless();
-            for(auto& va : vars)
+            auto cv = getCommonVars();
+            if(!cv.empty() && cv == p->getCommonVars())
             {
-                valuable *= va;
+                auto valuable = varless() + p->varless();
+                Valuable vp(1);
+                for(auto& va : vars)
+                    vp *= va;
+                return Become(Product(std::move(valuable),std::move(vp)));
             }
-            return Become(std::move(valuable));
         }
 		return Become(Sum(*this, v));
 	}

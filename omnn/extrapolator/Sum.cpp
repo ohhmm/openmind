@@ -25,8 +25,18 @@ namespace extrapolator {
 
 	void Sum::optimize()
 	{
+        thread_local bool isOptimising = false; // todo : remove
+        if (isOptimising)
+            return;
+        isOptimising = true;
+        
+        Valuable w(0);
+        do
+        {
+            w = *this;
         if (members.size()==1) {
             Become(std::move(members.front()));
+            isOptimising = false;
             return;
         }
 
@@ -74,15 +84,18 @@ namespace extrapolator {
             if(p)
             {
                 auto k = p->getCommonVars();
-                std::map<K,V>::iterator v = kv.find(k);
-                if (v==kv.end()) {
-                    kv[k] = const_cast<Product*>(p);
-                }
-                else
+                if(k.size())
                 {
-                    *v->second += *p;
-                    members.erase(it++);
-                    continue;
+                    std::map<K,V>::iterator v = kv.find(k);
+                    if (v==kv.end()) {
+                        kv[k] = const_cast<Product*>(p);
+                    }
+                    else
+                    {
+                        *v->second += *p;
+                        members.erase(it++);
+                        continue;
+                    }
                 }
             }
             ++it;
@@ -90,6 +103,8 @@ namespace extrapolator {
         
         for(auto& item : members)
             item.optimize();
+        }while (w!=*this);
+        isOptimising = false;
 	}
 
 	Valuable& Sum::operator +=(const Valuable& v)
@@ -235,7 +250,6 @@ namespace extrapolator {
     /** fast linear equation formula deduction */
 	Formula Sum::FormulaOfVa(const Variable& v) const
 	{
-        std::cout << *this;
 		// TODO : make it workfor non-linear as well once Formula ready
         Valuable e(0);
         const Variable* cv = nullptr; // the var found
@@ -243,14 +257,13 @@ namespace extrapolator {
         
 		for (auto& m : members)
 		{
-           
 			auto p = Product::cast(m);
 			if(p)
 			{
 				for(auto pm : *p)
 				{
 					auto vp = Variable::cast(pm);
-					if(*vp==v)
+					if(vp && *vp==v)
 					{
                         if(cv || svp)
                             throw "More then one variable occurence need Implement!";

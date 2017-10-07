@@ -97,11 +97,19 @@ BOOST_AUTO_TEST_CASE(Codec_test)
                             {1,0,0,1, 0,0,1},
                     }};
 
+    Valuable v = e;
+    std::cout<<v<<std::endl;
+//    for (int i=e.size1(); i--;) {
+//        for (int j=e.size2(); j--;) {
+////            BOOST_TEST(e(i,j,f(i,j))==0);
+//        }
+//    }
+    
     Formula f = e;
-    std::cout<<f<<std::endl;
-    for (int i=e.size1(); i--;) {
-        for (int j=e.size2(); j--;) {
-//            BOOST_TEST(e(i,j)==f(i,j));
-        }
-    }
+//    std::cout<<f<<std::endl;
+//    for (int i=e.size1(); i--;) {
+//        for (int j=e.size2(); j--;) {
+////            BOOST_TEST(e(i,j)==f(i,j));
+//        }
+//    }
 }

@@ -35,8 +35,9 @@ protected:
     template<class T>
     static const T* cast(const Valuable& v)
     {
-        return v.exp? dynamic_cast<const T*>(v.exp.get())
-                    : dynamic_cast<const T*>(&v);
+        auto e = v.exp;
+        while (e && e->exp) e = e->exp;
+        return dynamic_cast<const T*>(e ? e.get() : &v);
     }
 
     virtual std::ostream& print(std::ostream& out) const;

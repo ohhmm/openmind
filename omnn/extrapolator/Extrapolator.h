@@ -156,7 +156,27 @@ public:
     }
 
     /**
-     * returns equivalent expression
+     * @returns equivalent expression
+     */
+    operator Valuable() const
+    {
+        auto szy = size1();
+        auto szx = size2();
+        Valuable e(0);
+        Variable vx,vy,vv;
+        for (auto y = szy; y--; ) {
+            for (auto x = szx; x--; ) {
+                auto v = operator()(y,x);
+                auto co = vx*x + vy*y + vv*v;
+                e += co * co;
+            }
+        }
+        e.optimize();
+        return e;
+    }
+    
+    /**
+     * @returns values formula
      */
     operator Formula() const
     {
@@ -171,7 +191,7 @@ public:
                 e += co * co;
             }
         }
-
+        e.optimize();
         auto s = Sum::cast(e);
         return s->FormulaOfVa(vv);
     }
