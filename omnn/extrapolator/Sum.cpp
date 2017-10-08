@@ -1,10 +1,12 @@
 //
 // Created by Сергей Кривонос on 25.09.17.
 //
-
 #include "Sum.h"
+#include "Formula.h"
+#include "Fraction.h"
 #include "Product.h"
 #include "Variable.h"
+#include <cmath>
 #include <map>
 
 namespace omnn{
@@ -246,6 +248,13 @@ namespace extrapolator {
         out << cstr << ')';
 		return out;
 	}
+    
+    Valuable Sum::sqrt() const
+    {
+        return Valuable(Formula(Valuable(*this), [](Valuable&& v) {
+            return std::move(v.sqrt());
+        }));
+    }
 
     /** fast linear equation formula deduction */
 	Formula Sum::FormulaOfVa(const Variable& v) const

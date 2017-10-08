@@ -37,6 +37,7 @@ public:
 	bool operator <(const Valuable& v) const override;
 	bool operator ==(const Valuable& v) const override;
     void optimize() override;
+    Valuable sqrt() const override;
 
     using base::base;
     
