@@ -148,6 +148,14 @@ namespace extrapolator {
             IMPLEMENT
     }
     
+    Valuable& Valuable::operator^=(const Valuable& v)
+    {
+        if(exp)
+            return exp->operator^=(v);
+        else
+            IMPLEMENT
+    }
+    
     bool Valuable::operator<(const Valuable& v) const
     {
         if(exp)

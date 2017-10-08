@@ -250,61 +250,37 @@ namespace extrapolator {
     /** fast linear equation formula deduction */
 	Formula Sum::FormulaOfVa(const Variable& v) const
 	{
-		// TODO : make it workfor non-linear as well once Formula ready
+		// TODO : make it work for non-linear as well once Formula ready
+        // root formula: x=((b*b-4*a*c)^(1/2)-b)/(2*a)
         Valuable e(0);
-        const Variable* cv = nullptr; // the var found
-        const Product* svp = nullptr; // product with var
+        Valuable a(0), b(0), c(0);
         
-		for (auto& m : members)
-		{
-			auto p = Product::cast(m);
-			if(p)
-			{
-				for(auto pm : *p)
-				{
-					auto vp = Variable::cast(pm);
-					if(vp && *vp==v)
-					{
-                        if(cv || svp)
-                            throw "More then one variable occurence need Implement!";
-						cv=vp;
-                        svp = p;
-                        break;;
-					}
-				}
-			}
-			else
-			{
-				auto vp = Variable::cast(m);
-				if(vp && *vp==v)
-				{
-					cv=vp;
-                    // TODO: e = *this - v;
-				}
-				else
-				{
-                    // TODO : other types?
-                    
-					e -= m;
-				}
-			}
-		}
-        
-        if(cv)
+        for (auto& m : members)
         {
-            if(svp)
+            auto p = Product::cast(m);
+            if(p)
             {
-                Product o;
-                for(auto a : *svp){
-                    if(a!=v)
-                        o*=a;
-                }
-                e /= o;
+                auto vcnt = 0; // exponentation of va
+                for(auto& pv : p->getCommonVars())
+                    if(pv==v)
+                        ++vcnt;
+                if (vcnt==0)
+                    c += m;
+                else if (vcnt==1)
+                    b += m;
+                else if (vcnt==2)
+                    a += m;
+                else if (vcnt>2)
+                    throw "Implement!";
             }
-            return Formula::DeclareFormula(v, e);
+            else
+            {
+                c+=m;
+            }
         }
         
-        throw "No such variable";
+        e = ((b*b-4*a*c).sqrt()-b)/(2*a);
+        return Formula::DeclareFormula(v, e);
 	}
 
 }}

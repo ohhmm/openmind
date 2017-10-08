@@ -64,7 +64,7 @@ public:
     virtual Valuable& operator %=(const Valuable&);
     virtual Valuable& operator--();
     virtual Valuable& operator++();
-    //todo: operator^
+    virtual Valuable& operator^=(const Valuable&);
     virtual bool operator<(const Valuable& number) const;
     virtual bool operator==(const Valuable& number) const;
     virtual Valuable abs() const;
