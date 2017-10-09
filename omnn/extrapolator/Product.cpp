@@ -92,7 +92,15 @@ namespace extrapolator {
 
 	Valuable Product::operator -() const
 	{
-		return *this * -1;
+        auto it = members.begin();
+        if(it == members.end())
+            throw "impossible!";
+        Valuable v = -*it;
+        while (++it != members.end()) {
+            v*=*it;
+        }
+        v.optimize();
+        return v;
 	}
 
 	void Product::optimize()

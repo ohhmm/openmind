@@ -190,3 +190,5 @@ namespace std
 	omnn::extrapolator::Valuable abs(const omnn::extrapolator::Valuable& v);
 	omnn::extrapolator::Valuable sqrt(const omnn::extrapolator::Valuable& v);
 }
+
+::omnn::extrapolator::Valuable operator"" _v(unsigned long long v);

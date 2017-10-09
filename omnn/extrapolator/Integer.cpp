@@ -142,7 +142,3 @@ namespace extrapolator {
 
 }}
 
-::omnn::extrapolator::Integer operator"" _v(unsigned long long v)
-{
-    return ::omnn::extrapolator::Integer(v);
-}

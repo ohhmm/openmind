@@ -243,3 +243,8 @@ namespace std
         return v.sqrt();
     }
 }
+
+::omnn::extrapolator::Valuable operator"" _v(unsigned long long v)
+{
+    return ::omnn::extrapolator::Integer(v);
+}

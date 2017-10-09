@@ -75,4 +75,3 @@ private:
 }
 }
 
-::omnn::extrapolator::Integer operator"" _v(unsigned long long v);
