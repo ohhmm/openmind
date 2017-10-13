@@ -10,7 +10,6 @@
 #include <type_traits>
 #include "Equation.h"
 #include "Expression.h"
-#include "SymmetricDouble.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
@@ -20,7 +19,7 @@ namespace extrapolator{
 
 namespace ublas = boost::numeric::ublas;
 
-    using extrapolator_base_matrix = boost::numeric::ublas::matrix<Fraction>; // TODO : Fraction -> Valuable
+    using extrapolator_base_matrix = boost::numeric::ublas::matrix<Valuable>;
     
 
 auto det_fast(extrapolator_base_matrix matrix)
@@ -156,45 +155,68 @@ public:
     }
 
     /**
-     * @returns equivalent expression
+     * Build matrix as column,raw,value
      */
-    operator Valuable() const
+    Extrapolator ViewMatrix() const
     {
         auto szy = size1();
         auto szx = size2();
-        Valuable e(0);
-        Variable vx,vy,vv;
-        for (auto y = szy; y--; ) {
-            for (auto x = szx; x--; ) {
-                auto v = operator()(y,x);
-                auto co = vx*x + vy*y + vv*v;
-                e += co * co;
+        auto len = szx*szy;
+        size_t i=0;
+        Extrapolator e(len, 3); // column, row, value
+        for (auto y = 0; y < szy; ++y) {
+            for (auto x = 0; x < szx; ++x) {
+                e(i, 0) = y;
+                e(i, 1) = x;
+                e(i, 2) = operator()(y,x);
+                ++i;
             }
         }
-        e.optimize();
         return e;
     }
     
     /**
-     * @returns values formula
+     * @returns equivalent expression
      */
-    operator Formula() const
+    operator Valuable() const
     {
+        Valuable v = 0_v;
         auto szy = size1();
         auto szx = size2();
-        Valuable e(0);
-        Variable vx,vy,vv;
-        for (auto y = szy; y--; ) {
-            for (auto x = szx; x--; ) {
-                auto v = operator()(y,x);
-                auto co = vx*x + vy*y + vv*v;
-                e += co * co;
+        std::vector<Variable> vars(szx);
+        for(;szy--;)
+        {
+            Valuable s = 0_v;
+            for(auto c = szy; c--;)
+            {
+                s += vars[c] * operator()(szy, c);
             }
+            v += s*s;
         }
-        e.optimize();
-        auto s = Sum::cast(e);
-        return s->FormulaOfVa(vv);
+        v.optimize();
+        return v;
     }
+    
+//    /**
+//     * @returns values formula
+//     */
+//    operator Formula() const
+//    {
+//        auto szy = size1();
+//        auto szx = size2();
+//        Valuable e(0);
+//        Variable vx,vy,vv;
+//        for (auto y = szy; y--; ) {
+//            for (auto x = szx; x--; ) {
+//                auto v = operator()(y,x);
+//                auto co = vx*x + vy*y + vv*v;
+//                e += co * co;
+//            }
+//        }
+//        e.optimize();
+//        auto s = Sum::cast(e);
+//        return s->FormulaOfVa(vv);
+//    }
 };
 
 }

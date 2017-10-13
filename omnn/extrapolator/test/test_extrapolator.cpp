@@ -82,6 +82,24 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test, *disabled())
     //BOOST_TEST(e.Consistent());
 }
 
+BOOST_AUTO_TEST_CASE(ViewMatrix_test)
+{
+    Extrapolator e {{ {1, 2},
+                      {3, 4} }};
+    
+//    0 0 1
+//    0 1 2
+//    1 0 3
+//    1 1 4
+    auto vm = e.ViewMatrix();
+    BOOST_TEST(vm.size1() == 4);
+    BOOST_TEST(vm.size2() == 3);
+    BOOST_TEST(vm(0,0) == 0); BOOST_TEST(vm(0,1) == 0); BOOST_TEST(vm(0,2) == 1);
+    BOOST_TEST(vm(1,0) == 0); BOOST_TEST(vm(1,1) == 1); BOOST_TEST(vm(1,2) == 2);
+    BOOST_TEST(vm(2,0) == 1); BOOST_TEST(vm(2,1) == 0); BOOST_TEST(vm(2,2) == 3);
+    BOOST_TEST(vm(3,0) == 1); BOOST_TEST(vm(3,1) == 1); BOOST_TEST(vm(3,2) == 4);
+}
+
 BOOST_AUTO_TEST_CASE(Codec_test)
 {
     Extrapolator e {{
@@ -97,15 +115,20 @@ BOOST_AUTO_TEST_CASE(Codec_test)
                             {1,0,0,1, 0,0,1},
                     }};
 
-    Valuable v = e;
-    std::cout<<v<<std::endl;
-//    for (int i=e.size1(); i--;) {
-//        for (int j=e.size2(); j--;) {
-////            BOOST_TEST(e(i,j,f(i,j))==0);
-//        }
-//    }
+    auto vm = e.ViewMatrix();
+    ublas::vector<Valuable> augment(vm.size1());
+    auto solution = vm.Solve(augment);
+
+    Valuable v = vm;
+    //Formula f = e;
     
-    Formula f = e;
+    std::cout<<v<<std::endl;
+    for (int i=e.size1(); i--;) {
+        for (int j=e.size2(); j--;) {
+//            BOOST_TEST(e(i,j)==f(i,j));
+        }
+    }
+    
 //    std::cout<<f<<std::endl;
 //    for (int i=e.size1(); i--;) {
 //        for (int j=e.size2(); j--;) {

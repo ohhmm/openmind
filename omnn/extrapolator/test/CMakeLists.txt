@@ -1,9 +1,13 @@
 SET (this_target test_extrapolator)
 project(${this_target})
 file(GLOB src *.cpp)
-link_directories(${Boost_LIBRARIES} /usr/local/lib)
+link_directories(
+    ${Boost_LIBRARIES}
+    /usr/local/lib
+    ${Boost_INCLUDE_DIR}/stage/lib
+    )
 if(NOT MSVC)
-	set(test_libs boost_test_exec_monitor-mt)
+    set(test_libs boost_test_exec_monitor)
 endif()
 foreach(TEST ${src})
     get_filename_component(TEST_NAME ${TEST} NAME_WE)

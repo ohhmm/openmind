@@ -9,7 +9,6 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 
-
 namespace omnn{
 namespace extrapolator {
     
@@ -17,6 +16,7 @@ namespace extrapolator {
 
     class Integer;
     class Variable;
+    struct ValuableDescendantMarker {};
     
 class Valuable
         : public OpenOps<Valuable>
@@ -39,21 +39,23 @@ protected:
         while (e && e->exp) e = e->exp;
         return dynamic_cast<const T*>(e ? e.get() : &v);
     }
-
+    
+    template<class T> Valuable() {}
+    Valuable(ValuableDescendantMarker){}
+    
     virtual std::ostream& print(std::ostream& out) const;
-    
-    Valuable() = default;
-    
     virtual Valuable& Become(Valuable&& i);
     
 public:
     explicit Valuable(Valuable* v);
+    
+
 
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(const Valuable&& v);
     Valuable(const Valuable& v);
     Valuable(Valuable&& v);
-    Valuable(int i);
+    Valuable(int i = 0);
 
     virtual ~Valuable();
     virtual Valuable operator -() const;
@@ -90,8 +92,11 @@ protected:
     }
 
 public:
-    using Valuable::Valuable;
-	ValuableDescendantContract() {}
+    // once compiler allow
+    // todo :
+    //ValuableDescendantContract() : Valuable<>() {}
+    // instead of
+    ValuableDescendantContract() : Valuable(ValuableDescendantMarker()) {}
     ValuableDescendantContract(ValuableDescendantContract&&){}
     ValuableDescendantContract(const ValuableDescendantContract&){}
 	ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { return *this; }
