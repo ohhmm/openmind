@@ -122,10 +122,9 @@ namespace extrapolator {
         auto i = cast(v);
         if (i)
             return arbitrary == i->arbitrary;
-        else
-        {
-            // try other type
-        }
+        else if(Variable::cast(v))
+            return false;
+
         // no type matched
         return base::operator ==(v);
     }

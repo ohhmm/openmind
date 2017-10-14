@@ -34,8 +34,8 @@ public:
     
     void optimize() override { e.optimize(); }
     
-    template<class VaT, class... T>
-    Valuable&& operator()(const T&... vl) const
+    template<class... T>
+    Valuable operator()(const T&... vl) const
     {
         auto o = *this;
         auto va = o.ev.begin();
@@ -45,7 +45,7 @@ public:
             ++va;
         }
         o.optimize();
-        
+
         return f ? const_cast<f_t&>(f)(std::move(o.e)) : std::move(o.e);
     }
     

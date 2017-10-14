@@ -262,6 +262,7 @@ namespace extrapolator {
 		// TODO : make it work for non-linear as well once Formula ready
         // root formula: x=((b*b-4*a*c)^(1/2)-b)/(2*a)
         Valuable e(0);
+        // square equation axx+bx+c=0
         Valuable a(0), b(0), c(0);
         
         for (auto& m : members)
@@ -276,9 +277,9 @@ namespace extrapolator {
                 if (vcnt==0)
                     c += m;
                 else if (vcnt==1)
-                    b += m;
+                    b += m / v;
                 else if (vcnt==2)
-                    a += m;
+                    a += m / v / v;
                 else if (vcnt>2)
                     throw "Implement!";
             }
@@ -287,7 +288,7 @@ namespace extrapolator {
                 c+=m;
             }
         }
-        
+
         e = ((b*b-4*a*c).sqrt()-b)/(2*a);
         return Formula::DeclareFormula(v, e);
 	}

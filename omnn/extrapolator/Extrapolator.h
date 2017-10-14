@@ -52,7 +52,7 @@ class Extrapolator
     
     using solution_t = typename ublas::matrix_vector_solve_traits<base, ublas::vector<T>>::result_type;
 
-    solution_t solution;
+    mutable solution_t solution;
 
 public:
     using base::base;
@@ -78,8 +78,44 @@ public:
 
     }
 
-    solution_t Solve(const ublas::vector<T>& augment){
-        solution = ublas::solve(*this, augment, ublas::upper_tag());
+    solution_t Solve(const ublas::vector<T>& augment) const
+    {
+        auto e = *this;
+        auto sz1 = size1();
+        auto sz2 = size2();
+        ublas::vector<T> a(sz2);
+        const ublas::vector<T>* au = &augment;
+        if(sz1>sz2)
+        {
+            //make square matrix to make it solvable by boost ublas
+            e = Extrapolator(sz2, sz2);
+            // sum first equations
+            a[0] = 0;
+            for (auto i = sz2; i--; )
+            {
+                e(0, i) = 0;
+            }
+            auto d = sz1-sz2;
+            for (auto i = d; i--; )
+            {
+                for(auto j = sz2; j--; )
+                {
+                    e(0,j) += operator()(i,j);
+                }
+                a[0] += augment[i];
+            }
+            
+            for(auto i = d; i<sz1; ++i)
+            {
+                for(auto j = sz2; j--; )
+                {
+                    e(i-d, j) = operator()(i,j);
+                }
+                a[i-d] = augment[i];
+            }
+            au = &a;
+        }
+        solution = ublas::solve(e, *au, ublas::upper_tag());
         return solution;
     }
 
@@ -187,7 +223,7 @@ public:
         for(;szy--;)
         {
             Valuable s = 0_v;
-            for(auto c = szy; c--;)
+            for(auto c = szx; c--;)
             {
                 s += vars[c] * operator()(szy, c);
             }
@@ -197,26 +233,29 @@ public:
         return v;
     }
     
-//    /**
-//     * @returns values formula
-//     */
-//    operator Formula() const
-//    {
-//        auto szy = size1();
-//        auto szx = size2();
-//        Valuable e(0);
-//        Variable vx,vy,vv;
-//        for (auto y = szy; y--; ) {
-//            for (auto x = szx; x--; ) {
-//                auto v = operator()(y,x);
-//                auto co = vx*x + vy*y + vv*v;
-//                e += co * co;
-//            }
-//        }
-//        e.optimize();
-//        auto s = Sum::cast(e);
-//        return s->FormulaOfVa(vv);
-//    }
+    /**
+     * Build formula of its ViewMatrix
+     * @returns formula from two params
+     */
+    operator Formula() const
+    {
+        auto szy = size1();
+        auto szx = size2();
+        Valuable e(0);
+        Variable vx,vy,vv;
+        for (auto y = szy; y--; ) {
+            for (auto x = szx; x--; ) {
+                auto v = operator()(y,x);
+                auto co = vx*x + vy*y + vv*v;
+                e += co * co;
+            }
+        }
+        e.optimize();
+        auto s = Sum::cast(e);
+        if(!s)
+            throw "Debug!";
+        return s->FormulaOfVa(vv);
+    }
 };
 
 }

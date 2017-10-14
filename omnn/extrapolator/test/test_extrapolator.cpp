@@ -114,18 +114,15 @@ BOOST_AUTO_TEST_CASE(Codec_test)
                             {0,1,1,0, 0,0,1},
                             {1,0,0,1, 0,0,1},
                     }};
-
     auto vm = e.ViewMatrix();
+    Valuable vme = vm;
     ublas::vector<Valuable> augment(vm.size1());
-    auto solution = vm.Solve(augment);
+    std::cout<< vme <<std::endl;
 
-    Valuable v = vm;
-    //Formula f = e;
-    
-    std::cout<<v<<std::endl;
-    for (int i=e.size1(); i--;) {
-        for (int j=e.size2(); j--;) {
-//            BOOST_TEST(e(i,j)==f(i,j));
+    Formula f = e;
+    for (int i=vm.size1(); i--;) {
+        for (int j=vm.size2(); j--;) {
+            BOOST_TEST(vm(i,j)==f(i,j));
         }
     }
     

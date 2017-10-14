@@ -240,7 +240,16 @@ namespace extrapolator {
 
 	Valuable& Product::operator /=(const Valuable& v)
 	{
-        *this *= Fraction(1, v);
+        for (auto it = members.begin(); it != members.end(); ++it)
+        {
+            if (*it == v)
+            {
+                members.erase(it);
+                return *this;
+            }
+        }
+        
+        return *this *= Fraction(1, v);
 	}
 
 	Valuable& Product::operator %=(const Valuable& v)
@@ -282,9 +291,5 @@ namespace extrapolator {
         out << cstr;
         return out;
 	}
-
-	
-
-
 
 }}
