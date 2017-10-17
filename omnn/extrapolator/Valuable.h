@@ -73,6 +73,7 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     virtual Valuable sqrt() const;
     virtual const Variable* FindVa() const;
+    virtual void Eval(const Variable& va, const Valuable& v);
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     
     bool OfSameType(const Valuable& v) const;
@@ -183,9 +184,17 @@ public:
             return false;
         }
         
-        const Variable* FindVa() const
+        const Variable* FindVa() const override
         {
             return GetFirstOccurence<Variable>();
+        }
+        
+        void Eval(const Variable& va, const Valuable& v) override
+        {
+            for(auto& i : GetCont())
+            {
+                const_cast<Valuable&>(i).Eval(va,v);
+            }
         }
     };
 }}

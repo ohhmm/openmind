@@ -252,7 +252,7 @@ namespace extrapolator {
     Valuable Sum::sqrt() const
     {
         return Valuable(Formula(Valuable(*this), [](Valuable&& v) {
-            return std::move(v.sqrt());
+            return v.sqrt();
         }));
     }
 

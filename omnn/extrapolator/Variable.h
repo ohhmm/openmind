@@ -57,12 +57,15 @@ public:
     }
     
     using base::Become;
-//    Valuable& Become(Valuable&& i) override
-//    {
-//        auto& b = base::Become(std::move(i));
-//        //todo : notify other var instances through varhost
-//        return b;
-//    }
+    
+    void Eval(const Variable& va, const Valuable& v) override
+    {
+        if(va==*this)
+        {
+            auto copy = v;
+            Become(std::move(copy));
+        }
+    }
 };
 
 

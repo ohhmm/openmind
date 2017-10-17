@@ -83,9 +83,10 @@ public:
         auto e = *this;
         auto sz1 = size1();
         auto sz2 = size2();
+        
         ublas::vector<T> a(sz2);
         const ublas::vector<T>* au = &augment;
-        if(sz1>sz2)
+        if (sz1 > sz2 + 1/*augment*/)
         {
             //make square matrix to make it solvable by boost ublas
             e = Extrapolator(sz2, sz2);
@@ -255,6 +256,26 @@ public:
         if(!s)
             throw "Debug!";
         return s->FormulaOfVa(vv);
+    }
+
+    Valuable Equation(const ublas::vector<T>& augmented)
+    {
+        Valuable v = 0_v;
+        auto szy = size1();
+        auto szx = size2();
+        std::vector<Variable> vars(szx);
+        for(;szy--;)
+        {
+            Valuable s = 0_v;
+            for(auto c = szx; c--;)
+            {
+                s += vars[c] * operator()(szy, c);
+            }
+            s += augmented[szy];
+            v += s*s;
+        }
+        v.optimize();
+        return v;
     }
 };
 

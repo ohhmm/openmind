@@ -256,7 +256,7 @@ namespace extrapolator {
         else
             out << numerator;
         out << '/';
-        if(!n)
+        if(!dn)
             out << '(' << denominator << ')';
         else
             out << denominator;

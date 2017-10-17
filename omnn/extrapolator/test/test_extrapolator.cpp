@@ -8,6 +8,12 @@
 using namespace omnn::extrapolator;
 using namespace boost::unit_test;
 
+
+BOOST_AUTO_TEST_CASE(ExtrapolatorSolve_test)
+{
+    
+}
+
 BOOST_AUTO_TEST_CASE(Extrapolator_test, *disabled())
 {
     // lets define extrapolator vars:
@@ -86,7 +92,12 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
 {
     Extrapolator e {{ {1, 2},
                       {3, 4} }};
+    {
+    Valuable v = e;
+    std::cout << v << std::endl;
+    }
     
+// view matrix
 //    0 0 1
 //    0 1 2
 //    1 0 3
@@ -98,6 +109,84 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
     BOOST_TEST(vm(1,0) == 0); BOOST_TEST(vm(1,1) == 1); BOOST_TEST(vm(1,2) == 2);
     BOOST_TEST(vm(2,0) == 1); BOOST_TEST(vm(2,1) == 0); BOOST_TEST(vm(2,2) == 3);
     BOOST_TEST(vm(3,0) == 1); BOOST_TEST(vm(3,1) == 1); BOOST_TEST(vm(3,2) == 4);
+    {
+    // ax+by+cz=0
+    // a=0:N, b=0:M, c=-(ax+by)/z     // if x=0 and y=0 then c becames 0 but it wasnt;
+    // lets make c a va
+    Valuable eq = 1_v;
+    Variable x,y,z;
+    for (auto i=vm.size1(); i--;) {
+        auto e1 = x - vm(i,0);
+        auto e2 = y - vm(i,1);
+        auto e3 = z - vm(i,2);
+        auto subsyst = e1*e1 + e2*e2 + e3*e3; // squares sum equivalent to conjunction
+        std::cout << subsyst << std::endl;
+        eq += subsyst*subsyst;
+    }
+    std::cout << eq << std::endl;
+    // checking
+    for (auto i=vm.size1(); i--;) {
+        Valuable v = eq;
+        v.Eval(x, vm(i,0));
+        v.Eval(y, vm(i,1));
+        v.optimize();
+        std::cout << std::endl << vm(i,2) << " : " << v << std::endl;
+    }
+    }
+    Extrapolator m {{
+        {0,0},
+        {0,1},
+        {1,0},
+        {1,1}
+    }};
+    ublas::vector<Valuable> au(4);
+    for(int i=1; i<4; ++i)
+    {
+        au[i] = i;
+    }
+    auto s = m.Solve(au);
+    for(auto si : s)
+    {
+        std::cout << si << ' ';
+    }
+    std::cout << std::endl;
+
+    // check this solution
+    for (auto i = m.size1(); i--; ) {
+        Valuable v = -au[i];
+        for (auto j=m.size2(); j--; ) {
+            v += m(i,j) * s[j];
+        }
+        BOOST_TEST(v==0);
+    }
+//    std::cout << &s << std::endl;
+    auto eq = m.Equation(au);
+    std::cout << eq << std::endl;
+    // c = (ax+by) / z
+
+
+    Valuable v = vm;
+    //std::cout << v << std::endl;
+    // 30*v3*v3 + 12*v2*v3 + 14*v1*v3 + 2*v2*v2 + 2*v1*v2 + 2*v1*v1
+    //    0 0 1 :
+    //    0 1 2 :
+    //    1 0 3 :
+    //    1 1 4 :
+
+    //    0 0 | 1 : 0 != -1
+    //    0 1 | 2 :
+    //    1 0 | 3 :
+    //    1 1 | 4 :
+    
+    // to solve:
+    //    1 1 | 6 :
+    //    1 1 | 4 :
+    // solution : 2 3
+    // :facepalm:
+    //    (2*v2*v2 + 2*v1*v2 + 8*v2 + 2*v1*v1 + 10*v1 - 14) = 0
+    //    (2*9 + 2*6 + 8*3 + 2*4 + 10*2 - 14) = 0
+    //
+
 }
 
 BOOST_AUTO_TEST_CASE(Codec_test)

@@ -63,7 +63,6 @@ public:
     Fraction& operator=(const Fraction& f)=default;
     Fraction& operator=(Fraction&& f)=default;
 	//Fraction& operator=(const Fraction&) = default;
-    
 };
 
 }}

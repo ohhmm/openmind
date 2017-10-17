@@ -67,6 +67,8 @@ public:
             
     friend std::ostream& operator <<(std::ostream& out, const Integer& obj);
 
+    void Eval(const Variable& va, const Valuable& v) override { }
+
 private:
 	base_int arbitrary = 0;
 };

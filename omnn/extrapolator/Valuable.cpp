@@ -224,6 +224,14 @@ namespace extrapolator {
         IMPLEMENT
     }
 
+    void Valuable::Eval(const Variable& va, const Valuable& v)
+    {
+        if (exp) {
+            return exp->Eval(va, v);
+        }
+        IMPLEMENT
+    }
+    
     bool Valuable::OfSameType(const Valuable& v) const
     {
         const Valuable& v1 = exp ? *exp : *this;
