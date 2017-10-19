@@ -41,7 +41,8 @@ public:
         auto va = o.ev.begin();
         for(auto v:{vl...})
         {
-            (*va)->Become(v);
+            auto copy = v;
+            (*va)->Become(std::move(copy));
             ++va;
         }
         o.optimize();

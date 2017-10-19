@@ -271,7 +271,7 @@ public:
             {
                 s += vars[c] * operator()(szy, c);
             }
-            s += augmented[szy];
+            s -= augmented[szy];
             v += s*s;
         }
         v.optimize();
