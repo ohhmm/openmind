@@ -63,6 +63,11 @@ public:
     Fraction& operator=(const Fraction& f)=default;
     Fraction& operator=(Fraction&& f)=default;
 	//Fraction& operator=(const Fraction&) = default;
+
+    const base_int& getDenominator() const;
+    const base_int& getNumerator() const;
+
+    Fraction Reciprocal() const;
 };
 
 }}

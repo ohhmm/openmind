@@ -263,4 +263,20 @@ namespace extrapolator {
         return out;
     }
 
+    const omnn::extrapolator::Fraction::base_int& Fraction::getDenominator() const
+    {
+        return denominator;
+    }
+
+    const omnn::extrapolator::Fraction::base_int& Fraction::getNumerator() const
+    {
+        return numerator;
+    }
+
+    omnn::extrapolator::Fraction Fraction::Reciprocal() const
+    {
+        return Fraction(denominator, numerator);
+    }
+
+
 }}

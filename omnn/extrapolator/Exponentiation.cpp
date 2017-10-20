@@ -1,0 +1,165 @@
+//
+// Created by Сергей Кривонос on 01.09.17.
+//
+#include "Exponentiation.h"
+#include "Integer.h"
+#include "Sum.h"
+#include "Product.h"
+
+
+namespace omnn{
+namespace extrapolator {
+    
+	Valuable Exponentiation::operator -() const
+    {
+        return -1 * *this;
+    }
+
+    void Exponentiation::optimize()
+    {
+        bool ebz = ebase == 0;
+        bool exz = eexp == 0;
+        if(exz)
+        {
+            if(ebz)
+                throw "NaN";
+
+            Become(1_v);
+        }
+        else if(eexp == 1)
+        {
+            Become(std::move(ebase));
+        }
+        else
+        {
+            auto ibase = Integer::cast(ebase);
+            auto iexp = Integer::cast(eexp);
+            if(ibase && iexp)
+            {
+                Become(*ibase ^ *iexp);
+            }
+        }
+    }
+    
+    Valuable& Exponentiation::operator +=(const Valuable& v)
+    {
+        return Become(Sum(*this, v));
+    }
+
+    Valuable& Exponentiation::operator *=(const Valuable& v)
+    {
+        auto e = cast(v);
+        if (e)
+        {
+            if(ebase == e->ebase)
+            {
+                eexp += e->eexp;
+            }
+            else
+            {
+                Become(Product(*this, v));
+            }
+        }
+        else
+        {
+            auto f = Fraction::cast(v);
+            if(f && f->getDenominator() == ebase)
+            {
+                --eexp;
+                return operator*=(f->getNumerator());
+            }
+
+            if(ebase == v)
+            {
+                ++eexp;
+            }
+            else
+            {
+                Become(Product(*this, v));
+            }
+        }
+
+        optimize();
+        return *this;
+    }
+
+    Valuable& Exponentiation::operator /=(const Valuable& v)
+    {
+        auto e = cast(v);
+        if (e)
+        {
+            if(ebase == e->ebase)
+            {
+                eexp -= e->eexp;
+            }
+            else
+            {
+                Become(Fraction(*this, v));
+            }
+        }
+        else
+        {
+            auto f = Fraction::cast(v);
+            if(f)
+            {
+                return operator*=(f->Reciprocal());
+            }
+
+            if(ebase == v)
+            {
+                --eexp;
+            }
+            else
+            {
+                Become(Fraction(*this, v));
+            }
+        }
+
+        optimize();
+        return *this;
+    }
+
+    Valuable& Exponentiation::operator --()
+    {
+        return *this+=-1_v;
+    }
+
+    Valuable& Exponentiation::operator ++()
+    {
+        return *this+=1_v;
+    }
+
+    bool Exponentiation::operator <(const Valuable& v) const
+    {
+        // todo :
+        return base::operator <(v);
+    }
+
+    bool Exponentiation::operator ==(const Valuable& v) const
+    {
+        auto e = cast(v);
+        if (e)
+        {
+            return ebase == e->ebase && eexp == e->eexp;
+        }
+        // no type matched
+        return base::operator ==(v);
+    }
+
+    std::ostream& Exponentiation::print(std::ostream& out) const
+    {
+        auto n = Integer::cast(ebase);
+        auto dn = Integer::cast(eexp);
+        if(!n)
+            out << '(' << ebase << ')';
+        else
+            out << ebase;
+        out << '^';
+        if(!dn)
+            out << '(' << eexp << ')';
+        else
+            out << eexp;
+        return out;
+    }
+
+}}

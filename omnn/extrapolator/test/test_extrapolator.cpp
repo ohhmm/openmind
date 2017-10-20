@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         std::cout << subsyst << std::endl;
         eq += subsyst*subsyst;
         auto sum = Sum::cast(subsyst);
-        BOOST_TEST(sum != nullptr);
+        BOOST_TEST(sum);
         auto formula = sum->FormulaOfVa(z);
         BOOST_TEST(formula(vm(i, 0), vm(i, 1)) == vm(i, 2));
         subsyst.Eval(x, vm(i, 0));
