@@ -186,7 +186,13 @@ public:
         
         const Variable* FindVa() const override
         {
-            return GetFirstOccurence<Variable>();
+            for (auto& i : GetCont())
+            {
+                auto va = i.FindVa();
+                if (va)
+                    return va;
+            }
+            return nullptr;
         }
         
         void Eval(const Variable& va, const Valuable& v) override
@@ -195,6 +201,7 @@ public:
             {
                 const_cast<Valuable&>(i).Eval(va,v);
             }
+            optimize();
         }
     };
 }}

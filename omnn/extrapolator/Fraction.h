@@ -68,6 +68,8 @@ public:
     const base_int& getNumerator() const;
 
     Fraction Reciprocal() const;
+    const Variable* FindVa() const override;
+    void Eval(const Variable& va, const Valuable& v) override;
 };
 
 }}

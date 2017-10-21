@@ -37,6 +37,9 @@ public:
     Exponentiation(const Valuable& b)
             : ebase(b), eexp(1)
     {}
+
+    const Variable* FindVa() const override;
+    void Eval(const Variable& va, const Valuable& v) override;
 };
 
 }}

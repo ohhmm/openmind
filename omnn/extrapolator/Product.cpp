@@ -2,6 +2,8 @@
 // Created by Сергей Кривонос on 25.09.17.
 //
 #include "Product.h"
+
+#include "Exponentiation.h"
 #include "Sum.h"
 #include "Fraction.h"
 #include <type_traits>
@@ -12,11 +14,15 @@ namespace extrapolator {
     // store order operator
     bool ValuableLessCompare::operator()(const Valuable& v1, const Valuable& v2)
     {
+        // TODO : refactore, compare nemerical representation of order rank
         auto v1va = Variable::cast(v1);
         auto v2va = Variable::cast(v2);
         auto v1fa = v1.FindVa();
         auto v2fa = v2.FindVa();
-        
+        bool v1s = Sum::cast(v1);
+        bool v2s = Sum::cast(v2);
+        bool v1p = Product::cast(v1);
+        bool v2p = Product::cast(v2);
 
         if(v1va)
         {
@@ -32,7 +38,6 @@ namespace extrapolator {
                 }
                 else
                 {
-                    auto v2s = Sum::cast(v2);
                     if (v2s) {
                         return true;
                     }
@@ -64,16 +69,20 @@ namespace extrapolator {
                 }
                 else
                 {
-                    auto v1s = Sum::cast(v1);
                     if (v1s)
                     {
                         return false;
                     }
                     else
                     {
-                        if (Sum::cast(v2) || Product::cast(v2)) {
+                        if (v2s || v2p) {
                             return true;
                         }
+                        else if (v1s || v1p) {
+                            return false;
+                        }
+                        else if (Integer::cast(v1) && Exponentiation::cast(v2))
+                            return true;
                         else
                             return v1 < v2;
                     }
@@ -103,34 +112,34 @@ namespace extrapolator {
         return v;
 	}
 
-	void Product::optimize()
-	{
+    void Product::optimize()
+    {
         // emerge inner products
         for (auto it = members.begin(); it != members.end();)
         {
             auto p = cast(*it);
             if (p) {
-                for(auto& m : *p)
+                for (auto& m : *p)
                     Add(m);
                 members.erase(it++);
             }
             else  ++it;
         }
-        
+
         // optimize members, if found a sum then become the sum multiplied by other members
         Sum* s = nullptr;
-        for(auto& it : members)
+        for (auto& it : members)
         {
             s = const_cast<Sum*>(Sum::cast(it));
-            if(s)
+            if (s)
                 break;
             const_cast<Valuable&>(it).optimize();
         }
-        if(s)
+        if (s)
         {
-            for(auto& it : members)
+            for (auto& it : members)
             {
-                if(s == const_cast<Sum*>(Sum::cast(it)))
+                if (s == const_cast<Sum*>(Sum::cast(it)))
                     continue;
                 else
                     *s *= it;
@@ -139,37 +148,43 @@ namespace extrapolator {
             Become(std::move(*s));
             return;
         }
-        
+
         // if no sum  then continue optimizing this product
-		if (members.size() == 1)
-		{
-			Become(std::move(*const_cast<Valuable*>(&*members.begin())));
-		}
-		else
-		{
-			for (auto it = members.begin(); it != members.end(); ++it)
-			{
-                if (*it == 0)
+        for (auto it = members.begin(); it != members.end();)
+        {
+            if (members.size() == 1)
+            {
+                Become(std::move(*const_cast<Valuable*>(&*it)));
+                return;
+            }
+
+            if (*it == 1)
+            {
+                members.erase(it++);
+                continue;
+            }
+
+            if (*it == 0)
+            {
+                Become(0);
+                return;
+            }
+
+            auto t = it;
+            for (auto it2 = ++t; it2 != members.end();)
+            {
+                if (it2->OfSameType(*it) && !Variable::cast(*it))
                 {
-                    Become(0);
-                    return;
+                    const_cast<Valuable&>(*it) *= *it2;
+                    members.erase(it2++);
                 }
-				if (*it == 1)
-					members.erase(it++);
-				auto t = it;
-				for (auto it2 = ++t; it2 != members.end();)
-				{
-                    if (it2->OfSameType(*it) && !Variable::cast(*it))
-					{
-						const_cast<Valuable&>(*it) *= *it2;
-						members.erase(it2++);	
-					}
-					else
-						++it2;
-				}
-			}
-		}
-	}
+                else
+                    ++it2;
+            }
+
+            ++it;
+        }
+    }
 
     const std::multiset<Variable>& Product::getCommonVars() const
     {
@@ -188,35 +203,34 @@ namespace extrapolator {
         return p;
     }
     
-	Valuable& Product::operator +=(const Valuable& v)
-	{
+    Valuable& Product::operator +=(const Valuable& v)
+    {
         auto p = cast(v);
-        if(p)
+        if (p)
         {
             auto cv = getCommonVars();
-            if(!cv.empty() && cv == p->getCommonVars())
+            if (!cv.empty() && cv == p->getCommonVars())
             {
                 auto valuable = varless() + p->varless();
-                Valuable vp(1);
-                for(auto& va : vars)
-                    vp *= va;
-                return Become(Product(std::move(valuable),std::move(vp)));
+                for (auto& va : vars)
+                    valuable *= va;
+                return Become(std::move(valuable));
             }
         }
-		return Become(Sum(*this, v));
-	}
+        return Become(Sum(*this, v));
+    }
 
 	Valuable& Product::operator +=(int v)
 	{
 		return *this += Valuable(v);
 	}
 
-	Valuable& Product::operator *=(const Valuable& v)
-	{
+    Valuable& Product::operator *=(const Valuable& v)
+    {
         auto s = Sum::cast(v);
-        if(s)
+        if (s)
             return Become(v**this);
-        
+
         auto va = Variable::cast(v);
         if (!va)
         {
@@ -229,14 +243,14 @@ namespace extrapolator {
                 }
             }
         }
-        
+
         // add new member
         Add(v);
 
-	yes:
-		optimize();
-		return *this;
-	}
+    yes:
+        optimize();
+        return *this;
+    }
 
 	Valuable& Product::operator /=(const Valuable& v)
 	{
@@ -292,4 +306,27 @@ namespace extrapolator {
         return out;
 	}
 
+    const Variable* Product::FindVa() const
+    {
+        return vars.size() ? &*vars.begin() : nullptr;
+    }
+
+    void Product::Eval(const Variable& va, const Valuable& v)
+    {
+        // eval members
+        base::Eval(va, v);
+
+        if (cast(*this) // still Product
+            && vars.size())
+        {
+            bool found;
+            do
+            {
+                auto it = vars.find(va);
+                found = it != vars.end();
+                if (found)
+                    vars.erase(it);
+            } while (found);
+        }
+    }
 }}

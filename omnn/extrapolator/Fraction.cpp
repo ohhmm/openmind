@@ -27,20 +27,22 @@ namespace extrapolator {
 
     void Fraction::optimize()
     {
-		auto n = Integer::cast(numerator);
-		auto dn = Integer::cast(denominator);
-		if (n)
-		{
-            if(*n==0)
+        numerator.optimize();
+        denominator.optimize();
+        auto n = Integer::cast(numerator);
+        auto dn = Integer::cast(denominator);
+        if (n)
+        {
+            if (*n == 0)
             {
-                if(dn && *dn==0)
+                if (dn && *dn == 0)
                     throw "NaN";
                 Become(0);
                 return;
             }
-            if(dn)
+            if (dn)
             {
-                if(*dn==1)
+                if (*dn == 1)
                 {
                     Become(Integer(*n));
                     return;
@@ -51,11 +53,11 @@ namespace extrapolator {
                 numerator /= Integer(d);
                 denominator /= Integer(d);
             }
-		}
-		else
-		{
-			// TODO : products
-		}
+        }
+        else
+        {
+            // TODO : products
+        }
     }
     
     Valuable& Fraction::operator +=(const Valuable& v)
@@ -278,5 +280,15 @@ namespace extrapolator {
         return Fraction(denominator, numerator);
     }
 
+    const Variable* Fraction::FindVa() const
+    {
+        auto va = denominator.FindVa();
+        return va ? va : numerator.FindVa();
+    }
 
+    void Fraction::Eval(const Variable& va, const Valuable& v)
+    {
+        numerator.Eval(va, v);
+        denominator.Eval(va, v);
+    }
 }}

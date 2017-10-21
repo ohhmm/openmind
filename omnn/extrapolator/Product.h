@@ -23,11 +23,13 @@ class Product
     using base::cont;
     friend class Variable;
     cont members;
-    std::multiset<Variable> vars;
+    using vars_cont_t = std::multiset<Variable>;
+    vars_cont_t vars;
     
 protected:
     const cont& GetCont() const override { return members; }
-	std::ostream& print(std::ostream& out) const override;
+    std::ostream& print(std::ostream& out) const override;
+    Product(const vars_cont_t& v) : vars(v) { Add(1_v); }
 
 public:
     using base::base;
@@ -61,6 +63,9 @@ public:
 	bool operator <(const Valuable& v) const override;
 	bool operator ==(const Valuable& v) const override;
 	void optimize() override;
+
+    const Variable* FindVa() const override;
+    void Eval(const Variable& va, const Valuable& v) override;
 };
 
 

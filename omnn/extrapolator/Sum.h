@@ -17,7 +17,8 @@ class Sum
     using base::cont;
     friend class Variable;
     cont members;
-    
+    bool isOptimizing = false;
+
 protected:
     const cont& GetCont() const override { return members; }
 	std::ostream& print(std::ostream& out) const override;

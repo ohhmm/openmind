@@ -17,6 +17,9 @@ namespace extrapolator {
 
     void Exponentiation::optimize()
     {
+        ebase.optimize();
+        eexp.optimize();
+
         bool ebz = ebase == 0;
         bool exz = eexp == 0;
         if(exz)
@@ -29,6 +32,12 @@ namespace extrapolator {
         else if(eexp == 1)
         {
             Become(std::move(ebase));
+        }
+        else if (ebz)
+        {
+            if (exz)
+                throw "NaN";
+            Become(0_v);
         }
         else
         {
@@ -131,7 +140,14 @@ namespace extrapolator {
 
     bool Exponentiation::operator <(const Valuable& v) const
     {
-        // todo :
+        auto e = cast(v);
+        if (e)
+        {
+            if (e->ebase == ebase)
+                return eexp < e->eexp;
+            if (e->eexp == eexp)
+                return ebase < e->ebase;
+        }
         return base::operator <(v);
     }
 
@@ -141,6 +157,10 @@ namespace extrapolator {
         if (e)
         {
             return ebase == e->ebase && eexp == e->eexp;
+        }
+        else
+        {
+            return false;
         }
         // no type matched
         return base::operator ==(v);
@@ -160,6 +180,18 @@ namespace extrapolator {
         else
             out << eexp;
         return out;
+    }
+
+    const Variable* Exponentiation::FindVa() const
+    {
+        auto va = eexp.FindVa();
+        return va ? va : ebase.FindVa();
+    }
+
+    void Exponentiation::Eval(const Variable& va, const Valuable& v)
+    {
+        ebase.Eval(va, v);
+        eexp.Eval(va, v);
     }
 
 }}

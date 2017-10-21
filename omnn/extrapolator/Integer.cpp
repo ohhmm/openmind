@@ -40,12 +40,8 @@ namespace extrapolator {
             arbitrary *= i->arbitrary;
         else
         {
-            // try other type
-            auto i = Fraction::cast(v);
-            if (i)
-                Become(v**this);
-            else
-                Become(Product(*this, v));
+            // all other types should handle multiplication by Integer
+            Become(v**this);
         }
         return *this;
     }
@@ -122,7 +118,7 @@ namespace extrapolator {
         auto i = cast(v);
         if (i)
             return arbitrary == i->arbitrary;
-        else if(Variable::cast(v))
+        else if(v.FindVa())
             return false;
 
         // no type matched

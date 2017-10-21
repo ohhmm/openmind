@@ -2,10 +2,13 @@
 // Created by Сергей Кривонос on 25.09.17.
 //
 #include "Sum.h"
+
+#include "Exponentiation.h"
 #include "Formula.h"
 #include "Fraction.h"
 #include "Product.h"
 #include "Variable.h"
+
 #include <cmath>
 #include <map>
 
@@ -25,89 +28,92 @@ namespace extrapolator {
 		return s;
 	}
 
-	void Sum::optimize()
-	{
-        thread_local bool isOptimising = false; // todo : remove
-        if (isOptimising)
+    void Sum::optimize()
+    {
+        if (isOptimizing)
             return;
-        isOptimising = true;
-        
+        isOptimizing = true;
+
         Valuable w(0);
         do
         {
             w = *this;
-        if (members.size()==1) {
-            Become(std::move(members.front()));
-            isOptimising = false;
-            return;
-        }
+            if (members.size() == 1) {
+                Become(std::move(members.front()));
+                isOptimizing = false;
+                return;
+            }
 
-        for (auto it = members.begin(); it != members.end();)
-        {
-            if (*it == 0)
+            for (auto it = members.begin(); it != members.end();)
             {
-                members.erase(it++);
-                continue;
-            }
-            auto s = cast(*it);
-            if (s) {
-                for(auto& m : s->members)
+                it->optimize();
+                if (*it == 0)
                 {
-                    members.push_back(std::move(m));
+                    members.erase(it++);
+                    continue;
                 }
-                members.erase(it++);
-                continue;
-            }
-            auto t = it;
-            for (auto it2 = ++t; it2 != members.end();)
-            {
-                if (it2->OfSameType(*it)
-                    && !Variable::cast(*it)
-                    && !Product::cast(*it))
-                {
-                    const_cast<Valuable&>(*it) += *it2;
-                    members.erase(it2++);
+                auto s = cast(*it);
+                if (s) {
+                    for (auto& m : s->members)
+                    {
+                        members.push_back(std::move(m));
+                    }
+                    members.erase(it++);
+                    continue;
                 }
-                else
-                    ++it2;
-            }
-            
-            ++it;
-        }
-
-        // commonize by vars
-        using K = std::multiset<Variable>;
-        using V = Product*;
-        using KV = std::pair<K,V>;
-        std::map<K,V> kv;
-        for (auto it = members.begin(); it != members.end();)
-        {
-            auto p = Product::cast(*it);
-            if(p)
-            {
-                auto k = p->getCommonVars();
-                if(k.size())
+                auto t = it;
+                for (auto it2 = ++t; it2 != members.end();)
                 {
-                    std::map<K,V>::iterator v = kv.find(k);
-                    if (v==kv.end()) {
-                        kv[k] = const_cast<Product*>(p);
+                    if ((it2->OfSameType(*it)
+                        && !Variable::cast(*it)
+                        && !Product::cast(*it))
+                        || (Integer::cast(*it) && Fraction::cast(*it2))
+                        || (Integer::cast(*it2) && Fraction::cast(*it))
+                        )
+                    {
+                        const_cast<Valuable&>(*it) += *it2;
+                        members.erase(it2++);
                     }
                     else
+                        ++it2;
+                }
+
+                ++it;
+            }
+
+            // commonize by vars
+            using K = std::multiset<Variable>;
+            using V = Product*;
+            using KV = std::pair<K, V>;
+            std::map<K, V> kv;
+            for (auto it = members.begin(); it != members.end();)
+            {
+                auto p = Product::cast(*it);
+                if (p)
+                {
+                    auto k = p->getCommonVars();
+                    if (k.size())
                     {
-                        *v->second += *p;
-                        members.erase(it++);
-                        continue;
+                        std::map<K, V>::iterator v = kv.find(k);
+                        if (v == kv.end()) {
+                            kv[k] = const_cast<Product*>(p);
+                        }
+                        else
+                        {
+                            *v->second += *p;
+                            members.erase(it++);
+                            continue;
+                        }
                     }
                 }
+                ++it;
             }
-            ++it;
-        }
-        
-        for(auto& item : members)
-            item.optimize();
-        }while (w!=*this);
-        isOptimising = false;
-	}
+
+            for (auto& item : members)
+                item.optimize();
+        } while (w != *this);
+        isOptimizing = false;
+    }
 
 	Valuable& Sum::operator +=(const Valuable& v)
 	{
@@ -185,23 +191,9 @@ namespace extrapolator {
 		}
 		else
 		{
-			auto i = Integer::cast(v);
-			if (i)
-			{
-				Sum s;
-				for (auto& a : members) {
-					s.members.push_back(a/(*i));
-
-				}
-				*this = s;
+			for (auto& a : members) {
+				a/=v;
 			}
-			else
-			{
-				// try other type
-				// no type matched
-				base::operator /=(v);
-			}
-
 		}
 		optimize();
 		return *this;
@@ -251,9 +243,7 @@ namespace extrapolator {
     
     Valuable Sum::sqrt() const
     {
-        return Valuable(Formula(Valuable(*this), [](Valuable&& v) {
-            return v.sqrt();
-        }));
+        return Exponentiation(*this, 1_v/2);
     }
 
     /** fast linear equation formula deduction */

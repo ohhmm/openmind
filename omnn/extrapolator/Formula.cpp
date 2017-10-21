@@ -12,9 +12,9 @@ namespace extrapolator {
     :v(va),e(ex)
     { }
 
-    Formula::Formula(const Valuable& ex, const f_t& fn)
-    : e(ex), f(fn)
-    { }
+    //Formula::Formula(const Valuable& ex, const f_t& fn)
+    //: e(ex), f(fn)
+    //{ }
     
     Formula Formula::DeduceFormula(const Valuable& e, const Variable& v)
     {
