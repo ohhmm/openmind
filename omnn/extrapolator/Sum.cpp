@@ -66,7 +66,7 @@ namespace extrapolator {
                 {
                     if ((it2->OfSameType(*it)
                         && !Variable::cast(*it)
-                        && !Product::cast(*it))
+                        && (!Product::cast(*it) || *it == -*it2))
                         || (Integer::cast(*it) && Fraction::cast(*it2))
                         || (Integer::cast(*it2) && Fraction::cast(*it))
                         )
@@ -111,6 +111,10 @@ namespace extrapolator {
 
             for (auto& item : members)
                 item.optimize();
+            
+            if (w!=*this) {
+                std::cout << "Sum optimised from \n\t" << w << "\n \t to " << *this << std::endl;
+            }
         } while (w != *this);
         isOptimizing = false;
     }
@@ -120,7 +124,7 @@ namespace extrapolator {
 		auto i = cast(v);
 		if (i) {
 			for (auto& a : i->members) {
-				*this += a;
+				members.push_back(a);
 			}
 		}
 		else
@@ -142,6 +146,7 @@ namespace extrapolator {
 			members.push_back(v);
 		}
 
+        optimize();
 		return *this;
 	}
 
@@ -249,12 +254,9 @@ namespace extrapolator {
     /** fast linear equation formula deduction */
 	Formula Sum::FormulaOfVa(const Variable& v) const
 	{
-		// TODO : make it work for non-linear as well once Formula ready
-        // root formula: x=((b*b-4*a*c)^(1/2)-b)/(2*a)
-        Valuable e(0);
-        // square equation axx+bx+c=0
-        Valuable a(0), b(0), c(0);
-        
+        Valuable fo(0);
+        std::vector<Valuable> coefficients(4);
+        auto grade = 0;
         for (auto& m : members)
         {
             auto p = Product::cast(m);
@@ -264,23 +266,43 @@ namespace extrapolator {
                 for(auto& pv : p->getCommonVars())
                     if(pv==v)
                         ++vcnt;
-                if (vcnt==0)
-                    c += m;
-                else if (vcnt==1)
-                    b += m / v;
-                else if (vcnt==2)
-                    a += m / v / v;
-                else if (vcnt>2)
-                    throw "Implement!";
+                
+                if (vcnt > grade) {
+                    grade = vcnt;
+                    if (vcnt >= coefficients.size()) {
+                        coefficients.resize(vcnt+1);
+                    }
+                }
+                
+                coefficients[vcnt] += m / (v^vcnt);
             }
             else
             {
-                c+=m;
+                coefficients[0] += m;
             }
         }
 
-        e = ((b*b-4*a*c).sqrt()-b)/(2*a);
-        return Formula::DeclareFormula(v, e);
+        switch (grade) {
+            case 2: {
+                // square equation axx+bx+c=0
+                // root formula: x=((b*b-4*a*c)^(1/2)-b)/(2*a)
+                auto& a = coefficients[2];
+                auto& b = coefficients[1];
+                auto& c = coefficients[0];
+                fo = ((b*b-4*a*c).sqrt()-b)/(2*a);
+                break;
+            }
+            case 4: {
+                // four grade equation ax^4+bx^3+cx^2+dx+e=0
+                break;
+            }
+            default: {
+                throw "Implement!";
+                break;
+            }
+        }
+        
+        return Formula::DeclareFormula(v, fo);
 	}
 
 }}

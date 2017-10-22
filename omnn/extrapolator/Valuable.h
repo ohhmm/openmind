@@ -182,6 +182,15 @@ public:
             return false;
         }
         
+        bool Has(const Valuable& v) const
+        {
+            for(const auto& a : GetCont())
+            {
+                if(a==v) return true;
+            }
+            return false;
+        }
+        
         const Variable* FindVa() const override
         {
             for (auto& i : GetCont())

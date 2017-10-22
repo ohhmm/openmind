@@ -3,6 +3,7 @@
 //
 
 #include "Variable.h"
+#include "Exponentiation.h"
 #include "Product.h"
 #include "Sum.h"
 
@@ -86,6 +87,25 @@ namespace extrapolator {
     Valuable& Variable::operator ++()
     {
         return *this+=1;
+    }
+    
+    Valuable& Variable::operator^=(const Valuable& v)
+    {
+        auto ie = Integer::cast(v);
+        if(ie)
+        {
+            auto a = *this;
+            for (auto n = *ie; n > 1; --n) {
+                *this *= a;
+            }
+        }
+        else
+        {
+            Become(Exponentiation(*this, v));
+        }
+        
+        optimize();
+        return *this;
     }
     
     bool Variable::operator <(const Valuable& v) const

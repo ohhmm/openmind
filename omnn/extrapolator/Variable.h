@@ -44,6 +44,7 @@ public:
 //    Valuable& operator %=(const Valuable&) override;
     Valuable& operator--() override;
     Valuable& operator++() override;
+    Valuable& operator ^=(const Valuable&) override;
     bool operator<(const Valuable& number) const override;
     bool operator==(const Valuable& number) const override;
     Valuable abs() const override { throw "Implement Abs Valuable Descendant to use it here"; }

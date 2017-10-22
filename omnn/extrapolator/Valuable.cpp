@@ -93,11 +93,16 @@ namespace extrapolator {
     
     Valuable& Valuable::operator +=(int v)
     {
-        if(exp)
-            return exp->operator+=(v);
+        if(exp) {
+            Valuable& o = exp->operator+=(v);
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
+        }
         else
             IMPLEMENT
-        }
+    }
 
     Valuable& Valuable::operator *=(const Valuable& v)
     {
@@ -126,32 +131,52 @@ namespace extrapolator {
 
     Valuable& Valuable::operator %=(const Valuable& v)
     {
-        if(exp)
-            return exp->operator%=(v);
+        if(exp) {
+            Valuable& o = exp->operator%=(v);
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
+        }
         else
             IMPLEMENT
     }
 
     Valuable& Valuable::operator--()
     {
-        if(exp)
-            return exp->operator--();
+        if(exp) {
+            Valuable& o = exp->operator--();
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
+        }
         else
             IMPLEMENT
     }
     
     Valuable& Valuable::operator++()
     {
-        if(exp)
-            return exp->operator++();
+        if(exp) {
+            Valuable& o = exp->operator++();
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
+        }
         else
             IMPLEMENT
     }
     
     Valuable& Valuable::operator^=(const Valuable& v)
     {
-        if(exp)
-            return exp->operator^=(v);
+        if(exp) {
+            Valuable& o = exp->operator*=(v);
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
+        }
         else
             IMPLEMENT
     }
@@ -234,8 +259,8 @@ namespace extrapolator {
     
     bool Valuable::OfSameType(const Valuable& v) const
     {
-        const Valuable& v1 = exp ? *exp : *this;
-        const Valuable& v2 = v.exp ? *v.exp : v;
+        const Valuable& v1 = *cast<Valuable>(*this);
+        const Valuable& v2 = *cast<Valuable>(v);
         return typeid(v1) == typeid(v2);
     }
 }}

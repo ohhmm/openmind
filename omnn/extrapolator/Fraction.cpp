@@ -27,8 +27,11 @@ namespace extrapolator {
 
     void Fraction::optimize()
     {
+    reoptimize_the_fraction:
         numerator.optimize();
         denominator.optimize();
+        
+        // integers
         auto n = Integer::cast(numerator);
         auto dn = Integer::cast(denominator);
         if (n)
@@ -56,7 +59,59 @@ namespace extrapolator {
         }
         else
         {
-            // TODO : products
+            // products
+            auto n = Product::cast(numerator);
+            auto dn = Product::cast(denominator);
+            if (n) {
+                if (dn) {
+                    auto& vna = n->getCommonVars();
+                    auto& dnva = dn->getCommonVars();
+                    if (vna == dnva) {
+                        Become(n->varless() / n->varless());
+                        return;
+                    }
+                    else
+                    {
+                        for(auto& v1 : vna)
+                        {
+                            for(auto& v2 : dnva)
+                            {
+                                if (v1 == v2) {
+                                    *const_cast<Product*>(n) /= v1;
+                                    *const_cast<Product*>(dn) /= v2;
+                                    goto reoptimize_the_fraction;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (n->Has(denominator)) {
+                        Become(*n / denominator);
+                        return;
+                    }
+                }
+            }
+            else if (dn)
+            {
+                if (dn->Has(numerator)) {
+                    denominator /= numerator;
+                    numerator = 1_v;
+                    goto reoptimize_the_fraction;
+                }
+            }
+            else // no products
+            {
+                // sum
+                auto s = Sum::cast(numerator);
+                if (s) {
+                    auto sum(std::move(*s));
+                    sum /= denominator;
+                    Become(std::move(sum));
+                    return;
+                }
+            }
         }
     }
     
@@ -124,15 +179,7 @@ namespace extrapolator {
             denominator *= f->denominator;
         }
         else{
-            auto i = Integer::cast(v);
-            if (i)
-            {
-                numerator *= (decltype(numerator))(*i);
-            }
-            else
-            {
-                return Become(Product(*this, v));
-            }
+            numerator *= v;
         }
 		
 		optimize();
@@ -141,26 +188,15 @@ namespace extrapolator {
 
     Valuable& Fraction::operator /=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i)
+        auto f = cast(v);
+        if (f)
 		{
-			numerator *= i->denominator;
-			denominator *= i->numerator;
+			numerator *= f->denominator;
+			denominator *= f->numerator;
 		}
         else
         {
-				auto i = Integer::cast(v);
-				if (i)
-				{
-					denominator *= (decltype(denominator))(*i);
-				}
-				else
-				{
-					// try other type
-					// no type matched
-					base::operator /=(v);
-				}
-			
+			denominator *= v;
         }
 		optimize();
 		return *this;
@@ -227,7 +263,7 @@ namespace extrapolator {
 				f.numerator *= l.denominator;
 				l.numerator *= i->denominator;
 			}
-			return l.numerator == f.numerator;//arbitrary < i->arbitrary;
+			return l.numerator == f.numerator;
 		}
         else
         {
@@ -240,9 +276,9 @@ namespace extrapolator {
 			}
 			else
 			{
-				// try other type
-				// no type matched
-
+                if (v.FindVa()) {
+                    return false;
+                }
 			}
         }
         // no type matched

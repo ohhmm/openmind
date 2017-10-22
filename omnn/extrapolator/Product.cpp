@@ -184,6 +184,16 @@ namespace extrapolator {
 
             ++it;
         }
+        
+        // if has a fraction then become part of the fraction for optimizations
+        auto f = GetFirstOccurence<Fraction>();
+        if (f) {
+            auto fracopy = *f;
+            *this /= *f;
+            fracopy *= *this;
+            Become(std::move(fracopy));
+            return;
+        }
     }
 
     const std::multiset<Variable>& Product::getCommonVars() const
@@ -208,6 +218,9 @@ namespace extrapolator {
         auto p = cast(v);
         if (p)
         {
+            if(*this == -v)
+                return Become(0_v);
+
             auto cv = getCommonVars();
             if (!cv.empty() && cv == p->getCommonVars())
             {

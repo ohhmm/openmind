@@ -23,4 +23,11 @@ BOOST_AUTO_TEST_CASE(Product_tests)
 
     v += v1*v;
     BOOST_TEST(v == (125_v/3*v1 + v1*v2 + 125_v/3*v1*v1 + v1*v1*v2));
+    
+    v -= 125_v/3*v1 + v1*v2;
+    BOOST_TEST(v == 125_v/3*v1*v1 + v1*v1*v2);
+    
+    v /= v1^2;
+    v.optimize();
+    BOOST_TEST(v == 125_v/3 + v2);
 }
