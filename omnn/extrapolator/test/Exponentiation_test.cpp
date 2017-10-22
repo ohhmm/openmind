@@ -5,7 +5,7 @@
 
 BOOST_AUTO_TEST_CASE(Exponentiation_tests)
 {
-    auto a = 2 ^ 3;
+    auto a = 2_v ^ 3;
     BOOST_TEST(a==8);
 	// todo : test exponentiation
 }

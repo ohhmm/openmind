@@ -68,7 +68,7 @@ namespace extrapolator {
     Valuable::~Valuable()
     {
     }
-
+    
     Valuable Valuable::operator -() const
     {
         if(exp)

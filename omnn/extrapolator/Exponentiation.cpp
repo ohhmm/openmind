@@ -12,7 +12,7 @@ namespace extrapolator {
     
 	Valuable Exponentiation::operator -() const
     {
-        return -1 * *this;
+        return -1_v * *this;
     }
 
     void Exponentiation::optimize()
@@ -20,8 +20,8 @@ namespace extrapolator {
         ebase.optimize();
         eexp.optimize();
 
-        bool ebz = ebase == 0;
-        bool exz = eexp == 0;
+        bool ebz = ebase == 0_v;
+        bool exz = eexp == 0_v;
         if(exz)
         {
             if(ebz)

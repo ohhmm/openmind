@@ -3,6 +3,7 @@
 //
 
 #include "Integer.h"
+#include "Exponentiation.h"
 #include "Fraction.h"
 #include "Sum.h"
 #include "Product.h"
@@ -90,6 +91,38 @@ namespace extrapolator {
         return *this;
     }
 
+    Valuable& Integer::operator^=(const Valuable& v)
+    {
+        auto i = cast(v);
+        if(i)
+        {
+            if (*i != 0_v) {
+                if (*i > 1) {
+                    auto a = arbitrary;
+                    for (base_int n = *i; n > 1; --n) {
+                        arbitrary *= a;
+                    }
+                } else {
+                    // negative
+                    Become(Exponentiation(*this, v));
+                }
+            }
+            else { // zero
+                if (arbitrary == 0)
+                    throw "NaN"; // feel free to handle this properly
+                else
+                    arbitrary = 1;
+            }
+        }
+        else
+        {
+            Become(Exponentiation(*this, v));
+        }
+        
+        optimize();
+        return *this;
+    }
+    
     bool Integer::operator <(const Valuable& v) const
     {
         auto i = cast(v);

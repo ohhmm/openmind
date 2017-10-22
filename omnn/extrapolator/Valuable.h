@@ -49,8 +49,6 @@ protected:
 public:
     explicit Valuable(Valuable* v);
     
-
-
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(const Valuable&& v);
     Valuable(const Valuable& v);
@@ -201,7 +199,7 @@ public:
             {
                 const_cast<Valuable&>(i).Eval(va,v);
             }
-            optimize();
+            this->optimize();
         }
     };
 }}
