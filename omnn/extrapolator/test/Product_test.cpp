@@ -17,10 +17,11 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     BOOST_TEST(v==125_v/3);
     
     Variable v1, v2;
+    BOOST_TEST(1_v/2*v1*v2 == v1*v2*1_v/2);
     v *= v1;
     v += v1*v2;
     BOOST_TEST(v == (125_v/3*v1 + v1*v2));
-
+    cout<<v;
     v += v1*v;
     BOOST_TEST(v == (125_v/3*v1 + v1*v2 + 125_v/3*v1*v1 + v1*v1*v2));
     

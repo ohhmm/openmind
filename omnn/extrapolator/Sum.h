@@ -4,6 +4,7 @@
 
 #pragma once
 #include <list>
+#include <unordered_set>
 #include "Formula.h"
 
 namespace omnn{
@@ -20,7 +21,8 @@ class Sum
     bool isOptimizing = false;
 
 protected:
-    const cont& GetCont() const override { return members; }
+	cont& GetCont() override { return members; }
+	const cont& GetConstCont() const override { return members; }
 	std::ostream& print(std::ostream& out) const override;
     
 public:
@@ -45,7 +47,7 @@ public:
     Sum() = default;
     
     Sum(const Valuable& f) {
-        members.push_back(f);
+        Add(f);
     }
     
     template<class ...T>
@@ -53,7 +55,7 @@ public:
     {
 		for (const auto& arg : { Valuable(vals)...})
 		{
-			members.push_back(arg);
+			Add(arg);
 		}
     }
 

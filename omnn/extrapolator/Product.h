@@ -27,7 +27,8 @@ class Product
     vars_cont_t vars;
     
 protected:
-    const cont& GetCont() const override { return members; }
+	cont& GetCont() override { return members; }
+	const cont& GetConstCont() const override { return members; }
     std::ostream& print(std::ostream& out) const override;
     Product(const vars_cont_t& v) : vars(v) { Add(1_v); }
 

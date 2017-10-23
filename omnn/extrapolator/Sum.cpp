@@ -17,14 +17,14 @@ namespace extrapolator {
     
     void Sum::Add(const Valuable& item)
     {
-        operator+=(item);
+        members.push_back(item);
     }
 
 	Valuable Sum::operator -() const
 	{
 		Sum s;
 		for (auto& a : members) 
-			s.members.push_back(-a);
+			s.Add(-a);
 		return s;
 	}
 
@@ -38,8 +38,9 @@ namespace extrapolator {
         do
         {
             w = *this;
+            std::cout << "optimizing sum " << w << std::endl;
             if (members.size() == 1) {
-                Become(std::move(members.front()));
+                Become(std::move(*members.begin()));
                 isOptimizing = false;
                 return;
             }
@@ -56,7 +57,7 @@ namespace extrapolator {
                 if (s) {
                     for (auto& m : s->members)
                     {
-                        members.push_back(std::move(m));
+                        Add(std::move(m));
                     }
                     members.erase(it++);
                     continue;
@@ -124,7 +125,7 @@ namespace extrapolator {
 		auto i = cast(v);
 		if (i) {
 			for (auto& a : i->members) {
-				members.push_back(a);
+				Add(a);
 			}
 		}
 		else
@@ -143,7 +144,7 @@ namespace extrapolator {
             }
             
             // add new member
-			members.push_back(v);
+			Add(v);
 		}
 
         optimize();
@@ -163,7 +164,7 @@ namespace extrapolator {
 			Sum s;
 			for (auto& a : members) {
 				for (auto& b : f->members) {
-					s.members.push_back(a*b);
+					s.Add(a*b);
 				}
 			}
             s.optimize();
@@ -172,7 +173,7 @@ namespace extrapolator {
 		else
         {
             for (auto& a : members) {
-                a*=v;
+                a *= v;
             }
             optimize();
 		}
@@ -189,7 +190,7 @@ namespace extrapolator {
 			Sum s;
 			for (auto& a : members) {
 				for (auto& b : i->members) {
-					s.members.push_back(a/b);
+					s.Add(a/b);
 				}
 			}
 			*this = s;
@@ -197,7 +198,7 @@ namespace extrapolator {
 		else
 		{
 			for (auto& a : members) {
-				a/=v;
+				a /= v;
 			}
 		}
 		optimize();

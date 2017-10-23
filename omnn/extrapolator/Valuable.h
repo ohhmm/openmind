@@ -75,6 +75,7 @@ public:
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     
     bool OfSameType(const Valuable& v) const;
+    virtual size_t Hash() const;
 };
 
 template <class Chld>
@@ -129,33 +130,34 @@ public:
         
     protected:
         using cont = ContT;
-        virtual const cont& GetCont() const = 0;
+        virtual cont& GetCont() = 0;
+        virtual const cont& GetConstCont() const = 0;
         
     public:
-        
-        auto begin() const
-        {
-            return GetCont().begin();
-        }
-        
-        auto end() const
-        {
-            return GetCont().end();
-        }
-        
+
         auto begin()
         {
             return GetCont().begin();
         }
-        
+
         auto end()
         {
             return GetCont().end();
         }
+
+        auto begin() const
+        {
+            return GetConstCont().begin();
+        }
+
+        auto end() const
+        {
+            return GetConstCont().end();
+        }
         
         size_t size() const
         {
-            return GetCont().size();
+            return GetConstCont().size();
         }
         
         virtual void Add(typename ContT::const_reference item) = 0;
@@ -163,7 +165,7 @@ public:
         template<class T>
         const T* GetFirstOccurence() const
         {
-            for(const auto& a : GetCont())
+            for(const auto& a : GetConstCont())
             {
                 auto v = T::cast(a);
                 if(v)
@@ -174,7 +176,7 @@ public:
         
         bool HasValueType(const std::type_info& type) const
         {
-            for(const auto& a : GetCont())
+            for(const auto& a : GetConstCont())
             {
                 if(typeid(a) == type)
                     return true;
@@ -184,7 +186,7 @@ public:
         
         bool Has(const Valuable& v) const
         {
-            for(const auto& a : GetCont())
+            for(const auto& a : GetConstCont())
             {
                 if(a==v) return true;
             }
@@ -193,7 +195,7 @@ public:
         
         const Variable* FindVa() const override
         {
-            for (auto& i : GetCont())
+            for (auto& i : GetConstCont())
             {
                 auto va = i.FindVa();
                 if (va)
@@ -204,7 +206,7 @@ public:
         
         void Eval(const Variable& va, const Valuable& v) override
         {
-            for(auto& i : GetCont())
+            for(auto& i : GetConstCont())
             {
                 const_cast<Valuable&>(i).Eval(va,v);
             }
@@ -217,6 +219,13 @@ namespace std
 {
 	omnn::extrapolator::Valuable abs(const omnn::extrapolator::Valuable& v);
 	omnn::extrapolator::Valuable sqrt(const omnn::extrapolator::Valuable& v);
+    
+    template<>
+    struct hash<omnn::extrapolator::Valuable> {
+        size_t operator()(const omnn::extrapolator::Valuable& v) {
+            return v.Hash();
+        }
+    };
 }
 
 ::omnn::extrapolator::Valuable operator"" _v(unsigned long long v);

@@ -263,6 +263,14 @@ namespace extrapolator {
         const Valuable& v2 = *cast<Valuable>(v);
         return typeid(v1) == typeid(v2);
     }
+    
+    size_t Valuable::Hash() const
+    {
+        if (exp) {
+            return exp->Hash();
+        }
+        IMPLEMENT
+    }
 }}
 
 namespace std

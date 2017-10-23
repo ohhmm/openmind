@@ -153,6 +153,8 @@ namespace extrapolator {
             return arbitrary == i->arbitrary;
         else if(v.FindVa())
             return false;
+        else if(Fraction::cast(v))
+            return v == *this;
 
         // no type matched
         return base::operator ==(v);
@@ -168,5 +170,9 @@ namespace extrapolator {
         return obj.print(out);
     }
 
+    size_t Integer::Hash() const
+    {
+        return std::hash<base_int>()(arbitrary);
+    }
 }}
 
