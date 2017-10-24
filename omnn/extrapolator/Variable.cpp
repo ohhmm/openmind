@@ -151,5 +151,8 @@ namespace extrapolator {
         return varSetHost.print(out, varId);
     }
 
-
+    size_t Variable::Hash() const
+    {
+        return varSetHost.Hash(varId);
+    }
 }}

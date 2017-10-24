@@ -31,6 +31,7 @@ public:
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
     void optimize() override;
+    size_t Hash() const override;
     
     using base::base;
     

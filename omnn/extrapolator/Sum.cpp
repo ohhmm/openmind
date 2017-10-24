@@ -17,7 +17,7 @@ namespace extrapolator {
     
     void Sum::Add(const Valuable& item)
     {
-        members.push_back(item);
+        members.insert(item);
     }
 
 	Valuable Sum::operator -() const
@@ -40,14 +40,23 @@ namespace extrapolator {
             w = *this;
             std::cout << "optimizing sum " << w << std::endl;
             if (members.size() == 1) {
-                Become(std::move(*members.begin()));
+                cont::iterator b = members.begin();
+                Become(std::move(const_cast<Valuable&>(*b)));
                 isOptimizing = false;
                 return;
             }
 
             for (auto it = members.begin(); it != members.end();)
             {
-                it->optimize();
+                // optimize member
+                auto copy = *it;
+                copy.optimize();
+                if (copy != *it) {
+                    members.erase(it++);
+                    it = members.insert(it, copy);
+                    continue;
+                }
+                
                 if (*it == 0)
                 {
                     members.erase(it++);
@@ -110,11 +119,21 @@ namespace extrapolator {
                 ++it;
             }
 
-            for (auto& item : members)
-                item.optimize();
+            // optimize members
+            for (auto it = members.begin(); it != members.end();)
+            {
+                auto copy = *it;
+                copy.optimize();
+                if (copy != *it) {
+                    members.erase(it++);
+                    it = members.insert(it, copy);
+                }
+                else
+                    ++it;
+            }
             
             if (w!=*this) {
-                std::cout << "Sum optimised from \n\t" << w << "\n \t to " << *this << std::endl;
+                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
             }
         } while (w != *this);
         isOptimizing = false;
@@ -158,50 +177,49 @@ namespace extrapolator {
 
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
-		auto f = cast(v);
+        Sum s;
+        auto f = cast(v);
 		if (f)
 		{
-			Sum s;
 			for (auto& a : members) {
 				for (auto& b : f->members) {
 					s.Add(a*b);
 				}
 			}
-            s.optimize();
-			members = s.members;
 		}
 		else
         {
             for (auto& a : members) {
-                a *= v;
+                s.Add(a*v);
             }
-            optimize();
 		}
+
+        s.optimize();
+        members = s.members;
 
 		return *this;
 	}
 
 	Valuable& Sum::operator /=(const Valuable& v)
 	{
-        // todo: store valuables in Fraction
+        Sum s;
 		auto i = cast(v);
 		if (i)
 		{
-			Sum s;
 			for (auto& a : members) {
 				for (auto& b : i->members) {
 					s.Add(a/b);
 				}
 			}
-			*this = s;
 		}
 		else
 		{
-			for (auto& a : members) {
-				a /= v;
-			}
+            for (auto& a : members) {
+                s.Add(a/v);
+            }
 		}
-		optimize();
+        s.optimize();
+        members = s.members;
 		return *this;
 	}
 
@@ -230,7 +248,8 @@ namespace extrapolator {
 	bool Sum::operator ==(const Valuable& v) const
 	{
         auto s = cast(v);
-        return s && members==s->members;
+        bool eq = s && members==s->members;
+        return eq;
 	}
 
 	std::ostream& Sum::print(std::ostream& out) const
@@ -305,5 +324,6 @@ namespace extrapolator {
         
         return Formula::DeclareFormula(v, fo);
 	}
+    
 
 }}

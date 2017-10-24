@@ -60,6 +60,7 @@ namespace extrapolator {
             return host;
         }
         virtual bool Has(any::any id) const = 0;
+        virtual size_t Hash(any::any id) const = 0;
         virtual any::any NewVarId() = 0;
         virtual bool CompareIdsLess(any::any a, any::any b) const = 0;
         virtual bool CompareIdsEqual(any::any a, any::any b) const = 0;
@@ -120,6 +121,10 @@ namespace extrapolator {
         
         bool Has(any::any id) const override {
             return varIds.find(any::any_cast<T>(id)) != varIds.end();
+        }
+        
+        size_t Hash(any::any id) const override {
+            return std::hash<T>()(any::any_cast<T>(id));
         }
         
         bool CompareIdsLess(any::any a, any::any b) const override {

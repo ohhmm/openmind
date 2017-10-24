@@ -23,6 +23,12 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST(s == 1_v/9 - (2_v/3) * v + v*v);
 
     BOOST_TEST((v1*v2 + v1*v1*v2 + 1/3*125*v1 + 1/3*125*v1*v1) == (v1*v2 + 1/3*125*v1 + 1/3*125*v1*v1 + v1*v1*v2));
+    
+    s = Sum(v+1, v1+v2);
+    s.optimize();
+    auto sc = Sum::cast(s);
+    BOOST_TEST(sc);
+    BOOST_TEST(sc->size()==4);
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)

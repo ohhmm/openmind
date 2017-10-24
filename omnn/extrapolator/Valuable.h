@@ -212,6 +212,16 @@ public:
             }
             this->optimize();
         }
+        
+        size_t Hash() const override
+        {
+            size_t h = 0;
+            for (auto& i : GetConstCont())
+            {
+                h^=i.Hash();
+            }
+            return h;
+        }
     };
 }}
 
@@ -222,7 +232,7 @@ namespace std
     
     template<>
     struct hash<omnn::extrapolator::Valuable> {
-        size_t operator()(const omnn::extrapolator::Valuable& v) {
+        size_t operator()(const omnn::extrapolator::Valuable& v) const {
             return v.Hash();
         }
     };

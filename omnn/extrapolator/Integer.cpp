@@ -23,7 +23,12 @@ namespace extrapolator {
             arbitrary += i->arbitrary;
         else
         {
-            return Become(Sum(*this, v));
+            auto f = Fraction::cast(v);
+            if (f) {
+                return Become(v + *this);
+            }
+            else
+                return Become(Sum(*this, v));
         }
         return *this;
     }

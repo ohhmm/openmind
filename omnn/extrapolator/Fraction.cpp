@@ -179,7 +179,14 @@ namespace extrapolator {
             denominator *= f->denominator;
         }
         else{
-            numerator *= v;
+            auto i = Integer::cast(v);
+            if (i) {
+                numerator *= v;
+            }
+            else
+            {
+                return Become(Product(*this, v));
+            }
         }
 		
 		optimize();
@@ -326,5 +333,9 @@ namespace extrapolator {
     {
         numerator.Eval(va, v);
         denominator.Eval(va, v);
+    }
+    size_t Fraction::Hash() const
+    {
+        return numerator.Hash() ^ denominator.Hash();
     }
 }}

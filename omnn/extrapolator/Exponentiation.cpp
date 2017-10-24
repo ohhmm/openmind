@@ -193,5 +193,9 @@ namespace extrapolator {
         ebase.Eval(va, v);
         eexp.Eval(va, v);
     }
+    size_t Exponentiation::Hash() const
+    {
+        return ebase.Hash() ^ eexp.Hash();
+    }
 
 }}

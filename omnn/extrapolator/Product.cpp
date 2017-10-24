@@ -310,6 +310,7 @@ namespace extrapolator {
 
 	Valuable& Product::operator /=(const Valuable& v)
 	{
+        auto e = Exponentiation::cast(v);
         for (auto it = members.begin(); it != members.end(); ++it)
         {
             if (*it == v)
@@ -319,6 +320,12 @@ namespace extrapolator {
                 if (va) {
                     vars.erase(*va);
                 }
+                return *this;
+            }
+            else if (e && *it == e->getBase())
+            {
+                *this /= e->getBase();
+                *this /= *e / e->getBase();
                 return *this;
             }
         }
@@ -350,7 +357,8 @@ namespace extrapolator {
 	bool Product::operator ==(const Valuable& v) const
 	{
         auto p = cast(v);
-        return p && members==p->members;
+        bool eq = p && Hash() == p->Hash() && members==p->members;
+        return eq;
 	}
 
 	std::ostream& Product::print(std::ostream& out) const

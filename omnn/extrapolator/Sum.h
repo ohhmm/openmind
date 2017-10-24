@@ -12,9 +12,9 @@ namespace extrapolator {
 
 
 class Sum
-        : public ValuableCollectionDescendantContract<Sum, std::list<Valuable>>
+        : public ValuableCollectionDescendantContract<Sum, std::unordered_multiset<Valuable>>
 {
-    using base = ValuableCollectionDescendantContract<Sum, std::list<Valuable>>;
+    using base = ValuableCollectionDescendantContract<Sum, std::unordered_multiset<Valuable>>;
     using base::cont;
     friend class Variable;
     cont members;

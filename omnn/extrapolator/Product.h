@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include <set>
+#include <unordered_set>
 #include "Fraction.h"
 #include "Variable.h"
 
@@ -17,9 +17,9 @@ namespace extrapolator {
     
 
 class Product
-    : public ValuableCollectionDescendantContract<Product, std::multiset<Valuable, ValuableLessCompare>>
+    : public ValuableCollectionDescendantContract<Product, std::unordered_multiset<Valuable>>
 {
-    using base = ValuableCollectionDescendantContract<Product, std::multiset<Valuable, ValuableLessCompare>>;
+    using base = ValuableCollectionDescendantContract<Product, std::unordered_multiset<Valuable>>;
     using base::cont;
     friend class Variable;
     cont members;

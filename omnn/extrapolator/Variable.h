@@ -51,7 +51,8 @@ public:
 //    void optimize() override;
 //    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
-    
+    size_t Hash() const override;
+
     const Variable* FindVa() const override
     {
         return this;

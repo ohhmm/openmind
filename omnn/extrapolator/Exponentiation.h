@@ -17,6 +17,9 @@ class Exponentiation
 protected:
     std::ostream& print(std::ostream& out) const override;
 public:
+    const Valuable& getBase() const {return ebase;}
+    const Valuable& getExponentiation() const {return eexp;}
+    
     // virtual operators
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
@@ -27,6 +30,7 @@ public:
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
     void optimize() override;
+    size_t Hash() const override;
     
     using base::base;
     
