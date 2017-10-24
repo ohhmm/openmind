@@ -7,6 +7,7 @@
 #include "Fraction.h"
 #include "Sum.h"
 #include "Product.h"
+#include <boost/functional/hash.hpp>
 
 namespace omnn{
 namespace extrapolator {

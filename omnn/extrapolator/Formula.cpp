@@ -26,4 +26,9 @@ namespace extrapolator {
     {
         return Formula(v,e);
     }
+
+    std::ostream& Formula::print(std::ostream& out) const
+    {
+        return out << "f(" << v << ")=" << e;
+    }
 }}

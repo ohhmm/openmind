@@ -24,6 +24,9 @@ class Formula
     Formula(Valuable&& ex) : e(std::move(ex)){}
     Formula(int i) : e(i){}
     
+protected:
+    std::ostream& print(std::ostream& out) const;
+
 public:
     //using f_t = std::function<Valuable&&(Valuable&&)>;
     using base::base;

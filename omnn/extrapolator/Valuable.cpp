@@ -171,7 +171,7 @@ namespace extrapolator {
     Valuable& Valuable::operator^=(const Valuable& v)
     {
         if(exp) {
-            Valuable& o = exp->operator*=(v);
+            Valuable& o = exp->operator^=(v);
             if (o.exp) {
                 exp = o.exp;
             }
