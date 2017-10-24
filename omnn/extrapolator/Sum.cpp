@@ -248,7 +248,7 @@ namespace extrapolator {
 	bool Sum::operator ==(const Valuable& v) const
 	{
         auto s = cast(v);
-        bool eq = s && members==s->members;
+        bool eq = s && Hash() == v.Hash() && members==s->members;
         return eq;
 	}
 
@@ -274,7 +274,7 @@ namespace extrapolator {
     /** fast linear equation formula deduction */
 	Formula Sum::FormulaOfVa(const Variable& v) const
 	{
-        Valuable fo(0);
+        Valuable fx(0);
         std::vector<Valuable> coefficients(4);
         auto grade = 0;
         for (auto& m : members)
@@ -309,11 +309,27 @@ namespace extrapolator {
                 auto& a = coefficients[2];
                 auto& b = coefficients[1];
                 auto& c = coefficients[0];
-                fo = ((b*b-4*a*c).sqrt()-b)/(2*a);
+                fx = ((b*b-4*a*c).sqrt()-b)/(2*a);
                 break;
             }
             case 4: {
                 // four grade equation ax^4+bx^3+cx^2+dx+e=0
+                // see https://math.stackexchange.com/questions/785/is-there-a-general-formula-for-solving-4th-degree-equations-quartic
+                auto& a = coefficients[4];
+                auto& b = coefficients[3];
+                auto& c = coefficients[2];
+                auto& d = coefficients[1];
+                auto& e = coefficients[0];
+                auto sa = a*a;
+                auto sb = b*b;
+                auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
+                auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).sqrt();
+                auto qp2 = (p2/2)^(1_v/3);
+                auto p3 = (c*c-3*b*d+12*a*e)/(3*a*qp2)+qp2/(3*a);
+                auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).sqrt();
+                auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
+                auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
+                auto fx = -b/(4*a)+p4/2+(p5+p6).sqrt()/2;
                 break;
             }
             default: {
@@ -322,7 +338,7 @@ namespace extrapolator {
             }
         }
         
-        return Formula::DeclareFormula(v, fo);
+        return Formula::DeclareFormula(v, fx);
 	}
     
 

@@ -8,6 +8,8 @@ using namespace omnn::extrapolator;
 BOOST_AUTO_TEST_CASE(Sum_tests)
 {
     Variable v,v1,v2;
+    BOOST_TEST((-2_v/3*v1 + v1*v1 + 1_v/9) == (1_v/9 + v1*v1 + -2_v/3*v1));
+    
     Valuable
         f = 1_v / 2,
         f1 = 5_v / 6,
