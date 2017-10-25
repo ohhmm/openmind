@@ -72,7 +72,9 @@ namespace extrapolator {
                     continue;
                 }
                 auto t = it;
-                for (auto it2 = ++t; it2 != members.end();)
+                auto it2 = it;
+                ++it2;
+                for (; it2 != members.end();)
                 {
                     if ((it2->OfSameType(*it)
                         && !Variable::cast(*it)
@@ -81,13 +83,20 @@ namespace extrapolator {
                         || (Integer::cast(*it2) && Fraction::cast(*it))
                         )
                     {
-                        const_cast<Valuable&>(*it) += *it2;
+                        auto c = *it + *it2;
                         members.erase(it2++);
+                        members.erase(it++);
+                        members.insert(it, c);
+                        it = members.begin();
+                        break;
                     }
                     else
                         ++it2;
                 }
 
+                if (it != t) {
+                    continue;
+                }
                 ++it;
             }
 
