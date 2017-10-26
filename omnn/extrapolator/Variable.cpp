@@ -17,22 +17,10 @@ namespace extrapolator {
     
     Valuable& Variable::operator +=(const Valuable& v)
     {
-        {
         auto c = cast(v);
         if(c && *c==*this)
         {
             return Become(Product(2, *this));
-        }
-        }
-        
-        auto c = Product::cast(v);
-        if(c)
-        {
-            auto va = c->GetFirstOccurence<Variable>();
-            if(va)
-            {
-            //todo: become +1
-            }
         }
 
         return Become(Sum(*this, v));

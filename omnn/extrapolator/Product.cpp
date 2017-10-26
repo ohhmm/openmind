@@ -143,6 +143,7 @@ namespace extrapolator {
         {
             for (auto& it : members)
             {
+                // FIXME : may be same sum in sequence, add test
                 if (s == const_cast<Sum*>(Sum::cast(it)))
                     continue;
                 else
@@ -175,26 +176,35 @@ namespace extrapolator {
             }
 
             auto t = it;
-            for (auto it2 = ++t; it2 != members.end();)
+            auto it2 = it;
+            ++it2;
+            for (; it2 != members.end();)
             {
                 if ((it2->OfSameType(*it) && !Variable::cast(*it))
                     || (Integer::cast(*it) && Fraction::cast(*it2))
                     || (Integer::cast(*it2) && Fraction::cast(*it))
                     )
                 {
-                    const_cast<Valuable&>(*it) *= *it2;
+                    auto c = *it * *it2;
                     members.erase(it2++);
+                    members.erase(it++);
+                    members.insert(it, c);
+                    it = members.begin();
+                    break;
                 }
                 else
                     ++it2;
             }
 
+            if (it != t) {
+                continue;
+            }
             ++it;
         }
         
         // if has a fraction then do optimizations
         auto f = GetFirstOccurence<Fraction>();
-        if (f) {
+        if (f != members.end()) {
             // do not become a fraction for optimizations, because sum operate with products to analyse polynomial grade in FormulaOfVa
 //            auto fracopy = *f;
 //            *this /= *f;
@@ -204,7 +214,7 @@ namespace extrapolator {
             // ^ no
             
             // optimize here instead
-            auto pd = Product::cast(f->getDenominator());
+            auto pd = Product::cast(Fraction::cast(*f)->getDenominator());
             if (pd) {
                 for (auto it = members.begin(); it != members.end();)
                 {
@@ -216,25 +226,34 @@ namespace extrapolator {
                     else  ++it;
                 }
             }
-            const_cast<Fraction*>(f)->optimize();
+            
+            auto fo = *f;
+            fo.optimize();
+            
             // check if it still fraction
-            f = Fraction::cast(*f);
-            if (f) {
-                auto dn = f->getDenominator();
+            auto ff = Fraction::cast(fo);
+            if (ff) {
+                auto dn = ff->getDenominator();
                 pd = Product::cast(dn);
                 if (!pd) {
                     for (auto it = members.begin(); it != members.end();)
                     {
                         if (dn == *it) {
                             members.erase(it++);
-                            *const_cast<Fraction*>(f) *= dn;
-                            const_cast<Fraction*>(f)->optimize();
+                            fo *= dn;
+                            fo.optimize();
                             // not a fraction any more
                             break;
                         }
                         else  ++it;
                     }
                 }
+            }
+            
+            if(*f != fo)
+            {
+                members.erase(f++);
+                members.insert(f,fo);
             }
         }
     }
@@ -290,13 +309,15 @@ namespace extrapolator {
         auto va = Variable::cast(v);
         if (!va)
         {
-            for (const Valuable& a : members)
+            for (auto it = members.begin(); it != members.end();)
             {
-                if (a.OfSameType(v))
-                {
-                    const_cast<Valuable&>(a) *= v;
+                if (it->OfSameType(v)) {
+                    auto m = *it*v;
+                    members.erase(it++);
+                    members.insert(it,m);
                     goto yes;
                 }
+                else  ++it;
             }
         }
 

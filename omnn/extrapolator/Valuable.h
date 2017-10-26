@@ -163,15 +163,17 @@ public:
         virtual void Add(typename ContT::const_reference item) = 0;
 
         template<class T>
-        const T* GetFirstOccurence() const
+        auto GetFirstOccurence() const
         {
-            for(const auto& a : GetConstCont())
+            auto& c = GetConstCont();
+            auto e = c.end();
+            for(auto i = c.begin(); i != e; ++i)
             {
-                auto v = T::cast(a);
+                auto v = T::cast(*i);
                 if(v)
-                    return v;
+                    return i;
             }
-            return nullptr;
+            return e;
         }
         
         bool HasValueType(const std::type_info& type) const

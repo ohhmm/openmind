@@ -36,6 +36,8 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     v /= v1^2;
     v.optimize();
     BOOST_TEST(v == 125_v/3 + v2);
+    
+    BOOST_TEST(v1*2*2==v1*4);
 }
 
 BOOST_AUTO_TEST_CASE(unordered_multiset_tests)
