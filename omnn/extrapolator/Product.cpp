@@ -132,18 +132,26 @@ namespace extrapolator {
 
         // optimize members, if found a sum then become the sum multiplied by other members
         Sum* s = nullptr;
-        for (auto& it : members)
+        for (auto it = members.begin(); it != members.end();)
         {
-            s = const_cast<Sum*>(Sum::cast(it));
+            s = const_cast<Sum*>(Sum::cast(*it));
             if (s)
                 break;
-            const_cast<Valuable&>(it).optimize();
+            auto c = *it;
+            c.optimize();
+            if (*it != c) {
+                members.erase(it++);
+                members.insert(it, c);
+                it = begin();
+                continue;
+            }
+            else
+                ++it;
         }
         if (s)
         {
             for (auto& it : members)
             {
-                // FIXME : may be same sum in sequence, add test
                 if (s == const_cast<Sum*>(Sum::cast(it)))
                     continue;
                 else
@@ -205,6 +213,7 @@ namespace extrapolator {
         // if has a fraction then do optimizations
         auto f = GetFirstOccurence<Fraction>();
         if (f != members.end()) {
+            auto fo = *Fraction::cast(*f);
             // do not become a fraction for optimizations, because sum operate with products to analyse polynomial grade in FormulaOfVa
 //            auto fracopy = *f;
 //            *this /= *f;
@@ -214,7 +223,7 @@ namespace extrapolator {
             // ^ no
             
             // optimize here instead
-            auto pd = Product::cast(Fraction::cast(*f)->getDenominator());
+            auto pd = Product::cast(fo.getDenominator());
             if (pd) {
                 for (auto it = members.begin(); it != members.end();)
                 {
@@ -227,7 +236,6 @@ namespace extrapolator {
                 }
             }
             
-            auto fo = *f;
             fo.optimize();
             
             // check if it still fraction
