@@ -29,13 +29,21 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     cout<<v;
     v += v1*v;
     BOOST_TEST(v == (125_v/3*v1 + v1*v2 + 125_v/3*v1*v1 + v1*v1*v2));
-    
+
     v -= 125_v/3*v1 + v1*v2;
     BOOST_TEST(v == 125_v/3*v1*v1 + v1*v1*v2);
     
     v /= v1^2;
+    cout << v << endl;
     v.optimize();
     BOOST_TEST(v == 125_v/3 + v2);
+    Sum s(v1, 5);
+    Sum s1(v2, 12);
+    Fraction ff(v1, 12);
+    Product pp(2, s, ff, s1);
+    pp.optimize();
+    cout << pp<<endl;
+
     
     BOOST_TEST(v1*2*2==v1*4);
 }

@@ -71,6 +71,7 @@ namespace extrapolator {
                     members.erase(it++);
                     continue;
                 }
+                bool d = false;
                 auto t = it;
                 auto it2 = it;
                 ++it2;
@@ -87,6 +88,7 @@ namespace extrapolator {
                         members.erase(it2++);
                         members.erase(it++);
                         members.insert(it, c);
+                        d = true;
                         it = members.begin();
                         break;
                     }
@@ -94,7 +96,7 @@ namespace extrapolator {
                         ++it2;
                 }
 
-                if (it != t) {
+                if (d) {
                     continue;
                 }
                 ++it;
