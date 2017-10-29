@@ -22,7 +22,6 @@ public:
     // virtual operators
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
-    Valuable& operator +=(int v) override;
     Valuable& operator *=(const Valuable& v) override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;

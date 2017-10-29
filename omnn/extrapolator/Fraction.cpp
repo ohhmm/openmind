@@ -145,31 +145,6 @@ namespace extrapolator {
         return *this;
     }
 
-    Valuable& Fraction::operator +=(int v)
-    {
-		auto f = cast(v);
-		if (f)
-		{
-			numerator += v*denominator;
-		}
-		else
-		{
-			auto i = Integer::cast(v);
-			if (i)
-			{
-				numerator += (decltype(numerator))(*i);
-			}
-			else
-			{
-				// try other type
-				// no type matched
-				base::operator +=(v);
-			}
-		}
-		optimize();
-		return *this;
-    }
-
     Valuable& Fraction::operator *=(const Valuable& v)
     {
         auto f = cast(v);
