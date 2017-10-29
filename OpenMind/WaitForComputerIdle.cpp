@@ -64,6 +64,14 @@ bool getIdleMsec(unsigned& idleTime) {
 		idleTime = GetTickCount() - ii.dwTime;
 	return result;
 }
+
+#elif __APPLE__
+#include <CoreGraphics/CoreGraphics.h>
+bool getIdleMsec(unsigned& idleTime) {
+    throw "Implement!";
+    return true;
+}
+
 #else
 # include <X11/extensions/scrnsaver.h>
 bool getIdleMsec(unsigned& idleTime) {

@@ -38,8 +38,6 @@ namespace extrapolator {
         do
         {
             w = *this;
-            assert(w == *this);
-            std::cout << "optimizing sum " << w << std::endl;
             if (members.size() == 1) {
                 cont::iterator b = members.begin();
                 Become(std::move(const_cast<Valuable&>(*b)));
@@ -125,6 +123,7 @@ namespace extrapolator {
                             members.erase(it++);
                             members.erase(v->second);
                             kv.clear();
+                            members.insert(it,co);
                             it = members.begin();
                             continue;
                         }
@@ -146,9 +145,11 @@ namespace extrapolator {
                     ++it;
             }
             
+#ifndef NDEBUG
             if (w!=*this) {
                 std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
             }
+#endif
         } while (w != *this);
         isOptimizing = false;
     }

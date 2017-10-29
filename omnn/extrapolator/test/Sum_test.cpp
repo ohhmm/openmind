@@ -5,6 +5,13 @@
 
 using namespace omnn::extrapolator;
 
+std::string l(const Valuable& v)
+{
+    std::stringstream ss;
+    ss << v;
+    return ss.str();
+}
+
 BOOST_AUTO_TEST_CASE(Sum_tests)
 {
     Variable v,v1,v2;
@@ -20,7 +27,9 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     s+=v;
     std::cout << s;
     BOOST_TEST(s == a+v);
+    std::cout << s << std::endl;
     s = s*s;
+    std::cout << s << std::endl;
     s.optimize();
     BOOST_TEST(s == 1_v/9 - (2_v/3) * v + v*v);
 
