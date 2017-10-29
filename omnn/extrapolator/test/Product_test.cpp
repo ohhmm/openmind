@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     Sum s(v1, 5);
     Sum s1(v2, 12);
     Fraction ff(v1, 12);
-    Product pp(2, s, ff, s1);
+    auto pp = 2 * s * ff * s1;
     pp.optimize();
     cout << pp<<endl;
 
