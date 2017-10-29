@@ -59,12 +59,12 @@ namespace extrapolator {
             static TypedVarHost<T> host;
             return host;
         }
-        virtual bool Has(any::any id) const = 0;
-        virtual size_t Hash(any::any id) const = 0;
+        virtual bool Has(const any::any& id) const = 0;
+        virtual size_t Hash(const any::any& id) const = 0;
         virtual any::any NewVarId() = 0;
-        virtual bool CompareIdsLess(any::any a, any::any b) const = 0;
-        virtual bool CompareIdsEqual(any::any a, any::any b) const = 0;
-        virtual std::ostream& print(std::ostream& out, any::any v) const = 0;
+        virtual bool CompareIdsLess(const any::any& a, const any::any& b) const = 0;
+        virtual bool CompareIdsEqual(const any::any& a, const any::any& b) const = 0;
+        virtual std::ostream& print(std::ostream& out, const any::any& v) const = 0;
     };
     
     /**
@@ -119,23 +119,26 @@ namespace extrapolator {
             
         }
         
-        bool Has(any::any id) const override {
+        bool Has(const any::any& id) const override {
             return varIds.find(any::any_cast<T>(id)) != varIds.end();
         }
         
-        size_t Hash(any::any id) const override {
+        size_t Hash(const any::any& id) const override {
             return std::hash<T>()(any::any_cast<T>(id));
         }
         
-        bool CompareIdsLess(any::any a, any::any b) const override {
+        bool CompareIdsLess(const any::any& a, const any::any& b) const override {
             return any::any_cast<T>(a) < any::any_cast<T>(b);
         }
         
-        bool CompareIdsEqual(any::any a, any::any b) const override {
-            return any::any_cast<T>(a) == any::any_cast<T>(b);
+        bool CompareIdsEqual(const any::any& a, const any::any& b) const override {
+            auto ca = any::any_cast<const T&>(a);
+            auto cb = any::any_cast<const T&>(b);
+            bool eq = ca == cb;
+            return eq;
         }
         
-        std::ostream& print(std::ostream& out, any::any v) const override {
+        std::ostream& print(std::ostream& out, const any::any& v) const override {
             return out << 'v' << any::any_cast<T>(v);
         }
     };

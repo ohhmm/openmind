@@ -142,6 +142,7 @@ namespace extrapolator {
             if (*it != c) {
                 members.erase(it++);
                 members.insert(it, c);
+                // fixme : check vars
                 it = begin();
                 continue;
             }

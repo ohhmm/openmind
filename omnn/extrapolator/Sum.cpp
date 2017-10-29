@@ -38,6 +38,7 @@ namespace extrapolator {
         do
         {
             w = *this;
+            assert(w == *this);
             std::cout << "optimizing sum " << w << std::endl;
             if (members.size() == 1) {
                 cont::iterator b = members.begin();
@@ -72,7 +73,6 @@ namespace extrapolator {
                     continue;
                 }
                 bool d = false;
-                auto t = it;
                 auto it2 = it;
                 ++it2;
                 for (; it2 != members.end();)
@@ -104,8 +104,7 @@ namespace extrapolator {
 
             // commonize by vars
             using K = std::multiset<Variable>;
-            using V = Product*;
-            using KV = std::pair<K, V>;
+            using V = decltype(members)::iterator;
             std::map<K, V> kv;
             for (auto it = members.begin(); it != members.end();)
             {
@@ -117,12 +116,16 @@ namespace extrapolator {
                     {
                         std::map<K, V>::iterator v = kv.find(k);
                         if (v == kv.end()) {
-                            kv[k] = const_cast<Product*>(p);
+                            kv[k] = it;
                         }
                         else
                         {
-                            *v->second += *p;
+                            auto co = *v->second;
+                            co += *p;
                             members.erase(it++);
+                            members.erase(v->second);
+                            kv.clear();
+                            it = members.begin();
                             continue;
                         }
                     }
@@ -206,7 +209,7 @@ namespace extrapolator {
 		}
 
         s.optimize();
-        members = s.members;
+        members = std::move(s.members);
 
 		return *this;
 	}
@@ -230,7 +233,7 @@ namespace extrapolator {
             }
 		}
         s.optimize();
-        members = s.members;
+        members = std::move(s.members);
 		return *this;
 	}
 
