@@ -152,6 +152,10 @@ namespace extrapolator {
 #endif
         } while (w != *this);
 
+        if (members.size() == 0) {
+            Become(0_v);
+        }
+        
         isOptimizing = false;
     }
 

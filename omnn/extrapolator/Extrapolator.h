@@ -240,16 +240,15 @@ public:
      */
     operator Formula() const
     {
-        auto szy = size1();
-        auto szx = size2();
+        auto vm = ViewMatrix();
         Valuable e(0);
         Variable vx,vy,vv;
-        for (auto y = szy; y--; ) {
-            for (auto x = szx; x--; ) {
-                auto v = operator()(y,x);
-                auto co = vx*x + vy*y + vv*v;
-                e += co * co;
-            }
+        for (auto i = vm.size1(); i--; ) {
+                auto e1 = vx - vm(i,0);
+                auto e2 = vy - vm(i,1);
+                auto e3 = vv - vm(i,2);
+                auto subsyst = e1*e1 + e2*e2 + e3*e3;
+                e += subsyst*subsyst;
         }
         e.optimize();
         auto s = Sum::cast(e);

@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         subsyst.Eval(z, vm(i, 2));
         BOOST_TEST(subsyst == 0);
     }
-    std::cout << eq << std::endl;
+    std::cout << "Total equation:" << eq << std::endl;
     // checking
     for (auto i=vm.size1(); i--;) {
         Valuable v = eq;
@@ -167,6 +167,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
 
     // this seems not work
 //    auto s = m.Solve(au);
+    
 //    for(auto si : s)
 //    {
 //        std::cout << si << ' ';
