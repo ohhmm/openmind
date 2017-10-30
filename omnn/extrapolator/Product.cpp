@@ -118,18 +118,6 @@ namespace extrapolator {
 
     void Product::optimize()
     {
-        // emerge inner products
-        for (auto it = members.begin(); it != members.end();)
-        {
-            auto p = cast(*it);
-            if (p) {
-                for (auto& m : *p)
-                    Add(m);
-                members.erase(it++);
-            }
-            else  ++it;
-        }
-
         // optimize members, if found a sum then become the sum multiplied by other members
         Sum* s = nullptr;
         for (auto it = members.begin(); it != members.end();)
@@ -139,7 +127,7 @@ namespace extrapolator {
                 break;
             auto c = *it;
             c.optimize();
-            if (*it != c) {
+            if (!it->Same(c)) {
                 members.erase(it++);
                 members.insert(it, c);
                 // fixme : check vars
@@ -163,7 +151,22 @@ namespace extrapolator {
             return;
         }
 
-        // if no sum  then continue optimizing this product
+        
+        // if no sum then continue optimizing this product
+        
+        // emerge inner products
+        for (auto it = members.begin(); it != members.end();)
+        {
+            auto p = cast(*it);
+            if (p) {
+                for (auto& m : *p)
+                    Add(m);
+                members.erase(it++);
+            }
+            else
+                ++it;
+        }
+        
         for (auto it = members.begin(); it != members.end();)
         {
             if (members.size() == 1)
@@ -215,7 +218,7 @@ namespace extrapolator {
         // if has a fraction then do optimizations
         auto f = GetFirstOccurence<Fraction>();
         if (f != members.end()) {
-            auto fo = *Fraction::cast(*f);
+            Valuable fo = *Fraction::cast(*f);
             // do not become a fraction for optimizations, because sum operate with products to analyse polynomial grade in FormulaOfVa
 //            auto fracopy = *f;
 //            *this /= *f;
@@ -225,7 +228,7 @@ namespace extrapolator {
             // ^ no
             
             // optimize here instead
-            auto pd = Product::cast(fo.getDenominator());
+            auto pd = Product::cast(Fraction::cast(fo)->getDenominator());
             if (pd) {
                 for (auto it = members.begin(); it != members.end();)
                 {
@@ -260,12 +263,15 @@ namespace extrapolator {
                 }
             }
             
-            if(*f != fo)
+            if(!f->Same(fo))
             {
                 members.erase(f++);
                 members.insert(f,fo);
             }
         }
+        
+        if(members.size()==0)
+            Become(1_v);
     }
 
     const std::multiset<Variable>& Product::getCommonVars() const
@@ -407,7 +413,19 @@ namespace extrapolator {
 
     const Variable* Product::FindVa() const
     {
-        return vars.size() ? &*vars.begin() : nullptr;
+        auto va = vars.size() ? &*vars.begin() : nullptr;
+
+        if (!va)
+        {
+            for (auto it = members.begin();
+                 !va && it != members.end();
+                 ++it)
+            {
+                va = it->FindVa();
+            }
+        }
+        
+        return va;
     }
 
     void Product::Eval(const Variable& va, const Valuable& v)

@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     v.optimize();
     BOOST_TEST(v == 125_v/3 + v2);
     Sum s(v1, 5);
-    Sum s1(v2, 12);
-    Fraction ff(v1, 12);
+    auto s1 = v2 + 12;
+    auto ff = v1 / 12;
     auto pp = 2 * s * ff * s1;
     pp.optimize();
     cout << pp<<endl;

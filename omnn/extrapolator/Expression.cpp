@@ -68,11 +68,11 @@ Valuable& Expression::operator *=(const Valuable& val)
     if (e)
     {
         Expression ex;
-        for(auto& a : polynoms) {
-            for(auto& b : e->polynoms) {
-                //TODO : out+=a*b;
-            }
-        }
+//        for(auto& a : polynoms) {
+//            for(auto& b : e->polynoms) {
+//                //TODO : out+=a*b;
+//            }
+//        }
         *this = ex;
     }
     else

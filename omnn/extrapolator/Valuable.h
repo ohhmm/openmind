@@ -75,6 +75,7 @@ public:
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     
     bool OfSameType(const Valuable& v) const;
+    bool Same(const Valuable& v) const;
     virtual size_t Hash() const;
 };
 
@@ -208,9 +209,21 @@ public:
         
         void Eval(const Variable& va, const Valuable& v) override
         {
-            for(auto& i : GetConstCont())
+            auto& c = GetCont();
+            auto e = c.end();
+            for(auto i = c.begin(); i != e;)
             {
-                const_cast<Valuable&>(i).Eval(va,v);
+                auto co = *i;
+                co.Eval(va,v);
+                if (!i->Same(co))
+                {
+                    c.erase(i++);
+                    c.insert(i,co);
+                }
+                else
+                {
+                    ++i;
+                }
             }
             this->optimize();
         }

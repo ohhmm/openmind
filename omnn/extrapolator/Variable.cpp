@@ -39,31 +39,15 @@ namespace extrapolator {
     Valuable& Variable::operator /=(const Valuable& v)
     {
         auto i = cast(v);
-        if (i)
+        if (i && *this==*i)
         {
-            if (*this==*i) {
-                Become(Integer(1));
-            }
-            else
-                throw "Implement! Need fraction support for valuables";
+            Become(Integer(1));
         }
         else
         {
-            throw "Implement! Need fraction support for valuables";
-            auto i = Integer::cast(v);
-            if (i)
-            {
-                // todo : Implement!
-            }
-            else
-            {
-                // try other type
-                // no type matched
-                base::operator /=(v);
-            }
-            
+            Become(Fraction(*this,v));
         }
-        optimize();
+
         return *this;
     }
     

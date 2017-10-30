@@ -247,6 +247,9 @@ namespace extrapolator {
 			}
 			return l.numerator == f.numerator;
 		}
+        else if (v.FindVa()) {
+            return false;
+        }
         else
         {
 			auto i = Integer::cast(v);
@@ -256,13 +259,8 @@ namespace extrapolator {
 				auto l = *this;
 				return l.numerator == f*denominator;
 			}
-			else
-			{
-                if (v.FindVa()) {
-                    return false;
-                }
-			}
         }
+        
         // no type matched
         return base::operator ==(v);
     }

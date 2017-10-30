@@ -264,6 +264,11 @@ namespace extrapolator {
         return typeid(v1) == typeid(v2);
     }
     
+    bool Valuable::Same(const Valuable& v) const
+    {
+        return OfSameType(v) && operator==(v);
+    }
+    
     size_t Valuable::Hash() const
     {
         if (exp) {

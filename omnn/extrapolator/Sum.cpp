@@ -50,7 +50,7 @@ namespace extrapolator {
                 // optimize member
                 auto copy = *it;
                 copy.optimize();
-                if (copy != *it) {
+                if (!it->Same(copy)) {
                     members.erase(it++);
                     it = members.insert(it, copy);
                     continue;
@@ -78,8 +78,8 @@ namespace extrapolator {
                     if ((it2->OfSameType(*it)
                         && !Variable::cast(*it)
                         && (!Product::cast(*it) || *it == -*it2))
-                        || (Integer::cast(*it) && Fraction::cast(*it2))
-                        || (Integer::cast(*it2) && Fraction::cast(*it))
+                        || (Integer::cast(*it) && Fraction::cast(*it2) && !it2->FindVa())
+                        || (Integer::cast(*it2) && Fraction::cast(*it) && !it->FindVa())
                         )
                     {
                         auto c = *it + *it2;
@@ -137,7 +137,7 @@ namespace extrapolator {
             {
                 auto copy = *it;
                 copy.optimize();
-                if (copy != *it) {
+                if (!it->Same(copy)) {
                     members.erase(it++);
                     it = members.insert(it, copy);
                 }
@@ -151,6 +151,7 @@ namespace extrapolator {
             }
 #endif
         } while (w != *this);
+
         isOptimizing = false;
     }
 

@@ -25,7 +25,7 @@ class Formula
     Formula(int i) : e(i){}
     
 protected:
-    std::ostream& print(std::ostream& out) const;
+    std::ostream& print(std::ostream& out) const override;
 
 public:
     //using f_t = std::function<Valuable&&(Valuable&&)>;

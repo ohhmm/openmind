@@ -159,11 +159,8 @@ namespace extrapolator {
             return arbitrary == i->arbitrary;
         else if(v.FindVa())
             return false;
-        else if(Fraction::cast(v))
+        else
             return v == *this;
-
-        // no type matched
-        return base::operator ==(v);
     }
 
     std::ostream& Integer::print(std::ostream& out) const

@@ -9,6 +9,13 @@ using namespace omnn::extrapolator;
 using namespace boost::unit_test;
 
 
+std::string l(const omnn::extrapolator::Valuable& v)
+{
+    std::stringstream ss;
+    ss << v;
+    return ss.str();
+}
+
 BOOST_AUTO_TEST_CASE(ExtrapolatorSolve_test)
 {
     
