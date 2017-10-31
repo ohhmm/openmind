@@ -307,8 +307,15 @@ namespace extrapolator {
         numerator.Eval(va, v);
         denominator.Eval(va, v);
     }
+    
     size_t Fraction::Hash() const
     {
         return numerator.Hash() ^ denominator.Hash();
+    }
+    
+    bool Fraction::IsSimple() const
+    {
+        return Integer::cast(numerator)
+            && Integer::cast(denominator);
     }
 }}

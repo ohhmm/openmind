@@ -252,7 +252,11 @@ namespace extrapolator {
     void Valuable::Eval(const Variable& va, const Valuable& v)
     {
         if (exp) {
-            return exp->Eval(va, v);
+            exp->Eval(va, v);
+            while (exp->exp) {
+                exp = exp->exp;
+            }
+            return;
         }
         IMPLEMENT
     }

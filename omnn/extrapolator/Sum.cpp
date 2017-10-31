@@ -75,11 +75,12 @@ namespace extrapolator {
                 ++it2;
                 for (; it2 != members.end();)
                 {
+                    const Fraction* f;
                     if ((it2->OfSameType(*it)
                         && !Variable::cast(*it)
                         && (!Product::cast(*it) || *it == -*it2))
-                        || (Integer::cast(*it) && Fraction::cast(*it2) && !it2->FindVa())
-                        || (Integer::cast(*it2) && Fraction::cast(*it) && !it->FindVa())
+                        || (Integer::cast(*it) && (f=Fraction::cast(*it2)) && f->IsSimple())
+                        || (Integer::cast(*it2) && (f=Fraction::cast(*it)) && f->IsSimple())
                         )
                     {
                         auto c = *it + *it2;
@@ -147,7 +148,7 @@ namespace extrapolator {
             
 #ifndef NDEBUG
             if (w!=*this) {
-                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
+//                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
             }
 #endif
         } while (w != *this);
@@ -318,7 +319,27 @@ namespace extrapolator {
             }
             else
             {
-                coefficients[0] += m;
+                auto va = Variable::cast(m);
+                if (va && *va == v) {
+                    coefficients[1] += 1;
+                }
+                else
+                {
+//                    auto e = Exponentiation::cast(m);
+//                    if (e) {
+//                        auto ie = Integer::cast(e->getExponentiation());
+//                        if (e->getBase()==v && ie) {
+//                            coefficients[boost::numeric_cast<size_t>(ie->operator boost::multiprecision::cpp_int())] += 1;
+//                        }
+//                        else
+//                            throw "Implement!";
+//                    }
+//                    else
+                    {
+                        coefficients[0] += m;
+                    }
+                }
+                
             }
         }
 

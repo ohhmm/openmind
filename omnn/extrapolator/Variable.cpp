@@ -66,9 +66,16 @@ namespace extrapolator {
         auto ie = Integer::cast(v);
         if(ie)
         {
-            auto a = *this;
-            for (auto n = *ie; n > 1; --n) {
-                *this *= a;
+            if (*ie == 0)
+            {
+                Become(1_v);
+            }
+            else
+            {
+                auto a = *this;
+                for (auto n = *ie; n > 1; --n) {
+                    *this *= a;
+                }
             }
         }
         else
