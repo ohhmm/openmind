@@ -1,10 +1,8 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
-
 #pragma once
-#include <boost/multiprecision/cpp_int.hpp>
-#include "Integer.h"
+#include "ValuableDescendantContract.h"
 
 namespace omnn{
 namespace extrapolator {

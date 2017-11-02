@@ -5,6 +5,7 @@
 #pragma once
 #include <list>
 #include <unordered_set>
+#include "ValuableCollectionDescendantContract.h"
 #include "Formula.h"
 
 namespace omnn{

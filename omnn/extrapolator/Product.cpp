@@ -3,97 +3,14 @@
 //
 #include "Product.h"
 
-#include "Exponentiation.h"
-#include "Sum.h"
 #include "Fraction.h"
+#include "Integer.h"
+#include "Sum.h"
+
 #include <type_traits>
 
 namespace omnn{
 namespace extrapolator {
-    
-    // store order operator
-    bool ValuableLessCompare::operator()(const Valuable& v1, const Valuable& v2)
-    {
-        // TODO : refactore, compare nemerical representation of order rank
-        auto v1va = Variable::cast(v1);
-        auto v2va = Variable::cast(v2);
-        auto v1fa = v1.FindVa();
-        auto v2fa = v2.FindVa();
-        bool v1s = Sum::cast(v1);
-        bool v2s = Sum::cast(v2);
-        bool v1p = Product::cast(v1);
-        bool v2p = Product::cast(v2);
-
-        if(v1va)
-        {
-            if(v2va)
-            {
-                return v1 < v2;
-            }
-            else
-            {
-                if (v2fa)
-                {
-                    return true;
-                }
-                else
-                {
-                    if (v2s) {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
-        else
-        {
-            if(v2va)
-            {
-                if (v1fa)
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                if(v1fa)
-                {
-                    return false;
-                }
-                else if (v2fa)
-                {
-                    return true;
-                }
-                else
-                {
-                    if (v1s)
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        if (v2s || v2p) {
-                            return true;
-                        }
-                        else if (v1s || v1p) {
-                            return false;
-                        }
-                        else if (Integer::cast(v1) && Exponentiation::cast(v2))
-                            return true;
-                        else
-                            return v1 < v2;
-                    }
-                }
-            }
-        }
-    }
     
     void Product::Add(const Valuable& item)
     {

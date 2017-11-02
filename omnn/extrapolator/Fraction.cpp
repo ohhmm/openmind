@@ -281,12 +281,12 @@ namespace extrapolator {
         return out;
     }
 
-    const omnn::extrapolator::Fraction::base_int& Fraction::getDenominator() const
+    const omnn::extrapolator::Fraction::value_type& Fraction::getDenominator() const
     {
         return denominator;
     }
 
-    const omnn::extrapolator::Fraction::base_int& Fraction::getNumerator() const
+    const omnn::extrapolator::Fraction::value_type& Fraction::getNumerator() const
     {
         return numerator;
     }

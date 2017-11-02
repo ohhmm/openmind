@@ -4,6 +4,7 @@
 
 #pragma once
 #include <unordered_set>
+#include "ValuableCollectionDescendantContract.h"
 #include "Fraction.h"
 #include "Variable.h"
 

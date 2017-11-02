@@ -7,15 +7,12 @@
 #include <memory>
 #include <set>
 #include <type_traits>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/shared_ptr.hpp>
 
 namespace omnn{
 namespace extrapolator {
     
     namespace ptrs = ::std;
 
-    class Integer;
     class Variable;
     struct ValuableDescendantMarker {};
     
@@ -83,169 +80,6 @@ public:
     virtual size_t Hash() const;
 };
 
-template <class Chld>
-class ValuableDescendantContract
-        : public Valuable
-{
-    using self = ValuableDescendantContract;
-    friend Chld;
-    friend self;
-protected:
-    Valuable* Clone() const override
-    {
-        return new Chld(*static_cast<const Chld*>(this));
-    }
-
-public:
-    // once compiler allow
-    // todo :
-    //ValuableDescendantContract() : Valuable<>() {}
-    // instead of
-    ValuableDescendantContract() : Valuable(ValuableDescendantMarker()) {}
-    ValuableDescendantContract(ValuableDescendantContract&&) : Valuable(ValuableDescendantMarker()) {}
-    ValuableDescendantContract(const ValuableDescendantContract&) : Valuable(ValuableDescendantMarker()) {}
-	ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { return *this; }
-	ValuableDescendantContract& operator=(ValuableDescendantContract&& f) { return *this; }
-    static const Chld* cast(const Valuable& v){
-        return Valuable::cast<Chld>(v);
-    }
-    //friend Chld operator+(const Chld& c, int i) { return c+Chld(i); }
- 
-    
-    Valuable abs() const override
-    {
-        auto i = const_cast<Chld*>(cast(*this));
-        if(*i < Chld(0))
-        {
-            return *cast(-*i);
-        }
-		return *this;
-    }
-    void optimize() override { }
-	Valuable sqrt() const override { throw "Implement!"; }
-};
-
-    template <class Chld, class ContT>
-    class ValuableCollectionDescendantContract
-        : public ValuableDescendantContract<Chld>
-    {
-        using base = ValuableDescendantContract<Chld>;
-        
-    protected:
-        using cont = ContT;
-        virtual cont& GetCont() = 0;
-        virtual const cont& GetConstCont() const = 0;
-        
-    public:
-
-        auto begin()
-        {
-            return GetCont().begin();
-        }
-
-        auto end()
-        {
-            return GetCont().end();
-        }
-
-        auto begin() const
-        {
-            return GetConstCont().begin();
-        }
-
-        auto end() const
-        {
-            return GetConstCont().end();
-        }
-        
-        size_t size() const
-        {
-            return GetConstCont().size();
-        }
-        
-        virtual void Add(typename ContT::const_reference item) = 0;
-
-        template<class T>
-        auto GetFirstOccurence() const
-        {
-            auto& c = GetConstCont();
-            auto e = c.end();
-            for(auto i = c.begin(); i != e; ++i)
-            {
-                auto v = T::cast(*i);
-                if(v)
-                    return i;
-            }
-            return e;
-        }
-        
-        bool HasValueType(const std::type_info& type) const
-        {
-            for(const auto& a : GetConstCont())
-            {
-                if(typeid(a) == type)
-                    return true;
-            }
-            return false;
-        }
-        
-        bool Has(const Valuable& v) const
-        {
-            for(const auto& a : GetConstCont())
-            {
-                if(a==v) return true;
-            }
-            return false;
-        }
-        
-        const Variable* FindVa() const override
-        {
-            for (auto& i : GetConstCont())
-            {
-                auto va = i.FindVa();
-                if (va)
-                    return va;
-            }
-            return nullptr;
-        }
-        
-        void CollectVa(std::set<Variable>& s) const override
-        {
-            for (auto& i : GetConstCont())
-                i.CollectVa(s);
-        }
-        
-        void Eval(const Variable& va, const Valuable& v) override
-        {
-            auto& c = GetCont();
-            auto e = c.end();
-            for(auto i = c.begin(); i != e;)
-            {
-                auto co = *i;
-                co.Eval(va,v);
-                if (!i->Same(co))
-                {
-                    c.erase(i++);
-                    c.insert(i,co);
-                }
-                else
-                {
-                    ++i;
-                }
-            }
-            this->optimize();
-        }
-        
-        size_t Hash() const override
-        {
-            size_t h = 0;
-            for (auto& i : GetConstCont())
-            {
-                h^=i.Hash();
-            }
-            return h;
-        }
-    };
 }}
 
 namespace std

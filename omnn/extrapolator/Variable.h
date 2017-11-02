@@ -5,7 +5,7 @@
 #pragma once
 #include <boost/any.hpp>
 #include <memory>
-#include "Valuable.h"
+#include "ValuableDescendantContract.h"
 #include "VarHost.h"
 
 namespace omnn{

@@ -2,6 +2,7 @@
 // Created by Сергей Кривонос on 20.09.17.
 //
 #include "Expression.h"
+#include "Integer.h"
 
 namespace omnn{
 namespace extrapolator {

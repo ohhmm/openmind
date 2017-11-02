@@ -3,9 +3,9 @@
 //
 #include "Sum.h"
 
-#include "Exponentiation.h"
 #include "Formula.h"
 #include "Fraction.h"
+#include "Integer.h"
 #include "Product.h"
 #include "Variable.h"
 

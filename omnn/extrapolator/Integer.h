@@ -5,7 +5,7 @@
 #pragma once
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/numeric/conversion/converter.hpp>
-#include "Valuable.h"
+#include "ValuableDescendantContract.h"
 
 namespace omnn{
 namespace extrapolator {
