@@ -69,6 +69,7 @@ public:
 
     Fraction Reciprocal() const;
     const Variable* FindVa() const override;
+    void CollectVa(std::set<Variable>& s) const override;
     void Eval(const Variable& va, const Valuable& v) override;
     bool IsSimple() const;
 };

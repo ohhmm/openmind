@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
 
 }
 
-BOOST_AUTO_TEST_CASE(Codec_test, *disabled())
+BOOST_AUTO_TEST_CASE(Codec_test)
 {
     Extrapolator e {{
                             {0,0,0,0, 0,0,0},

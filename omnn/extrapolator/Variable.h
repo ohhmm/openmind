@@ -58,6 +58,8 @@ public:
         return this;
     }
     
+    void CollectVa(std::set<Variable>& s) const override;
+    
     using base::Become;
     
     void Eval(const Variable& va, const Valuable& v) override

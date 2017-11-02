@@ -193,6 +193,13 @@ namespace extrapolator {
         ebase.Eval(va, v);
         eexp.Eval(va, v);
     }
+    
+    void Exponentiation::CollectVa(std::set<Variable>& s) const
+    {
+        ebase.CollectVa(s);
+        eexp.CollectVa(s);
+    }
+    
     size_t Exponentiation::Hash() const
     {
         return ebase.Hash() ^ eexp.Hash();

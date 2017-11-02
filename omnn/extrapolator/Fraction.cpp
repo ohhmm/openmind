@@ -302,6 +302,12 @@ namespace extrapolator {
         return va ? va : numerator.FindVa();
     }
 
+    void Fraction::CollectVa(std::set<Variable>& s) const
+    {
+        numerator.CollectVa(s);
+        denominator.CollectVa(s);
+    }
+    
     void Fraction::Eval(const Variable& va, const Valuable& v)
     {
         numerator.Eval(va, v);

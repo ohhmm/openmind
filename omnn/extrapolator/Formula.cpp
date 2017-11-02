@@ -9,8 +9,10 @@ namespace omnn {
 namespace extrapolator {
 
     Formula::Formula(const Variable& va, const Valuable& ex)
-    :v(va),e(ex)
-    { }
+    : v(va), e(ex)
+    {
+        e.CollectVa(s);
+    }
 
     //Formula::Formula(const Valuable& ex, const f_t& fn)
     //: e(ex), f(fn)

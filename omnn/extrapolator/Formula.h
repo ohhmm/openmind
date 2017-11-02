@@ -18,11 +18,11 @@ class Formula
     
     Variable v;
     Valuable e;
-    //std::vector<Variable*> ev;
+    std::set<Variable> s;
     
     Formula(const Variable&, const Valuable&);
-    Formula(Valuable&& ex) : e(std::move(ex)){}
-    Formula(int i) : e(i){}
+    Formula(Valuable&& ex) : e(std::move(ex)) { e.CollectVa(s); }
+    Formula(int i) : e(i) { e.CollectVa(s); }
     
 protected:
     std::ostream& print(std::ostream& out) const override;
@@ -41,16 +41,11 @@ public:
     Valuable operator()(const T&... vl) const
     {
         auto copy = e;
+        auto vit = s.begin();
         for(auto v:{vl...})
         {
-            auto va = copy.FindVa();
-            if (va)
-            {
-                auto vaCopy = *va;
-                copy.Eval(vaCopy, v);
-            }
-            else
-                throw "no more vars. optimized out? store vars vector to handle evaluation order and such cases";
+            auto va = vit++;
+            copy.Eval(*va, v);
         }
         copy.optimize();
         return copy;

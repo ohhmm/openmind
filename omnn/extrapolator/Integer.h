@@ -61,14 +61,13 @@ public:
     // concrete operators
     bool operator <(const Integer& v) const { return arbitrary < v.arbitrary; }
     bool operator >(const Integer& v) const { return arbitrary > v.arbitrary; }
-//    bool operator>(int v) const  {
-//        return arbitrary > v;
-//    }
-            
-            
-    friend std::ostream& operator <<(std::ostream& out, const Integer& obj);
 
+    friend std::ostream& operator <<(std::ostream& out, const Integer& obj);
+    
+    const Variable* FindVa() const override { return nullptr; }
+    void CollectVa(std::set<Variable>&) const override { }
     void Eval(const Variable& va, const Valuable& v) override { }
+    
     size_t Hash() const override;
 
 private:

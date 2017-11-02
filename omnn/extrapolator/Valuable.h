@@ -5,6 +5,7 @@
 #pragma once
 #include "OpenOps.h"
 #include <memory>
+#include <set>
 #include <type_traits>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -45,7 +46,7 @@ protected:
     
     virtual std::ostream& print(std::ostream& out) const;
     virtual Valuable& Become(Valuable&& i);
-    
+
 public:
     explicit Valuable(Valuable* v);
     
@@ -70,12 +71,15 @@ public:
     virtual Valuable abs() const;
     virtual void optimize(); /// if it simplifies than it should become the type
     virtual Valuable sqrt() const;
-    virtual const Variable* FindVa() const;
-    virtual void Eval(const Variable& va, const Valuable& v);
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
+    
+    virtual const Variable* FindVa() const;
+    virtual void CollectVa(std::set<Variable>& s) const;
+    virtual void Eval(const Variable& va, const Valuable& v);
     
     bool OfSameType(const Valuable& v) const;
     bool Same(const Valuable& v) const;
+    
     virtual size_t Hash() const;
 };
 
@@ -119,8 +123,6 @@ public:
     }
     void optimize() override { }
 	Valuable sqrt() const override { throw "Implement!"; }
-
-    const Variable* FindVa() const override { return nullptr; }
 };
 
     template <class Chld, class ContT>
@@ -205,6 +207,12 @@ public:
                     return va;
             }
             return nullptr;
+        }
+        
+        void CollectVa(std::set<Variable>& s) const override
+        {
+            for (auto& i : GetConstCont())
+                i.CollectVa(s);
         }
         
         void Eval(const Variable& va, const Valuable& v) override

@@ -248,6 +248,14 @@ namespace extrapolator {
         }
         IMPLEMENT
     }
+    
+    void Valuable::CollectVa(std::set<Variable>& s) const
+    {
+        if (exp)
+            exp->CollectVa(s);
+        else
+            IMPLEMENT
+    }
 
     void Valuable::Eval(const Variable& va, const Valuable& v)
     {

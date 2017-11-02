@@ -134,4 +134,9 @@ namespace extrapolator {
     {
         return varSetHost.Hash(varId);
     }
+    
+    void Variable::CollectVa(std::set<Variable>& s) const
+    {
+        s.insert(*this);
+    }
 }}
