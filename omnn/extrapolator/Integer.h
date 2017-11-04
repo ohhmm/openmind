@@ -30,11 +30,13 @@ public:
     Integer(int i = 0)
         : arbitrary(i)
     {
+        hash = std::hash<base_int>()(arbitrary);
     }
 
     Integer(const base_int& i)
         : arbitrary(i)
     {
+        hash = std::hash<base_int>()(arbitrary);
     }
     
     operator base_int() const {
@@ -61,14 +63,10 @@ public:
     // concrete operators
     bool operator <(const Integer& v) const { return arbitrary < v.arbitrary; }
     bool operator >(const Integer& v) const { return arbitrary > v.arbitrary; }
-
-    friend std::ostream& operator <<(std::ostream& out, const Integer& obj);
     
     const Variable* FindVa() const override { return nullptr; }
     void CollectVa(std::set<Variable>&) const override { }
     void Eval(const Variable& va, const Valuable& v) override { }
-    
-    size_t Hash() const override;
 
 private:
 	base_int arbitrary = 0;

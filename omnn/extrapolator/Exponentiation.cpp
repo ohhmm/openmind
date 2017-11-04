@@ -2,6 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Exponentiation.h"
+#include "Accessor.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
@@ -10,6 +11,16 @@
 namespace omnn{
 namespace extrapolator {
     
+    Valuable Exponentiation::getBase()
+    {
+        return Accessor(ebase, hash);
+    }
+    
+    Valuable Exponentiation::getExponentiation()
+    {
+        return Accessor(eexp, hash);
+    }
+    
 	Valuable Exponentiation::operator -() const
     {
         return -1_v * *this;
@@ -17,6 +28,12 @@ namespace extrapolator {
 
     void Exponentiation::optimize()
     {
+        if (!optimizations)
+        {
+            hash = ebase.Hash() ^ eexp.Hash();
+            return;
+        }
+        
         ebase.optimize();
         eexp.optimize();
 
@@ -47,6 +64,10 @@ namespace extrapolator {
             {
                 Become(*ibase ^ *iexp);
             }
+        }
+        
+        if (cast(*this)) {
+            hash = ebase.Hash() ^ eexp.Hash();
         }
     }
     
@@ -198,11 +219,6 @@ namespace extrapolator {
     {
         ebase.CollectVa(s);
         eexp.CollectVa(s);
-    }
-    
-    size_t Exponentiation::Hash() const
-    {
-        return ebase.Hash() ^ eexp.Hash();
     }
 
 }}

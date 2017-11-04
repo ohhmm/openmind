@@ -27,8 +27,8 @@ namespace extrapolator {
         //ValuableDescendantContract() : Valuable<>() {}
         // instead of
         ValuableDescendantContract() : Valuable(ValuableDescendantMarker()) {}
-        ValuableDescendantContract(ValuableDescendantContract&&) : Valuable(ValuableDescendantMarker()) {}
-        ValuableDescendantContract(const ValuableDescendantContract&) : Valuable(ValuableDescendantMarker()) {}
+        ValuableDescendantContract(ValuableDescendantContract&& c) : Valuable(c, ValuableDescendantMarker()) {}
+        ValuableDescendantContract(const ValuableDescendantContract& c) : Valuable(c, ValuableDescendantMarker()) {}
         ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { return *this; }
         ValuableDescendantContract& operator=(ValuableDescendantContract&& f) { return *this; }
         static const Chld* cast(const Valuable& v){
@@ -38,7 +38,7 @@ namespace extrapolator {
         Valuable abs() const override
         {
             auto i = const_cast<Chld*>(cast(*this));
-            if(*i < Chld(0))
+            if(*i < 0_v)
             {
                 return *cast(-*i);
             }

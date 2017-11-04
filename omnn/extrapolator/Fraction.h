@@ -32,16 +32,19 @@ namespace extrapolator {
 		bool operator <(const Valuable& v) const override;
 		bool operator ==(const Valuable& v) const override;
 		void optimize() override;
-		size_t Hash() const override;
 
 		using base::base;
 
 		Fraction() : numerator(0), denominator(1)
-		{ }
+		{
+            hash = numerator.Hash() ^ denominator.Hash();
+        }
 
 		Fraction(int n)
 				: numerator(n), denominator(1)
-		{}
+		{
+            hash = numerator.Hash() ^ denominator.Hash();
+        }
 
 		Fraction(const_ref_type n)
 		: numerator(n)
@@ -53,20 +56,28 @@ namespace extrapolator {
 				numerator = e->numerator;
 				denominator = e->denominator;
 			}
+            hash = numerator.Hash() ^ denominator.Hash();
 		}
 		Fraction(const Integer& n);
 
 		Fraction(const_ref_type n, const_ref_type d)
 				: numerator(n), denominator(d)
-		{}
+		{
+            hash = numerator.Hash() ^ denominator.Hash();
+        }
 
 		Fraction(Fraction&&) = default;
 		Fraction(const Fraction&)=default;
 		Fraction& operator=(const Fraction& f)=default;
 		Fraction& operator=(Fraction&& f)=default;
 
-		const value_type& getDenominator() const;
-		const value_type& getNumerator() const;
+        const Valuable& getDenominator() const { return denominator; }
+        const Valuable& getNumerator() const { return numerator; }
+        
+        /// returns rw accessor
+		Valuable getDenominator();
+        /// returns rw accessor
+		Valuable getNumerator();
 
 		Fraction Reciprocal() const;
 		const Variable* FindVa() const override;

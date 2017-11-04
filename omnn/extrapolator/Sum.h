@@ -23,23 +23,18 @@ class Sum
 
 protected:
 	cont& GetCont() override { return members; }
-	const cont& GetConstCont() const override { return members; }
 	std::ostream& print(std::ostream& out) const override;
     
 public:
-    void Add(const Valuable& item) override;
+	const cont& GetConstCont() const override { return members; }
     
 	// virtual operators
 	Valuable operator -() const override;
 	Valuable& operator +=(const Valuable& v) override;
-	Valuable& operator +=(int v) override;
 	Valuable& operator *=(const Valuable& v) override;
 	Valuable& operator /=(const Valuable& v) override;
-	Valuable& operator %=(const Valuable& v) override;
 	Valuable& operator --() override;
 	Valuable& operator ++() override;
-	bool operator <(const Valuable& v) const override;
-	bool operator ==(const Valuable& v) const override;
     void optimize() override;
     Valuable sqrt() const override;
 

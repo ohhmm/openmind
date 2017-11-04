@@ -25,7 +25,9 @@ public:
     Variable(VarHost& varHost = const_cast<VarHost&>(VarHost::Global<>()))
     : varSetHost(varHost)
     , varId(varHost.NewVarId())
-    { }
+    {
+        varSetHost.Hash(varId);
+    }
     
     Variable(VarHost::ptr varHost)
     : optionalHostPtr(varHost)
@@ -34,6 +36,7 @@ public:
     {
         if(!varHost)
             throw "the varHost is mandatory parameter";
+        varSetHost.Hash(varId);
     }
 
     Valuable operator -() const override;
@@ -51,7 +54,6 @@ public:
 //    void optimize() override;
 //    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
-    size_t Hash() const override;
 
     const Variable* FindVa() const override
     {
@@ -59,8 +61,6 @@ public:
     }
     
     void CollectVa(std::set<Variable>& s) const override;
-    
-    using base::Become;
     
     void Eval(const Variable& va, const Valuable& v) override
     {

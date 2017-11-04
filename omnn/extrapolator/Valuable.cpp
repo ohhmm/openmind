@@ -3,11 +3,14 @@
 //
 
 #include "Valuable.h"
+#include "Accessor.h"
 #include "Integer.h"
 
 namespace omnn{
 namespace extrapolator {
 
+    thread_local bool Valuable::optimizations = true;
+    
     static void implement()
     {
         throw "Implement!";
@@ -23,6 +26,22 @@ namespace extrapolator {
             return new Valuable(*this);
     }
 
+    /// gets valuable under accessor if accessor passed
+    const Valuable* Valuable::accessor_cast(const Valuable& mayBeAccessor)
+    {
+        auto a = Accessor::cast(mayBeAccessor);
+        //todo:CollecctionAccessor
+        return a ? &a->v : nullptr;
+    }
+    
+    template<>
+    const Accessor* Valuable::cast(const Valuable& v)
+    {
+        auto e = v.exp;
+        while (e && e->exp) e = e->exp;
+        return dynamic_cast<const Accessor*>(e ? e.get() : &v);
+    }
+    
     Valuable& Valuable::Become(Valuable&& i)
     {
         Valuable v(std::move(i)); // move here in case it moved from the object member
@@ -35,6 +54,7 @@ namespace extrapolator {
     Valuable& Valuable::operator =(const Valuable&& v)
     {
         exp = std::move(v.exp);
+        hash = std::move(v.hash);
         if (!exp)
             exp.reset(v.Clone());
         return *this;
@@ -47,7 +67,8 @@ namespace extrapolator {
     }
 
     Valuable::Valuable(Valuable&& v) :
-            exp(std::move(v.exp))
+            exp(std::move(v.exp)),
+            hash(std::move(v.hash))
     {
         if (!exp)
             exp.reset(v.Clone());
@@ -224,9 +245,12 @@ namespace extrapolator {
             while (exp->exp) {
                 exp = exp->exp;
             }
-            exp->optimize();
-            while (exp->exp) {
-                exp = exp->exp;
+            if (optimizations)
+            {
+                exp->optimize();
+                while (exp->exp) {
+                    exp = exp->exp;
+                }
             }
             return;
         }
@@ -283,10 +307,16 @@ namespace extrapolator {
     
     size_t Valuable::Hash() const
     {
-        if (exp) {
-            return exp->Hash();
-        }
-        IMPLEMENT
+        return exp
+            ? exp->Hash()
+            : hash;
+    }
+    
+    std::string Valuable::str() const
+    {
+        std::stringstream s;
+        print(s);
+        return s.str();
     }
 }}
 

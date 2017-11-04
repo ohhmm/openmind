@@ -1,7 +1,6 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
-
 #pragma once
 #include "Exponentiation.h"
 
@@ -17,9 +16,9 @@ namespace extrapolator {
     protected:
         using cont = ContT;
         virtual cont& GetCont() = 0;
-        virtual const cont& GetConstCont() const = 0;
         
     public:
+        virtual const cont& GetConstCont() const = 0;
 
         auto begin()
         {
@@ -45,8 +44,12 @@ namespace extrapolator {
         {
             return GetConstCont().size();
         }
-        
-        virtual void Add(typename ContT::const_reference item) = 0;
+
+        virtual void Add(typename ContT::const_reference item)
+        {
+            GetCont().insert(item);
+            Valuable::hash ^= item.Hash();
+        }
 
         template<class T>
         auto GetFirstOccurence() const
@@ -108,8 +111,7 @@ namespace extrapolator {
                 co.Eval(va,v);
                 if (!i->Same(co))
                 {
-                    c.erase(i++);
-                    c.insert(i,co);
+                    Update(i,co);
                 }
                 else
                 {
@@ -118,20 +120,52 @@ namespace extrapolator {
             }
             this->optimize();
         }
-        
-        size_t Hash() const override
+
+        virtual void Update(typename cont::iterator& it, const Valuable& v)
         {
-            size_t h = 0;
-            for (auto& i : GetConstCont())
-            {
-                h^=i.Hash();
-            }
-            return h;
+            Valuable::hash ^= it->Hash();
+            auto& c = GetCont();
+            Delete(it);
+            c.insert(it, v);
+            Valuable::hash ^= v.Hash();
         }
-        
+
+        virtual void Delete(typename cont::iterator& it)
+        {
+            Valuable::hash ^= it->Hash();
+            auto& c = GetCont();
+            c.erase(it++);
+        }
+
         Valuable& operator^=(const Valuable& v) override
         {
             return base::Become(Exponentiation(*this,v));
+        }
+        
+        bool operator ==(const Valuable& v) const override
+        {
+            auto c = Chld::cast(v);
+            return c
+                && Valuable::hash == v.Hash()
+                && GetConstCont()==c->GetConstCont();
+        }
+        
+        template<class T>
+        bool Visit(const std::function<void(Valuable&)>& f)
+        {
+            bool wasVisits = {};
+            auto& c = GetCont();
+            auto e = c.end();
+            for(auto i = c.begin(); i != e; ++i)
+            {
+                auto v = T::cast(*i);
+                if(v)
+                {
+                    f(CollectionAccessor(*v, *this));
+                    wasVisits = true;
+                }
+            }
+            return wasVisits;
         }
     };
 }}

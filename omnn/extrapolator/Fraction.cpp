@@ -2,6 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Fraction.h"
+#include "Accessor.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
@@ -17,7 +18,7 @@ namespace extrapolator {
 	Fraction::Fraction(const Integer& n)
 		:numerator(n), denominator(1)
 	{
-		
+        hash = numerator.Hash() ^ denominator.Hash();
 	}
     
 	Valuable Fraction::operator -() const
@@ -27,6 +28,10 @@ namespace extrapolator {
 
     void Fraction::optimize()
     {
+        if (!optimizations) {
+            hash = numerator.Hash() ^ denominator.Hash();
+            return;
+        }
     reoptimize_the_fraction:
         numerator.optimize();
         denominator.optimize();
@@ -53,8 +58,10 @@ namespace extrapolator {
                 Integer::base_int d = boost::gcd(
                     static_cast<Integer::base_int>(*n),
                     static_cast<Integer::base_int>(*dn));
-                numerator /= Integer(d);
-                denominator /= Integer(d);
+                if (d != 1) {
+                    numerator /= Integer(d);
+                    denominator /= Integer(d);
+                }
             }
         }
         else
@@ -79,6 +86,7 @@ namespace extrapolator {
                                 if (v1 == v2) {
                                     *const_cast<Product*>(n) /= v1;
                                     *const_cast<Product*>(dn) /= v2;
+                                    
                                     goto reoptimize_the_fraction;
                                 }
                             }
@@ -112,6 +120,10 @@ namespace extrapolator {
                     return;
                 }
             }
+        }
+        
+        if (cast(*this)) {
+            hash = numerator.Hash() ^ denominator.Hash();
         }
     }
     
@@ -281,14 +293,14 @@ namespace extrapolator {
         return out;
     }
 
-    const omnn::extrapolator::Fraction::value_type& Fraction::getDenominator() const
+    Valuable Fraction::getDenominator()
     {
-        return denominator;
+        return Accessor(denominator, hash);
     }
 
-    const omnn::extrapolator::Fraction::value_type& Fraction::getNumerator() const
+    Valuable Fraction::getNumerator()
     {
-        return numerator;
+        return Accessor(numerator, hash);
     }
 
     omnn::extrapolator::Fraction Fraction::Reciprocal() const
@@ -312,11 +324,6 @@ namespace extrapolator {
     {
         numerator.Eval(va, v);
         denominator.Eval(va, v);
-    }
-    
-    size_t Fraction::Hash() const
-    {
-        return numerator.Hash() ^ denominator.Hash();
     }
     
     bool Fraction::IsSimple() const

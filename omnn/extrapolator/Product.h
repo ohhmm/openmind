@@ -29,14 +29,16 @@ class Product
     
 protected:
 	cont& GetCont() override { return members; }
-	const cont& GetConstCont() const override { return members; }
     std::ostream& print(std::ostream& out) const override;
     Product(const vars_cont_t& v) : vars(v) { Add(1_v); }
 
 public:
     using base::base;
 
+    const cont& GetConstCont() const override { return members; }
     void Add(const Valuable& item) override;
+    void Update(typename cont::iterator& it, const Valuable& v) override;
+    void Delete(typename cont::iterator& it) override;
     
 	template<class... T>
 	Product(const T&... vals)
@@ -48,7 +50,9 @@ public:
 	}
 
 	Product() : members {{1}}
-	{ }
+	{
+        hash = members.begin()->Hash();
+    }
     
     const std::multiset<Variable>& getCommonVars() const;
     Valuable varless() const;
@@ -56,18 +60,12 @@ public:
 	// virtual operators
 	Valuable operator -() const override;
 	Valuable& operator +=(const Valuable& v) override;
-	Valuable& operator +=(int v) override;
 	Valuable& operator *=(const Valuable& v) override;
 	Valuable& operator /=(const Valuable& v) override;
 	Valuable& operator %=(const Valuable& v) override;
 	Valuable& operator --() override;
 	Valuable& operator ++() override;
-	bool operator <(const Valuable& v) const override;
-	bool operator ==(const Valuable& v) const override;
 	void optimize() override;
-
-    const Variable* FindVa() const override;
-    void Eval(const Variable& va, const Valuable& v) override;
 };
 
 

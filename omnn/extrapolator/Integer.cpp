@@ -21,7 +21,10 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i)
+        {
             arbitrary += i->arbitrary;
+            hash = std::hash<base_int>()(arbitrary);
+        }
         else
         {
             auto f = Fraction::cast(v);
@@ -37,6 +40,7 @@ namespace extrapolator {
     Valuable& Integer::operator +=(int v)
     {
         arbitrary += v;
+        hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
 
@@ -44,7 +48,10 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i)
+        {
             arbitrary *= i->arbitrary;
+            hash = std::hash<base_int>()(arbitrary);
+        }
         else
         {
             // all other types should handle multiplication by Integer
@@ -60,7 +67,10 @@ namespace extrapolator {
         {
             auto div = arbitrary/i->arbitrary;
             if(div*i->arbitrary==arbitrary)
-                arbitrary=div;
+            {
+                arbitrary = div;
+                hash = std::hash<base_int>()(arbitrary);
+            }
             else
                 Become(Fraction(*this,*i));
         }
@@ -75,7 +85,10 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i)
+        {
             arbitrary %= i->arbitrary;
+            hash = std::hash<base_int>()(arbitrary);
+        }
         else
         {
             // try other type
@@ -88,12 +101,14 @@ namespace extrapolator {
     Valuable& Integer::operator --()
     {
         arbitrary--;
+        hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
 
     Valuable& Integer::operator ++()
     {
         arbitrary++;
+        hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
 
@@ -108,6 +123,7 @@ namespace extrapolator {
                     for (base_int n = *i; n > 1; --n) {
                         arbitrary *= a;
                     }
+                    hash = std::hash<base_int>()(arbitrary);
                 } else {
                     // negative
                     Become(Exponentiation(*this, v));
@@ -117,7 +133,10 @@ namespace extrapolator {
                 if (arbitrary == 0)
                     throw "NaN"; // feel free to handle this properly
                 else
+                {
                     arbitrary = 1;
+                    hash = std::hash<base_int>()(arbitrary);
+                }
             }
         }
         else
@@ -166,16 +185,6 @@ namespace extrapolator {
     std::ostream& Integer::print(std::ostream& out) const
     {
         return out << arbitrary;
-    }
-    
-    std::ostream& operator <<(std::ostream& out, const Integer& obj)
-    {
-        return obj.print(out);
-    }
-
-    size_t Integer::Hash() const
-    {
-        return std::hash<base_int>()(arbitrary);
     }
 }}
 

@@ -13,6 +13,7 @@ namespace extrapolator {
     
     namespace ptrs = ::std;
 
+    class Accessor;
     class Variable;
     struct ValuableDescendantMarker {};
     
@@ -26,6 +27,8 @@ public:
 	using self = Valuable;
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
+    /// gets valuable under accessor if accessor passed
+    static const Valuable* accessor_cast(const Valuable& mayBeAccessor);
 
 protected:
     virtual Valuable* Clone() const;
@@ -35,14 +38,30 @@ protected:
     {
         auto e = v.exp;
         while (e && e->exp) e = e->exp;
-        return dynamic_cast<const T*>(e ? e.get() : &v);
+        auto t = dynamic_cast<const T*>(e ? e.get() : &v);
+        if (!t)
+        {
+            auto a = accessor_cast(v);
+            if (a)
+                t = cast<T>(*a);
+        }
+        return t;
     }
     
     template<class T> Valuable() {}
-    Valuable(ValuableDescendantMarker){}
+    
+    Valuable(ValuableDescendantMarker)
+    {}
+    
+    Valuable(const Valuable& v, ValuableDescendantMarker)
+    : hash(v.hash)
+    {}
     
     virtual std::ostream& print(std::ostream& out) const;
     virtual Valuable& Become(Valuable&& i);
+    
+    size_t hash = 0;
+    static thread_local bool optimizations;
 
 public:
     explicit Valuable(Valuable* v);
@@ -77,8 +96,12 @@ public:
     bool OfSameType(const Valuable& v) const;
     bool Same(const Valuable& v) const;
     
-    virtual size_t Hash() const;
+    size_t Hash() const;
+    std::string str() const;
 };
+
+    template<>
+    const Accessor* Valuable::cast(const Valuable& v);
 
 }}
 

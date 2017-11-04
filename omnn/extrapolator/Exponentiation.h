@@ -15,8 +15,12 @@ class Exponentiation
 protected:
     std::ostream& print(std::ostream& out) const override;
 public:
-    const Valuable& getBase() const {return ebase;}
-    const Valuable& getExponentiation() const {return eexp;}
+    const Valuable& getBase() const { return ebase; }
+    const Valuable& getExponentiation() const { return eexp; }
+    /// returns r/w accessor
+    Valuable getBase();
+    /// returns r/w accessor
+    Valuable getExponentiation();
     
     // virtual operators
     Valuable operator -() const override;
@@ -28,17 +32,20 @@ public:
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
     void optimize() override;
-    size_t Hash() const override;
     
     using base::base;
     
     Exponentiation(const Valuable& b, const Valuable& e)
             : ebase(b), eexp(e)
-    {}
+    {
+        hash = ebase.Hash() ^ eexp.Hash();
+    }
 
     Exponentiation(const Valuable& b)
             : ebase(b), eexp(1)
-    {}
+    {
+        hash = ebase.Hash() ^ eexp.Hash();
+    }
 
     const Variable* FindVa() const override;
     void CollectVa(std::set<Variable>& s) const override;

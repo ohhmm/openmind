@@ -14,11 +14,6 @@
 
 namespace omnn{
 namespace extrapolator {
-    
-    void Sum::Add(const Valuable& item)
-    {
-        members.insert(item);
-    }
 
 	Valuable Sum::operator -() const
 	{
@@ -30,6 +25,8 @@ namespace extrapolator {
 
     void Sum::optimize()
     {
+        if (!optimizations) return;
+
         if (isOptimizing)
             return;
         isOptimizing = true;
@@ -51,14 +48,13 @@ namespace extrapolator {
                 auto copy = *it;
                 copy.optimize();
                 if (!it->Same(copy)) {
-                    members.erase(it++);
-                    it = members.insert(it, copy);
+                    Update(it, copy);
                     continue;
                 }
                 
                 if (*it == 0)
                 {
-                    members.erase(it++);
+                    Delete(it);
                     continue;
                 }
                 auto s = cast(*it);
@@ -67,12 +63,13 @@ namespace extrapolator {
                     {
                         Add(std::move(m));
                     }
-                    members.erase(it++);
+                    Delete(it);
                     continue;
                 }
-                bool d = false;
+                
                 auto it2 = it;
                 ++it2;
+                auto c = *it;
                 for (; it2 != members.end();)
                 {
                     const Fraction* f;
@@ -83,22 +80,19 @@ namespace extrapolator {
                         || (Integer::cast(*it2) && (f=Fraction::cast(*it)) && f->IsSimple())
                         )
                     {
-                        auto c = *it + *it2;
-                        members.erase(it2++);
-                        members.erase(it++);
-                        members.insert(it, c);
-                        d = true;
-                        it = members.begin();
-                        break;
+                        c += *it2;
+                        Delete(it2);
                     }
                     else
                         ++it2;
                 }
 
-                if (d) {
-                    continue;
+                if (it->Same(c))
+                    ++it;
+                else
+                {
+                    Update(it, c);
                 }
-                ++it;
             }
 
             // commonize by vars
@@ -121,10 +115,9 @@ namespace extrapolator {
                         {
                             auto co = *v->second;
                             co += *p;
-                            members.erase(it++);
-                            members.erase(v->second);
+                            Delete(v->second);
                             kv.clear();
-                            members.insert(it,co);
+                            Update(it,co);
                             it = members.begin();
                             continue;
                         }
@@ -139,8 +132,7 @@ namespace extrapolator {
                 auto copy = *it;
                 copy.optimize();
                 if (!it->Same(copy)) {
-                    members.erase(it++);
-                    it = members.insert(it, copy);
+                    Update(it, copy);
                 }
                 else
                     ++it;
@@ -148,7 +140,7 @@ namespace extrapolator {
             
 #ifndef NDEBUG
             if (w!=*this) {
-//                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
+                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
             }
 #endif
         } while (w != *this);
@@ -189,11 +181,6 @@ namespace extrapolator {
 
         optimize();
 		return *this;
-	}
-
-	Valuable& Sum::operator +=(int v)
-	{
-		return *this+=(Integer(v));
 	}
 
 	Valuable& Sum::operator *=(const Valuable& v)
@@ -244,11 +231,6 @@ namespace extrapolator {
 		return *this;
 	}
 
-	Valuable& Sum::operator %=(const Valuable& v)
-	{
-		return base::operator %=(v);
-	}
-
 	Valuable& Sum::operator --()
 	{
 		return *this += -1;
@@ -257,20 +239,6 @@ namespace extrapolator {
 	Valuable& Sum::operator ++()
 	{
 		return *this += 1;
-	}
-
-	bool Sum::operator <(const Valuable& v) const
-	{
-
-		// not implemented comparison to this Valuable descent
-		return base::operator <(v);
-	}
-
-	bool Sum::operator ==(const Valuable& v) const
-	{
-        auto s = cast(v);
-        bool eq = s && Hash() == v.Hash() && members==s->members;
-        return eq;
 	}
 
 	std::ostream& Sum::print(std::ostream& out) const
@@ -361,16 +329,24 @@ namespace extrapolator {
                 auto& c = coefficients[2];
                 auto& d = coefficients[1];
                 auto& e = coefficients[0];
+                const_cast<Sum*>(this)->optimizations = false;
                 auto sa = a*a;
                 auto sb = b*b;
                 auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
                 auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).sqrt();
                 auto qp2 = (p2/2)^(1_v/3);
+                const_cast<Sum*>(this)->optimizations = true;
+                p1.optimize();
+                p2.optimize();
+                qp2.optimize();
+                const_cast<Sum*>(this)->optimizations = false;
                 auto p3 = (c*c-3*b*d+12*a*e)/(3*a*qp2)+qp2/(3*a);
                 auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).sqrt();
                 auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
                 auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
                 auto fx = -b/(4*a)+p4/2+(p5+p6).sqrt()/2;
+                const_cast<Sum*>(this)->optimizations = true;
+                fx.optimize();
                 break;
             }
             default: {
