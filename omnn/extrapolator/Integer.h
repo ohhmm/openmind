@@ -43,9 +43,9 @@ public:
         return arbitrary;
     }
     
-//    operator int() const {
-//        return boost::numeric_cast<int>(arbitrary);
-//    }
+    explicit operator int() const {
+        return boost::numeric_cast<int>(arbitrary);
+    }
 
     // virtual operators 
     Valuable operator -() const override;

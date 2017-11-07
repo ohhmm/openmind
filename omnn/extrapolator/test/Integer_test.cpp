@@ -27,6 +27,9 @@ BOOST_AUTO_TEST_CASE(Integer_tests)
     BOOST_TEST(a--==initial_a+1);
     BOOST_TEST(a==initial_a);
 
+    auto t = 1_v;
+    t += 1_v/2;
+    BOOST_TEST(t == 3_v/2);
 
 //    --(++a++)--;
 //    BOOST_TEST(a==initial_a);

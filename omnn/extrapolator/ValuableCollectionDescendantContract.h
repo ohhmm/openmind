@@ -126,7 +126,7 @@ namespace extrapolator {
             Valuable::hash ^= it->Hash();
             auto& c = GetCont();
             Delete(it);
-            c.insert(it, v);
+            it = c.insert(it, v);
             Valuable::hash ^= v.Hash();
         }
 

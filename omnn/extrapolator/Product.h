@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <map>
 #include <unordered_set>
 #include "ValuableCollectionDescendantContract.h"
 #include "Fraction.h"
@@ -24,17 +25,15 @@ class Product
     using base::cont;
     friend class Variable;
     cont members;
-    using vars_cont_t = std::multiset<Variable>;
-    vars_cont_t vars;
-    
+
 protected:
-	cont& GetCont() override { return members; }
-    std::ostream& print(std::ostream& out) const override;
-    Product(const vars_cont_t& v) : vars(v) { Add(1_v); }
+    void AddToVarsIfVaOrVaExp(const Valuable &item);
 
 public:
-    using base::base;
+    using vars_cont_t = std::map<Variable, Valuable>;
 
+    using base::base;
+    
     const cont& GetConstCont() const override { return members; }
     void Add(const Valuable& item) override;
     void Update(typename cont::iterator& it, const Valuable& v) override;
@@ -54,8 +53,12 @@ public:
         hash = members.begin()->Hash();
     }
     
-    const std::multiset<Variable>& getCommonVars() const;
+    const vars_cont_t& getCommonVars() const;
+    vars_cont_t getCommonVars(const vars_cont_t& with) const;
     Valuable varless() const;
+    static Valuable VaVal(const vars_cont_t& v);
+    Valuable getVaVal() const;
+    Valuable getCommVal(const Product& with) const;
 
 	// virtual operators
 	Valuable operator -() const override;
@@ -66,6 +69,14 @@ public:
 	Valuable& operator --() override;
 	Valuable& operator ++() override;
 	void optimize() override;
+  
+protected:
+    cont& GetCont() override { return members; }
+    std::ostream& print(std::ostream& out) const override;
+    Product(const vars_cont_t& v) : vars(v) { Add(1_v); }
+    
+private:
+    vars_cont_t vars;
 };
 
 

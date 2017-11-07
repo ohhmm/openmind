@@ -7,11 +7,12 @@
 #include <memory>
 #include <set>
 #include <type_traits>
+#include <boost/shared_ptr.hpp>
 
 namespace omnn{
 namespace extrapolator {
     
-    namespace ptrs = ::std;
+    namespace ptrs = ::boost;
 
     class Accessor;
     class Variable;

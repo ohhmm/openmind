@@ -33,6 +33,11 @@ namespace extrapolator {
     
     Valuable& Variable::operator *=(const Valuable& v)
     {
+        if (Same(v)) {
+            return Become(Exponentiation(*this, 2));
+        }
+        else if (Exponentiation::cast(v))
+            return Become(v**this);
         return Become(Product(*this, v));
     }
     

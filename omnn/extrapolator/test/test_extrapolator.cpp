@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
     // ax+by+cz=0
     // a=0:N, b=0:M, c=-(ax+by)/z     // if x=0 and y=0 then c becames 0 but it wasnt;
     // lets make c a va
-    Valuable eq = 1_v;
+    Valuable eq = 0_v;
     Variable x,y,z;
     for (auto i=vm.size1(); i--;) {
         auto e1 = x - vm(i,0);
@@ -144,6 +144,10 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         BOOST_TEST(subsyst == 0);
     }
     std::cout << "Total equation:" << eq << std::endl;
+    auto s = Sum::cast(eq);
+    BOOST_TEST(s);
+    auto f = s->FormulaOfVa(z);
+    std::cout << "Formula : " << f << std::endl;
     // checking
     for (auto i=vm.size1(); i--;) {
         Valuable v = eq;
@@ -151,6 +155,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         v.Eval(y, vm(i,1));
         v.optimize();
         std::cout << std::endl << vm(i,2) << " : " << v << std::endl;
+        BOOST_TEST(f(vm(i,0),vm(i,1))==vm(i,2));
     }
     }
     Extrapolator m {{

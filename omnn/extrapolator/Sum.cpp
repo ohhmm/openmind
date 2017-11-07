@@ -25,13 +25,13 @@ namespace extrapolator {
 
     void Sum::optimize()
     {
-        if (!optimizations) return;
+        //if (!optimizations) return;
 
         if (isOptimizing)
             return;
         isOptimizing = true;
 
-        Valuable w(0);
+        Valuable w = 0_v;
         do
         {
             w = *this;
@@ -57,6 +57,7 @@ namespace extrapolator {
                     Delete(it);
                     continue;
                 }
+                
                 auto s = cast(*it);
                 if (s) {
                     for (auto& m : s->members)
@@ -70,18 +71,50 @@ namespace extrapolator {
                 auto it2 = it;
                 ++it2;
                 auto c = *it;
+                auto mc = -*it;
+                auto va = Variable::cast(c);
+                auto e = Exponentiation::cast(c);
+                auto p = Product::cast(c);
+                auto i = Integer::cast(c);
+                auto f = Fraction::cast(c);
                 for (; it2 != members.end();)
                 {
-                    const Fraction* f;
-                    if ((it2->OfSameType(*it)
-                        && !Variable::cast(*it)
-                        && (!Product::cast(*it) || *it == -*it2))
-                        || (Integer::cast(*it) && (f=Fraction::cast(*it2)) && f->IsSimple())
-                        || (Integer::cast(*it2) && (f=Fraction::cast(*it)) && f->IsSimple())
+                    const Fraction* f2;
+                    if ((i && (f2=Fraction::cast(*it2)) && f2->IsSimple())
+                        || (Integer::cast(*it2) && (i || (f && f->IsSimple())))
+                        || (p && mc == *it2)
                         )
                     {
                         c += *it2;
                         Delete(it2);
+                        va = Variable::cast(c);
+                        e = Exponentiation::cast(c);
+                        p = Product::cast(c);
+                        i = Integer::cast(c);
+                        f = Fraction::cast(c);
+                        mc = -c;
+                    }
+                    else if(it2->Same(c))
+                    {
+                        c *= 2;
+                        Delete(it2);
+                        va = Variable::cast(c);
+                        e = Exponentiation::cast(c);
+                        p = Product::cast(c);
+                        i = Integer::cast(c);
+                        f = Fraction::cast(c);
+                        mc = -c;
+                    }
+                    else if(it2->Same(mc))
+                    {
+                        c = 0_v;
+                        mc = 0_v;
+                        Delete(it2);
+                        va = Variable::cast(c);
+                        e = Exponentiation::cast(c);
+                        p = Product::cast(c);
+                        i = Integer::cast(c);
+                        f = Fraction::cast(c);
                     }
                     else
                         ++it2;
@@ -96,7 +129,7 @@ namespace extrapolator {
             }
 
             // commonize by vars
-            using K = std::multiset<Variable>;
+            using K = Product::vars_cont_t;
             using V = decltype(members)::iterator;
             std::map<K, V> kv;
             for (auto it = members.begin(); it != members.end();)
@@ -114,12 +147,17 @@ namespace extrapolator {
                         else
                         {
                             auto co = *v->second;
-                            co += *p;
-                            Delete(v->second);
-                            kv.clear();
-                            Update(it,co);
-                            it = members.begin();
-                            continue;
+                            const_cast<Sum*>(this)->optimizations = false;
+                            co += *p; // it may be sum, supress optimize to avoid stack overflow
+                            const_cast<Sum*>(this)->optimizations = true;
+                            if (!Sum::cast(co))
+                            {   // simplified
+                                Delete(v->second);
+                                kv.clear();
+                                Update(it,co);
+                                it = members.begin();
+                                continue;
+                            }
                         }
                     }
                 }
@@ -164,14 +202,16 @@ namespace extrapolator {
 		{
             if(!Product::cast(v))
             {
-                for (auto& a : members)
+                for (auto it = members.begin(); it != members.end();)
                 {
-                    if(a.OfSameType(v))
+                    if(it->OfSameType(v))
                     {
-                        const_cast<Valuable&>(a) += v;
+                        Update(it, *it + v);
                         optimize();
                         return *this;
                     }
+                    else
+                        ++it;
                 }
             }
             
@@ -185,50 +225,44 @@ namespace extrapolator {
 
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
-        Sum s;
+        Valuable s = 0_v;
         auto f = cast(v);
 		if (f)
 		{
 			for (auto& a : members) {
 				for (auto& b : f->members) {
-					s.Add(a*b);
+					s += a * b;
 				}
 			}
 		}
 		else
         {
             for (auto& a : members) {
-                s.Add(a*v);
+                s += a * v;
             }
 		}
-
-        s.optimize();
-        members = std::move(s.members);
-
-		return *this;
+        return Become(std::move(s));
 	}
 
 	Valuable& Sum::operator /=(const Valuable& v)
 	{
-        Sum s;
+        Valuable s = 0_v;
 		auto i = cast(v);
 		if (i)
 		{
 			for (auto& a : members) {
 				for (auto& b : i->members) {
-					s.Add(a/b);
+					s += a / b;
 				}
 			}
 		}
 		else
 		{
             for (auto& a : members) {
-                s.Add(a/v);
+                s += a / v;
             }
 		}
-        s.optimize();
-        members = std::move(s.members);
-		return *this;
+        return Become(std::move(s));
 	}
 
 	Valuable& Sum::operator --()
@@ -271,19 +305,22 @@ namespace extrapolator {
             auto p = Product::cast(m);
             if(p)
             {
-                auto vcnt = 0; // exponentation of va
-                for(auto& pv : p->getCommonVars())
-                    if(pv==v)
-                        ++vcnt;
-                
-                if (vcnt > grade) {
-                    grade = vcnt;
-                    if (vcnt >= coefficients.size()) {
-                        coefficients.resize(vcnt+1);
+                auto& coVa = p->getCommonVars();
+                auto it = coVa.find(v);
+                auto vcnt = it == coVa.end() ? 0 : it->second; // exponentation of va
+                auto i = Integer::cast(vcnt);
+                if (!i) {
+                    throw "Implement!";
+                }
+                int ie = static_cast<int>(*i);
+                if (ie > grade) {
+                    grade = ie;
+                    if (ie >= coefficients.size()) {
+                        coefficients.resize(ie+1);
                     }
                 }
                 
-                coefficients[vcnt] += m / (v^vcnt);
+                coefficients[ie] += m / (v^vcnt);
             }
             else
             {
@@ -293,21 +330,28 @@ namespace extrapolator {
                 }
                 else
                 {
-//                    auto e = Exponentiation::cast(m);
-//                    if (e) {
-//                        auto ie = Integer::cast(e->getExponentiation());
-//                        if (e->getBase()==v && ie) {
-//                            coefficients[boost::numeric_cast<size_t>(ie->operator boost::multiprecision::cpp_int())] += 1;
-//                        }
-//                        else
-//                            throw "Implement!";
-//                    }
-//                    else
+                    auto e = Exponentiation::cast(m);
+                    if (e && e->getBase()==v)
+                    {
+                        auto ie = Integer::cast(e->getExponentiation());
+                        if (ie) {
+                            int i = static_cast<int>(*ie);
+                            if (i > grade) {
+                                grade = i;
+                                if (i >= coefficients.size()) {
+                                    coefficients.resize(i+1);
+                                }
+                            }
+                            coefficients[i] += 1;
+                        }
+                        else
+                            throw "Implement!";
+                    }
+                    else
                     {
                         coefficients[0] += m;
                     }
                 }
-                
             }
         }
 

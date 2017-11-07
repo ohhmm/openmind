@@ -28,10 +28,10 @@ namespace extrapolator {
 
     void Fraction::optimize()
     {
-        if (!optimizations) {
-            hash = numerator.Hash() ^ denominator.Hash();
-            return;
-        }
+//        if (!optimizations) {
+//            hash = numerator.Hash() ^ denominator.Hash();
+//            return;
+//        }
     reoptimize_the_fraction:
         numerator.optimize();
         denominator.optimize();
@@ -71,27 +71,10 @@ namespace extrapolator {
             auto dn = Product::cast(denominator);
             if (n) {
                 if (dn) {
-                    auto& vna = n->getCommonVars();
-                    auto& dnva = dn->getCommonVars();
-                    if (vna == dnva) {
-                        Become(n->varless() / n->varless());
-                        return;
-                    }
-                    else
-                    {
-                        for(auto& v1 : vna)
-                        {
-                            for(auto& v2 : dnva)
-                            {
-                                if (v1 == v2) {
-                                    *const_cast<Product*>(n) /= v1;
-                                    *const_cast<Product*>(dn) /= v2;
-                                    
-                                    goto reoptimize_the_fraction;
-                                }
-                            }
-                        }
-                    }
+                    auto commonVarsPart = n->getCommVal(*dn);
+                    numerator /= commonVarsPart;
+                    denominator /= commonVarsPart;
+                    goto reoptimize_the_fraction;
                 }
                 else
                 {
@@ -112,13 +95,13 @@ namespace extrapolator {
             else // no products
             {
                 // sum
-                auto s = Sum::cast(numerator);
-                if (s) {
-                    auto sum(std::move(*s));
-                    sum /= denominator;
-                    Become(std::move(sum));
-                    return;
-                }
+//                auto s = Sum::cast(numerator);
+//                if (s) {
+//                    auto sum(std::move(*s));
+//                    sum /= denominator;
+//                    Become(std::move(sum));
+//                    return;
+//                }
             }
         }
         
@@ -279,17 +262,20 @@ namespace extrapolator {
 
     std::ostream& Fraction::print(std::ostream& out) const
     {
-        auto n = Integer::cast(numerator);
-        auto dn = Integer::cast(denominator);
-        if(!n)
+        auto noNeedBraces = [](auto& i) {
+            return Integer::cast(i) || Variable::cast(i);
+        };
+        out << '(';
+        if(!noNeedBraces(numerator))
             out << '(' << numerator << ')';
         else
             out << numerator;
-        out << '/';
-        if(!dn)
+        out << '^';
+        if(!noNeedBraces(denominator))
             out << '(' << denominator << ')';
         else
             out << denominator;
+        out << ')';
         return out;
     }
 
@@ -329,6 +315,7 @@ namespace extrapolator {
     bool Fraction::IsSimple() const
     {
         return Integer::cast(numerator)
-            && Integer::cast(denominator);
+            && Integer::cast(denominator)
+        ;
     }
 }}

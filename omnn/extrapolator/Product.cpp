@@ -12,31 +12,66 @@
 namespace omnn{
 namespace extrapolator {
     
+    void Product::AddToVarsIfVaOrVaExp(const Valuable &item)
+    {
+        auto v = Variable::cast(item);
+        if(v)
+        {
+            vars[*v] += 1;
+            if (vars[*v] == 0) {
+                vars.erase(*v);
+            }
+        }
+        else
+        {
+            auto e = Exponentiation::cast(item);
+            if (e)
+            {
+                v = Variable::cast(e->getBase());
+                if (v) {
+                    vars[*v] += e->getExponentiation();
+                    if (vars[*v] == 0) {
+                        vars.erase(*v);
+                    }
+                }
+            }
+        }
+    }
+    
     void Product::Add(const Valuable& item)
     {
         base::Add(item);
-        auto v = Variable::cast(item);
-        if(v)
-            vars.insert(*v);
+        AddToVarsIfVaOrVaExp(item);
     }
     
     void Product::Update(typename cont::iterator& it, const Valuable& v)
     {
         base::Update(it,v);
-        
-        auto va = Variable::cast(v);
-        if (va) {
-            vars.insert(*va);
-        }
+        AddToVarsIfVaOrVaExp(v);
     }
 
     void Product::Delete(typename cont::iterator& it)
     {
-        auto va = Variable::cast(*it);
-        if (va) {
-            auto iva = vars.find(*va);
-            if (iva != vars.end()) {
-                vars.erase(iva);
+        auto v = Variable::cast(*it);
+        if(v)
+        {
+            vars[*v] -= 1;
+            if (vars[*v] == 0) {
+                vars.erase(*v);
+            }
+        }
+        else
+        {
+            auto e = Exponentiation::cast(*it);
+            if (e)
+            {
+                v = Variable::cast(e->getBase());
+                if (v) {
+                    vars[*v] -= e->getExponentiation();
+                    if (vars[*v] == 0) {
+                        vars.erase(*v);
+                    }
+                }
             }
         }
         base::Delete(it);
@@ -44,20 +79,15 @@ namespace extrapolator {
     
 	Valuable Product::operator -() const
 	{
-        auto it = members.begin();
-        if(it == members.end())
-            throw "impossible!";
-        Valuable v = -*it;
-        while (++it != members.end()) {
-            v*=*it;
-        }
-        v.optimize();
-        return v;
+        Product p = *this;
+        auto b = p.begin();
+        p.Update(b, -*b);
+        return p;
 	}
 
     void Product::optimize()
     {
-        if (!optimizations) return;
+        //if (!optimizations) return;
         
         // optimize members, if found a sum then become the sum multiplied by other members
         Sum* s = nullptr;
@@ -125,31 +155,50 @@ namespace extrapolator {
                 return;
             }
 
-            bool cont = {};
+            auto c = *it;
+            auto e = Exponentiation::cast(c);
+            auto f = Fraction::cast(c);
+            auto i = Integer::cast(c);
+            auto v = Variable::cast(c);
             auto it2 = it;
             ++it2;
             for (; it2 != members.end();)
             {
-                if ((it2->OfSameType(*it) && !Variable::cast(*it))
-                    || (Integer::cast(*it) && Fraction::cast(*it2))
-                    || (Integer::cast(*it2) && Fraction::cast(*it))
+                const Exponentiation* e2 = Exponentiation::cast(*it2);
+                if ((it->OfSameType(*it2) && (i || f))
+                    || (v && v->Same(*it2))
+                    || (i && Fraction::cast(*it2))
+                    || (Integer::cast(*it2) && f)
+                    || (v && e2 && e2->getBase() == c)
+                    || (e && e->getBase() == *it2 && Variable::cast(*it2))
+                    || (e && e2 && e->getBase() == e2->getBase())
                     )
                 {
-                    cont = true;
-                    auto c = *it * *it2;
-                    if (!it->OfSameType(c)) {
-                        it = members.begin();
-                    }
+                    c *= *it2;
                     Delete(it2);
-                    Update(it, c);
+                    e = Exponentiation::cast(c);
+                    f = Fraction::cast(c);
+                    i = Integer::cast(c);
+                    v = Variable::cast(c);
+                    break;
+                }
+                else if (it->Same(*it2) && v)
+                {
+                    c ^= 2;
+                    Delete(it2);
+                    e = Exponentiation::cast(c);
+                    f = Fraction::cast(c);
+                    i = Integer::cast(c);
+                    v = Variable::cast(c);
                     break;
                 }
                 else
                     ++it2;
             }
 
-            if (cont)
-                continue;
+            if (!it->Same(c)) {
+                Update(it, c);
+            }
             else
                 ++it;
         }
@@ -205,23 +254,58 @@ namespace extrapolator {
             Become(1_v);
     }
 
-    const std::multiset<Variable>& Product::getCommonVars() const
+    const Product::vars_cont_t& Product::getCommonVars() const
     {
         return vars;
     }
     
+    Product::vars_cont_t Product::getCommonVars(const vars_cont_t& with) const
+    {
+        vars_cont_t common;
+        for(auto& kv : vars)
+        {
+            auto it = with.find(kv.first);
+            if (it != with.end()) {
+                auto i1 = Integer::cast(kv.second);
+                auto i2 = Integer::cast(it->second);
+                if (i1 && i2 && *i1 >= 0_v && *i2 >= 0_v) {
+                    common[kv.first] = std::min(*i1, *i2);
+                }
+                else
+                {
+                    throw "Implement!";
+                }
+            }
+        }
+        return common;
+    }
+    
     Valuable Product::varless() const
     {
+        return *this / getVaVal();
+    }
+    
+    Valuable Product::VaVal(const vars_cont_t& v)
+    {
         Valuable p(1);
-        for(auto& m : members)
+        for(auto& kv : v)
         {
-            auto v = Variable::cast(m);
-            if(!v)
-                p*=m;
+            p *= kv.first ^ kv.second;
         }
+        p.optimize();
         return p;
     }
     
+    Valuable Product::getVaVal() const
+    {
+        return VaVal(vars);
+    }
+    
+    Valuable Product::getCommVal(const Product& with) const
+    {
+        return VaVal(getCommonVars(with.getCommonVars()));
+    }
+
     Valuable& Product::operator +=(const Valuable& v)
     {
         auto p = cast(v);
@@ -234,8 +318,7 @@ namespace extrapolator {
             if (!cv.empty() && cv == p->getCommonVars())
             {
                 auto valuable = varless() + p->varless();
-                for (auto& va : vars)
-                    valuable *= va;
+                valuable *= getVaVal();
                 return Become(std::move(valuable));
             }
         }
@@ -249,15 +332,61 @@ namespace extrapolator {
             return Become(v**this);
 
         auto va = Variable::cast(v);
-        if (!va)
+        if (va)
         {
             for (auto it = members.begin(); it != members.end();)
             {
-                if (it->OfSameType(v)) {
-                    Update(it, *it*v);
+                if (it->Same(v)) {
+                    Update(it, Exponentiation(*va, 2));
                     goto yes;
                 }
-                else  ++it;
+                else
+                {
+                    auto e = Exponentiation::cast(*it);
+                    if (e && e->getBase() == *va) {
+                        Update(it, Exponentiation(*va, e->getExponentiation()+1));
+                        goto yes;
+                    }
+                    else
+                        ++it;
+                }
+            }
+        }
+        else
+        {
+            auto e = Exponentiation::cast(v);
+            if(e)
+            {
+                for (auto it = members.begin(); it != members.end();)
+                {
+                    auto ite = Exponentiation::cast(*it);
+                    if (ite && ite->getBase() == e->getBase())
+                    {
+                        Update(it, *it*v);
+                        goto yes;
+                    }
+                    else
+                    {
+                        if (e->getBase() == *it) {
+                            Update(it, Exponentiation(e->getBase(), e->getExponentiation()+1));
+                            goto yes;
+                        }
+                        else
+                            ++it;
+                    }
+                }
+            }
+            else
+            {
+                for (auto it = members.begin(); it != members.end();)
+                {
+                    if (it->OfSameType(v)) {
+                        Update(it, *it*v);
+                        goto yes;
+                    }
+                    else
+                        ++it;
+                }
             }
         }
 
@@ -271,22 +400,38 @@ namespace extrapolator {
 
 	Valuable& Product::operator /=(const Valuable& v)
 	{
-        auto e = Exponentiation::cast(v);
-        for (auto it = members.begin(); it != members.end(); ++it)
-        {
-            if (*it == v)
+        if (v == 1_v) {
+            return *this;
+        }
+        auto p = Product::cast(v);
+        if (p) {
+            for(auto& i : *p)
             {
-                Delete(it);
-                return *this;
+                *this /= i;
             }
-            else if (e && *it == e->getBase())
+            optimize();
+            return *this;
+        }
+        else
+        {
+            auto e = Exponentiation::cast(v);
+            for (auto it = members.begin(); it != members.end(); ++it)
             {
-                *this /= e->getBase();
-                *this /= *e / e->getBase();
-                return *this;
+                if (*it == v)
+                {
+                    Delete(it);
+                    optimize();
+                    return *this;
+                }
+                else if (e && *it == e->getBase())
+                {
+                    *this /= e->getBase();
+                    *this /= *e / e->getBase();
+                    optimize();
+                    return *this;
+                }
             }
         }
-        
         return *this *= Fraction(1, v);
 	}
 

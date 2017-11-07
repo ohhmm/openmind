@@ -28,11 +28,11 @@ namespace extrapolator {
 
     void Exponentiation::optimize()
     {
-        if (!optimizations)
-        {
-            hash = ebase.Hash() ^ eexp.Hash();
-            return;
-        }
+//        if (!optimizations)
+//        {
+//            hash = ebase.Hash() ^ eexp.Hash();
+//            return;
+//        }
         
         ebase.optimize();
         eexp.optimize();
@@ -189,17 +189,20 @@ namespace extrapolator {
 
     std::ostream& Exponentiation::print(std::ostream& out) const
     {
-        auto n = Integer::cast(ebase);
-        auto dn = Integer::cast(eexp);
-        if(!n)
+        auto noNeedBraces = [](auto& i) {
+            return Integer::cast(i) || Variable::cast(i);
+        };
+        out << '(';
+        if(!noNeedBraces(ebase))
             out << '(' << ebase << ')';
         else
             out << ebase;
         out << '^';
-        if(!dn)
+        if(!noNeedBraces(eexp))
             out << '(' << eexp << ')';
         else
             out << eexp;
+        out << ')';
         return out;
     }
 
