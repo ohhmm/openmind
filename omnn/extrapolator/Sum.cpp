@@ -147,15 +147,13 @@ namespace extrapolator {
                         else
                         {
                             auto co = *v->second;
-                            const_cast<Sum*>(this)->optimizations = false;
+                            const_cast<Sum*>(this)->optimizations = false; // TODO : turn on optimization to see if it simplified to not a sum
                             co += *p; // it may be sum, supress optimize to avoid stack overflow
                             const_cast<Sum*>(this)->optimizations = true;
                             if (!Sum::cast(co))
                             {   // simplified
-                                Delete(v->second);
-                                kv.clear();
-                                Update(it,co);
-                                it = members.begin();
+                                Update(v->second, co);
+                                Delete(it);
                                 continue;
                             }
                         }

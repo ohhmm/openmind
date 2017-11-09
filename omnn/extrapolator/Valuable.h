@@ -12,7 +12,7 @@
 namespace omnn{
 namespace extrapolator {
     
-    namespace ptrs = ::boost;
+    namespace ptrs = ::std;
 
     class Accessor;
     class Variable;

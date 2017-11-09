@@ -270,7 +270,7 @@ namespace extrapolator {
             out << '(' << numerator << ')';
         else
             out << numerator;
-        out << '^';
+        out << '/';
         if(!noNeedBraces(denominator))
             out << '(' << denominator << ')';
         else
@@ -279,12 +279,12 @@ namespace extrapolator {
         return out;
     }
 
-    Valuable Fraction::getDenominator()
+    Valuable Fraction::Denominator()
     {
         return Accessor(denominator, hash);
     }
 
-    Valuable Fraction::getNumerator()
+    Valuable Fraction::Numerator()
     {
         return Accessor(numerator, hash);
     }

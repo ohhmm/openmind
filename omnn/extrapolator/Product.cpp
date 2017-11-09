@@ -209,7 +209,7 @@ namespace extrapolator {
             Valuable fo = *Fraction::cast(*f);
             // do not become a fraction for optimizations, because sum operate with products to analyse polynomial grade in FormulaOfVa
             // optimize here instead
-            auto dn = Fraction::cast(fo)->getDenominator();
+            auto dn = const_cast<Fraction*>(Fraction::cast(fo))->Denominator();
             auto pd = Product::cast(dn);
             if (pd) {
                 for (auto it = members.begin(); it != members.end();)

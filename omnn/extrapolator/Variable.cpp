@@ -119,7 +119,8 @@ namespace extrapolator {
             if (&varSetHost != &i->varSetHost) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }
-            return varSetHost.CompareIdsEqual(varId, i->varId);
+            return hash == v.Hash()
+                && varSetHost.CompareIdsEqual(varId, i->varId);
         }
         else
         {   // compare with non-va

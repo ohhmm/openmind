@@ -75,9 +75,9 @@ namespace extrapolator {
         const Valuable& getNumerator() const { return numerator; }
         
         /// returns rw accessor
-		Valuable getDenominator();
+		Valuable Denominator();
         /// returns rw accessor
-		Valuable getNumerator();
+		Valuable Numerator();
 
 		Fraction Reciprocal() const;
 		const Variable* FindVa() const override;

@@ -29,8 +29,8 @@ namespace extrapolator {
         ValuableDescendantContract() : Valuable(ValuableDescendantMarker()) {}
         ValuableDescendantContract(ValuableDescendantContract&& c) : Valuable(c, ValuableDescendantMarker()) {}
         ValuableDescendantContract(const ValuableDescendantContract& c) : Valuable(c, ValuableDescendantMarker()) {}
-        ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { return *this; }
-        ValuableDescendantContract& operator=(ValuableDescendantContract&& f) { return *this; }
+        ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { hash=f.hash; return *this; }
+        ValuableDescendantContract& operator=(ValuableDescendantContract&& f) { hash=f.hash; return *this; }
         static const Chld* cast(const Valuable& v){
             return Valuable::cast<Chld>(v);
         }

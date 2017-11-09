@@ -123,7 +123,6 @@ namespace extrapolator {
 
         virtual void Update(typename cont::iterator& it, const Valuable& v)
         {
-            Valuable::hash ^= it->Hash();
             auto& c = GetCont();
             Delete(it);
             it = c.insert(it, v);
