@@ -91,7 +91,8 @@ namespace extrapolator {
         
         // optimize members, if found a sum then become the sum multiplied by other members
         Sum* s = nullptr;
-        for (auto it = members.begin(); it != members.end();)
+        auto it = members.begin();
+        for (; it != members.end();)
         {
             s = const_cast<Sum*>(Sum::cast(*it));
             if (s)
@@ -107,15 +108,13 @@ namespace extrapolator {
         }
         if (s)
         {
+            auto sum = std::move(*it);
+            Delete(it);
             for (auto& it : members)
             {
-                if (s == const_cast<Sum*>(Sum::cast(it)))
-                    continue;
-                else
-                    *s *= it;
+                sum *= it;
             }
-            s->optimize();
-            Become(std::move(*s));
+            Become(std::move(sum));
             return;
         }
 
