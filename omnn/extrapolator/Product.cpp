@@ -79,10 +79,18 @@ namespace extrapolator {
     
 	Valuable Product::operator -() const
 	{
-        Product p = *this;
-        auto b = p.begin();
-        p.Update(b, -*b);
-        return p;
+        Valuable v = *this;
+        auto p = cast(v);
+        auto b = p->GetFirstOccurence<Integer>();
+        if (b == p->end()) {
+            b = p->GetFirstOccurence<Fraction>();
+            if (b == p->end()) {
+                b = p->begin();
+            }
+        }
+        const_cast<Product*>(p)->Update(b, -*b);
+        v.optimize();
+        return v;
 	}
 
     void Product::optimize()
@@ -251,6 +259,8 @@ namespace extrapolator {
         
         if(members.size()==0)
             Become(1_v);
+        else if (members.size()==1)
+            Become(std::move(*const_cast<Valuable*>(&*members.begin())));
     }
 
     const Product::vars_cont_t& Product::getCommonVars() const
@@ -267,7 +277,7 @@ namespace extrapolator {
             if (it != with.end()) {
                 auto i1 = Integer::cast(kv.second);
                 auto i2 = Integer::cast(it->second);
-                if (i1 && i2 && *i1 >= 0_v && *i2 >= 0_v) {
+                if (i1 && i2 && *i1 > 0_v && *i2 > 0_v) {
                     common[kv.first] = std::min(*i1, *i2);
                 }
                 else
@@ -310,6 +320,8 @@ namespace extrapolator {
         auto p = cast(v);
         if (p)
         {
+            if (*this == v)
+                return *this *= 2;
             if(*this == -v)
                 return Become(0_v);
 

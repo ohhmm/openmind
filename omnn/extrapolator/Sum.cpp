@@ -72,11 +72,23 @@ namespace extrapolator {
                 ++it2;
                 auto c = *it;
                 auto mc = -*it;
-                auto va = Variable::cast(c);
-                auto e = Exponentiation::cast(c);
-                auto p = Product::cast(c);
-                auto i = Integer::cast(c);
-                auto f = Fraction::cast(c);
+                const Variable* va;
+                const Exponentiation* e;
+                const Product* p;
+                const Integer* i;
+                const Fraction* f;
+                
+                auto up = [&](){
+                    mc = -c;
+                    va = Variable::cast(c);
+                    e = Exponentiation::cast(c);
+                    p = Product::cast(c);
+                    i = Integer::cast(c);
+                    f = Fraction::cast(c);
+                };
+                
+                up();
+                
                 for (; it2 != members.end();)
                 {
                     const Fraction* f2;
@@ -87,34 +99,33 @@ namespace extrapolator {
                     {
                         c += *it2;
                         Delete(it2);
-                        va = Variable::cast(c);
-                        e = Exponentiation::cast(c);
-                        p = Product::cast(c);
-                        i = Integer::cast(c);
-                        f = Fraction::cast(c);
-                        mc = -c;
+                        up();
                     }
                     else if(it2->Same(c))
                     {
                         c *= 2;
                         Delete(it2);
-                        va = Variable::cast(c);
-                        e = Exponentiation::cast(c);
-                        p = Product::cast(c);
-                        i = Integer::cast(c);
-                        f = Fraction::cast(c);
-                        mc = -c;
+                        up();
                     }
                     else if(it2->Same(mc))
                     {
                         c = 0_v;
                         mc = 0_v;
                         Delete(it2);
-                        va = Variable::cast(c);
-                        e = Exponentiation::cast(c);
-                        p = Product::cast(c);
-                        i = Integer::cast(c);
-                        f = Fraction::cast(c);
+                        up();
+                        mc = 0_v;
+                    }
+                    else if (it2->OfSameType(c)
+                             && p // commonize by vars
+                             && p->getCommonVars()==Product::cast(*it2)->getCommonVars())
+                    {
+                        auto s = c + *it;
+                        s.optimize();
+                        if (!Sum::cast(s)) {
+                            c = s;
+                            Delete(it2);
+                            up();
+                        }
                     }
                     else
                         ++it2;
@@ -126,40 +137,6 @@ namespace extrapolator {
                 {
                     Update(it, c);
                 }
-            }
-
-            // commonize by vars
-            using K = Product::vars_cont_t;
-            using V = decltype(members)::iterator;
-            std::map<K, V> kv;
-            for (auto it = members.begin(); it != members.end();)
-            {
-                auto p = Product::cast(*it);
-                if (p)
-                {
-                    auto k = p->getCommonVars();
-                    if (k.size())
-                    {
-                        std::map<K, V>::iterator v = kv.find(k);
-                        if (v == kv.end()) {
-                            kv[k] = it;
-                        }
-                        else
-                        {
-                            auto co = *v->second;
-                            const_cast<Sum*>(this)->optimizations = false; // TODO : turn on optimization to see if it simplified to not a sum
-                            co += *p; // it may be sum, supress optimize to avoid stack overflow
-                            const_cast<Sum*>(this)->optimizations = true;
-                            if (!Sum::cast(co))
-                            {   // simplified
-                                Update(v->second, co);
-                                Delete(it);
-                                continue;
-                            }
-                        }
-                    }
-                }
-                ++it;
             }
 
             // optimize members

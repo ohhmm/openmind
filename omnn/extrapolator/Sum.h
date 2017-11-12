@@ -40,8 +40,6 @@ public:
 
     using base::base;
     
-    Sum() = default;
-    
     Sum(const Valuable& f) {
         Add(f);
     }

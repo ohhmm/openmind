@@ -310,6 +310,7 @@ namespace extrapolator {
     {
         numerator.Eval(va, v);
         denominator.Eval(va, v);
+//        optimize();
     }
     
     bool Fraction::IsSimple() const

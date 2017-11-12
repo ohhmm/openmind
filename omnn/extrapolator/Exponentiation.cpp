@@ -23,7 +23,7 @@ namespace extrapolator {
     
 	Valuable Exponentiation::operator -() const
     {
-        return -1_v * *this;
+        return Product(*this, -1);;
     }
 
     void Exponentiation::optimize()
@@ -216,6 +216,7 @@ namespace extrapolator {
     {
         ebase.Eval(va, v);
         eexp.Eval(va, v);
+//        optimize();
     }
     
     void Exponentiation::CollectVa(std::set<Variable>& s) const

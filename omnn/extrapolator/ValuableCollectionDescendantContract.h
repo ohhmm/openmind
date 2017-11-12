@@ -20,6 +20,15 @@ namespace extrapolator {
     public:
         virtual const cont& GetConstCont() const = 0;
 
+//        template<class... T>
+//        ValuableCollectionDescendantContract(const T&... vals)
+//        {
+//            for (const Valuable& arg : { Valuable(vals)... })
+//            {
+//                Add(arg);
+//            }
+//        }
+        
         auto begin()
         {
             return GetCont().begin();
@@ -105,19 +114,25 @@ namespace extrapolator {
         {
             auto& c = GetCont();
             auto e = c.end();
-            for(auto i = c.begin(); i != e;)
+            bool updated;
+            do
             {
-                auto co = *i;
-                co.Eval(va,v);
-                if (!i->Same(co))
+                updated = {};
+                for(auto i = c.begin(); i != e;)
                 {
-                    Update(i,co);
+                    auto co = *i;
+                    co.Eval(va,v);
+                    if (!i->Same(co))
+                    {
+                        Update(i,co);
+                        updated = true;
+                    }
+                    else
+                    {
+                        ++i;
+                    }
                 }
-                else
-                {
-                    ++i;
-                }
-            }
+            } while (updated);
             this->optimize();
         }
 
