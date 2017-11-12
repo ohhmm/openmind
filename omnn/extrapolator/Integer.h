@@ -39,7 +39,7 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
     
-    operator base_int() const {
+    operator const_base_int_ref() const {
         return arbitrary;
     }
     

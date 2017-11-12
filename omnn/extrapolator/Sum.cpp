@@ -364,7 +364,7 @@ namespace extrapolator {
                 auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).sqrt();
                 auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
                 auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
-                auto fx = -b/(4*a)+p4/2+(p5+p6).sqrt()/2;
+                fx = -b/(4*a)+p4/2+(p5+p6).sqrt()/2;
                 const_cast<Sum*>(this)->optimizations = true;
 //                fx.optimize();
                 break;

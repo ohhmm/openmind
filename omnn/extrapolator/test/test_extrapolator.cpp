@@ -141,6 +141,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         subsyst.Eval(x, vm(i, 0));
         subsyst.Eval(y, vm(i, 1));
         subsyst.Eval(z, vm(i, 2));
+        subsyst.optimize();
         BOOST_TEST(subsyst == 0);
     }
     std::cout << "Total equation:" << eq << std::endl;

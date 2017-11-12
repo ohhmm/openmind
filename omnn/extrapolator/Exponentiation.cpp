@@ -178,6 +178,8 @@ namespace extrapolator {
         if (e)
         {
             return hash == e->Hash()
+                && ebase.Hash() == e->ebase.Hash()
+                && eexp.Hash() == eexp.Hash()
                 && ebase == e->ebase
                 && eexp == e->eexp;
         }

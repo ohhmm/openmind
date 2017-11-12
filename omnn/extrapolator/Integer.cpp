@@ -175,7 +175,7 @@ namespace extrapolator {
     {
         auto i = cast(v);
         if (i)
-            return arbitrary == i->arbitrary;
+            return Hash() == i->Hash() && arbitrary == i->arbitrary;
         else if(v.FindVa())
             return false;
         else

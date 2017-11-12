@@ -133,7 +133,7 @@ namespace extrapolator {
                     }
                 }
             } while (updated);
-            this->optimize();
+//            this->optimize();
         }
 
         virtual void Update(typename cont::iterator& it, const Valuable& v)

@@ -234,18 +234,15 @@ namespace extrapolator {
         auto i = cast(v);
 		if (i)
 		{
-            if (hash != i->Hash())
-                return false;
-            
-			auto f = *i;
-			auto l = *this;
-			if (l.denominator != f.denominator) {
-				f.numerator *= l.denominator;
-				l.numerator *= i->denominator;
-			}
-			return l.numerator == f.numerator;
-		}
-        else if (v.FindVa()) {
+            return hash == i->Hash()
+                && denominator.Hash() == i->denominator.Hash()
+                && numerator.Hash() == i->numerator.Hash()
+                && ((denominator == i->denominator && numerator == i->numerator)
+                    || (numerator * i->denominator == i->numerator * denominator));
+        }
+        else if (Variable::cast(v)
+                 || (v.FindVa()==nullptr) != (FindVa()==nullptr))
+        {
             return false;
         }
         else
@@ -253,9 +250,17 @@ namespace extrapolator {
 			auto i = Integer::cast(v);
 			if (i)
 			{
-				auto f = (decltype(numerator))(*i);
-				auto l = *this;
-				return l.numerator == f*denominator;
+                if (IsSimple())
+                {
+                    auto& n = Integer::cast(numerator)->operator Integer::const_base_int_ref();
+                    auto& dn = Integer::cast(denominator)->operator Integer::const_base_int_ref();
+                    auto g = boost::gcd(n,dn);
+                    return (g == dn && n/g == *i) || (n == 0 && *i == 0);
+                }
+                else
+                {
+                    return false;
+                }
 			}
         }
         
