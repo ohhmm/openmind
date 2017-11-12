@@ -11,11 +11,12 @@
 namespace omnn{
 namespace extrapolator {
 
+    using sum_cont = std::multiset<Valuable, HashCompare>;
 
 class Sum
-        : public ValuableCollectionDescendantContract<Sum, std::unordered_multiset<Valuable>>
+    : public ValuableCollectionDescendantContract<Sum, sum_cont>
 {
-    using base = ValuableCollectionDescendantContract<Sum, std::unordered_multiset<Valuable>>;
+    using base = ValuableCollectionDescendantContract<Sum, sum_cont>;
     using base::cont;
     friend class Variable;
     cont members;

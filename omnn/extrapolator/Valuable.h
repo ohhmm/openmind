@@ -104,6 +104,10 @@ public:
     template<>
     const Accessor* Valuable::cast(const Valuable& v);
 
+    struct HashCompare
+    {
+        bool operator()(const Valuable&, const Valuable&);
+    };
 }}
 
 namespace std

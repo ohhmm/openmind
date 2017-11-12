@@ -117,9 +117,10 @@ namespace extrapolator {
                     }
                     else if (it2->OfSameType(c)
                              && p // commonize by vars
+                             && p->getCommonVars().size()
                              && p->getCommonVars()==Product::cast(*it2)->getCommonVars())
                     {
-                        auto s = c + *it;
+                        auto s = c + *it2;
                         s.optimize();
                         if (!Sum::cast(s)) {
                             c = s;
@@ -365,7 +366,7 @@ namespace extrapolator {
                 auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
                 auto fx = -b/(4*a)+p4/2+(p5+p6).sqrt()/2;
                 const_cast<Sum*>(this)->optimizations = true;
-                fx.optimize();
+//                fx.optimize();
                 break;
             }
             default: {

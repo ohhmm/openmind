@@ -234,6 +234,9 @@ namespace extrapolator {
         auto i = cast(v);
 		if (i)
 		{
+            if (hash != i->Hash())
+                return false;
+            
 			auto f = *i;
 			auto l = *this;
 			if (l.denominator != f.denominator) {

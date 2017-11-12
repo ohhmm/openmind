@@ -318,6 +318,13 @@ namespace extrapolator {
         print(s);
         return s.str();
     }
+    
+    
+    // store order operator
+    bool HashCompare::operator()(const Valuable& v1, const Valuable& v2)
+    {
+        return v1.Hash() < v2.Hash();
+    }
 }}
 
 namespace std

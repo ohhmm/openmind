@@ -17,11 +17,12 @@ namespace extrapolator {
         bool operator()(const Valuable&, const Valuable&);
     };
     
+    using product_container = std::multiset<Valuable, HashCompare>;
 
 class Product
-    : public ValuableCollectionDescendantContract<Product, std::unordered_multiset<Valuable>>
+    : public ValuableCollectionDescendantContract<Product, product_container>
 {
-    using base = ValuableCollectionDescendantContract<Product, std::unordered_multiset<Valuable>>;
+    using base = ValuableCollectionDescendantContract<Product, product_container>;
     using base::cont;
     friend class Variable;
     cont members;

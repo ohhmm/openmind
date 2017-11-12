@@ -177,7 +177,9 @@ namespace extrapolator {
         auto e = cast(v);
         if (e)
         {
-            return ebase == e->ebase && eexp == e->eexp;
+            return hash == e->Hash()
+                && ebase == e->ebase
+                && eexp == e->eexp;
         }
         else
         {
