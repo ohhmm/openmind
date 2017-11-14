@@ -128,7 +128,9 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         auto e3 = z - vm(i,2);
         auto subsyst = e1*e1 + e2*e2 + e3*e3; // squares sum equivalent to conjunction
         std::cout << subsyst << std::endl;
+        
         eq += subsyst*subsyst;
+        
         auto sum = Sum::cast(subsyst);
         BOOST_TEST(sum);
         auto formula = sum->FormulaOfVa(z);
@@ -154,9 +156,11 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         Valuable v = eq;
         v.Eval(x, vm(i,0));
         v.Eval(y, vm(i,1));
+        v.Eval(z, vm(i,2));
         v.optimize();
+        BOOST_TEST(v == 0);
         std::cout << std::endl << vm(i,2) << " : " << v << std::endl;
-        BOOST_TEST(f(vm(i,0),vm(i,1))==vm(i,2));
+        //BOOST_TEST(f(vm(i,0),vm(i,1))==vm(i,2));
     }
     }
     Extrapolator m {{

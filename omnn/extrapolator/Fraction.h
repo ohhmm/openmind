@@ -3,7 +3,9 @@
 //
 
 #pragma once
-#include "ValuableDescendantContract.h"
+#include <boost/lexical_cast.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include "Integer.h"
 
 namespace omnn{
 namespace extrapolator {
@@ -58,12 +60,24 @@ namespace extrapolator {
 			}
             hash = numerator.Hash() ^ denominator.Hash();
 		}
+        
 		Fraction(const Integer& n);
 
 		Fraction(const_ref_type n, const_ref_type d)
 				: numerator(n), denominator(d)
 		{
             hash = numerator.Hash() ^ denominator.Hash();
+        }
+        
+        template<int N>
+        Fraction(const boost::multiprecision::cpp_dec_float<N>& f)
+        {
+            auto s = boost::lexical_cast<std::string>(f);
+            auto doti = s.find_first_of('.');
+            auto fsz = s.length() - doti - 1;
+            s.erase(doti);
+            numerator = Integer(boost::multiprecision::cpp_int(s));
+            denominator = 10_v^fsz;
         }
 
 		Fraction(Fraction&&) = default;
@@ -79,6 +93,21 @@ namespace extrapolator {
         /// returns rw accessor
 		Valuable Numerator();
 
+        operator boost::multiprecision::cpp_dec_float_100() const
+        {
+            if (IsSimple())
+            {
+                auto& num = *Integer::cast(numerator);
+                boost::multiprecision::cpp_dec_float_100 f(static_cast<boost::multiprecision::cpp_int>(num));
+                auto & d = *Integer::cast(denominator);
+                f /= boost::multiprecision::cpp_dec_float_100(static_cast<boost::multiprecision::cpp_int>(d));
+                // TODO : check validity
+                return f;
+            }
+            else
+                throw "Implement!";
+        }
+        
 		Fraction Reciprocal() const;
 		const Variable* FindVa() const override;
 		void CollectVa(std::set<Variable>& s) const override;

@@ -7,7 +7,9 @@
 #include "Fraction.h"
 #include "Sum.h"
 #include "Product.h"
+#include <cmath>
 #include <boost/functional/hash.hpp>
+#include <boost/math/special_functions/pow.hpp>
 
 namespace omnn{
 namespace extrapolator {
@@ -141,7 +143,15 @@ namespace extrapolator {
         }
         else
         {
-            Become(Exponentiation(*this, v));
+            auto f = Fraction::cast(v);
+            if (f->IsSimple()) {
+                // TODO : check, remove this stub
+                return Become(Fraction(pow(
+                                           static_cast<double>(arbitrary),
+                                           static_cast<boost::multiprecision::cpp_dec_float_100>(*f))));
+            }
+            else
+                Become(Exponentiation(*this, v));
         }
         
         optimize();
