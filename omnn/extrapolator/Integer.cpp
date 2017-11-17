@@ -185,10 +185,42 @@ namespace extrapolator {
         {
             auto f = Fraction::cast(v);
             if (f->IsSimple()) {
-                // TODO : check, remove this stub
-                return Become(Fraction(pow(
-                                           static_cast<double>(arbitrary),
-                                           static_cast<boost::multiprecision::cpp_dec_float_100>(*f))));
+                auto n = f->getNumerator();
+                auto dn = f->getDenominator();
+
+                if (n != 1)
+                    *this ^= n;
+                Valuable nroot;
+                bool rootFound = false;
+                Valuable left =0, right = *this;
+
+                while (!rootFound)
+                {
+                    auto d = right - left;
+                    d -= d % 2;
+                    if (d!=0) {
+                        nroot = left + d / 2;
+                        auto result = nroot ^ dn;
+                        if (result == *this)
+                        {
+                            rootFound = true;
+                            return Become(std::move(nroot));
+                        }
+                        else
+                        {
+                            if (result > *this)
+                            {
+                                right = nroot;
+                            }
+                            else
+                            {
+                                left = nroot;
+                            }
+                        }
+                    }
+                    else
+                        throw "Implement!";
+                }
             }
             else
                 Become(Exponentiation(*this, v));
