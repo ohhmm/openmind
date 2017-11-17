@@ -96,6 +96,7 @@ public:
     
     bool OfSameType(const Valuable& v) const;
     bool Same(const Valuable& v) const;
+    explicit operator bool() const;
     
     size_t Hash() const;
     std::string str() const;
@@ -124,3 +125,4 @@ namespace std
 }
 
 ::omnn::extrapolator::Valuable operator"" _v(unsigned long long v);
+::omnn::extrapolator::Valuable operator"" _v(long double v);

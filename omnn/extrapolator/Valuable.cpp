@@ -4,7 +4,10 @@
 
 #include "Valuable.h"
 #include "Accessor.h"
+#include "Fraction.h"
 #include "Integer.h"
+#include <boost/numeric/conversion/converter.hpp>
+
 
 namespace omnn{
 namespace extrapolator {
@@ -305,6 +308,11 @@ namespace extrapolator {
         return OfSameType(v) && operator==(v);
     }
     
+    Valuable::operator bool() const
+    {
+        return *this != 0_v;
+    }
+
     size_t Valuable::Hash() const
     {
         return exp
@@ -341,5 +349,10 @@ namespace std
 
 ::omnn::extrapolator::Valuable operator"" _v(unsigned long long v)
 {
-    return ::omnn::extrapolator::Integer(v);
+    return ::omnn::extrapolator::Integer(boost::multiprecision::cpp_int(v));
+}
+
+::omnn::extrapolator::Valuable operator"" _v(long double v)
+{
+    return ::omnn::extrapolator::Fraction(v);
 }

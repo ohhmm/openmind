@@ -9,11 +9,18 @@
 #include "Product.h"
 #include <cmath>
 #include <boost/functional/hash.hpp>
-#include <boost/math/special_functions/pow.hpp>
+#include <boost/numeric/conversion/converter.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+
 
 namespace omnn{
 namespace extrapolator {
 
+    Integer::operator int64_t() const {
+        return boost::numeric_cast<int>(arbitrary);
+    }
+    
     Valuable Integer::operator -() const
     {
         return Integer(-arbitrary);
@@ -121,11 +128,44 @@ namespace extrapolator {
         {
             if (*i != 0_v) {
                 if (*i > 1) {
-                    auto a = arbitrary;
-                    for (base_int n = *i; n > 1; --n) {
-                        arbitrary *= a;
+                    Valuable x = *this;
+                    Valuable n = v;
+                    if (n < 0_v)
+                    {
+                        x = 1_v / x;
+                        n = -n;
                     }
-                    hash = std::hash<base_int>()(arbitrary);
+                    if (n == 0_v)
+                    {
+                        arbitrary = 1;
+                        return *this;
+                    }
+                    auto y = 1_v;
+                    while(n > 1)
+                    {
+                        auto in = Integer::cast(n);
+                        if (!in) throw "Implement!";
+                        if (in && (in->arbitrary % 2) == 0)
+                        {
+                            x *= x;
+                            n /= 2;
+                        }
+                        else
+                        {
+                            y *= x;
+                            x *= x;
+                            --n;
+                            n /= 2;
+                        }
+                    }
+                    x *= y;
+                    i = Integer::cast(x);
+                    if (i) {
+                        arbitrary = std::move(i->arbitrary);
+                        hash = std::hash<base_int>()(arbitrary);
+                    }
+                    else
+                        return Become(std::move(x));
                 } else {
                     // negative
                     Become(Exponentiation(*this, v));
@@ -169,7 +209,7 @@ namespace extrapolator {
             auto i = Fraction::cast(v);
             if (i)
             {
-                return v >= *this;
+                return !(v < *this) && *this!=v;
             }
             else
             {

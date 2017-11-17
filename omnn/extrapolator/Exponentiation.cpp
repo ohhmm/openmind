@@ -46,7 +46,7 @@ namespace extrapolator {
 
             Become(1_v);
         }
-        else if(eexp == 1)
+        else if(eexp == 1_v)
         {
             Become(std::move(ebase));
         }
@@ -63,6 +63,16 @@ namespace extrapolator {
             if(ibase && iexp)
             {
                 Become(*ibase ^ *iexp);
+            }
+        }
+        auto e = cast(ebase);
+        if (e)
+        {
+            auto& eeexp = e->getExponentiation();
+            if ((eeexp.FindVa() == nullptr) == (eexp.FindVa() == nullptr)) {
+                eexp *= eeexp;
+                // todo : copy if it shared
+                ebase = std::move(const_cast<Valuable&>((e->getBase())));
             }
         }
         

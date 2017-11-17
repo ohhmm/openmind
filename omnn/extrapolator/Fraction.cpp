@@ -6,6 +6,7 @@
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
+#include <boost/lexical_cast.hpp>
 
 namespace std{
     template<>
@@ -13,6 +14,7 @@ namespace std{
         bool value = true;
     };
 }
+
 namespace omnn{
 namespace extrapolator {
 	Fraction::Fraction(const Integer& n)
@@ -20,6 +22,27 @@ namespace extrapolator {
 	{
         hash = numerator.Hash() ^ denominator.Hash();
 	}
+    
+    Fraction::Fraction(const boost::multiprecision::cpp_dec_float_100& f)
+    {
+        auto s = boost::lexical_cast<std::string>(f);
+        if (s=="nan") {
+            throw s;
+        }
+        auto doti = s.find_first_of('.');
+        if (doti == -1)
+        {
+            numerator = Integer(boost::multiprecision::cpp_int(f));
+            denominator = 1;
+        }
+        else
+        {
+            auto fsz = s.length() - doti - 1;
+            s.erase(doti);
+            numerator = Integer(boost::multiprecision::cpp_int(s));
+            denominator = 10_v^Integer(fsz);
+        }
+    }
     
 	Valuable Fraction::operator -() const
     {
@@ -41,16 +64,16 @@ namespace extrapolator {
         auto dn = Integer::cast(denominator);
         if (n)
         {
-            if (*n == 0)
+            if (*n == 0_v)
             {
-                if (dn && *dn == 0)
+                if (dn && *dn == 0_v)
                     throw "NaN";
                 Become(0);
                 return;
             }
             if (dn)
             {
-                if (*dn == 1)
+                if (*dn == 1_v)
                 {
                     Become(Integer(*n));
                     return;

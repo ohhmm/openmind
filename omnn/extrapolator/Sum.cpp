@@ -288,7 +288,7 @@ namespace extrapolator {
                 if (!i) {
                     throw "Implement!";
                 }
-                int ie = static_cast<int>(*i);
+                int ie = static_cast<int64_t>(*i);
                 if (ie > grade) {
                     grade = ie;
                     if (ie >= coefficients.size()) {
@@ -311,7 +311,7 @@ namespace extrapolator {
                     {
                         auto ie = Integer::cast(e->getExponentiation());
                         if (ie) {
-                            int i = static_cast<int>(*ie);
+                            int i = static_cast<int64_t>(*ie);
                             if (i > grade) {
                                 grade = i;
                                 if (i >= coefficients.size()) {

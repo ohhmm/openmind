@@ -36,6 +36,7 @@ BOOST_AUTO_TEST_CASE(Integer_tests)
     //BOOST_TEST(a++-- == initial_a);
 //    BOOST_TEST(a==initial_a);
 
+    BOOST_TEST((105321254912_v).str() == "105321254912");
     
     for(;b-->z;)
     {

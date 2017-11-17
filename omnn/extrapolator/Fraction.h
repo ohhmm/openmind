@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <boost/lexical_cast.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include "Integer.h"
 
@@ -69,16 +68,7 @@ namespace extrapolator {
             hash = numerator.Hash() ^ denominator.Hash();
         }
         
-        template<int N>
-        Fraction(const boost::multiprecision::cpp_dec_float<N>& f)
-        {
-            auto s = boost::lexical_cast<std::string>(f);
-            auto doti = s.find_first_of('.');
-            auto fsz = s.length() - doti - 1;
-            s.erase(doti);
-            numerator = Integer(boost::multiprecision::cpp_int(s));
-            denominator = 10_v^fsz;
-        }
+        Fraction(const boost::multiprecision::cpp_dec_float_100& f);
 
 		Fraction(Fraction&&) = default;
 		Fraction(const Fraction&)=default;

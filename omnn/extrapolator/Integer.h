@@ -3,8 +3,8 @@
 //
 
 #pragma once
+#include <type_traits>
 #include <boost/multiprecision/cpp_int.hpp>
-#include <boost/numeric/conversion/converter.hpp>
 #include "ValuableDescendantContract.h"
 
 namespace omnn{
@@ -27,6 +27,13 @@ public:
     Integer(const Integer&)=default;
     Integer(Integer&&)=default;
 	Integer& operator=(const Integer& f) = default;
+
+    template<class IntT>
+    static Integer From(typename std::enable_if<std::is_integral<IntT>::value>::type i = 0)
+    {
+        return Integer(boost::multiprecision::cpp_int(i));
+    }
+
     Integer(int i = 0)
         : arbitrary(i)
     {
@@ -43,10 +50,8 @@ public:
         return arbitrary;
     }
     
-    explicit operator int() const {
-        return boost::numeric_cast<int>(arbitrary);
-    }
-
+    explicit operator int64_t() const;
+    
     // virtual operators 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
