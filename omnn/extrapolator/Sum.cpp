@@ -201,23 +201,32 @@ namespace extrapolator {
 
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
-        Valuable s = 0_v;
+        Valuable sum = 0_v;
+        auto add = [&](const Valuable& m)
+        {
+            auto s = Sum::cast(sum);
+            if (s) {
+                const_cast<Sum*>(s)->Add(m);
+            }
+            else
+                sum += m;
+        };
         auto f = cast(v);
 		if (f)
 		{
 			for (auto& a : members) {
 				for (auto& b : f->members) {
-					s += a * b;
+                    add(a*b);
 				}
 			}
 		}
 		else
         {
             for (auto& a : members) {
-                s += a * v;
+                add(a * v);
             }
 		}
-        return Become(std::move(s));
+        return Become(std::move(sum));
 	}
 
 	Valuable& Sum::operator /=(const Valuable& v)

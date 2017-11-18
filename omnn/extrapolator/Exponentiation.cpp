@@ -65,19 +65,23 @@ namespace extrapolator {
                 Become(*ibase ^ *iexp);
             }
         }
-        auto e = cast(ebase);
-        if (e)
+        auto e = cast(*this);
+        if(e)
         {
-            auto& eeexp = e->getExponentiation();
-            if ((eeexp.FindVa() == nullptr) == (eexp.FindVa() == nullptr)) {
-                eexp *= eeexp;
-                // todo : copy if it shared
-                ebase = std::move(const_cast<Valuable&>((e->getBase())));
+            e = cast(e->ebase);
+            if (e)
+            {
+                auto& eeexp = e->getExponentiation();
+                if ((eeexp.FindVa() == nullptr) == (eexp.FindVa() == nullptr)) {
+                    eexp *= eeexp;
+                    // todo : copy if it shared
+                    ebase = std::move(const_cast<Valuable&>((e->getBase())));
+                }
             }
-        }
         
-        if (cast(*this)) {
-            hash = ebase.Hash() ^ eexp.Hash();
+            if (cast(*this)) {
+                hash = ebase.Hash() ^ eexp.Hash();
+            }
         }
     }
     

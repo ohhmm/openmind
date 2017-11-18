@@ -139,12 +139,19 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         std::cout << evaluated << std::endl;
         evaluated.optimize();
         std::cout << evaluated << std::endl;
-        BOOST_TEST(evaluated == vm(i, 2));
+        BOOST_TEST(evaluated == vm(i, 2)); // test row formula
         subsyst.Eval(x, vm(i, 0));
         subsyst.Eval(y, vm(i, 1));
         subsyst.Eval(z, vm(i, 2));
         subsyst.optimize();
-        BOOST_TEST(subsyst == 0);
+        BOOST_TEST(subsyst == 0); // test row equation
+        
+        auto e = eq;
+        e.Eval(x, vm(i, 0));
+        e.Eval(y, vm(i, 1));
+        e.Eval(z, vm(i, 2));
+        std::cout << e.str() << std::endl;
+        BOOST_TEST(e == 0); //test current eq
     }
     std::cout << "Total equation:" << eq << std::endl;
     auto s = Sum::cast(eq);
@@ -158,9 +165,9 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         v.Eval(y, vm(i,1));
         v.Eval(z, vm(i,2));
         v.optimize();
-        BOOST_TEST(v == 0);
+        BOOST_TEST(v == 0);  //test whole equation
         std::cout << std::endl << vm(i,2) << " : " << v << std::endl;
-        //BOOST_TEST(f(vm(i,0),vm(i,1))==vm(i,2));
+        BOOST_TEST(f(vm(i,0),vm(i,1))==vm(i,2));
     }
     }
     Extrapolator m {{

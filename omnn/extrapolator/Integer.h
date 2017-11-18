@@ -64,6 +64,10 @@ public:
     Valuable& operator^=(const Valuable&) override;
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
+    // virtual convert operators
+    explicit operator int() const override;
+    explicit operator double() const override;
+    explicit operator long double() const override;
     
     // concrete operators
     bool operator <(const Integer& v) const { return arbitrary < v.arbitrary; }

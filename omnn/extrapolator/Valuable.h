@@ -97,6 +97,9 @@ public:
     bool OfSameType(const Valuable& v) const;
     bool Same(const Valuable& v) const;
     explicit operator bool() const;
+    virtual explicit operator int() const;
+    virtual explicit operator double() const;
+    virtual explicit operator long double() const;
     
     size_t Hash() const;
     std::string str() const;

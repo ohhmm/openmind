@@ -61,6 +61,18 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     auto sc = Sum::cast(s);
     BOOST_TEST(sc);
     BOOST_TEST(sc->size()==4);
+    BOOST_TEST((((8_v + (((8*1 + 8*1 + -8 + (1_v^2)*-4 + (1_v^2)*-4))^((1_v/2)))))/2) == 4);
+    
+    Variable x,y,z;
+    auto _ = (z^2) - 2*y + (y^2) -2*x + (x^2) -8*z + 18;
+    auto sq = (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4 *(x^3) + 2 *(x^2)*(y^2) + 2*(y^2)*(z^2) + 2* (x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324;
+    auto sqc = sq;
+    sqc.optimize();
+    BOOST_TEST(sqc == sq);
+    _ *= _;
+    std::cout << _ << std::endl;
+    // (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4 *(x^3) + 2 *(x^2)*(y^2) + 2*(y^2)*(z^2) + 2* (x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324
+    BOOST_TEST(_ == sq);
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)

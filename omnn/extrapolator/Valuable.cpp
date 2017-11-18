@@ -48,9 +48,16 @@ namespace extrapolator {
     Valuable& Valuable::Become(Valuable&& i)
     {
         Valuable v(std::move(i)); // move here in case it moved from the object member
+        v.optimize();
+        auto e = v.exp;
+        if(e)
+            while (e->exp) {
+                e = e->exp;
+            }
+        Valuable& toMove = e ? *e.get() : v;
+
         this->~Valuable();        // before this call
-        new (this) Valuable(std::move(v)); // todo : not neccesarily wrap into Valuable if there is space. it need to be checked through typeid
-        optimize();
+        new (this) Valuable(std::move(toMove)); // todo : not neccesarily wrap into Valuable if there is space. it need to be checked through through typeid
         return *this;
     }
 
@@ -312,7 +319,31 @@ namespace extrapolator {
     {
         return *this != 0_v;
     }
+    
+    Valuable::operator int() const
+    {
+        if (exp)
+            return exp->operator int();
+        else
+            IMPLEMENT
+    }
+    
+    Valuable::operator double() const
+    {
+        if (exp)
+            return exp->operator double();
+        else
+            IMPLEMENT
+    }
 
+    Valuable::operator long double() const
+    {
+        if (exp)
+            return exp->operator double();
+        else
+            IMPLEMENT
+    }
+    
     size_t Valuable::Hash() const
     {
         return exp

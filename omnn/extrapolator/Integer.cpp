@@ -7,6 +7,7 @@
 #include "Fraction.h"
 #include "Sum.h"
 #include "Product.h"
+#include <algorithm>
 #include <cmath>
 #include <boost/functional/hash.hpp>
 #include <boost/numeric/conversion/converter.hpp>
@@ -121,8 +122,32 @@ namespace extrapolator {
         return *this;
     }
 
+    Integer::operator int() const
+    {
+        return boost::numeric_cast<int>(arbitrary);
+    }
+
+    Integer::operator double() const
+    {
+        return boost::numeric_cast<double>(arbitrary);
+    }
+
+    Integer::operator long double() const
+    {
+        return boost::numeric_cast<long double>(arbitrary);
+    }
+
     Valuable& Integer::operator^=(const Valuable& v)
     {
+        if(arbitrary == 0 || arbitrary == 1)
+        {
+            if (v == 0) {
+                throw "Implement!"; //NaN
+            }
+            else {
+                return *this;
+            }
+        }
         auto i = cast(v);
         if(i)
         {
@@ -198,8 +223,13 @@ namespace extrapolator {
                 {
                     auto d = right - left;
                     d -= d % 2;
-                    if (d!=0) {
-                        nroot = left + d / 2;
+                    if (d != 0) {
+                        auto t = 10_v ^
+                                        (d < std::numeric_limits<double>::max()
+                                         ? int64_t(std::log10l(static_cast<long double>(d))/2)
+                                         : d.str().length()/2);
+                        d /= t > 2 ? static_cast<int>(t) : 2;
+                        nroot = left + d;
                         auto result = nroot ^ dn;
                         if (result == *this)
                         {

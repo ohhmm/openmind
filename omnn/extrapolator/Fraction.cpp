@@ -217,6 +217,67 @@ namespace extrapolator {
         return *this+=1;
     }
 
+    Valuable& Fraction::operator^=(const Valuable& v)
+    {
+        auto i = Integer::cast(v);
+        if(i)
+        {
+            if (*i != 0_v) {
+                if (*i > 1_v) {
+                    auto a = *this;
+                    for (auto n = *i; n > 1_v; --n) {
+                        *this *= a;
+                    }
+                    optimize();
+                    return *this;
+                }
+            }
+            else { // zero
+                if (numerator == 0_v)
+                    throw "NaN"; // feel free to handle this properly
+                else
+                    return Become(1_v);
+            }
+        }
+        else if(IsSimple())
+        {
+            auto f = Fraction::cast(v);
+            if (f->IsSimple())
+            {
+                auto n = f->getNumerator();
+                auto dn = f->getDenominator();
+
+                if (n != 1_v)
+                    *this ^= n;
+                Valuable nroot;
+                bool rootFound = false;
+                Valuable left =0, right = *this;
+
+                while (!rootFound)
+                {
+                    nroot = left +(right - left) / 2_v;
+                    auto result = nroot ^ dn;
+                    if (result == *this)
+                    {
+                        rootFound = true;
+                        return Become(std::move(nroot));
+                    }
+                    else if (*this < result)
+                    {
+                        right = nroot;
+                    }
+                    else
+                    {
+                        left = nroot;
+                    }
+                }
+            }
+        }
+
+        return Become(Exponentiation(*this, v));
+    }
+    
+
     bool Fraction::operator <(const Valuable& v) const
     {
         auto i = cast(v);
@@ -261,7 +322,8 @@ namespace extrapolator {
                 && denominator.Hash() == i->denominator.Hash()
                 && numerator.Hash() == i->numerator.Hash()
                 && ((denominator == i->denominator && numerator == i->numerator)
-                    || (numerator * i->denominator == i->numerator * denominator));
+//                    || (numerator * i->denominator == i->numerator * denominator)
+                    );
         }
         else if (Variable::cast(v)
                  || (v.FindVa()==nullptr) != (FindVa()==nullptr))
