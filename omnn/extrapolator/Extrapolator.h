@@ -241,14 +241,14 @@ public:
     operator Formula() const
     {
         auto vm = ViewMatrix();
-        Valuable e(0);
+        Valuable e(1);
         Variable vx,vy,vv;
         for (auto i = vm.size1(); i--; ) {
                 auto e1 = vx - vm(i,0);
                 auto e2 = vy - vm(i,1);
                 auto e3 = vv - vm(i,2);
                 auto subsyst = e1*e1 + e2*e2 + e3*e3;
-                e += subsyst*subsyst;
+                e *= subsyst;
         }
         e.optimize();
         auto s = Sum::cast(e);

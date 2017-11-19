@@ -56,9 +56,6 @@ namespace extrapolator {
         if(v)
         {
             vars[*v] -= 1;
-            if (vars[*v] == 0) {
-                vars.erase(*v);
-            }
         }
         else
         {
@@ -68,12 +65,15 @@ namespace extrapolator {
                 v = Variable::cast(e->getBase());
                 if (v) {
                     vars[*v] -= e->getExponentiation();
-                    if (vars[*v] == 0) {
-                        vars.erase(*v);
-                    }
                 }
             }
         }
+        
+        if (v && vars[*v] == 0)
+        {
+            vars.erase(*v);
+        }
+        
         base::Delete(it);
     }
     

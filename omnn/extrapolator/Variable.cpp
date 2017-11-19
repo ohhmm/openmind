@@ -69,19 +69,9 @@ namespace extrapolator {
     Valuable& Variable::operator^=(const Valuable& v)
     {
         auto ie = Integer::cast(v);
-        if(ie)
+        if(ie && *ie == 0)
         {
-            if (*ie == 0)
-            {
-                Become(1_v);
-            }
-            else
-            {
-                auto a = *this;
-                for (auto n = *ie; n > 1; --n) {
-                    *this *= a;
-                }
-            }
+            Become(1_v);
         }
         else
         {

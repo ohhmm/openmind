@@ -11,13 +11,11 @@
 
 namespace omnn{
 namespace extrapolator {
-
-    struct ValuableLessCompare
-    {
-        bool operator()(const Valuable&, const Valuable&);
-    };
     
-    using product_container = std::multiset<Valuable, HashCompare>;
+    using product_container =
+        //std::multiset<Valuable, HashCompare>
+        std::unordered_multiset<Valuable>
+        ;
 
 class Product
     : public ValuableCollectionDescendantContract<Product, product_container>

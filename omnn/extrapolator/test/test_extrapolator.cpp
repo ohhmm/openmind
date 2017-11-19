@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
     // ax+by+cz=0
     // a=0:N, b=0:M, c=-(ax+by)/z     // if x=0 and y=0 then c becames 0 but it wasnt;
     // lets make c a va
-    Valuable eq = 0_v;
+    Valuable eq = 1_v;
     Variable x,y,z;
     for (auto i=vm.size1(); i--;) {
         auto e1 = x - vm(i,0);
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         auto subsyst = e1*e1 + e2*e2 + e3*e3; // squares sum equivalent to conjunction
         std::cout << subsyst << std::endl;
         
-        eq += subsyst*subsyst;
+        eq *= subsyst;
         
         auto sum = Sum::cast(subsyst);
         BOOST_TEST(sum);
@@ -140,6 +140,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         evaluated.optimize();
         std::cout << evaluated << std::endl;
         BOOST_TEST(evaluated == vm(i, 2)); // test row formula
+        
         subsyst.Eval(x, vm(i, 0));
         subsyst.Eval(y, vm(i, 1));
         subsyst.Eval(z, vm(i, 2));
@@ -150,6 +151,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         e.Eval(x, vm(i, 0));
         e.Eval(y, vm(i, 1));
         e.Eval(z, vm(i, 2));
+        e.optimize();
         std::cout << e.str() << std::endl;
         BOOST_TEST(e == 0); //test current eq
     }

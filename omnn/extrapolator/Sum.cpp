@@ -136,7 +136,9 @@ namespace extrapolator {
                     ++it;
                 else
                 {
+                    std::cout << it->str() << " -> " << c.str() << std::endl;
                     Update(it, c);
+                    it = begin();
                 }
             }
 
@@ -311,7 +313,7 @@ namespace extrapolator {
             {
                 auto va = Variable::cast(m);
                 if (va && *va == v) {
-                    coefficients[1] += 1;
+                    coefficients[1] += 1_v;
                 }
                 else
                 {
@@ -327,7 +329,7 @@ namespace extrapolator {
                                     coefficients.resize(i+1);
                                 }
                             }
-                            coefficients[i] += 1;
+                            coefficients[i] += 1_v;
                         }
                         else
                             throw "Implement!";

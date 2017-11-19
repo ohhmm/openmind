@@ -5,13 +5,17 @@
 #pragma once
 #include <list>
 #include <unordered_set>
+#include <boost/unordered_set.hpp>
 #include "ValuableCollectionDescendantContract.h"
 #include "Formula.h"
 
 namespace omnn{
 namespace extrapolator {
 
-    using sum_cont = std::multiset<Valuable, HashCompare>;
+    using sum_cont =
+        //std::multiset<Valuable, HashCompare>
+        std::unordered_multiset<Valuable>
+    ;
 
 class Sum
     : public ValuableCollectionDescendantContract<Sum, sum_cont>

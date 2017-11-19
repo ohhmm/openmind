@@ -64,15 +64,47 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST((((8_v + (((8*1 + 8*1 + -8 + (1_v^2)*-4 + (1_v^2)*-4))^((1_v/2)))))/2) == 4);
     
     Variable x,y,z;
-    auto _ = (z^2) - 2*y + (y^2) -2*x + (x^2) -8*z + 18;
+    BOOST_TEST((x+y)*(x-y) == (x^2) - (y^2));
     auto sq = (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4 *(x^3) + 2 *(x^2)*(y^2) + 2*(y^2)*(z^2) + 2* (x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324;
     auto sqc = sq;
     sqc.optimize();
     BOOST_TEST(sqc == sq);
-    _ *= _;
-    std::cout << _ << std::endl;
-    // (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4 *(x^3) + 2 *(x^2)*(y^2) + 2*(y^2)*(z^2) + 2* (x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324
-    BOOST_TEST(_ == sq);
+    
+    auto _ = (z^2) - 2*y + (y^2) -2*x + (x^2) -8*z + 18;
+    t = _;
+    t.Eval(x,1); t.Eval(y,1); t.Eval(z, 4);
+    t.optimize();
+    BOOST_TEST(t==0);
+    
+    t = sqc;
+    t.Eval(x,1); t.Eval(y,1); t.Eval(z, 4);
+    t.optimize();
+    BOOST_TEST(t==0);
+    
+    Variable v4,v5,v6;
+    // shuffled compare test
+    BOOST_TEST((v5^2)*-4*v4 == (v5^2)*-4*v4);
+    BOOST_TEST(v4+v5 == v5+v4);
+    BOOST_TEST(v4*v6+v5*v6 == v5*v6+v4*v6);
+    
+    auto t1 = (v4^2)*v5*-4 + (v5^2)*-4*v4;
+    auto t2 = (v5^2)*-4*v4 + (v4^2)*v5*-4;
+    auto s1 = Sum::cast(t1);
+    auto s2 = Sum::cast(t2);
+    BOOST_TEST(s1->size()==s2->size());
+    BOOST_TEST(s1->size()==2);
+//    BOOST_TEST(*s1->begin()==*s2->GetConstCont().rbegin());
+//    BOOST_TEST(*s2->begin()==*s1->GetConstCont().rbegin());
+    BOOST_TEST(t1 == t2);
+    
+    t1 = ((v4^4) + (v6^4) + (v5^4) + (v6^2)*-4*v4 + (v4^2)*v5*-4 + (v5^2)*-4*v4 + (v6^2)*v5*-4 + (v4^2)*-16*v6 + (v5^2)*-16*v6 + -72*v5 + -72*v4 + -288*v6 + 324 + (v6^2)*100 + (v4^2)*40 + (v5^2)*40 + 8*v5*v4 + (v6^3)*-16 + 32*v6*v4 + 32*v5*v6 + (v5^3)*-4 + (v4^3)*-4 + (v6^2)*(v5^2)*2 + (v5^2)*(v4^2)*2 + (v6^2)*(v4^2)*2);
+    t2 = ((v4^4) + (v6^4) + (v5^4) + (v6^2)*-4*v4 + (v5^2)*-4*v4 + (v4^2)*v5*-4 + (v6^2)*v5*-4 + (v4^2)*-16*v6 + (v5^2)*-16*v6 + -72*v5 + -72*v4 + -288*v6 + 324 + (v6^2)*100 + (v4^2)*40 + (v5^2)*40 + 8*v5*v4 + (v6^3)*-16 + 32*v6*v4 + 32*v5*v6 + (v5^3)*-4 + (v4^3)*-4 + (v6^2)*(v5^2)*2 + (v5^2)*(v4^2)*2 + (v6^2)*(v4^2)*2);
+    BOOST_TEST(t1 == t2);
+    t = _*_;
+    BOOST_TEST(t==sqc);
+    t.Eval(x,1); t.Eval(y,1); t.Eval(z, 4);
+    t.optimize();
+    BOOST_TEST(t==0);
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)
