@@ -20,13 +20,13 @@ class Formula
     Valuable e;
     std::set<Variable> s;
     
-    Formula(const Variable&, const Valuable&);
     Formula(Valuable&& ex) : e(std::move(ex)) { e.CollectVa(s); }
     Formula(int i) : e(i) { e.CollectVa(s); }
     
 protected:
+    Formula(const Variable&, const Valuable&);
     std::ostream& print(std::ostream& out) const override;
-
+    virtual Valuable Solve(Valuable& v) const;
 public:
     //using f_t = std::function<Valuable&&(Valuable&&)>;
     using base::base;
@@ -47,8 +47,7 @@ public:
             auto va = vit++;
             copy.Eval(*va, v);
         }
-        copy.optimize();
-        return copy;
+        return Solve(copy);
     }
     
 private:

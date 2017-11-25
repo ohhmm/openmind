@@ -10,13 +10,12 @@
 namespace omnn {
 namespace extrapolator {
 
-    FormulaOfVaWithSingleIntegerRoot::FormulaOfVaWithSingleIntegerRoot(const Valuable& sumValuable, const Variable v)
-    : sum(sumValuable), va(v)
+    FormulaOfVaWithSingleIntegerRoot::FormulaOfVaWithSingleIntegerRoot(const Valuable& sumValuable, const Variable& v)
+    : base(v,sumValuable)
     {
         auto sum = Sum::cast(sumValuable);
         std::vector<Valuable> coefficients;
         grade = sum->FillPolyCoeff(coefficients, v);
-        sum->CollectVa(s);
     }
 
     Valuable FormulaOfVaWithSingleIntegerRoot::Solve(Valuable& v) const
@@ -27,6 +26,6 @@ namespace extrapolator {
     
     std::ostream& Formula::print(std::ostream& out) const
     {
-        return out << "f(" << v << ")=" << e;
+        return out << "f(" << v << ") = solve(" << e << ")(x,y)";
     }
 }}

@@ -3,41 +3,23 @@
 //
 
 #pragma once
-#include "Variable.h"
+#include "Formula.h"
 
 namespace omnn {
 namespace extrapolator {
 
 
 class FormulaOfVaWithSingleIntegerRoot
-        : public ValuableDescendantContract<FormulaOfVaWithSingleIntegerRoot>
+        : public Formula
 {
-    using base = ValuableDescendantContract<FormulaOfVaWithSingleIntegerRoot>;
-    Valuable sum;
+    using base = Formula;
+    
+protected:
     size_t grade;
-    Variable va;
-    std::set<Variable> s;
-    Valuable Solve(Valuable& v) const;
+    Valuable Solve(Valuable& v) const override;
     
 public:
-    using base::base;
 
-    FormulaOfVaWithSingleIntegerRoot(const Valuable& s, const Variable v);
-    
-    void optimize() override { sum.optimize(); }
-    
-    template<class... T>
-    Valuable operator()(const T&... vl) const
-    {
-        auto copy = sum;
-        auto vit = s.begin();
-        for(auto v:{vl...})
-        {
-            auto va = vit++;
-            copy.Eval(*va, v);
-        }
-        copy.optimize();
-        return Solve(copy);
-    }
+    FormulaOfVaWithSingleIntegerRoot(const Valuable& s, const Variable& v);
 };
 }}

@@ -33,4 +33,10 @@ namespace extrapolator {
     {
         return out << "f(" << v << ")=" << e;
     }
+    
+    Valuable Formula::Solve(Valuable& v) const
+    {
+        return v;
+    }
+
 }}

@@ -338,6 +338,7 @@ namespace extrapolator {
                 }
             }
         }
+        return grade;
     }
     
     /** fast linear equation formula deduction */
