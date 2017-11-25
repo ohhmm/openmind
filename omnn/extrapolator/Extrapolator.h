@@ -10,6 +10,7 @@
 #include <type_traits>
 #include "Equation.h"
 #include "Expression.h"
+#include "FormulaOfVaWithSingleIntegerRoot.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
@@ -240,21 +241,27 @@ public:
      */
     operator Formula() const
     {
+        bool integers = true;
         auto vm = ViewMatrix();
         Valuable e(1);
         Variable vx,vy,vv;
         for (auto i = vm.size1(); i--; ) {
-                auto e1 = vx - vm(i,0);
-                auto e2 = vy - vm(i,1);
-                auto e3 = vv - vm(i,2);
-                auto subsyst = e1*e1 + e2*e2 + e3*e3;
-                e *= subsyst;
+            auto& v = vm(i,2);
+            integers = integers && Integer::cast(v);
+            auto e1 = vx - vm(i,0);
+            auto e2 = vy - vm(i,1);
+            auto e3 = vv - v;
+            auto subsyst = e1*e1 + e2*e2 + e3*e3;
+            e *= subsyst;
         }
         e.optimize();
         auto s = Sum::cast(e);
         if(!s)
             throw "Debug!";
-        return s->FormulaOfVa(vv);
+        if(integers)
+            return FormulaOfVaWithSingleIntegerRoot(*s, vv);
+        else
+            return s->FormulaOfVa(vv);
     }
 
     Valuable Equation(const ublas::vector<T>& augmented)

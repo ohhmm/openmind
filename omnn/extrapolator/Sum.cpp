@@ -281,12 +281,9 @@ namespace extrapolator {
         return Exponentiation(*this, 1_v/2);
     }
 
-    /** fast linear equation formula deduction */
-	Formula Sum::FormulaOfVa(const Variable& v) const
-	{
-        Valuable fx(0);
-        std::vector<Valuable> coefficients(4);
-        auto grade = 0;
+    size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const
+    {
+        size_t grade = 0;
         for (auto& m : members)
         {
             auto p = Product::cast(m);
@@ -341,7 +338,15 @@ namespace extrapolator {
                 }
             }
         }
-
+    }
+    
+    /** fast linear equation formula deduction */
+	Formula Sum::FormulaOfVa(const Variable& v) const
+	{
+        Valuable fx(0);
+        std::vector<Valuable> coefficients(4);
+        auto grade = FillPolyCoeff(coefficients,v);
+        
         switch (grade) {
             case 2: {
                 // square equation axx+bx+c=0
@@ -360,23 +365,19 @@ namespace extrapolator {
                 auto& c = coefficients[2];
                 auto& d = coefficients[1];
                 auto& e = coefficients[0];
-                const_cast<Sum*>(this)->optimizations = false;
                 auto sa = a*a;
                 auto sb = b*b;
                 auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
                 auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).sqrt();
                 auto qp2 = (p2/2)^(1_v/3);
-                const_cast<Sum*>(this)->optimizations = true;
                 p1.optimize();
                 p2.optimize();
                 qp2.optimize();
-                const_cast<Sum*>(this)->optimizations = false;
                 auto p3 = (c*c-3*b*d+12*a*e)/(3*a*qp2)+qp2/(3*a);
                 auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).sqrt();
                 auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
                 auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
                 fx = -b/(4*a)+p4/2+(p5+p6).sqrt()/2;
-                const_cast<Sum*>(this)->optimizations = true;
 //                fx.optimize();
                 break;
             }
@@ -389,5 +390,4 @@ namespace extrapolator {
         return Formula::DeclareFormula(v, fx);
 	}
     
-
 }}

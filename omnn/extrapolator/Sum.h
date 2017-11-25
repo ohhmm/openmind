@@ -58,6 +58,7 @@ public:
 		}
     }
 
+    size_t FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const;
 	Formula FormulaOfVa(const Variable& v) const;
 };
 
