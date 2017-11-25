@@ -21,11 +21,12 @@ namespace extrapolator {
     Valuable FormulaOfVaWithSingleIntegerRoot::Solve(Valuable& v) const
     {
         auto sum = Sum::cast(v);
-        return *sum->GetFirstOccurence<Integer>() ^ (1_v/grade);
+        auto singleWouldBe = *sum->GetFirstOccurence<Integer>() ^ (1_v/grade);
+        return singleWouldBe;
     }
     
-    std::ostream& Formula::print(std::ostream& out) const
+    std::ostream& FormulaOfVaWithSingleIntegerRoot::print(std::ostream& out) const
     {
-        return out << "f(" << v << ") = solve(" << e << ")(x,y)";
+        return out << "f(" << getVa() << ") = solve(" << getEx() << ")(x,y)";
     }
 }}

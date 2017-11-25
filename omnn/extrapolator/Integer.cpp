@@ -18,6 +18,12 @@
 namespace omnn{
 namespace extrapolator {
 
+    Integer::Integer(const Fraction& f)
+    : arbitrary(Integer::cast(f.getNumerator())->arbitrary / Integer::cast(f.getDenominator())->arbitrary)
+    {
+        
+    }
+    
     Integer::operator int64_t() const {
         return boost::numeric_cast<int>(arbitrary);
     }
@@ -223,13 +229,8 @@ namespace extrapolator {
                 {
                     auto d = right - left;
                     d -= d % 2;
-                    if (d != 0) {
-                        auto t = 10_v ^
-                                        (d < std::numeric_limits<double>::max()
-                                         ? int64_t(std::log10l(static_cast<long double>(d))/2)
-                                         : d.str().length()/2);
-                        d /= t > 2 ? static_cast<int>(t) : 2;
-                        nroot = left + d;
+                    if (d!=0) {
+                        nroot = left + d / 2;
                         auto result = nroot ^ dn;
                         if (result == *this)
                         {

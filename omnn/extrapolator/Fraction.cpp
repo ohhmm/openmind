@@ -204,7 +204,8 @@ namespace extrapolator {
 
     Valuable& Fraction::operator %=(const Valuable& v)
     {
-		return base::operator %=(v);
+        Integer d(*this / v);
+		return *this -= d * v;
     }
 
     Valuable& Fraction::operator --()

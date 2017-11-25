@@ -9,6 +9,8 @@
 
 namespace omnn{
 namespace extrapolator {
+    
+    class Fraction;
 
 class Integer
     : public ValuableDescendantContract<Integer>
@@ -45,6 +47,8 @@ public:
     {
         hash = std::hash<base_int>()(arbitrary);
     }
+    
+    explicit Integer(const Fraction& f);
     
     operator const_base_int_ref() const {
         return arbitrary;

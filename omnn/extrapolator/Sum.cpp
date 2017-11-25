@@ -284,6 +284,7 @@ namespace extrapolator {
     size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const
     {
         size_t grade = 0;
+        coefficients.resize(members.size());
         for (auto& m : members)
         {
             auto p = Product::cast(m);

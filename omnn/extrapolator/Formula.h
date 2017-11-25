@@ -35,6 +35,9 @@ public:
 
     //Formula(const Valuable& e, const f_t& f);
     
+    const Variable& getVa() const { return v; }
+    const Valuable& getEx() const { return e; }
+    
     void optimize() override { e.optimize(); }
     
     template<class... T>
@@ -47,6 +50,7 @@ public:
             auto va = vit++;
             copy.Eval(*va, v);
         }
+        copy.optimize();
         return Solve(copy);
     }
     

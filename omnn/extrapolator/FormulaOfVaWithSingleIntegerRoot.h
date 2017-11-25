@@ -17,9 +17,9 @@ class FormulaOfVaWithSingleIntegerRoot
 protected:
     size_t grade;
     Valuable Solve(Valuable& v) const override;
-    
-public:
+    std::ostream& print(std::ostream& out) const override;
 
+public:
     FormulaOfVaWithSingleIntegerRoot(const Valuable& s, const Variable& v);
 };
 }}
