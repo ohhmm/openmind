@@ -80,6 +80,8 @@ public:
     const Variable* FindVa() const override { return nullptr; }
     void CollectVa(std::set<Variable>&) const override { }
     void Eval(const Variable& va, const Valuable& v) override { }
+    
+    void Factorization(const std::function<bool(Integer)>& f);
 
 private:
 	base_int arbitrary = 0;

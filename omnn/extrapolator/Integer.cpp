@@ -299,5 +299,13 @@ namespace extrapolator {
     {
         return out << arbitrary;
     }
+    
+    void Integer::Factorization(const std::function<bool(Integer)>& f)
+    {
+        Valuable h = Integer(arbitrary >> 1);
+        for (auto i = *this; i < h; ++i)
+            if (cast(*this/i) && f(i))
+                return i;
+    }
 }}
 
