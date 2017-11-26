@@ -50,7 +50,7 @@ namespace extrapolator {
         }
         else
         {
-            Become(Fraction(*this,v));
+            *this *= 1 / v;
         }
 
         return *this;
