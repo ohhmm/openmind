@@ -300,12 +300,15 @@ namespace extrapolator {
         return out << arbitrary;
     }
     
-    void Integer::Factorization(const std::function<bool(Integer)>& f)
+    bool Integer::Factorization(const std::function<bool(const Integer&)>& f) const
     {
-        Valuable h = Integer(arbitrary >> 1);
-        for (auto i = *this; i < h; ++i)
-            if (cast(*this/i) && f(i))
-                return i;
+        auto h = arbitrary;
+        if(h < 0)
+            h = -h;
+        for (base_int i = 1; i <= h; ++i)
+            if (cast(*this/Integer(i)) && f(i))
+                return true;
+        return false;
     }
 }}
 

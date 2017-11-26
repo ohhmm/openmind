@@ -183,52 +183,6 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
     {
         au[i] = i;
     }
-
-    // this seems not work
-//    auto s = m.Solve(au);
-    
-//    for(auto si : s)
-//    {
-//        std::cout << si << ' ';
-//    }
-//    std::cout << std::endl;
-//
-//    // check this solution
-//    for (auto i = m.size1(); i--; ) {
-//        Valuable v = -au[i];
-//        for (auto j=m.size2(); j--; ) {
-//            v += m(i,j) * s[j];
-//        }
-//        BOOST_TEST(v==0);
-//    }
-////    std::cout << &s << std::endl;
-//    auto eq = m.Equation(au);
-//    std::cout << eq << std::endl;
-//    // c = (ax+by) / z
-//
-//
-//    Valuable v = vm;
-//    //std::cout << v << std::endl;
-//    // 30*v3*v3 + 12*v2*v3 + 14*v1*v3 + 2*v2*v2 + 2*v1*v2 + 2*v1*v1
-//    //    0 0 1 :
-//    //    0 1 2 :
-//    //    1 0 3 :
-//    //    1 1 4 :
-//
-//    //    0 0 | 1 : 0 != -1
-//    //    0 1 | 2 :
-//    //    1 0 | 3 :
-//    //    1 1 | 4 :
-//    
-//    // to solve:
-//    //    1 1 | 6 :
-//    //    1 1 | 4 :
-//    // solution : 2 3
-//    // :facepalm:
-//    //    (2*v2*v2 + 2*v1*v2 + 8*v2 + 2*v1*v1 + 10*v1 - 14) = 0
-//    //    (2*9 + 2*6 + 8*3 + 2*4 + 10*2 - 14) = 0
-//    //
-
 }
 
 BOOST_AUTO_TEST_CASE(Codec_test, *disabled())

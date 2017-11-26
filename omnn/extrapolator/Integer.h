@@ -81,7 +81,7 @@ public:
     void CollectVa(std::set<Variable>&) const override { }
     void Eval(const Variable& va, const Valuable& v) override { }
     
-    void Factorization(const std::function<bool(Integer)>& f);
+    bool Factorization(const std::function<bool(const Integer&)>& f) const;
 
 private:
 	base_int arbitrary = 0;
