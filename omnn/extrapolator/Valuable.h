@@ -33,6 +33,7 @@ public:
 
 protected:
     virtual Valuable* Clone() const;
+    virtual int getTypeSize() const;
 
     template<class T>
     static const T* cast(const Valuable& v)
@@ -62,9 +63,9 @@ protected:
     virtual Valuable& Become(Valuable&& i);
     
     size_t hash = 0;
+public:
     static thread_local bool optimizations;
 
-public:
     explicit Valuable(Valuable* v);
     
     Valuable& operator =(const Valuable& v);
@@ -112,6 +113,9 @@ public:
     {
         bool operator()(const Valuable&, const Valuable&);
     };
+    
+    size_t hash_value(const omnn::extrapolator::Valuable& v);
+
 }}
 
 namespace std

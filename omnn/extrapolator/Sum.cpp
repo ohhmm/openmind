@@ -138,7 +138,6 @@ namespace extrapolator {
                 {
                     std::cout << it->str() << " -> " << c.str() << std::endl;
                     Update(it, c);
-                    it = begin();
                 }
             }
 

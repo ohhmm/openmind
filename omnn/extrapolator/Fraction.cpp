@@ -84,6 +84,7 @@ namespace extrapolator {
                 if (d != 1) {
                     numerator /= Integer(d);
                     denominator /= Integer(d);
+                    optimize();
                 }
             }
         }

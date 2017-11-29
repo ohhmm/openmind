@@ -243,8 +243,9 @@ public:
     {
         bool integers = true;
         auto vm = ViewMatrix();
-        Valuable e(1);
+        Product e(1);
         Variable vx,vy,vv;
+        Valuable::optimizations = false;
         for (auto i = vm.size1(); i--; ) {
             auto& v = vm(i,2);
             integers = integers && Integer::cast(v);
@@ -252,8 +253,9 @@ public:
             auto e2 = vy - vm(i,1);
             auto e3 = vv - v;
             auto subsyst = e1*e1 + e2*e2 + e3*e3;
-            e *= subsyst;
+            e.Add(subsyst);
         }
+        Valuable::optimizations = true;
         e.optimize();
         auto s = Sum::cast(e);
         if(!s)

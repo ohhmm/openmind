@@ -20,6 +20,12 @@ namespace extrapolator {
         {
             return new Chld(*static_cast<const Chld*>(this));
         }
+        
+        int getTypeSize() const override
+        {
+            assert(typeid(*this)==typeid(Chld));
+            return sizeof(Chld);
+        }
 
     public:
         // once compiler allow

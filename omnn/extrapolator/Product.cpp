@@ -118,10 +118,13 @@ namespace extrapolator {
         {
             auto sum = std::move(*it);
             Delete(it);
+            auto was = optimizations;
+            optimizations = false;
             for (auto& it : members)
             {
                 sum *= it;
             }
+            optimizations = was;
             Become(std::move(sum));
             return;
         }

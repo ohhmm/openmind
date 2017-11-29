@@ -29,6 +29,12 @@ namespace extrapolator {
             return new Valuable(*this);
     }
 
+    int Valuable::getTypeSize() const
+    {
+        assert(typeid(*this)==typeid(Valuable));
+        return sizeof(Valuable);
+    }
+    
     /// gets valuable under accessor if accessor passed
     const Valuable* Valuable::accessor_cast(const Valuable& mayBeAccessor)
     {
@@ -55,8 +61,13 @@ namespace extrapolator {
                 e = e->exp;
             }
         Valuable& toMove = e ? *e.get() : v;
+        auto sizeWas = getTypeSize();
+        auto newSize = toMove.getTypeSize();
 
         this->~Valuable();        // before this call
+        if (newSize <= sizeWas) {
+            
+        }
         new (this) Valuable(std::move(toMove)); // todo : not neccesarily wrap into Valuable if there is space. it need to be checked through through typeid
         return *this;
     }
@@ -223,7 +234,7 @@ namespace extrapolator {
     bool Valuable::operator==(const Valuable& v) const
     {
         if(exp)
-            return exp->operator==(v);
+            return Hash()==v.Hash() && exp->operator==(v);
         else
             IMPLEMENT
     }
@@ -312,7 +323,7 @@ namespace extrapolator {
     
     bool Valuable::Same(const Valuable& v) const
     {
-        return OfSameType(v) && operator==(v);
+        return Hash()==v.Hash() && OfSameType(v) && operator==(v);
     }
     
     Valuable::operator bool() const
@@ -358,7 +369,11 @@ namespace extrapolator {
         return s.str();
     }
     
-    
+    size_t hash_value(const Valuable& v)
+    {
+        return v.Hash();
+    }
+
     // store order operator
     bool HashCompare::operator()(const Valuable& v1, const Valuable& v2)
     {
