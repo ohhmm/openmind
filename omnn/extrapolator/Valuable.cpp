@@ -14,13 +14,11 @@ namespace extrapolator {
 
     thread_local bool Valuable::optimizations = true;
     
-    static void implement()
+    void implement()
     {
         throw "Implement!";
     }
     
-    #define IMPLEMENT { implement(); throw; }
-
     Valuable* Valuable::Clone() const
     {
         if (exp)
@@ -33,6 +31,11 @@ namespace extrapolator {
     {
         assert(typeid(*this)==typeid(Valuable));
         return sizeof(Valuable);
+    }
+    
+    Valuable::operator std::type_index() const
+    {
+        return exp ? static_cast<std::type_index>(*exp) : std::type_index(typeid(*this));
     }
     
     /// gets valuable under accessor if accessor passed
@@ -326,6 +329,16 @@ namespace extrapolator {
         return Hash()==v.Hash() && OfSameType(v) && operator==(v);
     }
     
+    int Valuable::getMaxVaExp() const
+    {
+        return exp ? exp->maxVaExp : maxVaExp;
+    }
+    
+    bool Valuable::IsComesBefore(const Valuable& v) const
+    {
+        return getMaxVaExp() > v.getMaxVaExp();
+    }
+    
     Valuable::operator bool() const
     {
         return *this != 0_v;
@@ -335,6 +348,14 @@ namespace extrapolator {
     {
         if (exp)
             return exp->operator int();
+        else
+            IMPLEMENT
+    }
+    
+    Valuable::operator size_t() const
+    {
+        if (exp)
+            return exp->operator size_t();
         else
             IMPLEMENT
     }
@@ -375,9 +396,9 @@ namespace extrapolator {
     }
 
     // store order operator
-    bool HashCompare::operator()(const Valuable& v1, const Valuable& v2)
+    bool HashCompare::operator()(const Valuable& v1, const Valuable& v2) const
     {
-        return v1.Hash() < v2.Hash();
+        return v1.IsComesBefore(v2);
     }
 }}
 

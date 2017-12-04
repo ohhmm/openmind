@@ -25,7 +25,11 @@ namespace extrapolator {
     }
     
     Integer::operator int64_t() const {
-        return boost::numeric_cast<int>(arbitrary);
+        return boost::numeric_cast<int64_t>(arbitrary);
+    }
+    
+    Integer::operator size_t() const {
+        return boost::numeric_cast<size_t>(arbitrary);
     }
     
     Valuable Integer::operator -() const
@@ -82,7 +86,7 @@ namespace extrapolator {
         if (i)
         {
             auto div = arbitrary/i->arbitrary;
-            if(div*i->arbitrary==arbitrary)
+            if (div*i->arbitrary==arbitrary)
             {
                 arbitrary = div;
                 hash = std::hash<base_int>()(arbitrary);

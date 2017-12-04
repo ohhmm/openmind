@@ -15,6 +15,18 @@
 namespace omnn{
 namespace extrapolator {
 
+    void Sum::Add(const Valuable& item)
+    {
+        auto it = std::find(begin(), end(), item);
+        if(it==end())
+           base::Add(item);
+        else
+           Add(Peek(it)*2);
+        auto itemMaxVaExp = item.getMaxVaExp();
+        if(itemMaxVaExp > maxVaExp)
+            maxVaExp = itemMaxVaExp;
+    }
+    
 	Valuable Sum::operator -() const
 	{
 		Sum s;
@@ -284,6 +296,8 @@ namespace extrapolator {
     {
         size_t grade = 0;
         coefficients.resize(members.size());
+        
+        #pragma omp for shared grade,coefficients
         for (auto& m : members)
         {
             auto p = Product::cast(m);

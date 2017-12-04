@@ -27,6 +27,7 @@ public:
     , varId(varHost.NewVarId())
     {
         hash = varSetHost.Hash(varId);
+        maxVaExp=1;
     }
     
     Variable(VarHost::ptr varHost)
@@ -37,6 +38,7 @@ public:
         if(!varHost)
             throw "the varHost is mandatory parameter";
         hash = varSetHost.Hash(varId);
+        maxVaExp=1;
     }
 
     Valuable operator -() const override;

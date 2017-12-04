@@ -127,6 +127,7 @@ public:
 	//Valuable abs() const override { return Valuable::abs(); }
     void optimize() override;
     std::ostream& print(std::ostream& out) const override;
+        
 private:
     std::map<variable_id, polynom> polynoms;
 };

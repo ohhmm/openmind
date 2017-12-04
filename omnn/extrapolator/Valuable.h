@@ -6,7 +6,7 @@
 #include "OpenOps.h"
 #include <memory>
 #include <set>
-#include <type_traits>
+#include <typeindex>
 #include <boost/shared_ptr.hpp>
 
 namespace omnn{
@@ -20,7 +20,6 @@ namespace extrapolator {
     
 class Valuable
         : public OpenOps<Valuable>
-    
 {
 #ifdef BOOST_TEST_MODULE
 public:
@@ -63,10 +62,14 @@ protected:
     virtual Valuable& Become(Valuable&& i);
     
     size_t hash = 0;
+    int maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
+    
 public:
     static thread_local bool optimizations;
+    virtual int getMaxVaExp() const;
 
     explicit Valuable(Valuable* v);
+    operator std::type_index() const;
     
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(const Valuable&& v);
@@ -84,8 +87,8 @@ public:
     virtual Valuable& operator--();
     virtual Valuable& operator++();
     virtual Valuable& operator^=(const Valuable&);
-    virtual bool operator<(const Valuable& number) const;
-    virtual bool operator==(const Valuable& number) const;
+    virtual bool operator<(const Valuable& smarter) const;
+    virtual bool operator==(const Valuable& smarter) const;
     virtual Valuable abs() const;
     virtual void optimize(); /// if it simplifies than it should become the type
     virtual Valuable sqrt() const;
@@ -94,11 +97,13 @@ public:
     virtual const Variable* FindVa() const;
     virtual void CollectVa(std::set<Variable>& s) const;
     virtual void Eval(const Variable& va, const Valuable& v);
+    virtual bool IsComesBefore(const Valuable& v) const;
     
     bool OfSameType(const Valuable& v) const;
     bool Same(const Valuable& v) const;
     explicit operator bool() const;
     virtual explicit operator int() const;
+    virtual explicit operator size_t() const;
     virtual explicit operator double() const;
     virtual explicit operator long double() const;
     
@@ -111,11 +116,12 @@ public:
 
     struct HashCompare
     {
-        bool operator()(const Valuable&, const Valuable&);
+        bool operator()(const Valuable&, const Valuable&) const;
     };
     
     size_t hash_value(const omnn::extrapolator::Valuable& v);
-
+    
+    void implement();
 }}
 
 namespace std
@@ -133,3 +139,6 @@ namespace std
 
 ::omnn::extrapolator::Valuable operator"" _v(unsigned long long v);
 ::omnn::extrapolator::Valuable operator"" _v(long double v);
+
+#define IMPLEMENT { implement(); throw; }
+

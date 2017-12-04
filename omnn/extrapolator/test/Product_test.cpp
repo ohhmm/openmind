@@ -23,6 +23,10 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     BOOST_TEST(Product::cast(p1));
     BOOST_TEST(Product::cast(p2));
     BOOST_TEST(p1 == p2);
+    p1.Eval(v1, 3);
+    p1.Eval(v2, 4);
+    p1.optimize();
+    BOOST_TEST(p1 == 6);
     v *= v1;
     v += v1*v2;
     BOOST_TEST(v == (125_v/3*v1 + v1*v2));
@@ -31,6 +35,7 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     BOOST_TEST(v == (125_v/3*v1 + v1*v2 + 125_v/3*v1*v1 + v1*v1*v2));
 
     v -= 125_v/3*v1 + v1*v2;
+    std::cout << std::endl << v << " == " << 125_v/3*v1*v1 + v1*v1*v2 << std::endl;
     BOOST_TEST(v == 125_v/3*v1*v1 + v1*v1*v2);
     
     v /= v1^2;

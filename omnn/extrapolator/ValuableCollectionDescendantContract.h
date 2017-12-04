@@ -18,6 +18,8 @@ namespace extrapolator {
         virtual cont& GetCont() = 0;
         
     public:
+        using iterator = typename cont::iterator;
+        
         virtual const cont& GetConstCont() const = 0;
 
 //        template<class... T>
@@ -149,6 +151,13 @@ namespace extrapolator {
             Valuable::hash ^= it->Hash();
             auto& c = GetCont();
             c.erase(it++);
+        }
+        
+        virtual Valuable Peek(typename cont::iterator& it)
+        {
+            Valuable v = *it;
+            Delete(it);
+            return v;
         }
 
         Valuable& operator^=(const Valuable& v) override

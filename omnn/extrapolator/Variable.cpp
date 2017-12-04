@@ -92,10 +92,6 @@ namespace extrapolator {
             }
             return varSetHost.CompareIdsLess(varId, i->varId);
         }
-        else
-        {
-            throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
-        }
         
         // not implemented comparison to this Valuable descent
         return base::operator <(v);

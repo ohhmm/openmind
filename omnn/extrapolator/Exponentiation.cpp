@@ -11,6 +11,21 @@
 namespace omnn{
 namespace extrapolator {
     
+    Exponentiation::Exponentiation(const Valuable& b, const Valuable& e)
+    : ebase(b), eexp(e)
+    {
+        hash = ebase.Hash() ^ eexp.Hash();
+        auto ie = Integer::cast(e);
+        if(ie)
+        {
+            maxVaExp = boost::numeric_cast<decltype(maxVaExp)>(ie->operator Integer::const_base_int_ref());
+        }
+        else
+        {
+            IMPLEMENT
+        }
+    }
+    
     Valuable Exponentiation::getBase()
     {
         return Accessor(ebase, hash);
@@ -19,6 +34,16 @@ namespace extrapolator {
     Valuable Exponentiation::getExponentiation()
     {
         return Accessor(eexp, hash);
+    }
+    
+    int Exponentiation::getMaxVaExp() const
+    {
+        auto vaBase = Variable::cast(ebase);
+        if (vaBase) {
+            auto i = Integer::cast(getExponentiation());
+            return static_cast<int>(*i);
+        }
+        IMPLEMENT
     }
     
 	Valuable Exponentiation::operator -() const
@@ -183,15 +208,16 @@ namespace extrapolator {
             if (e->eexp == eexp)
                 return ebase < e->ebase;
         }
+        
         return base::operator <(v);
     }
 
     bool Exponentiation::operator ==(const Valuable& v) const
     {
-        auto e = cast(v);
-        if (e)
+        if (hash == v.Hash())
         {
-            return hash == e->Hash()
+            auto e = cast(v);
+            return e
                 && ebase.Hash() == e->ebase.Hash()
                 && eexp.Hash() == eexp.Hash()
                 && ebase == e->ebase
@@ -242,5 +268,23 @@ namespace extrapolator {
         ebase.CollectVa(s);
         eexp.CollectVa(s);
     }
+    
+    bool Exponentiation::IsComesBefore(const Valuable& v) const
+    {
+        auto vaBase = Variable::cast(ebase);
+        if (vaBase) {
+            auto p = Product::cast(v);
+            if (p)
+            {
+                auto& vaInfo = p->getCommonVars();
+                auto it = vaInfo.find(*vaBase);
+                if (it != vaInfo.end())
+                {
+                    return getExponentiation() < it->second;
+                }
+            }
+        }
 
+        return base::IsComesBefore(v);
+    }
 }}

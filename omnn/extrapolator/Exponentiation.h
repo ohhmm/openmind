@@ -21,7 +21,8 @@ public:
     Valuable getBase();
     /// returns r/w accessor
     Valuable getExponentiation();
-    
+    int getMaxVaExp() const override;
+
     // virtual operators
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
@@ -35,21 +36,18 @@ public:
     
     using base::base;
     
-    Exponentiation(const Valuable& b, const Valuable& e)
-            : ebase(b), eexp(e)
-    {
-        hash = ebase.Hash() ^ eexp.Hash();
-    }
+    Exponentiation(const Valuable& b, const Valuable& e);
 
-    Exponentiation(const Valuable& b)
-            : ebase(b), eexp(1)
-    {
-        hash = ebase.Hash() ^ eexp.Hash();
-    }
-
+//    Exponentiation(const Valuable& b)
+//            : ebase(b), eexp(1)
+//    {
+//        hash = ebase.Hash() ^ eexp.Hash();
+//    }
+//
     const Variable* FindVa() const override;
     void CollectVa(std::set<Variable>& s) const override;
     void Eval(const Variable& va, const Valuable& v) override;
+    bool IsComesBefore(const Valuable& v) const override;
 };
 
 }}

@@ -12,9 +12,15 @@
 namespace omnn{
 namespace extrapolator {
     
+    struct ProductOrderComparator
+    {
+        bool operator()(const Valuable&, const Valuable&) const;
+    };
+    
     using product_container =
-        //std::multiset<Valuable, HashCompare>
-        std::unordered_multiset<Valuable>
+        std::multiset<Valuable, ProductOrderComparator>
+        //std::unordered_multiset<Valuable>
+        //std::set<Valuable, ProductOrderComparator>
         ;
 
 class Product
@@ -24,8 +30,10 @@ class Product
     using base::cont;
     friend class Variable;
     cont members;
+    int vaExpsSum = 0;
 
 protected:
+    void AddToVars(const Variable &item, const Valuable & exponentiation);
     void AddToVarsIfVaOrVaExp(const Valuable &item);
 
 public:
@@ -58,7 +66,9 @@ public:
     static Valuable VaVal(const vars_cont_t& v);
     Valuable getVaVal() const;
     Valuable getCommVal(const Product& with) const;
-
+    int findMaxVaExp();
+    bool IsComesBefore(const Valuable& v) const override;
+    
 	// virtual operators
 	Valuable operator -() const override;
 	Valuable& operator +=(const Valuable& v) override;

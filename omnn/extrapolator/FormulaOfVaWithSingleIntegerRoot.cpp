@@ -10,13 +10,6 @@
 namespace omnn {
 namespace extrapolator {
 
-    static void implement()
-    {
-        throw "Implement!";
-    }
-    
-#define IMPLEMENT { implement(); throw; }
-    
     FormulaOfVaWithSingleIntegerRoot::FormulaOfVaWithSingleIntegerRoot(const Valuable& sumValuable, const Variable& v)
     : base(v,sumValuable)
     {

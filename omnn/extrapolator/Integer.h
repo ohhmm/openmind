@@ -70,6 +70,7 @@ public:
     bool operator ==(const Valuable& v) const override;
     // virtual convert operators
     explicit operator int() const override;
+    explicit operator size_t() const override;
     explicit operator double() const override;
     explicit operator long double() const override;
     

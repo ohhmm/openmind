@@ -12,15 +12,62 @@
 namespace omnn{
 namespace extrapolator {
     
+    using namespace std;
+    
+    type_index order[] = {
+        // for fast optimizing
+        typeid(Sum),
+        typeid(Product),
+        // general order
+        typeid(Integer),
+        typeid(Fraction),
+        typeid(Variable),
+        typeid(Exponentiation)
+    };
+    
+    auto ob = std::begin(order);
+    auto oe = std::end(order);
+    
+    bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
+    {
+        auto it1 = std::find(ob, oe, static_cast<type_index>(x));
+        assert(it1!=oe); // IMPLEMENT
+        auto it2 = std::find(std::begin(order), std::end(order), static_cast<type_index>(y));
+        assert(it2!=oe); // IMPLEMENT
+        return it1 < it2;
+    }
+    
+    int Product::findMaxVaExp()
+    {
+        for (auto& i:vars) {
+            vaExpsSum += static_cast<int>(i.second);
+        }
+        auto it = std::max_element(vars.begin(), vars.end(), [](auto& x, auto& y){
+            return x.second < y.second;
+        });
+        if (it != vars.end()) {
+            auto i = Integer::cast(it->second);
+            return static_cast<int>(*i);
+        }
+        return 0;
+    }
+
+    void Product::AddToVars(const Variable & item, const Valuable & exponentiation)
+    {
+        vars[item] += exponentiation;
+        if (vars[item] == 0) {
+            vars.erase(item);
+            maxVaExp = findMaxVaExp();
+            
+        }
+    }
+
     void Product::AddToVarsIfVaOrVaExp(const Valuable &item)
     {
         auto v = Variable::cast(item);
         if(v)
         {
-            vars[*v] += 1;
-            if (vars[*v] == 0) {
-                vars.erase(*v);
-            }
+            AddToVars(*v, 1_v);
         }
         else
         {
@@ -28,11 +75,9 @@ namespace extrapolator {
             if (e)
             {
                 v = Variable::cast(e->getBase());
-                if (v) {
-                    vars[*v] += e->getExponentiation();
-                    if (vars[*v] == 0) {
-                        vars.erase(*v);
-                    }
+                if (v)
+                {
+                    AddToVars(*v, e->getExponentiation());
                 }
             }
         }
@@ -55,7 +100,7 @@ namespace extrapolator {
         auto v = Variable::cast(*it);
         if(v)
         {
-            vars[*v] -= 1;
+            AddToVars(*v, -1_v);
         }
         else
         {
@@ -64,14 +109,9 @@ namespace extrapolator {
             {
                 v = Variable::cast(e->getBase());
                 if (v) {
-                    vars[*v] -= e->getExponentiation();
+                    AddToVars(*v, -e->getExponentiation());
                 }
             }
-        }
-        
-        if (v && vars[*v] == 0)
-        {
-            vars.erase(*v);
         }
         
         base::Delete(it);
@@ -318,6 +358,30 @@ namespace extrapolator {
         return VaVal(getCommonVars(with.getCommonVars()));
     }
 
+    bool Product::IsComesBefore(const Valuable& v) const
+    {
+        auto is = base::IsComesBefore(v);
+        if (!is)
+        {
+            auto p = cast(v);
+            if (p)
+            {
+                if (vaExpsSum == p->vaExpsSum)
+                {
+                    if (members == p->members)
+                        return false;
+                    else
+                        return true;
+                }
+                else
+                {
+                    return vaExpsSum > p->vaExpsSum;
+                }
+            }
+        }
+        return is;
+    }
+    
     Valuable& Product::operator +=(const Valuable& v)
     {
         auto p = cast(v);
@@ -476,4 +540,5 @@ namespace extrapolator {
         out << cstr;
         return out;
 	}
+    
 }}
