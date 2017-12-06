@@ -58,8 +58,17 @@ namespace extrapolator {
         if (vars[item] == 0) {
             vars.erase(item);
             maxVaExp = findMaxVaExp();
-            
         }
+        auto i = Integer::cast(exponentiation);
+        if (i) {
+            int in = static_cast<decltype(vaExpsSum)>(*i); // <<< this in
+            vaExpsSum += in;
+            if (in > getMaxVaExp()) {
+                maxVaExp = in;
+            }
+        }
+        else
+            IMPLEMENT // just estimate in to be greater for those which you want to see first in sum sequence
     }
 
     void Product::AddToVarsIfVaOrVaExp(const Valuable &item)
@@ -360,22 +369,57 @@ namespace extrapolator {
 
     bool Product::IsComesBefore(const Valuable& v) const
     {
-        auto is = base::IsComesBefore(v);
+        auto is = getMaxVaExp() > v.getMaxVaExp();/// TODO : move maxvaexp to product
         if (!is)
         {
             auto p = cast(v);
             if (p)
             {
-                if (vaExpsSum == p->vaExpsSum)
+                if (getMaxVaExp() == p->getMaxVaExp())
                 {
-                    if (members == p->members)
-                        return false;
+                    if (vaExpsSum == p->vaExpsSum)
+                    {
+                        if (members == p->members)
+                            return false;
+                        else // TODO : inequality must cover all cases for bugless Sum::Add
+                        {
+                            auto it1 = std::find(ob, oe, static_cast<type_index>(*members.begin()));
+                            auto it2 = std::find(ob, oe, static_cast<type_index>(*p->members.begin()));
+                            if (it1==it2) {
+                                auto v1 = GetFirstOccurence<Fraction>();
+                                if (v1 == end()) {
+                                    v1 = GetFirstOccurence<Integer>();
+                                }
+                                
+                                auto v2 = p->GetFirstOccurence<Fraction>();
+                                if (v2 == end()) {
+                                    v2 = p->GetFirstOccurence<Integer>();
+                                }
+                                bool v1e = v1 == end();
+                                bool v2e = v2 == end();
+                                if(v1e && v2e)
+                                {
+                                    return *this != *p;
+                                }
+                                else if (!v1e && !v2e)
+                                    return *v1 > *v2;
+                                else
+                                    return v2e;
+                            }
+                            else
+                            {
+                                return it1 < it2;
+                            }
+                        }
+                    }
                     else
-                        return true;
+                    {
+                        return vaExpsSum > p->vaExpsSum;
+                    }
                 }
                 else
                 {
-                    return vaExpsSum > p->vaExpsSum;
+                    return getMaxVaExp() > p->getMaxVaExp();
                 }
             }
         }

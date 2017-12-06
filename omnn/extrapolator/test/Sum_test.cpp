@@ -24,6 +24,11 @@ void ohashes(const Valuable& v)
 BOOST_AUTO_TEST_CASE(Sum_tests)
 {
     Variable v,v1,v2;
+    Valuable val1 = -2_v/3*v1;
+    val1 += v1*v1;
+    val1 += 1_v/9;
+    Valuable val2 = 1_v/9 + v1*v1 + -2_v/3*v1;
+    std::cout << val1 << " == " << val2 << std::endl;
     BOOST_TEST((-2_v/3*v1 + v1*v1 + 1_v/9) == (1_v/9 + v1*v1 + -2_v/3*v1));
     BOOST_TEST(1_v/9 - (2_v/3) * v + v*v == 1_v/9 - (2_v/3) * v + v*v);
     

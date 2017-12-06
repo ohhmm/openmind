@@ -13,9 +13,14 @@
 namespace omnn{
 namespace extrapolator {
 
+    struct SumOrderComparator
+    {
+        bool operator()(const Valuable&, const Valuable&) const;
+    };
+
     using sum_cont =
-//        std::set<Valuable>
-    boost::container::set<Valuable, HashCompare>
+        std::set<Valuable, SumOrderComparator>
+//        boost::container::set<Valuable, SumOrderComparator>
 //        std::unordered_multiset<Valuable>
 //        boost::unordered_multiset<Valuable>
     ;

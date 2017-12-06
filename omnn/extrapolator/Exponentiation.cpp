@@ -271,17 +271,18 @@ namespace extrapolator {
     
     bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
-        auto vaBase = Variable::cast(ebase);
-        if (vaBase) {
-            auto p = Product::cast(v);
-            if (p)
+        auto e = cast(v);
+        if (e)
+        {
+            auto vaBase = Variable::cast(ebase);
+            auto vbase = Variable::cast(e->ebase);
+            if (vaBase && vbase)
             {
-                auto& vaInfo = p->getCommonVars();
-                auto it = vaInfo.find(*vaBase);
-                if (it != vaInfo.end())
-                {
-                    return getExponentiation() < it->second;
-                }
+                return eexp > e->eexp;
+            }
+            else
+            {
+                return *this > *e;
             }
         }
 

@@ -52,5 +52,10 @@ namespace extrapolator {
         }
         void optimize() override { }
         Valuable sqrt() const override { throw "Implement!"; }
+        
+        bool IsComesBefore(const Valuable& v) const override
+        {
+            return *this > v;
+        }
     };
 }}

@@ -15,6 +15,16 @@
 namespace omnn{
 namespace extrapolator {
 
+    namespace
+    {
+        ProductOrderComparator toc; // todo : rename to type order comparator and move to file
+    }
+    // store order operator
+    bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
+    {
+        return toc(v1,v2) || v1.IsComesBefore(v2);
+    }
+    
     void Sum::Add(const Valuable& item)
     {
         auto it = std::find(begin(), end(), item);

@@ -56,6 +56,7 @@ protected:
     
     Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.hash)
+    , maxVaExp(v.maxVaExp)
     {}
     
     virtual std::ostream& print(std::ostream& out) const;
@@ -97,7 +98,7 @@ public:
     virtual const Variable* FindVa() const;
     virtual void CollectVa(std::set<Variable>& s) const;
     virtual void Eval(const Variable& va, const Valuable& v);
-    virtual bool IsComesBefore(const Valuable& v) const;
+    virtual bool IsComesBefore(const Valuable& v) const; /// accepts same type as param
     
     bool OfSameType(const Valuable& v) const;
     bool Same(const Valuable& v) const;
@@ -113,11 +114,6 @@ public:
 
     template<>
     const Accessor* Valuable::cast(const Valuable& v);
-
-    struct HashCompare
-    {
-        bool operator()(const Valuable&, const Valuable&) const;
-    };
     
     size_t hash_value(const omnn::extrapolator::Valuable& v);
     

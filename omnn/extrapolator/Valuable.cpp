@@ -79,6 +79,7 @@ namespace extrapolator {
     {
         exp = std::move(v.exp);
         hash = std::move(v.hash);
+        maxVaExp = std::move(v.maxVaExp);
         if (!exp)
             exp.reset(v.Clone());
         return *this;
@@ -92,7 +93,8 @@ namespace extrapolator {
 
     Valuable::Valuable(Valuable&& v) :
             exp(std::move(v.exp)),
-            hash(std::move(v.hash))
+            hash(std::move(v.hash)),
+            maxVaExp(std::move(v.maxVaExp))
     {
         if (!exp)
             exp.reset(v.Clone());
@@ -331,12 +333,15 @@ namespace extrapolator {
     
     int Valuable::getMaxVaExp() const
     {
-        return exp ? exp->maxVaExp : maxVaExp;
+        return exp ? exp->getMaxVaExp() : maxVaExp;
     }
     
     bool Valuable::IsComesBefore(const Valuable& v) const
     {
-        return getMaxVaExp() > v.getMaxVaExp();
+        if (exp)
+            return exp->IsComesBefore(v);
+        else
+            IMPLEMENT
     }
     
     Valuable::operator bool() const
@@ -393,12 +398,6 @@ namespace extrapolator {
     size_t hash_value(const Valuable& v)
     {
         return v.Hash();
-    }
-
-    // store order operator
-    bool HashCompare::operator()(const Valuable& v1, const Valuable& v2) const
-    {
-        return v1.IsComesBefore(v2);
     }
 }}
 
