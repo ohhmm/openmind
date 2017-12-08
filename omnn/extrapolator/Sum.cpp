@@ -22,7 +22,7 @@ namespace extrapolator {
     // store order operator
     bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
     {
-        return toc(v1,v2) || v1.IsComesBefore(v2);
+        return v1.OfSameType(v2) ? v1.IsComesBefore(v2) : toc(v1,v2);
     }
     
     void Sum::Add(const Valuable& item)

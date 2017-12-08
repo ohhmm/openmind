@@ -28,13 +28,14 @@ namespace extrapolator {
     auto ob = std::begin(order);
     auto oe = std::end(order);
     
+    // inequality shoul cover all cases
     bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
     {
         auto it1 = std::find(ob, oe, static_cast<type_index>(x));
         assert(it1!=oe); // IMPLEMENT
-        auto it2 = std::find(std::begin(order), std::end(order), static_cast<type_index>(y));
+        auto it2 = std::find(ob, oe, static_cast<type_index>(y));
         assert(it2!=oe); // IMPLEMENT
-        return it1 < it2;
+        return it1 == it2 ? *it1 > *it2 : it1 < it2;
     }
     
     int Product::findMaxVaExp()
@@ -367,6 +368,7 @@ namespace extrapolator {
         return VaVal(getCommonVars(with.getCommonVars()));
     }
 
+    // NOTE : inequality must cover all cases for bugless Sum::Add
     bool Product::IsComesBefore(const Valuable& v) const
     {
         auto is = getMaxVaExp() > v.getMaxVaExp();/// TODO : move maxvaexp to product
@@ -375,52 +377,46 @@ namespace extrapolator {
             auto p = cast(v);
             if (p)
             {
-                if (getMaxVaExp() == p->getMaxVaExp())
-                {
-                    if (vaExpsSum == p->vaExpsSum)
-                    {
-                        if (members == p->members)
-                            return false;
-                        else // TODO : inequality must cover all cases for bugless Sum::Add
-                        {
-                            auto it1 = std::find(ob, oe, static_cast<type_index>(*members.begin()));
-                            auto it2 = std::find(ob, oe, static_cast<type_index>(*p->members.begin()));
-                            if (it1==it2) {
-                                auto v1 = GetFirstOccurence<Fraction>();
-                                if (v1 == end()) {
-                                    v1 = GetFirstOccurence<Integer>();
-                                }
-                                
-                                auto v2 = p->GetFirstOccurence<Fraction>();
-                                if (v2 == end()) {
-                                    v2 = p->GetFirstOccurence<Integer>();
-                                }
-                                bool v1e = v1 == end();
-                                bool v2e = v2 == end();
-                                if(v1e && v2e)
-                                {
-                                    return *this != *p;
-                                }
-                                else if (!v1e && !v2e)
-                                    return *v1 > *v2;
-                                else
-                                    return v2e;
-                            }
-                            else
-                            {
-                                return it1 < it2;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        return vaExpsSum > p->vaExpsSum;
-                    }
-                }
-                else
+                if (getMaxVaExp() != p->getMaxVaExp())
                 {
                     return getMaxVaExp() > p->getMaxVaExp();
                 }
+
+                if (vaExpsSum != p->vaExpsSum)
+                {
+                    return vaExpsSum > p->vaExpsSum;
+                }
+
+                if (members == p->members)
+                    return false;
+
+                if (members.size() != p->members.size()) {
+                    return members.size() > p->members.size();
+                }
+
+                auto i1 = members.begin();
+                auto i2 = p->members.begin();
+                for (; i1 != members.end(); ++i1, ++i2) {
+                    auto it1 = std::find(ob, oe, static_cast<type_index>(*i1));
+                    assert(it1!=oe); // IMPLEMENT, add to order table
+                    auto it2 = std::find(ob, oe, static_cast<type_index>(*i2));
+                    assert(it2!=oe); // IMPLEMENT
+                    if (it1 != it2) {
+                        return it1 < it2;
+                    }
+                }
+                // same types set, compare by value
+                i1 = members.begin();
+                i2 = p->members.begin();
+                for (; i1 != members.end(); ++i1, ++i2) {
+                    if(*i1 != *i2)
+                    {
+                        return i1->IsComesBefore(*i2);
+                    }
+                }
+
+                // everything is equal, should not be so
+                IMPLEMENT
             }
         }
         return is;
