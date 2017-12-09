@@ -126,6 +126,7 @@ namespace extrapolator {
                     co.Eval(va,v);
                     if (!i->Same(co))
                     {
+                        co.optimize();
                         Update(i,co);
                         updated = true;
                     }
@@ -135,7 +136,9 @@ namespace extrapolator {
                     }
                 }
             } while (updated);
-//            this->optimize();
+            
+//            if(!FindVa())
+                this->optimize();
         }
 
         virtual void Update(typename cont::iterator& it, const Valuable& v)
