@@ -18,9 +18,9 @@ public:
     const Valuable& getBase() const { return ebase; }
     const Valuable& getExponentiation() const { return eexp; }
     /// returns r/w accessor
-    Valuable getBase();
+    Valuable getBaseAccessor();
     /// returns r/w accessor
-    Valuable getExponentiation();
+    Valuable getExponentiationAccessor();
     int getMaxVaExp() const override;
 
     // virtual operators

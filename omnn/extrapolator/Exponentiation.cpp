@@ -26,12 +26,12 @@ namespace extrapolator {
         }
     }
     
-    Valuable Exponentiation::getBase()
+    Valuable Exponentiation::getBaseAccessor()
     {
         return Accessor(ebase, hash);
     }
     
-    Valuable Exponentiation::getExponentiation()
+    Valuable Exponentiation::getExponentiationAccessor()
     {
         return Accessor(eexp, hash);
     }
@@ -43,7 +43,9 @@ namespace extrapolator {
             auto i = Integer::cast(getExponentiation());
             return static_cast<int>(*i);
         }
-        IMPLEMENT
+        if(eexp.FindVa())
+            IMPLEMENT
+        return 0;
     }
     
 	Valuable Exponentiation::operator -() const
@@ -260,6 +262,7 @@ namespace extrapolator {
     {
         ebase.Eval(va, v);
         eexp.Eval(va, v);
+        hash = ebase.Hash() ^ eexp.Hash();
 //        optimize();
     }
     
@@ -278,8 +281,12 @@ namespace extrapolator {
             auto vbase = Variable::cast(e->ebase);
             if (vaBase && vbase)
             {
-                return eexp > e->eexp;
+                return eexp == e->eexp ? *vaBase < *vbase : eexp > e->eexp;
             }
+            else if(vaBase)
+                return false;
+            else if(vbase)
+                return true;
             else
             {
                 return *this > *e;

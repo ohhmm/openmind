@@ -18,7 +18,7 @@ namespace extrapolator {
         bool operator()(const Valuable&, const Valuable&) const;
     };
 
-    using sum_cont =
+    using sum_cont = // ensure Add/Update/Deletehas right behaviour if you change this structure
         std::set<Valuable, SumOrderComparator>
 //        boost::container::set<Valuable, SumOrderComparator>
 //        std::unordered_multiset<Valuable>
@@ -54,7 +54,8 @@ public:
     using base::base;
     
     void Add(const Valuable& item) override;
-    
+    void Update(typename cont::iterator& it, const Valuable& v) override;
+
     Sum(const Valuable& f) {
         Add(f);
     }

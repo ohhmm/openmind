@@ -31,10 +31,16 @@ namespace extrapolator {
         if(it==end())
            base::Add(item);
         else
-           Add(Peek(it)*2);
+           Update(it, item*2);
         auto itemMaxVaExp = item.getMaxVaExp();
         if(itemMaxVaExp > maxVaExp)
             maxVaExp = itemMaxVaExp;
+    }
+    
+    void Sum::Update(typename cont::iterator& it, const Valuable& v)
+    {
+        Delete(it);
+        Add(v);
     }
     
 	Valuable Sum::operator -() const
@@ -320,7 +326,7 @@ namespace extrapolator {
                 if (!i) {
                     throw "Implement!";
                 }
-                int ie = static_cast<int64_t>(*i);
+                int ie = static_cast<int>(*i);
                 if (ie > grade) {
                     grade = ie;
                     if (ie >= coefficients.size()) {

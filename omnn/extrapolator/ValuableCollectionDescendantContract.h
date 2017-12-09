@@ -152,13 +152,6 @@ namespace extrapolator {
             auto& c = GetCont();
             c.erase(it++);
         }
-        
-        virtual Valuable Peek(typename cont::iterator& it)
-        {
-            Valuable v = *it;
-            Delete(it);
-            return v;
-        }
 
         Valuable& operator^=(const Valuable& v) override
         {

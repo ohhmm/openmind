@@ -70,14 +70,34 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     
     Variable x,y,z;
     BOOST_TEST((x+y)*(x-y) == (x^2) - (y^2));
-    auto sq = (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4 *(x^3) + 2 *(x^2)*(y^2) + 2*(y^2)*(z^2) + 2* (x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324;
+    auto sq = (x^4) + (z^4);
+    auto sum = Sum::cast(sq);
+    BOOST_TEST(sum);
+    if (sum) {
+        BOOST_TEST(sum->size()==2);
+    }
+    t=-2*y-2*x;
+    sum=Sum::cast(t);
+    BOOST_TEST(sum);
+    if (sum) {
+        BOOST_TEST(sum->size()==2);
+    }
+    sq = (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4*(x^3) + 2*(x^2)*(y^2) + 2*(y^2)*(z^2) + 2*(x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324;
+    sum = Sum::cast(sq);
+    BOOST_TEST(sum);
+    BOOST_TEST(sum->size()==25);
     auto sqc = sq;
     sqc.optimize();
     BOOST_TEST(sqc == sq);
     
-    auto _ = (z^2) - 2*y + (y^2) -2*x + (x^2) -8*z + 18;
+    auto _ = (z^2) -2*y + (y^2) -2*x + (x^2) -8*z + 18;
+    sum = Sum::cast(_);
+    BOOST_TEST(sum);
+    BOOST_TEST(sum->size()==7);
     t = _;
-    t.Eval(x,1); t.Eval(y,1); t.Eval(z, 4);
+    t.Eval(x,1);
+    t.Eval(y,1);
+    t.Eval(z, 4);
     t.optimize();
     BOOST_TEST(t==0);
     
