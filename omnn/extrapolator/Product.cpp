@@ -148,13 +148,23 @@ namespace extrapolator {
         //if (!optimizations) return;
         
         // optimize members, if found a sum then become the sum multiplied by other members
-        Sum* s = nullptr;
-        auto it = members.begin();
-        for (; it != members.end();)
+        for (auto it = members.begin(); it != members.end();)
         {
-            s = const_cast<Sum*>(Sum::cast(*it));
+            auto s = Sum::cast(*it);
             if (s)
-                break;
+            {
+                auto sum = std::move(*it);
+                Delete(it);
+                auto was = optimizations;
+                //optimizations = false;
+                for (auto& it : members)
+                {
+                    sum *= it;
+                }
+                optimizations = was;
+                Become(std::move(sum));
+                return;
+            }
             auto c = *it;
             c.optimize();
             if (!it->Same(c)) {
@@ -164,22 +174,7 @@ namespace extrapolator {
             else
                 ++it;
         }
-        if (s)
-        {
-            auto sum = std::move(*it);
-            Delete(it);
-            auto was = optimizations;
-            optimizations = false;
-            for (auto& it : members)
-            {
-                sum *= it;
-            }
-            optimizations = was;
-            Become(std::move(sum));
-            return;
-        }
 
-        
         // if no sum then continue optimizing this product
         
         // emerge inner products
@@ -240,7 +235,7 @@ namespace extrapolator {
                     f = Fraction::cast(c);
                     i = Integer::cast(c);
                     v = Variable::cast(c);
-                    break;
+                    continue;
                 }
                 else if (it->Same(*it2) && v)
                 {
@@ -250,7 +245,7 @@ namespace extrapolator {
                     f = Fraction::cast(c);
                     i = Integer::cast(c);
                     v = Variable::cast(c);
-                    break;
+                    continue;
                 }
                 else
                     ++it2;

@@ -150,7 +150,7 @@ public:
     {
         auto sz = augment.size();
         extrapolator_base_matrix augmentedMatrix(sz, 1);
-        for (int i = sz; i-->0; ) {
+        for (auto i = sz; i-->0; ) {
             augmentedMatrix(i,0) = augment[i];
         }
         return Consistent(augmentedMatrix);
@@ -235,6 +235,24 @@ public:
         return v;
     }
     
+    Valuable Factors(const Variable& vx, const Variable& vy, const Variable& vv) const
+    {
+        Product e;
+        auto szy = size1();
+        auto szx = size2();
+        auto optsWas = Valuable::optimizations;
+        Valuable::optimizations = {};
+        for (auto y = 0; y < szy; ++y) {
+            for (auto x = 0; x < szx; ++x) {
+                e.Add(((vy-y)^2)
+                      +((vx-x)^2)
+                      +((vv-(*this)(y,x))^2));
+            }
+        }
+        Valuable::optimizations = optsWas;
+        return e;
+    }
+    
     /**
      * Build formula of its ViewMatrix
      * @returns formula from two params
@@ -243,7 +261,7 @@ public:
     {
         bool integers = true;
         auto vm = ViewMatrix();
-        Product e(1);
+        Valuable e = 1_v;
         Variable vx,vy,vv;
         Valuable::optimizations = false;
         for (auto i = vm.size1(); i--; ) {
@@ -253,7 +271,7 @@ public:
             auto e2 = vy - vm(i,1);
             auto e3 = vv - v;
             auto subsyst = e1*e1 + e2*e2 + e3*e3;
-            e.Add(subsyst);
+            e *= subsyst;
         }
         Valuable::optimizations = true;
         e.optimize();

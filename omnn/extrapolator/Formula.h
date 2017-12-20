@@ -3,13 +3,16 @@
 //
 
 #pragma once
-#include "Variable.h"
 #include <functional>
+#include <map>
+#include "Product.h"
+#include "Variable.h"
 
 namespace omnn {
 namespace extrapolator {
 
-
+    class Sum;
+    
 class Formula
         : public ValuableDescendantContract<Formula>
 {
@@ -22,6 +25,10 @@ class Formula
     
     Formula(Valuable&& ex) : e(std::move(ex)) { e.CollectVa(s); }
     Formula(int i) : e(i) { e.CollectVa(s); }
+    
+    using VaValMap = ::std::map<const Variable,const Valuable*>;
+    Valuable GetProductRootByCoordinates(const VaValMap& vaVals) const;
+    bool InCoordFactorization(const VaValMap& vaVals) const;
     
 protected:
     Formula(const Variable&, const Valuable&);
@@ -43,14 +50,30 @@ public:
     template<class... T>
     Valuable operator()(const T&... vl) const
     {
+        Valuable root;
         auto copy = e;
+        std::initializer_list<Valuable> args = {vl...};
+        
+        // va values map
+        VaValMap vaVals;
         auto vit = s.begin();
-        for(auto v:{vl...})
+        for(auto& a:args){
+            auto va = vit++;
+            vaVals[*va] = &a;
+        }
+
+        if (InCoordFactorization(vaVals))
+        {
+            root = GetProductRootByCoordinates(vaVals);
+            return root;
+        }
+
+        vit = s.begin();
+        for(auto v:args)
         {
             auto va = vit++;
             copy.Eval(*va, v);
         }
-        copy.optimize();
         return Solve(copy);
     }
     

@@ -243,9 +243,9 @@ namespace extrapolator {
         auto f = cast(v);
 		if (f)
 		{
-			for (auto& a : members) {
+            for (auto it = members.rbegin(); it != members.rend(); ++it) {
 				for (auto& b : f->members) {
-                    add(a*b);
+                    add(*it*b);
 				}
 			}
 		}
@@ -288,6 +288,28 @@ namespace extrapolator {
 	{
 		return *this += 1;
 	}
+    
+    bool Sum::IsComesBefore(const Valuable& v) const
+    {
+        auto s = Sum::cast(v);
+        if (!s) {
+            return base::IsComesBefore(v);
+        }
+        
+        auto sz1 = size();
+        auto sz2 = s->size();
+        if (sz1 != sz2) {
+            return sz1 > sz2;
+        }
+            
+        for (auto i1=begin(), i2=s->begin(); i1!=end(); ++i1, ++i2) {
+            if (*i1 != *i2) {
+                return i1->IsComesBefore(*i2);
+            }
+        }
+        
+        return {};
+    }
 
 	std::ostream& Sum::print(std::ostream& out) const
 	{
@@ -349,7 +371,7 @@ namespace extrapolator {
                     {
                         auto ie = Integer::cast(e->getExponentiation());
                         if (ie) {
-                            int i = static_cast<int64_t>(*ie);
+                            auto i = static_cast<decltype(grade)>(*ie);
                             if (i > grade) {
                                 grade = i;
                                 if (i >= coefficients.size()) {

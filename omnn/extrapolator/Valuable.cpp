@@ -71,7 +71,7 @@ namespace extrapolator {
         if (newSize <= sizeWas) {
             
         }
-        new (this) Valuable(std::move(toMove)); // todo : not neccesarily wrap into Valuable if there is space. it need to be checked through through typeid
+        new(this) Valuable(std::move(toMove)); // todo : not neccesarily wrap into Valuable if there is space. it need to be checked through through typeid
         return *this;
     }
 
@@ -87,7 +87,7 @@ namespace extrapolator {
 
     Valuable& Valuable::operator =(const Valuable& v)
     {
-        exp.reset((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone());
+        exp.reset(v.Clone());
         return *this;
     }
 
@@ -101,7 +101,7 @@ namespace extrapolator {
     }
 
     Valuable::Valuable(const Valuable& v) :
-            exp((v.exp ? v.exp.get() : const_cast<Valuable*>(&v))->Clone())
+            exp(v.Clone())
     {
     }
 
@@ -110,7 +110,10 @@ namespace extrapolator {
     {
     }
 
+    Valuable::Valuable(double d) : exp(new Fraction(d)) {}
     Valuable::Valuable(int i) : exp(new Integer(i)) {}
+    Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
+    Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
 
     Valuable::~Valuable()
     {

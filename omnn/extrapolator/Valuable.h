@@ -76,8 +76,11 @@ public:
     Valuable& operator =(const Valuable&& v);
     Valuable(const Valuable& v);
     Valuable(Valuable&& v);
+    Valuable(double d);
     Valuable(int i = 0);
-
+    Valuable(unsigned long i);
+    Valuable(unsigned long long i);
+    
     virtual ~Valuable();
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);

@@ -50,7 +50,12 @@ namespace extrapolator {
         {
             return GetConstCont().end();
         }
-        
+
+        auto rbegin() const
+        {
+            return GetConstCont().rbegin();
+        }
+
         size_t size() const
         {
             return GetConstCont().size();
@@ -138,7 +143,7 @@ namespace extrapolator {
             } while (updated);
             
 //            if(!FindVa())
-                this->optimize();
+//                this->optimize();
         }
 
         virtual void Update(typename cont::iterator& it, const Valuable& v)

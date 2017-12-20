@@ -287,6 +287,10 @@ namespace extrapolator {
                 return false;
             else if(vbase)
                 return true;
+            else if(ebase == e->ebase)
+                return eexp.IsComesBefore(e->eexp);
+            else if(eexp == e->eexp)
+                return ebase.IsComesBefore(e->ebase);
             else
             {
                 return *this > *e;

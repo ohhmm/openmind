@@ -42,6 +42,18 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
 
+    Integer(unsigned long i)
+    : arbitrary(i)
+    {
+        hash = std::hash<base_int>()(arbitrary);
+    }
+    
+    Integer(unsigned long long i)
+    : arbitrary(i)
+    {
+        hash = std::hash<base_int>()(arbitrary);
+    }
+    
     Integer(const base_int& i)
         : arbitrary(i)
     {

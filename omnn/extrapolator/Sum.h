@@ -55,6 +55,7 @@ public:
     
     void Add(const Valuable& item) override;
     void Update(typename cont::iterator& it, const Valuable& v) override;
+    bool IsComesBefore(const Valuable& v) const override;
 
     Sum(const Valuable& f) {
         Add(f);
