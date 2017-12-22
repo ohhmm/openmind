@@ -42,8 +42,8 @@ namespace extrapolator {
             // if it in range of product - then just find it by coordinates
             // check left gauge
             //auto first = p->begin();
-            bool is = std::all_of(std::begin(vaVals), std::end(vaVals), [](auto& _){
-                return *_.second > 0;
+            is = std::all_of(std::begin(vaVals), std::end(vaVals), [](auto& _){
+                return *_.second >= 0;
             });
             
             if(is)
@@ -66,11 +66,20 @@ namespace extrapolator {
                                 auto va = s->template GetFirstOccurence<Variable>();
                                 if (va != s->end())
                                 {
-                                    auto vaVal = vaVals.at(*Variable::cast(*va));
-                                    if (va == s->begin())
-                                        ++va;
-                                    else --va;
-                                    is = *vaVal <= -*va;
+                                    auto it = vaVals.find(*Variable::cast(*va));
+                                    auto isValue = it == vaVals.end();
+                                    is = isValue;
+                                    auto isCoord = !isValue;
+                                    if (isCoord) {
+                                        auto& vaVal = *it;
+                                        if (va == s->begin())
+                                            ++va;
+                                        else --va;
+                                        auto maxCoord = -*va;
+                                        std::cout << "max coord " << maxCoord << "  coord " << vaVal.second->str() << std::endl
+                                            << *vaVal.second <<" <= "<<maxCoord<< " is " << (*vaVal.second <= maxCoord) << std::endl;
+                                        is = *vaVal.second <= maxCoord;
+                                    }
                                 }
                                 else
                                     IMPLEMENT
@@ -118,6 +127,8 @@ namespace extrapolator {
                 if(match)
                     return root; // found
             }
+            else if (m==1)
+                continue;
             else
                 IMPLEMENT
         }
