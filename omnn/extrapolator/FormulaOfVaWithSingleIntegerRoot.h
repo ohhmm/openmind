@@ -20,6 +20,6 @@ protected:
     std::ostream& print(std::ostream& out) const override;
 
 public:
-    FormulaOfVaWithSingleIntegerRoot(const Valuable& s, const Variable& v);
+    using base::base;
 };
 }}

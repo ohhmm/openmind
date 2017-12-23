@@ -87,10 +87,10 @@ namespace extrapolator {
         auto i = cast(v);
         if (i)
         {
-            if (&varSetHost != &i->varSetHost) {
+            if (varSetHost != i->varSetHost) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }
-            return varSetHost.CompareIdsLess(varId, i->varId);
+            return varSetHost->CompareIdsLess(varId, i->varId);
         }
         
         // not implemented comparison to this Valuable descent
@@ -102,11 +102,11 @@ namespace extrapolator {
         auto i = cast(v);
         if (i)
         {
-            if (&varSetHost != &i->varSetHost) {
+            if (varSetHost != i->varSetHost) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }
             return hash == v.Hash()
-                && varSetHost.CompareIdsEqual(varId, i->varId);
+                && varSetHost->CompareIdsEqual(varId, i->varId);
         }
         else
         {   // compare with non-va
@@ -119,7 +119,7 @@ namespace extrapolator {
     
     std::ostream& Variable::print(std::ostream& out) const
     {
-        return varSetHost.print(out, varId);
+        return varSetHost->print(out, varId);
     }
     
     void Variable::CollectVa(std::set<Variable>& s) const

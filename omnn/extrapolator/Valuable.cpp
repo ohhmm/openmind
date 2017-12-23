@@ -17,6 +17,7 @@ namespace extrapolator {
     void implement()
     {
         throw "Implement!";
+        return;
     }
     
     Valuable* Valuable::Clone() const

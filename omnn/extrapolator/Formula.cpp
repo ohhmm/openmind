@@ -12,15 +12,23 @@
 namespace omnn {
 namespace extrapolator {
 
-    Formula::Formula(const Variable& va, const Valuable& ex)
+    void Formula::CollectVarSequence() {
+        std::set<Variable> vars;
+        e.CollectVa(vars);
+        s.clear();
+        for(auto& v : vars)
+            s.push_back(v);
+    }
+    
+    Formula::Formula(const Variable& va, const Valuable& ex, std::list<Variable>* sequence)
     : v(va), e(ex)
     {
-        e.CollectVa(s);
+        if(sequence)
+            s = *sequence;
+        else {
+            CollectVarSequence();
+        }
     }
-
-    //Formula::Formula(const Valuable& ex, const f_t& fn)
-    //: e(ex), f(fn)
-    //{ }
     
     Formula Formula::DeduceFormula(const Valuable& e, const Variable& v)
     {
@@ -33,6 +41,48 @@ namespace extrapolator {
         return Formula(v,e);
     }
 
+    bool Formula::coordMatch(const VaValMap& vaVals, const Valuable& _,
+                             std::function<bool(const Valuable& /*vaValsV*/, const Valuable& /*sumV*/)> predicate,
+                             Valuable const ** value)
+    {
+        bool is = {};
+        auto e = Exponentiation::cast(_);
+        if (e) {
+            auto s = Sum::cast(e->getBase());
+            if (s) {
+                if (s->size() != 2) {
+                    IMPLEMENT
+                }
+                auto va = s->template GetFirstOccurence<Variable>();
+                if (va != s->end())
+                {
+                    auto it = vaVals.find(*Variable::cast(*va));
+                    auto isValue = it == vaVals.end();
+                    is = isValue;
+                    auto isCoord = !isValue;
+                    
+                    auto& vaVal = *it;
+                    if (va == s->begin())
+                        ++va;
+                    else --va;
+                    auto maxCoord = -*va;
+                    if (isCoord) {
+                        is = predicate(*vaVal.second, maxCoord);
+                    }
+                    else if (value)
+                        *value = &*va;
+                }
+                else
+                    IMPLEMENT
+                    }
+            else
+                IMPLEMENT
+                }
+        else
+            IMPLEMENT
+        return is;
+    }
+    
     bool Formula::InCoordFactorization(const VaValMap& vaVals) const
     {
         bool is = {};
@@ -54,43 +104,16 @@ namespace extrapolator {
                     ++it;
                 auto& l = *it;
                 auto s = Sum::cast(l);
-                is = std::all_of(s->begin(), s->end(), [&](auto& _){
-                        bool is = {};
-                        auto e = Exponentiation::cast(_);
-                        if (e) {
-                            auto s = Sum::cast(e->getBase());
-                            if (s) {
-                                if (s->size() != 2) {
-                                    IMPLEMENT
-                                }
-                                auto va = s->template GetFirstOccurence<Variable>();
-                                if (va != s->end())
-                                {
-                                    auto it = vaVals.find(*Variable::cast(*va));
-                                    auto isValue = it == vaVals.end();
-                                    is = isValue;
-                                    auto isCoord = !isValue;
-                                    if (isCoord) {
-                                        auto& vaVal = *it;
-                                        if (va == s->begin())
-                                            ++va;
-                                        else --va;
-                                        auto maxCoord = -*va;
-                                        std::cout << "max coord " << maxCoord << "  coord " << vaVal.second->str() << std::endl
-                                            << *vaVal.second <<" <= "<<maxCoord<< " is " << (*vaVal.second <= maxCoord) << std::endl;
-                                        is = *vaVal.second <= maxCoord;
-                                    }
-                                }
-                                else
-                                    IMPLEMENT
-                            }
-                            else
-                                IMPLEMENT
-                        }
-                        else
-                            IMPLEMENT
-                        return is;
-                    });
+                if (!s) {
+                    IMPLEMENT
+                }
+                is = std::all_of(std::begin(*s), std::end(*s),
+                                 [&](auto& _) {
+                                     return coordMatch(vaVals, _,
+                                                      [](auto& v, auto& c){
+                                                          return v <= c;
+                                                      });
+                                 });
             }
         }
         return is;
@@ -107,25 +130,23 @@ namespace extrapolator {
             auto s = Sum::cast(m);
             if(s && s->size() == vaCount)
             {
-                bool match={};
-                for(auto sm: *s)
-                {
-                    auto e = Exponentiation::cast(sm);
-                    if(e)
-                    {
-                        auto es = Sum::cast(e->getBase());
-                        if (es) {
-                            if (es->size() != 2) {
-                                IMPLEMENT
-                            }
-                            
-                        }
-                    }
-                    else
-                        IMPLEMENT;
-                }
-                if(match)
+                Valuable const * value = {};
+                bool is = std::all_of(std::begin(*s), std::end(*s),
+                                      [&](auto& _) {
+                                          return coordMatch(vaVals, _,
+                                                            [&](auto& v, auto& c){
+                                                                return v == c;
+                                                            },
+                                                            &value
+                                                            );
+                                        }
+                                      );
+                if(is) {
+                    if (!value)
+                        IMPLEMENT
+                    root = -*value;
                     return root; // found
+                }
             }
             else if (m==1)
                 continue;
@@ -142,6 +163,7 @@ namespace extrapolator {
     
     Valuable Formula::Solve(Valuable& v) const
     {
+        IMPLEMENT
         v.optimize();
         return v;
     }

@@ -235,7 +235,7 @@ public:
         return v;
     }
     
-    Valuable Factors(const Variable& vx, const Variable& vy, const Variable& vv) const
+    Valuable Factors(const Variable& row, const Variable& col, const Variable& val) const
     {
         Product e;
         auto szy = size1();
@@ -244,9 +244,9 @@ public:
         Valuable::optimizations = {};
         for (auto y = 0; y < szy; ++y) {
             for (auto x = 0; x < szx; ++x) {
-                e.Add(((vy-y)^2)
-                      +((vx-x)^2)
-                      +((vv-(*this)(y,x))^2));
+                e.Add(((row-y)^2)
+                      +((col-x)^2)
+                      +((val-(*this)(y,x))^2));
             }
         }
         Valuable::optimizations = optsWas;
@@ -279,7 +279,7 @@ public:
         if(!s)
             throw "Debug!";
         if(integers)
-            return FormulaOfVaWithSingleIntegerRoot(*s, vv);
+            return FormulaOfVaWithSingleIntegerRoot(vv, *s);
         else
             return s->FormulaOfVa(vv);
     }

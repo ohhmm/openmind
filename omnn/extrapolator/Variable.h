@@ -18,26 +18,26 @@ class Variable
 {
     using base = ValuableDescendantContract<Variable>;
     VarHost::ptr optionalHostPtr;
-    VarHost& varSetHost;
+    VarHost* varSetHost;
     any::any varId;
     
 public:
     Variable(VarHost& varHost = const_cast<VarHost&>(VarHost::Global<>()))
-    : varSetHost(varHost)
+    : varSetHost(&varHost)
     , varId(varHost.NewVarId())
     {
-        hash = varSetHost.Hash(varId);
+        hash = varHost.Hash(varId);
         maxVaExp=1;
     }
     
     Variable(VarHost::ptr varHost)
     : optionalHostPtr(varHost)
-    , varSetHost(*varHost)
+    , varSetHost(varHost.get())
     , varId(varHost->NewVarId())
     {
         if(!varHost)
             throw "the varHost is mandatory parameter";
-        hash = varSetHost.Hash(varId);
+        hash = varHost->Hash(varId);
         maxVaExp=1;
     }
 

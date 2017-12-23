@@ -11,10 +11,6 @@
 namespace omnn {
 namespace extrapolator {
 
-    FormulaOfVaWithSingleIntegerRoot::FormulaOfVaWithSingleIntegerRoot(const Valuable& sumValuable, const Variable& v)
-    : base(v,sumValuable)
-    {
-    }
 
     Valuable FormulaOfVaWithSingleIntegerRoot::Solve(Valuable& _) const
     {

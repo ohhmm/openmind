@@ -21,20 +21,28 @@ class Formula
     
     Variable v;
     Valuable e;
-    std::set<Variable> s;
+    std::list<Variable> s; // sequence for operator()
     
-    Formula(Valuable&& ex) : e(std::move(ex)) { e.CollectVa(s); }
-    Formula(int i) : e(i) { e.CollectVa(s); }
+    void CollectVarSequence();
+    
+    Formula(Valuable&& ex) : e(std::move(ex)) { CollectVarSequence(); }
+    Formula(int i) : e(i) { CollectVarSequence(); }
     
     using VaValMap = ::std::map<const Variable,const Valuable*>;
     Valuable GetProductRootByCoordinates(const VaValMap& vaVals) const;
     bool InCoordFactorization(const VaValMap& vaVals) const;
     
+    static bool coordMatch(const VaValMap& vaVals, const Valuable& _,
+                           std::function<bool(const Valuable& /*vaValsV*/, const Valuable& /*sumV*/)> predicate,
+                           Valuable const ** value = {}
+                           );
+    
 protected:
-    Formula(const Variable&, const Valuable&);
     std::ostream& print(std::ostream& out) const override;
     virtual Valuable Solve(Valuable& v) const;
 public:
+    Formula(const Variable&, const Valuable&, std::list<Variable>* sequence = {});
+
     //using f_t = std::function<Valuable&&(Valuable&&)>;
     using base::base;
     static Formula DeduceFormula(const Valuable& e, const Variable& v);
