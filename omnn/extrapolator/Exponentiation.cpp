@@ -293,10 +293,28 @@ namespace extrapolator {
                 return ebase.IsComesBefore(e->ebase);
             else
             {
+                auto expComesBefore = eexp.IsComesBefore(e->eexp);
+                auto ebaseComesBefore = ebase.IsComesBefore(e->ebase);
+                if (expComesBefore==ebaseComesBefore) {
+                    return expComesBefore;
+                }
                 return *this > *e;
             }
         }
 
         return base::IsComesBefore(v);
     }
+    
+    Valuable Exponentiation::calcFreeMember() const
+    {
+        Valuable c;
+        if(Sum::cast(ebase) && Integer::cast(eexp)){
+            c = ebase.calcFreeMember() ^ eexp;
+        } else if(Variable::cast(ebase)) {
+            c = 0_v;
+        } else
+            IMPLEMENT;
+        return c;
+    }
+
 }}

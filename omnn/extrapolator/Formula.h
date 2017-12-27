@@ -38,6 +38,7 @@ class Formula
                            );
     
 protected:
+    const Valuable& getE() const { return e; }
     std::ostream& print(std::ostream& out) const override;
     virtual Valuable Solve(Valuable& v) const;
 public:
@@ -54,6 +55,7 @@ public:
     const Valuable& getEx() const { return e; }
     
     void optimize() override { e.optimize(); }
+    Valuable calcFreeMember() const override { return e.calcFreeMember(); }
     
     template<class... T>
     Valuable operator()(const T&... vl) const

@@ -93,6 +93,7 @@ public:
     const Variable* FindVa() const override { return nullptr; }
     void CollectVa(std::set<Variable>&) const override { }
     void Eval(const Variable& va, const Valuable& v) override { }
+    Valuable calcFreeMember() const override;
     
     bool Factorization(const std::function<bool(const Integer&)>& f) const;
 

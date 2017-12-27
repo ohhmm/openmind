@@ -29,72 +29,14 @@ namespace extrapolator {
                                          return found;
                                      });
         };
-        auto sum = Sum::cast(_);
-        if (sum) {
-            _.optimize();
-            sum = Sum::cast(_);
-            if(!sum)
-                IMPLEMENT
-            auto ii = sum->GetFirstOccurence<Integer>();
-            if (ii != sum->end()) {
-                auto i = Integer::cast(*ii);
-                if (i && finder(i)) {
-                    return singleIntegerRoot;
-                }
-            }
+
+        auto freeMember = _.calcFreeMember();
+        auto i = Integer::cast(freeMember);
+        if(!i)
             IMPLEMENT
+        if (finder(i)) {
+            return singleIntegerRoot;
         }
-        
-        auto p = Product::cast(_);
-        if(p)
-        {
-            Product free_members_product;
-            for(auto& m : *p)
-            {
-                auto s = Sum::cast(m);
-                if (s)
-                {
-                    auto i = s->GetFirstOccurence<Integer>();
-                    if (i != s->end()) {
-                        free_members_product.Add(*i);
-                    }
-                }
-                else if (Integer::cast(m))
-                {
-                    free_members_product.Add(m);
-                }
-                else
-                {
-                    auto e = Exponentiation::cast(m);
-                    if(e)
-                    {
-                        s = Sum::cast(e->getBase());
-                        if (s)
-                        {
-                            auto i = s->GetFirstOccurence<Integer>();
-                            if (i != s->end()) {
-                                free_members_product.Add(*i ^ e->getExponentiation());
-                            }
-                        }
-                        else
-                            IMPLEMENT
-                    }
-                    else
-                        IMPLEMENT
-                }
-                
-            }
-            Valuable free_member = std::move(free_members_product);
-            free_member.optimize();
-            auto i = Integer::cast(free_member);
-            if(!i)
-                IMPLEMENT
-            if (finder(i)) {
-                return singleIntegerRoot;
-            }
-            IMPLEMENT
-        }
-        
         IMPLEMENT
     }
     

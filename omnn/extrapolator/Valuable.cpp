@@ -25,7 +25,7 @@ namespace extrapolator {
         if (exp)
             return exp->Clone();
         else
-            return new Valuable(*this);
+            IMPLEMENT
     }
 
     int Valuable::getTypeSize() const
@@ -259,6 +259,14 @@ namespace extrapolator {
     std::ostream& operator<<(std::ostream& out, const Valuable& obj)
     {
         return obj.print(out);
+    }
+    
+    Valuable Valuable::calcFreeMember() const
+    {
+        if(exp)
+            return exp->calcFreeMember();
+        else
+            IMPLEMENT
     }
 
     Valuable Valuable::abs() const

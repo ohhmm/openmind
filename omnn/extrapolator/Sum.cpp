@@ -255,7 +255,11 @@ namespace extrapolator {
                 add(a * v);
             }
 		}
-        return Become(std::move(sum));
+        auto was = Valuable::optimizations;
+        Valuable::optimizations = {};
+        Become(std::move(sum));
+        Valuable::optimizations = was;
+        return *this;
 	}
 
 	Valuable& Sum::operator /=(const Valuable& v)
@@ -328,6 +332,15 @@ namespace extrapolator {
     Valuable Sum::sqrt() const
     {
         return Exponentiation(*this, 1_v/2);
+    }
+
+    Valuable Sum::calcFreeMember() const
+    {
+        Valuable _ = 0_v;
+        for(auto& m : *this) {
+            _ += m.calcFreeMember();
+        }
+        return _;
     }
 
     size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const

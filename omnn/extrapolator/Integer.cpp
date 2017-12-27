@@ -304,6 +304,11 @@ namespace extrapolator {
         return out << arbitrary;
     }
     
+    Valuable Integer::calcFreeMember() const
+    {
+        return *this;
+    }
+
     bool Integer::Factorization(const std::function<bool(const Integer&)>& f) const
     {
         auto h = arbitrary;

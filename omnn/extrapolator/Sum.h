@@ -50,6 +50,7 @@ public:
 	Valuable& operator ++() override;
     void optimize() override;
     Valuable sqrt() const override;
+    Valuable calcFreeMember() const override;
 
     using base::base;
     

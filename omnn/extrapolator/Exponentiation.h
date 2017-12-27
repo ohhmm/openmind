@@ -48,6 +48,8 @@ public:
     void CollectVa(std::set<Variable>& s) const override;
     void Eval(const Variable& va, const Valuable& v) override;
     bool IsComesBefore(const Valuable& v) const override;
+    Valuable calcFreeMember() const override;
+
 };
 
 }}

@@ -64,6 +64,11 @@ protected:
     
     size_t hash = 0;
     int maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
+    std::function<Valuable()> cachedFreeMember = [this]()->Valuable{
+        auto c = calcFreeMember();
+        this->cachedFreeMember = [c](){return c;};
+        return c;
+    };
     
 public:
     static thread_local bool optimizations;
@@ -93,9 +98,11 @@ public:
     virtual Valuable& operator^=(const Valuable&);
     virtual bool operator<(const Valuable& smarter) const;
     virtual bool operator==(const Valuable& smarter) const;
-    virtual Valuable abs() const;
     virtual void optimize(); /// if it simplifies than it should become the type
+    virtual Valuable abs() const;
     virtual Valuable sqrt() const;
+    virtual Valuable calcFreeMember() const;    
+    
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     
     virtual const Variable* FindVa() const;

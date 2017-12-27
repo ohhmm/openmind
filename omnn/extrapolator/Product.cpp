@@ -358,6 +358,22 @@ namespace extrapolator {
         return VaVal(vars);
     }
     
+    Valuable Product::calcFreeMember() const
+    {
+        Valuable _ = 1_v;
+        if (getCommonVars().empty()) {
+            for(auto& m : *this) {
+                auto c = m.calcFreeMember();
+                if(Integer::cast(c)) {
+                    _ *= c;
+                } else
+                    IMPLEMENT
+            }
+        } else
+            _ = 0_v;
+        return _;
+    }
+    
     Valuable Product::getCommVal(const Product& with) const
     {
         return VaVal(getCommonVars(with.getCommonVars()));

@@ -68,6 +68,7 @@ public:
     Valuable getCommVal(const Product& with) const;
     int findMaxVaExp();
     bool IsComesBefore(const Valuable& v) const override;
+    Valuable calcFreeMember() const override;
     
 	// virtual operators
 	Valuable operator -() const override;
