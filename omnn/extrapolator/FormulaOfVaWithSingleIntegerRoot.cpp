@@ -17,12 +17,15 @@ namespace extrapolator {
         Valuable singleIntegerRoot;
         auto finder = [&](const Integer* i) -> bool
         {
-            return i->Factorization([&](const Integer& i)
+            auto c = _;
+            if(!Product::cast(c))
+                c.optimize();
+            return i->Factorization([this,c,&singleIntegerRoot](const Integer& i)
                                      {
-                                         auto c = _;
-                                         c.Eval(getVa(), i);
-                                         c.optimize();
-                                         bool found = c == 0_v;
+                                         auto _ = c;
+                                         _.Eval(getVa(), i);
+                                         _.optimize();
+                                         bool found = _ == 0_v;
                                          if (found) {
                                              singleIntegerRoot = i;
                                          }

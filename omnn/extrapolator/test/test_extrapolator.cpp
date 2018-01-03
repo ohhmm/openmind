@@ -187,6 +187,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
 
 BOOST_AUTO_TEST_CASE(Codec_test)
 {
+    // this tiny extrapolator optimization goal seems unreachable with today calculation speed:
     Extrapolator ex {{    //  input   output
         {0,0,0,0, 0,0,0},
         // verticals
@@ -200,10 +201,28 @@ BOOST_AUTO_TEST_CASE(Codec_test)
         {1,0,0,1, 0,0,1},
     }};
 
+//    Extrapolator e {{       // input    output
+//        {0,0},              //{0,0,0,0, 0,0,0},
+//        // verticals
+//        {10,4},             //{1,0,1,0, 1,0,0},
+//        {5,4},              //{0,1,0,1, 1,0,0},
+//        // horizontals
+//        {12,2},             //{1,1,0,0, 0,1,0},
+//        {3,2},              //{0,0,1,1, 0,1,0},
+//        // diagonals
+//        {6,1},              //{0,1,1,0, 0,0,1},
+//        {9,1},              //{1,0,0,1, 0,0,1},
+//    }};
+    
     Variable x,y,z;
     auto f = ex.Factors(y,x,z);
     std::list<Variable> formulaParamSequence = {y,x};
     FormulaOfVaWithSingleIntegerRoot fo(z, f, &formulaParamSequence);
+    
+    // TODO : extrapolation
+//    std::cout << fo(ex.size1(), ex.size2()) << std::endl;
+
+    // inbound data deduce
     for (auto i=ex.size1(); i--;) { // raw
         for (auto j=ex.size2(); j--;) { // column
             auto c = f;

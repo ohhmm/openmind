@@ -268,6 +268,8 @@ namespace extrapolator {
 		auto i = cast(v);
 		if (i)
 		{
+            //auto xn = *begin() / *i->begin();
+            
 			for (auto& a : members) {
 				for (auto& b : i->members) {
 					s += a / b;

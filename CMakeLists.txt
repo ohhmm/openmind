@@ -12,6 +12,10 @@ option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 
+include_directories(${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/boost/gil/include
+)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 find_package(Boost)
 IF (Boost_FOUND)
@@ -32,8 +36,6 @@ if(MSVC)
 	endif()
 endif()
 
-
-include_directories(${CMAKE_SOURCE_DIR})
 
 if (${OPENMIND_BUILD_TESTS})
     enable_testing()
