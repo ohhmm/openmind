@@ -52,21 +52,20 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
 
     // inbound data deduce
     rgb8_image_t dst(src.dimensions());
-    v = view(dst);
-    b = v.begin();
+    auto dv = view(dst);
+    b = dv.begin();
     for (auto i=ex.size1(); i--;) { // raw
         for (auto j = ex.size2(); j--;) { // column
-            auto c = f;
-            c.Eval(x, j);
-            c.Eval(y, i);
-            c.Eval(z, ex(i, j));
-            c.optimize();
-            BOOST_TEST(c == 0_v);//
-
-            c = fo(i, j);
+            auto c = fo(i, j);
             std::cout << c.str() << std::endl;
             BOOST_TEST(c == ex(i, j));
-            v(i, j) = rgb8_pixel_t(int(c));
+            dv(i, j) = rgb8_pixel_t(int(c));
+            auto d=dv(i,j);
+            auto s=v(i,j);
+//            BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
+//            BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
+//            BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
+//            BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
         }
     }
     
