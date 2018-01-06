@@ -30,50 +30,57 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
-    Extrapolator ex(rows, cols);
     Extrapolator a(rows, cols);
     Extrapolator r(rows, cols);
     Extrapolator g(rows, cols);
     Extrapolator b(rows, cols);
 
     auto v = view(src);
-    for (auto i=ex.size1(); i--;) { // raw
-        for (auto j = ex.size2(); j--;) {// column
+    for (auto i = rows; i--;) { // raw
+        for (auto j = cols; j--;) { // column
             auto px = v(i,j);
-            a(i,j) = px[0];
-            r(i,j) = px[1];
-            g(i,j) = px[2];
-            b(i,j) = px[3];
-            
+            a(i,j) = get_color(px,alpha_t());
+            r(i,j) = get_color(px,red_t());
+            g(i,j) = get_color(px,green_t());
+            b(i,j) = get_color(px,blue_t());
         }
     }
-    
-    Variable x, y, z;
-    auto f = ex.Factors(y, x, z);
-    std::list<Variable> formulaParamSequence = { y, x };
-    FormulaOfVaWithSingleIntegerRoot fo(z, f, &formulaParamSequence);
 
-    // TODO : extrapolation
-//    std::cout << fo(ex.size1(), ex.size2()) << std::endl;
+//    a.optimize();
+//    r.optimize();
+//    g.optimize();
+//    b.optimize();
+
+    Variable x, y, z;
+    std::list<Variable> formulaParamSequence = { y, x };
+    auto fa = a.Factors(y, x, z);
+    auto fr = r.Factors(y, x, z);
+    auto fg = g.Factors(y, x, z);
+    auto fb = b.Factors(y, x, z);
+    FormulaOfVaWithSingleIntegerRoot
+        afo(z, fa, &formulaParamSequence),
+        rfo(z, fr, &formulaParamSequence),
+        gfo(z, fg, &formulaParamSequence),
+        bfo(z, fb, &formulaParamSequence);
 
     // inbound data deduce
-    rgb8_image_t dst(src.dimensions());
+    decltype(src) dst(src.dimensions());
     auto dv = view(dst);
-    for (auto i=ex.size1(); i--;) { // raw
-        for (auto j = ex.size2(); j--;) { // column
-            auto c = fo(i, j);
-            std::cout << c.str() << std::endl;
-            BOOST_TEST(c == ex(i, j));
-            dv(i, j) = rgb8_pixel_t(int(c));
-            auto d=dv(i,j);
-            auto s=v(i,j);
-//            BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
-//            BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
-//            BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
-//            BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
+    for (auto i = rows; i--;) { // raw
+        for (auto j = cols; j--;) { // column
+            auto& d = dv(i, j);
+            auto& s = v(i,j);
+            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
+            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
+            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
+            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+
+            BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
+            BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
+            BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
+            BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
         }
     }
-    
     
     write_view(TEST_BIN_DIR "o.tga", v, targa_tag());
 }

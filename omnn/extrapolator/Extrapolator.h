@@ -1,7 +1,6 @@
 //
 // Created by Сергей Кривонос on 10.08.17.
 //
-
 #pragma once
 #include <algorithm>
 #include <initializer_list>

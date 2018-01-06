@@ -83,6 +83,7 @@ public:
     Valuable(Valuable&& v);
     Valuable(double d);
     Valuable(int i = 0);
+    Valuable(const long i);
     Valuable(unsigned long i);
     Valuable(unsigned long long i);
     
@@ -117,6 +118,7 @@ public:
     virtual explicit operator size_t() const;
     virtual explicit operator double() const;
     virtual explicit operator long double() const;
+    virtual explicit operator unsigned char() const;
     
     size_t Hash() const;
     std::string str() const;

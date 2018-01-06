@@ -113,6 +113,7 @@ namespace extrapolator {
 
     Valuable::Valuable(double d) : exp(new Fraction(d)) {}
     Valuable::Valuable(int i) : exp(new Integer(i)) {}
+    Valuable::Valuable(const long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
 
@@ -389,6 +390,14 @@ namespace extrapolator {
     {
         if (exp)
             return exp->operator double();
+        else
+            IMPLEMENT
+    }
+
+    Valuable::operator unsigned char() const
+    {
+        if (exp)
+            return exp->operator unsigned char();
         else
             IMPLEMENT
     }

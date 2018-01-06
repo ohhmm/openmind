@@ -42,6 +42,12 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
 
+    Integer(const long i)
+    : arbitrary(i)
+    {
+        hash = std::hash<base_int>()(arbitrary);
+    }
+    
     Integer(unsigned long i)
     : arbitrary(i)
     {
@@ -85,6 +91,7 @@ public:
     explicit operator size_t() const override;
     explicit operator double() const override;
     explicit operator long double() const override;
+    explicit operator unsigned char() const override;
     
     // concrete operators
     bool operator <(const Integer& v) const { return arbitrary < v.arbitrary; }

@@ -146,6 +146,11 @@ namespace extrapolator {
     {
         return boost::numeric_cast<long double>(arbitrary);
     }
+    
+    Integer::operator unsigned char() const
+    {
+        return boost::numeric_cast<unsigned char>(arbitrary);
+    }
 
     Valuable& Integer::operator^=(const Valuable& v)
     {
