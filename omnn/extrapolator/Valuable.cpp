@@ -6,6 +6,7 @@
 #include "Accessor.h"
 #include "Fraction.h"
 #include "Integer.h"
+#include "Variable.h"
 #include <boost/numeric/conversion/converter.hpp>
 
 
@@ -343,6 +344,21 @@ namespace extrapolator {
     {
         return Hash()==v.Hash() && OfSameType(v) && operator==(v);
     }
+ 
+    bool Valuable::HasSameVars(const Valuable& v) const
+    {
+        std::set<Variable> thisVa, vVa;
+        this->CollectVa(thisVa);
+        v.CollectVa(vVa);
+        return thisVa == vVa;
+    }
+    
+    bool Valuable::IsMonicPolynomial() const
+    {
+        std::set<Variable> vars;
+        CollectVa(vars);
+        return vars.size() == 1;
+    }
     
     int Valuable::getMaxVaExp() const
     {
@@ -357,6 +373,41 @@ namespace extrapolator {
             IMPLEMENT
     }
     
+    const Valuable::vars_cont_t& Valuable::getCommonVars() const
+    {
+        if (exp)
+            return exp->getCommonVars();
+        else
+            IMPLEMENT
+    }
+    
+    Valuable Valuable::varless() const
+    {
+        return *this / getVaVal();
+    }
+    
+    Valuable Valuable::VaVal(const vars_cont_t& v)
+    {
+        Valuable p(1);
+        for(auto& kv : v)
+        {
+            p *= kv.first ^ kv.second;
+        }
+        p.optimize();
+        return p;
+    }
+    
+    Valuable Valuable::getVaVal() const
+    {
+        return VaVal(getCommonVars());
+    }
+    
+    const Valuable::vars_cont_t& Valuable::emptyCommonVars()
+    {
+        static const Valuable::vars_cont_t _;
+        return _;
+    }
+
     Valuable::operator bool() const
     {
         return *this != 0_v;

@@ -32,6 +32,12 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST((-2_v/3*v1 + v1*v1 + 1_v/9) == (1_v/9 + v1*v1 + -2_v/3*v1));
     BOOST_TEST(1_v/9 - (2_v/3) * v + v*v == 1_v/9 - (2_v/3) * v + v*v);
     
+    auto t = v-1;
+    auto sq = t*t;
+    sq.optimize();
+    BOOST_TEST(sq == (v^2)-v*2+1);
+    BOOST_TEST(sq/t == t);
+    
     Valuable
         f = 1_v / 2,
         f1 = 5_v / 6,
@@ -55,7 +61,7 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     ohashes(s);
     s.optimize();
     ohashes(s);
-    auto t = 1_v/9 - (2_v/3) * v + v*v;
+    t = 1_v/9 - (2_v/3) * v + v*v;
     ohashes(t);
     BOOST_TEST(s == 1_v/9 - (2_v/3) * v + v*v);
 
@@ -70,7 +76,7 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     
     Variable x,y,z;
     BOOST_TEST((x+y)*(x-y) == (x^2) - (y^2));
-    auto sq = (x^4) + (z^4);
+    sq = (x^4) + (z^4);
     auto sum = Sum::cast(sq);
     BOOST_TEST(sum);
     if (sum) {
@@ -144,3 +150,4 @@ BOOST_AUTO_TEST_CASE(Become_tests)
     bool isInnerSum = typeid(*s.exp.get())==typeid(Sum);
     BOOST_TEST(isInnerSum);
 }
+

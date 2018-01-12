@@ -7,7 +7,7 @@
 #include <map>
 
 #include "Sum.h"
-
+#include "Variable.h"
 
 namespace omnn {
 namespace extrapolator {

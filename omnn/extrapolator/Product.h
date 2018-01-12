@@ -37,12 +37,11 @@ protected:
     void AddToVarsIfVaOrVaExp(const Valuable &item);
 
 public:
-    using vars_cont_t = std::map<Variable, Valuable>;
-
+    
     using base::base;
     
     const cont& GetConstCont() const override { return members; }
-    void Add(const Valuable& item) override;
+    const iterator Add(const Valuable& item) override;
     void Update(typename cont::iterator& it, const Valuable& v) override;
     void Delete(typename cont::iterator& it) override;
     
@@ -60,11 +59,9 @@ public:
         hash = members.begin()->Hash();
     }
     
-    const vars_cont_t& getCommonVars() const;
+    const vars_cont_t& getCommonVars() const override;
     vars_cont_t getCommonVars(const vars_cont_t& with) const;
-    Valuable varless() const;
-    static Valuable VaVal(const vars_cont_t& v);
-    Valuable getVaVal() const;
+    
     Valuable getCommVal(const Product& with) const;
     int findMaxVaExp();
     bool IsComesBefore(const Valuable& v) const override;

@@ -101,6 +101,8 @@ public:
     void CollectVa(std::set<Variable>&) const override { }
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;
+    const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
+
     
     bool Factorization(const std::function<bool(const Integer&)>& f) const;
 

@@ -12,6 +12,7 @@ class Exponentiation
 {
 	using base = ValuableDescendantContract<Exponentiation>;
 	Valuable ebase, eexp;
+    mutable vars_cont_t v;
 protected:
     std::ostream& print(std::ostream& out) const override;
 public:
@@ -46,6 +47,7 @@ public:
 //
     const Variable* FindVa() const override;
     void CollectVa(std::set<Variable>& s) const override;
+    const vars_cont_t& getCommonVars() const override;
     void Eval(const Variable& va, const Valuable& v) override;
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;

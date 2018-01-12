@@ -19,6 +19,7 @@ namespace extrapolator {
         
     public:
         using iterator = typename cont::iterator;
+        using const_reference = typename ContT::const_reference;
         
         virtual const cont& GetConstCont() const = 0;
 
@@ -60,11 +61,22 @@ namespace extrapolator {
         {
             return GetConstCont().size();
         }
-
-        virtual void Add(typename ContT::const_reference item)
+        
+        static iterator getit(iterator it){
+            return it;
+        }
+        static iterator getit(std::pair<iterator,bool> it){
+            auto inserted = it.second;
+            if(!inserted)
+                IMPLEMENT
+            return it.first;
+        }
+        
+        virtual const iterator Add(const_reference item)
         {
-            GetCont().insert(item);
             Valuable::hash ^= item.Hash();
+            auto it = GetCont().insert(item);
+            return getit(it);
         }
 
         template<class T>
@@ -146,7 +158,7 @@ namespace extrapolator {
 //                this->optimize();
         }
 
-        virtual void Update(typename cont::iterator& it, const Valuable& v)
+        virtual void Update(iterator& it, const Valuable& v)
         {
             auto& c = GetCont();
             Delete(it);
@@ -154,7 +166,7 @@ namespace extrapolator {
             Valuable::hash ^= v.Hash();
         }
 
-        virtual void Delete(typename cont::iterator& it)
+        virtual void Delete(iterator& it)
         {
             Valuable::hash ^= it->Hash();
             auto& c = GetCont();

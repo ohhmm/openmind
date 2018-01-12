@@ -4,7 +4,7 @@
 
 #pragma once
 #include <boost/multiprecision/cpp_dec_float.hpp>
-#include "Integer.h"
+#include "Variable.h"
 
 namespace omnn{
 namespace extrapolator {
@@ -18,7 +18,8 @@ namespace extrapolator {
 		using value_type = omnn::extrapolator::Valuable;
 		using const_ref_type = const value_type&;
 		value_type numerator, denominator;
-
+        mutable vars_cont_t vars;
+        
 	protected:
 		std::ostream& print(std::ostream& out) const override;
 
@@ -34,7 +35,8 @@ namespace extrapolator {
 		bool operator <(const Valuable& v) const override;
 		bool operator ==(const Valuable& v) const override;
 		void optimize() override;
-
+        const vars_cont_t& getCommonVars() const override;
+        
 		using base::base;
 
 		Fraction() : numerator(0), denominator(1)
@@ -84,20 +86,7 @@ namespace extrapolator {
         /// returns rw accessor
 		Valuable Numerator();
 
-        operator boost::multiprecision::cpp_dec_float_100() const
-        {
-            if (IsSimple())
-            {
-                auto& num = *Integer::cast(numerator);
-                boost::multiprecision::cpp_dec_float_100 f(static_cast<boost::multiprecision::cpp_int>(num));
-                auto & d = *Integer::cast(denominator);
-                f /= boost::multiprecision::cpp_dec_float_100(static_cast<boost::multiprecision::cpp_int>(d));
-                // TODO : check validity
-                return f;
-            }
-            else
-                throw "Implement!";
-        }
+        operator boost::multiprecision::cpp_dec_float_100() const;
         
 		Fraction Reciprocal() const;
 		const Variable* FindVa() const override;

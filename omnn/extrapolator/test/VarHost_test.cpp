@@ -22,6 +22,7 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
 {
     TypedVarHost<int> vh;
     Variable v(vh);
+    BOOST_TEST(v.getMaxVaExp() == 1);
     Variable v1(vh);
     BOOST_TEST(v!=v1);
     
@@ -29,6 +30,7 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
     BOOST_TEST(a!=b);
     BOOST_TEST(a==a);
     BOOST_TEST(b==b);
+    BOOST_TEST(a.getCommonVars()!=b.getCommonVars());
     
     BOOST_CHECK_THROW(a!=v, const char*);
 }

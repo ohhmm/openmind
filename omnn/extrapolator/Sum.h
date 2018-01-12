@@ -54,7 +54,7 @@ public:
 
     using base::base;
     
-    void Add(const Valuable& item) override;
+    const iterator Add(const Valuable& item) override;
     void Update(typename cont::iterator& it, const Valuable& v) override;
     bool IsComesBefore(const Valuable& v) const override;
 
@@ -67,7 +67,12 @@ public:
     {
 		for (const auto& arg : { Valuable(vals)...})
 		{
-			Add(arg);
+            auto a = cast(arg);
+            if(a)
+                for(auto& m: *a)
+                    Add(m);
+            else
+                Add(arg);
 		}
     }
 

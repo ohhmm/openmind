@@ -21,14 +21,14 @@ namespace extrapolator {
         // general order
         typeid(Integer),
         typeid(Fraction),
+        typeid(Exponentiation),
         typeid(Variable),
-        typeid(Exponentiation)
     };
     
     auto ob = std::begin(order);
     auto oe = std::end(order);
     
-    // inequality shoul cover all cases
+    // inequality should cover all cases
     bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
     {
         auto it1 = std::find(ob, oe, static_cast<type_index>(x));
@@ -92,11 +92,12 @@ namespace extrapolator {
             }
         }
     }
-    
-    void Product::Add(const Valuable& item)
+
+    const Product::iterator Product::Add(const Valuable& item)
     {
-        base::Add(item);
+        auto it=base::Add(item);
         AddToVarsIfVaOrVaExp(item);
+        return it;
     }
     
     void Product::Update(typename cont::iterator& it, const Valuable& v)
@@ -337,27 +338,6 @@ namespace extrapolator {
         return common;
     }
     
-    Valuable Product::varless() const
-    {
-        return *this / getVaVal();
-    }
-    
-    Valuable Product::VaVal(const vars_cont_t& v)
-    {
-        Valuable p(1);
-        for(auto& kv : v)
-        {
-            p *= kv.first ^ kv.second;
-        }
-        p.optimize();
-        return p;
-    }
-    
-    Valuable Product::getVaVal() const
-    {
-        return VaVal(vars);
-    }
-    
     Valuable Product::calcFreeMember() const
     {
         Valuable _ = 1_v;
@@ -382,10 +362,16 @@ namespace extrapolator {
     // NOTE : inequality must cover all cases for bugless Sum::Add
     bool Product::IsComesBefore(const Valuable& v) const
     {
-        auto is = getMaxVaExp() > v.getMaxVaExp();/// TODO : move maxvaexp to product
+        auto is = getMaxVaExp() > v.getMaxVaExp();
         if (!is)
         {
+            Valuable t;
             auto p = cast(v);
+            if(!p)
+            {
+                t=Product(1,v);
+                p=cast(t);
+            }
             if (p)
             {
                 if (getMaxVaExp() != p->getMaxVaExp())
@@ -429,28 +415,27 @@ namespace extrapolator {
                 // everything is equal, should not be so
                 IMPLEMENT
             }
+            else
+                IMPLEMENT
         }
         return is;
     }
     
     Valuable& Product::operator +=(const Valuable& v)
     {
-        auto p = cast(v);
-        if (p)
-        {
             if (*this == v)
                 return *this *= 2;
             if(*this == -v)
                 return Become(0_v);
 
             auto cv = getCommonVars();
-            if (!cv.empty() && cv == p->getCommonVars())
+            if (!cv.empty() && cv == v.getCommonVars())
             {
-                auto valuable = varless() + p->varless();
+                auto valuable = varless() + v.varless();
                 valuable *= getVaVal();
                 return Become(std::move(valuable));
             }
-        }
+        
         return Become(Sum(*this, v));
     }
 

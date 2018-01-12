@@ -4,6 +4,7 @@
 
 #pragma once
 #include "OpenOps.h"
+#include <map>
 #include <memory>
 #include <set>
 #include <typeindex>
@@ -72,7 +73,6 @@ protected:
     
 public:
     static thread_local bool optimizations;
-    virtual int getMaxVaExp() const;
 
     explicit Valuable(Valuable* v);
     operator std::type_index() const;
@@ -111,8 +111,19 @@ public:
     virtual void Eval(const Variable& va, const Valuable& v);
     virtual bool IsComesBefore(const Valuable& v) const; /// accepts same type as param
     
-    bool OfSameType(const Valuable& v) const;
     bool Same(const Valuable& v) const;
+    bool OfSameType(const Valuable& v) const;
+    bool HasSameVars(const Valuable& v) const;
+    bool IsMonicPolynomial() const;
+
+    virtual int getMaxVaExp() const;
+    using vars_cont_t = std::map<Variable, Valuable>;
+    virtual const vars_cont_t& getCommonVars() const;
+    static const vars_cont_t& emptyCommonVars();
+    Valuable varless() const;
+    static Valuable VaVal(const vars_cont_t& v);
+    Valuable getVaVal() const;
+
     explicit operator bool() const;
     virtual explicit operator int() const;
     virtual explicit operator size_t() const;

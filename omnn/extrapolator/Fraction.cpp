@@ -373,6 +373,16 @@ namespace extrapolator {
         out << ')';
         return out;
     }
+    
+    const Valuable::vars_cont_t& Fraction::getCommonVars() const
+    {
+        vars = numerator.getCommonVars();
+        for(auto& r : denominator.getCommonVars())
+        {
+            vars[r.first] -= r.second;
+        }
+        return vars;
+    }
 
     Valuable Fraction::Denominator()
     {
@@ -384,6 +394,21 @@ namespace extrapolator {
         return Accessor(numerator, hash);
     }
 
+    Fraction::operator boost::multiprecision::cpp_dec_float_100() const
+    {
+        if (IsSimple())
+        {
+            auto& num = *Integer::cast(numerator);
+            boost::multiprecision::cpp_dec_float_100 f(static_cast<boost::multiprecision::cpp_int>(num));
+            auto & d = *Integer::cast(denominator);
+            f /= boost::multiprecision::cpp_dec_float_100(static_cast<boost::multiprecision::cpp_int>(d));
+            // TODO : check validity
+            return f;
+        }
+        else
+            throw "Implement!";
+    }
+    
     omnn::extrapolator::Fraction Fraction::Reciprocal() const
     {
         return Fraction(denominator, numerator);

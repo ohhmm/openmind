@@ -122,8 +122,35 @@ namespace extrapolator {
         return varSetHost->print(out, varId);
     }
     
+    bool Variable::IsComesBefore(const Valuable& v) const
+    {
+        return (Product::cast(v))
+            ? Product(1,*this).IsComesBefore(v)
+            : base::IsComesBefore(v);
+    }
+    
     void Variable::CollectVa(std::set<Variable>& s) const
     {
         s.insert(*this);
+    }
+    
+    void Variable::Eval(const Variable& va, const Valuable& v)
+    {
+        if(va==*this)
+        {
+            auto copy = v;
+            Become(std::move(copy));
+        }
+    }
+    
+    const Valuable::vars_cont_t& Variable::getCommonVars() const
+    {
+        vars[*this] = 1_v;
+        if(vars.size()>1)
+        {
+            vars.clear();
+            getCommonVars();
+        }
+        return vars;
     }
 }}

@@ -47,12 +47,7 @@ namespace extrapolator {
         }
         else
         {
-            auto f = Fraction::cast(v);
-            if (f) {
-                return Become(v + *this);
-            }
-            else
-                return Become(Sum(*this, v));
+            Become(v + *this);
         }
         return *this;
     }

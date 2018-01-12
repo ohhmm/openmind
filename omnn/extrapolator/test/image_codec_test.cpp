@@ -46,17 +46,17 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         }
     }
 
-//    a.optimize();
-//    r.optimize();
-//    g.optimize();
-//    b.optimize();
-
     Variable x, y, z;
     std::list<Variable> formulaParamSequence = { y, x };
     auto fa = a.Factors(y, x, z);
     auto fr = r.Factors(y, x, z);
     auto fg = g.Factors(y, x, z);
     auto fb = b.Factors(y, x, z);
+    //    fa.optimize();
+    //    fr.optimize();
+    //    fg.optimize();
+    //    fb.optimize();
+    
     FormulaOfVaWithSingleIntegerRoot
         afo(z, fa, &formulaParamSequence),
         rfo(z, fr, &formulaParamSequence),

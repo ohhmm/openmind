@@ -20,6 +20,7 @@ class Variable
     VarHost::ptr optionalHostPtr;
     VarHost* varSetHost;
     any::any varId;
+    mutable vars_cont_t vars;
     
 public:
     Variable(VarHost& varHost = const_cast<VarHost&>(VarHost::Global<>()))
@@ -58,6 +59,8 @@ public:
 //    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
 
+    bool IsComesBefore(const Valuable& v) const override;
+    
     const Variable* FindVa() const override
     {
         return this;
@@ -65,14 +68,9 @@ public:
     
     void CollectVa(std::set<Variable>& s) const override;
     
-    void Eval(const Variable& va, const Valuable& v) override
-    {
-        if(va==*this)
-        {
-            auto copy = v;
-            Become(std::move(copy));
-        }
-    }
+    void Eval(const Variable& va, const Valuable& v) override;
+    
+    const vars_cont_t& getCommonVars() const override;
 };
 
 

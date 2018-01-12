@@ -11,36 +11,66 @@
 
 #include <cmath>
 #include <map>
+#include <type_traits>
 
 namespace omnn{
 namespace extrapolator {
 
     namespace
     {
-        ProductOrderComparator toc; // todo : rename to type order comparator and move to file
+        using namespace std;
+        
+        type_index order[] = {
+            //typeid(Sum),
+            typeid(Product),
+            typeid(Exponentiation),
+            typeid(Variable),
+            typeid(Integer),
+            typeid(Fraction),
+        };
+        
+        auto ob = std::begin(order);
+        auto oe = std::end(order);
+        
+        // inequality should cover all cases
+        auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
+        {
+            auto it1 = std::find(ob, oe, static_cast<type_index>(x));
+            assert(it1!=oe); // IMPLEMENT
+            auto it2 = std::find(ob, oe, static_cast<type_index>(y));
+            assert(it2!=oe); // IMPLEMENT
+            return it1 == it2 ? *it1 > *it2 : it1 < it2;
+        };
     }
+    
     // store order operator
     bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
     {
-        return v1.OfSameType(v2) ? v1.IsComesBefore(v2) : toc(v1,v2);
+        return v1.OfSameType(v2)
+            || (Product::cast(v1) && Exponentiation::cast(v2))
+            || (Product::cast(v2) && Exponentiation::cast(v1))
+            || (Product::cast(v1) && Variable::cast(v2))
+            || (Product::cast(v2) && Variable::cast(v1))
+            ? v1.IsComesBefore(v2) : toc(v1,v2);
     }
-    
-    void Sum::Add(const Valuable& item)
+
+    const Sum::iterator Sum::Add(const Valuable& item)
     {
         auto it = std::find(begin(), end(), item);
         if(it==end())
-           base::Add(item);
+           it = base::Add(item);
         else
            Update(it, item*2);
         auto itemMaxVaExp = item.getMaxVaExp();
         if(itemMaxVaExp > maxVaExp)
             maxVaExp = itemMaxVaExp;
+        return it;
     }
     
-    void Sum::Update(typename cont::iterator& it, const Valuable& v)
+    void Sum::Update(iterator& it, const Valuable& v)
     {
         Delete(it);
-        Add(v);
+        it=Add(v);
     }
     
 	Valuable Sum::operator -() const
@@ -138,18 +168,14 @@ namespace extrapolator {
                     else if(it2->Same(mc))
                     {
                         c = 0_v;
-                        mc = 0_v;
                         Delete(it2);
                         up();
-                        mc = 0_v;
                     }
-                    else if (it2->OfSameType(c)
-                             && p // commonize by vars
-                             && p->getCommonVars().size()
-                             && p->getCommonVars()==Product::cast(*it2)->getCommonVars())
+                    else if (c.getCommonVars().size()
+                            && c.getCommonVars()==it2->getCommonVars())
                     {
-                        auto s = c + *it2;
-                        s.optimize();
+                        auto s = p ? c : Product(c);
+                        s += *it2;
                         if (!Sum::cast(s)) {
                             c = s;
                             Delete(it2);
@@ -205,18 +231,16 @@ namespace extrapolator {
 		}
 		else
 		{
-            if(!Product::cast(v))
+            for (auto it = members.begin(); it != members.end(); ++it)
             {
-                for (auto it = members.begin(); it != members.end();)
+                if(it->OfSameType(v) && it->getCommonVars()==v.getCommonVars())
                 {
-                    if(it->OfSameType(v))
-                    {
-                        Update(it, *it + v);
+                    auto s = *it + v;
+                    if (!Sum::cast(s)) {
+                        Update(it, s);
                         optimize();
                         return *this;
                     }
-                    else
-                        ++it;
                 }
             }
             
@@ -255,10 +279,10 @@ namespace extrapolator {
                 add(a * v);
             }
 		}
-        auto was = Valuable::optimizations;
-        Valuable::optimizations = {};
+        //auto was = Valuable::optimizations;
+        //Valuable::optimizations = {};
         Become(std::move(sum));
-        Valuable::optimizations = was;
+        //Valuable::optimizations = was;
         return *this;
 	}
 
@@ -268,13 +292,32 @@ namespace extrapolator {
 		auto i = cast(v);
 		if (i)
 		{
-            //auto xn = *begin() / *i->begin();
-            
-			for (auto& a : members) {
-				for (auto& b : i->members) {
-					s += a / b;
-				}
-			}
+            if(!v.FindVa())
+            {
+                for (auto& a : members) {
+                    for (auto& b : i->members) {
+                        s += a / b;
+                    }
+                }
+            }
+            else
+            {
+                while(*this != 0_v)
+                {
+                    if(cast(*this))
+                    {
+                        auto t = *begin() / *i->begin();
+                        s += t;
+                        t *= v;
+                        *this -= t;
+                    }
+                    else
+                    {
+                        s += *this / v;
+                        break;
+                    }
+                }
+            }
 		}
 		else
 		{

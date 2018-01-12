@@ -274,35 +274,37 @@ namespace extrapolator {
     
     bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
+        bool is = getMaxVaExp() > v.getMaxVaExp();
         auto e = cast(v);
         if (e)
         {
             auto vaBase = Variable::cast(ebase);
             auto vbase = Variable::cast(e->ebase);
             if (vaBase && vbase)
-            {
-                return eexp == e->eexp ? *vaBase < *vbase : eexp > e->eexp;
-            }
+                is = eexp == e->eexp ? *vaBase < *vbase : eexp > e->eexp;
             else if(vaBase)
-                return false;
+                is = false;
             else if(vbase)
-                return true;
+                is = true;
             else if(ebase == e->ebase)
-                return eexp.IsComesBefore(e->eexp);
+                is = eexp.IsComesBefore(e->eexp);
             else if(eexp == e->eexp)
-                return ebase.IsComesBefore(e->ebase);
+                is = ebase.IsComesBefore(e->ebase);
             else
             {
                 auto expComesBefore = eexp.IsComesBefore(e->eexp);
                 auto ebaseComesBefore = ebase.IsComesBefore(e->ebase);
-                if (expComesBefore==ebaseComesBefore) {
-                    return expComesBefore;
-                }
-                return *this > *e;
+                is = expComesBefore==ebaseComesBefore || *this > *e;
             }
         }
+        else if(Product::cast(v))
+        {
+            is = Product(1,*this).IsComesBefore(v);
+        }
+        else
+            IMPLEMENT
 
-        return base::IsComesBefore(v);
+        return is;
     }
     
     Valuable Exponentiation::calcFreeMember() const
@@ -317,4 +319,12 @@ namespace extrapolator {
         return c;
     }
 
+    const Valuable::vars_cont_t& Exponentiation::getCommonVars() const
+    {
+        v.clear();
+        auto vaBase = Variable::cast(ebase);
+        if(vaBase)
+            v[*vaBase] = eexp;
+        return v;
+    }
 }}
