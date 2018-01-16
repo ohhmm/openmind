@@ -1,4 +1,5 @@
-SET (this_target test_logic)
+SET (lib_target ${this_target})
+SET (this_target test_${lib_target})
 project(${this_target})
 file(GLOB src *.cpp)
 link_directories(

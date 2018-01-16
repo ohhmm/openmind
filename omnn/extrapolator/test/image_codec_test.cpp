@@ -10,13 +10,13 @@
 #include <boost/gil/extension/io/targa_all.hpp>
 #include "Extrapolator.h"
 
-using namespace omnn::extrapolator;
+using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace boost::gil;
 using namespace std;
 
 
-std::string l(const omnn::extrapolator::Valuable& v)
+std::string l(const omnn::math::Valuable& v)
 {
     std::stringstream ss;
     ss << v;
@@ -52,7 +52,8 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     auto fr = r.Factors(y, x, z);
     auto fg = g.Factors(y, x, z);
     auto fb = b.Factors(y, x, z);
-    //    fa.optimize();
+    fa.SetView(Valuable::View::Flat);
+    fa.optimize();
     //    fr.optimize();
     //    fg.optimize();
     //    fb.optimize();

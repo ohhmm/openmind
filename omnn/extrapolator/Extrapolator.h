@@ -7,15 +7,15 @@
 #include <limits>
 #include <limits.h>
 #include <type_traits>
-#include "Equation.h"
-#include "Expression.h"
-#include "FormulaOfVaWithSingleIntegerRoot.h"
+//#include "Equation.h"
+//#include "Expression.h"
+#include "math/FormulaOfVaWithSingleIntegerRoot.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
 
 namespace omnn{
-namespace extrapolator{
+namespace math{
 
     namespace ublas = boost::numeric::ublas;
 
@@ -144,7 +144,7 @@ public:
      * @param e expression with known varable values INCLUDING ZEROS
      * @return expression with additional deducted variables
      */
-    Expression Complete(const Expression& e)
+    Valuable Complete(const Valuable& e)
     {
         // search for the row
         throw "Implement now!";
@@ -155,16 +155,16 @@ public:
      * @param e expression with known varable values INCLUDING ZEROS
      * @return expression with additional deducted variables
      */
-    template<template <class> class RawContainerT>
-    Expression Complete(const RawContainerT<T>& data) {
-        // search for the row
-        auto it1 = this->begin1();
-        for (; it1 != this->end1(); ++it1) {
-            if (std::equal(data.begin(), data.end(), it1.begin())) {
-                break; // found it1
-            }
-        }
-    }
+//    template<template <class> class RawContainerT>
+//    Expression Complete(const RawContainerT<T>& data) {
+//        // search for the row
+//        auto it1 = this->begin1();
+//        for (; it1 != this->end1(); ++it1) {
+//            if (std::equal(data.begin(), data.end(), it1.begin())) {
+//                break; // found it1
+//            }
+//        }
+//    }
 
     /**
      * Build matrix as column,raw,value

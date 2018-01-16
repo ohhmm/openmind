@@ -4,12 +4,13 @@
 #define BOOST_TEST_MODULE Extrapolator test
 #include <boost/test/unit_test.hpp>
 #include "Extrapolator.h"
+#include "math/Sum.h"
 
-using namespace omnn::extrapolator;
+using namespace omnn::math;
 using namespace boost::unit_test;
 
 
-std::string l(const omnn::extrapolator::Valuable& v)
+std::string l(const omnn::math::Valuable& v)
 {
     std::stringstream ss;
     ss << v;
@@ -23,7 +24,7 @@ BOOST_AUTO_TEST_CASE(ExtrapolatorSolve_test)
 
 BOOST_AUTO_TEST_CASE(Extrapolator_test, *disabled())
 {
-    // lets define extrapolator vars:
+    // lets define math vars:
     // TODO : link to youtube video with description of the sample for deep learning
     // for example we'll take bool square 2x2
     // lets say the goal is to determine type of squere
@@ -187,7 +188,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
 
 BOOST_AUTO_TEST_CASE(Codec_test)
 {
-    // this tiny extrapolator optimization goal seems unreachable with today calculation speed:
+    // this tiny math optimization goal seems unreachable with today calculation speed:
     Extrapolator ex {{    //  input   output
         {0,0,0,0, 0,0,0},
         // verticals

@@ -3,10 +3,11 @@
 //
 
 #include "Extrapolator.h"
-#include "Integer.h"
+#include "math/Integer.h"
+#include "math/Sum.h"
 
 using namespace omnn;
-using namespace extrapolator;
+using namespace math;
 
 
 auto det_fast(extrapolator_base_matrix matrix)
