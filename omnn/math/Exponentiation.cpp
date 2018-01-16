@@ -105,12 +105,14 @@ namespace math {
                 }
                 case View::Flat: {
 
-                    auto i = cast(eexp);
-                    if(i)
+                    if(eexp.IsInt())
                     {
-                        if (*i != 0_v) {
-                            if (*i > 1) {
-                                Valuable x = *this;
+                        if (ebase.IsVa()) {
+                            break;
+                        }
+                        if (eexp != 0_v) {
+                            if (eexp > 1) {
+                                Valuable x = ebase;
                                 Valuable n = eexp;
                                 if (n < 0_v)
                                 {
@@ -125,9 +127,10 @@ namespace math {
                                 auto y = 1_v;
                                 while(n > 1)
                                 {
-                                    auto in = Integer::cast(n);
-                                    if (!in) throw "Implement!";
-                                    if (in && (*in % 2_v) == 0_v)
+                                    bool isInt = n.IsInt();
+                                    if (!isInt)
+                                        IMPLEMENT
+                                    if (isInt && (n % 2_v) == 0_v)
                                     {
                                         x *= x;
                                         n /= 2;
@@ -385,9 +388,9 @@ namespace math {
     Valuable Exponentiation::calcFreeMember() const
     {
         Valuable c;
-        if(Sum::cast(ebase) && Integer::cast(eexp)){
+        if(ebase.IsSum() && eexp.IsInt()){
             c = ebase.calcFreeMember() ^ eexp;
-        } else if(Variable::cast(ebase)) {
+        } else if(ebase.IsVa()) {
             c = 0_v;
         } else
             IMPLEMENT;

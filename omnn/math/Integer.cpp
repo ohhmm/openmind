@@ -314,6 +314,9 @@ namespace math {
         auto h = arbitrary;
         if(h < 0)
             h = -h;
+        if (f(0)) {
+            return true;
+        }
         for (base_int i = 1; i <= h; ++i)
             if (cast(*this/Integer(i)) && f(i))
                 return true;

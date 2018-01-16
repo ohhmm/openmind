@@ -18,7 +18,8 @@ namespace math {
         auto finder = [&](const Integer* i) -> bool
         {
             auto c = _;
-            if(!Product::cast(c))
+            std::cout << "searching" << std::endl;
+            if(!c.IsProduct())
                 c.optimize();
             return i->Factorization([this,c,&singleIntegerRoot](const Integer& i)
                                      {
@@ -27,7 +28,12 @@ namespace math {
                                          _.optimize();
                                          bool found = _ == 0_v;
                                          if (found) {
+                                             std::cout << "found " << i << std::endl;
                                              singleIntegerRoot = i;
+                                         }
+                                         else
+                                         {
+                                             std::cout << "trying " << i << " got " << _ << std::endl;
                                          }
                                          return found;
                                      });
@@ -40,6 +46,7 @@ namespace math {
         if (finder(i)) {
             return singleIntegerRoot;
         }
+        
         IMPLEMENT
     }
     

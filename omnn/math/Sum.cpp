@@ -41,6 +41,8 @@ namespace math {
             assert(it2!=oe); // IMPLEMENT
             return it1 == it2 ? *it1 > *it2 : it1 < it2;
         };
+        
+        SumOrderComparator soc;
     }
     
     // store order operator
@@ -56,14 +58,28 @@ namespace math {
 
     const Sum::iterator Sum::Add(const Valuable& item)
     {
-        auto it = std::find(begin(), end(), item);
-        if(it==end())
-           it = base::Add(item);
+        Sum::iterator it = end();
+        if(item.IsSum()) {
+            auto s = cast(item);
+            for(auto& i : *s) {
+                auto a = Add(i);
+                if (it == end() || soc(*a, *it)) {
+                    it = a;
+                }
+            }
+            it = members.begin();
+        }
         else
-           Update(it, item*2);
-        auto itemMaxVaExp = item.getMaxVaExp();
-        if(itemMaxVaExp > maxVaExp)
-            maxVaExp = itemMaxVaExp;
+        {
+            it = std::find(begin(), end(), item);
+            if(it==end())
+                it = base::Add(item);
+            else
+                Update(it, item*2);
+            auto itemMaxVaExp = item.getMaxVaExp();
+            if(itemMaxVaExp > maxVaExp)
+                maxVaExp = itemMaxVaExp;
+        }
         return it;
     }
     
@@ -183,7 +199,7 @@ namespace math {
                     {
                         auto sum = p ? c : Product(c);
                         sum += *it2;
-                        if (!Sum::cast(sum)) {
+                        if (!sum.IsSum()) {
                             c = sum;
                             Delete(it2);
                             up();
@@ -234,11 +250,8 @@ namespace math {
 
 	Valuable& Sum::operator +=(const Valuable& v)
 	{
-		auto i = cast(v);
-		if (i) {
-			for (auto& a : i->members) {
-				Add(a);
-			}
+		if (v.IsSum()) {
+			Add(v);
 		}
 		else
 		{

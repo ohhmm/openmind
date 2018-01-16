@@ -26,7 +26,7 @@ std::string l(const omnn::math::Valuable& v)
 BOOST_AUTO_TEST_CASE(ImageCodec_test)
 {
     rgba8_image_t src;
-    read_image(TEST_SRC_DIR "gresized.tga", src, targa_tag());
+    read_image(TEST_SRC_DIR "g.tga", src, targa_tag());
     
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
@@ -49,15 +49,22 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     Variable x, y, z;
     std::list<Variable> formulaParamSequence = { y, x };
     auto fa = a.Factors(y, x, z);
-    auto fr = r.Factors(y, x, z);
-    auto fg = g.Factors(y, x, z);
-    auto fb = b.Factors(y, x, z);
     fa.SetView(Valuable::View::Flat);
     fa.optimize();
-    //    fr.optimize();
-    //    fg.optimize();
-    //    fb.optimize();
-    
+    std::cout << fa << std::endl;
+    auto fr = r.Factors(y, x, z);
+    fr.SetView(Valuable::View::Flat);
+    fr.optimize();
+    std::cout << fr << std::endl;
+    auto fg = g.Factors(y, x, z);
+    fg.SetView(Valuable::View::Flat);
+    fg.optimize();
+    std::cout << fg << std::endl;
+    auto fb = b.Factors(y, x, z);
+    fb.SetView(Valuable::View::Flat);
+    fb.optimize();
+    std::cout << fb << std::endl;
+
     FormulaOfVaWithSingleIntegerRoot
         afo(z, fa, &formulaParamSequence),
         rfo(z, fr, &formulaParamSequence),
@@ -82,7 +89,19 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
             BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
         }
     }
-    
+
+//    // outband data deduce
+//    dst = decltype(src)(src.dimensions()+src.dimensions());
+//    dv = view(dst);
+//    for (auto i = rows*2; i--;) { // raw
+//        for (auto j = cols*2; j--;) { // column
+//            auto& d = dv(i, j);
+//            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
+//            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
+//            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
+//            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+//        }
+//    }
     write_view(TEST_BIN_DIR "o.tga", v, targa_tag());
 }
 

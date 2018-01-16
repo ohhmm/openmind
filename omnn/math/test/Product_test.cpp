@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(Product_tests)
 BOOST_AUTO_TEST_CASE(test_no_hang, *timeout(2))
 {
     Variable v2, v3;
-    (2_v*(((v3 + -255))^2)*(v2^2)).optimize();
+    (2_v*((v3 + -255)^2)*(v2^2)).optimize();
 }
 
 BOOST_AUTO_TEST_CASE(unordered_multiset_tests)
