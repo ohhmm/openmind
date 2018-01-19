@@ -70,6 +70,10 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         rfo(z, fr, &formulaParamSequence),
         gfo(z, fg, &formulaParamSequence),
         bfo(z, fb, &formulaParamSequence);
+    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
+    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
+    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
+    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
 
     // inbound data deduce
     decltype(src) dst(src.dimensions());
@@ -89,19 +93,20 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
             BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
         }
     }
-
-//    // outband data deduce
-//    dst = decltype(src)(src.dimensions()+src.dimensions());
-//    dv = view(dst);
-//    for (auto i = rows*2; i--;) { // raw
-//        for (auto j = cols*2; j--;) { // column
-//            auto& d = dv(i, j);
-//            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-//            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-//            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-//            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
-//        }
-//    }
-    write_view(TEST_BIN_DIR "o.tga", v, targa_tag());
+    write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
+    
+    // outband data deduce
+    dst = decltype(src)(4,4);
+    dv = view(dst);
+    for (auto i = rows*2; i--;) { // raw
+        for (auto j = cols*2; j--;) { // column
+            auto& d = dv(i, j);
+            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
+            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
+            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
+            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+        }
+    }
+    write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
 }
 

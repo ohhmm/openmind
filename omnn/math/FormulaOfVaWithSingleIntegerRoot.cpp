@@ -15,13 +15,16 @@ namespace math {
     Valuable FormulaOfVaWithSingleIntegerRoot::Solve(Valuable& _) const
     {
         Valuable singleIntegerRoot;
+        bool haveMin = false;
+        Valuable min;
+        Valuable closest;
         auto finder = [&](const Integer* i) -> bool
         {
             auto c = _;
             std::cout << "searching" << std::endl;
             if(!c.IsProduct())
                 c.optimize();
-            return i->Factorization([this,c,&singleIntegerRoot](const Integer& i)
+            return i->Factorization([&,c](const Integer& i)
                                      {
                                          auto _ = c;
                                          _.Eval(getVa(), i);
@@ -34,6 +37,17 @@ namespace math {
                                          else
                                          {
                                              std::cout << "trying " << i << " got " << _ << std::endl;
+                                             if(!haveMin || _ < min) {
+                                                 closest = i;
+                                                 min = _;
+                                                 haveMin = true;
+                                             } else if(mode==FirstExtrenum)
+                                             {
+                                                 if (haveMin) {
+                                                     singleIntegerRoot=closest;
+                                                     return true;
+                                                 }
+                                             }
                                          }
                                          return found;
                                      });
@@ -46,6 +60,9 @@ namespace math {
         if (finder(i)) {
             return singleIntegerRoot;
         }
+        
+        if(mode!=Strict && haveMin)
+            return closest;
         
         IMPLEMENT
     }

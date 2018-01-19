@@ -21,5 +21,12 @@ protected:
 
 public:
     using base::base;
+    enum Mode {
+        Strict,
+        Closest,
+        FirstExtrenum
+    };
+    Mode mode;
+    void SetMode(Mode m) { mode = m; }
 };
 }}
