@@ -75,6 +75,7 @@ public:
 	Valuable& operator %=(const Valuable& v) override;
 	Valuable& operator --() override;
 	Valuable& operator ++() override;
+    Valuable& d(const Variable& x) override;
 	void optimize() override;
 
 	bool IsProduct() const override { return true; }

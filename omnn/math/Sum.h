@@ -49,6 +49,7 @@ public:
 	Valuable& operator /=(const Valuable& v) override;
 	Valuable& operator --() override;
 	Valuable& operator ++() override;
+    Valuable& d(const Variable& x) override;
     void optimize() override;
     Valuable sqrt() const override;
     Valuable calcFreeMember() const override;

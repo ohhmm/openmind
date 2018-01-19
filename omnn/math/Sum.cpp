@@ -362,6 +362,24 @@ namespace math {
 		return *this += 1;
 	}
     
+    Valuable& Sum::d(const Variable& x)
+    {
+        Valuable sum = 0_v;
+        auto add = [&](const Valuable& m)
+        {
+            auto s = Sum::cast(sum);
+            if (s) {
+                const_cast<Sum*>(s)->Add(m);
+            }
+            else
+                sum += m;
+        };
+        for(auto m : *this)
+            add(m.d(x));
+        
+        return Become(std::move(sum));
+    }
+    
     bool Sum::IsComesBefore(const Valuable& v) const
     {
         auto s = Sum::cast(v);

@@ -234,6 +234,19 @@ namespace math {
             IMPLEMENT
     }
     
+    Valuable& Valuable::d(const Variable& x)
+    {
+        if(exp) {
+            Valuable& o = exp->d(x);
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
+        }
+        else
+            IMPLEMENT
+    }
+    
     bool Valuable::operator<(const Valuable& v) const
     {
         if(exp)

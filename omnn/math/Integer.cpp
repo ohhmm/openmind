@@ -265,6 +265,12 @@ namespace math {
         return *this;
     }
     
+    Valuable& Integer::d(const Variable& x)
+    {
+        arbitrary = 0;
+        return *this;
+    }
+    
     bool Integer::operator <(const Valuable& v) const
     {
         auto i = cast(v);

@@ -105,6 +105,7 @@ public:
     virtual Valuable& operator--();
     virtual Valuable& operator++();
     virtual Valuable& operator^=(const Valuable&);
+    virtual Valuable& d(const Variable& x);
     virtual bool operator<(const Valuable& smarter) const;
     virtual bool operator==(const Valuable& smarter) const;
     virtual void optimize(); /// if it simplifies than it should become the type

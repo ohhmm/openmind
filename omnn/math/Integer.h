@@ -86,6 +86,7 @@ public:
     Valuable& operator --() override;
     Valuable& operator ++() override;
     Valuable& operator^=(const Valuable&) override;
+    Valuable& d(const Variable& x) override;
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
     // virtual convert operators

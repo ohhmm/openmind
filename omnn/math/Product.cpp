@@ -564,6 +564,14 @@ namespace math {
 		return Become(Sum(this, 1));
 	}
 
+    Valuable& Product::d(const Variable& x)
+    {
+        *this *= vars[x];
+        *this /= x;
+        optimize();
+        return *this;
+    }
+    
 	std::ostream& Product::print(std::ostream& out) const
 	{
         std::stringstream s;
