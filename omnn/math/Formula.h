@@ -42,7 +42,7 @@ protected:
     std::ostream& print(std::ostream& out) const override;
     virtual Valuable Solve(Valuable& v) const;
 public:
-    Formula(const Variable&, const Valuable&, std::list<Variable>* sequence = {});
+    Formula(const Variable& v, const Valuable& e, const std::list<Variable>* sequence = {});
     bool IsFormula() const override { return true; }
     //using f_t = std::function<Valuable&&(Valuable&&)>;
     using base::base;
@@ -53,6 +53,7 @@ public:
     
     const Variable& getVa() const { return v; }
     const Valuable& getEx() const { return e; }
+    const std::list<Variable>& getVaSequanceForOp() const { return s; }
     
     void optimize() override { e.optimize(); }
     Valuable calcFreeMember() const override { return e.calcFreeMember(); }

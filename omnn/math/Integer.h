@@ -101,6 +101,7 @@ public:
     bool operator >(const Integer& v) const { return arbitrary > v.arbitrary; }
     
     const Variable* FindVa() const override { return nullptr; }
+    bool HasVa(const Variable& va) const override { return false; }
     void CollectVa(std::set<Variable>&) const override { }
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;

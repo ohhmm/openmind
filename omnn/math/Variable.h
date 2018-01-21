@@ -51,6 +51,7 @@ public:
     Valuable& operator--() override;
     Valuable& operator++() override;
     Valuable& operator ^=(const Valuable&) override;
+    Valuable& d(const Variable& x) override;
     bool operator<(const Valuable& number) const override;
     bool operator==(const Valuable& number) const override;
     Valuable abs() const override { throw "Implement Abs Valuable Descendant to use it here"; }
@@ -62,10 +63,8 @@ public:
     bool IsVa() const override { return true; }
     bool IsComesBefore(const Valuable& v) const override;
     
-    const Variable* FindVa() const override
-    {
-        return this;
-    }
+    const Variable* FindVa() const override { return this; }
+    bool HasVa(const Variable& va) const override { return operator==(va); }
     
     void CollectVa(std::set<Variable>& s) const override;
     

@@ -91,6 +91,7 @@ namespace math {
         
 		Fraction Reciprocal() const;
 		const Variable* FindVa() const override;
+        bool HasVa(const Variable& va) const override { return numerator.HasVa(va) || denominator.HasVa(va); }
 		void CollectVa(std::set<Variable>& s) const override;
 		void Eval(const Variable& va, const Valuable& v) override;
 		bool IsSimple() const;

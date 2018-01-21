@@ -82,6 +82,11 @@ namespace math {
         return *this;
     }
     
+    Valuable& Variable::d(const Variable& x)
+    {
+        return Become(1_v);
+    }
+    
     bool Variable::operator <(const Valuable& v) const
     {
         auto i = cast(v);

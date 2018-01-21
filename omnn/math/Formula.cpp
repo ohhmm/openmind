@@ -20,7 +20,7 @@ namespace math {
             s.push_back(v);
     }
     
-    Formula::Formula(const Variable& va, const Valuable& ex, std::list<Variable>* sequence)
+    Formula::Formula(const Variable& va, const Valuable& ex, const std::list<Variable>* sequence)
     : v(va), e(ex)
     {
         if(sequence)

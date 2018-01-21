@@ -355,6 +355,14 @@ namespace math {
         IMPLEMENT
     }
     
+    bool Valuable::HasVa(const Variable& x) const
+    {
+        if (exp) {
+            return exp->HasVa(x);
+        }
+        IMPLEMENT
+    }
+    
     void Valuable::CollectVa(std::set<Variable>& s) const
     {
         if (exp)

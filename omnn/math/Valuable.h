@@ -127,6 +127,7 @@ public:
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     
     virtual const Variable* FindVa() const;
+    virtual bool HasVa(const Variable&) const;
     virtual void CollectVa(std::set<Variable>& s) const;
     virtual void Eval(const Variable& va, const Valuable& v);
     virtual bool IsComesBefore(const Valuable& v) const; /// accepts same type as param

@@ -123,6 +123,14 @@ namespace math {
             return nullptr;
         }
         
+        bool HasVa(const Variable& va) const override
+        {
+            for (auto& i : GetConstCont())
+                if(i.HasVa(va))
+                    return true;
+            return false;
+        }
+        
         void CollectVa(std::set<Variable>& s) const override
         {
             for (auto& i : GetConstCont())

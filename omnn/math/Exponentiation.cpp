@@ -277,6 +277,28 @@ namespace math {
     {
         return *this+=1_v;
     }
+    
+    Valuable& Exponentiation::d(const Variable& x)
+    {
+        bool bhx = ebase.HasVa(x);
+        bool ehx = eexp.HasVa(x);
+        if(ehx) {
+            IMPLEMENT
+            if(bhx){
+                
+            }else{
+                
+            }
+        } else if (bhx) {
+            if(ebase == x)
+                Become(eexp * (ebase ^ (eexp-1)));
+            else
+                IMPLEMENT
+        } else
+            Become(0_v);
+        optimize();
+        return *this;
+    }
 
     bool Exponentiation::operator <(const Valuable& v) const
     {

@@ -32,6 +32,7 @@ public:
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator --() override;
     Valuable& operator ++() override;
+    Valuable& d(const Variable& x) override;
     bool operator <(const Valuable& v) const override;
     bool operator ==(const Valuable& v) const override;
     void optimize() override;
@@ -47,6 +48,7 @@ public:
 //    }
 //
     const Variable* FindVa() const override;
+    bool HasVa(const Variable& va) const override { return ebase.HasVa(va) || eexp.HasVa(va); }
     void CollectVa(std::set<Variable>& s) const override;
     const vars_cont_t& getCommonVars() const override;
     void Eval(const Variable& va, const Valuable& v) override;
