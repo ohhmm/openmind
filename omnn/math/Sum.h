@@ -53,6 +53,8 @@ public:
     void optimize() override;
     Valuable sqrt() const override;
     Valuable calcFreeMember() const override;
+    void solve(const Variable& va, std::set<Valuable>& solutions) const override;
+
 
     using base::base;
     

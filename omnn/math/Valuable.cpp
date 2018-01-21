@@ -247,6 +247,27 @@ namespace math {
             IMPLEMENT
     }
     
+    void Valuable::solve(const Variable& va, std::set<Valuable>& solutions) const
+    {
+        if(exp) {
+            exp->solve(va, solutions);
+        }
+        else
+            IMPLEMENT
+    }
+
+    std::set<Valuable> Valuable::solutions() const
+    {
+        IMPLEMENT
+    }
+    
+    std::set<Valuable> Valuable::solutions(const Variable& v) const
+    {
+        std::set<Valuable> solutions;
+        solve(v, solutions);
+        return solutions;
+    }
+
     bool Valuable::operator<(const Valuable& v) const
     {
         if(exp)

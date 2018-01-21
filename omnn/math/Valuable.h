@@ -77,7 +77,8 @@ public:
     {
         None,
         Condensed,
-        Flat
+        Flat,
+        Solving,
     };
 
     static thread_local bool optimizations;
@@ -122,7 +123,11 @@ public:
 
     virtual Valuable abs() const;
     virtual Valuable sqrt() const;
-    virtual Valuable calcFreeMember() const;    
+    virtual Valuable calcFreeMember() const;
+    virtual void solve(const Variable& va, std::set<Valuable>&) const;
+
+    std::set<Valuable> solutions() const;
+    std::set<Valuable> solutions(const Variable& v) const;
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     

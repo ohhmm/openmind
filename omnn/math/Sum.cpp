@@ -237,12 +237,36 @@ namespace math {
 #endif
         } while (w != *this);
 
-        if (members.size() == 0) {
-            Become(0_v);
-        }
-        else if (members.size() == 1) {
-            cont::iterator b = members.begin();
-            Become(std::move(const_cast<Valuable&>(*b)));
+        if(IsSum())
+        {
+            if (members.size() == 0) {
+                Become(0_v);
+            }
+            else if (members.size() == 1) {
+                cont::iterator b = members.begin();
+                Become(std::move(const_cast<Valuable&>(*b)));
+            }
+            else if (view==Solving){
+                // make coefficients int to use https://simple.wikipedia.org/wiki/Rational_root_theorem
+                bool checked = false;
+                while (!checked) {
+                    for(auto& m : members)
+                    {
+                        if (m.IsProduct()) {
+                            auto p = Product::cast(m);
+                            auto f = p->GetFirstOccurence<Fraction>();
+                            if (f != p->end()) {
+                                operator*=(Fraction::cast(*f)->getDenominator());
+                                break;
+                            }
+                        } else if (m.IsFraction()) {
+                            operator*=(Fraction::cast(m)->getDenominator());
+                            break;
+                        }
+                    }
+                    checked = true;
+                }
+            }
         }
         
         isOptimizing = false;
@@ -438,10 +462,9 @@ namespace math {
         #pragma omp for shared grade,coefficients
         for (auto& m : members)
         {
-            auto p = Product::cast(m);
-            if(p)
+            if(m.IsProduct())
             {
-                auto& coVa = p->getCommonVars();
+                auto& coVa = m.getCommonVars();
                 auto it = coVa.find(v);
                 auto vcnt = it == coVa.end() ? 0 : it->second; // exponentation of va
                 auto i = Integer::cast(vcnt);
@@ -493,6 +516,69 @@ namespace math {
         return grade;
     }
     
+    void Sum::solve(const Variable& va, std::set<Valuable>& solutions) const
+    {
+        std::vector<Valuable> coefficients;
+        auto grade = FillPolyCoeff(coefficients, va);
+        switch (grade) {
+            case 2: {
+                // square equation x=(-b+√(b*b-4*a*c))/(2*a)
+                auto& a = coefficients[2];
+                auto& b = coefficients[1];
+                auto& c = coefficients[0];
+                auto d = (b ^ 2) - 4_v * a * c;
+                auto dsq = d.sqrt();
+                auto a2 = a * 2;
+                solutions.insert((-dsq-b)/a2);
+                solutions.insert((dsq-b)/a2);
+                break;
+            }
+//            case 3: {
+//                auto& a = coefficients[3];
+//                auto& b = coefficients[2];
+//                auto& c = coefficients[1];
+//                auto& d = coefficients[0];
+//                auto di = (b^2)*(c^2) - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*(a^2)*(d^2) + 18_v*a*b*c*d;
+//                solutions.insert(
+//                break;
+//            }
+            case 4: {
+                // four grade equation ax^4+bx^3+cx^2+dx+e=0
+                // see https://math.stackexchange.com/questions/785/is-there-a-general-formula-for-solving-4th-degree-equations-quartic
+                auto& a = coefficients[4];
+                auto& b = coefficients[3];
+                auto& c = coefficients[2];
+                auto& d = coefficients[1];
+                auto& e = coefficients[0];
+                auto sa = a*a;
+                auto sb = b*b;
+                auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
+                auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).sqrt();
+                auto qp2 = (p2/2)^(1_v/3);
+                p1.optimize();
+                p2.optimize();
+                qp2.optimize();
+                auto p3 = (c*c-3*b*d+12*a*e)/(3*a*qp2)+qp2/(3*a);
+                auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).sqrt();
+                auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
+                auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
+                auto xp1 = b/(-4*a);
+                auto xp2 = p4/2;
+                auto xp3_1 = (p5-p6).sqrt()/2;
+                auto xp3_2 = (p5+p6).sqrt()/2;
+                solutions.insert(xp1-xp2-xp3_1);
+                solutions.insert(xp1-xp2+xp3_1);
+                solutions.insert(xp1+xp2-xp3_2);
+                solutions.insert(xp1+xp2+xp3_2);
+                break;
+            }
+            default: {
+                throw "Implement!";
+                break;
+            }
+        }
+    }
+    
     /** fast linear equation formula deduction */
 	Formula Sum::FormulaOfVa(const Variable& v) const
 	{
@@ -542,5 +628,6 @@ namespace math {
         
         return Formula::DeclareFormula(v, fx);
 	}
+    
     
 }}
