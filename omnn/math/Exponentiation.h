@@ -15,6 +15,7 @@ class Exponentiation
     mutable vars_cont_t v;
 protected:
     std::ostream& print(std::ostream& out) const override;
+    std::ostream& code(std::ostream& out) const override;
 public:
     bool IsExponentiation() const override { return true; }
     const Valuable& getBase() const { return ebase; }

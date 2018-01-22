@@ -335,16 +335,13 @@ namespace math {
 
     std::ostream& Exponentiation::print(std::ostream& out) const
     {
-        auto noNeedBraces = [](auto& i) {
-            return Integer::cast(i) || Variable::cast(i);
-        };
         out << '(';
-        if(!noNeedBraces(ebase))
+        if(!(ebase.IsInt() || ebase.IsVa()))
             out << '(' << ebase << ')';
         else
             out << ebase;
         out << '^';
-        if(!noNeedBraces(eexp))
+        if(!(eexp.IsInt() || eexp.IsVa()))
             out << '(' << eexp << ')';
         else
             out << eexp;
@@ -352,6 +349,20 @@ namespace math {
         return out;
     }
 
+    std::ostream& Exponentiation::code(std::ostream& out) const
+    {
+        if(!eexp.IsInt())
+            IMPLEMENT;
+
+        out << "(1";
+        for (auto i=eexp; i-->0;) {
+            out << '*' << ebase;
+        }
+        out << ')';
+        
+        return out;
+    }
+    
     const Variable* Exponentiation::FindVa() const
     {
         auto va = eexp.FindVa();

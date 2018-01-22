@@ -320,7 +320,12 @@ namespace math {
         else
             IMPLEMENT
     }
-    
+ 
+    std::ostream& Valuable::code(std::ostream& out) const
+    {
+        return exp ? exp->code(out) : print(out);
+    }
+
     std::ostream& operator<<(std::ostream& out, const Valuable& obj)
     {
         return obj.print(out);

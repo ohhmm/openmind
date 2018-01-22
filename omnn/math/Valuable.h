@@ -61,6 +61,8 @@ protected:
     {}
     
     virtual std::ostream& print(std::ostream& out) const;
+    virtual std::ostream& code(std::ostream& out) const;
+    
     virtual Valuable& Become(Valuable&& i);
     
     size_t hash = 0;
