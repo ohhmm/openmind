@@ -579,14 +579,15 @@ namespace math {
                 break;
             }
             default: {
-                throw "Implement!";
                 // build OpenCL kernel
-                std::stringstream source;
-                
                 using namespace boost::compute;
-                source << "__kernel void f(__global float *c) {"
+                auto copy = *this;
+                copy.optimize();
+                std::stringstream source;
+                source << "__kernel void f(__global long *c) {"
                         << "    const uint i = get_global_id(0);"
-                        << "    c[i] = "; code(source);
+                        << "    long " << va << "=i;"
+                        << "    c[i] = "; copy.code(source);
                 source << ";}";
                 
                 device cuwinner = system::default_device();
@@ -594,20 +595,20 @@ namespace math {
                     for(auto& d: p.devices())
                         if (d.compute_units() > cuwinner.compute_units())
                             cuwinner = d;
-                auto cu = cuwinner.compute_units();
+                auto wgsz = cuwinner.max_work_group_size();
                 context context(cuwinner);
                 
                 kernel k(program::build_with_source(source.str(), context), "f");
-                auto sz = cu*sizeof(cl_long);
+                auto sz = wgsz * sizeof(cl_long);
                 buffer c(context, sz);
                 k.set_arg(0, c);
                 
                 command_queue queue(context, cuwinner);
                 // run the add kernel
-                queue.enqueue_1d_range_kernel(k, 0, cu, 0);
+                queue.enqueue_1d_range_kernel(k, 0, wgsz, 0);
                 
                 // transfer results to the host array 'c'
-                std::vector<cl_long> z(cu*sizeof(cl_long));
+                std::vector<cl_long> z(wgsz);
                 queue.enqueue_read_buffer(c, 0, sz, &z[0]);
                 queue.finish();
                 
@@ -616,7 +617,7 @@ namespace math {
                     if (z[i] == 0) {
                         // lets recheck on host
                         auto copy = *this;
-                        copy.Valuable::Eval(va, i);
+                        copy.Eval(va, i);
                         copy.optimize();
                         if (copy == 0_v) {
                             auto it = solutions.insert(i);
@@ -625,6 +626,9 @@ namespace math {
                             }
                         }
                     }
+                
+                if(solutions.size() == grade)
+                    return;
                 
                 if (newSolutions.size()) {
                     Valuable newSolutionsPoly = 1_v;
@@ -635,6 +639,11 @@ namespace math {
                     newSolutionsPoly.optimize();
                     auto copy = *this / newSolutionsPoly;
                     copy.solve(va, solutions);
+                    
+                    if(solutions.size() == grade)
+                        return;
+                } else {
+                    
                 }
                 
                 IMPLEMENT

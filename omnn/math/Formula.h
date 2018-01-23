@@ -85,7 +85,19 @@ public:
             auto va = vit++;
             copy.Eval(*va, v);
         }
-        return Solve(copy);
+        auto roots = copy.solutions(v);
+        if(roots.size() == 0)
+        {
+            root = Solve(copy);
+        }
+        if(roots.size() == 1)
+        {
+            root = std::move(*roots.begin());
+        }
+        else
+            IMPLEMENT
+            
+        return root;
     }
     
 private:
