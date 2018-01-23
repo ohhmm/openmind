@@ -13,6 +13,8 @@
 #include <map>
 #include <type_traits>
 
+#include <boost/compute.hpp>
+
 namespace omnn{
 namespace math {
 
@@ -521,6 +523,10 @@ namespace math {
         std::vector<Valuable> coefficients;
         auto grade = FillPolyCoeff(coefficients, va);
         switch (grade) {
+            case 1: {
+                IMPLEMENT
+                break;
+            }
             case 2: {
                 // square equation x=(-b+√(b*b-4*a*c))/(2*a)
                 auto& a = coefficients[2];
@@ -574,6 +580,65 @@ namespace math {
             }
             default: {
                 throw "Implement!";
+                // build OpenCL kernel
+                std::stringstream source;
+                
+                using namespace boost::compute;
+                source << "__kernel void f(__global float *c) {"
+                        << "    const uint i = get_global_id(0);"
+                        << "    c[i] = "; code(source);
+                source << ";}";
+                
+                device cuwinner = system::default_device();
+                for(auto& p: system::platforms())
+                    for(auto& d: p.devices())
+                        if (d.compute_units() > cuwinner.compute_units())
+                            cuwinner = d;
+                auto cu = cuwinner.compute_units();
+                context context(cuwinner);
+                
+                kernel k(program::build_with_source(source.str(), context), "f");
+                auto sz = cu*sizeof(cl_long);
+                buffer c(context, sz);
+                k.set_arg(0, c);
+                
+                command_queue queue(context, cuwinner);
+                // run the add kernel
+                queue.enqueue_1d_range_kernel(k, 0, cu, 0);
+                
+                // transfer results to the host array 'c'
+                std::vector<cl_long> z(cu*sizeof(cl_long));
+                queue.enqueue_read_buffer(c, 0, sz, &z[0]);
+                queue.finish();
+                
+                std::vector<Valuable> newSolutions;
+                for(int i = sz; sz-->0;)
+                    if (z[i] == 0) {
+                        // lets recheck on host
+                        auto copy = *this;
+                        copy.Valuable::Eval(va, i);
+                        copy.optimize();
+                        if (copy == 0_v) {
+                            auto it = solutions.insert(i);
+                            if (it.second) { // new value
+                                newSolutions.push_back(i);
+                            }
+                        }
+                    }
+                
+                if (newSolutions.size()) {
+                    Valuable newSolutionsPoly = 1_v;
+                    for(auto solution : newSolutions)
+                    {
+                        newSolutionsPoly *= va - solution;
+                    }
+                    newSolutionsPoly.optimize();
+                    auto copy = *this / newSolutionsPoly;
+                    copy.solve(va, solutions);
+                }
+                
+                IMPLEMENT
+                
                 break;
             }
         }
