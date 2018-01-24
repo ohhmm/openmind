@@ -106,7 +106,7 @@ public:
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
-
+    Valuable sqrt() const override { return *this^(1_v/2); }
     
     bool Factorization(const std::function<bool(const Integer&)>& f) const;
 

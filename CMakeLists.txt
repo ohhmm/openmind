@@ -36,6 +36,8 @@ if(MSVC)
 	endif()
 endif()
 
+find_package(opencl)
+
 
 if (${OPENMIND_BUILD_TESTS})
     enable_testing()

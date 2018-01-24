@@ -14,7 +14,6 @@ link_directories(
 if(NOT MSVC)
     set(test_libs boost_test_exec_monitor)
 endif()
-find_package(opencl)
 foreach(TEST ${src})
     get_filename_component(TEST_NAME ${TEST} NAME_WE)
     add_executable(${TEST_NAME} ${TEST_NAME})
