@@ -65,15 +65,12 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     fb.optimize();
     std::cout << fb << std::endl;
 
+    // Unification
     FormulaOfVaWithSingleIntegerRoot
         afo(z, fa, &formulaParamSequence),
         rfo(z, fr, &formulaParamSequence),
         gfo(z, fg, &formulaParamSequence),
         bfo(z, fb, &formulaParamSequence);
-    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
-    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
-    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
-    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
 
     // inbound data deduce
     decltype(src) dst(src.dimensions());
@@ -96,6 +93,10 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
     
     // outband data deduce
+    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum); // extra rough
+    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
+    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
+    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
     dst = decltype(src)(4,4);
     dv = view(dst);
     for (auto i = rows*2; i--;) { // raw

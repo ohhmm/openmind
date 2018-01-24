@@ -21,14 +21,19 @@ namespace math {
         auto finder = [&](const Integer* i) -> bool
         {
             auto c = _;
-            std::cout << "searching" << std::endl;
             if(!c.IsProduct())
                 c.optimize();
+            auto cdx = c;
+            cdx.d(getVa());
+            auto& seq = getVaSequanceForOp();
+            FormulaOfVaWithSingleIntegerRoot f(getVa(), cdx, &seq);
+            std::cout << "searching: f(" << getVa() << ")=" << _ << "; f'=" << cdx << std::endl;
             return i->Factorization([&,c](const Integer& i)
                                      {
                                          auto _ = c;
                                          _.Eval(getVa(), i);
                                          _.optimize();
+                                         
                                          bool found = _ == 0_v;
                                          if (found) {
                                              std::cout << "found " << i << std::endl;
@@ -36,7 +41,10 @@ namespace math {
                                          }
                                          else
                                          {
-                                             std::cout << "trying " << i << " got " << _ << std::endl;
+                                             auto d_ = cdx;
+                                             d_.Eval(getVa(), i);
+                                             d_.optimize();
+                                             std::cout << "trying " << i << " got " << _ << " f'(" << i << ")=" << d_ << std::endl;
                                              if(!haveMin || _ < min) {
                                                  closest = i;
                                                  min = _;

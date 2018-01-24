@@ -90,7 +90,7 @@ public:
         {
             root = Solve(copy);
         }
-        if(roots.size() == 1)
+        else if(roots.size() == 1)
         {
             root = std::move(*roots.begin());
         }

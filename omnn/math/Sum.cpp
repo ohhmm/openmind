@@ -613,7 +613,7 @@ namespace math {
                 queue.finish();
                 
                 std::vector<Valuable> newSolutions;
-                for(int i = sz; sz-->0;)
+                for(int i = wgsz; i-->0;)
                     if (z[i] == 0) {
                         // lets recheck on host
                         auto copy = *this;
@@ -646,7 +646,7 @@ namespace math {
                     
                 }
                 
-                IMPLEMENT
+                // TODO : IMPLEMENT
                 
                 break;
             }

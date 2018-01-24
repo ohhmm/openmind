@@ -291,8 +291,10 @@ namespace math {
                         if (dn == *it) {
                             Delete(it);
                             fo *= dn;
-                            fo.optimize();
-                            // not a fraction any more
+                            break;
+                        } else if (it->IsExponentiation() && Exponentiation::cast(*it)->getBase()==dn) {
+                            Update(it, *it/dn);
+                            fo *= dn;
                             break;
                         }
                         else  ++it;
@@ -544,6 +546,12 @@ namespace math {
                     optimize();
                     return *this;
                 }
+                else if (it->IsExponentiation() && Exponentiation::cast(*it)->getBase()==v)
+                {
+                    Update(it, *it / v);
+                    optimize();
+                    return *this;
+                }
             }
         }
         return *this *= Fraction(1, v);
@@ -566,9 +574,13 @@ namespace math {
 
     Valuable& Product::d(const Variable& x)
     {
-        *this *= vars[x];
-        *this /= x;
-        optimize();
+        if(vars.find(x) != vars.end())
+        {
+            *this *= vars[x];
+            *this /= x;
+            optimize();
+        }else
+            Become(0_v);
         return *this;
     }
     
