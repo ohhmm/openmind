@@ -12,7 +12,7 @@ namespace math {
 
     Valuable Variable::operator -() const
     {
-        return Valuable(Product(-1, *this).Clone());
+        return Product{-1, *this};
     }
     
     Valuable& Variable::operator +=(const Valuable& v)
@@ -20,15 +20,12 @@ namespace math {
         auto c = cast(v);
         if(c && *c==*this)
         {
-            return Become(Product(2, *this));
+            Become(Product{2, *this});
         }
+        else
+            Become(Sum{*this, v});
 
-        return Become(Sum(*this, v));
-    }
-    
-    Valuable& Variable::operator +=(int v)
-    {
-        return Become(Sum(*this, v));
+        return *this;
     }
     
     Valuable& Variable::operator *=(const Valuable& v)
@@ -38,7 +35,7 @@ namespace math {
         }
         else if (Exponentiation::cast(v))
             return Become(v**this);
-        return Become(Product(*this, v));
+        return Become(Product{*this, v});
     }
     
     Valuable& Variable::operator /=(const Valuable& v)
@@ -130,7 +127,7 @@ namespace math {
     bool Variable::IsComesBefore(const Valuable& v) const
     {
         return (Product::cast(v))
-            ? Product(1,*this).IsComesBefore(v)
+            ? Product{*this}.IsComesBefore(v)
             : base::IsComesBefore(v);
     }
     

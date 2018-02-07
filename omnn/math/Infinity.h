@@ -1,21 +1,20 @@
 #pragma once
-
 #include "ValuableDescendantContract.h"
 
 namespace omnn{
 namespace math {
 
-/**
- * for accessing a valuable members
- */
-class Accessor
-        : public ValuableDescendantContract<Accessor>
+
+class Infinity
+        : public ValuableDescendantContract<Infinity>
 {
-    friend class Valuable;
-    Valuable& v;
-    size_t& h;
+    using base = ValuableDescendantContract<Infinity>;
+
+protected:
+    std::ostream& print(std::ostream& out) const override;
+
 public:
-    Accessor(Valuable& m, size_t& hash);
+    using base::base;
 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
@@ -25,12 +24,8 @@ public:
     Valuable& operator --() override;
     Valuable& operator ++() override;
     Valuable& operator^=(const Valuable&) override;
+    Valuable& d(const Variable& x) override;
     bool operator <(const Valuable& v) const override;
-    bool operator ==(const Valuable& v) const override;
-
-    const Variable* FindVa() const override;
-    void CollectVa(std::set<Variable>&) const override;
-    void Eval(const Variable& va, const Valuable& v) override;
 };
 
 }}

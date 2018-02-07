@@ -13,6 +13,9 @@
 #include <map>
 #include <type_traits>
 
+#ifndef NDEBUG
+# define BOOST_COMPUTE_DEBUG_KERNEL_COMPILATION
+#endif
 #include <boost/compute.hpp>
 
 namespace omnn{
@@ -107,13 +110,14 @@ namespace math {
             return;
         isOptimizing = true;
 
-        Valuable w = 0_v;
+        Valuable w;
         do
         {
             w = *this;
             if (members.size() == 1) {
-                cont::iterator b = members.begin();
-                Become(std::move(const_cast<Valuable&>(*b)));
+                Valuable m;
+                {m = *members.begin();}
+                Become(std::move(m));
                 isOptimizing = false;
                 return;
             }
@@ -199,7 +203,7 @@ namespace math {
                              //&& (!p || p->GetFirstOccurence<Sum>() != p->end())
                             && c.getCommonVars()==it2->getCommonVars())
                     {
-                        auto sum = p ? c : Product(c);
+                        auto sum = p ? c : Product{c};
                         sum += *it2;
                         if (!sum.IsSum()) {
                             c = sum;
@@ -215,7 +219,6 @@ namespace math {
                     ++it;
                 else
                 {
-                    std::cout << it->str() << " -> " << c.str() << std::endl;
                     Update(it, c);
                 }
             }
@@ -304,12 +307,11 @@ namespace math {
 
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
-        Valuable sum = 0_v;
+        Valuable sum = Sum{};
         auto add = [&](const Valuable& m)
         {
-            auto s = Sum::cast(sum);
-            if (s) {
-                const_cast<Sum*>(s)->Add(m);
+            if (sum.IsSum()) {
+                Sum::cast(sum)->Add(m);
             }
             else
                 sum += m;
@@ -354,7 +356,7 @@ namespace math {
             {
                 while(*this != 0_v)
                 {
-                    if(cast(*this))
+                    if(IsSum())
                     {
                         auto t = *begin() / *i->begin();
                         s += t;
@@ -613,7 +615,7 @@ namespace math {
                 queue.finish();
                 
                 std::vector<Valuable> newSolutions;
-                for(int i = wgsz; i-->0;)
+                for(auto i = wgsz; i-->0;)
                     if (z[i] == 0) {
                         // lets recheck on host
                         auto copy = *this;

@@ -6,13 +6,14 @@
  */
 
 #pragma once
+//#include <any>
 #include <memory>
 #include <set>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <boost/any.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
+#include "Integer.h"
 
 namespace omnn {
 namespace math {
@@ -54,7 +55,7 @@ namespace math {
         static ptr make(){
             return new TypedVarHost<T>();
         }
-        template<class T = boost::multiprecision::cpp_int>
+        template<class T = Valuable>
         static cref Global(){
             static TypedVarHost<T> host;
             return host;
@@ -62,6 +63,7 @@ namespace math {
         virtual bool Has(const any::any& id) const = 0;
         virtual size_t Hash(const any::any& id) const = 0;
         virtual any::any NewVarId() = 0;
+        virtual any::any CloneId(const any::any& a) = 0;
         virtual bool CompareIdsLess(const any::any& a, const any::any& b) const = 0;
         virtual bool CompareIdsEqual(const any::any& a, const any::any& b) const = 0;
         virtual std::ostream& print(std::ostream& out, const any::any& v) const = 0;
@@ -107,7 +109,10 @@ namespace math {
                 std::stringstream s;
                 s<< name << ++n;
                 return s.str();
-            } else if (std::is_arithmetic<T>::value || std::is_same<boost::multiprecision::cpp_int, T>::value) {
+            } else if (std::is_arithmetic<T>::value
+                       || std::is_same<boost::multiprecision::cpp_int, T>::value
+                       || std::is_same<Integer, T>::value
+                       || std::is_same<Valuable, T>::value) {
                 auto n = last;
                 typename decltype(varIds)::iterator inserted;
                 while(varIds.find(++n)!=varIds.end());
@@ -117,6 +122,10 @@ namespace math {
                 throw "Implement!";
             }
             
+        }
+        
+        any::any CloneId(const any::any& a) override {
+            return any::any_cast<T>(a);
         }
         
         bool Has(const any::any& id) const override {

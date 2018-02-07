@@ -262,17 +262,25 @@ namespace math {
         // fraction optimizations
         auto f = GetFirstOccurence<Fraction>();
         if (f != members.end()) {
-            Valuable fo = *Fraction::cast(*f);
-            // do not become a fraction for optimizations, because sum operate with products to analyse polynomial grade in FormulaOfVa
-            // optimize here instead
-            auto dn = const_cast<Fraction*>(Fraction::cast(fo))->Denominator();
+            Valuable fo = *f;
+            auto fc = Fraction::cast(fo);
+            auto dn = fc->getDenominator();
             auto pd = Product::cast(dn);
             if (pd) {
                 for (auto it = members.begin(); it != members.end();)
                 {
                     if (pd->Has(*it)) {
-                        dn /= *it;
+                        fo *= *it;
                         Delete(it);
+                        
+                        if ((fc = Fraction::cast(fo)) &&
+                            (dn = fc->getDenominator()) &&
+                            (pd = Product::cast(dn))
+                            ) {
+                            it = pd->begin();
+                        }
+                        else
+                            break;
                     }
                     else  ++it;
                 }
@@ -284,8 +292,7 @@ namespace math {
             auto ff = Fraction::cast(fo);
             if (ff) {
                 auto dn = ff->getDenominator();
-                pd = Product::cast(dn);
-                if (!pd) {
+                if (!dn.IsProduct()) {
                     for (auto it = members.begin(); it != members.end();)
                     {
                         if (dn == *it) {
@@ -367,13 +374,13 @@ namespace math {
         auto is = getMaxVaExp() > v.getMaxVaExp();
         if (!is)
         {
-            Valuable t;
             auto p = cast(v);
+            Product vp{v};
             if(!p)
             {
-                t=Product(1,v);
-                p=cast(t);
+                p=cast(vp);
             }
+            
             if (p)
             {
                 if (getMaxVaExp() != p->getMaxVaExp())
@@ -425,20 +432,22 @@ namespace math {
     
     Valuable& Product::operator +=(const Valuable& v)
     {
-            if (*this == v)
-                return *this *= 2;
-            if(*this == -v)
-                return Become(0_v);
-
-            auto cv = getCommonVars();
-            if (!cv.empty() && cv == v.getCommonVars())
-            {
-                auto valuable = varless() + v.varless();
-                valuable *= getVaVal();
-                return Become(std::move(valuable));
-            }
+        if(v == 0_v)
+            return *this;
+        if (*this == v)
+            return *this *= 2;
+        if(*this == -v)
+            return Become(0_v);
         
-        return Become(Sum(*this, v));
+        auto cv = getCommonVars();
+        if (!cv.empty() && cv == v.getCommonVars())
+        {
+            auto valuable = varless() + v.varless();
+            valuable *= getVaVal();
+            return Become(std::move(valuable));
+        }
+
+        return Become(Sum { *this, v });
     }
 
     Valuable& Product::operator *=(const Valuable& v)
@@ -564,12 +573,12 @@ namespace math {
 
 	Valuable& Product::operator --()
 	{
-		return Become(Sum(this, -1));
+        return operator+=(-1);
 	}
 
 	Valuable& Product::operator ++()
 	{
-		return Become(Sum(this, 1));
+		return operator+=(1);
 	}
 
     Valuable& Product::d(const Variable& x)

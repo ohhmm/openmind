@@ -20,11 +20,7 @@ public:
     bool IsExponentiation() const override { return true; }
     const Valuable& getBase() const { return ebase; }
     const Valuable& getExponentiation() const { return eexp; }
-    /// returns r/w accessor
-    Valuable getBaseAccessor();
-    /// returns r/w accessor
-    Valuable getExponentiationAccessor();
-    int getMaxVaExp() const override;
+    a_int getMaxVaExp() const override;
 
     // virtual operators
     Valuable operator -() const override;

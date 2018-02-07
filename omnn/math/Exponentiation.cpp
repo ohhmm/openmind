@@ -2,7 +2,6 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Exponentiation.h"
-#include "Accessor.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
@@ -18,7 +17,7 @@ namespace math {
         auto ie = Integer::cast(e);
         if(ie)
         {
-            maxVaExp = boost::numeric_cast<decltype(maxVaExp)>(ie->operator Integer::const_base_int_ref());
+            maxVaExp = ie->operator Integer::const_base_int_ref();
         }
         else
         {
@@ -26,17 +25,7 @@ namespace math {
         }
     }
     
-    Valuable Exponentiation::getBaseAccessor()
-    {
-        return Accessor(ebase, hash);
-    }
-    
-    Valuable Exponentiation::getExponentiationAccessor()
-    {
-        return Accessor(eexp, hash);
-    }
-    
-    int Exponentiation::getMaxVaExp() const
+    a_int Exponentiation::getMaxVaExp() const
     {
         auto vaBase = Variable::cast(ebase);
         if (vaBase) {
@@ -50,7 +39,7 @@ namespace math {
     
 	Valuable Exponentiation::operator -() const
     {
-        return Product(*this, -1);;
+        return Product {*this, -1};
     }
 
     void Exponentiation::optimize()
@@ -192,7 +181,7 @@ namespace math {
     
     Valuable& Exponentiation::operator +=(const Valuable& v)
     {
-        return Become(Sum(*this, v));
+        return Become(Sum {*this, v});
     }
 
     Valuable& Exponentiation::operator *=(const Valuable& v)
@@ -206,7 +195,7 @@ namespace math {
             }
             else
             {
-                Become(Product(*this, v));
+                Become(Product {*this, v});
             }
         }
         else
@@ -224,7 +213,7 @@ namespace math {
             }
             else
             {
-                Become(Product(*this, v));
+                Become(Product{*this, v});
             }
         }
 
@@ -410,7 +399,7 @@ namespace math {
         }
         else if(Product::cast(v))
         {
-            is = Product(1,*this).IsComesBefore(v);
+            is = Product{*this}.IsComesBefore(v);
         }
         else
             IMPLEMENT

@@ -45,11 +45,12 @@ namespace math {
                                              d_.Eval(getVa(), i);
                                              d_.optimize();
                                              std::cout << "trying " << i << " got " << _ << " f'(" << i << ")=" << d_ << std::endl;
-                                             if(!haveMin || _ < min) {
+                                             if(!haveMin || _.abs() < min.abs()) {
                                                  closest = i;
                                                  min = _;
                                                  haveMin = true;
-                                             } else if(mode==FirstExtrenum)
+                                             }
+                                             else if(mode==FirstExtrenum)
                                              {
                                                  if (haveMin) {
                                                      singleIntegerRoot=closest;

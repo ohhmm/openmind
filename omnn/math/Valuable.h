@@ -9,16 +9,21 @@
 #include <set>
 #include <typeindex>
 #include <boost/shared_ptr.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+
+#define IMPLEMENT { implement(); throw; }
 
 namespace omnn{
 namespace math {
     
+    using a_int = boost::multiprecision::cpp_int;
     namespace ptrs = ::std;
 
-    class Accessor;
     class Variable;
     struct ValuableDescendantMarker {};
     
+    void implement();
+
 class Valuable
         : public OpenOps<Valuable>
 {
@@ -28,25 +33,30 @@ public:
 	using self = Valuable;
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
-    /// gets valuable under accessor if accessor passed
-    static const Valuable* accessor_cast(const Valuable& mayBeAccessor);
 
 protected:
     virtual Valuable* Clone() const;
+    virtual Valuable* Move();
+    virtual void New(void*, Valuable&&);
     virtual int getTypeSize() const;
-
+    virtual int getAllocSize() const;
+    virtual void setAllocSize(int sz);
+    
     template<class T>
     static const T* cast(const Valuable& v)
     {
         auto e = v.exp;
         while (e && e->exp) e = e->exp;
         auto t = dynamic_cast<const T*>(e ? e.get() : &v);
-        if (!t)
-        {
-            auto a = accessor_cast(v);
-            if (a)
-                t = cast<T>(*a);
-        }
+        return t;
+    }
+    
+    template<class T>
+    static T* cast(Valuable& v)
+    {
+        auto e = v.exp;
+        while (e && e->exp) e = e->exp;
+        auto t = dynamic_cast<T*>(e ? e.get() : &v);
         return t;
     }
     
@@ -56,9 +66,16 @@ protected:
     {}
     
     Valuable(const Valuable& v, ValuableDescendantMarker)
-    : hash(v.hash)
-    , maxVaExp(v.maxVaExp)
+    : hash(v.Hash())
+    , maxVaExp(v.getMaxVaExp())
     {}
+    
+    Valuable(Valuable&& v, ValuableDescendantMarker)
+    : hash(v.Hash())
+    , maxVaExp(v.getMaxVaExp())
+    {
+        
+    }
     
     virtual std::ostream& print(std::ostream& out) const;
     virtual std::ostream& code(std::ostream& out) const;
@@ -66,13 +83,16 @@ protected:
     virtual Valuable& Become(Valuable&& i);
     
     size_t hash = 0;
-    int maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
+    size_t sz = sizeof(Valuable);
+    a_int maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
+    
+    static std::function<Valuable()> DefaultCachedFm();
     std::function<Valuable()> cachedFreeMember = [this]()->Valuable{
         auto c = calcFreeMember();
         this->cachedFreeMember = [c](){return c;};
         return c;
     };
-    
+
 public:
 
     enum View
@@ -89,9 +109,34 @@ public:
     operator std::type_index() const;
     
     Valuable& operator =(const Valuable& v);
-    Valuable& operator =(const Valuable&& v);
+    Valuable& operator =(Valuable&& v);
+    
+    
     Valuable(const Valuable& v);
-    Valuable(Valuable&& v);
+
+    template<class T>
+    Valuable(const T&& t)
+    : exp(t.Clone())
+    , hash(t.Hash())
+    , maxVaExp(t.getMaxVaExp())
+    {
+    }
+     
+    template<class T,
+        typename = typename std::enable_if<
+                std::is_rvalue_reference<T>::value &&
+                !std::is_const<T>::value>::type
+    >
+    Valuable(T t)
+    : exp(t.Move())
+    , hash(t.Hash())
+    , maxVaExp(t.getMaxVaExp())
+    {
+        //Become(std::move(t));
+    }
+
+    Valuable(Valuable&&) = default;
+    
     Valuable(double d);
     Valuable(int i = 0);
     Valuable(const long i);
@@ -109,8 +154,8 @@ public:
     virtual Valuable& operator++();
     virtual Valuable& operator^=(const Valuable&);
     virtual Valuable& d(const Variable& x);
-    virtual bool operator<(const Valuable& smarter) const;
-    virtual bool operator==(const Valuable& smarter) const;
+    virtual bool operator<(const Valuable&) const;
+    virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
     virtual void SetView(View v) { view = v; }
 
@@ -144,7 +189,7 @@ public:
     bool HasSameVars(const Valuable& v) const;
     bool IsMonicPolynomial() const;
 
-    virtual int getMaxVaExp() const;
+    virtual a_int getMaxVaExp() const;
     using vars_cont_t = std::map<Variable, Valuable>;
     virtual const vars_cont_t& getCommonVars() const;
     static const vars_cont_t& emptyCommonVars();
@@ -166,12 +211,7 @@ protected:
     View view = View::Flat;
 };
 
-    template<>
-    const Accessor* Valuable::cast(const Valuable& v);
-    
     size_t hash_value(const omnn::math::Valuable& v);
-    
-    void implement();
 }}
 
 namespace std
@@ -190,5 +230,4 @@ namespace std
 ::omnn::math::Valuable operator"" _v(unsigned long long v);
 ::omnn::math::Valuable operator"" _v(long double v);
 
-#define IMPLEMENT { implement(); throw; }
 

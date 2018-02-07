@@ -4,7 +4,6 @@
 
 #pragma once
 #include <type_traits>
-#include <boost/multiprecision/cpp_int.hpp>
 #include "ValuableDescendantContract.h"
 
 namespace omnn{
@@ -21,7 +20,8 @@ protected:
     std::ostream& print(std::ostream& out) const override;
 
 public:
-	using base_int = boost::multiprecision::cpp_int;
+    using base_int = a_int;
+
 	using const_base_int_ref = const base_int&;
 	
 	using base::base;
@@ -95,11 +95,7 @@ public:
     explicit operator double() const override;
     explicit operator long double() const override;
     explicit operator unsigned char() const override;
-    
-    // concrete operators
-    bool operator <(const Integer& v) const { return arbitrary < v.arbitrary; }
-    bool operator >(const Integer& v) const { return arbitrary > v.arbitrary; }
-    
+
     const Variable* FindVa() const override { return nullptr; }
     bool HasVa(const Variable& va) const override { return false; }
     void CollectVa(std::set<Variable>&) const override { }

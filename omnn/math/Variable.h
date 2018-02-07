@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <boost/any.hpp>
 #include <memory>
 #include "ValuableDescendantContract.h"
 #include "VarHost.h"
@@ -11,18 +10,23 @@
 namespace omnn{
 namespace math {
 
-    namespace any = boost;
-    
 class Variable
         : public ValuableDescendantContract<Variable>
 {
     using base = ValuableDescendantContract<Variable>;
-    VarHost::ptr optionalHostPtr;
     VarHost* varSetHost;
     any::any varId;
     mutable vars_cont_t vars;
     
 public:
+    Variable(const Variable& v)
+    : varSetHost(v.varSetHost)
+    , varId(v.varSetHost->CloneId(v.varId))
+    {
+        hash = v.Hash();
+        maxVaExp=1;
+    }
+    
     Variable(VarHost& varHost = const_cast<VarHost&>(VarHost::Global<>()))
     : varSetHost(&varHost)
     , varId(varHost.NewVarId())
@@ -32,8 +36,7 @@ public:
     }
     
     Variable(VarHost::ptr varHost)
-    : optionalHostPtr(varHost)
-    , varSetHost(varHost.get())
+    : varSetHost(varHost.get())
     , varId(varHost->NewVarId())
     {
         if(!varHost)
@@ -44,7 +47,6 @@ public:
 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable&) override;
-    Valuable& operator +=(int) override;
     Valuable& operator *=(const Valuable&) override;
     Valuable& operator /=(const Valuable&) override;
 //    Valuable& operator %=(const Valuable&) override;

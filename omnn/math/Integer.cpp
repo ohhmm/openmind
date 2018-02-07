@@ -9,11 +9,12 @@
 #include "Product.h"
 #include <algorithm>
 #include <cmath>
+#include <boost/compute.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-
+//#include <libiomp/omp.h>
 
 namespace omnn{
 namespace math {
@@ -238,7 +239,6 @@ namespace math {
                         auto result = nroot ^ dn;
                         if (result == *this)
                         {
-                            rootFound = true;
                             return Become(std::move(nroot));
                         }
                         else
@@ -317,15 +317,67 @@ namespace math {
 
     bool Integer::Factorization(const std::function<bool(const Integer&)>& f) const
     {
+        using namespace boost::compute;
         auto h = arbitrary;
         if(h < 0)
             h = -h;
         if (f(0)) {
             return true;
         }
-        for (base_int i = 1; i <= h; ++i)
-            if (cast(*this/Integer(i)) && f(i))
-                return true;
+        auto up = h; // half
+//        if (arbitrary > std::numeric_limits<cl_long>::max()) {
+        #pragma omp parallel for shared(up)
+        for (base_int i = 1; i <= up; ++i) {
+            auto a = *this;
+            a /= Integer(i);
+            auto ii = cast(a);
+            if (ii) {
+                if(f(i) || f(*ii))
+                    return true;
+                if (*ii < up) {
+                    up = ii->arbitrary;
+                }
+            }
+        }
+//        }
+//        else
+//        {
+//            // build OpenCL kernel
+//            using namespace boost::compute;
+//            auto copy = *this;
+//            copy.optimize();
+//            std::stringstream source;
+//            source << "__kernel void f(__global long16 a, __global long16 *c) {"
+//                << "    const uint i = get_global_id(0);"
+//                << "    c[i] = a/i;"
+//                << ";}";
+//
+//            device cuwinner = system::default_device();
+//            for(auto& p: system::platforms())
+//                for(auto& d: p.devices())
+//                    if (d.compute_units() > cuwinner.compute_units())
+//                        cuwinner = d;
+//            auto wgsz = cuwinner.max_work_group_size();
+//            context context(cuwinner);
+//
+//            kernel k(program::build_with_source(source.str(), context), "f");
+//            auto sz = wgsz * sizeof(cl_long16);
+//            buffer c(context, sz);
+//            k.set_arg(0, c);
+//
+//            command_queue queue(context, cuwinner);
+//            // run the add kernel
+//            queue.enqueue_1d_range_kernel(k, 0, wgsz, 0);
+//
+//            // transfer results to the host array 'c'
+//            std::vector<cl_long> z(wgsz);
+//            queue.enqueue_read_buffer(c, 0, sz, &z[0]);
+//            queue.finish();
+        
+//        }
+
+        
+//#pragma omp for
         return false;
     }
 }}

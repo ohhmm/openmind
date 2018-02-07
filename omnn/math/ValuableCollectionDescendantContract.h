@@ -20,17 +20,10 @@ namespace math {
     public:
         using iterator = typename cont::iterator;
         using const_reference = typename ContT::const_reference;
-        
-        virtual const cont& GetConstCont() const = 0;
 
-//        template<class... T>
-//        ValuableCollectionDescendantContract(const T&... vals)
-//        {
-//            for (const Valuable& arg : { Valuable(vals)... })
-//            {
-//                Add(arg);
-//            }
-//        }
+        using base::base;
+
+        virtual const cont& GetConstCont() const = 0;
         
         auto begin()
         {
@@ -72,7 +65,7 @@ namespace math {
             return it.first;
         }
         
-        virtual const iterator Add(const_reference item)
+        virtual const iterator Add(const Valuable& item)
         {
             Valuable::hash ^= item.Hash();
             auto it = GetCont().insert(item);
@@ -192,24 +185,6 @@ namespace math {
             return c
                 && Valuable::hash == v.Hash()
                 && GetConstCont()==c->GetConstCont();
-        }
-        
-        template<class T>
-        bool Visit(const std::function<void(Valuable&)>& f)
-        {
-            bool wasVisits = {};
-            auto& c = GetCont();
-            auto e = c.end();
-            for(auto i = c.begin(); i != e; ++i)
-            {
-                auto v = T::cast(*i);
-                if(v)
-                {
-                    f(CollectionAccessor(*v, *this));
-                    wasVisits = true;
-                }
-            }
-            return wasVisits;
         }
     };
 }}

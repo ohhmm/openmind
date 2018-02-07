@@ -3,7 +3,6 @@
 //
 
 #include "Valuable.h"
-#include "Accessor.h"
 #include "Fraction.h"
 #include "Integer.h"
 #include "Variable.h"
@@ -29,10 +28,32 @@ namespace math {
             IMPLEMENT
     }
 
+    Valuable* Valuable::Move()
+    {
+        if (exp)
+            return exp->Move();
+        else
+            IMPLEMENT
+    }
+    
+    void Valuable::New(void*, Valuable&&)
+    {
+        IMPLEMENT
+    }
+   
     int Valuable::getTypeSize() const
     {
-        assert(typeid(*this)==typeid(Valuable));
         return sizeof(Valuable);
+    }
+
+    int Valuable::getAllocSize() const
+    {
+        return sz;
+    }
+    
+    void Valuable::setAllocSize(int sz)
+    {
+        this->sz = sz;
     }
     
     Valuable::operator std::type_index() const
@@ -40,66 +61,83 @@ namespace math {
         return exp ? static_cast<std::type_index>(*exp) : std::type_index(typeid(*this));
     }
     
-    /// gets valuable under accessor if accessor passed
-    const Valuable* Valuable::accessor_cast(const Valuable& mayBeAccessor)
-    {
-        auto a = Accessor::cast(mayBeAccessor);
-        //todo:CollecctionAccessor
-        return a ? &a->v : nullptr;
-    }
-    
-    template<>
-    const Accessor* Valuable::cast(const Valuable& v)
-    {
-        auto e = v.exp;
-        while (e && e->exp) e = e->exp;
-        return dynamic_cast<const Accessor*>(e ? e.get() : &v);
-    }
-    
     Valuable& Valuable::Become(Valuable&& i)
     {
-        Valuable v(std::move(i)); // move here in case it moved from the object member
-        v.optimize();
-        auto e = v.exp;
+        auto h = i.Hash();
+        auto e = i.exp;
         if(e)
+        {
             while (e->exp) {
                 e = e->exp;
             }
-        Valuable& toMove = e ? *e.get() : v;
-        auto sizeWas = getTypeSize();
-        auto newSize = toMove.getTypeSize();
-
-        this->~Valuable();        // before this call
-        if (newSize <= sizeWas) {
             
+            if(exp)
+            {
+                exp = e;
+                if (Hash() != h) {
+                    IMPLEMENT
+                }
+            }
+            else
+            {
+                auto moved = e->Move();
+                this->~Valuable();
+                new(this) Valuable(moved);
+                if (Hash() != h) {
+                    IMPLEMENT
+                }
+                optimize();
+            }
+            
+            e.reset();
         }
-        new(this) Valuable(std::move(toMove)); // todo : not neccesarily wrap into Valuable if there is space. it need to be checked through through typeid
+        else
+        {
+            auto sizeWas = getAllocSize();
+            auto newSize = i.getTypeSize();
+            
+            if (newSize <= sizeWas) {
+                constexpr decltype(newSize) BufSz = 512;
+                assert(BufSz >= newSize);
+                char buf[BufSz];
+                i.New(buf, std::move(i));
+                Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
+                this->~Valuable();
+                i.New(this, std::move(bufv));
+                setAllocSize(sizeWas);
+                if (Hash() != h) {
+                    IMPLEMENT
+                }
+                optimize();
+            }
+            else if(exp && exp->getAllocSize() >= newSize)
+            {
+                exp->Become(std::move(i));
+            }
+            else
+            {
+                auto moved = i.Move();
+                this->~Valuable();
+                new(this) Valuable(moved);
+                if (Hash() != h) {
+                    IMPLEMENT
+                }
+                optimize();
+            }
+        }
+        
         return *this;
     }
 
-    Valuable& Valuable::operator =(const Valuable&& v)
+    Valuable& Valuable::operator =(Valuable&& v)
     {
-        exp = std::move(v.exp);
-        hash = std::move(v.hash);
-        maxVaExp = std::move(v.maxVaExp);
-        if (!exp)
-            exp.reset(v.Clone());
-        return *this;
+        return Become(std::move(v));
     }
 
     Valuable& Valuable::operator =(const Valuable& v)
     {
         exp.reset(v.Clone());
         return *this;
-    }
-
-    Valuable::Valuable(Valuable&& v) :
-            exp(std::move(v.exp)),
-            hash(std::move(v.hash)),
-            maxVaExp(std::move(v.maxVaExp))
-    {
-        if (!exp)
-            exp.reset(v.Clone());
     }
 
     Valuable::Valuable(const Valuable& v) :
@@ -436,7 +474,7 @@ namespace math {
         return vars.size() == 1;
     }
     
-    int Valuable::getMaxVaExp() const
+    a_int Valuable::getMaxVaExp() const
     {
         return exp ? exp->getMaxVaExp() : maxVaExp;
     }

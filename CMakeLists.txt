@@ -14,7 +14,17 @@ option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare 
 
 include_directories(${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/boost/gil/include
+    ${CMAKE_SOURCE_DIR}/boost/multiprecision/include
 )
+
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+#elseif(NOT MSVC)
+#   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 find_package(Boost)

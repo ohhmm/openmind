@@ -39,26 +39,30 @@ protected:
 public:
     
     using base::base;
-    
-    const cont& GetConstCont() const override { return members; }
-    const iterator Add(const Valuable& item) override;
-    void Update(typename cont::iterator& it, const Valuable& v) override;
-    void Delete(typename cont::iterator& it) override;
-    
-	template<class... T>
-	Product(const T&... vals)
-	{
-		for (const auto& arg : { Valuable(vals)... })
-		{
-			Add(arg);
-		}
-	}
 
 	Product() : members {{1}}
 	{
-        hash = members.begin()->Hash();
+		hash = members.begin()->Hash();
+	}
+
+    Product(std::initializer_list<Valuable> l)
+    {
+        for (const auto& arg : l)
+        {
+            auto a = cast(arg);
+            if(a)
+                for(auto& m: *a)
+                    this->Add(m);
+            else
+                this->Add(arg);
+        }
     }
     
+	const cont& GetConstCont() const override { return members; }
+    const iterator Add(const Valuable& item) override;
+    void Update(typename cont::iterator& it, const Valuable& v) override;
+    void Delete(typename cont::iterator& it) override;
+
     const vars_cont_t& getCommonVars() const override;
     vars_cont_t getCommonVars(const vars_cont_t& with) const;
     

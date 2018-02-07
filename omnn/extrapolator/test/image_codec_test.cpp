@@ -93,14 +93,15 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
     
     // outband data deduce
-    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum); // extra rough
-    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
-    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
-    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::FirstExtrenum);
-    dst = decltype(src)(4,4);
+    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Closest); // extra rough
+    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Closest);
+    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Closest);
+    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Closest);
+    ++cols;
+    dst = decltype(src)(rows, cols);
     dv = view(dst);
-    for (auto i = rows*2; i--;) { // raw
-        for (auto j = cols*2; j--;) { // column
+    for (auto i = rows; i--;) { // raw
+        for (auto j = cols; j--;) { // column
             auto& d = dv(i, j);
             get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
             get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));

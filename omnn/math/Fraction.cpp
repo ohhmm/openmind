@@ -2,7 +2,6 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Fraction.h"
-#include "Accessor.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
@@ -158,7 +157,7 @@ namespace math {
             }
             else
             {
-                return Become(Sum(*this, v));
+                return Become(Sum {*this, v});
             }
         }
         return *this;
@@ -173,13 +172,12 @@ namespace math {
             denominator *= f->denominator;
         }
         else{
-            auto i = Integer::cast(v);
-            if (i) {
+            if (v.IsInt()) {
                 numerator *= v;
             }
             else
             {
-                return Become(Product(*this, v));
+                return Become(Product{*this, v});
             }
         }
 		
@@ -382,16 +380,6 @@ namespace math {
             vars[r.first] -= r.second;
         }
         return vars;
-    }
-
-    Valuable Fraction::Denominator()
-    {
-        return Accessor(denominator, hash);
-    }
-
-    Valuable Fraction::Numerator()
-    {
-        return Accessor(numerator, hash);
     }
 
     Fraction::operator boost::multiprecision::cpp_dec_float_100() const

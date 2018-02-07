@@ -55,29 +55,25 @@ public:
     Valuable calcFreeMember() const override;
     void solve(const Variable& va, std::set<Valuable>& solutions) const override;
 
-
     using base::base;
+    Sum(Sum&&)=default;
+    Sum(const Sum&)=default;
     
     const iterator Add(const Valuable& item) override;
     void Update(typename cont::iterator& it, const Valuable& v) override;
     bool IsComesBefore(const Valuable& v) const override;
 
-    Sum(const Valuable& f) {
-        Add(f);
-    }
-    
-    template<class ...T>
-    Sum(const T&... vals)
+    Sum(std::initializer_list<Valuable> l)
     {
-		for (const auto& arg : { Valuable(vals)...})
-		{
+        for (const auto& arg : l)
+        {
             auto a = cast(arg);
             if(a)
                 for(auto& m: *a)
-                    Add(m);
+                    this->Add(m);
             else
-                Add(arg);
-		}
+                this->Add(arg);
+        }
     }
 
     size_t FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const;

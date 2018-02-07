@@ -23,20 +23,31 @@ void ohashes(const Valuable& v)
 
 BOOST_AUTO_TEST_CASE(Sum_tests)
 {
-    Variable v,v1,v2;
-    Valuable val1 = -2_v/3*v1;
+    Variable v1,v2,v3;
+    
+    auto _1 = (v1 + -1)*v1;
+    auto _2 = (v1^2) + -1*v1;
+    BOOST_TEST(_1 == _2);
+    
+    _1 = Sum{1, -1};
+    BOOST_TEST(_1 == 0_v);
+    
+    auto val1 = -2_v/3*v1;
     val1 += v1*v1;
     val1 += 1_v/9;
-    Valuable val2 = 1_v/9 + v1*v1 + -2_v/3*v1;
+    auto val2 = 1_v/9 + v1*v1 + -2_v/3*v1;
     std::cout << val1 << " == " << val2 << std::endl;
     BOOST_TEST((-2_v/3*v1 + v1*v1 + 1_v/9) == (1_v/9 + v1*v1 + -2_v/3*v1));
-    BOOST_TEST(1_v/9 - (2_v/3) * v + v*v == 1_v/9 - (2_v/3) * v + v*v);
+    BOOST_TEST(1_v/9 - (2_v/3) * v3 + v3*v3 == 1_v/9 - (2_v/3) * v3 + v3*v3);
     
-    auto t = v-1;
+    auto t = v3-1;
+    BOOST_TEST(((v3-1)^2) == t^2);
     auto sq = t*t;
     sq.optimize();
-    BOOST_TEST(sq == (v^2)-v*2+1);
-    BOOST_TEST(sq/t == t);
+    BOOST_TEST(sq == t^2);
+    BOOST_TEST(sq == (v3^2)-v3*2+1);
+    _1 = sq/t;
+    BOOST_TEST(_1 == t);
     
     Valuable
         f = 1_v / 2,
@@ -49,9 +60,9 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     std::cout << a << std::endl;
     
     auto s=a;
-    s+=v;
+    s+=v3;
     std::cout << s;
-    BOOST_TEST(s == a+v);
+    BOOST_TEST(s == a+v3);
     std::cout << s << std::endl;
     ohashes(s);
     ohashes(-1_v/3 + v1);
@@ -61,13 +72,13 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     ohashes(s);
     s.optimize();
     ohashes(s);
-    t = 1_v/9 - (2_v/3) * v + v*v;
+    t = 1_v/9 - (2_v/3) * v3 + v3*v3;
     ohashes(t);
-    BOOST_TEST(s == 1_v/9 - (2_v/3) * v + v*v);
+    BOOST_TEST(s == 1_v/9 - (2_v/3) * v3 + v3*v3);
 
     BOOST_TEST((v1*v2 + v1*v1*v2 + 1/3*125*v1 + 1/3*125*v1*v1) == (v1*v2 + 1/3*125*v1 + 1/3*125*v1*v1 + v1*v1*v2));
 //    BOOST_TEST((((65851823091255177969664_v*v11*v11*v11*v11*v11 + -4433312658227724288*v11*v11*v11*v11*v11*v11))/(v11*v11*v11*v11*v11*v11*v11*v11*v11*v11*v11) + v9*v9*-23702740992/(v11*v11*v11*v11*v11) + v10*v10*-23702740992/(v11*v11*v11*v11*v11)) == (((65851823091255177969664*v11*v11*v11*v11*v11 + -4433312658227724288*v11*v11*v11*v11*v11*v11))/(v11*v11*v11*v11*v11*v11*v11*v11*v11*v11*v11) + v9*v9*-23702740992/(v11*v11*v11*v11*v11) + v10*v10*-23702740992/(v11*v11*v11*v11*v11)))
-    s = (v+1)+(v1+v2);
+    s = (v3+1)+(v1+v2);
     s.optimize();
     auto sc = Sum::cast(s);
     BOOST_TEST(sc);
@@ -149,5 +160,15 @@ BOOST_AUTO_TEST_CASE(Become_tests)
     BOOST_TEST(isValuableType);
     bool isInnerSum = typeid(*s.exp.get())==typeid(Sum);
     BOOST_TEST(isInnerSum);
+}
+
+BOOST_AUTO_TEST_CASE(Solution_tests)
+{
+    Variable v;
+    auto sol = ((v^2)-4_v).solutions(v);
+    auto solution1 = *sol.begin();
+    BOOST_TEST(solution1 == -2_v);
+    auto solution2 = *sol.rbegin();
+    BOOST_TEST(solution1 == -solution2);
 }
 

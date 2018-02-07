@@ -15,9 +15,8 @@ namespace math {
 			: public ValuableDescendantContract<Fraction>
 	{
 		using base = ValuableDescendantContract<Fraction>;
-		using value_type = omnn::math::Valuable;
-		using const_ref_type = const value_type&;
-		value_type numerator, denominator;
+
+		Valuable numerator, denominator;
         mutable vars_cont_t vars;
         
 	protected:
@@ -51,7 +50,7 @@ namespace math {
             hash = numerator.Hash() ^ denominator.Hash();
         }
 
-		Fraction(const_ref_type n)
+		Fraction(const Valuable& n)
 		: numerator(n)
 		, denominator(1)
 		{
@@ -66,7 +65,7 @@ namespace math {
         
 		Fraction(const Integer& n);
 
-		Fraction(const_ref_type n, const_ref_type d)
+		Fraction(const Valuable& n, const Valuable& d)
 				: numerator(n), denominator(d)
 		{
             hash = numerator.Hash() ^ denominator.Hash();
@@ -81,11 +80,6 @@ namespace math {
 
         const Valuable& getDenominator() const { return denominator; }
         const Valuable& getNumerator() const { return numerator; }
-        
-        /// returns rw accessor
-		Valuable Denominator();
-        /// returns rw accessor
-		Valuable Numerator();
 
         operator boost::multiprecision::cpp_dec_float_100() const;
         

@@ -7,8 +7,30 @@
 #include "Integer.h"
 #include "Valuable.h"
 
+using namespace omnn::math;
+
+BOOST_AUTO_TEST_CASE(BaseInt_tests)
+{
+    Integer::base_int i = 0;
+    BOOST_TEST(!i);
+    BOOST_TEST(i==0);
+    ++--i;
+    BOOST_TEST(!i);
+    BOOST_TEST(i==0);
+    BOOST_TEST(i==Integer::base_int(0));
+
+    auto _1 = 0_v;
+    BOOST_TEST(_1 == 0_v);
+    --++_1;
+    BOOST_TEST(!_1);
+    BOOST_TEST(_1 == 0_v);
+}
+
 BOOST_AUTO_TEST_CASE(Integer_tests)
 {
+    auto aa = Valuable(1_v);
+    auto bb =aa;
+    auto cc = std::move(aa);
     using int_t = omnn::math::Integer;
     const int_t initial_a = 2;
     BOOST_TEST(initial_a == 2);
