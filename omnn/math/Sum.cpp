@@ -526,7 +526,10 @@ namespace math {
         auto grade = FillPolyCoeff(coefficients, va);
         switch (grade) {
             case 1: {
-                IMPLEMENT
+                //x=-(b/a)
+                auto& b = coefficients[0];
+                auto& a = coefficients[1];
+                solutions.insert(-b / a);
                 break;
             }
             case 2: {
