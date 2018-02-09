@@ -71,7 +71,7 @@ namespace math {
                 e = e->exp;
             }
             
-            if(exp)
+            if(exp && e.unique())
             {
                 exp = e;
                 if (Hash() != h) {

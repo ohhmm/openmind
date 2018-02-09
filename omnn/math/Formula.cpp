@@ -48,7 +48,10 @@ namespace math {
         bool is = {};
         auto e = Exponentiation::cast(_);
         if (e) {
-            auto s = Sum::cast(e->getBase());
+            static const Valuable z = 0_v;
+            bool isSum = e->getBase().IsSum();
+            Valuable sum = Sum{e->getBase(), z};
+            auto s = Sum::cast(isSum ? e->getBase() : sum);
             if (s) {
                 if (s->size() != 2) {
                     IMPLEMENT
@@ -69,8 +72,9 @@ namespace math {
                     if (isCoord) {
                         is = predicate(*vaVal.second, maxCoord);
                     }
-                    else if (value)
-                        *value = &*va;
+                    else if (value) {
+                        *value = isSum ? &*va : &z;
+                    }
                 }
                 else
                     IMPLEMENT
@@ -79,7 +83,7 @@ namespace math {
                 IMPLEMENT
                 }
         else
-            IMPLEMENT
+            IMPLEMENT;
         return is;
     }
     
@@ -134,7 +138,7 @@ namespace math {
                 bool is = std::all_of(std::begin(*s), std::end(*s),
                                       [&](auto& _) {
                                           return coordMatch(vaVals, _,
-                                                            [&](auto& v, auto& c){
+                                                            [](auto& v, auto& c){
                                                                 return v == c;
                                                             },
                                                             &value
