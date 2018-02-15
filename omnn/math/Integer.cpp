@@ -315,7 +315,7 @@ namespace math {
         return *this;
     }
 
-    bool Integer::Factorization(const std::function<bool(const Integer&)>& f) const
+    bool Integer::Factorization(const std::function<bool(const Integer&)>& f, const zero_zone_t& zz) const
     {
         using namespace boost::compute;
         auto h = arbitrary;
@@ -324,20 +324,39 @@ namespace math {
         if (f(0)) {
             return true;
         }
-        auto up = h; // half
+        bool scanz = zz.second.size();
+        auto scanIt = zz.second.end();
+        Valuable up = Integer(h); // half
+        auto from = 1_v;
+        if (scanz) {
+            if (zz.first.second < up) {
+                up = zz.first.second;
+            }
+            if (zz.first.first > from) {
+                from = zz.first.first;
+            }
+            scanIt = zz.second.begin();
+        }
+        if (!zz.second.empty()) {
+            IMPLEMENT
+        }
 //        if (arbitrary > std::numeric_limits<cl_long>::max()) {
         #pragma omp parallel for shared(up)
-        for (base_int i = 1; i <= up; ++i) {
+        for (auto i = 1_v; i <= up; ++i) {
             auto a = *this;
-            a /= Integer(i);
+            a /= i;
             auto ii = cast(a);
             if (ii) {
-                if(f(i) || f(*ii))
+                if(f(*Integer::cast(i)) || f(*ii))
                     return true;
                 if (*ii < up) {
-                    up = ii->arbitrary;
+                    up = *ii;
                 }
             }
+            
+//            while (scai > scanIt.s) {
+//                <#statements#>
+//            }
         }
 //        }
 //        else

@@ -16,6 +16,14 @@ namespace math {
     {
         Valuable singleIntegerRoot;
         bool haveMin = false;
+        _.optimize();
+        auto sum = Sum::cast(_);
+        if (!sum) {
+            IMPLEMENT
+        }
+        auto extrenums = sum->extrenums(getVa());
+        auto zz = sum->get_zeros_zones(getVa(), extrenums);
+        
         Valuable min;
         Valuable closest;
         auto finder = [&](const Integer* i) -> bool
@@ -59,7 +67,8 @@ namespace math {
                                              }
                                          }
                                          return found;
-                                     });
+                                     },
+                                    zz);
         };
 
         auto freeMember = _.calcFreeMember();

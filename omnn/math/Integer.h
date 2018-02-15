@@ -104,7 +104,9 @@ public:
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
     Valuable sqrt() const override { return *this^(1_v/2); }
     
-    bool Factorization(const std::function<bool(const Integer&)>& f) const;
+    static const zero_zone_t empty_zero_zone;
+    bool Factorization(const std::function<bool(const Integer&)>& f,
+                       const zero_zone_t& zz = empty_zero_zone) const;
 
 private:
 	base_int arbitrary = 0;

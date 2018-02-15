@@ -4,6 +4,7 @@
 
 #pragma once
 #include "OpenOps.h"
+#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -167,14 +168,27 @@ public:
     virtual bool IsVa() const;
     virtual bool IsProduct() const;
     virtual bool IsSum() const;
+    virtual bool IsInfinity() const;
+    virtual bool IsMInfinity() const;
 
     virtual Valuable abs() const;
     virtual Valuable sqrt() const;
     virtual Valuable calcFreeMember() const;
+    
+    bool IsUnivariate() const;
     virtual void solve(const Variable& va, std::set<Valuable>&) const;
-
     std::set<Valuable> solutions() const;
     std::set<Valuable> solutions(const Variable& v) const;
+    
+    using extrenums_t = std::vector<std::pair<Valuable/*value*/,Valuable/*direction*/> >;
+    extrenums_t extrenums() const;
+    extrenums_t extrenums(const Variable& v) const;
+    extrenums_t& extrenums(const Variable& v, extrenums_t& extrs) const;
+
+    using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
+    using zero_zone_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
+    zero_zone_t get_zeros_zones(const Variable& v) const;
+    zero_zone_t get_zeros_zones(const Variable& v, const extrenums_t&) const;
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     

@@ -4,6 +4,7 @@
 
 #include "Valuable.h"
 #include "Fraction.h"
+#include "Infinity.h"
 #include "Integer.h"
 #include "Variable.h"
 #include <boost/numeric/conversion/converter.hpp>
@@ -294,9 +295,22 @@ namespace math {
             IMPLEMENT
     }
 
+    bool Valuable::IsUnivariate() const
+    {
+        std::set<Variable> vars;
+        CollectVa(vars);
+        return (vars.size() == 1);
+    }
+
     std::set<Valuable> Valuable::solutions() const
     {
-        IMPLEMENT
+        std::set<Variable> vars;
+        CollectVa(vars);
+        if (vars.size() == 1) {
+            return solutions(*vars.begin());
+        }
+        else
+            IMPLEMENT
     }
     
     std::set<Valuable> Valuable::solutions(const Variable& v) const
@@ -306,6 +320,98 @@ namespace math {
         return solutions;
     }
 
+    using extrenums_t = std::vector<std::pair<Valuable/*value*/,Valuable/*direction*/> >;
+    extrenums_t Valuable::extrenums() const
+    {
+        extrenums_t e;
+        std::set<Variable> vars;
+        CollectVa(vars);
+        if (vars.size() == 1) {
+            extrenums(*vars.begin(), e);
+        }
+        else
+            IMPLEMENT;
+        return e;
+    }
+
+    extrenums_t Valuable::extrenums(const Variable& v) const
+    {
+        extrenums_t e;
+        return extrenums(v, e);
+    }
+
+    extrenums_t& Valuable::extrenums(const Variable& v, extrenums_t& e) const
+    {
+        auto f = *this;
+        f.d(v);
+        f.optimize();
+        auto dd = f; dd.d(v);
+        dd.optimize();
+        for(auto& s : f.solutions(v))
+        {
+            auto ddc = dd;
+            ddc.Eval(v, s);
+            ddc.optimize();
+            e.push_back({s, ddc});
+        }
+        return e;
+    }
+    
+    using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
+    using zero_zone_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
+
+    zero_zone_t Valuable::get_zeros_zones(const Variable& v) const
+    {
+        return get_zeros_zones(v, extrenums(v));
+    }
+
+    zero_zone_t Valuable::get_zeros_zones(const Variable& v, const extrenums_t& extrs) const
+    {
+        zero_zone_t z {{Infinity(), MInfinity()},{}};
+        if (!extrs.size()) {
+            return z;
+        }
+        
+        auto y = [&](auto x){
+            auto _y = *this;
+            _y.Eval(v, x);
+            return _y;
+        };
+        
+        auto dv = *this; dv.d(v);
+        dv.optimize();
+        auto dxval = [&](auto x){
+            auto dy = dv;
+            dy.Eval(v, x);
+            return dy;
+        };
+        
+        auto inf = Infinity();
+        auto valPrevious = y(MInfinity());
+        auto& b = extrs.begin()->first;
+//        if ((y(b-inf) < b && b > 0) || (y(b-inf) > b && b < 0)){
+//            z.second.push_back({MInfinity(), b});
+//        }
+        for(auto& e : extrs)
+        {
+            if(valPrevious > 0 != e.first > 0) {
+                z.second.push_back({valPrevious, e.first});
+                if (z.first.first > valPrevious) {
+                    z.first.first = valPrevious;
+                }
+                if (z.first.second < e.first) {
+                    z.first.second = e.first;
+                }
+            }
+            else if(valPrevious == 0 || e.first == 0) {
+                IMPLEMENT
+            }
+            valPrevious = e.first;
+        }
+        
+        return z;
+    }
+    
     bool Valuable::operator<(const Valuable& v) const
     {
         if(exp)
@@ -350,6 +456,8 @@ namespace math {
     {
         return exp ? exp->IsSum() : false;
     }
+    bool Valuable::IsInfinity() const { return exp ? exp->IsInfinity() : false; }
+    bool Valuable::IsMInfinity() const { return exp ? exp->IsMInfinity() : false; }
 
     std::ostream& Valuable::print(std::ostream& out) const
     {
