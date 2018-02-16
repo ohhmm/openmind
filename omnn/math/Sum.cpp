@@ -647,11 +647,12 @@ namespace math {
                     
                     if(solutions.size() == grade)
                         return;
-                } else {
-                    
                 }
                 
-                // TODO : IMPLEMENT
+                if(solutions.size() == grade)
+                    return;
+                
+                // TODO : IMPLEMENT decomposition
                 
                 break;
             }

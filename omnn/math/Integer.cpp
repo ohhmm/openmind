@@ -326,7 +326,7 @@ namespace math {
         }
         bool scanz = zz.second.size();
         auto scanIt = zz.second.end();
-        Valuable up = Integer(h); // half
+        Valuable up = Integer(h);
         auto from = 1_v;
         if (scanz) {
             if (zz.first.second < up) {
@@ -336,13 +336,16 @@ namespace math {
                 from = zz.first.first;
             }
             scanIt = zz.second.begin();
+            while (scanIt != zz.second.end() && scanIt->second < from) {
+                ++scanIt;
+            }
         }
         if (!zz.second.empty()) {
             IMPLEMENT
         }
 //        if (arbitrary > std::numeric_limits<cl_long>::max()) {
         #pragma omp parallel for shared(up)
-        for (auto i = 1_v; i <= up; ++i) {
+        for (auto i = from; i <= up; ++i) {
             auto a = *this;
             a /= i;
             auto ii = cast(a);
@@ -354,6 +357,16 @@ namespace math {
                 }
             }
             
+            if (i > scanIt->second) {
+                ++scanIt;
+                if (scanIt == zz.second.end()) {
+                    break;
+                }
+                i = scanIt->first;
+                if (!i.IsInt()) {
+                    IMPLEMENT;
+                }
+            }
 //            while (scai > scanIt.s) {
 //                <#statements#>
 //            }
