@@ -653,7 +653,40 @@ namespace math {
                     return;
                 
                 // TODO : IMPLEMENT decomposition
+                sz = grade + 1;
+                auto sza = grade / 2 + 1;
+                auto szb = sza - (grade & 1);
+                std::vector<Variable> vva(sza);
+                std::vector<Variable> vvb(szb);
+                Valuable eq1, eq2;
+                std::vector<Valuable> equs;
+                //system
+                for (auto i = sza; i--; ) {
+                    eq1 += vva[i] * (va ^ i);
+                }
+                for (auto i = szb; i--; ) {
+                    eq2 += vvb[i] * (va ^ i);
+                }
                 
+                auto teq = eq1*eq2;
+                std::vector<Valuable> teq_coefficients;
+                auto teqs = Sum::cast(teq);
+                if (teqs) {
+                    if (teqs->FillPolyCoeff(teq_coefficients, va) != grade) {
+                        IMPLEMENT
+                    }
+                } else {
+                    IMPLEMENT
+                }
+                // system
+                for (auto i = sz; i--; ) {
+                    auto c = coefficients[i];
+                    Valuable eq = teq_coefficients[i]-c;
+                    std::cout << eq << std::endl;
+                    equs.push_back(eq);
+                }
+                
+//                equs.
                 break;
             }
         }

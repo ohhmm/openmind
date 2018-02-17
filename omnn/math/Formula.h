@@ -85,6 +85,7 @@ public:
             auto va = vit++;
             copy.Eval(*va, v);
         }
+        copy.optimize();
         auto roots = copy.solutions(v);
         if(roots.size() == 0)
         {
