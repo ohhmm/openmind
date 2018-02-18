@@ -175,6 +175,7 @@ public:
     virtual Valuable sqrt() const;
     virtual Valuable calcFreeMember() const;
     
+    virtual Valuable operator()(const Variable&) const;
     bool IsUnivariate() const;
     virtual void solve(const Variable& va, std::set<Valuable>&) const;
     std::set<Valuable> solutions() const;
@@ -194,7 +195,9 @@ public:
     
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;
-    virtual void CollectVa(std::set<Variable>& s) const;
+    using var_set_t = std::set<Variable>;
+    virtual void CollectVa(var_set_t& s) const;
+    var_set_t Vars() const;
     virtual void Eval(const Variable& va, const Valuable& v);
     virtual bool IsComesBefore(const Valuable& v) const; /// accepts same type as param
     

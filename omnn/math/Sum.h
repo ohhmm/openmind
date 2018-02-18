@@ -55,6 +55,8 @@ public:
     Valuable calcFreeMember() const override;
     void solve(const Variable& va, std::set<Valuable>& solutions) const override;
 
+    Valuable operator()(const Variable& va) const override;
+    
     using base::base;
     Sum(Sum&&)=default;
     Sum(const Sum&)=default;

@@ -295,6 +295,15 @@ namespace math {
             IMPLEMENT
     }
 
+    Valuable Valuable::operator()(const Variable& va) const
+    {
+        if(exp) {
+            return exp->operator()(va);
+        }
+        else
+            IMPLEMENT
+    }
+    
     bool Valuable::IsUnivariate() const
     {
         std::set<Variable> vars;
@@ -543,6 +552,13 @@ namespace math {
             IMPLEMENT
     }
 
+    Valuable::var_set_t Valuable::Vars() const
+    {
+        var_set_t vars;
+        CollectVa(vars);
+        return vars;
+    }
+    
     void Valuable::Eval(const Variable& va, const Valuable& v)
     {
         if (exp) {

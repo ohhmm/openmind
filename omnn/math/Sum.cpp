@@ -533,6 +533,64 @@ namespace math {
         return grade;
     }
     
+    Valuable Sum::operator()(const Variable& va) const
+    {
+        Valuable _ = 0_v;
+        Valuable todo = 0_v;
+        for(auto& m : *this)
+        {
+            if (m.HasVa(va)) {
+                todo += m;
+            } else {
+                _ += m;
+            }
+        }
+        
+        if (todo.IsSum()) {
+            static_assert(!"Multiple roots", "what to implement?");
+            auto s = Sum::cast(todo);
+            for(auto& m : *s)
+            {
+                IMPLEMENT
+            }
+        }
+        else if(todo.IsProduct())
+        {
+            _ /= todo(va);
+        }
+        else if (todo.IsExponentiation())
+        {
+            auto e = Exponentiation::cast(todo);
+            if (e->getBase() == va) {
+                auto& ee = e->getExponentiation();
+                if (ee.HasVa(va)) {
+                    IMPLEMENT
+                }
+                if (ee % 2 == 1_v) {
+                    _ ^= 1_v / ee;
+                }
+                else
+                {
+                    static_assert(!"Two roots", "what to implement?");
+                }
+            }
+            else
+            {
+                IMPLEMENT
+            }
+        }
+        else if (todo.IsVa())
+        {
+            assert(todo == va);
+        }
+        else
+        {
+            IMPLEMENT
+        }
+        
+        return _;
+    }
+    
     void Sum::solve(const Variable& va, std::set<Valuable>& solutions) const
     {
         std::vector<Valuable> coefficients;

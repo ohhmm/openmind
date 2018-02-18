@@ -11,39 +11,37 @@ namespace math {
 class System
 {
 public:
-    using equs_by_vars = std::map<
-            std::set<Variable>, // from these vars
-            Valuable >;         // this expressions
-    using expressions = std::map< // expressions
-            Variable, //of this va
-            equs_by_vars>; // these expressions
-
-    using solutions = std::map<
-            Valuable, // solution id
-            std::set<std::pair<
-                Variable, // solutions of this var
-                Valuable> >
-            >; // these solutions, order does metter. common order for all solutions
+    using solution_t = std::shared_ptr<Valuable>;
+//    using by_vars_set = Valuable::var_set_t;
+//    using equs_by_vars = std::map<
+//            by_vars_set, // from these vars
+//            std::set<Valuable> >;  // this expressions
+//
+//    using expressions = std::map< // expressions
+//            Variable, //of this va
+//            std::set<std::shared_ptr<equs_by_vars> >// these expressions
+//        >;
+//
+//    using solutions = std::map<
+//            Valuable, // solution id
+//            std::set<std::pair<
+//                Variable, // solutions of this var
+//                Valuable> >
+//            >; // these solutions, order does metter. common order for all solutions
+//
+    using expressions = std::list<Valuable>;
     
-    System& operator<<(const Valuable& v)
-    {
-        return *this;
+    System& operator<<(const Valuable& v);
+    
+    solution_t Solve(const Variable& v);
+    
+    bool Validate() {
+        return true;
     }
     
-//    System(std::initializer_list<Valuable> l);
-    bool Solve(const Variable& v)
-    {
-        
-    }
-    
-    equs_by_vars& operator[](const Variable& v)
-    {
-        return equs[v];
-    }
-
 private:
     expressions equs;
-    solutions solus;
+//    solutions solus;
 };
 
 }}

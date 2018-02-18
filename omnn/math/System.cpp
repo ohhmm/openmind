@@ -7,3 +7,38 @@
 using namespace omnn;
 using namespace math;
 
+System& System::operator<<(const Valuable& v)
+{
+    equs.push_back(v);
+    return *this;
+}
+
+System::solution_t System::Solve(const Variable& v)
+{
+    solution_t solution;
+    if(Validate()){
+        std::set<const Valuable*> withV;
+        for(auto& e : equs)
+        {
+            if (e.HasVa(v))
+            {
+                withV.insert(&e);
+            }
+        }
+        
+        std::map<
+            std::set<Variable>,
+            std::vector<Valuable>
+        > es;
+        
+        for(auto w : withV) {
+            auto e = (*w)(v);
+            es[e.Vars()].push_back(e);
+        }
+    }
+    else
+    {
+        throw "Contradiction!";
+    }
+    return solution;
+}
