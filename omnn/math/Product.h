@@ -40,23 +40,8 @@ public:
     
     using base::base;
 
-	Product() : members {{1}}
-	{
-		hash = members.begin()->Hash();
-	}
-
-    Product(std::initializer_list<Valuable> l)
-    {
-        for (const auto& arg : l)
-        {
-            auto a = cast(arg);
-            if(a)
-                for(auto& m: *a)
-                    this->Add(m);
-            else
-                this->Add(arg);
-        }
-    }
+    Product();
+    Product(const std::initializer_list<Valuable>& l);
     
 	const cont& GetConstCont() const override { return members; }
     const iterator Add(const Valuable& item) override;

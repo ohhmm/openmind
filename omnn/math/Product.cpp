@@ -38,6 +38,24 @@ namespace math {
         return it1 == it2 ? *it1 > *it2 : it1 < it2;
     }
     
+    Product::Product() : members {{1}}
+    {
+        hash = members.begin()->Hash();
+    }
+    
+    Product::Product(const std::initializer_list<Valuable>& l)
+    {
+        for (const auto& arg : l)
+        {
+            auto a = cast(arg);
+            if(a)
+                for(auto& m: *a)
+                    this->Add(m);
+            else
+                this->Add(arg);
+        }
+    }
+    
     int Product::findMaxVaExp()
     {
         for (auto& i:vars) {

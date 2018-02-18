@@ -63,18 +63,7 @@ public:
     void Update(typename cont::iterator& it, const Valuable& v) override;
     bool IsComesBefore(const Valuable& v) const override;
 
-    Sum(std::initializer_list<Valuable> l)
-    {
-        for (const auto& arg : l)
-        {
-            auto a = cast(arg);
-            if(a)
-                for(auto& m: *a)
-                    this->Add(m);
-            else
-                this->Add(arg);
-        }
-    }
+    Sum(const std::initializer_list<Valuable>& l);
 
     size_t FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const;
 	Formula FormulaOfVa(const Variable& v) const;

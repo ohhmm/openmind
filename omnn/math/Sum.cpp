@@ -7,7 +7,7 @@
 #include "Fraction.h"
 #include "Integer.h"
 #include "Product.h"
-#include "Variable.h"
+#include "System.h"
 
 #include <cmath>
 #include <map>
@@ -408,6 +408,19 @@ namespace math {
         return Become(std::move(sum));
     }
     
+    Sum::Sum(const std::initializer_list<Valuable>& l)
+    {
+        for (const auto& arg : l)
+        {
+            auto a = cast(arg);
+            if(a)
+                for(auto& m: *a)
+                    this->Add(m);
+            else
+                this->Add(arg);
+        }
+    }
+    
     bool Sum::IsComesBefore(const Valuable& v) const
     {
         auto s = Sum::cast(v);
@@ -654,13 +667,11 @@ namespace math {
                 
                 // TODO : IMPLEMENT decomposition
                 sz = grade + 1;
-                auto sza = grade / 2 + 1;
-                auto szb = sza - (grade & 1);
+                auto sza = grade;
+                auto szb = 2;
                 std::vector<Variable> vva(sza);
                 std::vector<Variable> vvb(szb);
                 Valuable eq1, eq2;
-                std::vector<Valuable> equs;
-                //system
                 for (auto i = sza; i--; ) {
                     eq1 += vva[i] * (va ^ i);
                 }
@@ -678,15 +689,14 @@ namespace math {
                 } else {
                     IMPLEMENT
                 }
-                // system
+                System sequs;
                 for (auto i = sz; i--; ) {
                     auto c = coefficients[i];
                     Valuable eq = teq_coefficients[i]-c;
-                    std::cout << eq << std::endl;
-                    equs.push_back(eq);
+                    sequs << eq;
                 }
-                
-//                equs.
+                sequs << copy;
+                sequs.Solve(va);
                 break;
             }
         }
