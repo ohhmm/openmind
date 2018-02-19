@@ -533,8 +533,9 @@ namespace math {
         return grade;
     }
     
-    Valuable Sum::operator()(const Variable& va) const
+    Valuable::solutions_t Sum::operator()(const Variable& va) const
     {
+        solutions_t solutions;
         Valuable _ = 0_v;
         Valuable todo = 0_v;
         for(auto& m : *this)
@@ -547,7 +548,6 @@ namespace math {
         }
         
         if (todo.IsSum()) {
-            static_assert(!"Multiple roots", "what to implement?");
             auto s = Sum::cast(todo);
             for(auto& m : *s)
             {
@@ -556,7 +556,8 @@ namespace math {
         }
         else if(todo.IsProduct())
         {
-            _ /= todo(va);
+            for(auto& e: todo(va))
+                solutions.insert(_ / e);
         }
         else if (todo.IsExponentiation())
         {
@@ -566,12 +567,11 @@ namespace math {
                 if (ee.HasVa(va)) {
                     IMPLEMENT
                 }
-                if (ee % 2 == 1_v) {
-                    _ ^= 1_v / ee;
-                }
-                else
+                _ ^= 1_v / ee;
+                if (ee % 2 == 0_v)
                 {
-                    static_assert(!"Two roots", "what to implement?");
+                    solutions.insert(-_);
+                    solutions.insert(_);
                 }
             }
             else
@@ -588,10 +588,13 @@ namespace math {
             IMPLEMENT
         }
         
-        return _;
+        if (!solutions.size()) {
+            solutions.insert(_);
+        }
+        return solutions;
     }
     
-    void Sum::solve(const Variable& va, std::set<Valuable>& solutions) const
+    void Sum::solve(const Variable& va, solutions_t& solutions) const
     {
         std::vector<Valuable> coefficients;
         auto grade = FillPolyCoeff(coefficients, va);
@@ -723,7 +726,7 @@ namespace math {
                 if(solutions.size() == grade)
                     return;
                 
-                // TODO : IMPLEMENT decomposition
+                // decomposition
                 sz = grade + 1;
                 auto sza = grade;
                 auto szb = 2;
@@ -754,6 +757,10 @@ namespace math {
                     sequs << eq;
                 }
                 sequs << copy;
+                std::vector<solutions_t> s(szb);
+                for (auto i = szb; i--; ) {
+                    s[i] = std::move(sequs.Solve(vvb[i]));
+                }
                 sequs.Solve(va);
                 break;
             }

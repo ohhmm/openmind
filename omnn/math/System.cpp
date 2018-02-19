@@ -31,9 +31,12 @@ System::solution_t System::Solve(const Variable& v)
             std::vector<Valuable>
         > es;
         
-        for(auto w : withV) {
-            auto e = (*w)(v);
-            es[e.Vars()].push_back(e);
+        for(auto w : withV)
+        {
+            for(auto& e : (*w)(v))
+            {
+                es[e.Vars()].push_back(e);
+            }
         }
     }
     else

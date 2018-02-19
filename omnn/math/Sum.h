@@ -53,9 +53,9 @@ public:
     void optimize() override;
     Valuable sqrt() const override;
     Valuable calcFreeMember() const override;
-    void solve(const Variable& va, std::set<Valuable>& solutions) const override;
+    void solve(const Variable& va, solutions_t& solutions) const override;
 
-    Valuable operator()(const Variable& va) const override;
+    solutions_t operator()(const Variable& va) const override;
     
     using base::base;
     Sum(Sum&&)=default;

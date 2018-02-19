@@ -175,11 +175,13 @@ public:
     virtual Valuable sqrt() const;
     virtual Valuable calcFreeMember() const;
     
-    virtual Valuable operator()(const Variable&) const;
+    using solutions_t = std::set<Valuable>; // do not use std::set<Valuable> until it tested. it may skip unequal items
+    virtual solutions_t operator()(const Variable&) const;
     bool IsUnivariate() const;
-    virtual void solve(const Variable& va, std::set<Valuable>&) const;
-    std::set<Valuable> solutions() const;
-    std::set<Valuable> solutions(const Variable& v) const;
+    
+    virtual void solve(const Variable& va, solutions_t&) const;
+    solutions_t solutions() const;
+    solutions_t solutions(const Variable& v) const;
     
     using extrenums_t = std::vector<std::pair<Valuable/*value*/,Valuable/*direction*/> >;
     extrenums_t extrenums() const;

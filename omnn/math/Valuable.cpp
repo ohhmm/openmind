@@ -286,7 +286,7 @@ namespace math {
             IMPLEMENT
     }
     
-    void Valuable::solve(const Variable& va, std::set<Valuable>& solutions) const
+    void Valuable::solve(const Variable& va, solutions_t& solutions) const
     {
         if(exp) {
             exp->solve(va, solutions);
@@ -295,7 +295,7 @@ namespace math {
             IMPLEMENT
     }
 
-    Valuable Valuable::operator()(const Variable& va) const
+    Valuable::solutions_t Valuable::operator()(const Variable& va) const
     {
         if(exp) {
             return exp->operator()(va);
@@ -311,7 +311,7 @@ namespace math {
         return (vars.size() == 1);
     }
 
-    std::set<Valuable> Valuable::solutions() const
+    Valuable::solutions_t Valuable::solutions() const
     {
         std::set<Variable> vars;
         CollectVa(vars);
@@ -322,9 +322,9 @@ namespace math {
             IMPLEMENT
     }
     
-    std::set<Valuable> Valuable::solutions(const Variable& v) const
+    Valuable::solutions_t Valuable::solutions(const Variable& v) const
     {
-        std::set<Valuable> solutions;
+        solutions_t solutions;
         solve(v, solutions);
         return solutions;
     }

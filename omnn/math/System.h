@@ -11,11 +11,11 @@ namespace math {
 class System
 {
 public:
-    using solution_t = std::shared_ptr<Valuable>;
+    using solution_t = Valuable::solutions_t;
 //    using by_vars_set = Valuable::var_set_t;
 //    using equs_by_vars = std::map<
 //            by_vars_set, // from these vars
-//            std::set<Valuable> >;  // this expressions
+//            solutions_t >;  // this expressions
 //
 //    using expressions = std::map< // expressions
 //            Variable, //of this va
