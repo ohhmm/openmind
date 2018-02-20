@@ -69,6 +69,8 @@ public:
 
 	bool IsProduct() const override { return true; }
   
+    solutions_t operator()(const Variable& va) const override;
+
 protected:
     cont& GetCont() override { return members; }
     std::ostream& print(std::ostream& out) const override;

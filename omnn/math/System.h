@@ -29,7 +29,7 @@ public:
 //                Valuable> >
 //            >; // these solutions, order does metter. common order for all solutions
 //
-    using expressions = std::list<Valuable>;
+    using expressions = std::vector<Valuable>;
     
     System& operator<<(const Valuable& v);
     

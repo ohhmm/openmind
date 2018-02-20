@@ -58,6 +58,19 @@ namespace math {
         numerator.optimize();
         denominator.optimize();
         
+        while(denominator.IsFraction())
+        {
+            auto dn = cast(denominator);
+            numerator *= dn->denominator;
+            denominator = std::move(dn->numerator);
+        }
+
+        if(denominator.IsInt() && denominator == 1_v)
+        {
+            Become(std::move(numerator));
+            return;
+        }
+
         // integers
         auto n = Integer::cast(numerator);
         auto dn = Integer::cast(denominator);
@@ -128,7 +141,7 @@ namespace math {
             }
         }
         
-        if (cast(*this)) {
+        if (IsFraction()) {
             hash = numerator.Hash() ^ denominator.Hash();
         }
     }

@@ -10,6 +10,7 @@ using namespace math;
 System& System::operator<<(const Valuable& v)
 {
     equs.push_back(v);
+    equs[equs.size()-1].optimize();
     return *this;
 }
 
@@ -37,6 +38,11 @@ System::solution_t System::Solve(const Variable& v)
             {
                 es[e.Vars()].push_back(e);
             }
+        }
+        
+        for(auto& esi : es)
+        {
+            
         }
     }
     else

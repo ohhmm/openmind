@@ -546,8 +546,8 @@ namespace math {
         if (v == 1_v) {
             return *this;
         }
-        auto p = Product::cast(v);
-        if (p) {
+        if (v.IsProduct()) {
+            auto p = Product::cast(v);
             for(auto& i : *p)
             {
                 *this /= i;
@@ -609,6 +609,16 @@ namespace math {
         }else
             Become(0_v);
         return *this;
+    }
+    
+    Valuable::solutions_t Product::operator()(const Variable& va) const
+    {
+        auto cova = getCommonVars();
+        auto it = cova.find(va);
+        if (it == cova.end()) {
+            throw "No such variable.";
+        }
+        return {1_v / (*this / (va ^ it->second))};
     }
     
 	std::ostream& Product::print(std::ostream& out) const

@@ -29,8 +29,12 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 	BOOST_TEST(a == d);
 	BOOST_TEST(a - d == 0);
 
-    Valuable v = 3.1_v;
-    BOOST_TEST(Fraction::cast(v));
+    Valuable _ = 3.1_v;
+    BOOST_TEST(Fraction::cast(_));
 
     BOOST_TEST((1_v/2)^2_v == 1_v/4);
+    
+    Variable v;
+    _ = 1_v / (1_v / v);
+    BOOST_TEST(_ == v);
 }
