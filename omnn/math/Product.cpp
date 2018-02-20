@@ -618,7 +618,7 @@ namespace math {
         if (it == cova.end()) {
             throw "No such variable.";
         }
-        return {1_v / (*this / (va ^ it->second))};
+        return {0_v / (*this / (va ^ it->second))};
     }
     
 	std::ostream& Product::print(std::ostream& out) const

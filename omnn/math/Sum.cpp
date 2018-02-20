@@ -543,7 +543,7 @@ namespace math {
             if (m.HasVa(va)) {
                 todo += m;
             } else {
-                _ += m;
+                _ -= m;
             }
         }
         
@@ -556,8 +556,17 @@ namespace math {
         }
         else if(todo.IsProduct())
         {
-            for(auto& e: todo(va))
-                solutions.insert(_ / e);
+            auto cova = todo.getCommonVars();
+            auto it = cova.find(va);
+            if (it == cova.end()) {
+                throw "No such variable.";
+            }
+            todo /= it->first ^ it->second;
+            _ /= todo;
+            solutions.insert(_);
+            if (it->second % 2 == 0_v) {
+                solutions.insert(-_);
+            }
         }
         else if (todo.IsExponentiation())
         {
