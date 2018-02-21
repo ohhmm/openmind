@@ -304,6 +304,15 @@ namespace math {
             IMPLEMENT
     }
     
+    Valuable::solutions_t Valuable::operator()(const Variable& v, const Valuable& augmentation) const
+    {
+        if(exp) {
+            return exp->operator()(v, augmentation);
+        }
+        else
+            IMPLEMENT
+    }
+    
     bool Valuable::IsUnivariate() const
     {
         std::set<Variable> vars;

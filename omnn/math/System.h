@@ -11,29 +11,14 @@ namespace math {
 class System
 {
 public:
-    using solution_t = Valuable::solutions_t;
-//    using by_vars_set = Valuable::var_set_t;
-//    using equs_by_vars = std::map<
-//            by_vars_set, // from these vars
-//            solutions_t >;  // this expressions
-//
-//    using expressions = std::map< // expressions
-//            Variable, //of this va
-//            std::set<std::shared_ptr<equs_by_vars> >// these expressions
-//        >;
-//
-//    using solutions = std::map<
-//            Valuable, // solution id
-//            std::set<std::pair<
-//                Variable, // solutions of this var
-//                Valuable> >
-//            >; // these solutions, order does metter. common order for all solutions
-//
-    using expressions = std::vector<Valuable>;
+    using solutions_t = Valuable::solutions_t;
+    using es_t = std::map<std::set<Variable>,solutions_t>;
+    using v_es_t = std::map<Variable, es_t>;
+    using expressions = std::set<Valuable>;
     
     System& operator<<(const Valuable& v);
     
-    solution_t Solve(const Variable& v);
+    solutions_t Solve(const Variable& v);
     
     bool Validate() {
         return true;
@@ -41,6 +26,7 @@ public:
     
 private:
     expressions equs;
+    v_es_t vEs;
 //    solutions solus;
 };
 

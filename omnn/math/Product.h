@@ -70,7 +70,8 @@ public:
 	bool IsProduct() const override { return true; }
   
     solutions_t operator()(const Variable& va) const override;
-
+    solutions_t operator()(const Variable&, const Valuable& augmentation) const override;
+    
 protected:
     cont& GetCont() override { return members; }
     std::ostream& print(std::ostream& out) const override;

@@ -588,6 +588,10 @@ namespace math {
                 IMPLEMENT
             }
         }
+        else if (todo.IsFraction())
+        {
+            solutions = todo(va, _);
+        }
         else if (todo.IsVa())
         {
             assert(todo == va);

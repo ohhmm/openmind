@@ -37,4 +37,6 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     Variable v;
     _ = 1_v / (1_v / v);
     BOOST_TEST(_ == v);
+    
+    BOOST_TEST((2040_v*v/(-2_v*v))==-1020);
 }

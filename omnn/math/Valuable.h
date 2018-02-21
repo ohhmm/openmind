@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <typeindex>
+#include <unordered_set>
 #include <boost/shared_ptr.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 
@@ -175,8 +176,9 @@ public:
     virtual Valuable sqrt() const;
     virtual Valuable calcFreeMember() const;
     
-    using solutions_t = std::set<Valuable>; // do not use std::set<Valuable> until it tested. it may skip unequal items
+    using solutions_t = std::unordered_set<Valuable>; // do not use std::set<Valuable> until it tested. it may skip unequal items
     virtual solutions_t operator()(const Variable&) const;
+    virtual solutions_t operator()(const Variable&, const Valuable& augmentation) const;
     bool IsUnivariate() const;
     
     virtual void solve(const Variable& va, solutions_t&) const;

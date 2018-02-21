@@ -73,6 +73,7 @@ public:
     void Eval(const Variable& va, const Valuable& v) override;
     
     const vars_cont_t& getCommonVars() const override;
+    solutions_t operator()(const Variable&, const Valuable& augmentation) const override;
 };
 
 

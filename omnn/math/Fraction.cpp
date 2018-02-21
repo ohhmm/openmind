@@ -87,7 +87,12 @@ namespace math {
             {
                 if (*dn == 1_v)
                 {
-                    Become(Integer(*n));
+                    Become(std::move(*n));
+                    return;
+                }
+                if (*dn == -1_v)
+                {
+                    Become(-*n);
                     return;
                 }
                 Integer::base_int d = boost::gcd(
@@ -200,12 +205,17 @@ namespace math {
 
     Valuable& Fraction::operator /=(const Valuable& v)
     {
-        auto f = cast(v);
-        if (f)
+        if (v.IsFraction())
 		{
-			numerator *= f->denominator;
+            auto f = cast(v);
+            numerator *= f->denominator;
 			denominator *= f->numerator;
 		}
+        else if (v.IsProduct())
+        {
+            for(auto& _ : *Product::cast(v))
+                *this /= _;
+        }
         else
         {
 			denominator *= v;
@@ -408,6 +418,34 @@ namespace math {
         }
         else
             throw "Implement!";
+    }
+    
+    Fraction::solutions_t Fraction::operator()(const Variable& v, const Valuable& augmentation) const
+    {
+        solutions_t s;
+        if(numerator.HasVa(v))
+        {
+            s = numerator(v,augmentation);
+            if(denominator.HasVa(v))
+            {
+                IMPLEMENT;
+            }
+            else
+            {
+                solutions_t so;
+                for(auto& _ : s)
+                    so.insert(_ * denominator);
+                s = so;
+            }
+        }
+        else if(denominator.HasVa(v))
+        {
+            s = denominator(v, numerator / augmentation);
+        }
+        else
+            IMPLEMENT
+            
+        return s;
     }
     
     omnn::math::Fraction Fraction::Reciprocal() const

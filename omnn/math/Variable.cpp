@@ -155,4 +155,13 @@ namespace math {
         }
         return vars;
     }
+    
+    Valuable::solutions_t Variable::operator()(const Variable& va, const Valuable& augmentation) const
+    {
+        if (*this == va) {
+            return {augmentation};
+        }
+        else
+            IMPLEMENT
+    }
 }}

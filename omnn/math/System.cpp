@@ -9,40 +9,66 @@ using namespace math;
 
 System& System::operator<<(const Valuable& v)
 {
-    equs.push_back(v);
-    equs[equs.size()-1].optimize();
+    auto _ = v;
+    _.optimize();
+    equs.insert(_);
     return *this;
 }
 
-System::solution_t System::Solve(const Variable& v)
+System::solutions_t System::Solve(const Variable& v)
 {
-    solution_t solution;
+    solutions_t solution;
     if(Validate()){
-        std::set<const Valuable*> withV;
+        auto& es = vEs[v];
+        
+        auto equsSzWas = equs.size();
+        bool modified = {};
         for(auto& e : equs)
         {
             if (e.HasVa(v))
             {
-                withV.insert(&e);
+                for(auto& _ : e(v))
+                {
+                    auto vars = _.Vars();
+                    modified = modified || es[vars].insert(_).second;
+                    equs.insert(_ - v);
+                }
             }
         }
+        modified = modified || equsSzWas < equs.size();
         
-        std::map<
-            std::set<Variable>,
-            std::vector<Valuable>
-        > es;
-        
-        for(auto w : withV)
-        {
-            for(auto& e : (*w)(v))
+        if (modified) {
+            std::vector<Variable> singleVars;
+            for(auto& esi : es)
             {
-                es[e.Vars()].push_back(e);
+                if(esi.first.size() == 0)
+                {
+                    for(auto& s : esi.second)
+                        solution.insert(s);
+                    break;
+                }
+                else if(esi.first.size() == 1)
+                {
+                    singleVars.push_back(*esi.first.begin());
+                }
             }
-        }
-        
-        for(auto& esi : es)
-        {
             
+            if(!solution.size())
+            {
+                for(auto& v : singleVars)
+                {
+                    auto s = Solve(v);
+                }
+                
+                for(auto& esi : es)
+                {
+                    if(esi.first.size() == 0)
+                    {
+                        for(auto& _ : esi.second)
+                            solution.insert(_);
+                    }
+                }
+            }
         }
     }
     else

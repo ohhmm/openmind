@@ -50,6 +50,9 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     cout << pp<<endl;
 
     BOOST_TEST(v1*2*2==v1*4);
+    
+    auto _ = v1 * (-1_v / v2);
+    BOOST_TEST(_.getCommonVars().size()==2);
 }
 
 BOOST_AUTO_TEST_CASE(test_no_hang, *timeout(2))

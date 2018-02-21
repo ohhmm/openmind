@@ -147,6 +147,9 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     t.Eval(x,1); t.Eval(y,1); t.Eval(z, 4);
     t.optimize();
     BOOST_TEST(t==0);
+    
+    _ = ((v3 + (2040_v/v1)) / ((-1_v/v1)*v2));
+    BOOST_TEST(!_.HasVa(v1));
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)
@@ -166,9 +169,10 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
 {
     Variable v;
     auto sol = ((v^2)-4_v).solutions(v);
+    BOOST_TEST(sol.size()==2);
     auto solution1 = *sol.begin();
-    BOOST_TEST(solution1 == -2_v);
-    auto solution2 = *sol.rbegin();
+    BOOST_TEST(solution1.abs() == 2_v);
+    auto solution2 = *++sol.begin();
     BOOST_TEST(solution1 == -solution2);
 }
 

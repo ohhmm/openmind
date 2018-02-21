@@ -621,6 +621,22 @@ namespace math {
         return {0_v / (*this / (va ^ it->second))};
     }
     
+    Valuable::solutions_t Product::operator()(const Variable& va, const Valuable& augmentation) const
+    {
+        Valuable::solutions_t s;
+        auto cova = getCommonVars();
+        auto it = cova.find(va);
+        if (it == cova.end()) {
+            throw "No such variable.";
+        }
+        auto _ = augmentation / (*this / (va ^ it->second));
+        s.insert(_);
+        if (it->second % 2 == 0) {
+            s.insert(-_);
+        }
+        return s;
+    }
+    
 	std::ostream& Product::print(std::ostream& out) const
 	{
         std::stringstream s;
