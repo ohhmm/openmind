@@ -176,3 +176,18 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     BOOST_TEST(solution1 == -solution2);
 }
 
+BOOST_AUTO_TEST_CASE(Containers_test)
+{
+    Variable va;
+    std::vector<Valuable> vec{0_v, va, va+1_v};
+    std::set<Valuable, SumOrderComparator> s;
+    std::unordered_set<Valuable> us;
+    for(auto& a : vec)
+    {
+        s.insert(a);
+        us.insert(a);
+    }
+    BOOST_ASSERT(vec.size()==3);
+    BOOST_ASSERT(s.size()==3);
+    BOOST_ASSERT(us.size()==3);
+}
