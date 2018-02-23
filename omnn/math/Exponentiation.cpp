@@ -53,6 +53,12 @@ namespace math {
         ebase.optimize();
         eexp.optimize();
 
+        if (ebase.IsProduct()) {
+            ebase ^= eexp;
+            Become(std::move(ebase));
+            return;
+        }
+
         bool ebz = ebase == 0_v;
         bool exz = eexp == 0_v;
         if(exz)
@@ -173,7 +179,7 @@ namespace math {
                 }
             }
         
-            if (cast(*this)) {
+            if (IsExponentiation()) {
                 hash = ebase.Hash() ^ eexp.Hash();
             }
         }
@@ -257,6 +263,13 @@ namespace math {
         return *this;
     }
 
+    Valuable& Exponentiation::operator^=(const Valuable& v)
+    {
+        eexp *= v;
+        optimize();
+        return *this;
+    }
+    
     Valuable& Exponentiation::operator --()
     {
         return *this+=-1_v;

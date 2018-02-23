@@ -149,7 +149,15 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST(t==0);
     
     _ = ((v3 + (2040_v/v1)) / ((-1_v/v1)*v2));
-    BOOST_TEST(!_.HasVa(v1));
+    auto ss = _(v3);
+    BOOST_TEST(ss.size() == 1);
+    BOOST_TEST(!ss.begin()->HasVa(v3));
+    
+    _1 = x*-1+y*-2;
+    _1 /= z;
+    BOOST_TEST(_1.HasVa(z));
+    _2 = x*-1/z+y*-2/z;
+    BOOST_TEST(_1==_2);
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)

@@ -27,6 +27,7 @@ public:
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator *=(const Valuable& v) override;
     Valuable& operator /=(const Valuable& v) override;
+    Valuable& operator ^=(const Valuable&) override;
     Valuable& operator --() override;
     Valuable& operator ++() override;
     Valuable& d(const Variable& x) override;

@@ -26,7 +26,7 @@ namespace math {
         using namespace std;
         
         type_index order[] = {
-            //typeid(Sum),
+            typeid(Sum),
             typeid(Product),
             typeid(Exponentiation),
             typeid(Variable),
@@ -54,10 +54,10 @@ namespace math {
     bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
     {
         return v1.OfSameType(v2)
-            || (Product::cast(v1) && Exponentiation::cast(v2))
-            || (Product::cast(v2) && Exponentiation::cast(v1))
-            || (Product::cast(v1) && Variable::cast(v2))
-            || (Product::cast(v2) && Variable::cast(v1))
+            || (v1.IsProduct() && v2.IsExponentiation())
+            || (v2.IsProduct() && v1.IsExponentiation())
+            || (v1.IsProduct() && v2.IsVa())
+            || (v2.IsProduct() && v1.IsVa())
             ? v1.IsComesBefore(v2) : toc(v1,v2);
     }
 
@@ -341,8 +341,7 @@ namespace math {
 	Valuable& Sum::operator /=(const Valuable& v)
 	{
         Valuable s = 0_v;
-		auto i = cast(v);
-		if (i)
+		if (v.IsSum())
 		{
             if(!v.FindVa())
             {
@@ -772,9 +771,19 @@ namespace math {
                 sequs << copy;
                 std::vector<solutions_t> s(szb);
                 for (auto i = szb; i--; ) {
-                    s[i] = std::move(sequs.Solve(vvb[i]));
+                    s[i] = sequs.Solve(vvb[i]);
                 }
-                sequs.Solve(va);
+                
+                auto ss = sequs.Solve(vvb[0]);
+                if (ss.size()) {
+                    for(auto& s : ss)
+                    {
+                        copy /= va - s;
+                    }
+                    copy.solve(va, solutions);
+                }
+                else
+                    IMPLEMENT;
                 break;
             }
         }

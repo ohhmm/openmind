@@ -164,13 +164,40 @@ namespace math {
 
     void Product::optimize()
     {
-        //if (!optimizations) return;
+        if (!optimizations) return;
+        
+        // fractionless
+        bool updated;
+        do {
+            updated = {};
+            for (auto it = GetFirstOccurence<Fraction>(); it != end(); ++it) {
+                if (it->IsFraction() && it->FindVa()) {
+                    auto f=Fraction::cast(*it);
+                    auto dn = f->getDenominator();
+                    auto defract = dn.FindVa() ? (dn ^ (-1_v)) : 1_v / dn;
+                    auto n = f->getNumerator();
+                    if(n==1_v)
+                    {
+                        Delete(it);
+                    }
+                    else
+                    {
+                        Update(it, n);
+                        auto o = optimizations;
+                        optimizations = false;
+                        operator*=(defract);
+                        optimizations = o;
+                    }
+                    updated = true;
+                }
+            }
+        } while (updated);
+
         
         // optimize members, if found a sum then become the sum multiplied by other members
         for (auto it = members.begin(); it != members.end();)
         {
-            auto s = Sum::cast(*it);
-            if (s)
+            if (it->IsSum())
             {
                 auto sum = std::move(*it);
                 Delete(it);
@@ -193,15 +220,12 @@ namespace math {
             else
                 ++it;
         }
-
-        // if no sum then continue optimizing this product
         
         // emerge inner products
         for (auto it = members.begin(); it != members.end();)
         {
-            auto p = cast(*it);
-            if (p) {
-                for (auto& m : *p)
+            if (it->IsProduct()) {
+                for (auto& m : *cast(*it))
                     Add(m);
                 Delete(it);
             }
@@ -306,10 +330,8 @@ namespace math {
             
             fo.optimize();
             
-            // check if it still fraction
-            auto ff = Fraction::cast(fo);
-            if (ff) {
-                auto dn = ff->getDenominator();
+            if (fo.IsFraction()) {
+                auto dn = Fraction::cast(fo)->getDenominator();
                 if (!dn.IsProduct()) {
                     for (auto it = members.begin(); it != members.end();)
                     {
@@ -581,8 +603,47 @@ namespace math {
                 }
             }
         }
-        return *this *= Fraction(1, v);
+//        else if (v.IsVa())
+//        {
+//            auto it = getCommonVars().find(v);
+//            if (it != getCommonVars().end() && *it != 0_v) {
+//                if (*it == 1_v) {
+//                    auto _ = find(begin(), end(), v);
+//                    if (_ == end()) {
+//                        IMPLEMENT
+//                    }
+//                    else
+//                    {
+//                        Delete(_);
+//                    }
+//                } else {
+//                    for(auto i = begin(); i != end(); ++i)
+//                    {
+//                        if (i->IsExponentiation()) {
+//                            auto e = Exponentiation::cast(*i);
+//                            if (e->getBase() == v) {
+//                                Update(i, *e / v);
+//                                optimize();
+//                                break;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        return *this *= v ^ -1;
 	}
+
+    Valuable& Product::operator ^=(const Valuable& v)
+    {
+        auto _ = 1_v;
+        for(auto& m : members)
+        {
+            _ *= m ^ v;
+        }
+        Become(std::move(_));
+        return *this;
+    }
 
 	Valuable& Product::operator %=(const Valuable& v)
 	{

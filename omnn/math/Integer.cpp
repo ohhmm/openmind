@@ -78,9 +78,9 @@ namespace math {
 
     Valuable& Integer::operator /=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i)
+        if (v.IsInt())
         {
+            auto i = cast(v);
             auto div = arbitrary/i->arbitrary;
             if (div*i->arbitrary==arbitrary)
             {
@@ -90,10 +90,10 @@ namespace math {
             else
                 Become(Fraction(*this,*i));
         }
+        else if(v.FindVa())
+			*this *= v^-1;
         else
-        {
-			Become(Fraction(*this, v));
-        }
+            Become(Fraction(*this,v));
         return *this;
     }
 
@@ -159,11 +159,11 @@ namespace math {
                 return *this;
             }
         }
-        auto i = cast(v);
-        if(i)
+        if(v.IsInt())
         {
-            if (*i != 0_v) {
-                if (*i > 1) {
+            auto i = cast(v);
+            if (v != 0_v) {
+                if (v > 1) {
                     Valuable x = *this;
                     Valuable n = v;
                     if (n < 0_v)
@@ -202,9 +202,9 @@ namespace math {
                     }
                     else
                         return Become(std::move(x));
-                } else {
-                    // negative
-                    Become(Exponentiation(*this, v));
+                } else if (v != 1) {
+                    *this ^= v.abs();
+                    Become(Fraction(1, *this));
                 }
             }
             else { // zero
@@ -217,7 +217,7 @@ namespace math {
                 }
             }
         }
-        else
+        else if(v.IsFraction())
         {
             auto f = Fraction::cast(v);
             if (f->IsSimple()) {
@@ -259,6 +259,10 @@ namespace math {
             }
             else
                 Become(Exponentiation(*this, v));
+        }
+        else
+        {
+            Become(Exponentiation(*this, v));
         }
         
         optimize();
