@@ -56,6 +56,7 @@ public:
     void solve(const Variable& va, solutions_t& solutions) const override;
 
     solutions_t operator()(const Variable& va) const override;
+    solutions_t operator()(const Variable& va, const Valuable& augmentation) const override;
     
     using base::base;
     Sum(Sum&&)=default;

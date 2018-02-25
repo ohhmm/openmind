@@ -343,6 +343,7 @@ namespace math {
         Valuable s = 0_v;
 		if (v.IsSum())
 		{
+            auto i = cast(v);
             if(!v.FindVa())
             {
                 for (auto& a : members) {
@@ -532,10 +533,10 @@ namespace math {
         return grade;
     }
     
-    Valuable::solutions_t Sum::operator()(const Variable& va) const
+    Valuable::solutions_t Sum::operator()(const Variable& va, const Valuable& augmentation) const
     {
         solutions_t solutions;
-        Valuable _ = 0_v;
+        Valuable _ = augmentation;
         Valuable todo = 0_v;
         for(auto& m : *this)
         {
@@ -547,11 +548,19 @@ namespace math {
         }
         
         if (todo.IsSum()) {
-            auto s = Sum::cast(todo);
-            for(auto& m : *s)
+            auto s = 0_v;
+            for(auto& m : *Sum::cast(todo))
             {
-                IMPLEMENT
+                auto e = m(va, _);
+                if (e.size() == 1) {
+                    s += *e.begin();
+                }
+                else
+                {
+                    IMPLEMENT
+                }
             }
+            _ = s;
         }
         else if(todo.IsProduct())
         {
@@ -604,6 +613,11 @@ namespace math {
             solutions.insert(_);
         }
         return solutions;
+    }
+    
+    Valuable::solutions_t Sum::operator()(const Variable& va) const
+    {
+        return operator()(va, 0_v);
     }
     
     void Sum::solve(const Variable& va, solutions_t& solutions) const
@@ -740,8 +754,8 @@ namespace math {
                 
                 // decomposition
                 sz = grade + 1;
-                auto sza = grade;
-                auto szb = 2;
+                auto sza = (grade >> 1) + (grade % 2) + 1;
+                auto szb = (grade >> 1) + 1;
                 std::vector<Variable> vva(sza);
                 std::vector<Variable> vvb(szb);
                 Valuable eq1, eq2;
@@ -768,7 +782,7 @@ namespace math {
                     Valuable eq = teq_coefficients[i]-c;
                     sequs << eq;
                 }
-                sequs << copy;
+                //sequs << copy;
                 std::vector<solutions_t> s(szb);
                 for (auto i = szb; i--; ) {
                     s[i] = sequs.Solve(vvb[i]);
