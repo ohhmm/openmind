@@ -3,9 +3,23 @@
 //
 #include "System.h"
 #include "Valuable.h"
+#include <numeric>
 
 using namespace omnn;
 using namespace math;
+
+template<class T, class F>
+void each(const T& t, const F& f)
+{
+    std::for_each(t.begin(), t.end(), f);
+}
+
+System& System::operator()(const Variable& v)
+{
+    if(Fetch(v))
+        Solve(v);
+    return *this;
+}
 
 System& System::operator<<(const Valuable& v)
 {
@@ -27,19 +41,57 @@ bool System::Add(const Variable& va, const Valuable& v)
     return isNew;
 }
 
+Valuable::var_set_t System::CollectVa(const Variable& va) const
+{
+    Valuable::var_set_t _;
+    for(auto& e : equs)
+        if (e.HasVa(va))
+            e.CollectVa(_);
+    _.erase(va);
+    return _;
+}
+
 bool System::Eval(const Variable& va, const Valuable& v)
 {
     bool modified = {};
+    if(!v.HasVa(va))
+        for(auto& e : equs)
+        {
+            if (e.HasVa(va))
+            {
+                auto eva = e;
+                eva.Eval(va, v);
+                eva.optimize();
+                modified = modified || Add(va, eva);
+            }
+        }
+    return modified;
+}
+
+bool System::Fetch(const Variable& va)
+{
+    bool modified = {};
+    
+    if (fetching.find(va) == fetching.end()) {
+        fetching.insert(va);
+    }
+    else {
+        return modified;
+    }
+    
+    Valuable::var_set_t vars;
     for(auto& e : equs)
     {
+        e.CollectVa(vars);
         if (e.HasVa(va))
-        {
-            auto eva = e;
-            eva.Eval(va, v);
-            eva.optimize();
-            modified = modified || Add(va, eva);
-        }
+            for(auto& _ : e(va))
+                modified = modified || Add(va, _);
     }
+    
+    vars.erase(va);
+    std::for_each(vars.begin(), vars.end(),
+                  std::bind(&System::Fetch, this, std::placeholders::_1));
+    
     return modified;
 }
 
@@ -54,35 +106,18 @@ System::solutions_t System::Solve(const Variable& va)
         return solution;
     }
         
-    if(Validate()){
+    if(Validate())
+    {
         auto& es = vEs[va];
         
-        auto equsSzWas = equs.size();
-        bool modified = {};
-        Valuable::var_set_t vars;
-        for(auto& e : equs)
+        if (Fetch(va))
         {
-            e.CollectVa(vars);
-            if (e.HasVa(va))
+            bool modified;
+            do
             {
-                for(auto& _ : e(va))
-                {
-                    modified = modified || Add(va, _);
-                }
-            }
-        }
-        modified = modified || equsSzWas < equs.size();
-        
-        if (modified) {
-            
-            do{
                 modified = {};
-                for(auto& v : vars)
+                for(auto& v : CollectVa(va))
                 {
-                    if (v == va) {
-                        continue;
-                    }
-                    
                     auto& vaFuncs = vEs[v];
                     int toSolve = vaFuncs.size();
                     if (!toSolve) {
@@ -116,7 +151,7 @@ System::solutions_t System::Solve(const Variable& va)
                 }
             } while(modified);
             
-            bool modified = {};
+            modified = {};
             std::vector<Variable> singleVars;
             for(auto& esi : es)
             {
@@ -135,6 +170,15 @@ System::solutions_t System::Solve(const Variable& va)
                         modified = modified || Eval(v, toEval);
                     }
                 }
+                else
+                {
+                    Valuable::var_set_t vset;
+                    each(esi.first, [&](auto& v){vset.insert(v);});
+                    vset.erase(va);
+                    for(auto& v: vset)
+                        Solve(v);
+                }
+                
             }
             if (modified) {
                 solving.erase(va);
