@@ -11,22 +11,14 @@ using namespace omnn::math;
 BOOST_AUTO_TEST_CASE(System_tests)
 {
     {
-        System s;
+        System sys;
         Variable a,b;
-        s << a - 8 - b;
-        s << a + b - 100;
-        auto _ = s.Solve(a);
-        BOOST_TEST(_.size()==0);
-    }
-  
-    {
-        System s;
-        Variable a,b;
-        s << a - 8 - b;
-        s << a + b - 21;
-        s.Eval(a, b+8);
-        auto _ = s.Solve(a);
-        BOOST_TEST(_.size()==1);
+        sys << a - 8 - b;
+        sys << a + b - 100;
+        auto s = sys.Solve(a);
+        BOOST_TEST(s.size()==1);
+        auto _ = *s.begin();
+        BOOST_TEST(_ == 54);
     }
     
     {

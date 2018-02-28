@@ -85,6 +85,11 @@ namespace math {
             }
             if (dn)
             {
+                if (*n < 0 && *dn < 0) {
+                    numerator = -numerator;
+                    denominator = -denominator;
+                    goto reoptimize_the_fraction;
+                }
                 if (*dn == 1_v)
                 {
                     Become(std::move(*n));

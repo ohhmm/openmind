@@ -90,7 +90,7 @@ bool System::Eval(const Variable& va, const Valuable& v)
                 auto eva = e;
                 eva.Eval(va, v);
                 eva.optimize();
-                modified = modified || Add(eva);
+                modified = Add(eva) || modified;
             }
         }
     return modified;
@@ -99,6 +99,7 @@ bool System::Eval(const Variable& va, const Valuable& v)
 bool System::Fetch(const Variable& va)
 {
     bool modified = {};
+    bool fetched = {};
     
     if (fetching.find(va) == fetching.end()) {
         fetching.insert(va);
@@ -113,12 +114,24 @@ bool System::Fetch(const Variable& va)
         e.CollectVa(vars);
         if (e.HasVa(va))
             for(auto& _ : e(va))
-                modified = modified || Add(va, _);
+            {
+                modified = Add(va, _) || modified;
+                if (_.Vars().size() == 0) {
+                    fetched = true;
+                }
+                modified = Eval(va, _) || modified;
+            }
     }
     
-    vars.erase(va);
-    std::for_each(vars.begin(), vars.end(),
-                  std::bind(&System::Fetch, this, std::placeholders::_1));
+    if (!fetched) {
+        vars.erase(va);
+        each(vars,
+             [&](auto& v){
+                 modified = modified || Fetch(v);
+             });
+        
+        fetching.erase(va);
+    }
     
     return modified;
 }
@@ -136,7 +149,7 @@ System::solutions_t System::Solve(const Variable& va)
         
     if(Validate())
     {
-        if (Fetch(va))
+        while (Fetch(va))
         {
             bool modified;
             do
@@ -207,10 +220,6 @@ System::solutions_t System::Solve(const Variable& va)
                 }
                 
             }
-            if (modified) {
-                solving.erase(va);
-                return Solve(va);
-            }
             
             if(!solution.size())
             {
@@ -234,5 +243,7 @@ System::solutions_t System::Solve(const Variable& va)
     {
         throw "Contradiction!";
     }
+    
+    solving.erase(va);
     return solution;
 }
