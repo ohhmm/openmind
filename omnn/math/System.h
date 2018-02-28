@@ -23,6 +23,7 @@ public:
     System& operator()(const Variable& v);
     System& operator<<(const Valuable& v);
     bool Add(const Variable&, const Valuable& v);
+    bool Add(const Valuable& v);
     Valuable::var_set_t CollectVa(const Variable& v) const;
     bool Eval(const Variable&, const Valuable& v);
     bool Fetch(const Variable&);

@@ -14,6 +14,21 @@ void each(const T& t, const F& f)
     std::for_each(t.begin(), t.end(), f);
 }
 
+
+bool is_subset(const std::set<std::string>& subs, const std::set<std::string>& set)
+{
+    auto it = subs.begin();
+    auto se = set.end();
+    for(auto& m : subs)
+    {
+        it = std::find(it, se, m);
+        if (it == se) {
+            return false;
+        }
+    }
+    return true;
+}
+
 System& System::operator()(const Variable& v)
 {
     if(Fetch(v))
@@ -41,6 +56,19 @@ bool System::Add(const Variable& va, const Valuable& v)
     return isNew;
 }
 
+bool System::Add(const Valuable& v)
+{
+    bool isNew = equs.insert(v).second;
+    if (isNew) {
+        for(auto& va : v.Vars())
+        {
+            for(auto& s : v(va))
+                Add(va, s);
+        }
+    }
+    return isNew;
+}
+
 Valuable::var_set_t System::CollectVa(const Variable& va) const
 {
     Valuable::var_set_t _;
@@ -62,7 +90,7 @@ bool System::Eval(const Variable& va, const Valuable& v)
                 auto eva = e;
                 eva.Eval(va, v);
                 eva.optimize();
-                modified = modified || Add(va, eva);
+                modified = modified || Add(eva);
             }
         }
     return modified;
@@ -108,8 +136,6 @@ System::solutions_t System::Solve(const Variable& va)
         
     if(Validate())
     {
-        auto& es = vEs[va];
-        
         if (Fetch(va))
         {
             bool modified;
@@ -151,6 +177,7 @@ System::solutions_t System::Solve(const Variable& va)
                 }
             } while(modified);
             
+            auto& es = vEs[va];
             modified = {};
             std::vector<Variable> singleVars;
             for(auto& esi : es)

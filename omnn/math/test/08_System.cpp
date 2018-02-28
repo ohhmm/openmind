@@ -18,6 +18,16 @@ BOOST_AUTO_TEST_CASE(System_tests)
         auto _ = s.Solve(a);
         BOOST_TEST(_.size()==0);
     }
+  
+    {
+        System s;
+        Variable a,b;
+        s << a - 8 - b;
+        s << a + b - 21;
+        s.Eval(a, b+8);
+        auto _ = s.Solve(a);
+        BOOST_TEST(_.size()==1);
+    }
     
     {
         System s;
