@@ -53,7 +53,8 @@ namespace math {
         ebase.optimize();
         eexp.optimize();
 
-        if (ebase.IsProduct()) {
+        if (ebase.IsExponentiation() || ebase.IsProduct())
+        {
             ebase ^= eexp;
             Become(std::move(ebase));
             return;

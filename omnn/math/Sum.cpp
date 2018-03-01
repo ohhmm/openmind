@@ -76,7 +76,7 @@ namespace math {
         }
         else
         {
-            it = std::find(begin(), end(), item);
+            it = std::find(members.begin(), members.end(), item);
             if(it==end())
                 it = base::Add(item);
             else
@@ -277,6 +277,46 @@ namespace math {
         isOptimizing = false;
     }
 
+    const Valuable::vars_cont_t& Sum::getCommonVars() const
+    {
+        vars.clear();
+        
+        auto it = members.begin();
+        if (it != members.end())
+        {
+            vars = it->getCommonVars();
+            ++it;
+            while (it != members.end()) {
+                auto& _ = it->getCommonVars();
+                for(auto i = vars.begin(); i != vars.end();)
+                {
+                    auto found = _.find(i->first);
+                    if(found != _.end())
+                    {
+                        auto mm = std::minmax(i->second, found->second,
+                                              [](auto& _1, auto& _2){return _1.abs() < _2.abs();});
+                        if ((i->second < 0) == (found->second < 0)) {
+                            i->second = mm.first;
+                        }
+                        else
+                        {
+                            auto sign = mm.second / mm.second.abs();
+                            i->second = sign * (mm.second.abs() - mm.first.abs());
+                        }
+                        ++i;
+                    }
+                    else
+                    {
+                        vars.erase(i++);
+                    }
+                }
+                ++it;
+            }
+        }
+
+        return vars;
+    }
+    
 	Valuable& Sum::operator +=(const Valuable& v)
 	{
 		if (v.IsSum()) {
@@ -548,19 +588,18 @@ namespace math {
         }
         
         if (todo.IsSum()) {
-            auto s = 0_v;
+            solutions.insert(0_v);
             for(auto& m : *Sum::cast(todo))
             {
-                auto e = m(va, _);
-                if (e.size() == 1) {
-                    s += *e.begin();
-                }
-                else
+                solutions_t incoming(std::move(solutions));
+                for(auto& e : m(va, _))
                 {
-                    IMPLEMENT
+                    for(auto& s : incoming)
+                    {
+                        solutions.insert(s + e);
+                    }
                 }
             }
-            _ = s;
         }
         else if(todo.IsProduct())
         {

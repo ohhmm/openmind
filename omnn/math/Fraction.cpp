@@ -112,31 +112,32 @@ namespace math {
         }
         else
         {
-            // products
-            auto n = Product::cast(numerator);
-            auto dn = Product::cast(denominator);
-            if (n) {
-                if (dn) {
-                    auto commonVarsPart = n->getCommVal(*dn);
-                    numerator /= commonVarsPart;
-                    denominator /= commonVarsPart;
-                    goto reoptimize_the_fraction;
+            if (numerator.IsProduct()) {
+                if (denominator.IsProduct()) {
+                    Become(numerator / denominator);
+                    return;
                 }
                 else
                 {
+                    auto n = Product::cast(numerator);
                     if (n->Has(denominator)) {
                         Become(*n / denominator);
                         return;
                     }
                 }
             }
-            else if (dn)
+            else if (denominator.IsProduct())
             {
+                auto dn = Product::cast(denominator);
                 if (dn->Has(numerator)) {
                     denominator /= numerator;
                     numerator = 1_v;
                     goto reoptimize_the_fraction;
                 }
+            }
+            else if (denominator.FindVa())
+            {
+                Become(Product{numerator,Exponentiation(denominator, -1)});
             }
             else // no products
             {

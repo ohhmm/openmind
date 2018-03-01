@@ -33,6 +33,7 @@ class Sum
     friend class Variable;
     cont members;
     bool isOptimizing = false;
+    mutable vars_cont_t vars;
 
 protected:
 	cont& GetCont() override { return members; }
@@ -51,6 +52,7 @@ public:
 	Valuable& operator ++() override;
     Valuable& d(const Variable& x) override;
     void optimize() override;
+    const vars_cont_t& getCommonVars() const override;
     Valuable sqrt() const override;
     Valuable calcFreeMember() const override;
     void solve(const Variable& va, solutions_t& solutions) const override;
