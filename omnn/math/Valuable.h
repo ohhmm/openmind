@@ -101,6 +101,7 @@ public:
     {
         None,
         Condensed,
+        Equation,
         Flat,
         Solving,
     };

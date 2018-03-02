@@ -428,30 +428,7 @@ namespace math {
     
     Fraction::solutions_t Fraction::operator()(const Variable& v, const Valuable& augmentation) const
     {
-        solutions_t s;
-        if(numerator.HasVa(v))
-        {
-            s = numerator(v,augmentation);
-            if(denominator.HasVa(v))
-            {
-                IMPLEMENT;
-            }
-            else
-            {
-                solutions_t so;
-                for(auto& _ : s)
-                    so.insert(_ * denominator);
-                s = so;
-            }
-        }
-        else if(denominator.HasVa(v))
-        {
-            s = denominator(v, numerator / augmentation);
-        }
-        else
-            IMPLEMENT
-            
-        return s;
+        return numerator(v, augmentation * denominator);
     }
     
     omnn::math::Fraction Fraction::Reciprocal() const

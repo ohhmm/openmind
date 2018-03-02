@@ -39,6 +39,7 @@ System& System::operator()(const Variable& v)
 System& System::operator<<(const Valuable& v)
 {
     auto _ = v;
+    _.SetView(Valuable::View::Equation);
     _.optimize();
     equs.insert(_);
     return *this;
@@ -51,7 +52,10 @@ bool System::Add(const Variable& va, const Valuable& v)
     bool isNew = es[vars].insert(v).second;
     if (isNew)
     {
-        equs.insert(v - va);
+        auto _ = v - va;
+        _.SetView(Valuable::View::Equation);
+        _.optimize();
+        equs.insert(_);
     }
     return isNew;
 }

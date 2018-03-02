@@ -141,6 +141,17 @@ namespace math {
                 ++it;
             }
             
+            if (view == Equation) {
+                auto& coVa = getCommonVars();
+                if (coVa.size()) {
+                    *this /= VaVal(coVa);
+                    if (!IsSum()) {
+                        isOptimizing = {};
+                        return;
+                    }
+                }
+            }
+            
             for (auto it = members.begin(); it != members.end();)
             {
                 auto s = cast(*it);
