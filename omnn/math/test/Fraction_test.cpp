@@ -34,9 +34,16 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 
     BOOST_TEST((1_v/2)^2_v == 1_v/4);
     
-    Variable v;
-    _ = 1_v / (1_v / v);
-    BOOST_TEST(_ == v);
+    Variable v1, v2;
+    _ = 1_v / (1_v / v1);
+    BOOST_TEST(_ == v1);
     
-    BOOST_TEST((2040_v*v/(-2_v*v))==-1020);
+    BOOST_TEST((2040_v*v1/(-2_v*v1))==-1020);
+    
+    _ = (2040_v/v1) / ((-1_v/v1)*v2);
+    _.optimize();
+    BOOST_TEST(_ == -2040_v/v2);
+    
 }
+
+

@@ -71,6 +71,20 @@ namespace math {
             return;
         }
 
+        if (numerator.IsExponentiation()) {
+            auto e = Exponentiation::cast(numerator);
+            auto& exp = e->getExponentiation();
+            if (exp < 0)
+            {
+                if (exp.IsInt()) {
+                    denominator *= e->getBase() ^ (-exp);
+                    numerator = 1;
+                } else if (exp.IsFraction()) {
+                    IMPLEMENT
+                }
+            }
+        }
+
         // integers
         auto n = Integer::cast(numerator);
         auto dn = Integer::cast(denominator);

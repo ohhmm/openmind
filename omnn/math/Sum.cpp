@@ -283,6 +283,16 @@ namespace math {
                     checked = true;
                 }
             }
+            else if (view == Equation) {
+                auto& coVa = getCommonVars();
+                if (coVa.size()) {
+                    *this /= VaVal(coVa);
+                    if (!IsSum()) {
+                        isOptimizing = {};
+                        return;
+                    }
+                }
+            }
         }
         
         isOptimizing = false;
@@ -599,65 +609,87 @@ namespace math {
         }
         
         if (todo.IsSum()) {
-            solutions.insert(0_v);
-            for(auto& m : *Sum::cast(todo))
-            {
-                solutions_t incoming(std::move(solutions));
-                for(auto& e : m(va, _))
+            auto coVa = todo.getCommonVars();
+            auto it = coVa.find(va);
+            if (it != coVa.end()) {
+                todo /= it->first ^ it->second;
+                if (it->second < 0) {
+                    _ *= it->first ^ -it->second;
+                    return _(va, todo);
+                }
+                else
                 {
-                    for(auto& s : incoming)
-                    {
-                        solutions.insert(s + e);
+                    auto solution = Fraction(_, todo);
+                    if (it->second != 1_v) {
+                        solution ^= 1_v/it->second;
                     }
-                }
-            }
-        }
-        else if(todo.IsProduct())
-        {
-            auto cova = todo.getCommonVars();
-            auto it = cova.find(va);
-            if (it == cova.end()) {
-                throw "No such variable.";
-            }
-            todo /= it->first ^ it->second;
-            _ /= todo;
-            solutions.insert(_);
-            if (it->second % 2 == 0_v) {
-                solutions.insert(-_);
-            }
-        }
-        else if (todo.IsExponentiation())
-        {
-            auto e = Exponentiation::cast(todo);
-            if (e->getBase() == va) {
-                auto& ee = e->getExponentiation();
-                if (ee.HasVa(va)) {
-                    IMPLEMENT
-                }
-                _ ^= 1_v / ee;
-                if (ee % 2 == 0_v)
-                {
-                    solutions.insert(-_);
-                    solutions.insert(_);
+                    solution.optimize();
+                    solutions.insert(solution);
                 }
             }
             else
             {
-                IMPLEMENT
+                solutions.insert(0_v);
+                for(auto& m : *Sum::cast(todo))
+                {IMPLEMENT
+                    solutions_t incoming(std::move(solutions));
+                    for(auto& e : m(va, _))
+                    {
+                        IMPLEMENT // test it
+                        for(auto& s : incoming)
+                        {
+                            solutions.insert(s + e);
+                        }
+                    }
+                }
             }
         }
-        else if (todo.IsFraction())
+//        else if(todo.IsProduct())
+//        {
+//            auto cova = todo.getCommonVars();
+//            auto it = cova.find(va);
+//            if (it == cova.end()) {
+//                throw "No such variable.";
+//            }
+//            todo /= it->first ^ it->second;
+//            _ /= todo;
+//            solutions.insert(_);
+//            if (it->second % 2 == 0_v) {
+//                solutions.insert(-_);
+//            }
+//        }
+//        else if (todo.IsExponentiation())
+//        {
+//            auto e = Exponentiation::cast(todo);
+//            if (e->getBase() == va) {
+//                auto& ee = e->getExponentiation();
+//                if (ee.HasVa(va)) {
+//                    IMPLEMENT
+//                }
+//                _ ^= 1_v / ee;
+//                if (ee % 2 == 0_v)
+//                {
+//                    solutions.insert(-_);
+//                    solutions.insert(_);
+//                }
+//            }
+//            else
+//            {
+//                IMPLEMENT
+//            }
+//        }
+        else// if (todo.IsFraction())
         {
             solutions = todo(va, _);
         }
-        else if (todo.IsVa())
-        {
-            assert(todo == va);
-        }
-        else
-        {
-            IMPLEMENT
-        }
+//        else if (todo.IsVa())
+//        {
+//            assert(todo == va);
+//        }
+//        else
+//        {
+//            IMPLEMENT
+//        }
         
         if (!solutions.size()) {
             solutions.insert(_);
@@ -667,7 +699,17 @@ namespace math {
     
     Valuable::solutions_t Sum::operator()(const Variable& va) const
     {
-        return operator()(va, 0_v);
+        Valuable augmentation = 0_v;
+        Valuable _ = 0_v;
+        for(auto& m : *this)
+        {
+            if (m.HasVa(va)) {
+                _ += m;
+            } else {
+                augmentation -= m;
+            }
+        }
+        return _(va, augmentation);
     }
     
     void Sum::solve(const Variable& va, solutions_t& solutions) const

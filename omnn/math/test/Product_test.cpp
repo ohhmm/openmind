@@ -53,6 +53,16 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     
     auto _ = v1 * (-1_v / v2);
     BOOST_TEST(_.getCommonVars().size()==2);
+    
+    auto _1 = -1_v*v1*v2;
+    auto _2 = -1_v*v2*v1;
+    BOOST_TEST(_1 == _2);
+//    Variable v8, v9, v10, v12, v13;
+//    _ = (-1_v/174)*(((-1_v*(v10^2)*v12 + -1_v*v14*v8*v10 + -1_v*v13*v9*v10 + -866_v*v10))^-1_v)*v13*v9;
+//    BOOST_TEST(_(v8) == )
+//    _ = -1_v*(v6^-1_v)*(v8^2_v)*v13;
+//    _ = _(v6, (-1_v*v14*v9 + -1_v*v13*v10 + 174_v));
+//    BOOST_TEST(_ == )
 }
 
 BOOST_AUTO_TEST_CASE(test_no_hang, *timeout(2))

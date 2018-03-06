@@ -14,6 +14,10 @@ class System
     std::set<Variable> solving;
     std::set<Variable> fetching;
     
+    struct VaData
+    {
+        
+    };
 public:
     using solutions_t = Valuable::solutions_t;
     using es_t = std::map<std::set<Variable>,solutions_t>;

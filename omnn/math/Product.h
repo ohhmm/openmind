@@ -18,9 +18,9 @@ namespace math {
     };
     
     using product_container =
-        std::multiset<Valuable, ProductOrderComparator>
+        //std::multiset<Valuable, ProductOrderComparator>
         //std::unordered_multiset<Valuable>
-        //std::set<Valuable, ProductOrderComparator>
+        std::set<Valuable, ProductOrderComparator>
         ;
 
 class Product

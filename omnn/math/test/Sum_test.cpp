@@ -152,12 +152,38 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     auto ss = _(v3);
     BOOST_TEST(ss.size() == 1);
     BOOST_TEST(!ss.begin()->HasVa(v3));
+    _ = *ss.begin();
+    BOOST_TEST(_ == -2040_v/v1);
     
     _1 = x*-1+y*-2;
     _1 /= z;
     BOOST_TEST(_1.HasVa(z));
     _2 = x*-1/z+y*-2/z;
     BOOST_TEST(_1==_2);
+    
+    Variable v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17;
+    
+    _1 = -1_v*v17*v12 + -1_v*v16*v13 + 174;
+    _2 = -1_v*v17*v12 + -1_v*v13*v16 + 174;
+    BOOST_TEST(_1 == _2);
+
+    _1 = -1_v*(v11^2)*v16 + -1_v*v17*v10*v11 + -1_v*v15*v12*v11 + -1_v*v14*v13*v11 + 2723_v*v11;
+    _2 = -1_v*(v11^2)*v16 + -1_v*v13*v11*v14 + -1_v*v17*v10*v11 + -1_v*v15*v12*v11 + 2723_v*v11;
+    BOOST_TEST(_1 == _2);
+
+    _ = (-1_v*(v6^-1_v)*(v8^2_v)*v13 + -1_v*(v6^-1_v)*v14*v7*v8 + -1_v*(v6^-1)*v12*v9*v8 + v10*v13 + v9*v14 + -1_v*(v6^-1)*v11*v10*v8 + 2723_v*(v6^-1)*v8 + -174_v);
+    // -1_v*(v6^-1_v)*(v8^2_v)*v13 + -1_v*(v6^-1_v)*v14*v7*v8 + -1_v*(v6^-1)*v12*v9*v8 -1_v*(v6^-1)*v11*v10*v8 + 2723_v*(v6^-1)*v8
+    //              == -v10*v13 - v9*v14 + 174_v
+    
+    // -1_v*(v8^2_v)*v13 + -1_v*v14*v7*v8 + -1_v*v12*v9*v8 -1_v*v11*v10*v8 + 2723_v*v8 == v6(-v10*v13 - v9*v14 + 174_v)
+    // v6 == (-1_v*(v8^2_v)*v13 + -1_v*v14*v7*v8 + -1_v*v12*v9*v8 -1_v*v11*v10*v8 + 2723_v*v8) / (-v10*v13 - v9*v14 + 174_v)
+    ss = _(v6);
+    BOOST_TEST(ss.size() == 1);
+    BOOST_TEST(!ss.begin()->HasVa(v6));
+    _1 = *ss.begin();
+    _2 = Fraction(-1_v*(v8^2_v)*v13 + -1_v*v14*v7*v8 + -1_v*v12*v9*v8 -1_v*v11*v10*v8 + 2723_v*v8,
+                  -v10*v13 - v9*v14 + 174_v);
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)

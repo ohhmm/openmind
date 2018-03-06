@@ -674,27 +674,67 @@ namespace math {
     
     Valuable::solutions_t Product::operator()(const Variable& va) const
     {
-        auto cova = getCommonVars();
-        auto it = cova.find(va);
-        if (it == cova.end()) {
-            throw "No such variable.";
-        }
-        return {0_v / (*this / (va ^ it->second))};
+        return operator()(va, 0_v);
     }
     
     Valuable::solutions_t Product::operator()(const Variable& va, const Valuable& augmentation) const
     {
         Valuable::solutions_t s;
-        auto cova = getCommonVars();
-        auto it = cova.find(va);
-        if (it == cova.end()) {
-            throw "No such variable.";
+       
+        if(augmentation.HasVa(va)) {
+            IMPLEMENT;
+        } else {
+            auto coVa = getCommonVars();
+            auto it = coVa.find(va);
+            if (it != coVa.end()) {
+                if (it->second < 0) {
+                    s.insert(((*this / (it->first ^ it->second)) / augmentation) ^ (1_v / -it->second));
+                }
+                else
+                {
+                    s.insert((augmentation / (*this / (it->first ^ it->second))) ^ (1_v / it->second));
+                }
+            }
+            else
+                IMPLEMENT
         }
-        auto _ = augmentation / (*this / (va ^ it->second));
-        s.insert(_);
-        if (it->second % 2 == 0) {
-            s.insert(-_);
-        }
+        
+//        if(augmentation.HasVa(va)) {
+//            IMPLEMENT;
+//        } else {
+//            auto _ = augmentation;
+//            auto left = 1_v;
+//            for(auto& m : members)
+//            {
+//                if (m.HasVa(va)) {
+//                    left *= m;
+//                } else {
+//                    _ /= m;
+//                }
+//            }
+//            
+//            left.optimize();
+//            if (left.IsProduct()) {
+//                IMPLEMENT
+//            }
+//            
+//            return left(va, _);
+//        }
+//        auto cova = getCommonVars();
+//        auto it = cova.find(va);
+//        if (it != cova.end()) {
+//            auto _ = augmentation / (*this / (va ^ it->second));
+//            if(_.HasVa(va))
+//                IMPLEMENT;
+//            s.insert(_);
+//            if (it->second % 2 == 0) {
+//                s.insert(-_);
+//            }
+//        }
+//        else
+//        {
+//            IMPLEMENT
+//        }
         return s;
     }
     
