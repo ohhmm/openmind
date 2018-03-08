@@ -86,7 +86,9 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST((((8_v + (((8*1 + 8*1 + -8 + (1_v^2)*-4 + (1_v^2)*-4))^((1_v/2)))))/2) == 4);
     
     Variable x,y,z;
-    BOOST_TEST((x+y)*(x-y) == (x^2) - (y^2));
+    _1 = (x+y)*(x-y);
+    _2 = (x^2) - (y^2);
+    BOOST_TEST(_1 == _2);
     sq = (x^4) + (z^4);
     auto sum = Sum::cast(sq);
     BOOST_TEST(sum);
@@ -221,7 +223,21 @@ BOOST_AUTO_TEST_CASE(Containers_test)
         s.insert(a);
         us.insert(a);
     }
-    BOOST_ASSERT(vec.size()==3);
-    BOOST_ASSERT(s.size()==3);
-    BOOST_ASSERT(us.size()==3);
+    BOOST_TEST(vec.size()==3);
+    BOOST_TEST(s.size()==3);
+    BOOST_TEST(us.size()==3);
+}
+
+BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang, *timeout(2))
+{
+    // good
+    auto _1 = (va^2)-va*2+1;
+    auto _2 = va-1;
+    BOOST_TEST(_1/_2 == _2);
+    
+    // hang -> should fall back to fraction
+    _2 = (va^2)-1;
+    auto _ = _1/_2; // hang
+    BOOST_TEST(_.IsFraction());
+    BOOST_TEST(_1/_2 == (((va^2)-va*2+1)/((va^2)-1)));
 }

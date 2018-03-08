@@ -442,7 +442,7 @@ namespace math {
     
     Fraction::solutions_t Fraction::operator()(const Variable& v, const Valuable& augmentation) const
     {
-        return numerator(v, augmentation * denominator);
+        return (augmentation * denominator - numerator)(v);
     }
     
     omnn::math::Fraction Fraction::Reciprocal() const

@@ -95,9 +95,12 @@ public:
     explicit operator double() const override;
     explicit operator long double() const override;
     explicit operator unsigned char() const override;
-
+    
+    solutions_t operator()(const Variable&) const override { return {}; }
+    solutions_t operator()(const Variable&, const Valuable& augmentation) const override { return {}; }
+    
     const Variable* FindVa() const override { return nullptr; }
-    bool HasVa(const Variable& va) const override { return false; }
+    bool HasVa(const Variable& va) const override { return {}; }
     void CollectVa(std::set<Variable>&) const override { }
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;

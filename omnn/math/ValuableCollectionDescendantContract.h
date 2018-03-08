@@ -58,11 +58,16 @@ namespace math {
         static iterator getit(iterator it){
             return it;
         }
-        static iterator getit(std::pair<iterator,bool> it){
+        iterator getit(const std::pair<iterator,bool>& it){
             auto inserted = it.second;
-            if(!inserted)
-                IMPLEMENT
+            if(!inserted){
+                return Had(it.first);
+            }
             return it.first;
+        }
+        virtual iterator Had(iterator it)
+        {
+            IMPLEMENT
         }
         
         virtual const iterator Add(const Valuable& item)

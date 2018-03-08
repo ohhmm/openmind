@@ -53,10 +53,34 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     
     auto _ = v1 * (-1_v / v2);
     BOOST_TEST(_.getCommonVars().size()==2);
+   
+    _ = -1_v*v1*v2;
+    _ *= -v1;
+    BOOST_TEST((v1^2)*v2  == _);
     
     auto _1 = -1_v*v1*v2;
     auto _2 = -1_v*v2*v1;
     BOOST_TEST(_1 == _2);
+    
+    _1 = -1_v*(v1^3);
+    _2 = -1_v*(v1^4);
+    BOOST_TEST(_1.getCommonVars().begin()->second == 3);
+    BOOST_TEST(_2.getCommonVars().begin()->second == 4);
+    
+    _1 /= v1;
+    BOOST_TEST(_1.getCommonVars().begin()->second == 2);
+    
+    _2 /= v1^2;
+    BOOST_TEST(_2.getCommonVars().begin()->second == 2);
+    _2 *= v1^2;
+    BOOST_TEST(_2.getCommonVars().begin()->second == 4);
+    
+    _2 += _1;
+    _2 *= v1 ^ 4;
+    BOOST_TEST(Sum::cast(_2)->begin()->getCommonVars().begin()->second == 8);
+    
+    Product::cast(_1)->Add(v1^2);
+    BOOST_TEST(_1.getCommonVars().begin()->second == 4);
 //    Variable v8, v9, v10, v12, v13;
 //    _ = (-1_v/174)*(((-1_v*(v10^2)*v12 + -1_v*v14*v8*v10 + -1_v*v13*v9*v10 + -866_v*v10))^-1_v)*v13*v9;
 //    BOOST_TEST(_(v8) == )

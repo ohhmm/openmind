@@ -44,6 +44,7 @@ public:
     Product(const std::initializer_list<Valuable>& l);
     
 	const cont& GetConstCont() const override { return members; }
+    iterator Had(iterator it) override;
     const iterator Add(const Valuable& item) override;
     void Update(typename cont::iterator& it, const Valuable& v) override;
     void Delete(typename cont::iterator& it) override;
@@ -57,7 +58,6 @@ public:
     Valuable calcFreeMember() const override;
     
 	// virtual operators
-	Valuable operator -() const override;
 	Valuable& operator +=(const Valuable& v) override;
 	Valuable& operator *=(const Valuable& v) override;
 	Valuable& operator /=(const Valuable& v) override;

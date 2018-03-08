@@ -35,7 +35,7 @@ namespace math {
         assert(it1!=oe); // IMPLEMENT
         auto it2 = std::find(ob, oe, static_cast<type_index>(y));
         assert(it2!=oe); // IMPLEMENT
-        return it1 == it2 ? *it1 > *it2 : it1 < it2;
+        return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
     }
     
     Product::Product() : members {{1}}
@@ -92,23 +92,33 @@ namespace math {
 
     void Product::AddToVarsIfVaOrVaExp(const Valuable &item)
     {
-        auto v = Variable::cast(item);
-        if(v)
+        if(item.IsVa())
         {
+            auto v = Variable::cast(item);
             AddToVars(*v, 1_v);
         }
-        else
+        else if (item.IsExponentiation())
         {
             auto e = Exponentiation::cast(item);
-            if (e)
+            auto isVa = e->getBase().IsVa();
+            if (isVa)
             {
-                v = Variable::cast(e->getBase());
-                if (v)
-                {
-                    AddToVars(*v, e->getExponentiation());
-                }
+                auto v = Variable::cast(e->getBase());
+                AddToVars(*v, e->getExponentiation());
             }
         }
+        else if (!item.IsSum() && item.FindVa())
+        {
+            IMPLEMENT
+        }
+    }
+    
+    Product::iterator Product::Had(iterator it)
+    {
+        hash ^= it->Hash();
+        AddToVarsIfVaOrVaExp(*it);
+        base::Update(it, *it ^ 2);
+        return it;
     }
 
     const Product::iterator Product::Add(const Valuable& item)
@@ -145,22 +155,6 @@ namespace math {
         
         base::Delete(it);
     }
-    
-	Valuable Product::operator -() const
-	{
-        Valuable v = *this;
-        auto p = cast(v);
-        auto b = p->GetFirstOccurence<Integer>();
-        if (b == p->end()) {
-            b = p->GetFirstOccurence<Fraction>();
-            if (b == p->end()) {
-                b = p->begin();
-            }
-        }
-        const_cast<Product*>(p)->Update(b, -*b);
-        v.optimize();
-        return v;
-	}
 
     void Product::optimize()
     {
@@ -496,68 +490,71 @@ namespace math {
         if (s)
             return Become(v**this);
 
-        auto va = Variable::cast(v);
-        if (va)
+        if (v.IsVa())
         {
-            for (auto it = members.begin(); it != members.end();)
+            auto va = Variable::cast(v);
+            for (auto it = members.begin(); it != members.end(); ++it)
             {
                 if (it->Same(v)) {
                     Update(it, Exponentiation(*va, 2));
                     goto yes;
                 }
-                else
+                else if (it->IsExponentiation())
                 {
                     auto e = Exponentiation::cast(*it);
                     if (e && e->getBase() == *va) {
                         Update(it, Exponentiation(*va, e->getExponentiation()+1));
                         goto yes;
                     }
+                }
+            }
+        }
+        else if (v.IsExponentiation())
+        {
+            auto e = Exponentiation::cast(v);
+            for (auto it = members.begin(); it != members.end();)
+            {
+                auto ite = Exponentiation::cast(*it);
+                if (ite && ite->getBase() == e->getBase())
+                {
+                    Update(it, *it*v);
+                    goto yes;
+                }
+                else
+                {
+                    if (e->getBase() == *it) {
+                        Update(it, Exponentiation(e->getBase(), e->getExponentiation()+1));
+                        goto yes;
+                    }
                     else
                         ++it;
                 }
             }
+        }
+        else if (v.IsProduct())
+        {
+            for(auto& m : *cast(v))
+            {
+                Add(m);
+            }
+            goto yes;
         }
         else
         {
-            auto e = Exponentiation::cast(v);
-            if(e)
+            for (auto it = members.begin(); it != members.end();)
             {
-                for (auto it = members.begin(); it != members.end();)
-                {
-                    auto ite = Exponentiation::cast(*it);
-                    if (ite && ite->getBase() == e->getBase())
-                    {
-                        Update(it, *it*v);
-                        goto yes;
-                    }
-                    else
-                    {
-                        if (e->getBase() == *it) {
-                            Update(it, Exponentiation(e->getBase(), e->getExponentiation()+1));
-                            goto yes;
-                        }
-                        else
-                            ++it;
-                    }
+                if (it->OfSameType(v)) {
+                    Update(it, *it*v);
+                    goto yes;
                 }
-            }
-            else
-            {
-                for (auto it = members.begin(); it != members.end();)
-                {
-                    if (it->OfSameType(v)) {
-                        Update(it, *it*v);
-                        goto yes;
-                    }
-                    else
-                        ++it;
-                }
+                else
+                    ++it;
             }
         }
-
+        
         // add new member
         Add(v);
-
+        
     yes:
         optimize();
         return *this;

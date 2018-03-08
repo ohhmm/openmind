@@ -187,9 +187,8 @@ namespace math {
                 
                 for (; it2 != members.end();)
                 {
-                    const Fraction* f2;
-                    if ((i && (f2=Fraction::cast(*it2)) && f2->IsSimple())
-                        || (Integer::cast(*it2) && (i || (f && f->IsSimple())))
+                    if ((i && it2->IsFraction() && Fraction::cast(*it2)->IsSimple())
+                        || (it2->IsInt() && (i || (f && f->IsSimple())))
                         || (p && mc == *it2)
                         )
                     {
@@ -210,8 +209,6 @@ namespace math {
                         up();
                     }
                     else if (c.getCommonVars().size()
-                             //&& (!s || !Sum::cast(*it2))
-                             //&& (!p || p->GetFirstOccurence<Sum>() != p->end())
                             && c.getCommonVars()==it2->getCommonVars())
                     {
                         auto sum = p ? c : Product{c};
@@ -377,14 +374,11 @@ namespace math {
             else
                 sum += m;
         };
-        auto f = cast(v);
-		if (f)
+        if (v.IsSum())
 		{
-            for (auto it = members.rbegin(); it != members.rend(); ++it) {
-				for (auto& b : f->members) {
-                    add(*it*b);
-				}
-			}
+            for(auto& _1 : *cast(v))
+				for (auto& _2 : members)
+                    add(_1*_2);
 		}
 		else
         {
@@ -392,10 +386,7 @@ namespace math {
                 add(a * v);
             }
 		}
-        //auto was = Valuable::optimizations;
-        //Valuable::optimizations = {};
         Become(std::move(sum));
-        //Valuable::optimizations = was;
         return *this;
 	}
 
@@ -430,6 +421,7 @@ namespace math {
                         break;
                     }
                 }
+                
             }
 		}
 		else
@@ -619,7 +611,7 @@ namespace math {
                 }
                 else
                 {
-                    auto solution = Fraction(_, todo);
+                    Valuable solution = Fraction(_, todo);
                     if (it->second != 1_v) {
                         solution ^= 1_v/it->second;
                     }

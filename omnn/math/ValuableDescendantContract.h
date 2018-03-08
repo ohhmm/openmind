@@ -75,6 +75,10 @@ namespace math {
             return Valuable::cast<Chld>(v);
         }
         
+        Valuable operator -() const override {
+            return *this * -1;
+        }
+        
         Valuable abs() const override
         {
             auto i = const_cast<Chld*>(cast(*this));
