@@ -279,6 +279,8 @@ namespace math {
                     }
                     checked = true;
                 }
+                
+                // todo : make all va exponentiations > 0
             }
             else if (view == Equation) {
                 auto& coVa = getCommonVars();
@@ -539,10 +541,15 @@ namespace math {
                 auto vcnt = it == coVa.end() ? 0 : it->second; // exponentation of va
                 auto i = Integer::cast(vcnt);
                 if (!i) {
-                    throw "Implement!";
+                    IMPLEMENT
                 }
                 int ie = static_cast<int>(*i);
-                if (ie > grade) {
+                if (ie < 0)
+                {
+                    coefficients.clear();
+                    return cast(*this * (v^ie))->FillPolyCoeff(coefficients, v);
+                }
+                else if (ie > grade) {
                     grade = ie;
                     if (ie >= coefficients.size()) {
                         coefficients.resize(ie+1);
@@ -574,7 +581,7 @@ namespace math {
                             coefficients[i] += 1_v;
                         }
                         else
-                            throw "Implement!";
+                            IMPLEMENT
                     }
                     else
                     {
@@ -609,105 +616,108 @@ namespace math {
                     _ *= it->first ^ -it->second;
                     return _(va, todo);
                 }
-                else
+                else if (todo != 0_v)
                 {
                     Valuable solution = Fraction(_, todo);
                     if (it->second != 1_v) {
                         solution ^= 1_v/it->second;
                     }
-                    solution.optimize();
+                    else
+                        solution.optimize();
                     solutions.insert(solution);
                 }
             }
             else
             {
-                solutions.insert(0_v);
-                for(auto& m : *Sum::cast(todo))
-                {IMPLEMENT
-                    solutions_t incoming(std::move(solutions));
-                    for(auto& e : m(va, _))
+                auto stodo = cast(todo);
+                if (stodo->size() == 2)
+                {
+                    if(stodo->begin()->IsFraction())
                     {
-                        IMPLEMENT // test it
-                        for(auto& s : incoming)
+                        solutions = (*stodo->begin())(va, _ - *stodo->rbegin());
+                    }
+                    else if(stodo->rbegin()->IsFraction())
+                    {
+                        solutions = (*stodo->rbegin())(va, _ - *stodo->begin());
+                    }
+                    else
+                    {
+                        IMPLEMENT
+                    }
+                }
+                else
+                {
+                    solutions.insert(0_v);
+                    for(auto& m : *stodo)
+                    {IMPLEMENT
+                        solutions_t incoming(std::move(solutions));
+                        for(auto& e : m(va, _))
                         {
-                            solutions.insert(s + e);
+                            IMPLEMENT // test it
+                            for(auto& s : incoming)
+                            {
+                                solutions.insert(s + e);
+                            }
                         }
                     }
                 }
             }
         }
-//        else if(todo.IsProduct())
-//        {
-//            auto cova = todo.getCommonVars();
-//            auto it = cova.find(va);
-//            if (it == cova.end()) {
-//                throw "No such variable.";
-//            }
-//            todo /= it->first ^ it->second;
-//            _ /= todo;
-//            solutions.insert(_);
-//            if (it->second % 2 == 0_v) {
-//                solutions.insert(-_);
-//            }
-//        }
-//        else if (todo.IsExponentiation())
-//        {
-//            auto e = Exponentiation::cast(todo);
-//            if (e->getBase() == va) {
-//                auto& ee = e->getExponentiation();
-//                if (ee.HasVa(va)) {
-//                    IMPLEMENT
-//                }
-//                _ ^= 1_v / ee;
-//                if (ee % 2 == 0_v)
-//                {
-//                    solutions.insert(-_);
-//                    solutions.insert(_);
-//                }
-//            }
-//            else
-//            {
-//                IMPLEMENT
-//            }
-//        }
-        else// if (todo.IsFraction())
+        else
         {
             solutions = todo(va, _);
         }
-//        else if (todo.IsVa())
-//        {
-//            assert(todo == va);
-//        }
-//        else
-//        {
-//            IMPLEMENT
-//        }
-        
-        if (!solutions.size()) {
-            solutions.insert(_);
-        }
+
         return solutions;
     }
     
     Valuable::solutions_t Sum::operator()(const Variable& va) const
     {
-        Valuable augmentation = 0_v;
-        Valuable _ = 0_v;
-        for(auto& m : *this)
-        {
-            if (m.HasVa(va)) {
-                _ += m;
-            } else {
-                augmentation -= m;
+        Valuable::solutions_t s;
+        if (size() <= 3) {
+            std::vector<Valuable> coefs;
+            auto grade = FillPolyCoeff(coefs, va);
+            if (coefs.size() && grade && grade <= 2)
+            {
+                solve(va, s, coefs, grade);
+                for (auto i=s.begin(); i != s.end();) {
+                    if (i->HasVa(va)) {
+//                        IMPLEMENT
+                        s.erase(i++);
+                    }
+                    else
+                        ++i;
+                }
             }
         }
-        return _(va, augmentation);
+
+        if (!s.size())
+        {
+            Valuable augmentation = 0_v;
+            Valuable _ = 0_v;
+            for(auto& m : *this)
+            {
+                if (m.HasVa(va)) {
+                    _ += m;
+                } else {
+                    augmentation -= m;
+                }
+            }
+            s = _(va, augmentation);
+        }
+        
+        return s;
     }
     
     void Sum::solve(const Variable& va, solutions_t& solutions) const
     {
         std::vector<Valuable> coefficients;
         auto grade = FillPolyCoeff(coefficients, va);
+        solve(va, solutions, coefficients, grade);
+    }
+    
+    void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const
+    {        
         switch (grade) {
             case 1: {
                 //x=-(b/a)

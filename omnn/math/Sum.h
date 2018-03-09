@@ -56,6 +56,7 @@ public:
     Valuable sqrt() const override;
     Valuable calcFreeMember() const override;
     void solve(const Variable& va, solutions_t& solutions) const override;
+    void solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const;
 
     solutions_t operator()(const Variable& va) const override;
     solutions_t operator()(const Variable& va, const Valuable& augmentation) const override;
