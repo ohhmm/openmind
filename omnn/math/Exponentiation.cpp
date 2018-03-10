@@ -415,7 +415,7 @@ namespace math {
                 is = expComesBefore==ebaseComesBefore || *this > *e;
             }
         }
-        else if(Product::cast(v))
+        else if(v.IsProduct())
         {
             is = Product{*this}.IsComesBefore(v);
         }

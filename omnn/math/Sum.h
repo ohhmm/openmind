@@ -18,7 +18,7 @@ namespace math {
         bool operator()(const Valuable&, const Valuable&) const;
     };
 
-    using sum_cont = // ensure Add/Update/Deletehas right behaviour if you change this structure
+    using sum_cont = // ensure Add/Update/Delete validness if you change this structure
         std::set<Valuable, SumOrderComparator>
 //        boost::container::set<Valuable, SumOrderComparator>
 //        std::unordered_multiset<Valuable>

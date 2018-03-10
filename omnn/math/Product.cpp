@@ -53,8 +53,12 @@ namespace math {
     
     int Product::findMaxVaExp()
     {
+        vaExpsSum = 0;
         for (auto& i:vars) {
-            vaExpsSum += static_cast<int>(i.second);
+            if (!i.second.IsInt()) {
+                IMPLEMENT;
+            }
+            vaExpsSum += i.second;
         }
         auto it = std::max_element(vars.begin(), vars.end(), [](auto& x, auto& y){
             return x.second < y.second;
@@ -66,23 +70,37 @@ namespace math {
         return 0;
     }
 
-    void Product::AddToVars(const Variable & item, const Valuable & exponentiation)
+    void Product::AddToVars(const Variable & va, const Valuable & exponentiation)
     {
-        vars[item] += exponentiation;
-        if (vars[item] == 0) {
-            vars.erase(item);
-            maxVaExp = findMaxVaExp();
+        if (!exponentiation.IsInt()) {
+            IMPLEMENT // estimate in to be greater for those which you want to see first in sum sequence
         }
         auto i = Integer::cast(exponentiation);
-        if (i) {
-            int in = static_cast<decltype(vaExpsSum)>(*i); // <<< this in
-            vaExpsSum += in;
-            if (in > getMaxVaExp()) {
-                maxVaExp = in;
-            }
+        vaExpsSum += *i;
+        
+        auto& e = vars[va];
+        if (!e.IsInt()) {
+            IMPLEMENT
         }
-        else
-            IMPLEMENT // just estimate in to be greater for those which you want to see first in sum sequence
+        auto ie = Integer::cast(e);
+        bool wasMax = maxVaExp == *ie;
+        e += exponentiation;
+        ie = Integer::cast(e);
+      
+        if (maxVaExp < ie->operator Integer::const_base_int_ref()) {
+            maxVaExp = ie->operator Integer::const_base_int_ref();
+        }
+        else if (wasMax) {
+            assert(*i < 0);
+            maxVaExp = findMaxVaExp();
+        }
+        
+        if (e == 0) {
+            vars.erase(va);
+//            maxVaExp = findMaxVaExp();
+        }
+        
+
     }
 
     void Product::AddToVarsIfVaOrVaExp(const Valuable &item)
@@ -95,10 +113,11 @@ namespace math {
         else if (item.IsExponentiation())
         {
             auto e = Exponentiation::cast(item);
-            auto isVa = e->getBase().IsVa();
+            auto& base = e->getBase();
+            auto isVa = base.IsVa();
             if (isVa)
             {
-                auto v = Variable::cast(e->getBase());
+                auto v = Variable::cast(base);
                 AddToVars(*v, e->getExponentiation());
             }
         }
@@ -149,24 +168,29 @@ namespace math {
 
     void Product::Delete(typename cont::iterator& it)
     {
-        auto v = Variable::cast(*it);
-        if(v)
+        std::function<void()> addToVars;
+        if(it->IsVa())
         {
-            AddToVars(*v, -1_v);
+            auto v = Variable::cast(*it);
+            addToVars = std::bind(&Product::AddToVars, this, *v, -1_v);
         }
         else
         {
-            auto e = Exponentiation::cast(*it);
-            if (e)
+            if (it->IsExponentiation())
             {
-                v = Variable::cast(e->getBase());
-                if (v) {
-                    AddToVars(*v, -e->getExponentiation());
+                auto e = Exponentiation::cast(*it);
+                auto& ebase = e->getBase();
+                if (ebase.IsVa()) {
+                    auto v = Variable::cast(ebase);
+                    addToVars = std::bind(&Product::AddToVars, this, *v, -e->getExponentiation());
                 }
             }
         }
         
         base::Delete(it);
+
+        if(addToVars)
+            addToVars();
     }
 
     void Product::optimize()

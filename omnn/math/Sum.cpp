@@ -56,8 +56,6 @@ namespace math {
         return v1.OfSameType(v2)
             || (v1.IsProduct() && v2.IsExponentiation())
             || (v2.IsProduct() && v1.IsExponentiation())
-            || (v1.IsProduct() && v2.IsVa())
-            || (v2.IsProduct() && v1.IsVa())
             ? v1.IsComesBefore(v2) : toc(v1,v2);
     }
 
@@ -531,12 +529,12 @@ namespace math {
     
     bool Sum::IsComesBefore(const Valuable& v) const
     {
-        auto s = Sum::cast(v);
-        if (!s) {
+        if (!v.IsSum()) {
             return base::IsComesBefore(v);
         }
         
         auto sz1 = size();
+        auto s = Sum::cast(v);
         auto sz2 = s->size();
         if (sz1 != sz2) {
             return sz1 > sz2;
