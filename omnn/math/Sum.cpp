@@ -154,9 +154,8 @@ namespace math {
             
             for (auto it = members.begin(); it != members.end();)
             {
-                auto s = cast(*it);
-                if (s) {
-                    for (auto& m : s->members)
+                if (it->IsSum()) {
+                    for (auto& m : cast(*it)->members)
                     {
                         Add(std::move(m));
                     }
@@ -412,13 +411,57 @@ namespace math {
                 {
                     s = Fraction(*this, v);
                 }
-                else
+                else if (HasSameVars(v))
                 {
+                    auto it = begin();
+                    auto vars = it->Vars();
+                    auto coVa = it->getCommonVars();
+                    auto b=i->begin();
+                    auto it2 = b;
+                    auto e = i->end();
+                    while(it2 != e && it2->Vars() != vars)
+                        ++it2;
+                    if (it2 == e) {
+                        
+                        for (it2 = b; it2 != e; ++it2)
+                        {
+                            bool found = {};
+                            for(auto& v : it2->Vars())
+                            {
+                                found = vars.find(v) != vars.end();
+                                if (found) {
+                                    auto coVa2 = it2->getCommonVars();
+                                    auto coVa2vIt = coVa2.find(v);
+                                    if (coVa2vIt == coVa2.end()) {
+                                        IMPLEMENT
+                                    }
+                                    auto coVa1vIt = coVa.find(v);
+                                    if (coVa1vIt == coVa.end()) {
+                                        IMPLEMENT
+                                    }
+                                    found = coVa1vIt->second >= coVa2vIt->second;
+                                    
+                                }
+                                
+                                if (!found) {
+                                    break;
+                                }
+                            }
+                            
+                            if(found)
+                                break;
+                        }
+                        
+                        if (it2 == e) {
+                            IMPLEMENT;
+                        }
+                    }
+                    
                     while(*this != 0_v)
                     {
                         if(IsSum())
                         {
-                            auto t = *begin() / *i->begin();
+                            auto t = *begin() / *it2;
                             s += t;
                             t *= v;
                             *this -= t;
@@ -429,6 +472,10 @@ namespace math {
                             break;
                         }
                     }
+                }
+                else
+                {
+                    s = Fraction(*this, v);
                 }
             }
 		}

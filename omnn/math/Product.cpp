@@ -38,7 +38,7 @@ namespace math {
         return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
     }
     
-    Product::Product() : members {{1}}
+    Product::Product() : members{1}
     {
         hash = members.begin()->Hash();
     }
@@ -47,12 +47,7 @@ namespace math {
     {
         for (const auto& arg : l)
         {
-            auto a = cast(arg);
-            if(a)
-                for(auto& m: *a)
-                    this->Add(m);
-            else
-                this->Add(arg);
+            this->Add(arg);
         }
     }
     
@@ -123,8 +118,26 @@ namespace math {
 
     const Product::iterator Product::Add(const Valuable& item)
     {
-        auto it=base::Add(item);
-        AddToVarsIfVaOrVaExp(item);
+        iterator it;
+        auto cmp = members.value_comp();
+        if (item.IsProduct()) {
+            auto p = cast(item);
+            auto i = p->begin();
+            it = Add(*i);
+            for (++i; i != p->end(); ++i) {
+                Add(*i);
+            }
+        } else if (item.IsFraction() && item.FindVa()) {
+            auto f = Fraction::cast(item);
+            it = std::min(Add(f->getNumerator()),
+                          Add(f->getDenominator() ^ -1),
+                          [&](auto& _1, auto& _2){ return cmp(*_1, *_2); });
+        }
+        else
+        {
+            it=base::Add(item);
+            AddToVarsIfVaOrVaExp(item);
+        }
         return it;
     }
     
@@ -408,13 +421,15 @@ namespace math {
         auto is = getMaxVaExp() > v.getMaxVaExp();
         if (!is)
         {
-            auto p = cast(v);
-            Product vp{v};
-            if(!p)
-            {
-                p=cast(vp);
-            }
-            
+            char vp[sizeof(Product)];
+            auto isSameType = v.IsProduct();
+            auto p = isSameType ? cast(v) : new(vp) Product{v};
+            auto d = [isSameType](const Product* _){
+                if (!isSameType && _){
+                    _->~Product();
+                }
+            };
+            std::unique_ptr<const Product , decltype(d)> up(p,d);
             if (p)
             {
                 if (getMaxVaExp() != p->getMaxVaExp())

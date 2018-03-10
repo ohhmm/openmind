@@ -203,9 +203,9 @@ namespace math {
 
     Valuable& Fraction::operator *=(const Valuable& v)
     {
-        auto f = cast(v);
-        if (f)
+        if (v.IsFraction())
         {
+            auto f = cast(v);
             numerator *= f->numerator;
             denominator *= f->denominator;
         }

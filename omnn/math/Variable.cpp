@@ -126,7 +126,7 @@ namespace math {
     
     bool Variable::IsComesBefore(const Valuable& v) const
     {
-        return (Product::cast(v))
+        return v.IsProduct()
             ? Product{*this}.IsComesBefore(v)
             : base::IsComesBefore(v);
     }

@@ -3,7 +3,9 @@
 #include "Sum.h"
 #include "Variable.h"
 
+
 using namespace omnn::math;
+using namespace boost::unit_test;
 
 std::string l(const Valuable& v)
 {
@@ -183,9 +185,24 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST(ss.size() == 1);
     BOOST_TEST(!ss.begin()->HasVa(v6));
     _1 = *ss.begin();
-    _2 = Fraction(-1_v*(v8^2_v)*v13 + -1_v*v14*v7*v8 + -1_v*v12*v9*v8 -1_v*v11*v10*v8 + 2723_v*v8,
-                  -v10*v13 - v9*v14 + 174_v);
+    _2 = Fraction((v8^2_v)*v13 + v14*v7*v8 + v12*v9*v8 + v11*v10*v8 - 2723_v*v8,
+                  v10*v13 + v9*v14 - 174_v);
     BOOST_TEST(_1 == _2);
+    
+    _ = ((-1/2)*(v14^-1)*v13*v9 + (-1/2)*(v14^-1)*v12*v10 + (-1/2)*(((4*v14*v13*v10*v7 + 4*(v14^2)*v9*v7 + 2*v13*v12*v10*v9 + (v9^2)*(v13^2) + (v10^2)*(v12^2) + 1732*v13*v9 + 1732*v12*v10 + -696*v14*v7 + 749956))^((1/2)))*(v14^-1));
+    _ += -433*(v14^-1);
+    
+    _1 = (x^2)*y + (y^2)*x + x;
+    _2 = (y^2)*x + (x^2)*y + x;
+    BOOST_TEST(_1 == _2);
+
+    _1 = (x^3)+(x^4)*y+(x^3)*(y^2)+y*x+(x^2)*(y^2)+x*(y^3);
+    _2 = (x^2) + y;
+    _ = x+(x^2)*y+(y^2)*x;
+    s = _1 / _2;
+    BOOST_TEST(s == _);
+    s *= _2;
+    BOOST_TEST(s == _1);
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)

@@ -14,8 +14,7 @@ namespace math {
     : ebase(b), eexp(e)
     {
         hash = ebase.Hash() ^ eexp.Hash();
-        auto ie = Integer::cast(e);
-        if(ie)
+        if(e.IsInt())
         {
             auto ie = Integer::cast(e);
             maxVaExp = ie->operator Integer::const_base_int_ref();
@@ -394,16 +393,16 @@ namespace math {
     bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
         bool is = getMaxVaExp() > v.getMaxVaExp();
-        auto e = cast(v);
-        if (e)
+        if (v.IsExponentiation())
         {
-            auto vaBase = Variable::cast(ebase);
-            auto vbase = Variable::cast(e->ebase);
-            if (vaBase && vbase)
-                is = eexp == e->eexp ? *vaBase < *vbase : eexp > e->eexp;
-            else if(vaBase)
+            auto e = cast(v);
+            bool baseIsVa = ebase.IsVa();
+            bool vbaseIsVa = e->ebase.IsVa();
+            if (baseIsVa && vbaseIsVa)
+                is = eexp == e->eexp ? ebase.IsComesBefore(e->ebase) : eexp > e->eexp;
+            else if(baseIsVa)
                 is = false;
-            else if(vbase)
+            else if(vbaseIsVa)
                 is = true;
             else if(ebase == e->ebase)
                 is = eexp.IsComesBefore(e->eexp);
