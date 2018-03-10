@@ -54,11 +54,9 @@ namespace math {
         //ValuableDescendantContract() : Valuable<>() {}
         // instead of
         ValuableDescendantContract() : Valuable(ValuableDescendantMarker()) {}
-        ValuableDescendantContract(ValuableDescendantContract&& c)
-//        =default;
+        ValuableDescendantContract(ValuableDescendantContract&& c)//        =default;
         : Valuable(std::move(c), ValuableDescendantMarker()) {}
-        ValuableDescendantContract(const ValuableDescendantContract& c)
-//        =default;
+        ValuableDescendantContract(const ValuableDescendantContract& c)//        =default;
          : Valuable(c, ValuableDescendantMarker()) {}
         ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { hash=f.hash; return *this; }
         ValuableDescendantContract& operator=(ValuableDescendantContract&& f) { hash=f.hash; return *this; }

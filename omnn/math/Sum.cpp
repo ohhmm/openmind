@@ -408,22 +408,28 @@ namespace math {
             }
             else
             {
-                while(*this != 0_v)
+                if (size() < i->size())
                 {
-                    if(IsSum())
+                    s = Fraction(*this, v);
+                }
+                else
+                {
+                    while(*this != 0_v)
                     {
-                        auto t = *begin() / *i->begin();
-                        s += t;
-                        t *= v;
-                        *this -= t;
-                    }
-                    else
-                    {
-                        s += *this / v;
-                        break;
+                        if(IsSum())
+                        {
+                            auto t = *begin() / *i->begin();
+                            s += t;
+                            t *= v;
+                            *this -= t;
+                        }
+                        else
+                        {
+                            s += *this / v;
+                            break;
+                        }
                     }
                 }
-                
             }
 		}
 		else
@@ -547,7 +553,7 @@ namespace math {
                 if (ie < 0)
                 {
                     coefficients.clear();
-                    return cast(*this * (v^ie))->FillPolyCoeff(coefficients, v);
+                    return cast(*this * (v^(-ie)))->FillPolyCoeff(coefficients, v);
                 }
                 else if (ie > grade) {
                     grade = ie;
@@ -596,6 +602,31 @@ namespace math {
     Valuable::solutions_t Sum::operator()(const Variable& va, const Valuable& augmentation) const
     {
         solutions_t solutions;
+        {
+        auto e = *this + augmentation;
+        if (!e.IsSum()) {
+            IMPLEMENT;
+        }
+        auto es = cast(e);
+        std::vector<Valuable> coefs;
+        auto grade = es->FillPolyCoeff(coefs, va);
+        if (coefs.size() && grade && grade <= 2)
+        {
+            es->solve(va, solutions, coefs, grade);
+            for (auto i=solutions.begin(); i != solutions.end();) {
+                if (i->HasVa(va)) {
+                    IMPLEMENT
+                    solutions.erase(i++);
+                }
+                else
+                    ++i;
+            }
+            
+            if (solutions.size()) {
+                return solutions;
+            }
+        }
+        }
         Valuable _ = augmentation;
         Valuable todo = 0_v;
         for(auto& m : *this)
@@ -612,6 +643,8 @@ namespace math {
             auto it = coVa.find(va);
             if (it != coVa.end()) {
                 todo /= it->first ^ it->second;
+                if (todo.HasVa(va))
+                    IMPLEMENT;
                 if (it->second < 0) {
                     _ *= it->first ^ -it->second;
                     return _(va, todo);
@@ -674,20 +707,19 @@ namespace math {
     Valuable::solutions_t Sum::operator()(const Variable& va) const
     {
         Valuable::solutions_t s;
-        if (size() <= 3) {
-            std::vector<Valuable> coefs;
-            auto grade = FillPolyCoeff(coefs, va);
-            if (coefs.size() && grade && grade <= 2)
-            {
-                solve(va, s, coefs, grade);
-                for (auto i=s.begin(); i != s.end();) {
-                    if (i->HasVa(va)) {
-//                        IMPLEMENT
-                        s.erase(i++);
-                    }
-                    else
-                        ++i;
+        
+        std::vector<Valuable> coefs;
+        auto grade = FillPolyCoeff(coefs, va);
+        if (coefs.size() && grade && grade <= 2)
+        {
+            solve(va, s, coefs, grade);
+            for (auto i=s.begin(); i != s.end();) {
+                if (i->HasVa(va)) {
+                    IMPLEMENT
+                    s.erase(i++);
                 }
+                else
+                    ++i;
             }
         }
 

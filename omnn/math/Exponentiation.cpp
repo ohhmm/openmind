@@ -17,7 +17,12 @@ namespace math {
         auto ie = Integer::cast(e);
         if(ie)
         {
+            auto ie = Integer::cast(e);
             maxVaExp = ie->operator Integer::const_base_int_ref();
+        }
+        else if (e.IsFraction())
+        {
+            
         }
         else
         {
@@ -27,10 +32,10 @@ namespace math {
     
     a_int Exponentiation::getMaxVaExp() const
     {
-        auto vaBase = Variable::cast(ebase);
-        if (vaBase) {
-            auto i = Integer::cast(getExponentiation());
-            return static_cast<int>(*i);
+        if (ebase.IsVa()) {
+            if (eexp.IsInt()) {
+                return *Integer::cast(eexp);
+            }
         }
         if(eexp.FindVa())
             IMPLEMENT
@@ -141,7 +146,7 @@ namespace math {
                                 }
                                 x *= y;
                                 Become(std::move(x));
-                            } else {
+                            } else if (eexp!=-1){
                                 // negative
                                 Become(1_v/(ebase^(-eexp)));
                             }
@@ -158,8 +163,8 @@ namespace math {
                             }
                         }
                     }
-                    else
-                    IMPLEMENT
+//                    else
+//                    IMPLEMENT
                     break;
                 }
                 default:

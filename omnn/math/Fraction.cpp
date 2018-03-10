@@ -149,7 +149,7 @@ namespace math {
                     goto reoptimize_the_fraction;
                 }
             }
-            else if (denominator.FindVa())
+            else if (denominator.FindVa() && !denominator.IsSum())
             {
                 Become(Product{numerator,Exponentiation(denominator, -1)});
             }
@@ -425,6 +425,11 @@ namespace math {
         return vars;
     }
 
+    bool Fraction::IsComesBefore(const Valuable& v) const
+    {
+        return str().length() < v.str().length();
+    }
+    
     Fraction::operator boost::multiprecision::cpp_dec_float_100() const
     {
         if (IsSimple())

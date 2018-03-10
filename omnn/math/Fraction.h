@@ -35,6 +35,7 @@ namespace math {
 		bool operator ==(const Valuable& v) const override;
 		void optimize() override;
         const vars_cont_t& getCommonVars() const override;
+        bool IsComesBefore(const Valuable& v) const override;
 		bool IsFraction() const override { return true; }
         
 		using base::base;

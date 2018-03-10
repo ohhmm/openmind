@@ -477,7 +477,8 @@ namespace math {
         if (!cv.empty() && cv == v.getCommonVars())
         {
             auto valuable = varless() + v.varless();
-            valuable *= getVaVal();
+            if(!valuable.IsSum())
+                valuable *= getVaVal();
             return Become(std::move(valuable));
         }
 
