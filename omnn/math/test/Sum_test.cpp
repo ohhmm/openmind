@@ -210,9 +210,8 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     _1 -= _;
     _2 = x-y;
     s = _1 / _2;
+    _ = (y^5)+(x^5)+(y^4)*x+(x^4)*y+(y^3)*(x^2)+(x^3)*(y^2)+6*(y^3)+6*(x^3)+6*(y^2)*x+6*(x^2)*y+(y^2)+(x^2)+y*x+9*y+9*x+3;
     BOOST_TEST(s == _);
-    s *= _2;
-    BOOST_TEST(s == _1);
     
 }
 
@@ -256,9 +255,9 @@ BOOST_AUTO_TEST_CASE(Containers_test)
     BOOST_TEST(us.size()==3);
 }
 
-BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang,
-                     *disabled()
-//                     *timeout(2)
+BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang
+//                     ,*disabled()
+                     ,*timeout(2)
                      )
 {
     Variable va;

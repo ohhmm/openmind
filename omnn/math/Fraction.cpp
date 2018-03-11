@@ -86,10 +86,10 @@ namespace math {
         }
 
         // integers
-        auto n = Integer::cast(numerator);
-        auto dn = Integer::cast(denominator);
-        if (n)
+        if (numerator.IsInt())
         {
+            auto n = Integer::cast(numerator);
+            auto dn = Integer::cast(denominator);
             if (*n == 0_v)
             {
                 if (dn && *dn == 0_v)
@@ -188,9 +188,9 @@ namespace math {
         }
         else
         {
-            auto i = Integer::cast(v);
-            if(i)
+            if(v.IsInt())
             {
+                auto i = Integer::cast(v);
                 *this += Fraction(*i);
             }
             else

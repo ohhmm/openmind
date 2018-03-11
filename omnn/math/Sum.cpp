@@ -413,20 +413,24 @@ namespace math {
                 {
                     auto b=i->begin();
                     auto e = i->end();
+//                    size_t offs = 0;
+//                    std::deque<Valuable> hist {*this};
                     
                     while(*this != 0_v)
                     {
                         if(IsSum())
                         {
                             auto it = begin();
-                            for (auto i=offs; it != end() && i--; ) {
-                                ++it;
-                            }
+//                            for (auto i=offs; it != end() && i--; ) {
+//                                ++it;
+//                            }
                             if (it == end()) {
                                 IMPLEMENT;
                             }
                             auto vars = it->Vars();
                             auto coVa = it->getCommonVars();
+                            auto maxVa = std::max_element(coVa.begin(), coVa.end(),
+                                                          [](auto&_1,auto&_2){return _1.second < _2.second;});
                             auto it2 = b;
                             while(it2 != e && it2->Vars() != vars)
                                 ++it2;
@@ -437,7 +441,7 @@ namespace math {
                                     bool found = {};
                                     for(auto& v : it2->Vars())
                                     {
-                                        found = vars.find(v) != vars.end();
+                                        found = v == maxVa->first;
                                         if (found) {
                                             auto coVa2 = it2->getCommonVars();
                                             auto coVa2vIt = coVa2.find(v);
@@ -470,19 +474,19 @@ namespace math {
                             s += t;
                             t *= v;
                             *this -= t;
-                            if (std::find(hist.begin(), hist.end(), *this) == hist.end()) {
-                                hist.push_back(*this);
-                                constexpr size_t MaxHistSize = 8;
-                                if (hist.size() > MaxHistSize) {
-                                    hist.pop_front();
-                                    offs = 0;
-                                }
-                            }
-                            else
-                            {
-                                ++offs;
-                                hist.clear();
-                            }
+//                            if (std::find(hist.begin(), hist.end(), *this) == hist.end()) {
+//                                hist.push_back(*this);
+//                                constexpr size_t MaxHistSize = 8;
+//                                if (hist.size() > MaxHistSize) {
+//                                    hist.pop_front();
+//                                    offs = 0;
+//                                }
+//                            }
+//                            else
+//                            {
+//                                ++offs;
+//                                hist.clear();
+//                            }
                         }
                         else
                         {
