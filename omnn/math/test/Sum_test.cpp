@@ -203,6 +203,17 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST(s == _);
     s *= _2;
     BOOST_TEST(s == _1);
+    
+    _1 = (x^6)+(x^4)*6+(x^3)+(x^2)*9+x*3-5;
+    _ = _1;
+    _.Eval(x,y);
+    _1 -= _;
+    _2 = x-y;
+    s = _1 / _2;
+    BOOST_TEST(s == _);
+    s *= _2;
+    BOOST_TEST(s == _1);
+    
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)

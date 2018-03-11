@@ -411,58 +411,78 @@ namespace math {
                 }
                 else if (HasSameVars(v))
                 {
-                    auto it = begin();
-                    auto vars = it->Vars();
-                    auto coVa = it->getCommonVars();
                     auto b=i->begin();
-                    auto it2 = b;
                     auto e = i->end();
-                    while(it2 != e && it2->Vars() != vars)
-                        ++it2;
-                    if (it2 == e) {
-                        
-                        for (it2 = b; it2 != e; ++it2)
-                        {
-                            bool found = {};
-                            for(auto& v : it2->Vars())
-                            {
-                                found = vars.find(v) != vars.end();
-                                if (found) {
-                                    auto coVa2 = it2->getCommonVars();
-                                    auto coVa2vIt = coVa2.find(v);
-                                    if (coVa2vIt == coVa2.end()) {
-                                        IMPLEMENT
-                                    }
-                                    auto coVa1vIt = coVa.find(v);
-                                    if (coVa1vIt == coVa.end()) {
-                                        IMPLEMENT
-                                    }
-                                    found = coVa1vIt->second >= coVa2vIt->second;
-                                    
-                                }
-                                
-                                if (!found) {
-                                    break;
-                                }
-                            }
-                            
-                            if(found)
-                                break;
-                        }
-                        
-                        if (it2 == e) {
-                            IMPLEMENT;
-                        }
-                    }
                     
                     while(*this != 0_v)
                     {
                         if(IsSum())
                         {
+                            auto it = begin();
+                            for (auto i=offs; it != end() && i--; ) {
+                                ++it;
+                            }
+                            if (it == end()) {
+                                IMPLEMENT;
+                            }
+                            auto vars = it->Vars();
+                            auto coVa = it->getCommonVars();
+                            auto it2 = b;
+                            while(it2 != e && it2->Vars() != vars)
+                                ++it2;
+                            if (it2 == e) {
+                                
+                                for (it2 = b; it2 != e; ++it2)
+                                {
+                                    bool found = {};
+                                    for(auto& v : it2->Vars())
+                                    {
+                                        found = vars.find(v) != vars.end();
+                                        if (found) {
+                                            auto coVa2 = it2->getCommonVars();
+                                            auto coVa2vIt = coVa2.find(v);
+                                            if (coVa2vIt == coVa2.end()) {
+                                                IMPLEMENT
+                                            }
+                                            auto coVa1vIt = coVa.find(v);
+                                            if (coVa1vIt == coVa.end()) {
+                                                IMPLEMENT
+                                            }
+                                            found = coVa1vIt->second >= coVa2vIt->second;
+                                            
+                                        }
+                                        
+                                        if (!found) {
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if(found)
+                                        break;
+                                }
+                                
+                                if (it2 == e) {
+                                    IMPLEMENT;
+                                }
+                            }
+
                             auto t = *begin() / *it2;
                             s += t;
                             t *= v;
                             *this -= t;
+                            if (std::find(hist.begin(), hist.end(), *this) == hist.end()) {
+                                hist.push_back(*this);
+                                constexpr size_t MaxHistSize = 8;
+                                if (hist.size() > MaxHistSize) {
+                                    hist.pop_front();
+                                    offs = 0;
+                                }
+                            }
+                            else
+                            {
+                                ++offs;
+                                hist.clear();
+                            }
                         }
                         else
                         {
@@ -924,51 +944,57 @@ namespace math {
                     return;
                 
                 // decomposition
-                sz = grade + 1;
-                auto sza = (grade >> 1) + (grade % 2) + 1;
-                auto szb = (grade >> 1) + 1;
-                std::vector<Variable> vva(sza);
-                std::vector<Variable> vvb(szb);
-                Valuable eq1, eq2;
-                for (auto i = sza; i--; ) {
-                    eq1 += vva[i] * (va ^ i);
-                }
-                for (auto i = szb; i--; ) {
-                    eq2 += vvb[i] * (va ^ i);
-                }
-                
-                auto teq = eq1*eq2;
-                std::vector<Valuable> teq_coefficients;
-                auto teqs = Sum::cast(teq);
-                if (teqs) {
-                    if (teqs->FillPolyCoeff(teq_coefficients, va) != grade) {
-                        IMPLEMENT
-                    }
-                } else {
-                    IMPLEMENT
-                }
-                System sequs;
-                for (auto i = sz; i--; ) {
-                    auto c = coefficients[i];
-                    Valuable eq = teq_coefficients[i]-c;
-                    sequs << eq;
-                }
-                //sequs << copy;
-                std::vector<solutions_t> s(szb);
-                for (auto i = szb; i--; ) {
-                    s[i] = sequs.Solve(vvb[i]);
-                }
-                
-                auto ss = sequs.Solve(vvb[0]);
-                if (ss.size()) {
-                    for(auto& s : ss)
-                    {
-                        copy /= va - s;
-                    }
-                    copy.solve(va, solutions);
-                }
-                else
-                    IMPLEMENT;
+                auto yx = -*this;
+                Variable y;
+                yx.Valuable::Eval(va, y);
+                yx += *this;
+                yx /= va - y;
+                auto _ = yx.str();
+//                sz = grade + 1;
+//                auto sza = (grade >> 1) + (grade % 2) + 1;
+//                auto szb = (grade >> 1) + 1;
+//                std::vector<Variable> vva(sza);
+//                std::vector<Variable> vvb(szb);
+//                Valuable eq1, eq2;
+//                for (auto i = sza; i--; ) {
+//                    eq1 += vva[i] * (va ^ i);
+//                }
+//                for (auto i = szb; i--; ) {
+//                    eq2 += vvb[i] * (va ^ i);
+//                }
+//                
+//                auto teq = eq1*eq2;
+//                std::vector<Valuable> teq_coefficients;
+//                auto teqs = Sum::cast(teq);
+//                if (teqs) {
+//                    if (teqs->FillPolyCoeff(teq_coefficients, va) != grade) {
+//                        IMPLEMENT
+//                    }
+//                } else {
+//                    IMPLEMENT
+//                }
+//                System sequs;
+//                for (auto i = sz; i--; ) {
+//                    auto c = coefficients[i];
+//                    Valuable eq = teq_coefficients[i]-c;
+//                    sequs << eq;
+//                }
+//                //sequs << copy;
+//                std::vector<solutions_t> s(szb);
+//                for (auto i = szb; i--; ) {
+//                    s[i] = sequs.Solve(vvb[i]);
+//                }
+//                
+//                auto ss = sequs.Solve(vvb[0]);
+//                if (ss.size()) {
+//                    for(auto& s : ss)
+//                    {
+//                        copy /= va - s;
+//                    }
+//                    copy.solve(va, solutions);
+//                }
+//                else
+//                    IMPLEMENT;
                 break;
             }
         }
