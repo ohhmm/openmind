@@ -212,7 +212,6 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     s = _1 / _2;
     _ = (y^5)+(x^5)+(y^4)*x+(x^4)*y+(y^3)*(x^2)+(x^3)*(y^2)+6*(y^3)+6*(x^3)+6*(y^2)*x+6*(x^2)*y+(y^2)+(x^2)+y*x+9*y+9*x+3;
     BOOST_TEST(s == _);
-    
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)
@@ -256,7 +255,6 @@ BOOST_AUTO_TEST_CASE(Containers_test)
 }
 
 BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang
-//                     ,*disabled()
                      ,*timeout(2)
                      )
 {

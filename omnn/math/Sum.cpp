@@ -413,17 +413,18 @@ namespace math {
                 {
                     auto b=i->begin();
                     auto e = i->end();
-//                    size_t offs = 0;
-//                    std::deque<Valuable> hist {*this};
+                    size_t offs = 0;
+                    std::deque<Valuable> hist {*this};
                     
-                    while(*this != 0_v)
+                    auto icnt = size() * 2;
+                    while(*this != 0_v && icnt--)
                     {
                         if(IsSum())
                         {
                             auto it = begin();
-//                            for (auto i=offs; it != end() && i--; ) {
-//                                ++it;
-//                            }
+                            for (auto i=offs; it != end() && i--; ) {
+                                ++it;
+                            }
                             if (it == end()) {
                                 IMPLEMENT;
                             }
@@ -474,25 +475,28 @@ namespace math {
                             s += t;
                             t *= v;
                             *this -= t;
-//                            if (std::find(hist.begin(), hist.end(), *this) == hist.end()) {
-//                                hist.push_back(*this);
-//                                constexpr size_t MaxHistSize = 8;
-//                                if (hist.size() > MaxHistSize) {
-//                                    hist.pop_front();
-//                                    offs = 0;
-//                                }
-//                            }
-//                            else
-//                            {
-//                                ++offs;
-//                                hist.clear();
-//                            }
+                            if (std::find(hist.begin(), hist.end(), *this) == hist.end()) {
+                                hist.push_back(*this);
+                                constexpr size_t MaxHistSize = 8;
+                                if (hist.size() > MaxHistSize) {
+                                    hist.pop_front();
+                                    offs = 0;
+                                }
+                            }
+                            else
+                            {
+                                ++offs;
+                                hist.clear();
+                            }
                         }
                         else
                         {
                             s += *this / v;
                             break;
                         }
+                    }
+                    if (*this != 0_v) {
+                        s = Fraction(*this, v);
                     }
                 }
                 else

@@ -358,31 +358,33 @@ namespace math {
 
     bool Fraction::operator ==(const Valuable& v) const
     {
-        auto i = cast(v);
-		if (i)
+        if (v.IsFraction())
 		{
-            return hash == i->Hash()
-                && denominator.Hash() == i->denominator.Hash()
-                && numerator.Hash() == i->numerator.Hash()
-                && ((denominator == i->denominator && numerator == i->numerator)
-//                    || (numerator * i->denominator == i->numerator * denominator)
+            auto f = cast(v);
+            return hash == f->Hash()
+                && denominator.Hash() == f->denominator.Hash()
+                && numerator.Hash() == f->numerator.Hash()
+                && ((denominator == f->denominator && numerator == f->numerator)
+//                    || (numerator * f->denominator == f->numerator * denominator)
                     );
         }
-        else if (Variable::cast(v)
+        else if (v.IsVa()
                  || (v.FindVa()==nullptr) != (FindVa()==nullptr))
         {
             return false;
         }
+        else if (v.IsProduct())
+            return v==*this;
         else
         {
-			auto i = Integer::cast(v);
-			if (i)
+			if (v.IsInt())
 			{
                 if (IsSimple())
                 {
                     auto& n = Integer::cast(numerator)->operator Integer::const_base_int_ref();
                     auto& dn = Integer::cast(denominator)->operator Integer::const_base_int_ref();
                     auto g = boost::gcd(n,dn);
+                    auto i = Integer::cast(v);
                     return (g == dn && n/g == *i) || (n == 0 && *i == 0);
                 }
                 else
