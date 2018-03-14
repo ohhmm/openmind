@@ -163,21 +163,17 @@ namespace math {
                 
                 auto it2 = it;
                 ++it2;
-                auto c = *it;
-                auto mc = -*it;
-                const Variable* va;
-                const Exponentiation* e;
-                const Product* p;
-                const Integer* i;
+                Valuable c = *it;
+                Valuable mc;
+                bool p;
+                bool i;
                 const Fraction* f;
                 
                 auto up = [&](){
                     mc = -c;
-                    va = Variable::cast(c);
-                    e = Exponentiation::cast(c);
-                    p = Product::cast(c);
-                    i = Integer::cast(c);
-                    f = Fraction::cast(c);
+                    p = c.IsProduct();
+                    i = c.IsInt();
+                    f = c.IsFraction() ? Fraction::cast(c) : nullptr;
                 };
                 
                 up();
@@ -186,7 +182,7 @@ namespace math {
                 {
                     if ((i && it2->IsFraction() && Fraction::cast(*it2)->IsSimple())
                         || (it2->IsInt() && (i || (f && f->IsSimple())))
-                        || (p && mc == *it2)
+                        || (c.IsProduct() && mc == *it2)
                         )
                     {
                         c += *it2;
@@ -208,7 +204,7 @@ namespace math {
                     else if (c.getCommonVars().size()
                             && c.getCommonVars()==it2->getCommonVars())
                     {
-                        auto sum = p ? c : Product{c};
+                        auto sum = c.IsProduct() ? c : Product{c};
                         sum += *it2;
                         if (!sum.IsSum()) {
                             c = sum;
@@ -952,57 +948,58 @@ namespace math {
                     return;
                 
                 // decomposition
-                auto yx = -*this;
-                Variable y;
-                yx.Valuable::Eval(va, y);
-                yx += *this;
-                yx /= va - y;
-                auto _ = yx.str();
-//                sz = grade + 1;
-//                auto sza = (grade >> 1) + (grade % 2) + 1;
-//                auto szb = (grade >> 1) + 1;
-//                std::vector<Variable> vva(sza);
-//                std::vector<Variable> vvb(szb);
-//                Valuable eq1, eq2;
-//                for (auto i = sza; i--; ) {
-//                    eq1 += vva[i] * (va ^ i);
-//                }
-//                for (auto i = szb; i--; ) {
-//                    eq2 += vvb[i] * (va ^ i);
-//                }
-//                
-//                auto teq = eq1*eq2;
-//                std::vector<Valuable> teq_coefficients;
-//                auto teqs = Sum::cast(teq);
-//                if (teqs) {
-//                    if (teqs->FillPolyCoeff(teq_coefficients, va) != grade) {
-//                        IMPLEMENT
-//                    }
-//                } else {
-//                    IMPLEMENT
-//                }
-//                System sequs;
-//                for (auto i = sz; i--; ) {
-//                    auto c = coefficients[i];
-//                    Valuable eq = teq_coefficients[i]-c;
-//                    sequs << eq;
-//                }
-//                //sequs << copy;
-//                std::vector<solutions_t> s(szb);
-//                for (auto i = szb; i--; ) {
-//                    s[i] = sequs.Solve(vvb[i]);
-//                }
-//                
-//                auto ss = sequs.Solve(vvb[0]);
-//                if (ss.size()) {
-//                    for(auto& s : ss)
-//                    {
-//                        copy /= va - s;
-//                    }
-//                    copy.solve(va, solutions);
-//                }
-//                else
-//                    IMPLEMENT;
+//                auto yx = -*this;
+//                Variable y;
+//                yx.Valuable::Eval(va, y);
+//                yx += *this;
+//                yx /= va - y;
+//                auto _ = yx.str();
+                
+                sz = grade + 1;
+                auto sza = (grade >> 1) + (grade % 2) + 1;
+                auto szb = (grade >> 1) + 1;
+                std::vector<Variable> vva(sza);
+                std::vector<Variable> vvb(szb);
+                Valuable eq1, eq2;
+                for (auto i = sza; i--; ) {
+                    eq1 += vva[i] * (va ^ i);
+                }
+                for (auto i = szb; i--; ) {
+                    eq2 += vvb[i] * (va ^ i);
+                }
+                
+                auto teq = eq1*eq2;
+                std::vector<Valuable> teq_coefficients;
+                auto teqs = Sum::cast(teq);
+                if (teqs) {
+                    if (teqs->FillPolyCoeff(teq_coefficients, va) != grade) {
+                        IMPLEMENT
+                    }
+                } else {
+                    IMPLEMENT
+                }
+                System sequs;
+                for (auto i = sz; i--; ) {
+                    auto c = coefficients[i];
+                    Valuable eq = teq_coefficients[i]-c;
+                    sequs << eq;
+                }
+                //sequs << copy;
+                std::vector<solutions_t> s(szb);
+                for (auto i = szb; i--; ) {
+                    s[i] = sequs.Solve(vvb[i]);
+                }
+                
+                auto ss = sequs.Solve(vvb[0]);
+                if (ss.size()) {
+                    for(auto& s : ss)
+                    {
+                        copy /= va - s;
+                    }
+                    copy.solve(va, solutions);
+                }
+                else
+                    IMPLEMENT;
                 break;
             }
         }

@@ -86,18 +86,8 @@ public:
             copy.Eval(*va, v);
         }
         copy.optimize();
-        auto roots = copy.solutions(v);
-        if(roots.size() == 0)
-        {
-            root = Solve(copy);
-        }
-        else if(roots.size() == 1)
-        {
-            root = std::move(*roots.begin());
-        }
-        else
-            IMPLEMENT
-            
+        
+        root = Solve(copy);
         return root;
     }
     

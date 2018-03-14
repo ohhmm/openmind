@@ -21,6 +21,24 @@ namespace math {
         if (!sum) {
             IMPLEMENT
         }
+        
+        std::vector<Valuable> coefficients;
+        auto g = sum->FillPolyCoeff(coefficients,getVa());
+        if (g<3)
+        {
+            solutions_t solutions;
+            sum->solve(getVa(), solutions, coefficients, g);
+            
+            if(solutions.size() == 1)
+            {
+                singleIntegerRoot = std::move(*solutions.begin());
+                return singleIntegerRoot;
+            }
+            else if(solutions.size())
+                IMPLEMENT
+                
+        }
+        
         auto extrenums = sum->extrenums(getVa());
         auto zz = sum->get_zeros_zones(getVa(), extrenums);
         

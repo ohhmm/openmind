@@ -543,7 +543,7 @@ namespace math {
                 {
                     auto e = Exponentiation::cast(*it);
                     if (e && e->getBase() == *va) {
-                        Update(it, Exponentiation(*va, e->getExponentiation()+1));
+                        Update(it, *va ^ (e->getExponentiation()+1));
                         goto yes;
                     }
                 }
