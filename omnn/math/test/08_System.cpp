@@ -29,4 +29,20 @@ BOOST_AUTO_TEST_CASE(System_tests)
         auto _ = s.Solve(a);
         BOOST_TEST(_.size()==1);
     }
+    
+    // https://github.com/ohhmm/openmind/issues/8
+    // In a farm there are 100 animals consisting of cows,goats,and buffalos.each goat gives 250g of milk,each Buffalo gives 6kg of milk and if each cow gives 4kg of milk.if in total 100 animals produce 40 kg of milk how many animals of each type are present?
+    // https://www.quora.com/Can-this-math-problem-be-solved
+    
+    {
+        System s;
+        Variable c,g,b;
+        s << c+g+b-100
+          << g*250+b*6000+c*4000-40000;
+        auto cc = s.Solve(c);
+        auto gc = s.Solve(g);
+        auto bc = s.Solve(b);
+        BOOST_TEST(cc.size()==1);
+
+    }
 }

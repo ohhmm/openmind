@@ -38,10 +38,7 @@ System& System::operator()(const Variable& v)
 
 System& System::operator<<(const Valuable& v)
 {
-    auto _ = v;
-    _.SetView(Valuable::View::Equation);
-    _.optimize();
-    equs.insert(_);
+    Add(v);
     return *this;
 }
 
@@ -49,24 +46,29 @@ bool System::Add(const Variable& va, const Valuable& v)
 {
     auto& es = vEs[va];
     auto vars = v.Vars();
-    bool isNew = es[vars].insert(v).second;
+    bool isNew = v != 0_v
+        ? es[vars].insert(v).second
+        : false;
     if (isNew)
     {
-        auto _ = v - va;
-        _.SetView(Valuable::View::Equation);
-        _.optimize();
-        equs.insert(_);
+        *this << v - va;
     }
     return isNew;
 }
 
 bool System::Add(const Valuable& v)
 {
-    bool isNew = equs.insert(v).second;
+    auto _ = v;
+    _.SetView(Valuable::View::Equation);
+    _.optimize();
+    bool isNew = _ != 0_v
+        ? equs.find(-_) == equs.end() && equs.insert(_).second
+        : false;
+    
     if (isNew) {
-        for(auto& va : v.Vars())
+        for(auto& va : _.Vars())
         {
-            for(auto& s : v(va))
+            for(auto& s : _(va))
                 Add(va, s);
         }
     }

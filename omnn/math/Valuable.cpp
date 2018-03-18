@@ -65,14 +65,15 @@ namespace math {
     Valuable& Valuable::Become(Valuable&& i)
     {
         auto h = i.Hash();
+        auto v = i.view;
         auto e = i.exp;
         if(e)
         {
             while (e->exp) {
                 e = e->exp;
             }
-            
-            if(exp && e.unique())
+           
+            if(exp)
             {
                 exp = e;
                 if (Hash() != h) {
@@ -81,13 +82,7 @@ namespace math {
             }
             else
             {
-                auto moved = e->Move();
-                this->~Valuable();
-                new(this) Valuable(moved);
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-                optimize();
+                Become(std::move(*e));
             }
             
             e.reset();
@@ -109,11 +104,17 @@ namespace math {
                 if (Hash() != h) {
                     IMPLEMENT
                 }
+                if (v != view) {
+                    IMPLEMENT
+                }
                 optimize();
             }
             else if(exp && exp->getAllocSize() >= newSize)
             {
                 exp->Become(std::move(i));
+                if (v != exp->view) {
+                    IMPLEMENT
+                }
             }
             else
             {
@@ -121,6 +122,9 @@ namespace math {
                 this->~Valuable();
                 new(this) Valuable(moved);
                 if (Hash() != h) {
+                    IMPLEMENT
+                }
+                if (v != view) {
                     IMPLEMENT
                 }
                 optimize();
@@ -338,6 +342,26 @@ namespace math {
         return solutions;
     }
 
+    Valuable::solutions_t Valuable::GetIntegerSolution() const
+    {
+        std::set<Variable> vars;
+        CollectVa(vars);
+        if (vars.size() == 1) {
+            return GetIntegerSolution(*vars.begin());
+        }
+        else
+            IMPLEMENT
+    }
+    
+    Valuable::solutions_t Valuable::GetIntegerSolution(const Variable& va) const
+    {
+        if(exp) {
+            return exp->GetIntegerSolution(va);
+        }
+        else
+            IMPLEMENT
+    }
+    
     using extrenums_t = std::vector<std::pair<Valuable/*value*/,Valuable/*direction*/> >;
     extrenums_t Valuable::extrenums() const
     {
@@ -511,6 +535,14 @@ namespace math {
             IMPLEMENT
     }
 
+    void Valuable::SetView(View v)
+    {
+        if(exp)
+            exp->view = v;
+        else
+            IMPLEMENT
+    }
+    
     void Valuable::optimize()
     {
         if(exp) {
@@ -600,7 +632,7 @@ namespace math {
         return thisVa == vVa;
     }
     
-    bool Valuable::IsMonicPolynomial() const
+    bool Valuable::IsMonic() const
     {
         std::set<Variable> vars;
         CollectVa(vars);

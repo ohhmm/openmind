@@ -429,7 +429,13 @@ namespace math {
 
     bool Fraction::IsComesBefore(const Valuable& v) const
     {
-        return str().length() < v.str().length();
+        auto va1 = FindVa();
+        auto va2 = v.FindVa();
+        return !va1 && !va2
+                ? operator<(v)
+                : (va1 && va2
+                   ? str().length() < v.str().length()
+                   : va1!=nullptr );
     }
     
     Fraction::operator boost::multiprecision::cpp_dec_float_100() const

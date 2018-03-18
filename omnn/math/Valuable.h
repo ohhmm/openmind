@@ -160,7 +160,7 @@ public:
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
-    virtual void SetView(View v) { view = v; }
+    virtual void SetView(View v);
 
     // identify
     virtual bool IsInt() const;
@@ -185,6 +185,8 @@ public:
     virtual void solve(const Variable& va, solutions_t&) const;
     solutions_t solutions() const;
     solutions_t solutions(const Variable& v) const;
+    Valuable::solutions_t GetIntegerSolution() const;
+    virtual Valuable::solutions_t GetIntegerSolution(const Variable& va) const;
     
     using extrenums_t = std::vector<std::pair<Valuable/*value*/,Valuable/*direction*/> >;
     extrenums_t extrenums() const;
@@ -209,7 +211,7 @@ public:
     bool Same(const Valuable& v) const;
     bool OfSameType(const Valuable& v) const;
     bool HasSameVars(const Valuable& v) const;
-    bool IsMonicPolynomial() const;
+    bool IsMonic() const;
 
     virtual a_int getMaxVaExp() const;
     using vars_cont_t = std::map<Variable, Valuable>;

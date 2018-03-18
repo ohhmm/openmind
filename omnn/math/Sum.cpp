@@ -180,7 +180,7 @@ namespace math {
                 
                 for (; it2 != members.end();)
                 {
-                    if ((i && it2->IsFraction() && Fraction::cast(*it2)->IsSimple())
+                    if (((f || i) && it2->IsFraction() && Fraction::cast(*it2)->IsSimple())
                         || (it2->IsInt() && (i || (f && f->IsSimple())))
                         || (c.IsProduct() && mc == *it2)
                         )
@@ -252,30 +252,45 @@ namespace math {
                 cont::iterator b = members.begin();
                 Become(std::move(const_cast<Valuable&>(*b)));
             }
-            else if (view==Solving){
+            else if (view==Solving || view == Equation){
                 // make coefficients int to use https://simple.wikipedia.org/wiki/Rational_root_theorem
-                bool checked = false;
-                while (!checked) {
-                    for(auto& m : members)
+                bool scan;
+                do {
+                    scan = {};
+                    if (IsSum())
                     {
-                        if (m.IsProduct()) {
-                            auto p = Product::cast(m);
-                            auto f = p->GetFirstOccurence<Fraction>();
-                            if (f != p->end()) {
-                                operator*=(Fraction::cast(*f)->getDenominator());
+                        for(auto& m : members)
+                        {
+                            if (m.IsProduct()) {
+                                auto p = Product::cast(m);
+                                auto f = p->GetFirstOccurence<Fraction>();
+                                if (f != p->end()) {
+                                    operator*=(Fraction::cast(*f)->getDenominator());
+                                    scan = true;
+                                    break;
+                                }
+                            } else if (m.IsFraction()) {
+                                operator*=(Fraction::cast(m)->getDenominator());
+                                scan = true;
                                 break;
                             }
-                        } else if (m.IsFraction()) {
-                            operator*=(Fraction::cast(m)->getDenominator());
-                            break;
                         }
                     }
-                    checked = true;
+                } while (scan);
+                
+                auto it = members.begin();
+                auto gcd = it->varless();
+                for (; it != members.end(); ++it) {
+                    gcd = boost::gcd(gcd, it->varless());
                 }
                 
+                if(gcd!=1_v){
+                    operator/=(gcd);
+                }
                 // todo : make all va exponentiations > 0
             }
-            else if (view == Equation) {
+            
+            if (view == Equation) {
                 auto& coVa = getCommonVars();
                 if (coVa.size()) {
                     *this /= VaVal(coVa);
@@ -810,6 +825,87 @@ namespace math {
         return s;
     }
     
+    Valuable::solutions_t Sum::GetIntegerSolution(const Variable& va) const
+    {
+        solutions_t solutions;
+        Valuable singleIntegerRoot;
+        bool haveMin = false;
+        auto _ = *this;
+        _.optimize();
+        auto sum = cast(_);
+        if (!sum) {
+            IMPLEMENT
+        }
+        
+        std::vector<Valuable> coefficients;
+        auto g = sum->FillPolyCoeff(coefficients,va);
+        if (g<5)
+        {
+            sum->solve(va, solutions, coefficients, g);
+            
+            if(solutions.size())
+            {
+                return solutions;
+            }
+        }
+        
+        auto extrenums = sum->extrenums(va);
+        auto zz = sum->get_zeros_zones(va, extrenums);
+        
+        Valuable min;
+        Valuable closest;
+        auto finder = [&](const Integer* i) -> bool
+        {
+            auto c = _;
+            if(!c.IsProduct())
+                c.optimize();
+            auto cdx = c;
+            cdx.d(va);
+            std::cout << "searching: f(" << va << ")=" << _ << "; f'=" << cdx << std::endl;
+            return i->Factorization([&,c](const Integer& i)
+                                    {
+                                        auto _ = c;
+                                        _.Eval(va, i);
+                                        _.optimize();
+                                        
+                                        bool found = _ == 0_v;
+                                        if (found) {
+                                            std::cout << "found " << i << std::endl;
+                                            singleIntegerRoot = i;
+                                            solutions.insert(i);
+                                        }
+                                        else
+                                        {
+                                            auto d_ = cdx;
+                                            d_.Eval(va, i);
+                                            d_.optimize();
+                                            std::cout << "trying " << i << " got " << _ << " f'(" << i << ")=" << d_ << std::endl;
+                                            if(!haveMin || _.abs() < min.abs()) {
+                                                closest = i;
+                                                min = _;
+                                                haveMin = true;
+                                            }
+                                        }
+                                        return found;
+                                    },
+                                    zz);
+        };
+        
+        auto freeMember = _.calcFreeMember();
+        auto i = Integer::cast(freeMember);
+        if(!i) {
+            IMPLEMENT
+        }
+        
+        if (finder(i)) {
+            return solutions;
+        }
+        
+        
+        IMPLEMENT
+
+    }
+    
     void Sum::solve(const Variable& va, solutions_t& solutions) const
     {
         std::vector<Valuable> coefficients;
@@ -818,7 +914,8 @@ namespace math {
     }
     
     void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const
-    {        
+    {
+        auto& salias = solutions;
         switch (grade) {
             case 1: {
                 //x=-(b/a)
@@ -839,7 +936,8 @@ namespace math {
                 solutions.insert((dsq-b)/a2);
                 break;
             }
-//            case 3: {
+            case 3: {
+                IMPLEMENT;
 //                auto& a = coefficients[3];
 //                auto& b = coefficients[2];
 //                auto& c = coefficients[1];
@@ -847,7 +945,7 @@ namespace math {
 //                auto di = (b^2)*(c^2) - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*(a^2)*(d^2) + 18_v*a*b*c*d;
 //                solutions.insert(
 //                break;
-//            }
+            }
             case 4: {
                 // four grade equation ax^4+bx^3+cx^2+dx+e=0
                 // see https://math.stackexchange.com/questions/785/is-there-a-general-formula-for-solving-4th-degree-equations-quartic
@@ -912,7 +1010,15 @@ namespace math {
                 queue.enqueue_read_buffer(c, 0, sz, &z[0]);
                 queue.finish();
                 
-                std::vector<Valuable> newSolutions;
+                auto simple = *this;
+                auto addSolution = [&](auto& s) -> bool {
+                    auto it = solutions.insert(s);
+                    if (it.second) {
+                        simple /= va - s;
+                    }
+                    return it.second;
+                };
+                
                 for(auto i = wgsz; i-->0;)
                     if (z[i] == 0) {
                         // lets recheck on host
@@ -920,34 +1026,50 @@ namespace math {
                         copy.Eval(va, i);
                         copy.optimize();
                         if (copy == 0_v) {
-                            auto it = solutions.insert(i);
-                            if (it.second) { // new value
-                                newSolutions.push_back(i);
-                            }
+                            addSolution(i);
                         }
                     }
                 
                 if(solutions.size() == grade)
                     return;
                 
-                if (newSolutions.size()) {
-                    Valuable newSolutionsPoly = 1_v;
-                    for(auto solution : newSolutions)
-                    {
-                        newSolutionsPoly *= va - solution;
+                auto simpleSolve = [&](){
+                    solutions_t news;
+                    do {
+                        news.clear();
+                        simple.solve(va, news);
+                        for(auto& s : news)
+                        {
+                            addSolution(s);
+                        }
+                    } while(news.size());
+                };
+                
+                auto addSolution2 = [&](auto& _) -> bool {
+                    if (addSolution(_)) {
+                        simpleSolve();
                     }
-                    newSolutionsPoly.optimize();
-                    auto copy = *this / newSolutionsPoly;
-                    copy.solve(va, solutions);
-                    
-                    if(solutions.size() == grade)
-                        return;
+                    return solutions.size() == grade;
+                };
+                
+                
+#define IS(_) if(addSolution2(_))return;
+                
+                if (solutions.size()) {
+                    simpleSolve();
                 }
                 
                 if(solutions.size() == grade)
                     return;
                 
+                
+                for(auto i : simple.GetIntegerSolution(va))
+                {
+                    IS(i);
+                }
+                
                 // decomposition
+                IMPLEMENT;
 //                auto yx = -*this;
 //                Variable y;
 //                yx.Valuable::Eval(va, y);

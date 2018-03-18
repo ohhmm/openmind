@@ -63,6 +63,11 @@ namespace math {
             Become(std::move(ebase));
             return;
         }
+        
+        if (ebase.IsFraction() && eexp.IsInt() && eexp < 0_v) {
+            eexp = -eexp;
+            ebase = Fraction::cast(ebase)->Reciprocal();
+        }
 
         bool ebz = ebase == 0_v;
         bool exz = eexp == 0_v;
@@ -170,23 +175,20 @@ namespace math {
                     IMPLEMENT
             }
         }
-        auto e = cast(*this);
-        if(e)
-        {
-            e = cast(e->ebase);
-            if (e)
-            {
-                auto& eeexp = e->getExponentiation();
-                if ((eeexp.FindVa() == nullptr) == (eexp.FindVa() == nullptr)) {
-                    eexp *= eeexp;
-                    // todo : copy if it shared
-                    ebase = std::move(const_cast<Valuable&>((e->getBase())));
-                }
-            }
         
-            if (IsExponentiation()) {
-                hash = ebase.Hash() ^ eexp.Hash();
+        if(IsExponentiation() && ebase.IsExponentiation())
+        {
+            auto e = cast(ebase);
+            auto& eeexp = e->getExponentiation();
+            if ((eeexp.FindVa() == nullptr) == (eexp.FindVa() == nullptr)) {
+                eexp *= eeexp;
+                // todo : copy if it shared
+                ebase = std::move(const_cast<Valuable&>((e->getBase())));
             }
+        }
+        
+        if (IsExponentiation()) {
+            hash = ebase.Hash() ^ eexp.Hash();
         }
     }
     
