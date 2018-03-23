@@ -66,6 +66,7 @@ bool System::Add(const Valuable& v)
         : false;
     
     if (isNew) {
+        sqs += _^2;
         for(auto& va : _.Vars())
         {
             for(auto& s : _(va))
@@ -152,7 +153,33 @@ System::solutions_t System::Solve(const Variable& va)
     else {
         return solution;
     }
+
+    solution = sqs(va);
+    if (solution.size()) {
+        Valuable::var_set_t vars;
+        for(auto& s : solution)
+        {
+            s.CollectVa(vars);
+        }
         
+        for(auto& v : vars)
+        {
+            solutions_t solutions;
+            for(auto& s : Solve(v))
+            {
+                for(auto& ss : solution)
+                {
+                    auto _ = ss;
+                    _.Eval(v, s);
+                    if (_.FindVa()) {
+                        IMPLEMENT
+                    }
+                    solutions.insert(_);
+                }
+            }
+        }
+    }
+    
     if(Validate())
     {
         while (Fetch(va))

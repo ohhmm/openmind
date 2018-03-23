@@ -40,6 +40,7 @@ public:
 private:
     expressions equs;
     v_es_t vEs;
+    Valuable sqs;
 //    solutions solus;
 };
 

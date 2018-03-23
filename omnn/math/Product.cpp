@@ -114,11 +114,17 @@ namespace math {
         {
             auto e = Exponentiation::cast(item);
             auto& base = e->getBase();
-            auto isVa = base.IsVa();
-            if (isVa)
+            if (base.IsVa())
             {
                 auto v = Variable::cast(base);
                 AddToVars(*v, e->getExponentiation());
+            }
+            else
+            {
+                auto itemMaxVaExp = item.getMaxVaExp();
+                if (itemMaxVaExp > maxVaExp) {
+                    maxVaExp = itemMaxVaExp;
+                }
             }
         }
         else if (!item.IsSum() && item.FindVa())
@@ -230,7 +236,8 @@ namespace math {
         {
             if (it->IsSum())
             {
-                auto sum = std::move(*it);
+                auto sum = std::move(const_cast<Valuable&&>(*it));
+                sum.optimize();
                 Delete(it);
                 auto was = optimizations;
                 //optimizations = false;
@@ -442,65 +449,65 @@ namespace math {
     // NOTE : inequality must cover all cases for bugless Sum::Add
     bool Product::IsComesBefore(const Valuable& v) const
     {
-        auto is = getMaxVaExp() > v.getMaxVaExp();
-        if (!is)
+        auto mae = getMaxVaExp();
+        auto vme = v.getMaxVaExp();
+        
+        if (mae != vme)
+            return mae > vme;
+        
+        char vp[sizeof(Product)];
+        auto isSameType = v.IsProduct();
+        auto p = isSameType ? cast(v) : new(vp) Product{v};
+        auto d = [isSameType](const Product* _){
+            if (!isSameType && _){
+                _->~Product();
+            }
+        };
+        std::unique_ptr<const Product , decltype(d)> up(p,d);
+        if (p)
         {
-            char vp[sizeof(Product)];
-            auto isSameType = v.IsProduct();
-            auto p = isSameType ? cast(v) : new(vp) Product{v};
-            auto d = [isSameType](const Product* _){
-                if (!isSameType && _){
-                    _->~Product();
-                }
-            };
-            std::unique_ptr<const Product , decltype(d)> up(p,d);
-            if (p)
-            {
-                if (getMaxVaExp() != p->getMaxVaExp())
-                {
-                    return getMaxVaExp() > p->getMaxVaExp();
-                }
-
-                if (vaExpsSum != p->vaExpsSum)
-                {
-                    return vaExpsSum > p->vaExpsSum;
-                }
-
-                if (members == p->members)
-                    return false;
-
-                if (members.size() != p->members.size()) {
-                    return members.size() > p->members.size();
-                }
-
-                auto i1 = members.begin();
-                auto i2 = p->members.begin();
-                for (; i1 != members.end(); ++i1, ++i2) {
-                    auto it1 = std::find(ob, oe, static_cast<type_index>(*i1));
-                    assert(it1!=oe); // IMPLEMENT, add to order table
-                    auto it2 = std::find(ob, oe, static_cast<type_index>(*i2));
-                    assert(it2!=oe); // IMPLEMENT
-                    if (it1 != it2) {
-                        return it1 < it2;
-                    }
-                }
-                // same types set, compare by value
-                i1 = members.begin();
-                i2 = p->members.begin();
-                for (; i1 != members.end(); ++i1, ++i2) {
-                    if(*i1 != *i2)
-                    {
-                        return i1->IsComesBefore(*i2);
-                    }
-                }
-
-                // everything is equal, should not be so
+            if (vme != p->getMaxVaExp()) {
                 IMPLEMENT
             }
-            else
-                IMPLEMENT
+
+            if (vaExpsSum != p->vaExpsSum)
+            {
+                return vaExpsSum > p->vaExpsSum;
+            }
+            
+            if (members == p->members)
+                return false;
+            
+            if (members.size() != p->members.size()) {
+                return members.size() > p->members.size();
+            }
+            
+            auto i1 = members.begin();
+            auto i2 = p->members.begin();
+            for (; i1 != members.end(); ++i1, ++i2) {
+                auto it1 = std::find(ob, oe, static_cast<type_index>(*i1));
+                assert(it1!=oe); // IMPLEMENT, add to order table
+                auto it2 = std::find(ob, oe, static_cast<type_index>(*i2));
+                assert(it2!=oe); // IMPLEMENT
+                if (it1 != it2) {
+                    return it1 < it2;
+                }
+            }
+            // same types set, compare by value
+            i1 = members.begin();
+            i2 = p->members.begin();
+            for (; i1 != members.end(); ++i1, ++i2) {
+                if(*i1 != *i2)
+                {
+                    return i1->IsComesBefore(*i2);
+                }
+            }
+            
+            // everything is equal, should not be so
+            IMPLEMENT
         }
-        return is;
+        else
+            IMPLEMENT
     }
     
     Valuable& Product::operator +=(const Valuable& v)

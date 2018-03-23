@@ -31,14 +31,13 @@ namespace math {
     
     a_int Exponentiation::getMaxVaExp() const
     {
-        if (ebase.IsVa()) {
-            if (eexp.IsInt()) {
-                return *Integer::cast(eexp);
-            }
+        if (eexp.IsInt()) {
+            a_int _ = *Integer::cast(eexp);
+            _ *= ebase.getMaxVaExp();
+            return _;
         }
-        if(eexp.FindVa())
+        
             IMPLEMENT
-        return 0;
     }
     
 	Valuable Exponentiation::operator -() const

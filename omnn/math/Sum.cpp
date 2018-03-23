@@ -211,6 +211,8 @@ namespace math {
                             Delete(it2);
                             up();
                         }
+                        else
+                            ++it2;
                     }
                     else
                         ++it2;
@@ -938,11 +940,11 @@ namespace math {
             }
             case 3: {
                 IMPLEMENT;
-//                auto& a = coefficients[3];
-//                auto& b = coefficients[2];
-//                auto& c = coefficients[1];
-//                auto& d = coefficients[0];
-//                auto di = (b^2)*(c^2) - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*(a^2)*(d^2) + 18_v*a*b*c*d;
+                auto& a = coefficients[3];
+                auto& b = coefficients[2];
+                auto& c = coefficients[1];
+                auto& d = coefficients[0];
+                auto di = (b^2)*(c^2) - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*(a^2)*(d^2) + 18_v*a*b*c*d;
 //                solutions.insert(
 //                break;
             }
