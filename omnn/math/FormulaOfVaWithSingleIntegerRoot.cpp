@@ -39,6 +39,30 @@ namespace math {
                 
         }
         
+        if (sum->size() > 2) {
+            auto dx = _;
+            while (Sum::cast(dx)->size()>2) {
+                dx.d(getVa());
+            }
+            
+            auto solution = dx(getVa());
+            if (solution.size() != 1) {
+                IMPLEMENT
+            } else {
+                auto s = *solution.begin();
+                if (!s.IsInt() && !s.IsFraction()) {
+                    IMPLEMENT
+                }
+                dx = _;
+                dx.Eval(getVa(), s);
+                dx.optimize();
+                if (dx == 0_v) {
+                    return s;
+                }
+            }
+        }
+        
+        
         auto extrenums = sum->extrenums(getVa());
         auto zz = sum->get_zeros_zones(getVa(), extrenums);
         

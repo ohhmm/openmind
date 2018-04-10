@@ -81,6 +81,11 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     
     Product::cast(_1)->Add(v1^2);
     BOOST_TEST(_1.getCommonVars().begin()->second == 4);
+    
+    _1 = (((v1 + 0))^2);
+    _2 = 2*(v2^2)*(v1^2);
+    _ = _1*_2;
+    BOOST_TEST(_ == 2*(v2^2)*(v1^4));
 //    Variable v8, v9, v10, v12, v13;
 //    _ = (-1_v/174)*(((-1_v*(v10^2)*v12 + -1_v*v14*v8*v10 + -1_v*v13*v9*v10 + -866_v*v10))^-1_v)*v13*v9;
 //    BOOST_TEST(_(v8) == )

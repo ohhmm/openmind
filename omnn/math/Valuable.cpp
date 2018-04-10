@@ -157,6 +157,7 @@ namespace math {
 
     Valuable::Valuable(double d) : exp(new Fraction(d)) {}
     Valuable::Valuable(int i) : exp(new Integer(i)) {}
+    Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
     Valuable::Valuable(const long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
@@ -724,12 +725,42 @@ namespace math {
             IMPLEMENT
     }
 
+    Valuable::operator unsigned() const
+    {
+        if (exp)
+            return exp->operator unsigned();
+        else
+            IMPLEMENT
+    }
+    
     Valuable::operator unsigned char() const
     {
         if (exp)
             return exp->operator unsigned char();
         else
             IMPLEMENT
+    }
+    
+//    Valuable Valuable::ifz(const Valuable& z, const Valuable& Then, const Valuable& Else) const
+//    {
+//        return ((z)^2+(Then)^2)(((((z)^2)+((Then)^2))(Else))^2+(Else)^2);
+//    }
+    
+    Valuable Valuable::bit(const Valuable& n) const
+    {
+        if (n > 0) {
+            return shr().bit(n-1);
+        }
+        else if (n == 0)
+            // (this & 1) == (this % 2) == (1+((-1)^(this+1)))/2
+            return (1_v+((-1_v)^(*this+1)))/2;
+        else
+            IMPLEMENT;
+    }
+    
+    Valuable Valuable::shr() const
+    {
+        return (*this-bit(0))/2;
     }
     
     size_t Valuable::Hash() const

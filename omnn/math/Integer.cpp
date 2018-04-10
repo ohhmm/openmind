@@ -14,7 +14,10 @@
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/detail/integer_ops.hpp>
 //#include <libiomp/omp.h>
+
+using boost::multiprecision::cpp_int;
 
 namespace omnn{
 namespace math {
@@ -133,6 +136,11 @@ namespace math {
         return boost::numeric_cast<int>(arbitrary);
     }
 
+    Integer::operator unsigned() const
+    {
+        return boost::numeric_cast<unsigned>(arbitrary);
+    }
+    
     Integer::operator double() const
     {
         return boost::numeric_cast<double>(arbitrary);
@@ -148,6 +156,21 @@ namespace math {
         return boost::numeric_cast<unsigned char>(arbitrary);
     }
 
+    Valuable Integer::bit(const Valuable& n) const
+    {
+        if (n.IsInt()) {
+            unsigned N = static_cast<unsigned>(*Integer::cast(n));
+            return static_cast<int>(bit_test(arbitrary, N));
+        }
+        else
+            IMPLEMENT;
+    }
+    
+    Valuable Integer::shr() const
+    {
+        return Integer(decltype(arbitrary)(arbitrary>>1));
+    }
+    
     Valuable& Integer::operator^=(const Valuable& v)
     {
         if(arbitrary == 0 || arbitrary == 1)
@@ -254,15 +277,18 @@ namespace math {
                         }
                     }
                     else
-                        throw "Implement!";
+                        return Become(Exponentiation(*this, v));
+                        // *this ^ 1/dn  == (nroot^dn + t)^ 1/dn
+                         // this == nroot^dn + 
+                        // TODO : IMPLEMENT//return Become(Sum {nroot, (*this-(nroot^dn))^(1/dn)});
                 }
             }
             else
-                Become(Exponentiation(*this, v));
+                return Become(Exponentiation(*this, v));
         }
         else
         {
-            Become(Exponentiation(*this, v));
+            return Become(Exponentiation(*this, v));
         }
         
         optimize();

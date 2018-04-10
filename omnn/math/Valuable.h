@@ -117,7 +117,8 @@ public:
     
     Valuable(const Valuable& v);
 
-    template<class T>
+    template<class T,
+            typename = typename std::enable_if<std::is_convertible<T&, Valuable&>::value>::type>
     Valuable(const T&& t)
     : exp(t.Clone())
     , hash(t.Hash())
@@ -142,9 +143,10 @@ public:
     
     Valuable(double d);
     Valuable(int i = 0);
-    Valuable(const long i);
-    Valuable(unsigned long i);
-    Valuable(unsigned long long i);
+    Valuable(const a_int&);
+    Valuable(const long);
+    Valuable(unsigned long);
+    Valuable(unsigned long long);
     
     virtual ~Valuable();
     virtual Valuable operator -() const;
@@ -157,6 +159,7 @@ public:
     virtual Valuable& operator++();
     virtual Valuable& operator^=(const Valuable&);
     virtual Valuable& d(const Variable& x);
+//    virtual Valuable& I(const Variable& x);
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
@@ -226,7 +229,16 @@ public:
     virtual explicit operator size_t() const;
     virtual explicit operator double() const;
     virtual explicit operator long double() const;
+    virtual explicit operator unsigned() const;
     virtual explicit operator unsigned char() const;
+    
+//    virtual Valuable ifz(const Valuable& z, const Valuable& Then, const Valuable& Else) const;
+//    Valuable For(const Valuable& initialValue, const Valuable& lambda) const
+//    {
+//
+//    }
+    virtual Valuable bit(const Valuable& n) const;
+    virtual Valuable shr() const;
     
     size_t Hash() const;
     std::string str() const;

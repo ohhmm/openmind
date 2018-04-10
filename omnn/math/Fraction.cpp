@@ -65,12 +65,20 @@ namespace math {
             denominator = std::move(dn->numerator);
         }
 
-        if(denominator.IsInt() && denominator == 1_v)
-        {
-            Become(std::move(numerator));
+        if (numerator.IsSum()) {
+            Become(numerator/denominator);
             return;
         }
-
+        
+        if(denominator.IsInt())
+        {
+            if(denominator == 1_v)
+            {
+                Become(std::move(numerator));
+                return;
+            }
+        }
+        
         if (numerator.IsExponentiation()) {
             auto e = Exponentiation::cast(numerator);
             auto& exp = e->getExponentiation();
@@ -188,7 +196,7 @@ namespace math {
         }
         else
         {
-            if(v.IsInt())
+            if(v.IsInt() && IsSimple())
             {
                 auto i = Integer::cast(v);
                 *this += Fraction(*i);
@@ -397,6 +405,11 @@ namespace math {
         // no type matched
         return base::operator ==(v);
     }
+    
+    Valuable Fraction::sqrt() const
+    {
+        return numerator.sqrt() / denominator.sqrt();
+    }
 
     std::ostream& Fraction::print(std::ostream& out) const
     {
@@ -436,6 +449,11 @@ namespace math {
                 : (va1 && va2
                    ? str().length() < v.str().length()
                    : va1!=nullptr );
+    }
+    
+    Fraction::operator unsigned char() const
+    {
+        return static_cast<unsigned char>(static_cast<Integer>(*this));
     }
     
     Fraction::operator boost::multiprecision::cpp_dec_float_100() const

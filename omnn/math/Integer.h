@@ -94,7 +94,11 @@ public:
     explicit operator size_t() const override;
     explicit operator double() const override;
     explicit operator long double() const override;
+    explicit operator unsigned() const override;
     explicit operator unsigned char() const override;
+    
+    Valuable bit(const Valuable& n) const override;
+    Valuable shr() const override;
     
     solutions_t operator()(const Variable&) const override { return {}; }
     solutions_t operator()(const Variable&, const Valuable& augmentation) const override { return {}; }

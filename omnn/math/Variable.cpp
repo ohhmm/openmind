@@ -65,8 +65,7 @@ namespace math {
     
     Valuable& Variable::operator^=(const Valuable& v)
     {
-        auto ie = Integer::cast(v);
-        if(ie && *ie == 0)
+        if(v.IsInt() && v == 0_v)
         {
             Become(1_v);
         }

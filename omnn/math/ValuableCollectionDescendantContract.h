@@ -70,11 +70,17 @@ namespace math {
             IMPLEMENT
         }
         
-        virtual const iterator Add(const Valuable& item)
+        virtual const iterator Add(const Valuable& item, const iterator hint)
         {
             Valuable::hash ^= item.Hash();
-            auto it = GetCont().insert(item);
-            return getit(it);
+            auto& c = GetCont();
+            auto it = hint == c.end() ? getit(c.insert(item)) : getit(c.insert(hint, item));
+            return it;
+        }
+        
+        const iterator Add(const Valuable& item)
+        {
+            return Add(item, GetCont().end());
         }
 
         template<class T>
@@ -166,10 +172,8 @@ namespace math {
 
         virtual void Update(iterator& it, const Valuable& v)
         {
-            auto& c = GetCont();
             Delete(it);
-            it = c.insert(it, v);
-            Valuable::hash ^= v.Hash();
+            it=Add(v, it);
         }
 
         virtual void Delete(iterator& it)

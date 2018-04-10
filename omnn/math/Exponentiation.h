@@ -39,12 +39,6 @@ public:
     
     Exponentiation(const Valuable& b, const Valuable& e);
 
-//    Exponentiation(const Valuable& b)
-//            : ebase(b), eexp(1)
-//    {
-//        hash = ebase.Hash() ^ eexp.Hash();
-//    }
-//
     const Variable* FindVa() const override;
     bool HasVa(const Variable& va) const override { return ebase.HasVa(va) || eexp.HasVa(va); }
     void CollectVa(std::set<Variable>& s) const override;

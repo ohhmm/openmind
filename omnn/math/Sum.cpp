@@ -59,7 +59,17 @@ namespace math {
             ? v1.IsComesBefore(v2) : toc(v1,v2);
     }
 
-    const Sum::iterator Sum::Add(const Valuable& item)
+    Sum::iterator Sum::Had(iterator it)
+    {
+        //return it;
+        auto item = *it;
+        it = std::find(members.begin(), members.end(), item);
+        std::cout << it->str();
+        throw "Impossible! Check order comparator error.";
+        return it;
+    }
+    
+    const Sum::iterator Sum::Add(const Valuable& item, const iterator hint)
     {
         Sum::iterator it = end();
         if(item.IsSum()) {
@@ -76,7 +86,7 @@ namespace math {
         {
             it = std::find(members.begin(), members.end(), item);
             if(it==end())
-                it = base::Add(item);
+                it = base::Add(item, hint);
             else
                 Update(it, item*2);
             auto itemMaxVaExp = item.getMaxVaExp();
@@ -84,12 +94,6 @@ namespace math {
                 maxVaExp = itemMaxVaExp;
         }
         return it;
-    }
-    
-    void Sum::Update(iterator& it, const Valuable& v)
-    {
-        Delete(it);
-        it=Add(v);
     }
     
 	Valuable Sum::operator -() const
@@ -116,7 +120,6 @@ namespace math {
                 Valuable m;
                 {m = *members.begin();}
                 Become(std::move(m));
-                isOptimizing = false;
                 return;
             }
 
@@ -350,7 +353,7 @@ namespace math {
 	Valuable& Sum::operator +=(const Valuable& v)
 	{
 		if (v.IsSum()) {
-			Add(v);
+			base::Add(v);
 		}
 		else
 		{
@@ -390,7 +393,11 @@ namespace math {
 		{
             for(auto& _1 : *cast(v))
 				for (auto& _2 : members)
-                    add(_1*_2);
+                {
+                    auto m = _1*_2;
+                    add(m);
+                    m = _1*_2;
+                }
 		}
 		else
         {
@@ -562,9 +569,9 @@ namespace math {
             auto a = cast(arg);
             if(a)
                 for(auto& m: *a)
-                    this->Add(m);
+                    this->Add(m, end());
             else
-                this->Add(arg);
+                this->Add(arg, end());
         }
     }
     

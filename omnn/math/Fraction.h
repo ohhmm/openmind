@@ -34,6 +34,7 @@ namespace math {
 		bool operator <(const Valuable& v) const override;
 		bool operator ==(const Valuable& v) const override;
 		void optimize() override;
+        Valuable sqrt() const override;
         const vars_cont_t& getCommonVars() const override;
         bool IsComesBefore(const Valuable& v) const override;
 		bool IsFraction() const override { return true; }
@@ -82,6 +83,7 @@ namespace math {
         const Valuable& getDenominator() const { return denominator; }
         const Valuable& getNumerator() const { return numerator; }
 
+        explicit operator unsigned char() const override;
         operator boost::multiprecision::cpp_dec_float_100() const;
         solutions_t operator()(const Variable&, const Valuable& augmentation) const override;
         

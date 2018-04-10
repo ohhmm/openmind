@@ -45,8 +45,8 @@ public:
     
 	const cont& GetConstCont() const override { return members; }
     iterator Had(iterator it) override;
-    const iterator Add(const Valuable& item) override;
-    void Update(typename cont::iterator& it, const Valuable& v) override;
+    using base::Add;
+    const iterator Add(const Valuable& item, const iterator hint) override;
     void Delete(typename cont::iterator& it) override;
 
     const vars_cont_t& getCommonVars() const override;
@@ -67,6 +67,7 @@ public:
 	Valuable& operator ++() override;
     Valuable& d(const Variable& x) override;
 	void optimize() override;
+    Valuable sqrt() const override;
 
 	bool IsProduct() const override { return true; }
   
@@ -76,7 +77,7 @@ public:
 protected:
     cont& GetCont() override { return members; }
     std::ostream& print(std::ostream& out) const override;
-    Product(const vars_cont_t& v) : vars(v) { Add(1_v); }
+    Product(const vars_cont_t& v) : vars(v) { base::Add(1_v); }
     
 private:
     vars_cont_t vars;

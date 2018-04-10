@@ -27,6 +27,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
 {
     rgba8_image_t src;
     read_image(TEST_SRC_DIR "g.tga", src, targa_tag());
+    write_view(TEST_BIN_DIR "was.tga", view(src), targa_tag());
     
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;

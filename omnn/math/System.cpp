@@ -159,25 +159,71 @@ System::solutions_t System::Solve(const Variable& va)
         Valuable::var_set_t vars;
         for(auto& s : solution)
         {
+            auto vaSzWas = vars.size();
             s.CollectVa(vars);
-        }
-        
-        for(auto& v : vars)
-        {
-            solutions_t solutions;
-            for(auto& s : Solve(v))
-            {
-                for(auto& ss : solution)
-                {
-                    auto _ = ss;
-                    _.Eval(v, s);
-                    if (_.FindVa()) {
-                        IMPLEMENT
-                    }
-                    solutions.insert(_);
-                }
+            if (vaSzWas!=vars.size()) {
+                Add(va, s);
             }
         }
+        
+        if (!vars.size()) {
+            return solution;
+        } else {
+            solution.clear();
+        }
+//        
+//   -     if(vars.size()==1 && solution.size()==2)
+//        {
+//            auto v = *vars.begin();
+//            auto s = solution.begin();
+//   -         auto sum = *s; ++s; sum -= *s;
+//            auto vo = sum(v);
+//            if (vo.size() != 1) {
+//                IMPLEMENT
+//            } else {
+//                auto vaVal = *vo.begin();
+//                if (vaVal.FindVa()) {
+//                    IMPLEMENT
+//                } else {
+//                    solutions_t news;
+//                    for(auto s : solution)
+//                    {
+//                        s.Eval(v, vaVal);
+//                        s.optimize();
+//                        news.insert(s);
+//                    }
+//                    return news;
+//                }
+//            }
+//        }
+//        else
+//        {
+//            for(auto& v : vars)
+//            {
+//                solutions_t solutions;
+//                for(auto& s : Solve(v))
+//                {
+//                    
+//                    for(auto& ss : solution)
+//                    {
+//                        auto _ = ss;
+//                        _.Eval(v, s);
+//                        auto fv = _.FindVa();
+//                        if (fv) {
+//                            auto t = Solve(*fv);
+//                            if(t.size()!=1)
+//                                IMPLEMENT
+//                            _.Eval(*fv, *t.begin());
+//                            if (_.FindVa()) {
+//                                IMPLEMENT
+//                            }
+//                        }
+//                        
+//                        solutions.insert(_);
+//                    }
+//                }
+//            }
+//        }
     }
     
     if(Validate())

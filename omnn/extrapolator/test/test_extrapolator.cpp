@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
             e.Eval(y, vm(i, 1));
             e.Eval(z, vm(i, 2));
             e.optimize();
-            std::cout << e.str() << std::endl;
+//            std::cout << e.str() << std::endl;
             BOOST_TEST(e == 0); //test current eq
         }
         std::cout << "Total equation:" << eq << std::endl;
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
             v.Eval(z, vm(i,2));
             v.optimize();
             BOOST_TEST(v == 0);  //test whole equation
-            std::cout << std::endl << vm(i,2) << " : " << v << std::endl;
+//            std::cout << std::endl << vm(i,2) << " : " << v << std::endl;
             BOOST_TEST(f(vm(i,0),vm(i,1))==vm(i,2)); // test formula
         }
     }

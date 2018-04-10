@@ -47,7 +47,7 @@ namespace math {
     {
         for (const auto& arg : l)
         {
-            this->Add(arg);
+            this->Add(arg, end());
         }
     }
     
@@ -87,20 +87,19 @@ namespace math {
         e += exponentiation;
         ie = Integer::cast(e);
       
-        if (maxVaExp < ie->operator Integer::const_base_int_ref()) {
+        bool isMax = maxVaExp < ie->operator Integer::const_base_int_ref();
+        if (isMax) {
             maxVaExp = ie->operator Integer::const_base_int_ref();
-        }
-        else if (wasMax) {
-            assert(*i < 0);
-            maxVaExp = findMaxVaExp();
         }
         
         if (e == 0) {
             vars.erase(va);
-//            maxVaExp = findMaxVaExp();
         }
         
-
+        if (!isMax && wasMax) {
+            assert(*i < 0);
+            maxVaExp = findMaxVaExp();
+        }
     }
 
     void Product::AddToVarsIfVaOrVaExp(const Valuable &item)
@@ -140,8 +139,8 @@ namespace math {
         base::Update(it, *it ^ 2);
         return it;
     }
-
-    const Product::iterator Product::Add(const Valuable& item)
+    
+    const Product::iterator Product::Add(const Valuable& item, const iterator hint)
     {
         iterator it;
         auto cmp = members.value_comp();
@@ -160,16 +159,14 @@ namespace math {
         }
         else
         {
-            it=base::Add(item);
-            AddToVarsIfVaOrVaExp(item);
+            it = std::find(members.begin(), members.end(), item);
+            if(it==end()) {
+                it = base::Add(item, hint);
+                AddToVarsIfVaOrVaExp(item);
+            } else
+                Update(it, item^2);
         }
         return it;
-    }
-    
-    void Product::Update(typename cont::iterator& it, const Valuable& v)
-    {
-        base::Update(it,v);
-        AddToVarsIfVaOrVaExp(v);
     }
 
     void Product::Delete(typename cont::iterator& it)
@@ -180,16 +177,13 @@ namespace math {
             auto v = Variable::cast(*it);
             addToVars = std::bind(&Product::AddToVars, this, *v, -1_v);
         }
-        else
+        else if (it->IsExponentiation())
         {
-            if (it->IsExponentiation())
-            {
-                auto e = Exponentiation::cast(*it);
-                auto& ebase = e->getBase();
-                if (ebase.IsVa()) {
-                    auto v = Variable::cast(ebase);
-                    addToVars = std::bind(&Product::AddToVars, this, *v, -e->getExponentiation());
-                }
+            auto e = Exponentiation::cast(*it);
+            auto& ebase = e->getBase();
+            if (ebase.IsVa()) {
+                auto v = Variable::cast(ebase);
+                addToVars = std::bind(&Product::AddToVars, this, *v, -e->getExponentiation());
             }
         }
         
@@ -399,6 +393,11 @@ namespace math {
             Become(std::move(*const_cast<Valuable*>(&*members.begin())));
     }
 
+    Valuable Product::sqrt() const
+    {
+        return *this ^ (1_v/2);
+    }
+    
     const Product::vars_cont_t& Product::getCommonVars() const
     {
         return vars;
@@ -582,7 +581,7 @@ namespace math {
         {
             for(auto& m : *cast(v))
             {
-                Add(m);
+                base::Add(m);
             }
             goto yes;
         }

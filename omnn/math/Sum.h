@@ -63,11 +63,10 @@ public:
     solutions_t operator()(const Variable& va, const Valuable& augmentation) const override;
     
     using base::base;
-    Sum(Sum&&)=default;
-    Sum(const Sum&)=default;
     
-    const iterator Add(const Valuable& item) override;
-    void Update(typename cont::iterator& it, const Valuable& v) override;
+    iterator Had(iterator it) override;
+    using base::Add;
+    const iterator Add(const Valuable& item, const iterator hint) override;
     bool IsComesBefore(const Valuable& v) const override;
 
     Sum(const std::initializer_list<Valuable>& l);

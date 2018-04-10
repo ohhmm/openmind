@@ -58,8 +58,8 @@ namespace math {
         : Valuable(std::move(c), ValuableDescendantMarker()) {}
         ValuableDescendantContract(const ValuableDescendantContract& c)//        =default;
          : Valuable(c, ValuableDescendantMarker()) {}
-        ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { hash = f.Hash(); return *this; }
-        ValuableDescendantContract& operator=(ValuableDescendantContract&& f) { hash = f.Hash(); return *this; }
+        ValuableDescendantContract& operator=(const ValuableDescendantContract& f) { hash = f.hash; return *this; }
+        ValuableDescendantContract& operator=(ValuableDescendantContract&& f) { hash = f.hash; return *this; }
         
 //        operator Valuable&&() {
 //            return std::move(Valuable(Move()));
@@ -88,7 +88,7 @@ namespace math {
         }
         void optimize() override { }
         //void expand() override { }
-        Valuable sqrt() const override { throw "Implement!"; }
+        Valuable sqrt() const override { IMPLEMENT }
         
         bool IsComesBefore(const Valuable& v) const override
         {
