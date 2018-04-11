@@ -577,20 +577,18 @@ namespace math {
     
     bool Sum::IsComesBefore(const Valuable& v) const
     {
-        if (!v.IsSum()) {
-            return base::IsComesBefore(v);
-        }
-        
-        auto sz1 = size();
-        auto s = Sum::cast(v);
-        auto sz2 = s->size();
-        if (sz1 != sz2) {
-            return sz1 > sz2;
-        }
+        if (v.IsSum()) {
+            auto sz1 = size();
+            auto s = Sum::cast(v);
+            auto sz2 = s->size();
+            if (sz1 != sz2) {
+                return sz1 > sz2;
+            }
             
-        for (auto i1=begin(), i2=s->begin(); i1!=end(); ++i1, ++i2) {
-            if (*i1 != *i2) {
-                return i1->IsComesBefore(*i2);
+            for (auto i1=begin(), i2=s->begin(); i1!=end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    return i1->IsComesBefore(*i2);
+                }
             }
         }
         
@@ -924,7 +922,6 @@ namespace math {
     
     void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const
     {
-        auto& salias = solutions;
         switch (grade) {
             case 1: {
                 //x=-(b/a)

@@ -65,10 +65,10 @@ namespace math {
             denominator = std::move(dn->numerator);
         }
 
-        if (numerator.IsSum()) {
-            Become(numerator/denominator);
-            return;
-        }
+//        if (numerator.IsSum()) {
+//            Become(numerator/denominator);
+//            return;
+//        }
         
         if(denominator.IsInt())
         {
@@ -445,7 +445,7 @@ namespace math {
         auto va1 = FindVa();
         auto va2 = v.FindVa();
         return !va1 && !va2
-                ? operator<(v)
+            ? (IsSimple() && (v.IsInt() || (v.IsFraction() && Fraction::cast(v)->IsSimple())) ? operator<(v) : str().length() < v.str().length())
                 : (va1 && va2
                    ? str().length() < v.str().length()
                    : va1!=nullptr );

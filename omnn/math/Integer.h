@@ -110,6 +110,7 @@ public:
     Valuable calcFreeMember() const override;
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
     Valuable sqrt() const override { return *this^(1_v/2); }
+    bool IsComesBefore(const Valuable& v) const override;
     
     static const zero_zone_t empty_zero_zone;
     bool Factorization(const std::function<bool(const Integer&)>& f,

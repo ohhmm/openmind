@@ -301,6 +301,11 @@ namespace math {
         return *this;
     }
     
+    bool Integer::IsComesBefore(const Valuable& v) const
+    {
+        return v.IsInt() && *this > v;
+    }
+
     bool Integer::operator <(const Valuable& v) const
     {
         auto i = cast(v);

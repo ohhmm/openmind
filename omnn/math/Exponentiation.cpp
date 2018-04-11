@@ -451,7 +451,7 @@ namespace math {
             {
                 auto expComesBefore = eexp.IsComesBefore(e->eexp);
                 auto ebaseComesBefore = ebase.IsComesBefore(e->ebase);
-                is = expComesBefore==ebaseComesBefore || *this > *e;
+                is = expComesBefore==ebaseComesBefore || str().length() > e->str().length();
             }
         }
         else if(v.IsProduct())
