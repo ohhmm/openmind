@@ -91,6 +91,17 @@ namespace math {
                     IMPLEMENT
                 }
             }
+            
+            if (e->getExponentiation().IsFraction())
+            {
+                auto f = Fraction::cast(e->getExponentiation());
+                auto in = e->getBase() / (denominator ^ f->Reciprocal());
+                if (in.IsInt())
+                {
+                    Become(in ^ e->getExponentiation());
+                    return;
+                }
+            }
         }
 
         // integers

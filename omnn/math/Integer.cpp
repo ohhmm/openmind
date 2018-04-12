@@ -249,38 +249,41 @@ namespace math {
 
                 if (n != 1)
                     *this ^= n;
-                Valuable nroot;
-                bool rootFound = false;
-                Valuable left =0, right = *this;
-
-                while (!rootFound)
+                if (dn != 1)
                 {
-                    auto d = right - left;
-                    d -= d % 2;
-                    if (d!=0) {
-                        nroot = left + d / 2;
-                        auto result = nroot ^ dn;
-                        if (result == *this)
-                        {
-                            return Become(std::move(nroot));
-                        }
-                        else
-                        {
-                            if (result > *this)
+                    Valuable nroot;
+                    bool rootFound = false;
+                    Valuable left =0, right = *this;
+                    
+                    while (!rootFound)
+                    {
+                        auto d = right - left;
+                        d -= d % 2;
+                        if (d!=0) {
+                            nroot = left + d / 2;
+                            auto result = nroot ^ dn;
+                            if (result == *this)
                             {
-                                right = nroot;
+                                return Become(std::move(nroot));
                             }
                             else
                             {
-                                left = nroot;
+                                if (result > *this)
+                                {
+                                    right = nroot;
+                                }
+                                else
+                                {
+                                    left = nroot;
+                                }
                             }
                         }
-                    }
-                    else
-                        return Become(Exponentiation(*this, v));
+                        else
+                            return Become(Exponentiation(*this, 1_v/dn));
                         // *this ^ 1/dn  == (nroot^dn + t)^ 1/dn
-                         // this == nroot^dn + 
+                        // this == nroot^dn +
                         // TODO : IMPLEMENT//return Become(Sum {nroot, (*this-(nroot^dn))^(1/dn)});
+                    }
                 }
             }
             else
