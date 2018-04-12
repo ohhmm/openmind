@@ -22,6 +22,8 @@ using boost::multiprecision::cpp_int;
 namespace omnn{
 namespace math {
 
+    const Integer::zero_zone_t Integer::empty_zero_zone;
+
     Integer::Integer(const Fraction& f)
     : arbitrary(Integer::cast(f.getNumerator())->arbitrary / Integer::cast(f.getDenominator())->arbitrary)
     {
@@ -353,7 +355,7 @@ namespace math {
         return *this;
     }
 
-    bool Integer::Factorization(const std::function<bool(const Integer&)>& f, const zero_zone_t& zz) const
+    bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, const zero_zone_t& zz) const
     {
         using namespace boost::compute;
         auto h = arbitrary;
@@ -382,32 +384,32 @@ namespace math {
             IMPLEMENT
         }
 //        if (arbitrary > std::numeric_limits<cl_long>::max()) {
-        #pragma omp parallel for shared(up)
-        for (auto i = from; i <= up; ++i) {
+//        #pragma omp parallel for shared(up)
+        for (auto i = from; i < up; ++i) {
             auto a = *this;
             a /= i;
             auto ii = cast(a);
-            if (ii) {
-                if(f(*Integer::cast(i)) || f(*ii))
+            if (a.IsInt()) {
+                if(f(i) || f(a))
                     return true;
-                if (*ii < up) {
-                    up = *ii;
+                if (a < up) {
+                    up = a;
                 }
             }
             
-            if (i > scanIt->second) {
-                ++scanIt;
-                if (scanIt == zz.second.end()) {
-                    break;
-                }
-                i = scanIt->first;
-                if (!i.IsInt()) {
-                    IMPLEMENT;
-                }
-            }
-//            while (scai > scanIt.s) {
-//                <#statements#>
+//            if (i > scanIt->second) {
+//                ++scanIt;
+//                if (scanIt == zz.second.end()) {
+//                    break;
+//                }
+//                i = scanIt->first;
+//                if (!i.IsInt()) {
+//                    IMPLEMENT;
+//                }
 //            }
+////            while (scai > scanIt.s) {
+////                <#statements#>
+////            }
         }
 //        }
 //        else

@@ -869,7 +869,7 @@ namespace math {
             auto cdx = c;
             cdx.d(va);
             std::cout << "searching: f(" << va << ")=" << _ << "; f'=" << cdx << std::endl;
-            return i->Factorization([&,c](const Integer& i)
+            return i->Factorization([&,c](const Valuable& i)
                                     {
                                         auto _ = c;
                                         _.Eval(va, i);

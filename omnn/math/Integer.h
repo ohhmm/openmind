@@ -113,7 +113,7 @@ public:
     bool IsComesBefore(const Valuable& v) const override;
     
     static const zero_zone_t empty_zero_zone;
-    bool Factorization(const std::function<bool(const Integer&)>& f,
+    bool Factorization(const std::function<bool(const Valuable&)>& f,
                        const zero_zone_t& zz = empty_zero_zone) const;
 
 private:

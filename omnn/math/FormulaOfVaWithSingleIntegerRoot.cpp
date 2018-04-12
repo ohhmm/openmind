@@ -50,21 +50,20 @@ namespace math {
                 IMPLEMENT
             } else {
                 auto s = *solution.begin();
-                if (!s.IsInt() && !s.IsFraction()) {
-                    IMPLEMENT
-                }
-                dx = _;
-                dx.Eval(getVa(), s);
-                dx.optimize();
-                if (dx == 0_v) {
-                    return s;
+                if (s.IsInt()) {
+                    dx = _;
+                    dx.Eval(getVa(), s);
+                    dx.optimize();
+                    if (dx == 0_v) {
+                        return s;
+                    }
                 }
             }
         }
         
         
-        auto extrenums = sum->extrenums(getVa());
-        auto zz = sum->get_zeros_zones(getVa(), extrenums);
+        //auto extrenums = sum->extrenums(getVa());
+        //sum->get_zeros_zones(getVa(), extrenums);
         
         Valuable min;
         Valuable closest;
@@ -78,7 +77,7 @@ namespace math {
             auto& seq = getVaSequanceForOp();
             FormulaOfVaWithSingleIntegerRoot f(getVa(), cdx, &seq);
             std::cout << "searching: f(" << getVa() << ")=" << _ << "; f'=" << cdx << std::endl;
-            return i->Factorization([&,c](const Integer& i)
+            return i->Factorization([&,c](const Valuable& i)
                                      {
                                          auto _ = c;
                                          _.Eval(getVa(), i);
@@ -109,8 +108,9 @@ namespace math {
                                              }
                                          }
                                          return found;
-                                     },
-                                    zz);
+                                     }
+//                                    ,zz
+                                    );
         };
 
         auto freeMember = _.calcFreeMember();
