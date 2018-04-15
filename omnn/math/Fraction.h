@@ -84,6 +84,7 @@ namespace math {
         const Valuable& getNumerator() const { return numerator; }
 
         explicit operator unsigned char() const override;
+        explicit operator a_int() const override;
         operator boost::multiprecision::cpp_dec_float_100() const;
         solutions_t operator()(const Variable&, const Valuable& augmentation) const override;
         

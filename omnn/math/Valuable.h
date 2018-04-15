@@ -226,6 +226,7 @@ public:
 
     explicit operator bool() const;
     virtual explicit operator int() const;
+    virtual explicit operator a_int() const;
     virtual explicit operator size_t() const;
     virtual explicit operator double() const;
     virtual explicit operator long double() const;

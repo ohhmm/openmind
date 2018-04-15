@@ -133,9 +133,8 @@ namespace math {
                     Become(-*n);
                     return;
                 }
-                Integer::base_int d = boost::gcd(
-                    static_cast<Integer::base_int>(*n),
-                    static_cast<Integer::base_int>(*dn));
+                Integer::base_int d = boost::gcd(static_cast<Integer::const_base_int_ref>(*n),
+                                                 static_cast<Integer::const_base_int_ref>(*dn));
                 if (d != 1) {
                     numerator /= Integer(d);
                     denominator /= Integer(d);
@@ -400,11 +399,11 @@ namespace math {
 			{
                 if (IsSimple())
                 {
-                    auto& n = Integer::cast(numerator)->operator Integer::const_base_int_ref();
-                    auto& dn = Integer::cast(denominator)->operator Integer::const_base_int_ref();
+                    auto& n = Integer::cast(numerator)->as_const_base_int_ref();
+                    auto& dn = Integer::cast(denominator)->as_const_base_int_ref();
                     auto g = boost::gcd(n,dn);
                     auto i = Integer::cast(v);
-                    return (g == dn && n/g == *i) || (n == 0 && *i == 0);
+                    return (g == dn && n/g == i->as_const_base_int_ref()) || (n == 0 && *i == 0);
                 }
                 else
                 {
@@ -466,20 +465,28 @@ namespace math {
     {
         return static_cast<unsigned char>(static_cast<Integer>(*this));
     }
+  
+    Fraction::operator a_int() const
+    {
+        if (!IsSimple()) {
+            IMPLEMENT
+        }
+        return static_cast<a_int>(numerator)/static_cast<a_int>(denominator);
+    }
     
     Fraction::operator boost::multiprecision::cpp_dec_float_100() const
     {
         if (IsSimple())
         {
             auto& num = *Integer::cast(numerator);
-            boost::multiprecision::cpp_dec_float_100 f(static_cast<boost::multiprecision::cpp_int>(num));
+            boost::multiprecision::cpp_dec_float_100 f(num.as_const_base_int_ref());
             auto & d = *Integer::cast(denominator);
-            f /= boost::multiprecision::cpp_dec_float_100(static_cast<boost::multiprecision::cpp_int>(d));
+            f /= boost::multiprecision::cpp_dec_float_100(d.as_const_base_int_ref());
             // TODO : check validity
             return f;
         }
         else
-            throw "Implement!";
+            IMPLEMENT;
     }
     
     Fraction::solutions_t Fraction::operator()(const Variable& v, const Valuable& augmentation) const

@@ -83,13 +83,13 @@ namespace math {
             IMPLEMENT
         }
         auto ie = Integer::cast(e);
-        bool wasMax = maxVaExp == *ie;
+        auto wasMax = maxVaExp == ie->as_const_base_int_ref();
         e += exponentiation;
         ie = Integer::cast(e);
       
-        bool isMax = maxVaExp < ie->operator Integer::const_base_int_ref();
+        auto isMax = maxVaExp < ie->as_const_base_int_ref();
         if (isMax) {
-            maxVaExp = ie->operator Integer::const_base_int_ref();
+            maxVaExp = ie->as_const_base_int_ref();
         }
         
         if (e == 0) {

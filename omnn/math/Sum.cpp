@@ -5,6 +5,7 @@
 
 #include "Formula.h"
 #include "Fraction.h"
+#include "Infinity.h"
 #include "Integer.h"
 #include "Product.h"
 #include "System.h"
@@ -895,6 +896,7 @@ namespace math {
                                         }
                                         return found;
                                     },
+                                    Infinity(),
                                     zz);
         };
         

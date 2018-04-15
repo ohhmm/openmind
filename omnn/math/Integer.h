@@ -68,7 +68,7 @@ public:
     
     explicit Integer(const Fraction& f);
     
-    operator const_base_int_ref() const {
+    const_base_int_ref as_const_base_int_ref() const {
         return arbitrary;
     }
     
@@ -91,6 +91,7 @@ public:
     bool operator ==(const Valuable& v) const override;
     // virtual convert operators
     explicit operator int() const override;
+    explicit operator a_int() const override;
     explicit operator size_t() const override;
     explicit operator double() const override;
     explicit operator long double() const override;
@@ -114,6 +115,7 @@ public:
     
     static const zero_zone_t empty_zero_zone;
     bool Factorization(const std::function<bool(const Valuable&)>& f,
+                       const Valuable& max,
                        const zero_zone_t& zz = empty_zero_zone) const;
 
 private:

@@ -30,6 +30,10 @@ namespace math {
         
     }
     
+    Integer::operator a_int() const {
+        return arbitrary;
+    }
+    
     Integer::operator int64_t() const {
         return boost::numeric_cast<int64_t>(arbitrary);
     }
@@ -355,7 +359,7 @@ namespace math {
         return *this;
     }
 
-    bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, const zero_zone_t& zz) const
+    bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, const Valuable& max, const zero_zone_t& zz) const
     {
         using namespace boost::compute;
         auto h = arbitrary;
@@ -367,6 +371,7 @@ namespace math {
         bool scanz = zz.second.size();
         auto scanIt = zz.second.end();
         Valuable up = Integer(h);
+        if (up > max) up = max;
         auto from = 1_v;
         if (scanz) {
             if (zz.first.second < up) {
@@ -386,9 +391,7 @@ namespace math {
 //        if (arbitrary > std::numeric_limits<cl_long>::max()) {
 //        #pragma omp parallel for shared(up)
         for (auto i = from; i < up; ++i) {
-            auto a = *this;
-            a /= i;
-            auto ii = cast(a);
+            auto a = *this / i;
             if (a.IsInt()) {
                 if(f(i) || f(a))
                     return true;

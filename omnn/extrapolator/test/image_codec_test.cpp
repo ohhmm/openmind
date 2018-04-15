@@ -94,10 +94,15 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
     
     // outband data deduce
-    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Closest); // extra rough
-    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Closest);
-    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Closest);
-    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Closest);
+    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+    afo.SetMin(0); afo.SetMax(255);
+    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+    rfo.SetMin(0); rfo.SetMax(255);
+    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+    gfo.SetMin(0); gfo.SetMax(255);
+    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+    bfo.SetMin(0); bfo.SetMax(255);
+    
     ++cols;
     dst = decltype(src)(rows, cols);
     dv = view(dst);

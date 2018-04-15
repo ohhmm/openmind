@@ -700,6 +700,14 @@ namespace math {
         else
             IMPLEMENT
     }
+  
+    Valuable::operator a_int() const
+    {
+        if (exp)
+            return exp->operator a_int();
+        else
+            IMPLEMENT
+    }
     
     Valuable::operator size_t() const
     {

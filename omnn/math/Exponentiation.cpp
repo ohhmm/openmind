@@ -16,8 +16,7 @@ namespace math {
         hash = ebase.Hash() ^ eexp.Hash();
         if(e.IsInt())
         {
-            auto ie = Integer::cast(e);
-            maxVaExp = ie->operator Integer::const_base_int_ref();
+            maxVaExp = static_cast<a_int>(e);
         }
         else if (e.IsFraction())
         {
@@ -32,13 +31,13 @@ namespace math {
     a_int Exponentiation::getMaxVaExp() const
     {
         if (eexp.IsInt()) {
-            a_int _ = *Integer::cast(eexp);
+            a_int _ = static_cast<a_int>(eexp);
             _ *= ebase.getMaxVaExp();
             return _;
         } else {
             auto maxVaExp = eexp * Integer(ebase.getMaxVaExp());
             if (maxVaExp.IsInt()) {
-                return *Integer::cast(maxVaExp);
+                return static_cast<a_int>(maxVaExp);
             }
         }
         
