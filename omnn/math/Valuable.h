@@ -239,7 +239,11 @@ public:
 //
 //    }
     virtual Valuable bit(const Valuable& n) const;
+    virtual Valuable Or(const Valuable& n, const Valuable& v) const;
+    virtual Valuable And(const Valuable& n, const Valuable& v) const;
+    virtual Valuable Xor(const Valuable& n, const Valuable& v) const;
     virtual Valuable shr() const;
+    virtual Valuable sh(const Valuable& n) const;
     
     size_t Hash() const;
     std::string str() const;

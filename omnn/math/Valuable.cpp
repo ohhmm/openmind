@@ -766,9 +766,29 @@ namespace math {
             IMPLEMENT;
     }
     
+    Valuable Valuable::And(const Valuable& n, const Valuable& v) const
+    {
+        IMPLEMENT
+    }
+    
+    Valuable Valuable::Or(const Valuable& n, const Valuable& v) const
+    {
+        IMPLEMENT
+    }
+    
+    Valuable Valuable::Xor(const Valuable& n, const Valuable& v) const
+    {
+        IMPLEMENT
+    }
+    
     Valuable Valuable::shr() const
     {
         return (*this-bit(0))/2;
+    }
+    
+    Valuable Valuable::sh(const Valuable& n) const
+    {
+        IMPLEMENT
     }
     
     size_t Valuable::Hash() const
