@@ -569,7 +569,7 @@ namespace math {
                 else
                 {
                     if (e->getBase() == *it) {
-                        Update(it, Exponentiation(e->getBase(), e->getExponentiation()+1));
+                        Update(it, e->getBase() ^ (e->getExponentiation()+1));
                         goto yes;
                     }
                     else

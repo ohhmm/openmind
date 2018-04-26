@@ -768,12 +768,24 @@ namespace math {
     
     Valuable Valuable::And(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        auto s = 0_v;
+        for(auto i = n; i--;)
+        {
+            s += bit(i)*v.bit(i);
+        }
+        return s;
     }
     
     Valuable Valuable::Or(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        auto s = 0_v;
+        for(auto i = n; i--;)
+        {
+            auto _1 = bit(i);
+            auto _2 = v.bit(i);
+            s += _1+_2-_1*_2;
+        }
+        return s;
     }
     
     Valuable Valuable::Xor(const Valuable& n, const Valuable& v) const

@@ -14,18 +14,7 @@ namespace math {
     : ebase(b), eexp(e)
     {
         hash = ebase.Hash() ^ eexp.Hash();
-        if(e.IsInt())
-        {
-            maxVaExp = static_cast<a_int>(e);
-        }
-        else if (e.IsFraction())
-        {
-            
-        }
-        else
-        {
-            IMPLEMENT
-        }
+        maxVaExp = getMaxVaExp();
     }
     
     a_int Exponentiation::getMaxVaExp() const
@@ -34,6 +23,18 @@ namespace math {
             a_int _ = static_cast<a_int>(eexp);
             _ *= ebase.getMaxVaExp();
             return _;
+        } else if (eexp.FindVa()) {
+            a_int i = ebase.getMaxVaExp();
+            if (i) {
+                auto _ = eexp;
+                const Variable* v;
+                while ((v = _.FindVa())) {
+                    _.Eval(*v, 0);
+                }
+                _.optimize();
+                i *= static_cast<a_int>(_);
+            }
+            return i;
         } else {
             auto maxVaExp = eexp * Integer(ebase.getMaxVaExp());
             if (maxVaExp.IsInt()) {
@@ -386,7 +387,7 @@ namespace math {
         else
             out << ebase;
         out << '^';
-        if(!(eexp.IsInt() || eexp.IsVa()))
+        if(!(eexp.IsInt() || eexp.IsVa() || ebase.IsSum()))
             out << '(' << eexp << ')';
         else
             out << eexp;

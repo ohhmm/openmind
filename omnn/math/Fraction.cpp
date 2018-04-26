@@ -82,7 +82,7 @@ namespace math {
         if (numerator.IsExponentiation()) {
             auto e = Exponentiation::cast(numerator);
             auto& exp = e->getExponentiation();
-            if (exp < 0)
+            if (!exp.FindVa() && exp < 0)
             {
                 if (exp.IsInt()) {
                     denominator *= e->getBase() ^ (-exp);
@@ -144,6 +144,8 @@ namespace math {
         }
         else
         {
+            std::vector<Variable> coVa;
+
             if (numerator.IsProduct()) {
                 if (denominator.IsProduct()) {
                     Become(numerator / denominator);

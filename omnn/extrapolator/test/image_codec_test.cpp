@@ -103,12 +103,15 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     bfo.SetMin(0); bfo.SetMax(255);
     
-    cols+=5;rows+=5;
-    dst = decltype(src)(rows, cols);
+    const auto d = 5;
+    cols+=d;rows+=d;
+    dst = decltype(src)(rows+d, cols+d);
     dv = view(dst);
-    for (auto i = rows; i--;) { // raw
-        for (auto j = cols; j--;) { // column
-            auto& d = dv(i, j);
+    for (auto i = rows; i>=-d; --i) { // raw
+        for (auto j = cols; j>=-d; --j) { // column
+            auto c=j+d;
+            auto r = i+d;
+            auto& d = dv(r, c);
             get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
             get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
             get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
