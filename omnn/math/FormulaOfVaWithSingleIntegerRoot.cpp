@@ -84,7 +84,7 @@ namespace math {
             auto nwtn = c / cdx;
             auto& seq = getVaSequanceForOp();
             FormulaOfVaWithSingleIntegerRoot f(getVa(), cdx, &seq);
-            std::cout << "searching: f(" << getVa() << ")=" << _ << "; f'=" << cdx << std::endl;
+//            std::cout << "searching: f(" << getVa() << ")=" << _ << "; f'=" << cdx << std::endl;
             Valuable was;
             std::function<bool(const Valuable&)> test = [&](const Valuable& i) -> bool
             {
@@ -94,7 +94,7 @@ namespace math {
                 
                 bool found = _ == 0_v;
                 if (found) {
-                    std::cout << "found " << i << std::endl;
+//                    std::cout << "found " << i << std::endl;
                     singleIntegerRoot = i;
                 }
                 else
@@ -103,7 +103,7 @@ namespace math {
                     d_.d(getVa());
                     d_.Eval(getVa(), i);
                     d_.optimize();
-                    std::cout << "trying " << i << " got " << _ << " f'(" << i << ")=" << d_ << std::endl;
+//                    std::cout << "trying " << i << " got " << _ << " f'(" << i << ")=" << d_ << std::endl;
                     
 //                    if (mode == Newton && i!=0)
 //                    {

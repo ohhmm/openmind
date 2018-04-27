@@ -769,9 +769,15 @@ namespace math {
     Valuable Valuable::And(const Valuable& n, const Valuable& v) const
     {
         auto s = 0_v;
+        auto ow = optimizations;
+        optimizations = {};
         for(auto i = n; i--;)
         {
             s += bit(i)*v.bit(i);
+        }
+        optimizations = ow;
+        if (ow) {
+            s.optimize();
         }
         return s;
     }
@@ -779,11 +785,17 @@ namespace math {
     Valuable Valuable::Or(const Valuable& n, const Valuable& v) const
     {
         auto s = 0_v;
+        auto ow = optimizations;
+        optimizations = {};
         for(auto i = n; i--;)
         {
             auto _1 = bit(i);
             auto _2 = v.bit(i);
             s += _1+_2-_1*_2;
+        }
+        optimizations = ow;
+        if (ow) {
+            s.optimize();
         }
         return s;
     }

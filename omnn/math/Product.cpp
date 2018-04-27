@@ -197,6 +197,13 @@ namespace math {
     {
         if (!optimizations) return;
         
+        // zero
+        auto it = GetFirstOccurence<Integer>();
+        if (it != end() && it->Same(0)) {
+            Become(0);
+            return;
+        }
+
         // fractionless
         bool updated;
         do {
@@ -532,8 +539,9 @@ namespace math {
 
     Valuable& Product::operator *=(const Valuable& v)
     {
-        auto s = Sum::cast(v);
-        if (s)
+        if (v.IsInt() && v==0)
+            return Become(0);
+        if (v.IsSum())
             return Become(v**this);
 
         if (v.IsVa())

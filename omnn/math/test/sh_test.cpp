@@ -15,13 +15,17 @@ BOOST_AUTO_TEST_CASE(And_test)
     Variable v;
     auto _1 = v+10;
     auto _2 = v+11;
+    Valuable::optimizations = {};
     auto _ = _1.And(5, _2);
     auto t = _;
     t.Eval(v,0);
+    Valuable::optimizations = true;
     t.optimize();
     BOOST_TEST(t == 10);
     t = _;
+    Valuable::optimizations = {};
     t.Eval(v,1);
+    Valuable::optimizations = true;
     t.optimize();
     BOOST_TEST(t == 8);
 }
@@ -31,13 +35,17 @@ BOOST_AUTO_TEST_CASE(Or_test)
     Variable v;
     auto _1 = v+10;
     auto _2 = v+11;
-    auto _ = _1.And(5, _2);
+    Valuable::optimizations = {};
+    auto _ = _1.Or(5, _2);
     auto t = _;
     t.Eval(v,0);
+    Valuable::optimizations = true;
     t.optimize();
+    Valuable::optimizations = {};
     BOOST_TEST(t == 11);
     t = _;
     t.Eval(v,1);
+    Valuable::optimizations = true;
     t.optimize();
     BOOST_TEST(t == 15);
 }

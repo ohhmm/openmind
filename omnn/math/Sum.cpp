@@ -107,7 +107,7 @@ namespace math {
 
     void Sum::optimize()
     {
-        //if (!optimizations) return;
+        if (!optimizations) return;
 
         if (isOptimizing)
             return;
@@ -129,18 +129,12 @@ namespace math {
                 // optimize member
                 auto copy = *it;
                 copy.optimize();
-                if (!it->Same(copy)) {
-                    Update(it, copy);
-                    continue;
-                }
-                
-                if (*it == 0)
-                {
+                if (copy == 0)
                     Delete(it);
-                    continue;
-                }
-                
-                ++it;
+                else if (!it->Same(copy))
+                    Update(it, copy);
+                else
+                    ++it;
             }
             
             if (view == Equation) {
@@ -169,14 +163,10 @@ namespace math {
                 ++it2;
                 Valuable c = *it;
                 Valuable mc;
-                bool p;
-                bool i;
                 const Fraction* f;
                 
                 auto up = [&](){
                     mc = -c;
-                    p = c.IsProduct();
-                    i = c.IsInt();
                     f = c.IsFraction() ? Fraction::cast(c) : nullptr;
                 };
                 
@@ -184,8 +174,8 @@ namespace math {
                 
                 for (; it2 != members.end();)
                 {
-                    if (((f || i) && it2->IsFraction() && Fraction::cast(*it2)->IsSimple())
-                        || (it2->IsInt() && (i || (f && f->IsSimple())))
+                    if (((f || c.IsInt()) && it2->IsFraction() && Fraction::cast(*it2)->IsSimple())
+                        || (it2->IsInt() && (c.IsInt() || (f && f->IsSimple())))
                         || (c.IsProduct() && mc == *it2)
                         )
                     {
@@ -222,12 +212,12 @@ namespace math {
                         ++it2;
                 }
 
-                if (it->Same(c))
+                if (c==0)
+                    Delete(it);
+                else if (it->Same(c))
                     ++it;
                 else
-                {
                     Update(it, c);
-                }
             }
 
             // optimize members
@@ -353,6 +343,9 @@ namespace math {
     
 	Valuable& Sum::operator +=(const Valuable& v)
 	{
+        if (v.IsInt() && v==0) {
+            return *this;
+        }
 		if (v.IsSum()) {
 			base::Add(v);
 		}
@@ -363,7 +356,7 @@ namespace math {
                 if(it->OfSameType(v) && it->getCommonVars()==v.getCommonVars())
                 {
                     auto s = *it + v;
-                    if (!Sum::cast(s)) {
+                    if (!s.IsSum()) {
                         Update(it, s);
                         optimize();
                         return *this;
@@ -381,31 +374,16 @@ namespace math {
 
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
-        Valuable sum = Sum{};
-        auto add = [&](const Valuable& m)
-        {
-            if (sum.IsSum()) {
-                Sum::cast(sum)->Add(m);
-            }
-            else
-                sum += m;
-        };
+        Valuable sum;
+        if (v==0)
+        { }
         if (v.IsSum())
-		{
             for(auto& _1 : *cast(v))
 				for (auto& _2 : members)
-                {
-                    auto m = _1*_2;
-                    add(m);
-                    m = _1*_2;
-                }
-		}
+                    sum += _1*_2;
 		else
-        {
-            for (auto& a : members) {
-                add(a * v);
-            }
-		}
+            for (auto& a : members)
+                sum += a * v;
         Become(std::move(sum));
         return *this;
 	}

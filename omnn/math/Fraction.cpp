@@ -82,23 +82,15 @@ namespace math {
         if (numerator.IsExponentiation()) {
             auto e = Exponentiation::cast(numerator);
             auto& exp = e->getExponentiation();
-            if (!exp.FindVa() && exp < 0)
-            {
-                if (exp.IsInt()) {
-                    denominator *= e->getBase() ^ (-exp);
-                    numerator = 1;
-                } else if (exp.IsFraction()) {
-                    IMPLEMENT
-                }
-            }
-            
-            if (e->getExponentiation().IsFraction())
-            {
-                auto f = Fraction::cast(e->getExponentiation());
+            if (exp.IsInt() && exp < 0) {
+                denominator *= e->getBase() ^ (-exp);
+                numerator = 1;
+            } else if (exp.IsFraction()) {
+                auto f = Fraction::cast(exp);
                 auto in = e->getBase() / (denominator ^ f->Reciprocal());
                 if (in.IsInt())
                 {
-                    Become(in ^ e->getExponentiation());
+                    Become(in ^ exp);
                     return;
                 }
             }
@@ -454,13 +446,55 @@ namespace math {
 
     bool Fraction::IsComesBefore(const Valuable& v) const
     {
-        auto va1 = FindVa();
-        auto va2 = v.FindVa();
-        return !va1 && !va2
-            ? (IsSimple() && (v.IsInt() || (v.IsFraction() && Fraction::cast(v)->IsSimple())) ? operator<(v) : str().length() < v.str().length())
-                : (va1 && va2
-                   ? str().length() < v.str().length()
-                   : va1!=nullptr );
+//        auto va1 = FindVa();
+//        auto va2 = v.FindVa();
+//        return !va1 && !va2
+//            ? (IsSimple() && (v.IsInt() || (v.IsFraction() && Fraction::cast(v)->IsSimple())) ? operator<(v) : str().length() < v.str().length())
+//                : (va1 && va2
+//                   ? str().length() < v.str().length()
+//                   : va1!=nullptr );
+        auto mve = getMaxVaExp();
+        auto vmve = v.getMaxVaExp();
+        auto is = mve > vmve;
+        if (mve != vmve)
+        {}
+        else if (v.IsFraction())
+        {
+            auto f = cast(v);
+            is = numerator.IsComesBefore(f->numerator) || denominator.IsComesBefore(f->denominator);
+
+//            auto e = cast(v);
+//            bool numeratorIsVa = numerator.IsVa();
+//            bool vbaseIsVa = e->numerator.IsVa();
+//            if (numeratorIsVa && vbaseIsVa)
+//                is = denominator == e->denominator ? numerator.IsComesBefore(e->numerator) : denominator > e->denominator;
+//            else if(numeratorIsVa)
+//                is = false;
+//            else if(vbaseIsVa)
+//                is = true;
+//            else if(numerator == e->numerator)
+//                is = denominator.IsComesBefore(e->denominator);
+//            else if(denominator == e->denominator)
+//                is = numerator.IsComesBefore(e->numerator);
+//            else
+//            {
+//                auto expComesBefore = denominator.IsComesBefore(e->denominator);
+//                auto ebaseComesBefore = numerator.IsComesBefore(e->numerator);
+//                is = ebaseComesBefore || expComesBefore;//expComesBefore==ebaseComesBefore || str().length() > e->str().length();
+//            }
+        }
+        else if(v.IsProduct())
+            is = Product{*this}.IsComesBefore(v);
+        else if(v.IsSum())
+            is = Sum{*this}.IsComesBefore(v);
+        else if(v.IsVa())
+            is = FindVa();
+        else if(v.IsInt())
+            is = true;
+        else
+            IMPLEMENT
+
+        return is;
     }
     
     Fraction::operator unsigned char() const

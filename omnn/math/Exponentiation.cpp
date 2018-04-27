@@ -39,10 +39,17 @@ namespace math {
             auto maxVaExp = eexp * Integer(ebase.getMaxVaExp());
             if (maxVaExp.IsInt()) {
                 return static_cast<a_int>(maxVaExp);
+            } else if(!optimizations) {
+                optimizations = true;
+                maxVaExp.optimize();
+                optimizations = {};
+                if (maxVaExp.IsInt()) {
+                    return static_cast<a_int>(maxVaExp);
+                }
             }
         }
         
-            IMPLEMENT
+        IMPLEMENT
     }
     
 	Valuable Exponentiation::operator -() const
@@ -431,8 +438,12 @@ namespace math {
     
     bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
-        bool is = getMaxVaExp() > v.getMaxVaExp();
-        if (v.IsExponentiation())
+        auto mve = getMaxVaExp();
+        auto vmve = v.getMaxVaExp();
+        auto is = mve > vmve;
+        if (mve != vmve)
+        {}
+        else if (v.IsExponentiation())
         {
             auto e = cast(v);
             bool baseIsVa = ebase.IsVa();
@@ -449,15 +460,22 @@ namespace math {
                 is = ebase.IsComesBefore(e->ebase);
             else
             {
-                auto expComesBefore = eexp.IsComesBefore(e->eexp);
-                auto ebaseComesBefore = ebase.IsComesBefore(e->ebase);
-                is = expComesBefore==ebaseComesBefore || str().length() > e->str().length();
+                is = ebase.IsComesBefore(e->ebase) || eexp.IsComesBefore(e->eexp); //  || str().length() > e->str().length();
+//                auto expComesBefore = eexp.IsComesBefore(e->eexp);
+//                auto ebaseComesBefore = ebase.IsComesBefore(e->ebase);
+//                is = expComesBefore==ebaseComesBefore || str().length() > e->str().length();
             }
         }
         else if(v.IsProduct())
         {
             is = Product{*this}.IsComesBefore(v);
         }
+        else if(v.IsInt())
+            is = true;
+//        else if(v.IsFraction())
+//        {is=}
+        else if(v.IsVa())
+            is = !!FindVa();
         else
             IMPLEMENT
 
