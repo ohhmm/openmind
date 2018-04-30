@@ -546,20 +546,18 @@ namespace math {
     
     void Valuable::optimize()
     {
-        if(exp) {
+        if(optimizations && !optimized && exp) {
             while (exp->exp) {
                 exp = exp->exp;
             }
-            if (optimizations)
-            {
-                exp->optimize();
-                while (exp->exp) {
-                    exp = exp->exp;
-                }
+            exp->optimize();
+            while (exp->exp) {
+                exp = exp->exp;
             }
+            optimized = true;
             return;
         }
-        else
+        else if(!exp)
             IMPLEMENT
     }
 
@@ -756,7 +754,9 @@ namespace math {
     
     Valuable Valuable::bit(const Valuable& n) const
     {
-        if (n > 0) {
+        if (exp)
+            return exp->bit(n);
+        else if (n > 0) {
             return shr().bit(n-1);
         }
         else if (n == 0)

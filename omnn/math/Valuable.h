@@ -250,6 +250,7 @@ public:
 
 protected:
     View view = View::Flat;
+    bool optimized {};
 };
 
     size_t hash_value(const omnn::math::Valuable& v);

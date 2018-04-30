@@ -107,7 +107,7 @@ namespace math {
 
     void Sum::optimize()
     {
-        if (!optimizations) return;
+        if (optimized || !optimizations) return;
 
         if (isOptimizing)
             return;
@@ -298,7 +298,10 @@ namespace math {
             }
         }
         
-        isOptimizing = false;
+        if(IsSum())
+            isOptimizing = false;
+        
+        optimized=true;
     }
 
     const Valuable::vars_cont_t& Sum::getCommonVars() const

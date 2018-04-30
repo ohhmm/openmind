@@ -59,12 +59,15 @@ namespace math {
 
     void Exponentiation::optimize()
     {
-//        if (!optimizations)
-//        {
-//            hash = ebase.Hash() ^ eexp.Hash();
-//            return;
-//        }
-        
+        if (optimized)
+            return;
+
+        if (!optimizations)
+        {
+            hash = ebase.Hash() ^ eexp.Hash();
+            return;
+        }
+
         ebase.optimize();
         eexp.optimize();
 
@@ -73,6 +76,27 @@ namespace math {
             ebase ^= eexp;
             Become(std::move(ebase));
             return;
+        }
+        
+        if (eexp.IsSum())
+        {
+            auto s = Sum::cast(eexp);
+            auto sz = s->size();
+            auto v = 1_v;
+            for(auto it = s->begin(), e = s->end();
+                it != e; )
+            {
+                if (it->IsInt()) {
+                    v *= ebase^*it;
+                    s->Delete(it);
+                }
+                else
+                    ++it;
+            }
+            if (sz != s->size()) {
+                Become(*this * v);
+                return;
+            }
         }
 
         // todo : comment this and try System test
@@ -96,6 +120,14 @@ namespace math {
                 }
             }
         }
+        
+//        if (eexp.IsFraction() && ebase.IsInt()) {
+//            auto f = Fraction::cast(eexp);
+//            if (f->IsSimple()) {
+
+        
+//            }
+//        }
 
         if (ebase.IsFraction() && eexp.IsInt() && eexp < 0_v) {
             eexp = -eexp;
@@ -112,7 +144,7 @@ namespace math {
                 } else
                     IMPLEMENT;
             } else if (ebase==-1 && eexp.IsInt() && eexp > 0) {
-                ebase += 1_v-eexp.bit(0);
+                ebase += 2_v-eexp.bit(0);
                 Become(std::move(ebase));
                 return;
             }
@@ -239,6 +271,8 @@ namespace math {
         if (IsExponentiation()) {
             hash = ebase.Hash() ^ eexp.Hash();
         }
+        
+        optimized = true;
     }
     
     Valuable& Exponentiation::operator +=(const Valuable& v)
@@ -253,18 +287,24 @@ namespace math {
         if (v.IsExponentiation()
             && ebase == (e = cast(v))->ebase)
         {
-            eexp += e->eexp;
+            auto s = eexp + e->eexp;
+            if(s.IsSum() && ebase==-1)
+                Become(Product{*this, v});
+            else
+                eexp += e->eexp;
         }
         else if(v.IsFraction()
                 && (f = Fraction::cast(v))->getDenominator() == ebase)
         {
             --eexp;
+            optimized={};
             optimize();
             return *this *= f->getNumerator();
         }
-        else if(ebase == v)
+        else if(ebase == v && v.FindVa())
         {
             ++eexp;
+            optimized={};
         }
         else if(v.IsProduct())
         {
