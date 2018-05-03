@@ -38,6 +38,7 @@ namespace math {
         const vars_cont_t& getCommonVars() const override;
         bool IsComesBefore(const Valuable& v) const override;
 		bool IsFraction() const override { return true; }
+        bool IsSimpleFraction() const override { return IsSimple(); }
         
 		using base::base;
 

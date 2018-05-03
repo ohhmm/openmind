@@ -70,11 +70,13 @@ protected:
     Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.Hash())
     , maxVaExp(v.getMaxVaExp())
+    , optimized(v.optimized)
     {}
     
     Valuable(Valuable&& v, ValuableDescendantMarker)
     : hash(v.Hash())
     , maxVaExp(v.getMaxVaExp())
+    , optimized(v.optimized)
     {
         
     }
@@ -123,6 +125,7 @@ public:
     : exp(t.Clone())
     , hash(t.Hash())
     , maxVaExp(t.getMaxVaExp())
+    , optimized(t.optimized)
     {
     }
      
@@ -135,9 +138,8 @@ public:
     : exp(t.Move())
     , hash(t.Hash())
     , maxVaExp(t.getMaxVaExp())
-    {
-        //Become(std::move(t));
-    }
+    , optimized(t.optimized)
+    { }
 
     Valuable(Valuable&&) = default;
     
@@ -168,6 +170,7 @@ public:
     // identify
     virtual bool IsInt() const;
     virtual bool IsFraction() const;
+    virtual bool IsSimpleFraction() const;
     virtual bool IsFormula() const;
     virtual bool IsExponentiation() const;
     virtual bool IsVa() const;

@@ -455,6 +455,34 @@ namespace math {
     // NOTE : inequality must cover all cases for bugless Sum::Add
     bool Product::IsComesBefore(const Valuable& v) const
     {
+//        auto mve = getMaxVaExp();
+//        auto vmve = v.getMaxVaExp();
+//        auto is = mve > vmve;
+//        if (mve != vmve)
+//        {}
+//        else if(v.IsProduct())
+//        {
+//            auto p = cast(v);
+//            auto i1 = members.begin(), e1=members.end();
+//            auto i2 = p->members.begin(), e2=p->members.end();
+//            for (; !is && i1 != e1 && i2 != e2;
+//                 ++i1, ++i2)
+//            {
+//                is = i1->IsComesBefore(*i2);
+//            }
+//            
+//            if (!is) {
+//                is = i2==e2 && i1!=e1;
+//            }
+//        } else if (v.IsSum()) {
+//            IMPLEMENT
+//        } else {
+//            is = rbegin()->IsComesBefore(v);
+//        }
+//        return is;
+//
+//        IMPLEMENT;
+
         auto mae = getMaxVaExp();
         auto vme = v.getMaxVaExp();
         
@@ -747,7 +775,19 @@ namespace math {
                 }
             }
             else
-                IMPLEMENT
+            {
+                auto a = 1_v;
+                auto aug = augmentation;
+                for(auto& m : members)
+                    if (m.HasVa(va))
+                        a *= m;
+                    else
+                        aug *= m;
+                if (a==1) {
+                    IMPLEMENT
+                }
+                s = a(va,aug);
+            }
         }
         
 //        if(augmentation.HasVa(va)) {

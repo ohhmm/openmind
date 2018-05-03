@@ -64,8 +64,8 @@ namespace math {
     {
         //return it;
         auto item = *it;
+        std::cout << item.str();
         it = std::find(members.begin(), members.end(), item);
-        std::cout << it->str();
         throw "Impossible! Check order comparator error.";
         return it;
     }
@@ -163,19 +163,17 @@ namespace math {
                 ++it2;
                 Valuable c = *it;
                 Valuable mc;
-                const Fraction* f;
                 
                 auto up = [&](){
                     mc = -c;
-                    f = c.IsFraction() ? Fraction::cast(c) : nullptr;
                 };
                 
                 up();
                 
                 for (; it2 != members.end();)
                 {
-                    if (((f || c.IsInt()) && it2->IsFraction() && Fraction::cast(*it2)->IsSimple())
-                        || (it2->IsInt() && (c.IsInt() || (f && f->IsSimple())))
+                    if (((c.IsFraction() || c.IsInt()) && it2->IsSimpleFraction())
+                        || (it2->IsInt() && (c.IsInt() || c.IsSimpleFraction()))
                         || (c.IsProduct() && mc == *it2)
                         )
                     {
@@ -234,7 +232,7 @@ namespace math {
             
 #ifndef NDEBUG
             if (w!=*this) {
-                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
+//                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
             }
 #endif
         } while (w != *this);

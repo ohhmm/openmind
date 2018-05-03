@@ -66,15 +66,9 @@ namespace math {
     Valuable& Variable::operator^=(const Valuable& v)
     {
         if(v.IsInt() && v == 0_v)
-        {
             Become(1_v);
-        }
         else
-        {
             Become(Exponentiation(*this, v));
-        }
-        
-        optimize();
         return *this;
     }
     

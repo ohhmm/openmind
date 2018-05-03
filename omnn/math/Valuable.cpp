@@ -471,36 +471,16 @@ namespace math {
             IMPLEMENT
     }
 
-    bool Valuable::IsInt() const
-    {
-        return exp ? exp->IsInt() : false;
-    }
-    bool Valuable::IsFraction() const
-    {
-        return exp ? exp->IsFraction() : false;
-    }
-    bool Valuable::IsFormula() const
-    {
-        return exp ? exp->IsFormula() : false;
-    }
-    bool Valuable::IsExponentiation() const
-    {
-        return exp ? exp->IsExponentiation() : false;
-    }
-    bool Valuable::IsVa() const
-    {
-        return exp ? exp->IsVa() : false;
-    }
-    bool Valuable::IsProduct() const
-    {
-        return exp ? exp->IsProduct() : false;
-    }
-    bool Valuable::IsSum() const
-    {
-        return exp ? exp->IsSum() : false;
-    }
-    bool Valuable::IsInfinity() const { return exp ? exp->IsInfinity() : false; }
-    bool Valuable::IsMInfinity() const { return exp ? exp->IsMInfinity() : false; }
+    bool Valuable::IsInt() const { return exp && exp->IsInt(); }
+    bool Valuable::IsFraction() const { return exp && exp->IsFraction(); }
+    bool Valuable::IsSimpleFraction() const { return exp && exp->IsSimpleFraction(); }
+    bool Valuable::IsFormula() const { return exp && exp->IsFormula(); }
+    bool Valuable::IsExponentiation() const { return exp && exp->IsExponentiation(); }
+    bool Valuable::IsVa() const { return exp && exp->IsVa(); }
+    bool Valuable::IsProduct() const { return exp && exp->IsProduct(); }
+    bool Valuable::IsSum() const { return exp && exp->IsSum(); }
+    bool Valuable::IsInfinity() const { return exp && exp->IsInfinity(); }
+    bool Valuable::IsMInfinity() const { return exp && exp->IsMInfinity(); }
 
     std::ostream& Valuable::print(std::ostream& out) const
     {
@@ -546,7 +526,7 @@ namespace math {
     
     void Valuable::optimize()
     {
-        if(optimizations && !optimized && exp) {
+        if(optimizations && exp) {
             while (exp->exp) {
                 exp = exp->exp;
             }
@@ -554,7 +534,6 @@ namespace math {
             while (exp->exp) {
                 exp = exp->exp;
             }
-            optimized = true;
             return;
         }
         else if(!exp)
