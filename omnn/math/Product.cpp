@@ -294,48 +294,34 @@ namespace math {
 
             auto c = *it;
             auto e = Exponentiation::cast(c);
-            auto f = Fraction::cast(c);
-            auto i = Integer::cast(c);
-            auto v = Variable::cast(c);
             auto it2 = it;
             ++it2;
             for (; it2 != members.end();)
             {
                 const Exponentiation* e2 = Exponentiation::cast(*it2);
-                if ((it->OfSameType(*it2) && (i || f))
-                    || (v && v->Same(*it2))
-                    || (i && Fraction::cast(*it2))
-                    || (Integer::cast(*it2) && f)
-                    || (v && e2 && e2->getBase() == c)
-                    || (e && e->getBase() == *it2 && Variable::cast(*it2))
-                    || (e && e2 && e->getBase() == e2->getBase())
+                if (((c.IsInt() || c.IsFraction()) && (it2->IsFraction() || it2->IsInt()))
+                    || (c.IsVa() && ((it2->IsVa() && c==*it2) || (it2->IsExponentiation() && e2->getBase() == c)))
+                    || (c.IsExponentiation() && ((it2->IsVa() && e->getBase() == *it2) || (e2 && e->getBase() == e2->getBase())))
                     )
                 {
                     c *= *it2;
                     Delete(it2);
                     e = Exponentiation::cast(c);
-                    f = Fraction::cast(c);
-                    i = Integer::cast(c);
-                    v = Variable::cast(c);
                     continue;
                 }
-                else if (it->Same(*it2) && v)
+                else if (c.IsVa() && it->Same(*it2))
                 {
                     c ^= 2;
                     Delete(it2);
                     e = Exponentiation::cast(c);
-                    f = Fraction::cast(c);
-                    i = Integer::cast(c);
-                    v = Variable::cast(c);
                     continue;
                 }
                 else
                     ++it2;
             }
 
-            if (!it->Same(c)) {
+            if (!it->Same(c))
                 Update(it, c);
-            }
             else
                 ++it;
         }

@@ -319,11 +319,7 @@ namespace math {
         if (v.IsExponentiation()
             && ebase == (e = cast(v))->ebase)
         {
-            auto s = eexp + e->eexp;
-            if(s.IsSum() && ebase==-1)
-                return Become(Product{*this, v});
-            else
-                eexp += e->eexp;
+            eexp += e->eexp;
             optimized={};
         }
         else if(v.IsFraction()
