@@ -751,6 +751,7 @@ namespace math {
         optimizations = {};
         for(auto i = n; i--;)
         {
+            s *= 2;
             s += bit(i)*v.bit(i);
         }
         optimizations = ow;
@@ -767,6 +768,7 @@ namespace math {
         optimizations = {};
         for(auto i = n; i--;)
         {
+            s *= 2;
             auto _1 = bit(i);
             auto _2 = v.bit(i);
             s += _1+_2-_1*_2;
@@ -780,7 +782,21 @@ namespace math {
     
     Valuable Valuable::Xor(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        auto s = 0_v;
+        auto ow = optimizations;
+        optimizations = {};
+        for(auto i = n; i--;)
+        {
+            s *= 2;
+            auto _1 = bit(i);
+            auto _2 = v.bit(i);
+            s += (_1+_2).bit(0);
+        }
+        optimizations = ow;
+        if (ow) {
+            s.optimize();
+        }
+        return s;
     }
     
     Valuable Valuable::shr() const

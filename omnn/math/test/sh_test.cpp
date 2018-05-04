@@ -17,6 +17,17 @@ BOOST_AUTO_TEST_CASE(And_test)
     _.Eval(v, 1);
     _.optimize();
     BOOST_TEST(_==1);
+    
+    _ = v.And(2,3);
+    _.Eval(v, 2);
+    _.optimize();
+    BOOST_TEST(_==2);
+    
+    _ = v.And(2,3);
+    _.Eval(v, 3);
+    _.optimize();
+    BOOST_TEST(_==3);
+    
     auto _1 = v+10;
     auto _2 = v+11;
     Valuable::optimizations = {};
