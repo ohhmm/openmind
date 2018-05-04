@@ -171,10 +171,8 @@ namespace math {
                     return;
                 } else
                     IMPLEMENT;
-            } else if (ebase==-1 && eexp.IsInt() && eexp > 0) {
-                ebase += 2_v-eexp.bit(0);
-                Become(std::move(ebase));
-                return;
+            } else if (ebase==-1 && eexp.IsInt() && eexp > 0 && eexp!=1) {
+                eexp = eexp.bit(0);
             }
         }
 

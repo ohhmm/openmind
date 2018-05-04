@@ -737,8 +737,7 @@ namespace math {
             return exp->bit(n);
         else if (n > 0) {
             return shr().bit(n-1);
-        }
-        else if (n == 0)
+        } else if (n == 0)
             // (this & 1) == (this % 2) == (1+((-1)^(this+1)))/2
             return (1_v+((-1_v)^(*this+1)))/2;
         else

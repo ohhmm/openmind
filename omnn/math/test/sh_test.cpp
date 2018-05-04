@@ -13,10 +13,14 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(And_test)
 {
     Variable v;
+    auto _ = v.And(2,3);
+    _.Eval(v, 1);
+    _.optimize();
+    BOOST_TEST(_==1);
     auto _1 = v+10;
     auto _2 = v+11;
     Valuable::optimizations = {};
-    auto _ = _1.And(5, _2);
+    _ = _1.And(5, _2);
     auto t = _;
     Valuable::optimizations = true;
     t.Eval(v,0);
@@ -28,7 +32,7 @@ BOOST_AUTO_TEST_CASE(And_test)
     BOOST_TEST(t == 8);
 }
 
-BOOST_AUTO_TEST_CASE(Or_test, *disabled())
+BOOST_AUTO_TEST_CASE(Or_test)
 {
     Variable v;
     auto _1 = v+10;
@@ -46,7 +50,7 @@ BOOST_AUTO_TEST_CASE(Or_test, *disabled())
     BOOST_TEST(t == 15);
 }
 
-BOOST_AUTO_TEST_CASE(XOr_test, *disabled())
+BOOST_AUTO_TEST_CASE(XOr_test)
 {
     Variable v;
     auto _1 = v+10;
