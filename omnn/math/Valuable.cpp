@@ -799,6 +799,16 @@ namespace math {
         return s;
     }
     
+    Valuable& Valuable::shl(const Valuable& n)
+    {
+        return *this *= 2_v^n;
+    }
+
+    Valuable Valuable::Shl(const Valuable& n) const
+    {
+        return *this * 2_v^n;
+    }
+
     Valuable Valuable::shr() const
     {
         return (*this-bit(0))/2;
@@ -839,6 +849,11 @@ namespace std
     {
         return v.sqrt();
     }
+}
+
+::omnn::math::Valuable operator"" _v(const char* v, std::size_t)
+{
+    return ::omnn::math::Integer(boost::multiprecision::cpp_int(v));
 }
 
 ::omnn::math::Valuable operator"" _v(unsigned long long v)

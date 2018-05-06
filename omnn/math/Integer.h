@@ -99,6 +99,7 @@ public:
     explicit operator unsigned char() const override;
     
     Valuable bit(const Valuable& n) const override;
+    Valuable& shl(const Valuable& n) override;
     Valuable shr() const override;
     
     solutions_t operator()(const Variable&) const override { return {}; }

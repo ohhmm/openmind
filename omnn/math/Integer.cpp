@@ -172,6 +172,16 @@ namespace math {
             IMPLEMENT;
     }
     
+    Valuable& Integer::shl(const Valuable& n)
+    {
+        if (n.IsInt()) {
+            arbitrary = arbitrary << static_cast<unsigned>(n);
+        } else {
+            base::shl(n);
+        }
+        return *this;
+    }
+
     Valuable Integer::shr() const
     {
         return Integer(decltype(arbitrary)(arbitrary>>1));

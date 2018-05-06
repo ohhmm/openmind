@@ -78,3 +78,22 @@ BOOST_AUTO_TEST_CASE(XOr_test)
     t.optimize();
     BOOST_TEST(t == 7);
 }
+
+BOOST_AUTO_TEST_CASE(Sh_test)
+{
+    // http://static.righto.com/images/bitcoin/block_diagram_ghash.png
+    auto _ = "0x02000000"_v
+            "17975b97c18ed1f7e255adf297599b55"_v
+            "330edab87803c8170100000000000000"_v
+            "8a97295a2747b4f1a0b3948df3990344"_v
+            "c0e19fa6b2b92b3a19c8e6badc141787"_v
+            "358b0553"_v
+            "535f0119"_v
+            "48750833"_v
+            "63"_v; // 161b
+    auto sh = "0x0000000000000000"_v
+                "e067a478024addfe"_v
+                "cdc93628978aa52d"_v
+                "91fabd4292982a50"_v;
+//    BOOST_TEST(_.sh(161)==sh);
+}

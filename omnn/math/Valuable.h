@@ -245,6 +245,8 @@ public:
     virtual Valuable Or(const Valuable& n, const Valuable& v) const;
     virtual Valuable And(const Valuable& n, const Valuable& v) const;
     virtual Valuable Xor(const Valuable& n, const Valuable& v) const;
+    virtual Valuable& shl(const Valuable& n);
+    virtual Valuable Shl(const Valuable& n) const;
     virtual Valuable shr() const;
     virtual Valuable sh(const Valuable& n) const;
     
@@ -272,6 +274,7 @@ namespace std
     };
 }
 
+::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
 ::omnn::math::Valuable operator"" _v(unsigned long long v);
 ::omnn::math::Valuable operator"" _v(long double v);
 
