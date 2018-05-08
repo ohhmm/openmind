@@ -187,6 +187,23 @@ namespace math {
         return Integer(decltype(arbitrary)(arbitrary>>1));
     }
     
+    Valuable Integer::Or(const Valuable& n, const Valuable& v) const
+    {
+        IMPLEMENT
+    }
+    Valuable Integer::And(const Valuable& n, const Valuable& v) const
+    {
+        IMPLEMENT
+    }
+    Valuable Integer::Xor(const Valuable& n, const Valuable& v) const
+    {
+        IMPLEMENT
+    }
+    Valuable Integer::Not(const Valuable& n) const
+    {
+        return Integer(~arbitrary);
+    }
+    
     Valuable& Integer::operator^=(const Valuable& v)
     {
         if(arbitrary == 0 || arbitrary == 1)

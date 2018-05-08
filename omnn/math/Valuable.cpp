@@ -798,6 +798,24 @@ namespace math {
         }
         return s;
     }
+
+    Valuable Valuable::Not(const Valuable& n) const
+    {
+        auto s = 0_v;
+        auto ow = optimizations;
+        optimizations = {};
+        for(auto i = n; i--;)
+        {
+            s *= 2;
+            auto _1 = 1-bit(i);
+            s += (_1).bit(0);
+        }
+        optimizations = ow;
+        if (ow) {
+            s.optimize();
+        }
+        return s;
+    }
     
     Valuable& Valuable::shl(const Valuable& n)
     {
@@ -813,6 +831,23 @@ namespace math {
     {
         return (*this-bit(0))/2;
     }
+    
+    auto sh_const =   "0x428a2f9871374491b5c0fbcfe9b5dba5" /*  0 */
+                        "3956c25b59f111f1923f82a4ab1c5ed5"
+                        "d807aa9812835b01243185be550c7dc3" /*  8 */
+                        "72be5d7480deb1fe9bdc06a7c19bf174"
+                        "e49b69c1efbe47860fc19dc6240ca1cc" /* 16 */
+                        "2de92c6f4a7484aa5cb0a9dc76f988da"
+                        "983e5152a831c66db00327c8bf597fc7" /* 24 */
+                        "c6e00bf3d5a7914706ca635114292967"
+                        "27b70a852e1b21384d2c6dfc53380d13" /* 32 */
+                        "650a7354766a0abb81c2c92e92722c85"
+                        "a2bfe8a1a81a664bc24b8b70c76c51a3" /* 40 */
+                        "d192e819d6990624f40e3585106aa070"
+                        "19a4c1161e376c082748774c34b0bcb5" /* 48 */
+                        "391c0cb34ed8aa4a5b9cca4f682e6ff3"
+                        "748f82ee78a5636f84c878148cc70208" /* 56 */
+                        "90befffaa4506cebbef9a3f7c67178f2"_v;
     
     Valuable Valuable::sh(const Valuable& n) const
     {

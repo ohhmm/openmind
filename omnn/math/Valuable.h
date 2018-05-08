@@ -245,6 +245,7 @@ public:
     virtual Valuable Or(const Valuable& n, const Valuable& v) const;
     virtual Valuable And(const Valuable& n, const Valuable& v) const;
     virtual Valuable Xor(const Valuable& n, const Valuable& v) const;
+    virtual Valuable Not(const Valuable& n) const;
     virtual Valuable& shl(const Valuable& n);
     virtual Valuable Shl(const Valuable& n) const;
     virtual Valuable shr() const;
