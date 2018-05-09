@@ -250,6 +250,7 @@ public:
     virtual Valuable Shl(const Valuable& n) const;
     virtual Valuable shr() const;
     virtual Valuable sh(const Valuable& n) const;
+    virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const;
     
     size_t Hash() const;
     std::string str() const;

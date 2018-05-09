@@ -832,6 +832,28 @@ namespace math {
         return (*this-bit(0))/2;
     }
     
+    Valuable Valuable::Cyclic(const Valuable& total, const Valuable& shiftLeft) const
+    {
+        auto s = 0_v;
+        auto ow = optimizations;
+        optimizations = {};
+        for(auto i = total; i--;)
+        {
+            auto shi = i + shiftLeft;
+            if(shi >= total)
+                shi -= total;
+            else if (shi < 0)
+                shi += total;
+            auto _1 = bit(i);
+            s += bit(i) * (2^(shi));
+        }
+        optimizations = ow;
+        if (ow) {
+            s.optimize();
+        }
+        return s;
+    }
+    
     auto sh_const =   "0x428a2f9871374491b5c0fbcfe9b5dba5" /*  0 */
                         "3956c25b59f111f1923f82a4ab1c5ed5"
                         "d807aa9812835b01243185be550c7dc3" /*  8 */

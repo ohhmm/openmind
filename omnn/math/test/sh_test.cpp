@@ -30,10 +30,8 @@ BOOST_AUTO_TEST_CASE(And_test)
     
     auto _1 = v+10;
     auto _2 = v+11;
-    Valuable::optimizations = {};
     _ = _1.And(5, _2);
     auto t = _;
-    Valuable::optimizations = true;
     t.Eval(v,0);
     t.optimize();
     BOOST_TEST(t == 10);
@@ -48,10 +46,8 @@ BOOST_AUTO_TEST_CASE(Or_test)
     Variable v;
     auto _1 = v+10;
     auto _2 = v+11;
-    Valuable::optimizations = {};
     auto _ = _1.Or(5, _2);
     auto t = _;
-    Valuable::optimizations = true;
     t.Eval(v,0);
     t.optimize();
     BOOST_TEST(t == 11);
@@ -66,10 +62,8 @@ BOOST_AUTO_TEST_CASE(XOr_test)
     Variable v;
     auto _1 = v+10;
     auto _2 = v+11;
-    Valuable::optimizations = {};
     auto _ = _1.Xor(5, _2);
     auto t = _;
-    Valuable::optimizations = true;
     t.Eval(v,0);
     t.optimize();
     BOOST_TEST(t == 1);
@@ -77,6 +71,29 @@ BOOST_AUTO_TEST_CASE(XOr_test)
     t.Eval(v,1);
     t.optimize();
     BOOST_TEST(t == 7);
+}
+
+BOOST_AUTO_TEST_CASE(Cyclic_test)
+{
+    Variable v;
+    auto _1 = v+10;
+    auto _ = _1.Cyclic(5, 3);
+    auto t = _;
+    t.Eval(v,0);
+    t.optimize();
+    BOOST_TEST(t == 18);
+    
+    _ = _1.Cyclic(5, -1);
+    t = _;
+    t.Eval(v,0);
+    t.optimize();
+    BOOST_TEST(t == 5);
+    
+    _ = _1.Cyclic(5, -2);
+    t = _;
+    t.Eval(v,0);
+    t.optimize();
+    BOOST_TEST(t == 18);
 }
 
 BOOST_AUTO_TEST_CASE(Sh_test)
