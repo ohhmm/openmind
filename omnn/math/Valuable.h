@@ -146,7 +146,9 @@ public:
     Valuable(double d);
     Valuable(int i = 0);
     Valuable(const a_int&);
+    Valuable(a_int&&);
     Valuable(const long);
+    Valuable(unsigned);
     Valuable(unsigned long);
     Valuable(unsigned long long);
     
@@ -235,6 +237,8 @@ public:
     virtual explicit operator long double() const;
     virtual explicit operator unsigned() const;
     virtual explicit operator unsigned char() const;
+    virtual a_int& a();
+    virtual const a_int& ca() const;
     
 //    virtual Valuable ifz(const Valuable& z, const Valuable& Then, const Valuable& Else) const;
 //    Valuable For(const Valuable& initialValue, const Valuable& lambda) const
@@ -242,13 +246,15 @@ public:
 //
 //    }
     virtual Valuable bit(const Valuable& n) const;
+    virtual Valuable bits(int n, int l) const;
     virtual Valuable Or(const Valuable& n, const Valuable& v) const;
     virtual Valuable And(const Valuable& n, const Valuable& v) const;
     virtual Valuable Xor(const Valuable& n, const Valuable& v) const;
     virtual Valuable Not(const Valuable& n) const;
     virtual Valuable& shl(const Valuable& n);
     virtual Valuable Shl(const Valuable& n) const;
-    virtual Valuable shr() const;
+    virtual Valuable Shr(const Valuable& n) const;
+    virtual Valuable Shr() const;
     virtual Valuable sh(const Valuable& n) const;
     virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const;
     

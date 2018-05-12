@@ -34,6 +34,14 @@ namespace math {
         return arbitrary;
     }
     
+    a_int& Integer::a() {
+        return arbitrary;
+    }
+    
+    const a_int& Integer::ca() const {
+        return arbitrary;
+    }
+    
     Integer::operator int64_t() const {
         return boost::numeric_cast<int64_t>(arbitrary);
     }
@@ -165,7 +173,13 @@ namespace math {
     Valuable Integer::bit(const Valuable& n) const
     {
         if (n.IsInt()) {
-            unsigned N = static_cast<unsigned>(*Integer::cast(n));
+            if (arbitrary < 0) {
+                if (arbitrary == -1) {
+                    return 1;
+                }
+                IMPLEMENT
+            }
+            unsigned N = static_cast<unsigned>(n);
             return static_cast<int>(bit_test(arbitrary, N));
         }
         else
@@ -182,9 +196,17 @@ namespace math {
         return *this;
     }
 
-    Valuable Integer::shr() const
+    Valuable Integer::Shr() const
     {
         return Integer(decltype(arbitrary)(arbitrary>>1));
+    }
+    
+    Valuable Integer::Shr(const Valuable& n) const
+    {
+        if (!n.IsInt()) {
+            IMPLEMENT
+        }
+        return Integer(decltype(arbitrary)(arbitrary>>static_cast<unsigned>(n)));
     }
     
     Valuable Integer::Or(const Valuable& n, const Valuable& v) const
@@ -193,7 +215,11 @@ namespace math {
     }
     Valuable Integer::And(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        if (v.IsInt()) {
+            return decltype(arbitrary)(arbitrary & ((2_v^n)-1).a() & v.ca());
+        }
+        else
+            return base::And(n, v);
     }
     Valuable Integer::Xor(const Valuable& n, const Valuable& v) const
     {

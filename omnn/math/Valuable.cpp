@@ -158,7 +158,9 @@ namespace math {
     Valuable::Valuable(double d) : exp(new Fraction(d)) {}
     Valuable::Valuable(int i) : exp(new Integer(i)) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
+    Valuable::Valuable(a_int&& i) : exp(new Integer(std::move(i))) {}
     Valuable::Valuable(const long i) : exp(new Integer(i)) {}
+    Valuable::Valuable(unsigned i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
 
@@ -686,6 +688,22 @@ namespace math {
             IMPLEMENT
     }
     
+    a_int& Valuable::a()
+    {
+        if (exp)
+            return exp->a();
+        else
+            IMPLEMENT
+    }
+
+    const a_int& Valuable::ca() const
+    {
+        if (exp)
+            return exp->ca();
+        else
+            IMPLEMENT
+    }
+
     Valuable::operator size_t() const
     {
         if (exp)
@@ -736,12 +754,19 @@ namespace math {
         if (exp)
             return exp->bit(n);
         else if (n > 0) {
-            return shr().bit(n-1);
+            return Shr().bit(n-1);
         } else if (n == 0)
             // (this & 1) == (this % 2) == (1+((-1)^(this+1)))/2
             return (1_v+((-1_v)^(*this+1)))/2;
         else
             IMPLEMENT;
+    }
+    
+    Valuable Valuable::bits(int n, int l) const
+    {
+        if(n<0)
+            IMPLEMENT
+        return Shr(n).And(l, -1);
     }
     
     Valuable Valuable::And(const Valuable& n, const Valuable& v) const
@@ -824,10 +849,24 @@ namespace math {
 
     Valuable Valuable::Shl(const Valuable& n) const
     {
-        return *this * 2_v^n;
+        return *this * (2_v^n);
     }
 
-    Valuable Valuable::shr() const
+    Valuable Valuable::Shr(const Valuable& n) const
+    {
+        if(!n.IsInt()){
+            IMPLEMENT
+        }
+
+        if (n>1)
+            return Shr(n-1).Shr();
+        else if (n!=0)
+            return Shr();
+        else
+            return *this;
+    }
+    
+    Valuable Valuable::Shr() const
     {
         return (*this-bit(0))/2;
     }
@@ -871,9 +910,188 @@ namespace math {
                         "748f82ee78a5636f84c878148cc70208" /* 56 */
                         "90befffaa4506cebbef9a3f7c67178f2"_v;
     
+    const Valuable SHA256_K[64] = {
+        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+        0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+        0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+        0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+        0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+        0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
+        0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+        0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+        0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+    };
     Valuable Valuable::sh(const Valuable& n) const
     {
-        IMPLEMENT
+//        Valuable state = "0x6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19"_v;
+        Valuable W[16];
+        Valuable T[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
+        auto state = T;
+        // lambdas
+//#define S0(x) (rotrFixed(x,2)^rotrFixed(x,13)^rotrFixed(x,22))
+        auto S0 = [](const Valuable& v){
+            return v.Cyclic(32, -2).Xor(32, v.Cyclic(32, -13)).Xor(32, v.Cyclic(32, -22));
+        };
+//#define S1(x) (rotrFixed(x,6)^rotrFixed(x,11)^rotrFixed(x,25))
+        auto S1 = [](const Valuable& v){
+            return v.Cyclic(32, -6).Xor(32, v.Cyclic(32, -11)).Xor(32, v.Cyclic(32, -25));
+        };
+//#define s0(x) (rotrFixed(x,7)^rotrFixed(x,18)^(x>>3))
+        auto s0 = [](const Valuable& v){
+            return v.Cyclic(32, -7).Xor(32, v.Cyclic(32, -18)).Xor(32, v.Shr(3));
+        };
+//#define s1(x) (rotrFixed(x,17)^rotrFixed(x,19)^(x>>10))
+        auto s1 = [](const Valuable& v){
+            return v.Cyclic(32, -17).Xor(32, v.Cyclic(32, -19)).Xor(32, v.Shr(10));
+        };
+//#define blk0(i) (W[i] = data[i])
+        auto blk0 = [&](int i) {
+            return (W[i] = bits(32*i,32));
+        };
+//#define blk2(i) (W[i&15]+=s1(W[(i-2)&15])+W[(i-7)&15]+s0(W[(i-15)&15]))
+        auto blk2 = [&](int i) {
+            return (W[i&15]+=s1(W[(i-2)&15])+W[(i-7)&15]+s0(W[(i-15)&15])).And(32, -1);
+        };
+//#define Ch(x,y,z) (z^(x&(y^z)))
+        auto Ch = [](const Valuable& _1, const Valuable& _2, const Valuable& _3) {
+            return _3.Xor(32, _2).And(32,_1).Xor(32, _3);
+        };
+//#define Maj(x,y,z) (y^((x^y)&(y^z)))
+        auto Maj = [](const Valuable& _1, const Valuable& _2, const Valuable& _3) {
+            return _3.Xor(32, _2).And(32,_1.Xor(32, _2)).Xor(32, _2);
+        };
+        
+#define a(i) T[(0-i)&7]
+#define b(i) T[(1-i)&7]
+#define c(i) T[(2-i)&7]
+#define d(i) T[(3-i)&7]
+#define e(i) T[(4-i)&7]
+#define f(i) T[(5-i)&7]
+#define g(i) T[(6-i)&7]
+#define h(i) T[(7-i)&7]
+        
+#define R(i) h(i)+=S1(e(i))+Ch(e(i),f(i),g(i))+SHA256_K[i+j]+(j?blk2(i):blk0(i));\
+d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
+//        auto _ = [&](auto i) {
+//            h(i) +=
+//        };
+        /* Copy context->state[] to working vars */
+//        memcpy(T, state, sizeof(T));
+        /* 64 operations, partially loop unrolled */
+        for (unsigned int j=0; j<64; j+=16)
+        {
+            R( 0); R( 1); R( 2); R( 3);
+            R( 4); R( 5); R( 6); R( 7);
+            R( 8); R( 9); R(10); R(11);
+            R(12); R(13); R(14); R(15);
+        }
+        /* Add the working vars back into context.state[] */
+        state[0] += a(0);
+        state[1] += b(0);
+        state[2] += c(0);
+        state[3] += d(0);
+        state[4] += e(0);
+        state[5] += f(0);
+        state[6] += g(0);
+        state[7] += h(0);
+        
+        return ((((((state[0].And(32,-1).Shl(32) + state[1].And(32,-1)).Shl(32) + state[2].And(32,-1)).Shl(32) + state[3].And(32,-1)).Shl(32) + state[4].And(32,-1)).Shl(32) + state[5].And(32,-1)).Shl(32) + state[6].And(32,-1)).Shl(32) + state[7].And(32,-1);
+        
+        
+//        Пояснения:
+//        Все переменные беззнаковые, имеют размер 32 бита и при вычислениях суммируются по модулю 232
+//        message — исходное двоичное сообщение
+//        m — преобразованное сообщение
+//
+//        Инициализация переменных
+//        (первые 32 бита дробных частей квадратных корней первых восьми простых чисел [от 2 до 19]):
+//        auto h0 = "0x6A09E667"_v;
+//        auto h1 = "0xBB67AE85"_v;
+//        auto h2 = "0x3C6EF372"_v;
+//        auto h3 = "0xA54FF53A"_v;
+//        auto h4 = "0x510E527F"_v;
+//        auto h5 = "0x9B05688C"_v;
+//        auto h6 = "0x1F83D9AB"_v;
+//        auto h7 = "0x5BE0CD19"_v;
+//
+//        Таблица констант
+//        (первые 32 бита дробных частей кубических корней первых 64 простых чисел [от 2 до 311]):
+//        auto k[64] = {
+//        "0x428A2F98"_v, "0x71374491"_v, "0xB5C0FBCF"_v, "0xE9B5DBA5"_v, "0x3956C25B"_v, "0x59F111F1"_v, "0x923F82A4"_v, "0xAB1C5ED5"_v,
+//        "0xD807AA98"_v, "0x12835B01"_v, "0x243185BE"_v, "0x550C7DC3"_v, "0x72BE5D74"_v, "0x80DEB1FE"_v, "0x9BDC06A7"_v, "0xC19BF174"_v,
+//        "0xE49B69C1"_v, "0xEFBE4786"_v, "0x0FC19DC6"_v, "0x240CA1CC"_v, "0x2DE92C6F"_v, "0x4A7484AA"_v, "0x5CB0A9DC"_v, "0x76F988DA"_v,
+//        "0x983E5152"_v, "0xA831C66D"_v, "0xB00327C8"_v, "0xBF597FC7"_v, "0xC6E00BF3"_v, "0xD5A79147"_v, "0x06CA6351"_v, "0x14292967"_v,
+//        "0x27B70A85"_v, "0x2E1B2138"_v, "0x4D2C6DFC"_v, "0x53380D13"_v, "0x650A7354"_v, "0x766A0ABB"_v, "0x81C2C92E"_v, "0x92722C85"_v,
+//        "0xA2BFE8A1"_v, "0xA81A664B"_v, "0xC24B8B70"_v, "0xC76C51A3"_v, "0xD192E819"_v, "0xD6990624"_v, "0xF40E3585"_v, "0x106AA070"_v,
+//        "0x19A4C116"_v, "0x1E376C08"_v, "0x2748774C"_v, "0x34B0BCB5"_v, "0x391C0CB3"_v, "0x4ED8AA4A"_v, "0x5B9CCA4F"_v, "0x682E6FF3"_v,
+//        "0x748F82EE"_v, "0x78A5636F"_v, "0x84C87814"_v, "0x8CC70208"_v, "0x90BEFFFA"_v, "0xA4506CEB"_v, "0xBEF9A3F7"_v, "0xC67178F2"_v};
+//
+        // ǁ - concat
+//        Предварительная обработка:
+//        auto m = Shl(1) + 1;
+//        m = m ǁ [k нулевых бит], где k — наименьшее неотрицательное число, такое что
+//        (L + 1 + K) mod 512 = 448, где L — число бит в сообщении (сравнима по модулю 512 c 448)
+//        m = m ǁ Длина(message) — длина исходного сообщения в битах в виде 64-битного числа
+//        с порядком байтов от старшего к младшему
+//
+//        Далее сообщение обрабатывается последовательными порциями по 512 бит:
+//        разбить сообщение на куски по 512 бит
+//        для каждого куска
+//        разбить кусок на 16 слов длиной 32 бита (с порядком байтов от старшего к младшему внутри слова): w[0..15]
+//
+//        Сгенерировать дополнительные 48 слов:
+//        для i от 16 до 63
+//        s0 = (w[i-15] rotr 7) xor (w[i-15] rotr 18) xor (w[i-15] shr 3)
+//        s1 = (w[i-2] rotr 17) xor (w[i-2] rotr 19) xor (w[i-2] shr 10)
+//        w[i] = w[i-16] + s0 + w[i-7] + s1
+//
+//        Инициализация вспомогательных переменных:
+//        a = h0
+//        b = h1
+//        c = h2
+//        d = h3
+//        e = h4
+//        f = h5
+//        g = h6
+//        h = h7
+//
+//        Основной цикл:
+//        для i от 0 до 63
+//        Σ0 = (a rotr 2) xor (a rotr 13) xor (a rotr 22)
+//        Ma = (a and b) xor (a and c) xor (b and c)
+//        t2 = Σ0 + Ma
+//        Σ1 = (e rotr 6) xor (e rotr 11) xor (e rotr 25)
+//        Ch = (e and f) xor ((not e) and g)
+//        t1 = h + Σ1 + Ch + k[i] + w[i]
+//
+//        h = g
+//        g = f
+//        f = e
+//        e = d + t1
+//        d = c
+//        c = b
+//        b = a
+//        a = t1 + t2
+//
+//        Добавить полученные значения к ранее вычисленному результату:
+//        h0 = h0 + a
+//        h1 = h1 + b
+//        h2 = h2 + c
+//        h3 = h3 + d
+//        h4 = h4 + e
+//        h5 = h5 + f
+//        h6 = h6 + g
+//        h7 = h7 + h
+//
+//        Получить итоговое значение хеша:
+//        digest = hash = h0 ǁ h1 ǁ h2 ǁ h3 ǁ h4 ǁ h5 ǁ h6 ǁ h7
     }
     
     size_t Valuable::Hash() const

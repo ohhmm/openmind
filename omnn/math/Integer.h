@@ -54,6 +54,12 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
     
+    Integer(unsigned i)
+    : arbitrary(i)
+    {
+        hash = std::hash<base_int>()(arbitrary);
+    }
+    
     Integer(unsigned long long i)
     : arbitrary(i)
     {
@@ -62,6 +68,12 @@ public:
     
     Integer(const base_int& i)
         : arbitrary(i)
+    {
+        hash = std::hash<base_int>()(arbitrary);
+    }
+    
+    Integer(base_int&& i)
+    : arbitrary(std::move(i))
     {
         hash = std::hash<base_int>()(arbitrary);
     }
@@ -97,6 +109,8 @@ public:
     explicit operator long double() const override;
     explicit operator unsigned() const override;
     explicit operator unsigned char() const override;
+    a_int& a() override;
+    const a_int& ca() const override;
     
     Valuable bit(const Valuable& n) const override;
     Valuable Or(const Valuable& n, const Valuable& v) const override;
@@ -104,7 +118,8 @@ public:
     Valuable Xor(const Valuable& n, const Valuable& v) const override;
     Valuable Not(const Valuable& n) const override;
     Valuable& shl(const Valuable& n) override;
-    Valuable shr() const override;
+    Valuable Shr() const override;
+    Valuable Shr(const Valuable& n) const override;
     
     solutions_t operator()(const Variable&) const override { return {}; }
     solutions_t operator()(const Variable&, const Valuable& augmentation) const override { return {}; }

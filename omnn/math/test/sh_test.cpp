@@ -3,6 +3,7 @@
 //
 #define BOOST_TEST_MODULE Sh test
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 
 #include "Variable.h"
 
@@ -39,6 +40,10 @@ BOOST_AUTO_TEST_CASE(And_test)
     t.Eval(v,1);
     t.optimize();
     BOOST_TEST(t == 8);
+    
+    _ = 53818796976214_v;
+    _ = _.And(32, -1);
+    BOOST_TEST(_ == 2856757334);
 }
 
 BOOST_AUTO_TEST_CASE(Or_test)
@@ -96,6 +101,29 @@ BOOST_AUTO_TEST_CASE(Cyclic_test)
     BOOST_TEST(t == 18);
 }
 
+BOOST_AUTO_TEST_CASE(Shl_test)
+{
+    Variable v;
+    auto _1 = v+10;
+    auto _ = _1.Shl(3);
+    auto t = _;
+    t.Eval(v,0);
+    t.optimize();
+    BOOST_TEST(t == 80);
+    
+    _ = _1.Shr();
+    t = _;
+    t.Eval(v,0);
+    t.optimize();
+    BOOST_TEST(t == 5);
+    
+    _ = _1.Shr(2);
+    t = _;
+    t.Eval(v,0);
+    t.optimize();
+    BOOST_TEST(t == 2);
+}
+
 BOOST_AUTO_TEST_CASE(Sh_test)
 {
     // http://static.righto.com/images/bitcoin/block_diagram_ghash.png
@@ -112,5 +140,8 @@ BOOST_AUTO_TEST_CASE(Sh_test)
                 "e067a478024addfe"_v
                 "cdc93628978aa52d"_v
                 "91fabd4292982a50"_v;
-//    BOOST_TEST(_.sh(161)==sh);
+    std::cout << std::hex << sh << std::endl;
+    _ = _.sh(161);
+    std::cout << std::hex << _ << std::endl;
+    BOOST_TEST(_==sh);
 }
