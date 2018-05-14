@@ -140,7 +140,12 @@ BOOST_AUTO_TEST_CASE(Sh_test)
                 "e067a478024addfe"_v
                 "cdc93628978aa52d"_v
                 "91fabd4292982a50"_v;
-    std::cout << std::hex << sh << std::endl;
+    
+    std::cout << std::hex
+            << _ << std::endl
+            << sh << std::endl;
+    _.save(L"sh.v"); // $ shasum -a256 -b sh.v
+    // 26b4a1075393e09e13c9121b963eabfd0659dc6248a8d243afe37c9624a1997a *sh.v
     _ = _.sh(161);
     std::cout << std::hex << _ << std::endl;
     BOOST_TEST(_==sh);

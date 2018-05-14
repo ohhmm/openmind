@@ -8,7 +8,10 @@
 #include "Sum.h"
 #include "Product.h"
 #include <algorithm>
+#include <codecvt>
 #include <cmath>
+#include <iostream>
+#include <boost/archive/binary_oarchive.hpp>
 #include <boost/compute.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/numeric/conversion/converter.hpp>
@@ -364,6 +367,17 @@ namespace math {
         return v.IsInt() && *this > v;
     }
 
+    std::wstring Integer::save(const std::wstring& f) const
+    {
+        using namespace std;
+        using convert_typeX = codecvt_utf8<wchar_t>;
+        std::wstring_convert<convert_typeX, wchar_t> c;
+        ofstream s(c.to_bytes(f));
+        boost::archive::binary_oarchive a(s);
+        a & arbitrary;
+        return f;
+    }
+    
     bool Integer::operator <(const Valuable& v) const
     {
         auto i = cast(v);

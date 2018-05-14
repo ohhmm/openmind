@@ -133,6 +133,8 @@ public:
     Valuable sqrt() const override { return *this^(1_v/2); }
     bool IsComesBefore(const Valuable& v) const override;
     
+    std::wstring save(const std::wstring&) const override;
+    
     static const zero_zone_t empty_zero_zone;
     bool Factorization(const std::function<bool(const Valuable&)>& f,
                        const Valuable& max,

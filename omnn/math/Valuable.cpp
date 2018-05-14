@@ -1108,6 +1108,15 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
         return s.str();
     }
     
+    std::wstring Valuable::save(const std::wstring& f) const
+    {
+        if (exp) {
+            return exp->save(f);
+        }
+        else
+            IMPLEMENT
+    }
+
     size_t hash_value(const Valuable& v)
     {
         return v.Hash();

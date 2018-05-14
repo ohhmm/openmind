@@ -260,6 +260,7 @@ public:
     
     size_t Hash() const;
     std::string str() const;
+    virtual std::wstring save(const std::wstring&) const;
 
 protected:
     View view = View::Flat;

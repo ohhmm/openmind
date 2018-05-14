@@ -12,7 +12,7 @@ link_directories(
     ${Boost_INCLUDE_DIR}/stage/lib
     )
 if(NOT MSVC)
-    set(test_libs boost_test_exec_monitor)
+    set(test_libs boost_test_exec_monitor boost_serialization)
 endif()
 foreach(TEST ${src})
     get_filename_component(TEST_NAME ${TEST} NAME_WE)
