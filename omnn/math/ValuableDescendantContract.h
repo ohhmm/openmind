@@ -76,7 +76,13 @@ namespace math {
         Valuable operator -() const override {
             return *this * -1;
         }
-        
+
+//        Valuable& operator *=(const Valuable& v) override;
+//        Valuable& operator /=(const Valuable& v) override;
+
+        Valuable& operator --() override { optimized={}; return *this+=-1_v; }
+        Valuable& operator ++() override { optimized={}; return *this+=1_v; }
+
         Valuable abs() const override
         {
             auto i = const_cast<Chld*>(cast(*this));

@@ -483,6 +483,7 @@ namespace math {
     bool Valuable::IsSum() const { return exp && exp->IsSum(); }
     bool Valuable::IsInfinity() const { return exp && exp->IsInfinity(); }
     bool Valuable::IsMInfinity() const { return exp && exp->IsMInfinity(); }
+    bool Valuable::Is_e() const { return exp && exp->Is_e(); }
 
     std::ostream& Valuable::print(std::ostream& out) const
     {

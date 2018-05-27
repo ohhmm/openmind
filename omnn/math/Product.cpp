@@ -687,16 +687,6 @@ namespace math {
 		return base::operator %=(v);
 	}
 
-	Valuable& Product::operator --()
-	{
-        return operator+=(-1);
-	}
-
-	Valuable& Product::operator ++()
-	{
-		return operator+=(1);
-	}
-
     Valuable& Product::d(const Variable& x)
     {
         if(vars.find(x) != vars.end())

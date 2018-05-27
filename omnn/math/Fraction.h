@@ -28,8 +28,6 @@ namespace math {
 		Valuable& operator *=(const Valuable& v) override;
 		Valuable& operator /=(const Valuable& v) override;
 		Valuable& operator %=(const Valuable& v) override;
-		Valuable& operator --() override;
-        Valuable& operator ++() override;
         Valuable& operator^=(const Valuable&) override;
 		bool operator <(const Valuable& v) const override;
 		bool operator ==(const Valuable& v) const override;

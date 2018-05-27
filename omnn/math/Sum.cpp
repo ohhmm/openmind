@@ -514,24 +514,13 @@ namespace math {
         return Become(std::move(s));
 	}
 
-	Valuable& Sum::operator --()
-	{
-		return *this += -1;
-	}
-
-	Valuable& Sum::operator ++()
-	{
-		return *this += 1;
-	}
-    
     Valuable& Sum::d(const Variable& x)
     {
         Valuable sum = 0_v;
         auto add = [&](const Valuable& m)
         {
-            auto s = Sum::cast(sum);
-            if (s) {
-                const_cast<Sum*>(s)->Add(m);
+            if (sum.IsSum()) {
+                Sum::cast(sum)->Add(m);
             }
             else
                 sum += m;

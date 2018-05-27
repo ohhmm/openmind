@@ -180,6 +180,7 @@ public:
     virtual bool IsSum() const;
     virtual bool IsInfinity() const;
     virtual bool IsMInfinity() const;
+    virtual bool Is_e() const;
 
     virtual Valuable abs() const;
     virtual Valuable sqrt() const;

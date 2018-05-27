@@ -262,16 +262,6 @@ namespace math {
 		return *this -= d * v;
     }
 
-    Valuable& Fraction::operator --()
-    {
-        return *this+=-1;
-    }
-
-    Valuable& Fraction::operator ++()
-    {
-        return *this+=1;
-    }
-
     Valuable& Fraction::operator^=(const Valuable& v)
     {
         auto i = Integer::cast(v);

@@ -394,18 +394,6 @@ namespace math {
         return *this;
     }
     
-    Valuable& Exponentiation::operator --()
-    {
-        optimized={};
-        return *this+=-1_v;
-    }
-
-    Valuable& Exponentiation::operator ++()
-    {
-        optimized={};
-        return *this+=1_v;
-    }
-    
     Valuable& Exponentiation::d(const Variable& x)
     {
         optimized={};
@@ -572,9 +560,11 @@ namespace math {
     const Valuable::vars_cont_t& Exponentiation::getCommonVars() const
     {
         v.clear();
-        auto vaBase = Variable::cast(ebase);
-        if(vaBase)
+        if(ebase.IsVa())
+        {
+            auto vaBase = Variable::cast(ebase);
             v[*vaBase] = eexp;
+        }
         return v;
     }
     

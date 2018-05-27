@@ -403,9 +403,8 @@ namespace math {
 
     bool Integer::operator ==(const Valuable& v) const
     {
-        auto i = cast(v);
-        if (i)
-            return Hash() == i->Hash() && arbitrary == i->arbitrary;
+        if (v.IsInt())
+            return Hash() == v.Hash() && arbitrary == v.ca();
         else if(v.FindVa())
             return false;
         else

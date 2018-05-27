@@ -52,17 +52,7 @@ namespace math {
 
         return *this;
     }
-    
-    Valuable& Variable::operator --()
-    {
-        return *this+=-1;
-    }
-    
-    Valuable& Variable::operator ++()
-    {
-        return *this+=1;
-    }
-    
+
     Valuable& Variable::operator^=(const Valuable& v)
     {
         if(v.IsInt() && v == 0_v)

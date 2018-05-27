@@ -63,7 +63,7 @@ Extrapolator::operator Formula() const
     Valuable::optimizations = false;
     for (auto i = vm.size1(); i--; ) {
         auto& v = vm(i,2);
-        integers = integers && Integer::cast(v);
+        integers = integers && v.IsInt();
         auto e1 = vx - vm(i,0);
         auto e2 = vy - vm(i,1);
         auto e3 = vv - v;

@@ -50,8 +50,6 @@ public:
     Valuable& operator *=(const Valuable&) override;
     Valuable& operator /=(const Valuable&) override;
 //    Valuable& operator %=(const Valuable&) override;
-    Valuable& operator--() override;
-    Valuable& operator++() override;
     Valuable& operator ^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
     bool operator<(const Valuable& number) const override;
