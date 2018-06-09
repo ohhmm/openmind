@@ -41,8 +41,8 @@ protected:
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
     virtual int getTypeSize() const;
-    virtual int getAllocSize() const;
-    virtual void setAllocSize(int sz);
+    virtual size_t getAllocSize() const;
+    virtual void setAllocSize(size_t sz);
     
     template<class T>
     static const T* cast(const Valuable& v)
@@ -151,6 +151,7 @@ public:
     Valuable(unsigned);
     Valuable(unsigned long);
     Valuable(unsigned long long);
+	Valuable(ptrdiff_t);
     
     virtual ~Valuable();
     virtual Valuable operator -() const;
@@ -233,10 +234,10 @@ public:
     explicit operator bool() const;
     virtual explicit operator int() const;
     virtual explicit operator a_int() const;
-    virtual explicit operator size_t() const;
+    virtual explicit operator uint64_t() const;
     virtual explicit operator double() const;
     virtual explicit operator long double() const;
-    virtual explicit operator unsigned() const;
+    virtual explicit operator uint32_t() const;
     virtual explicit operator unsigned char() const;
     virtual a_int& a();
     virtual const a_int& ca() const;

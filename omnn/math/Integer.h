@@ -66,6 +66,12 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
     
+    Integer(ptrdiff_t i)
+        : arbitrary(i)
+    {
+        hash = std::hash<base_int>()(arbitrary);
+    }
+
     Integer(const base_int& i)
         : arbitrary(i)
     {
@@ -104,10 +110,10 @@ public:
     // virtual convert operators
     explicit operator int() const override;
     explicit operator a_int() const override;
-    explicit operator size_t() const override;
+    explicit operator uint64_t() const override;
     explicit operator double() const override;
     explicit operator long double() const override;
-    explicit operator unsigned() const override;
+    explicit operator uint32_t() const override;
     explicit operator unsigned char() const override;
     a_int& a() override;
     const a_int& ca() const override;

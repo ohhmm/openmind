@@ -70,12 +70,16 @@ namespace math {
 //            return;
 //        }
         
-        if(denominator.IsInt())
+        if (denominator.IsInt())
         {
-            if(denominator == 1_v)
+            if (denominator == 1_v)
             {
                 Become(std::move(numerator));
                 return;
+            }
+            else if (denominator < 0) {
+                numerator = -numerator;
+                denominator = -denominator;
             }
         }
         
@@ -125,8 +129,7 @@ namespace math {
                     Become(-*n);
                     return;
                 }
-                Integer::base_int d = boost::gcd(static_cast<Integer::const_base_int_ref>(*n),
-                                                 static_cast<Integer::const_base_int_ref>(*dn));
+                auto d = boost::gcd(n->ca(), dn->ca());
                 if (d != 1) {
                     numerator /= Integer(d);
                     denominator /= Integer(d);
@@ -139,18 +142,19 @@ namespace math {
             std::vector<Variable> coVa;
 
             if (numerator.IsProduct()) {
-                if (denominator.IsProduct()) {
+                //if (denominator.IsProduct()) {
                     Become(numerator / denominator);
                     return;
-                }
-                else
-                {
-                    auto n = Product::cast(numerator);
-                    if (n->Has(denominator)) {
-                        Become(*n / denominator);
-                        return;
-                    }
-                }
+                //}
+                //else
+                //{
+                //    auto n = Product::cast(numerator);
+                    //if (n->Has(denominator))
+					//{
+     //                   Become(*n / denominator);
+     //                   return;
+     //               }
+     //           }
             }
             else if (denominator.IsProduct())
             {
@@ -159,6 +163,22 @@ namespace math {
                     denominator /= numerator;
                     numerator = 1_v;
                     goto reoptimize_the_fraction;
+                }
+                else if (numerator.IsInt() || numerator.IsSimpleFraction()) {
+                    for (auto& m : *dn)
+                    {
+                        if (m.IsVa()) {
+                            numerator *= m ^ -1;
+                        }
+                        else if (m.IsExponentiation()) {
+                            auto e = Exponentiation::cast(m);
+                            numerator *= e->getBase() ^ -e->getExponentiation();
+                        }
+                        else
+                            numerator /= m;
+                    }
+                    Become(std::move(numerator));
+                    return;
                 }
             }
             else if (denominator.FindVa() && !denominator.IsSum())
@@ -221,17 +241,16 @@ namespace math {
             numerator *= f->numerator;
             denominator *= f->denominator;
         }
-        else{
-            if (v.IsInt()) {
-                numerator *= v;
-            }
-            else
-            {
-                return Become(Product{*this, v});
-            }
+        else if (v.IsInt())
+        {
+            numerator *= v;
+        }
+        else
+        {
+            return Become(v * *this);
         }
 		
-		optimize();
+        optimize();
         return *this;
     }
 
@@ -325,37 +344,17 @@ namespace math {
 
     bool Fraction::operator <(const Valuable& v) const
     {
-        auto i = cast(v);
-		if (i)
-		{
-			auto f = *i;
-			auto l = *this;
-			if (l.denominator != f.denominator) {
-				f.numerator *= l.denominator;
-				l.numerator *= i->denominator;
-			}
-			return l.numerator < f.numerator;//arbitrary < i->arbitrary;
-		}
-            
-        else
+        if (v.IsFraction())
         {
-			auto i = Integer::cast(v);
-			if (i)
-			{
-				auto f = (decltype(numerator))(*i);
-				auto l = *this;
-				return l.numerator < f*denominator;
-			}
-			else
-			{
-				// try other type
-				// no type matched
-				
-			}
+            auto f = cast(v);
+            return numerator * f->denominator < f->numerator * denominator;
         }
-
-        // not implemented comparison to this Valuable descent
-        return base::operator <(v);
+        else if (v.IsInt())
+        {
+            return numerator < v * denominator;
+        }
+        else
+            return base::operator <(v);
     }
 
     bool Fraction::operator ==(const Valuable& v) const
@@ -450,9 +449,13 @@ namespace math {
         {}
         else if (v.IsFraction())
         {
-            auto f = cast(v);
-            is = numerator.IsComesBefore(f->numerator) || denominator.IsComesBefore(f->denominator);
-
+            if (IsSimple() && v.IsSimpleFraction())
+                is = *this < v;
+            else
+            {
+                auto f = cast(v);
+                is = numerator.IsComesBefore(f->numerator) || denominator.IsComesBefore(f->denominator);
+            }
 //            auto e = cast(v);
 //            bool numeratorIsVa = numerator.IsVa();
 //            bool vbaseIsVa = e->numerator.IsVa();

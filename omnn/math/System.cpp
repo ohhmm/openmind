@@ -237,7 +237,7 @@ System::solutions_t System::Solve(const Variable& va)
                 for(auto& v : CollectVa(va))
                 {
                     auto& vaFuncs = vEs[v];
-                    int toSolve = vaFuncs.size();
+                    auto toSolve = vaFuncs.size();
                     if (!toSolve) {
                         if(Solve(v).size()) {
                             modified = true;
@@ -245,9 +245,9 @@ System::solutions_t System::Solve(const Variable& va)
                         continue;
                     }
                     
-                    auto mm = std::minmax(vaFuncs.begin(), vaFuncs.end(), [](auto& _1, auto& _2){
-                        return _1->first.size() < _2->first.size();
-                    });
+                    //auto mm = std::minmax(vaFuncs.begin(), vaFuncs.end(), [](auto& _1, auto& _2){
+                    //    return _1->first.size() < _2->first.size();
+                    //});
                     --toSolve;
                     for(auto nParams = 0; toSolve; ++nParams)
                     {

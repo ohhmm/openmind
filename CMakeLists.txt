@@ -47,7 +47,7 @@ if(MSVC)
 endif()
 
 find_package(opencl)
-
+include_directories(${OPENCL_INCLUDE_DIR})
 
 if (${OPENMIND_BUILD_TESTS})
     enable_testing()

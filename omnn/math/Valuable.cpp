@@ -47,12 +47,12 @@ namespace math {
         return sizeof(Valuable);
     }
 
-    int Valuable::getAllocSize() const
+    size_t Valuable::getAllocSize() const
     {
         return sz;
     }
     
-    void Valuable::setAllocSize(int sz)
+    void Valuable::setAllocSize(size_t sz)
     {
         this->sz = sz;
     }
@@ -99,7 +99,7 @@ namespace math {
                 i.New(buf, std::move(i));
                 Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
                 this->~Valuable();
-                i.New(this, std::move(bufv));
+				bufv.New(this, std::move(bufv));
                 setAllocSize(sizeWas);
                 if (Hash() != h) {
                     IMPLEMENT
@@ -121,6 +121,7 @@ namespace math {
                 auto moved = i.Move();
                 this->~Valuable();
                 new(this) Valuable(moved);
+                setAllocSize(sizeWas);
                 if (Hash() != h) {
                     IMPLEMENT
                 }
@@ -163,6 +164,7 @@ namespace math {
     Valuable::Valuable(unsigned i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
+	Valuable::Valuable(ptrdiff_t i) : exp(new Integer(i)) {}
 
     Valuable::~Valuable()
     {
@@ -522,9 +524,11 @@ namespace math {
     void Valuable::SetView(View v)
     {
         if(exp)
-            exp->view = v;
-        else
-            IMPLEMENT
+            exp->SetView(v);
+		else {
+			view = v;
+			optimized = {};
+		}
     }
     
     void Valuable::optimize()
@@ -705,10 +709,10 @@ namespace math {
             IMPLEMENT
     }
 
-    Valuable::operator size_t() const
+    Valuable::operator uint64_t() const
     {
         if (exp)
-            return exp->operator size_t();
+            return exp->operator uint64_t();
         else
             IMPLEMENT
     }
@@ -729,10 +733,10 @@ namespace math {
             IMPLEMENT
     }
 
-    Valuable::operator unsigned() const
+    Valuable::operator uint32_t() const
     {
         if (exp)
-            return exp->operator unsigned();
+            return exp->operator uint32_t();
         else
             IMPLEMENT
     }

@@ -2,7 +2,7 @@
 // Created by Sergej Krivonos on 5/26/18.
 //
 
-#pragma pragma once
+#pragma once
 #include "ValuableDescendant.h"
 
 namespace omnn::math {

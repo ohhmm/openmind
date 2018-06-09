@@ -61,6 +61,9 @@ public:
     solutions_t operator()(const Variable& va, const Valuable& augmentation) const override;
     
     using base::base;
+#ifdef _MSC_VER
+    Sum() {}
+#endif
     
     iterator Had(iterator it) override;
     using base::Add;

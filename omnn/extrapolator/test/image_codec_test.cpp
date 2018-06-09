@@ -6,8 +6,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <boost/gil/extension/io/bmp_all.hpp>
-#include <boost/gil/extension/io/targa_all.hpp>
+#include <boost/gil/extension/io/bmp.hpp>
+#include <boost/gil/extension/io/targa.hpp>
 #include "Extrapolator.h"
 
 using namespace omnn::math;
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     bfo.SetMin(0); bfo.SetMax(255);
     
-    const auto d = 5;
+    const auto d = 0; // 5
     cols+=d;rows+=d;
     dst = decltype(src)(rows+d, cols+d);
     dv = view(dst);

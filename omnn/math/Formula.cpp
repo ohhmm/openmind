@@ -64,12 +64,12 @@ namespace math {
                     is = isValue;
                     auto isCoord = !isValue;
                     
-                    auto& vaVal = *it;
                     if (va == s->begin())
                         ++va;
                     else --va;
                     auto maxCoord = -*va;
                     if (isCoord) {
+                        auto& vaVal = *it;
                         is = predicate(*vaVal.second, maxCoord);
                     }
                     else if (value) {

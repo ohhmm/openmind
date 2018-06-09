@@ -219,6 +219,11 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     _1 = (-510*v3 + (v3^2) + (v2^2) + (v1^2) + 65025);
     _2 = ((v3^2) + (v2^2) + (v1^2) + -510*v3 + 65025);
     BOOST_TEST(_1 == _2);
+
+    _1 = 5120_v*(v5 ^ 7);
+    _2 = 2 * v5 + v7 + 3;
+    _ = Sum{ _1 } / _2;
+    BOOST_TEST(_ == _1 / _2);
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)

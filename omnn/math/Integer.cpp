@@ -49,8 +49,8 @@ namespace math {
         return boost::numeric_cast<int64_t>(arbitrary);
     }
     
-    Integer::operator size_t() const {
-        return boost::numeric_cast<size_t>(arbitrary);
+    Integer::operator uint64_t() const {
+        return boost::numeric_cast<uint64_t>(arbitrary);
     }
     
     Valuable Integer::operator -() const
@@ -153,9 +153,9 @@ namespace math {
         return boost::numeric_cast<int>(arbitrary);
     }
 
-    Integer::operator unsigned() const
+    Integer::operator uint32_t() const
     {
-        return boost::numeric_cast<unsigned>(arbitrary);
+        return boost::numeric_cast<uint32_t>(arbitrary);
     }
     
     Integer::operator double() const

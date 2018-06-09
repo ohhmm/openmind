@@ -4,6 +4,7 @@
 
 #pragma once
 #include <functional>
+#include <initializer_list>
 #include <map>
 #include "Product.h"
 #include "Variable.h"
@@ -63,12 +64,12 @@ public:
     {
         Valuable root;
         auto copy = e;
-        std::initializer_list<Valuable> args = {vl...};
+        std::initializer_list<Valuable> args {vl...};
         
         // va values map
         VaValMap vaVals;
         auto vit = s.begin();
-        for(auto& a:args){
+        for(const Valuable& a:args){
             auto va = vit++;
             vaVals[*va] = &a;
         }
@@ -80,7 +81,7 @@ public:
         }
 
         vit = s.begin();
-        for(auto v:args)
+        for(const Valuable& v:args)
         {
             auto va = vit++;
             copy.Eval(*va, v);

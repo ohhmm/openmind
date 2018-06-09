@@ -627,8 +627,7 @@ namespace math {
                 }
                 else if (e && *it == e->getBase())
                 {
-                    *this /= e->getBase();
-                    *this /= *e / e->getBase();
+                    *this *= e->getBase() ^ (-e->getExponentiation());
                     optimize();
                     return *this;
                 }

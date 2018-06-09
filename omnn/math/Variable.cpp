@@ -84,9 +84,9 @@ namespace math {
     
     bool Variable::operator ==(const Valuable& v) const
     {
-        auto i = cast(v);
-        if (i)
+        if (v.IsVa())
         {
+            auto i = cast(v);
             if (varSetHost != i->varSetHost) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }

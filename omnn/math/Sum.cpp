@@ -253,20 +253,56 @@ namespace math {
                     scan = {};
                     if (IsSum())
                     {
-                        for(auto& m : members)
+                        for (auto& m : members)
                         {
                             if (m.IsProduct()) {
                                 auto p = Product::cast(m);
-                                auto f = p->GetFirstOccurence<Fraction>();
-                                if (f != p->end()) {
-                                    operator*=(Fraction::cast(*f)->getDenominator());
-                                    scan = true;
-                                    break;
+                                for (auto& m : *p) {
+                                    if (m.IsFraction()) {
+                                        operator*=(Fraction::cast(m)->getDenominator());
+                                        scan = true;
+                                        break;
+                                    }
+                                    else if (m.IsExponentiation()) {
+                                        auto e = Exponentiation::cast(m);
+                                        auto& ee = e->getExponentiation();
+                                        if (ee.IsInt() && ee < 0) {
+                                            operator*=(e->getBase() ^ (-ee));
+                                            scan = true;
+                                            break;
+                                        }
+                                        else if (ee.IsFraction()) {
+                                            auto f = Fraction::cast(ee);
+                                            auto& d = f->getDenominator();
+                                            auto wo = *p / *e;
+                                            Become(((e->getBase() ^ f->getNumerator()) * (wo^d)) - ((-(*this - *p)) ^ d));
+                                            scan = true;
+                                            break;
+                                        }
+                                    }
                                 }
-                            } else if (m.IsFraction()) {
+                                if (scan)
+                                    break;
+                            }
+                            else if (m.IsFraction()) {
                                 operator*=(Fraction::cast(m)->getDenominator());
                                 scan = true;
                                 break;
+                            }
+                            else if (m.IsExponentiation()) {
+                                auto e = Exponentiation::cast(m);
+                                auto& ee = e->getExponentiation();
+                                if (ee.IsInt() && ee < 0) {
+                                    operator*=(e->getBase() ^ (-ee));
+                                    scan = true;
+                                    break;
+                                }
+                                else if (ee.IsFraction()) {
+                                    auto f = Fraction::cast(ee);
+                                    Become((e->getBase() ^ f->getNumerator()) - ((-(*this - m)) ^ f->getDenominator()));
+                                    scan = true;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -342,19 +378,22 @@ namespace math {
         return vars;
     }
     
-	Valuable& Sum::operator +=(const Valuable& v)
-	{
-        if (v.IsInt() && v==0) {
+    Valuable& Sum::operator +=(const Valuable& v)
+    {
+        if (v.IsInt() && v == 0) {
             return *this;
         }
-		if (v.IsSum()) {
-			base::Add(v);
-		}
-		else
-		{
+        if (v.IsSum()) {
+            auto s = cast(v);
+            for (auto& i : *s) {
+                operator+=(i);
+            }
+        }
+        else
+        {
             for (auto it = members.begin(); it != members.end(); ++it)
             {
-                if(it->OfSameType(v) && it->getCommonVars()==v.getCommonVars())
+                if (it->OfSameType(v) && it->getCommonVars() == v.getCommonVars())
                 {
                     auto s = *it + v;
                     if (!s.IsSum()) {
@@ -364,14 +403,14 @@ namespace math {
                     }
                 }
             }
-            
+
             // add new member
-			Add(v);
-		}
+            Add(v);
+        }
 
         optimize();
-		return *this;
-	}
+        return *this;
+    }
 
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
@@ -597,31 +636,43 @@ namespace math {
         size_t grade = 0;
         coefficients.resize(members.size());
         
-        #pragma omp for shared grade,coefficients
+	    // TODO : openmp
+	    //#pragma omp parallel default(none) shared(grade,coefficients)
+	    {
+        //#pragma omp for 
         for (auto& m : members)
         {
-            if(m.IsProduct())
+            if (m.IsProduct())
             {
                 auto& coVa = m.getCommonVars();
                 auto it = coVa.find(v);
-                auto vcnt = it == coVa.end() ? 0 : it->second; // exponentation of va
-                auto i = Integer::cast(vcnt);
-                if (!i) {
+                auto noVa = it == coVa.end();
+                if (noVa && m.HasVa(v))
+                {
+                    auto s = *this;
+                    s.SetView(View::Solving);
+                    s.optimize();
+                    coefficients.clear();
+                    return s.FillPolyCoeff(coefficients, v);
+                }
+
+                auto vcnt = noVa ? 0 : it->second; // exponentation of va
+                if (!vcnt.IsInt()) {
                     IMPLEMENT
                 }
-                int ie = static_cast<int>(*i);
+                int ie = static_cast<int>(vcnt);
                 if (ie < 0)
                 {
                     coefficients.clear();
-                    return cast(*this * (v^(-ie)))->FillPolyCoeff(coefficients, v);
+                    return cast(*this * (v ^ (-ie)))->FillPolyCoeff(coefficients, v);
                 }
                 else if (ie > grade) {
                     grade = ie;
                     if (ie >= coefficients.size()) {
-                        coefficients.resize(ie+1);
+                        coefficients.resize(ie + 1);
                     }
                 }
-                
+
                 coefficients[ie] += m / (v^vcnt);
             }
             else
@@ -655,6 +706,7 @@ namespace math {
                     }
                 }
             }
+        }
         }
         return grade;
     }

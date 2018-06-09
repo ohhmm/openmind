@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE Exponentiation test
 #include <boost/test/unit_test.hpp>
 
-#include "Exponentiation.h"
+#include "Variable.h"
 
 BOOST_AUTO_TEST_CASE(Exponentiation_tests)
 {
