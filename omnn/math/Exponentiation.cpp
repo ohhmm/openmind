@@ -300,9 +300,8 @@ namespace math {
 
         if (IsExponentiation()) {
             hash = ebase.Hash() ^ eexp.Hash();
+            optimized = true;
         }
-        
-        optimized = true;
     }
     
     Valuable& Exponentiation::operator +=(const Valuable& v)
