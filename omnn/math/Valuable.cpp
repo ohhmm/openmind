@@ -164,7 +164,7 @@ namespace math {
     Valuable::Valuable(unsigned i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
-	Valuable::Valuable(ptrdiff_t i) : exp(new Integer(i)) {}
+	Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
 
     Valuable::~Valuable()
     {

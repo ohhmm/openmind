@@ -66,7 +66,7 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
     
-    Integer(ptrdiff_t i)
+    Integer(int64_t i)
         : arbitrary(i)
     {
         hash = std::hash<base_int>()(arbitrary);
