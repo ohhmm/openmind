@@ -390,6 +390,16 @@ namespace math {
     {
         return *this ^ (1_v/2);
     }
+
+    Valuable & Product::sq()
+    {
+        Product p;
+        for (auto m : members)
+        {
+            p.Add(m.Sq());
+        }
+        return Become(std::move(p));
+    }
     
     const Product::vars_cont_t& Product::getCommonVars() const
     {
@@ -403,14 +413,14 @@ namespace math {
         {
             auto it = with.find(kv.first);
             if (it != with.end()) {
-                auto i1 = Integer::cast(kv.second);
-                auto i2 = Integer::cast(it->second);
-                if (i1 && i2 && *i1 > 0_v && *i2 > 0_v) {
-                    common[kv.first] = std::min(*i1, *i2);
+                auto& i1 = kv.second.ca();
+                auto& i2 = it->second.ca();
+                if (i1 > 0_v && i2 > 0_v) {
+                    common[kv.first] = std::min(i1, i2);
                 }
                 else
                 {
-                    throw "Implement!";
+                    IMPLEMENT
                 }
             }
         }

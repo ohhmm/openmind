@@ -52,6 +52,7 @@ public:
     void optimize() override;
     const vars_cont_t& getCommonVars() const override;
     Valuable sqrt() const override;
+    Valuable& sq() override;
     Valuable calcFreeMember() const override;
     solutions_t GetIntegerSolution(const Variable& va) const override;
     void solve(const Variable& va, solutions_t& solutions) const override;
@@ -62,7 +63,7 @@ public:
     
     using base::base;
 #ifdef _MSC_VER
-    Sum() {}
+    Sum() = default;
 #endif
     
     iterator Had(iterator it) override;

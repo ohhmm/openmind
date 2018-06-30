@@ -60,10 +60,9 @@ namespace math {
     
     Valuable& Integer::operator +=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i)
+        if (v.IsInt())
         {
-            arbitrary += i->arbitrary;
+            arbitrary += v.ca();
             hash = std::hash<base_int>()(arbitrary);
         }
         else
@@ -82,10 +81,9 @@ namespace math {
 
     Valuable& Integer::operator *=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i)
+        if (v.IsInt())
         {
-            arbitrary *= i->arbitrary;
+            arbitrary *= v.ca();
             hash = std::hash<base_int>()(arbitrary);
         }
         else
@@ -100,15 +98,14 @@ namespace math {
     {
         if (v.IsInt())
         {
-            auto i = cast(v);
-            auto div = arbitrary/i->arbitrary;
-            if (div*i->arbitrary==arbitrary)
+            auto div = arbitrary / v.ca();
+            if (div*v.ca() == arbitrary)
             {
                 arbitrary = div;
                 hash = std::hash<base_int>()(arbitrary);
             }
             else
-                Become(Fraction(*this,*i));
+                Become(Fraction(*this, v.ca()));
         }
         else if(v.FindVa())
 			*this *= v^-1;
@@ -119,10 +116,9 @@ namespace math {
 
     Valuable& Integer::operator %=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i)
+        if (v.IsInt())
         {
-            arbitrary %= i->arbitrary;
+            arbitrary %= v.ca();
             hash = std::hash<base_int>()(arbitrary);
         }
         else
@@ -246,7 +242,6 @@ namespace math {
         }
         if(v.IsInt())
         {
-            auto i = cast(v);
             if (v != 0_v) {
                 if (v > 1) {
                     Valuable x = *this;
@@ -264,25 +259,19 @@ namespace math {
                     auto y = 1_v;
                     while(n > 1)
                     {
-                        auto in = Integer::cast(n);
-                        if (!in) throw "Implement!";
-                        if (in && (in->arbitrary % 2) == 0)
-                        {
-                            x *= x;
-                            n /= 2;
-                        }
-                        else
+                        auto nIsInt = n.IsInt();
+                        if (!nIsInt) IMPLEMENT;
+                        if (n.ca() & 1)
                         {
                             y *= x;
-                            x *= x;
                             --n;
-                            n /= 2;
                         }
+                        x.sq();
+                        n /= 2;
                     }
                     x *= y;
-                    i = Integer::cast(x);
-                    if (i) {
-                        arbitrary = std::move(i->arbitrary);
+                    if (x.IsInt()) {
+                        arbitrary = std::move(x.a());
                         hash = std::hash<base_int>()(arbitrary);
                     }
                     else
@@ -380,14 +369,11 @@ namespace math {
     
     bool Integer::operator <(const Valuable& v) const
     {
-        auto i = cast(v);
-        if (i)
-            return arbitrary < i->arbitrary;
+        if (v.IsInt())
+            return arbitrary < v.ca();
         else
         {
-            // try other type
-            auto i = Fraction::cast(v);
-            if (i)
+            if (v.IsFraction())
             {
                 return !(v < *this) && *this!=v;
             }

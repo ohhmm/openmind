@@ -11,6 +11,7 @@
 #include "System.h"
 
 #include <cmath>
+#include <execution>
 #include <map>
 #include <type_traits>
 
@@ -85,7 +86,7 @@ namespace math {
         }
         else
         {
-            it = std::find(members.begin(), members.end(), item);
+            it = std::find(std::execution::par, members.begin(), members.end(), item);
             if(it==end())
                 it = base::Add(item, hint);
             else
@@ -167,8 +168,19 @@ namespace math {
                 auto up = [&](){
                     mc = -c;
                 };
-                
+
                 up();
+                
+                auto comVaEq = [&]() {
+                    auto& ccv = c.getCommonVars();
+                    auto ccvsz = ccv.size();
+                    auto& itcv = it2->getCommonVars();
+                    auto itcvsz = itcv.size();
+                    return ccvsz
+                        && ccvsz == itcvsz 
+                        && std::equal(std::execution::par,
+                            ccv.cbegin(), ccv.cend(), itcv.cbegin());
+                };
                 
                 for (; it2 != members.end();)
                 {
@@ -193,8 +205,7 @@ namespace math {
                         Delete(it2);
                         up();
                     }
-                    else if (c.getCommonVars().size()
-                            && c.getCommonVars()==it2->getCommonVars())
+                    else if (comVaEq())
                     {
                         auto sum = c.IsProduct() ? c : Product{c};
                         sum += *it2;
@@ -332,10 +343,10 @@ namespace math {
             }
         }
         
-        if(IsSum())
+        if (IsSum()) {
             isOptimizing = false;
-        
-        optimized=true;
+            optimized = true;
+        }
     }
 
     const Valuable::vars_cont_t& Sum::getCommonVars() const
@@ -414,16 +425,28 @@ namespace math {
 
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
-        Valuable sum;
-        if (v==0)
-        { }
-        if (v.IsSum())
+        Sum sum;
+        auto vIsInt = v.IsInt();
+        if (vIsInt && v == 0)
+        {
+        }
+        else if (vIsInt && v == 1)
+        {
+            return *this;
+        }
+        else if (v.IsSum())
             for(auto& _1 : *cast(v))
 				for (auto& _2 : members)
-                    sum += _1*_2;
-		else
+                    sum.Add(_1*_2);
+        else
+        {
             for (auto& a : members)
-                sum += a * v;
+            {
+                sum.Add(a * v);
+            }
+            if (vIsInt)
+                sum.optimized = optimized;
+        }
         Become(std::move(sum));
         return *this;
 	}
@@ -622,6 +645,21 @@ namespace math {
         return Exponentiation(*this, 1_v/2);
     }
 
+    Valuable& Sum::sq()
+    {
+        Sum s;
+        auto e = end();
+        for (auto i = begin(); i != e; ++i)
+        {
+            s.Add(i->Sq());
+            for (auto j = i; ++j != e;)
+            {
+                s.Add(*i * *j * 2);
+            }
+        }
+        return Become(std::move(s));
+    }
+
     Valuable Sum::calcFreeMember() const
     {
         Valuable _ = 0_v;
@@ -635,7 +673,13 @@ namespace math {
     {
         size_t grade = 0;
         coefficients.resize(members.size());
-        
+        Sum c0;
+        auto add = [&](auto i, Valuable&& a) {
+            if (i)
+                coefficients[i] += a;
+            else
+                c0.Add(a);
+        };
 	    // TODO : openmp
 	    //#pragma omp parallel default(none) shared(grade,coefficients)
 	    {
@@ -673,13 +717,13 @@ namespace math {
                     }
                 }
 
-                coefficients[ie] += m / (v^vcnt);
+                add(ie, m / (v^vcnt));
             }
             else
             {
                 auto va = Variable::cast(m);
                 if (va && *va == v) {
-                    coefficients[1] += 1_v;
+                    ++coefficients[1];
                 }
                 else
                 {
@@ -695,19 +739,21 @@ namespace math {
                                     coefficients.resize(i+1);
                                 }
                             }
-                            coefficients[i] += 1_v;
+                            add(i, 1);
                         }
                         else
                             IMPLEMENT
                     }
                     else
                     {
-                        coefficients[0] += m;
+                        c0.Add(m);
                     }
                 }
             }
         }
         }
+        c0.optimized = optimized;
+        coefficients[0] = std::move(c0);
         return grade;
     }
     
@@ -965,14 +1011,40 @@ namespace math {
                 break;
             }
             case 3: {
-                IMPLEMENT;
+                // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_real_coefficients
                 auto& a = coefficients[3];
                 auto& b = coefficients[2];
                 auto& c = coefficients[1];
                 auto& d = coefficients[0];
-                auto di = (b^2)*(c^2) - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*(a^2)*(d^2) + 18_v*a*b*c*d;
-//                solutions.insert(
-//                break;
+                auto asq = a.Sq();
+                auto bsq = b.Sq();
+                auto ac3 = a * c * 3;
+                auto di = bsq*c.Sq() - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*asq*d.Sq() + ac3*(18/3)*b*d;
+                auto d0 = bsq - ac3;
+                if (di == 0)
+                {
+                    if (d0 == 0)
+                    {
+                        solutions.insert(b / (a*-3));
+                    }
+                    else
+                    {
+                        solutions.insert((a*d * 9 - b * c) / (d0 * 2));
+                        solutions.insert((a*b*c * 4 + asq * d*-9 - bsq * b) / (d0 * a));
+                    }
+                }
+                else
+                {
+                    auto d1 = (bsq * 2 - ac3 * 3)*b + asq * d * 27;
+                    auto subC = (asq*di*-27).sqrt();
+                    auto C1 = ((d1 + subC) / 2) ^ (1_v / 3);
+                    auto C2 = ((d1 - subC) / 2) ^ (1_v / 3);
+                    solutions.insert((b + C1 + d0 / C1) / (a*-3));
+                    solutions.insert((b + C1 + d0 / C2) / (a*-3));
+                    solutions.insert((b + C2 + d0 / C1) / (a*-3));
+                    solutions.insert((b + C2 + d0 / C2) / (a*-3));
+                }
+                break;
             }
             case 4: {
                 // four grade equation ax^4+bx^3+cx^2+dx+e=0

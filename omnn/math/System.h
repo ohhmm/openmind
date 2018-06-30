@@ -37,10 +37,16 @@ public:
         return true;
     }
     
+    void MakeTotalEqu(bool makeTotalEqu) {
+        this->makeTotalEqu = makeTotalEqu;
+    }
+
 private:
     expressions equs;
     v_es_t vEs;
     Valuable sqs;
+    bool makeTotalEqu = {};
+    bool doEarlyFetch = {};
 //    solutions solus;
 };
 

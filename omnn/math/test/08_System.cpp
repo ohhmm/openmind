@@ -21,7 +21,10 @@ BOOST_AUTO_TEST_CASE(System_tests)
     {
         System sys;
         Variable a,b;
-        sys << a - 8 - b;
+        Valuable t;
+        t.SetView(Valuable::View::Equation);
+        t = a - 8 - b;
+        sys << t;
         sys << a + b - 100;
         auto s = sys.Solve(a);
         BOOST_TEST(s.size()==1);
@@ -77,69 +80,85 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
 {
     //TypedVarHost<std::string> vh;
-   
+
     ifstream in(TEST_SRC_DIR"train.csv", ifstream::in);
     if (!in.is_open())
-    { cout << "cannot open file\n"; getchar(); return; }
-    else
     {
-        //std::map<std::string, Variable> v;
-        std::vector<Variable> v;
-        System s;
-        std::deque<std::future<Valuable>> d;
-        using namespace boost;
-        std::string line;
-        if (!in.eof()) {
-            in >> line; // headers
-            tokenizer<escaped_list_separator<char> > tk(
-                line, escaped_list_separator<char>('\\', ',', '\"'));
-            for (tokenizer<escaped_list_separator<char> >::iterator i(tk.begin());
-                i != tk.end(); ++i)
-                v.push_back(Variable());
-        }
-        while (!in.eof()) {
-            in >> line;
-            tokenizer<escaped_list_separator<char> > tk(
-                line, escaped_list_separator<char>('\\', ',', '\"'));
-            int vi=0;
-            for (tokenizer<escaped_list_separator<char> >::iterator i(tk.begin());
-                i != tk.end(); ++i)
-            {
-                d.push_back(
-                    std::async(
-                        [&v](int i, auto s) {
-                            auto tid = std::this_thread::get_id();
-                            std::cout << tid << " start " << i << std::endl;
-                            Variable& va = v[i];
-                            Valuable val;
-                            auto t = s;
-                            if (i) {
-                                val = boost::lexical_cast<double>(s);
-                            }
-                            else {
-                                long long l;
-                                std::stringstream ss(s);
-                                ss >> hex >> l;
-                                val = l;
-                            }
-                            std::cout << tid << " complete " << i << std::endl;
-                            return (va - val) ^ 2;
-                        },
-                        vi++,
-                        *i
-                    )
-                );
-            }
-            
-            Sum sum;
-            for (auto&& de : d)
-                sum.Add(de.get());
-            sum.optimize();
-
-            s << sum;
-        }
-
-
-        in.close();
+        cout << "cannot open file\n";
+        return;
     }
+
+    //std::map<std::string, Variable> v;
+    std::vector<Variable> v;
+    System s;
+    std::mutex m;
+    using namespace boost;
+    std::string line;
+    if (!in.eof()) {
+        in >> line; // headers
+        tokenizer<escaped_list_separator<char> > tk(
+            line, escaped_list_separator<char>('\\', ',', '\"'));
+        for (tokenizer<escaped_list_separator<char> >::iterator i(tk.begin());
+            i != tk.end(); ++i)
+            v.push_back(Variable());
+    }
+    std::deque<std::future<bool> > tasks;
+    while (!in.eof()) {
+        in >> line;
+        tokenizer<escaped_list_separator<char> > tk(
+            line, escaped_list_separator<char>('\\', ',', '\"'));
+        int vi = 0;
+        std::deque<std::future<Valuable>> d;
+        for (tokenizer<escaped_list_separator<char> >::iterator i(tk.begin());
+            i != tk.end(); ++i)
+        {
+            d.push_back(
+                std::async(
+                    [&v](int i, auto s) {
+                        auto tid = std::this_thread::get_id();
+                        std::cout << tid << " start " << i << std::endl;
+                        Variable& va = v[i];
+                        Valuable val;
+                        auto t = s;
+                        if (i) {
+                            val = boost::lexical_cast<double>(s);
+                        }
+                        else {
+                            long long l;
+                            std::stringstream ss(s);
+                            ss >> hex >> l;
+                            val = l;
+                        }
+                        std::cout << tid << " complete " << i << std::endl;
+                        return (va - val) ^ 2;
+                    },
+                    vi++,
+                    *i
+                )
+            );
+        }
+
+        tasks.push_back(std::async(
+            [&](auto&& deq) {
+                Sum sum;
+                sum.SetView(Valuable::View::Equation);
+                for (auto&& de : d)
+                    sum.Add(de.get());
+                sum.optimize();
+
+                std::lock_guard g(m);
+                s << sum;
+                return true;
+            },
+            std::move(d)));
+    }
+
+    while (tasks.front().get())
+        tasks.pop_front();
+
+
+
+
+    in.close();
+
 }

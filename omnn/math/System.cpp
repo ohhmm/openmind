@@ -3,6 +3,7 @@
 //
 #include "System.h"
 #include "Valuable.h"
+#include <execution>
 #include <numeric>
 
 using namespace omnn;
@@ -62,15 +63,19 @@ bool System::Add(const Valuable& v)
     _.SetView(Valuable::View::Equation);
     _.optimize();
     bool isNew = _ != 0_v
-        ? equs.find(-_) == equs.end() && equs.insert(_).second
+        ? std::find(std::execution::par, std::begin(equs), std::end(equs), -_) == equs.end() && equs.insert(_).second
         : false;
     
     if (isNew) {
-        sqs += _^2;
-        for(auto& va : _.Vars())
+        if (makeTotalEqu)
+            sqs += _.Sq();
+        if (doEarlyFetch)
         {
-            for(auto& s : _(va))
-                Add(va, s);
+            for (auto& va : _.Vars())
+            {
+                for (auto& s : _(va))
+                    Add(va, s);
+            }
         }
     }
     return isNew;
@@ -154,7 +159,7 @@ System::solutions_t System::Solve(const Variable& va)
         return solution;
     }
 
-    solution = sqs(va);
+    //solution = sqs(va);
     if (solution.size()) {
         Valuable::var_set_t vars;
         for(auto& s : solution)

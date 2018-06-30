@@ -526,8 +526,8 @@ namespace math {
         if(exp)
             exp->SetView(v);
 		else {
+			optimized = optimized && view == v;
 			view = v;
-			optimized = {};
 		}
     }
     
@@ -553,7 +553,20 @@ namespace math {
         else
             IMPLEMENT
     }
-    
+
+    Valuable& Valuable::sq() {
+        if (exp)
+            return exp->sq();
+        else
+            IMPLEMENT
+    }
+
+    Valuable Valuable::Sq() const
+    {
+        auto t = *this;
+        return t.sq();
+    }
+
     const Variable* Valuable::FindVa() const
     {
         if (exp) {

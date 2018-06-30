@@ -301,6 +301,12 @@ namespace math {
         if (IsExponentiation()) {
             hash = ebase.Hash() ^ eexp.Hash();
             optimized = true;
+            v.clear();
+            if (ebase.IsVa())
+            {
+                auto vaBase = Variable::cast(ebase);
+                v[*vaBase] = eexp;
+            }
         }
     }
     
@@ -556,14 +562,16 @@ namespace math {
         return c;
     }
 
+    Valuable & Exponentiation::sq()
+    {
+        eexp *= 2;
+        optimized = {};
+        optimize();
+        return *this;
+    }
+
     const Valuable::vars_cont_t& Exponentiation::getCommonVars() const
     {
-        v.clear();
-        if(ebase.IsVa())
-        {
-            auto vaBase = Variable::cast(ebase);
-            v[*vaBase] = eexp;
-        }
         return v;
     }
     

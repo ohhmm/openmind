@@ -45,6 +45,8 @@ public:
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;
 
+    Valuable& sq() override;
+
     Valuable::solutions_t operator()(const Variable& v, const Valuable& augmentation) const override;
 };
 

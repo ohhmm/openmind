@@ -71,14 +71,18 @@ protected:
     : hash(v.Hash())
     , maxVaExp(v.getMaxVaExp())
     , optimized(v.optimized)
-    {}
+    , view(v.view)
+    {
+        assert(!exp);
+    }
     
     Valuable(Valuable&& v, ValuableDescendantMarker)
     : hash(v.Hash())
     , maxVaExp(v.getMaxVaExp())
     , optimized(v.optimized)
+    , view(v.view)
     {
-        
+        assert(!exp);
     }
     
     virtual std::ostream& print(std::ostream& out) const;
@@ -123,9 +127,6 @@ public:
             typename = typename std::enable_if<std::is_convertible<T&, Valuable&>::value>::type>
     Valuable(const T&& t)
     : exp(t.Clone())
-    , hash(t.Hash())
-    , maxVaExp(t.getMaxVaExp())
-    , optimized(t.optimized)
     {
     }
      
@@ -136,9 +137,6 @@ public:
     >
     Valuable(T t)
     : exp(t.Move())
-    , hash(t.Hash())
-    , maxVaExp(t.getMaxVaExp())
-    , optimized(t.optimized)
     { }
 
     Valuable(Valuable&&) = default;
@@ -183,6 +181,9 @@ public:
     virtual bool IsMInfinity() const;
     virtual bool Is_e() const;
 
+    virtual Valuable& sq();
+
+    Valuable Sq() const;
     virtual Valuable abs() const;
     virtual Valuable sqrt() const;
     virtual Valuable calcFreeMember() const;
