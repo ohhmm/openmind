@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(Shl_test)
     BOOST_TEST(t == 2);
 }
 
-BOOST_AUTO_TEST_CASE(Sh_test)
+BOOST_AUTO_TEST_CASE(Sh_test, *disabled())
 {
     // http://static.righto.com/images/bitcoin/block_diagram_ghash.png
     auto _ = "0x02000000"_v
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(Sh_test)
     std::cout << std::hex
             << _ << std::endl
             << sh << std::endl;
-    _.save(L"sh.v"); // $ shasum -a256 -b sh.v
+    _.save(L"sh.v"); // shasum -a256 -b sh.v
     // 26b4a1075393e09e13c9121b963eabfd0659dc6248a8d243afe37c9624a1997a *sh.v
     _ = _.sh(161);
     std::cout << std::hex << _ << std::endl;

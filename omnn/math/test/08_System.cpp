@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
             v.push_back(Variable());
     }
     std::deque<std::future<bool> > tasks;
-    while (!in.eof()) {
+    //while (!in.eof()) {
         in >> line;
         tokenizer<escaped_list_separator<char> > tk(
             line, escaped_list_separator<char>('\\', ',', '\"'));
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
             [&](auto&& deq) {
                 Sum sum;
                 sum.SetView(Valuable::View::Equation);
-                for (auto&& de : d)
+                for (auto&& de : deq)
                     sum.Add(de.get());
                 sum.optimize();
 
@@ -151,10 +151,12 @@ BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
                 return true;
             },
             std::move(d)));
-    }
+    //}
 
-    while (tasks.front().get())
+    while (tasks.size()) {
+        tasks.front().get();
         tasks.pop_front();
+    }
 
 
 

@@ -149,7 +149,7 @@ public:
     Valuable(unsigned);
     Valuable(unsigned long);
     Valuable(unsigned long long);
-	Valuable(ptrdiff_t);
+	Valuable(int64_t);
     
     virtual ~Valuable();
     virtual Valuable operator -() const;
