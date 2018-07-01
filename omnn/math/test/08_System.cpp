@@ -6,6 +6,7 @@
 
 #include "System.h"
 
+#include <boost/thread/executors/basic_thread_pool.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <future>
@@ -77,6 +78,8 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 //    BOOST_TEST(values);
 }
 
+boost::basic_thread_pool tp;
+
 BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
 {
     //TypedVarHost<std::string> vh;
@@ -90,9 +93,10 @@ BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
 
     //std::map<std::string, Variable> v;
     std::vector<Variable> v;
-    System s;
-    std::mutex m;
+    System sys;
+    std::mutex systemMutex;
     using namespace boost;
+
     std::string line;
     if (!in.eof()) {
         in >> line; // headers
@@ -102,65 +106,71 @@ BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
             i != tk.end(); ++i)
             v.push_back(Variable());
     }
-    std::deque<std::future<bool> > tasks;
-    //while (!in.eof()) {
+    std::atomic<int> cntLines = 0, completedLines = 0;
+    if (!in.eof())
+        ++cntLines;
+
+    std::atomic<int> lines = 5;
+    while (!in.eof() /*&& lines--*/) {
         in >> line;
-        tokenizer<escaped_list_separator<char> > tk(
-            line, escaped_list_separator<char>('\\', ',', '\"'));
-        int vi = 0;
-        std::deque<std::future<Valuable>> d;
-        for (tokenizer<escaped_list_separator<char> >::iterator i(tk.begin());
-            i != tk.end(); ++i)
+        if (!in.eof())
+            ++cntLines;
+        tp.submit([&, line]()
         {
-            d.push_back(
-                std::async(
-                    [&v](int i, auto s) {
-                        auto tid = std::this_thread::get_id();
-                        std::cout << tid << " start " << i << std::endl;
-                        Variable& va = v[i];
+            auto sum = std::make_shared<Sum>();
+            sum->SetView(Valuable::View::Equation);
+            auto sumMutex = std::make_shared<std::mutex>();
+
+            auto cntWords = std::make_shared<std::atomic<int>>(0);
+            tokenizer<escaped_list_separator<char> > tk(
+                line, escaped_list_separator<char>('\\', ',', '\"'));
+            int vi = 0;
+            for (tokenizer<escaped_list_separator<char> >::iterator i(tk.begin());
+                i != tk.end(); ++i)
+            {
+                tp.submit([&, sum, sumMutex, cntWords, w = *i, vi](){
+                    auto tid = std::this_thread::get_id();
+                    std::cout << tid << " start " << vi << std::endl;
+                    const Variable& va = v[vi];
+                    {
                         Valuable val;
-                        auto t = s;
-                        if (i) {
-                            val = boost::lexical_cast<double>(s);
+                        if (vi) {
+                            val = boost::lexical_cast<double>(w);
                         }
                         else {
                             long long l;
-                            std::stringstream ss(s);
+                            std::stringstream ss(w);
                             ss >> hex >> l;
                             val = l;
                         }
-                        std::cout << tid << " complete " << i << std::endl;
-                        return (va - val) ^ 2;
-                    },
-                    vi++,
-                    *i
-                )
-            );
-        }
+                        val = std::move((va - val).sq());
 
-        tasks.push_back(std::async(
-            [&](auto&& deq) {
-                Sum sum;
-                sum.SetView(Valuable::View::Equation);
-                for (auto&& de : deq)
-                    sum.Add(de.get());
-                sum.optimize();
+                        std::lock_guard g(*sumMutex);
+                        sum->Add(val);
+                    }
+                    if (cntWords->fetch_add(1)+1 == v.size())
+                    {
+                        sum->optimize();
 
-                std::lock_guard g(m);
-                s << sum;
-                return true;
-            },
-            std::move(d)));
-    //}
-
-    while (tasks.size()) {
-        tasks.front().get();
-        tasks.pop_front();
+                        std::lock_guard g(systemMutex);
+                        sys << *sum;
+                        std::cout << tid << " line complete " << vi << std::endl;
+                        if (completedLines.fetch_add(1)+1 == cntLines)
+                        {
+                            // save sys and start processing test lines file
+                            std::cout << tid << " sys complete " << vi << std::endl;
+                        }
+                    }
+                    std::cout << tid << " complete " << vi << std::endl;
+                });
+                ++vi;
+            }
+        });
     }
-
 
 
 
     in.close();
 
+    tp.join();
 }

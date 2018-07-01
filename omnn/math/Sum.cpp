@@ -70,6 +70,8 @@ namespace math {
         throw "Impossible! Check order comparator error.";
         return it;
     }
+
+    auto Thr = std::thread::hardware_concurrency() << 3;
     
     const Sum::iterator Sum::Add(const Valuable& item, const iterator hint)
     {
@@ -86,11 +88,16 @@ namespace math {
         }
         else
         {
-            it = std::find(std::execution::par, members.begin(), members.end(), item);
+            if (members.size() > Thr)
+                it = std::find(std::execution::par, members.begin(), members.end(), item);
+            else
+                it = members.find(item);
+
             if(it==end())
                 it = base::Add(item, hint);
             else
                 Update(it, item*2);
+
             auto itemMaxVaExp = item.getMaxVaExp();
             if(itemMaxVaExp > maxVaExp)
                 maxVaExp = itemMaxVaExp;
