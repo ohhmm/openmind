@@ -6,13 +6,16 @@
 
 #include "System.h"
 
-#include <boost/thread/executors/basic_thread_pool.hpp>
+#include <boost/thread/thread_pool.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <future>
 #include <iostream>     // cout, endl
 #include <fstream>      // fstream
 #include <thread>
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace std;
@@ -105,16 +108,52 @@ BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
         for (tokenizer<escaped_list_separator<char> >::iterator i(tk.begin());
             i != tk.end(); ++i)
             v.push_back(Variable());
+
+#ifdef _WIN32
+        EnableMenuItem(
+            GetSystemMenu(GetConsoleWindow(), {}),
+            SC_CLOSE,
+            MF_GRAYED);
+#endif // _WIN32
+
     }
-    std::atomic<int> cntLines = 0, completedLines = 0;
+
+    std::atomic<int> cntLines = 0;
     if (!in.eof())
         ++cntLines;
 
-    std::atomic<int> lines = 5;
-    while (!in.eof() /*&& lines--*/) {
+    int skip = 0;
+    {
+        ifstream system(TEST_SRC_DIR"sys.csv", fstream::in);
+        if (system.is_open())
+        {
+            while (!system.eof()) {
+                constexpr auto Sz = 1 << 18;
+                char s[Sz];
+                system.getline(s,Sz);
+                if (!std::string(s).empty())
+                {
+                    ++skip;
+                    // TODO : check line
+                }
+            }
+            system.close();
+        }
+        else
+        {
+            cout << "cannot open file, creating new";
+            ofstream(TEST_SRC_DIR"sys.csv", fstream::out).close();
+            return;
+        }
+    }
+
+    std::atomic<int> completedLines = skip;
+    while (!in.eof()) {
         in >> line;
         if (!in.eof())
             ++cntLines;
+        if (completedLines+1 >= cntLines)
+            continue;
         tp.submit([&, line]()
         {
             auto sum = std::make_shared<Sum>();
@@ -152,13 +191,17 @@ BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
                     {
                         sum->optimize();
 
-                        std::lock_guard g(systemMutex);
-                        sys << *sum;
-                        std::cout << tid << " line complete " << vi << std::endl;
+                        {
+                            std::lock_guard g(systemMutex);
+                            sys << *sum;
+                            ofstream system(TEST_SRC_DIR"sys.csv", fstream::app);
+                            system << completedLines << ';' << *sum << endl;
+                        }
+                        std::cout << tid << " line complete " << completedLines << std::endl;
                         if (completedLines.fetch_add(1)+1 == cntLines)
                         {
                             // save sys and start processing test lines file
-                            std::cout << tid << " sys complete " << vi << std::endl;
+                            std::cout << tid << " sys complete " << std::endl;
                         }
                     }
                     std::cout << tid << " complete " << vi << std::endl;
@@ -167,8 +210,6 @@ BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
             }
         });
     }
-
-
 
     in.close();
 
