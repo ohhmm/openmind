@@ -6,7 +6,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <boost/gil/extension/io/bmp.hpp>
 #include <boost/gil/extension/io/targa.hpp>
 #include "Extrapolator.h"
 

@@ -10,8 +10,21 @@
 #include <algorithm>
 #include <codecvt>
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <boost/archive/binary_oarchive.hpp>
+#if __cplusplus >= 201700
+#include <random>
+namespace std {
+    template< class It >
+    void random_shuffle( It f, It l )
+    {
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(f, l, g);
+    }
+}
+#endif
 #include <boost/compute.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/numeric/conversion/converter.hpp>
@@ -361,7 +374,7 @@ namespace math {
         using namespace std;
         using convert_typeX = codecvt_utf8<wchar_t>;
         std::wstring_convert<convert_typeX, wchar_t> c;
-        ofstream s(c.to_bytes(f));
+        std::ofstream s(c.to_bytes(f));
         boost::archive::binary_oarchive a(s);
         a & arbitrary;
         return f;

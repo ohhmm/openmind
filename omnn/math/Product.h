@@ -6,6 +6,7 @@
 #include <map>
 #include <unordered_set>
 #include "ValuableCollectionDescendantContract.h"
+#include "Integer.h"
 #include "Fraction.h"
 #include "Variable.h"
 

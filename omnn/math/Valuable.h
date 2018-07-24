@@ -5,12 +5,14 @@
 #pragma once
 #include "OpenOps.h"
 #include <deque>
+#include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <typeindex>
 #include <unordered_set>
-#include <boost/shared_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 
 #define IMPLEMENT { implement(); throw; }
@@ -70,8 +72,8 @@ protected:
     Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.Hash())
     , maxVaExp(v.getMaxVaExp())
-    , optimized(v.optimized)
     , view(v.view)
+    , optimized(v.optimized)
     {
         assert(!exp);
     }
@@ -79,8 +81,8 @@ protected:
     Valuable(Valuable&& v, ValuableDescendantMarker)
     : hash(v.Hash())
     , maxVaExp(v.getMaxVaExp())
-    , optimized(v.optimized)
     , view(v.view)
+    , optimized(v.optimized)
     {
         assert(!exp);
     }
@@ -94,12 +96,14 @@ protected:
     size_t sz = sizeof(Valuable);
     a_int maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
     
-    static std::function<Valuable()> DefaultCachedFm();
-    std::function<Valuable()> cachedFreeMember = [this]()->Valuable{
-        auto c = calcFreeMember();
-        this->cachedFreeMember = [c](){return c;};
-        return c;
-    };
+    std::function<Valuable()> DefaultCachedFm() {
+        return [this]()->Valuable{
+            auto c = calcFreeMember();
+            this->cachedFreeMember = [c](){return c;};
+            return c;
+        };
+    }
+    std::function<Valuable()> cachedFreeMember = DefaultCachedFm();
 
 public:
 
@@ -267,7 +271,7 @@ public:
 
 protected:
     View view = View::Flat;
-    bool optimized {};
+    bool optimized = false;
 };
 
     size_t hash_value(const omnn::math::Valuable& v);

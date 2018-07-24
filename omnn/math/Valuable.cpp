@@ -427,15 +427,15 @@ namespace math {
         
         auto dv = *this; dv.d(v);
         dv.optimize();
-        auto dxval = [&](auto x){
-            auto dy = dv;
-            dy.Eval(v, x);
-            return dy;
-        };
+//        auto dxval = [&](auto x){
+//            auto dy = dv;
+//            dy.Eval(v, x);
+//            return dy;
+//        };
         
         auto inf = Infinity();
         auto valPrevious = y(MInfinity());
-        auto& b = extrs.begin()->first;
+//        auto& b = extrs.begin()->first;
 //        if ((y(b-inf) < b && b > 0) || (y(b-inf) > b && b < 0)){
 //            z.second.push_back({MInfinity(), b});
 //        }

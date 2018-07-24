@@ -33,14 +33,14 @@ namespace math {
 #endif
         Valuable* Clone() const override
         {
-            return new Chld(*static_cast<const Chld*>(this));
+            return static_cast<Valuable*>(new Chld(*static_cast<const Chld*>(this)));
         }
     
         int getTypeSize() const override { return sizeof(Chld); }
         
         Valuable* Move() override
         {
-            return new Chld(std::move(*static_cast<Chld*>(this)));
+            return static_cast<Valuable*>(new Chld(std::move(*static_cast<Chld*>(this))));
         }
 
         void New(void* addr, Valuable&& v) override {
@@ -84,9 +84,6 @@ namespace math {
         Valuable operator -() const override {
             return *this * -1;
         }
-
-//        Valuable& operator *=(const Valuable& v) override;
-//        Valuable& operator /=(const Valuable& v) override;
 
         Valuable& operator --() override { optimized={}; return *this+=-1_v; }
         Valuable& operator ++() override { optimized={}; return *this+=1_v; }

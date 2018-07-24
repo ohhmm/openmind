@@ -10,13 +10,29 @@
 #include "Product.h"
 #include "System.h"
 
+#include <algorithm>
 #include <cmath>
+#ifdef _WIN32
 #include <execution>
+#endif
 #include <map>
+#include <thread>
 #include <type_traits>
 
 #ifndef NDEBUG
 # define BOOST_COMPUTE_DEBUG_KERNEL_COMPILATION
+#endif
+#if __cplusplus >= 201700
+#include <random>
+namespace std {
+template< class It >
+void random_shuffle( It f, It l )
+{
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(f, l, g);
+}
+}
 #endif
 #include <boost/compute.hpp>
 
@@ -88,9 +104,11 @@ namespace math {
         }
         else
         {
+#ifdef _WIN32
             if (members.size() > Thr)
                 it = std::find(std::execution::par, members.begin(), members.end(), item);
             else
+#endif
                 it = members.find(item);
 
             if(it==end())
@@ -185,7 +203,7 @@ namespace math {
                     auto itcvsz = itcv.size();
                     return ccvsz
                         && ccvsz == itcvsz 
-                        && std::equal(std::execution::par,
+                        && std::equal(//TODO:std::execution::par,
                             ccv.cbegin(), ccv.cend(), itcv.cbegin());
                 };
                 
@@ -737,9 +755,9 @@ namespace math {
                     auto e = Exponentiation::cast(m);
                     if (e && e->getBase()==v)
                     {
-                        auto ie = Integer::cast(e->getExponentiation());
-                        if (ie) {
-                            auto i = static_cast<decltype(grade)>(*ie);
+                        auto& ee = e->getExponentiation();
+                        if (ee.IsInt()) {
+                            auto i = static_cast<decltype(grade)>(ee.ca());
                             if (i > grade) {
                                 grade = i;
                                 if (i >= coefficients.size()) {

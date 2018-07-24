@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <boost/any.hpp>
 #include "Integer.h"
+#include "Variable.h"
 
 namespace omnn {
 namespace math {
@@ -32,19 +33,30 @@ namespace math {
         virtual ~VarHost() = default;
 
         template<class T>
-        void AddVarId(const T& id) {
+        Variable New(const T& id) {
             auto host = dynamic_cast<TypedVarHost<T>*>(this);
             if (host) {
-                host->AddNewVarById(&id);
+                AddNewId((void*)(&id));
+                Variable v(sh());
+                v.SetId(id);
+                return v;
             }
             else
             {
                 throw "wrong id type";
             }
         }
+        
+        Variable New()
+        {
+            Variable v(sh());
+            v.SetId(NewVarId());
+            return v;
+        }
+
     protected:
         VarHost() = default;
-        virtual void AddNewVarById(void* id) {
+        virtual void AddNewId(void* id) {
             throw "Implement!";
         }
     public:
@@ -53,13 +65,15 @@ namespace math {
         }
         template<class T>
         static ptr make(){
-            return new TypedVarHost<T>();
+            return ptr(static_cast<VarHost*>(new TypedVarHost<T>()));
         }
         template<class T = Valuable>
-        static cref Global(){
-            static TypedVarHost<T> host;
-            return host;
+        static VarHost& Global(){
+            static auto host = make<T>();
+            return *host;
         }
+        template<class T>
+        static void inc(T&);
         virtual bool Has(const any::any& id) const = 0;
         virtual size_t Hash(const any::any& id) const = 0;
         virtual any::any NewVarId() = 0;
@@ -76,10 +90,12 @@ namespace math {
     class TypedVarHost : public VarHost
     {
         std::set<T> varIds;
-        using VarHost::VarHost;
-    public:
+        friend class VarHost;
+        TypedVarHost()=default;
+        
+    protected:
 
-        void AddNewVarById(void* id) override {
+        void AddNewId(void* id) override {
             if (std::is_class<T>::value) {
                 auto varId = static_cast<T*>(id);
                 if (varId)
@@ -94,6 +110,8 @@ namespace math {
                 throw "Implement!";
             }
         }
+        
+    public:
         
         any::any NewVarId() override {
 
@@ -115,7 +133,8 @@ namespace math {
                        || std::is_same<Valuable, T>::value) {
                 auto n = last;
                 typename decltype(varIds)::iterator inserted;
-                while(varIds.find(++n)!=varIds.end());
+                inc(n);
+                while(varIds.find(n)!=varIds.end());
                 varIds.insert(n);
                 return n;
             } else {
@@ -151,6 +170,15 @@ namespace math {
             return out << 'v' << any::any_cast<T>(v);
         }
     };
+
+    template<>
+    void VarHost::inc<>(std::string&);
+
+    template<class T>
+    void VarHost::inc(T& t)
+    {
+        ++t;
+    }
 
 } /* namespace math */
 } /* namespace omnn */

@@ -3,47 +3,31 @@
 //
 
 #pragma once
+#include <any>
 #include <memory>
+#include <boost/any.hpp>
 #include "ValuableDescendantContract.h"
-#include "VarHost.h"
 
 namespace omnn{
 namespace math {
+
+class VarHost;
 
 class Variable
         : public ValuableDescendantContract<Variable>
 {
     using base = ValuableDescendantContract<Variable>;
-    VarHost* varSetHost;
-    any::any varId;
+    std::shared_ptr<VarHost> varSetHost;
+    boost::any varId;
     mutable vars_cont_t vars;
     
+    friend class VarHost;
+    void SetId(boost::any);
+
 public:
-    Variable(const Variable& v)
-    : varSetHost(v.varSetHost)
-    , varId(v.varSetHost->CloneId(v.varId))
-    {
-        hash = v.Hash();
-        maxVaExp=1;
-    }
-    
-    Variable(VarHost& varHost = const_cast<VarHost&>(VarHost::Global<>()))
-    : varSetHost(&varHost)
-    , varId(varHost.NewVarId())
-    {
-        hash = varHost.Hash(varId);
-        maxVaExp=1;
-    }
-    
-    Variable(VarHost::ptr varHost)
-    : varSetHost(varHost.get())
-    , varId(varHost->NewVarId())
-    {
-        if(!varHost)
-            throw "the varHost is mandatory parameter";
-        hash = varHost->Hash(varId);
-        maxVaExp=1;
-    }
+    Variable();
+    Variable(const Variable& v);
+    Variable(std::shared_ptr<VarHost>);
 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable&) override;

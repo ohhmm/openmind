@@ -4,6 +4,7 @@
 
 #include "Formula.h"
 
+#include <list>
 #include <map>
 
 #include "Sum.h"

@@ -6,9 +6,18 @@
  */
 
 #include "VarHost.h"
+#include <boost/uuid/uuid.hpp>
 
-namespace omnn {
-namespace math {
+using namespace omnn::math;
 
-} /* namespace math */
-} /* namespace omnn */
+template<>
+any::any TypedVarHost<std::string>::NewVarId()
+{
+    return boost::uuids::uuid();
+}
+
+template<>
+void VarHost::inc<>(std::string&)
+{
+    IMPLEMENT
+}

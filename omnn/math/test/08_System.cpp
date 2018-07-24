@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 
 boost::basic_thread_pool tp;
 
-BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
+BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
 {
     //TypedVarHost<std::string> vh;
 

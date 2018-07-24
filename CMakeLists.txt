@@ -12,8 +12,10 @@ option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 
+add_definitions(-DBOOST_SYSTEM_NO_DEPRECATED)
+
 include_directories(${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/boost/gil/include
+#    ${CMAKE_SOURCE_DIR}/boost/gil/include
     ${CMAKE_SOURCE_DIR}/boost/multiprecision/include
 )
 

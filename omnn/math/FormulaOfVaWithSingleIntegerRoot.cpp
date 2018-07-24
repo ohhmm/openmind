@@ -6,7 +6,7 @@
 #include "Integer.h"
 #include "Product.h"
 #include "Sum.h"
-
+#include <list>
 
 namespace omnn {
 namespace math {

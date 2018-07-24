@@ -19,10 +19,10 @@ using namespace omnn::math;
 
 BOOST_AUTO_TEST_CASE(Varhost_test)
 {
-    TypedVarHost<int> vh;
-    Variable v(vh);
+    auto vh = VarHost::make<int>();
+    auto v = vh->New();
     BOOST_TEST(v.getMaxVaExp() == 1);
-    Variable v1(vh);
+    auto v1 = vh->New();
     BOOST_TEST(v!=v1);
     
     Variable a, b;
@@ -63,9 +63,20 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
     BOOST_CHECK_THROW(a!=v, const char*);
     
     {
-    std::string s = "any str";
-    boost::any a = s;
-    auto _ = a;
+        std::string s = "any str";
+        boost::any a = s;
+        auto _ = a;
+        auto host = VarHost::make<std::string>();
+        v1 = host->New(s);
+        auto v2 = host->New(s);
+        BOOST_TEST(v1==v2);
+        auto host2 = VarHost::make<std::string>();
+        v1 = host2->New(s);
+        BOOST_CHECK_THROW(v1!=v2, const char*);
+        v1 = host->New(std::string("t"));
+        BOOST_TEST(v1!=v2);
     }
+    
+    
 }
 

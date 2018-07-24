@@ -3,7 +3,9 @@
 //
 #include "System.h"
 #include "Valuable.h"
+#ifdef _WIN32
 #include <execution>
+#endif
 #include <numeric>
 
 using namespace omnn;
@@ -63,7 +65,11 @@ bool System::Add(const Valuable& v)
     _.SetView(Valuable::View::Equation);
     _.optimize();
     bool isNew = _ != 0_v
+#ifdef _WIN32
         ? std::find(std::execution::par, std::begin(equs), std::end(equs), -_) == equs.end() && equs.insert(_).second
+#else
+        ? std::find(std::begin(equs), std::end(equs), -_) == equs.end() && equs.insert(_).second
+#endif
         : false;
     
     if (isNew) {

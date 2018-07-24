@@ -6,10 +6,40 @@
 #include "Integer.h"
 #include "Product.h"
 #include "Sum.h"
+#include "VarHost.h"
 
 namespace omnn{
 namespace math {
 
+    Variable::Variable()
+    : varSetHost(&VarHost::Global<>(), [](auto){})
+    , varId(VarHost::Global<>().NewVarId())
+    {
+        hash = varSetHost->Hash(varId);
+        maxVaExp=1;
+    }
+    
+    Variable::Variable(const Variable& v)
+    : varSetHost(v.varSetHost)
+    , varId(v.varSetHost->CloneId(v.varId))
+    {
+        hash = v.Hash();
+        maxVaExp=1;
+    }
+    
+    void Variable::SetId(boost::any id) {
+        varId = id;
+        hash = varSetHost->Hash(id);
+    }
+    
+    Variable::Variable(VarHost::ptr varHost)
+    : varSetHost(varHost)
+    {
+        if(!varHost)
+            throw "the varHost is mandatory parameter";
+        maxVaExp=1;
+    }
+    
     Valuable Variable::operator -() const
     {
         return Product{-1, *this};
