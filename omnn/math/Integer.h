@@ -84,6 +84,12 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
     
+    Integer(const std::string& s)
+        : arbitrary(s)
+    {
+        hash = std::hash<base_int>()(arbitrary);
+    }
+
     explicit Integer(const Fraction& f);
     
     const_base_int_ref as_const_base_int_ref() const {

@@ -5,6 +5,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "System.h"
+#include "Varhost.h"
 
 #include <boost/thread/thread_pool.hpp>
 #include <boost/tokenizer.hpp>
@@ -84,9 +85,13 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
 {
     boost::basic_thread_pool tp;
-    
+
     //TypedVarHost<std::string> vh;
 
+    std::atomic<int> cntLines = 0;
+    std::map<int, std::string> ids;
+    std::string line;
+    {
     ifstream in(TEST_SRC_DIR"train.csv", ifstream::in);
     if (!in.is_open())
     {
@@ -94,13 +99,11 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
         return;
     }
 
-    //std::map<std::string, Variable> v;
     std::vector<Variable> v;
     System sys;
     std::mutex systemMutex;
     using namespace boost;
 
-    std::string line;
     if (!in.eof()) {
         in >> line; // headers
         tokenizer<escaped_list_separator<char> > tk(
@@ -115,10 +118,8 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
             SC_CLOSE,
             MF_GRAYED);
 #endif // _WIN32
-
     }
 
-    std::atomic<int> cntLines = 0;
     if (!in.eof())
         ++cntLines;
 
@@ -130,11 +131,14 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
             while (!system.eof()) {
                 constexpr auto Sz = 1 << 18;
                 char s[Sz];
-                system.getline(s,Sz);
-                if (!std::string(s).empty())
+                system.getline(s, Sz);
+                line = s;
+                if (!line.empty())
                 {
                     ++skip;
-                    // TODO : check line
+                    auto c = memchr(s, ',', Sz);
+                    *(char*)c = 0;
+                    ids[skip] = s;
                 }
             }
             system.close();
@@ -152,7 +156,7 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
         in >> line;
         if (!in.eof())
             ++cntLines;
-        if (completedLines+1 >= cntLines)
+        if (completedLines + 1 >= cntLines)
             continue;
         tp.submit([&, line]()
         {
@@ -187,7 +191,7 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
                         std::lock_guard g(*sumMutex);
                         sum->Add(val);
                     }
-                    if (cntWords->fetch_add(1)+1 == v.size())
+                    if (cntWords->fetch_add(1) + 1 == v.size())
                     {
                         sum->optimize();
 
@@ -198,7 +202,7 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
                             system << completedLines << ';' << *sum << endl;
                         }
                         std::cout << tid << " line complete " << completedLines << std::endl;
-                        if (completedLines.fetch_add(1)+1 == cntLines)
+                        if (completedLines.fetch_add(1) + 1 == cntLines)
                         {
                             // save sys and start processing test lines file
                             std::cout << tid << " sys complete " << std::endl;
@@ -212,6 +216,34 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
     }
 
     in.close();
+    }
+    tp.join();
+
+    {
+        ifstream in(TEST_SRC_DIR"train.csv", ifstream::in);
+        ifstream system(TEST_SRC_DIR"sys.csv", fstream::in);
+        ifstream test(TEST_SRC_DIR"test.csv", ifstream::in);
+
+        if (!in.is_open() || !system.is_open())
+        {
+            cout << "cannot open file\n";
+            return;
+        }
+        auto h = VarHost::make<std::string>();
+        while (!system.eof()) {
+            constexpr auto Sz = 1 << 18;
+            char s[Sz];
+            system.getline(s, Sz);
+            line = std::string(s);
+            if (!line.empty())
+            {
+                std::size_t sc = line.find(';');
+                line = line.substr(sc + 1, line.length() - sc);
+                Valuable v(line, h);
+                BOOST_TEST(v.str() == line);
+            }
+        }
+    }
 
     tp.join();
 }

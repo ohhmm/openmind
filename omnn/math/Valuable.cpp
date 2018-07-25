@@ -6,7 +6,11 @@
 #include "Fraction.h"
 #include "Infinity.h"
 #include "Integer.h"
-#include "Variable.h"
+#include "Varhost.h"
+#include <string>
+#include <stack>
+#include <map>
+#include <algorithm>
 #include <boost/numeric/conversion/converter.hpp>
 
 
@@ -147,12 +151,12 @@ namespace math {
     }
 
     Valuable::Valuable(const Valuable& v) :
-            exp(v.Clone())
+        exp(v.Clone())
     {
     }
 
     Valuable::Valuable(Valuable* v) :
-            exp(v)
+        exp(v)
     {
     }
 
@@ -164,7 +168,83 @@ namespace math {
     Valuable::Valuable(unsigned i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
-	Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
+    Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
+
+    Valuable::Valuable(const std::string& s, std::shared_ptr<VarHost> h)
+    {
+        std::stack <int> st;
+        std::map<int, int> bracketsmap;
+        int c = 0;
+        auto l = s.length();
+        std::string numbers = "0123456789";
+        while (c < l)
+        {
+            if (s[c] == '(')
+                st.push(c);
+            else if (s[c] == ')')
+            {
+                bracketsmap.insert(std::pair(st.top(), c));
+                st.pop();
+            }
+            c++;
+        }
+        if (st.empty()) std::cout << "line is valid\n";
+        if (bracketsmap.empty())
+        {
+            std::size_t found = s.find("*");
+            if (found != std::string::npos)
+            {
+                std::string lpart = s.substr(0, found);
+                std::string rpart = s.substr(found + 1, s.length() - found);
+                Become(Valuable(lpart, h)*Valuable(rpart, h));
+            }
+            else
+            {
+                found = s.find("^");
+                if (found != std::string::npos)
+                {
+                    std::string lpart = s.substr(0, found);
+                    std::string rpart = s.substr(found + 1, s.length() - found);
+                    Become(Valuable(lpart, h) ^ Valuable(rpart, h));
+                }
+                else
+                {
+                    found = s.find_first_not_of("0123456789");
+                    if (found == std::string::npos)
+                    {
+                        Become(Integer(s));
+                    }
+                    else if (s[0] == 'v')
+                    {
+                        Become(h->New(s));
+                    }
+                }
+            }
+        }
+        else {
+            std::string lpart = s.substr(bracketsmap.begin()->first + 1, bracketsmap.begin()->second - bracketsmap.begin()->first - 1);
+            if (bracketsmap.begin()->second != s.length() - 1)
+            {
+                std::string rpart = s.substr(bracketsmap.begin()->second + 1, s.length() - bracketsmap.begin()->second - 1);
+                if (rpart.compare(0, 3, " + ") == 0)
+                {
+                    Become(Valuable(lpart, h) + Valuable(rpart.substr(3, rpart.length() - 3), h));
+                }
+                else if (rpart.compare(0, 1, "*") == 0)
+                {
+                    Become(Valuable(lpart, h)*Valuable(rpart.substr(1, rpart.length() - 1), h));
+                }
+                else if (rpart.compare(0, 1, "^") == 0)
+                {
+                    Become(Valuable(lpart, h) ^ Valuable(rpart.substr(1, rpart.length() - 1), h));
+                }
+            }
+            else
+            {
+                Become(Valuable(lpart, h));
+            }
+        }
+    }
 
     Valuable::~Valuable()
     {

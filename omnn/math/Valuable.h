@@ -23,6 +23,7 @@ namespace math {
     using a_int = boost::multiprecision::cpp_int;
     namespace ptrs = ::std;
 
+    class VarHost;
     class Variable;
     struct ValuableDescendantMarker {};
     
@@ -154,7 +155,9 @@ public:
     Valuable(unsigned long);
     Valuable(unsigned long long);
 	Valuable(int64_t);
-    
+
+    Valuable(const std::string&, std::shared_ptr<VarHost>);
+
     virtual ~Valuable();
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
