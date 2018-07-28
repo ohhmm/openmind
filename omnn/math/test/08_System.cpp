@@ -81,10 +81,10 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 //    BOOST_TEST(values);
 }
 
-boost::basic_thread_pool tp;
-
 BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
 {
+    boost::basic_thread_pool tp;
+    
     //TypedVarHost<std::string> vh;
 
     ifstream in(TEST_SRC_DIR"train.csv", ifstream::in);

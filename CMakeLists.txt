@@ -12,7 +12,12 @@ option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 
-add_definitions(-DBOOST_SYSTEM_NO_DEPRECATED)
+include(ExternalProject)
+
+add_definitions(
+    -DBOOST_SYSTEM_NO_DEPRECATED
+    -DBOOST_ERROR_CODE_HEADER_ONLY
+)
 
 include_directories(${CMAKE_SOURCE_DIR}
 #    ${CMAKE_SOURCE_DIR}/boost/gil/include
@@ -29,7 +34,7 @@ if (OPENMP_FOUND)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
-find_package(Boost)
+find_package(Boost COMPONENTS system)
 IF (Boost_FOUND)
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
     ADD_DEFINITIONS( "-DHAS_BOOST" )
