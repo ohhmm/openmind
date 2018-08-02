@@ -34,24 +34,76 @@ if (OPENMP_FOUND)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
-find_package(Boost COMPONENTS system)
-IF (Boost_FOUND)
-    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-    ADD_DEFINITIONS( "-DHAS_BOOST" )
-ELSEIF(WIN32)
-    find_program(NUGET nuget HINTS $ENV{ProgramFiles})
-    if(NOT NUGET)
-        message(FATAL "Cannot find nuget command line tool.\nInstall it with e.g. choco install nuget.commandline")
+
+find_package(Boost)
+if (Boost_FOUND)
+    add_custom_target(boost)
+else()
+    set(BOOST_USED_COMPONENTS system serialization date_time thread)
+    if (${OPENMIND_BUILD_TESTS})
+        set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test)
+    endif ()
+    message("Finding boost components ${BOOST_USED_COMPONENTS}")
+    foreach(module ${BOOST_USED_COMPONENTS})
+        set(BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS} --with-${module}")
+    endforeach(module)
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(Boost_address_model 64)
     else()
-        execute_process(COMMAND ${NUGET} install boost)
+      set(Boost_address_model 32)
+    endif()
+
+    if(WIN32)
+        set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
+        separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
+        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
+    else()
+        set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
+        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
+    endif()
+    message("ExternalProject_Add ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
+    if(_IS_DEBUG)
+        ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
+            BUILD_IN_SOURCE 1
+            CONFIGURE_COMMAND "" #${BOOST_EXT_CONFIGURE}
+            BUILD_COMMAND ${BOOST_BUILD_COMMAND}
+            INSTALL_COMMAND ""
+            )
+    else()
+        ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
+            BUILD_IN_SOURCE 1
+            CONFIGURE_COMMAND "" #${BOOST_EXT_CONFIGURE}
+            BUILD_COMMAND ${BOOST_BUILD_COMMAND}
+            INSTALL_COMMAND ""
+            UPDATE_COMMAND ""
+            )
+    endif()
+    set(Boost_INCLUDE_DIR ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
+    build_command(BOOST_BUILD_CMD TARGET boost)
+    message(BOOST_BUILD_CMD ${BOOST_BUILD_CMD})
+    #execute_process(COMMAND ${BOOST_BUILD_CMD}
+        #WORKING_DIRECTORY ${Boost_INCLUDE_DIR}
+        #)
+    #find_package(Boost COMPONENTS ${BOOST_USED_COMPONENTS})
+    if(NOT ${Boost_FOUND})
+        add_custom_target(conf ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} DEPENDS boost)
+    else()
+        add_custom_target(conf)
+    endif()
+endif()
+function(add_library targetName)
+    _add_library(${targetName} ${ARGN})
+    add_dependencies(${targetName} boost) 
+endfunction()
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+IF (Boost_FOUND)
+    message("Boost_FOUND")
+    ADD_DEFINITIONS( "-DHAS_BOOST" )
+    if(MSVC)
+	    link_directories(${Boost_INCLUDE_DIR}/stage/lib)
     endif()
 ENDIF()
-
-if(MSVC)
-	if(Boost_FOUND)
-		link_directories(${Boost_INCLUDE_DIR}/stage/lib)
-	endif()
-endif()
 
 find_package(opencl)
 include_directories(${OPENCL_INCLUDE_DIR})
@@ -59,7 +111,6 @@ include_directories(${OPENCL_INCLUDE_DIR})
 if (${OPENMIND_BUILD_TESTS})
     enable_testing()
 endif ()
-
 add_subdirectory(OpenMind)
 add_subdirectory(omnn)
 if(${OPENMIND_BUILD_SAMPLES})

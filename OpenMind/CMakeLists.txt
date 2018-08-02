@@ -22,7 +22,7 @@ MACRO(ADD_MSVC_PRECOMPILED_HEADER PrecompiledHeader PrecompiledSource SourcesVar
   ENDIF(MSVC)
 ENDMACRO(ADD_MSVC_PRECOMPILED_HEADER)
 
-FIND_PACKAGE(Boost REQUIRED)
+#FIND_PACKAGE(Boost)
 IF (Boost_FOUND)
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
     ADD_DEFINITIONS( "-DHAS_BOOST" )
@@ -185,3 +185,5 @@ if(${UNIX})
 	target_link_libraries(${this_target} ${${this_target}_Libs})
 #	target_link_libraries(${this_target} lib${this_target})
 endif(${UNIX})
+
+#add_dependencies(${this_target} conf)
