@@ -172,10 +172,11 @@ namespace math {
 
     Valuable::Valuable(const std::string& s, std::shared_ptr<VarHost> h)
     {
-        std::stack <int> st;
-        std::map<int, int> bracketsmap;
-        int c = 0;
         auto l = s.length();
+        using index_t = decltype(l);
+        std::stack <index_t> st;
+        std::map<index_t, index_t> bracketsmap;
+        int c = 0;
         std::string numbers = "0123456789";
         while (c < l)
         {
@@ -222,28 +223,95 @@ namespace math {
             }
         }
         else {
-            std::string lpart = s.substr(bracketsmap.begin()->first + 1, bracketsmap.begin()->second - bracketsmap.begin()->first - 1);
-            if (bracketsmap.begin()->second != s.length() - 1)
+            Valuable v;
+            std::function<void(Valuable&&)> o = [&](Valuable&& val) {
+                v = std::move(val);
+            };
+            //std::stack<std::pair<char, Valuable> > a;
+            for (index_t i = 0; i < l; ++i)
             {
-                std::string rpart = s.substr(bracketsmap.begin()->second + 1, s.length() - bracketsmap.begin()->second - 1);
-                if (rpart.compare(0, 3, " + ") == 0)
+                auto c = s[i];
+                if (c == '(')
                 {
-                    Become(Valuable(lpart, h) + Valuable(rpart.substr(3, rpart.length() - 3), h));
+                    auto cb = bracketsmap[i];
+                    auto next = i + 1;
+                    o(Valuable(s.substr(next, cb - next), h));
+                    i = cb;
                 }
-                else if (rpart.compare(0, 1, "*") == 0)
-                {
-                    Become(Valuable(lpart, h)*Valuable(rpart.substr(1, rpart.length() - 1), h));
+                else if (c == 'v') {
+                    auto next = s.find_first_not_of("0123456789");
+                    o(std::move(h->New(s.substr(i, next - i))));
+                    i = next - 1;
                 }
-                else if (rpart.compare(0, 1, "^") == 0)
-                {
-                    Become(Valuable(lpart, h) ^ Valuable(rpart.substr(1, rpart.length() - 1), h));
+                else if ( (c >= '0' && c <= '9') || c == '-') {
+                    auto next = s.find_first_not_of("0123456789");
+                    operator+=(v);
+                    v = Integer(s.substr(i, next - i));
+                    //while (s[next] == ' ')
+                    //    ++next;
+                    //if (s[next] == '*') {
+                    //    auto _ = o;
+                    //    o = [&, _](Valuable&& val) {
+                    //        v *= std::move(val);
+                    //        o = _;
+                    //    };
+                    //}
+                    i = next - 1;
                 }
-            }
-            else
-            {
-                Become(Valuable(lpart, h));
+                else if (c == '+') {
+                    auto _ = o;
+                    o = [&, _](Valuable&& val) {
+                        v += std::move(val);
+                        o = _;
+                    };
+                }
+                else if (c == '*') {
+                    auto _ = o;
+                    o = [&, _](Valuable&& val) {
+                        v *= std::move(val);
+                        o = _;
+                    };
+                }
+                else if (c == '^') {
+                    auto _ = o;
+                    o = [&,_](Valuable&& val) {
+                        v ^= std::move(val);
+                        o = _;
+                    };
+                }
+                else if (c == ' ') {
+                }
+                else {
+                    IMPLEMENT
+                }
+
+                //std::string lpart = s.substr(bracketsmap.begin()->first + 1, bracketsmap.begin()->second - bracketsmap.begin()->first - 1);
+                //if (bracketsmap.begin()->second != s.length() - 1)
+                //{
+                //    std::string rpart = s.substr(bracketsmap.begin()->second + 1, s.length() - bracketsmap.begin()->second - 1);
+                //    if (rpart.compare(0, 3, " + ") == 0)
+                //    {
+                //        operator+=(Valuable(lpart, h));
+                //        Become(+Valuable(rpart.substr(3, rpart.length() - 3), h));
+                //    }
+                //    else if (rpart.compare(0, 1, "*") == 0)
+                //    {
+                //        Become(Valuable(lpart, h)*Valuable(rpart.substr(1, rpart.length() - 1), h));
+                //    }
+                //    else if (rpart.compare(0, 1, "^") == 0)
+                //    {
+                //        Become(Valuable(lpart, h) ^ Valuable(rpart.substr(1, rpart.length() - 1), h));
+                //    }
+                //}
+                //else
+                //{
+                //    Become(Valuable(lpart, h));
+                //}
             }
         }
+
+        if (s != str())
+            IMPLEMENT;
     }
 
     Valuable::~Valuable()

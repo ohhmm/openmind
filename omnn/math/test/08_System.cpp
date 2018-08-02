@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 //    BOOST_TEST(values);
 }
 
-BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
+BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
 {
     boost::basic_thread_pool tp;
 
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
                 if (!line.empty())
                 {
                     ++skip;
-                    auto c = memchr(s, ',', Sz);
+                    auto c = memchr(s, ';', Sz);
                     *(char*)c = 0;
                     ids[skip] = s;
                 }
