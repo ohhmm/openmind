@@ -167,7 +167,10 @@ namespace math {
         }
         
         std::ostream& print(std::ostream& out, const any::any& v) const override {
-            return out << 'v' << any::any_cast<T>(v);
+            auto c = any::any_cast<T>(v);
+            if (std::is_integral<T>::value)
+                out << 'v';
+            return out << c;
         }
     };
 

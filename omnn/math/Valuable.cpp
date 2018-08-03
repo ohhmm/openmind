@@ -310,7 +310,11 @@ namespace math {
             }
         }
 
-        if (s != str())
+        auto _ = str();
+        if (_.front() == '(' && _.back() == ')')
+            _ = _.substr(1, str().length() - 2);
+        
+        if (s != _)
             IMPLEMENT;
     }
 
