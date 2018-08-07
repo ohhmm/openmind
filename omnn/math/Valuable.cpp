@@ -7,6 +7,7 @@
 #include "Infinity.h"
 #include "Integer.h"
 #include "Varhost.h"
+#include "Sum.h"
 #include <string>
 #include <stack>
 #include <map>
@@ -189,7 +190,8 @@ namespace math {
             }
             c++;
         }
-        if (st.empty()) std::cout << "line is valid\n";
+        if (!st.empty())
+            throw "parentneses relation missmatch";
         if (bracketsmap.empty())
         {
             std::size_t found = s.find("*");
@@ -223,11 +225,19 @@ namespace math {
             }
         }
         else {
+            Sum sum;
             Valuable v;
-            std::function<void(Valuable&&)> o = [&](Valuable&& val) {
+            auto o_mov = [&](Valuable&& val) {
                 v = std::move(val);
             };
-            //std::stack<std::pair<char, Valuable> > a;
+            auto o_mul = [&](Valuable&& val) {
+                v *= std::move(val);
+            };
+            auto o_e = [&](Valuable&& val) {
+                v ^= std::move(val);
+            };
+            std::function<void(Valuable&&)> o = o_mov;
+            //std::stack<char> op;
             for (index_t i = 0; i < l; ++i)
             {
                 auto c = s[i];
@@ -239,80 +249,41 @@ namespace math {
                     i = cb;
                 }
                 else if (c == 'v') {
-                    auto next = s.find_first_not_of("0123456789");
+                    auto next = s.find_first_not_of("0123456789", i+1);
                     o(std::move(h->New(s.substr(i, next - i))));
                     i = next - 1;
                 }
                 else if ( (c >= '0' && c <= '9') || c == '-') {
-                    auto next = s.find_first_not_of("0123456789");
-                    operator+=(v);
-                    v = Integer(s.substr(i, next - i));
-                    //while (s[next] == ' ')
-                    //    ++next;
-                    //if (s[next] == '*') {
-                    //    auto _ = o;
-                    //    o = [&, _](Valuable&& val) {
-                    //        v *= std::move(val);
-                    //        o = _;
-                    //    };
-                    //}
+                    auto next = s.find_first_not_of("0123456789", i+1);
+                    o(Integer(s.substr(i, next - i)));
                     i = next - 1;
                 }
                 else if (c == '+') {
-                    auto _ = o;
-                    o = [&, _](Valuable&& val) {
-                        v += std::move(val);
-                        o = _;
-                    };
+                    sum.Add(v);
+                    v = 0;
+                    o = o_mov;
                 }
                 else if (c == '*') {
-                    auto _ = o;
-                    o = [&, _](Valuable&& val) {
-                        v *= std::move(val);
-                        o = _;
-                    };
+                    o = o_mul;
                 }
                 else if (c == '^') {
+                    IMPLEMENT
                     auto _ = o;
-                    o = [&,_](Valuable&& val) {
-                        v ^= std::move(val);
-                        o = _;
-                    };
+                    o = o_e;
                 }
                 else if (c == ' ') {
                 }
                 else {
                     IMPLEMENT
                 }
-
-                //std::string lpart = s.substr(bracketsmap.begin()->first + 1, bracketsmap.begin()->second - bracketsmap.begin()->first - 1);
-                //if (bracketsmap.begin()->second != s.length() - 1)
-                //{
-                //    std::string rpart = s.substr(bracketsmap.begin()->second + 1, s.length() - bracketsmap.begin()->second - 1);
-                //    if (rpart.compare(0, 3, " + ") == 0)
-                //    {
-                //        operator+=(Valuable(lpart, h));
-                //        Become(+Valuable(rpart.substr(3, rpart.length() - 3), h));
-                //    }
-                //    else if (rpart.compare(0, 1, "*") == 0)
-                //    {
-                //        Become(Valuable(lpart, h)*Valuable(rpart.substr(1, rpart.length() - 1), h));
-                //    }
-                //    else if (rpart.compare(0, 1, "^") == 0)
-                //    {
-                //        Become(Valuable(lpart, h) ^ Valuable(rpart.substr(1, rpart.length() - 1), h));
-                //    }
-                //}
-                //else
-                //{
-                //    Become(Valuable(lpart, h));
-                //}
             }
+            sum.Add(v);
+            Become(std::move(sum));
         }
 
         auto _ = str();
         if (_.front() == '(' && _.back() == ')')
-            _ = _.substr(1, str().length() - 2);
+            _ = _.substr(1, _.length()-2);
         
         if (s != _)
             IMPLEMENT;
