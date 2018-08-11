@@ -36,7 +36,9 @@ namespace math {
         Variable New(const T& id) {
             auto host = dynamic_cast<TypedVarHost<T>*>(this);
             if (host) {
-                AddNewId((void*)(&id));
+                AddNewId(sizeof(void*) >= sizeof(T)
+                         ? reinterpret_cast<void*>(id)
+                         : (void*)(new T(id)));
                 Variable v(sh());
                 v.SetId(id);
                 return v;
@@ -63,7 +65,7 @@ namespace math {
         ptr sh() {
             return shared_from_this();
         }
-        template<class T>
+        template<class T = int>
         static ptr make(){
             return ptr(static_cast<VarHost*>(new TypedVarHost<T>()));
         }
@@ -96,7 +98,8 @@ namespace math {
     protected:
 
         void AddNewId(void* id) override {
-            if (std::is_class<T>::value) {
+            if (sizeof(void*) >= sizeof(T)) varIds.insert(*reinterpret_cast<T*>(reinterpret_cast<void*>(&id)));
+            else if (std::is_class<T>::value) {
                 auto varId = static_cast<T*>(id);
                 if (varId)
                 {

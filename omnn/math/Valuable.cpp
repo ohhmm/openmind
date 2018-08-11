@@ -219,7 +219,7 @@ namespace math {
                     }
                     else if (s[0] == 'v')
                     {
-                        Become(h->New(s));
+                        Become(h->New(std::stoi(s.c_str()+1)));
                     }
                 }
             }
@@ -250,7 +250,8 @@ namespace math {
                 }
                 else if (c == 'v') {
                     auto next = s.find_first_not_of("0123456789", i+1);
-                    o(std::move(h->New(s.substr(i, next - i))));
+                    auto id = s.substr(i + 1, next - i);
+                    o(std::move(h->New(std::stoi(id))));
                     i = next - 1;
                 }
                 else if ( (c >= '0' && c <= '9') || c == '-') {
@@ -282,7 +283,7 @@ namespace math {
         }
 
         auto _ = str();
-        if (_.front() == '(' && _.back() == ')')
+        if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
             _ = _.substr(1, _.length()-2);
         
         if (s != _)
