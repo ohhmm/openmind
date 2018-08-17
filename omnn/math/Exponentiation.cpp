@@ -2,6 +2,10 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Exponentiation.h"
+
+#include "e.h"
+#include "i.h"
+#include "π.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
@@ -160,6 +164,10 @@ namespace math {
         if (ebase.IsFraction() && eexp.IsInt() && eexp < 0_v) {
             eexp = -eexp;
             ebase = Fraction::cast(ebase)->Reciprocal();
+        }
+
+        if (ebase.Is_e() && eexp == i*π) {
+            Become(-1);
         }
 
         if (ebase.IsInt()) {

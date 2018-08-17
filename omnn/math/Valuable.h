@@ -187,6 +187,8 @@ public:
     virtual bool IsInfinity() const;
     virtual bool IsMInfinity() const;
     virtual bool Is_e() const;
+    virtual bool Is_i() const;
+    virtual bool Is_π() const;
 
     virtual Valuable& sq();
 

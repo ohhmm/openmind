@@ -2,8 +2,8 @@
 // Created by Sergej Krivonos on 5/26/18.
 //
 
-#include "e.h"
+#include "π.h"
 
 using namespace omnn::math;
 
-const Euler e;
+const Pi e;

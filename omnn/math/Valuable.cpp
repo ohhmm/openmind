@@ -610,6 +610,8 @@ namespace math {
     bool Valuable::IsInfinity() const { return exp && exp->IsInfinity(); }
     bool Valuable::IsMInfinity() const { return exp && exp->IsMInfinity(); }
     bool Valuable::Is_e() const { return exp && exp->Is_e(); }
+    bool Valuable::Is_i() const { return exp && exp->Is_i(); }
+    bool Valuable::Is_π() const { return exp && exp->Is_π(); }
 
     std::ostream& Valuable::print(std::ostream& out) const
     {

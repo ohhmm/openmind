@@ -6,6 +6,9 @@
 
 #include "System.h"
 #include "Varhost.h"
+#include "e.h"
+#include "i.h"
+#include "π.h"
 
 #include <boost/thread/thread_pool.hpp>
 #include <boost/tokenizer.hpp>
@@ -74,15 +77,16 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
     s   << c+g+b-100
         << g*250+b*6000+c*4000-40000
         // c,g,b are integers, see https://math.stackexchange.com/a/1598552/118612
-        // << (e^(2*π*i*c))-1
+        << (e^(2*π*i*c))-1
     ;
+    auto _ = s.Solve(c);
 //    auto cc = s.SolveSingleInteger(c);
 //    auto gc = s.SolveSingleInteger(g);
 //    auto bc = s.SolveSingleInteger(b);
 //    BOOST_TEST(values);
 }
 
-BOOST_AUTO_TEST_CASE(kaggle_test/*, *disabled()*/)
+BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
 {
     boost::basic_thread_pool tp;
 

@@ -36,8 +36,10 @@ namespace math {
         Variable New(const T& id) {
             auto host = dynamic_cast<TypedVarHost<T>*>(this);
             if (host) {
+                using cv = const void;
+                using vp = cv*;
                 AddNewId(sizeof(void*) >= sizeof(T)
-                         ? reinterpret_cast<void*>(id)
+                         ? *(void**)(&id)
                          : (void*)(new T(id)));
                 Variable v(sh());
                 v.SetId(id);
@@ -58,7 +60,7 @@ namespace math {
 
     protected:
         VarHost() = default;
-        virtual void AddNewId(void* id) {
+        virtual void AddNewId(const void* id) {
             throw "Implement!";
         }
     public:
@@ -97,10 +99,11 @@ namespace math {
         
     protected:
 
-        void AddNewId(void* id) override {
-            if (sizeof(void*) >= sizeof(T)) varIds.insert(*reinterpret_cast<T*>(reinterpret_cast<void*>(&id)));
+        void AddNewId(const void* id) override {
+            if (sizeof(void*) >= sizeof(T))
+                varIds.insert(*reinterpret_cast<T*>(reinterpret_cast<void*>(&id)));
             else if (std::is_class<T>::value) {
-                auto varId = static_cast<T*>(id);
+                auto varId = static_cast<const T*>(id);
                 if (varId)
                 {
                     varIds.insert(*varId);
