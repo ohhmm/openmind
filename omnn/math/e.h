@@ -3,13 +3,13 @@
 //
 
 #pragma once
-#include "ValuableDescendant.h"
+#include "Constant.h"
 
 namespace omnn::math {
 
-    class Euler : public ValuableDescendant<Euler>
+    class Euler : public Constant<Euler>
     {
-        using base = ValuableDescendant<Euler>;
+        using base = Constant<Euler>;
 
     protected:
         std::ostream &print(std::ostream &out) const override
@@ -19,9 +19,13 @@ namespace omnn::math {
         using base::base;
 
         bool Is_e() const override { return true; }
+        bool operator==(const Valuable& v) const override
+        { return v.Is_e(); }
 
 //        bool operator<(const Valuable &v) const override;
     };
 
-    const Euler e;
+    namespace constant {
+        const Euler e;
+    }
 }

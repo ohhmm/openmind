@@ -6,7 +6,9 @@
 #include "Fraction.h"
 #include "Integer.h"
 #include "Sum.h"
-
+#include "e.h"
+#include "i.h"
+#include "π.h"
 #include <type_traits>
 
 namespace omnn{
@@ -20,6 +22,9 @@ namespace math {
         typeid(Product),
         // general order
         typeid(Integer),
+        typeid(MinusOneSq),
+        typeid(Euler),
+        typeid(Pi),
         typeid(Fraction),
         typeid(Exponentiation),
         typeid(Variable),

@@ -3,13 +3,13 @@
 //
 
 #pragma once
-#include "ValuableDescendant.h"
+#include "Constant.h"
 
 namespace omnn::math {
 
-    class MinusOneSq : public ValuableDescendant<MinusOneSq>
+    class MinusOneSq : public Constant<MinusOneSq>
     {
-        using base = ValuableDescendant<MinusOneSq>;
+        using base = Constant<MinusOneSq>;
 
     protected:
         std::ostream &print(std::ostream &out) const override
@@ -19,7 +19,11 @@ namespace omnn::math {
         using base::base;
 
         bool Is_i() const override { return true; }
+        bool operator==(const Valuable& v) const override
+        { return v.Is_i(); }
     };
 
-    const MinusOneSq i;
+    namespace constant {
+        const MinusOneSq i;
+    }
 }

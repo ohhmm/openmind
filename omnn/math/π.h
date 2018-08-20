@@ -3,13 +3,13 @@
 //
 
 #pragma once
-#include "ValuableDescendant.h"
+#include "Constant.h"
 
 namespace omnn::math {
 
-    class Pi : public ValuableDescendant<Pi>
+    class Pi : public Constant<Pi>
     {
-        using base = ValuableDescendant<Pi>;
+        using base = Constant<Pi>;
 
     protected:
         std::ostream &print(std::ostream &out) const override
@@ -19,7 +19,11 @@ namespace omnn::math {
         using base::base;
 
         bool Is_π() const override { return true; }
+        bool operator==(const Valuable& v) const override
+        { return v.Is_π(); }
     };
 
-    const Pi π;
+    namespace constant {
+        const Pi π;
+    }
 }

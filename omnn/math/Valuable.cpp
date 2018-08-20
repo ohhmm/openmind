@@ -6,7 +6,7 @@
 #include "Fraction.h"
 #include "Infinity.h"
 #include "Integer.h"
-#include "Varhost.h"
+#include "VarHost.h"
 #include "Sum.h"
 #include <string>
 #include <stack>

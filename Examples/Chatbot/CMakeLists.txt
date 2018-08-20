@@ -1,6 +1,13 @@
 project(ChatBot)
 
-ExternalProject_Add(zlib GIT_REPOSITORY https://github.com/madler/zlib.git)
+Find_Package(zlib)
+if(NOT ZLIB_FOUND)
+	ExternalProject_Add(zlib
+		GIT_REPOSITORY https://github.com/madler/zlib.git
+#		BUILD_IN_SOURCE 1
+#		INSTALL_DIR "${CMAKE_BINARY_DIR}/zlib-prefix"
+		)
+endif()
 ExternalProject_Add(icu
     SVN_REPOSITORY http://source.icu-project.org/repos/icu/tags/latest
     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env

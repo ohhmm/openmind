@@ -8,9 +8,16 @@
 namespace omnn{
 namespace math {
 
+    class ValuableDescendantBase : public Valuable
+    {
+    public:
+        using Valuable::Valuable;
+        Valuable& operator^=(const Valuable& v) override;
+    };
+
     template <class Chld>
     class ValuableDescendantContract
-            : public Valuable
+            : public ValuableDescendantBase
     {
 #ifdef BOOST_TEST_MODULE
     public:
@@ -53,11 +60,11 @@ namespace math {
         // todo :
         //ValuableDescendantContract() : Valuable<>() {}
         // instead of
-        ValuableDescendantContract() : Valuable(ValuableDescendantMarker()) {}
+        ValuableDescendantContract() : ValuableDescendantBase(ValuableDescendantMarker()) {}
         ValuableDescendantContract(ValuableDescendantContract&& c)//        =default;
-        : Valuable(std::move(c), ValuableDescendantMarker()) {}
+        : ValuableDescendantBase(std::move(c), ValuableDescendantMarker()) {}
         ValuableDescendantContract(const ValuableDescendantContract& c)//        =default;
-         : Valuable(c, ValuableDescendantMarker()) {}
+         : ValuableDescendantBase(c, ValuableDescendantMarker()) {}
         ValuableDescendantContract& operator=(const ValuableDescendantContract& v) {
             hash = v.hash;
             optimized = v.optimized;

@@ -75,9 +75,13 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
     System s;
     Variable c,g,b;
     s   << c+g+b-100
-        << g*250+b*6000+c*4000-40000
-        // c,g,b are integers, see https://math.stackexchange.com/a/1598552/118612
-        << (e^(2*π*i*c))-1
+        << g*250+b*6000+c*4000-40000;
+    
+    // c,g,b are integers, see https://math.stackexchange.com/a/1598552/118612
+    using namespace constant;
+    s   << (e^(2*π*i*c))-1
+        << (e^(2*π*i*g))-1
+        << (e^(2*π*i*b))-1
     ;
     auto _ = s.Solve(c);
 //    auto cc = s.SolveSingleInteger(c);
