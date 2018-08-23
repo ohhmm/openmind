@@ -166,8 +166,15 @@ namespace math {
             ebase = Fraction::cast(ebase)->Reciprocal();
         }
 
-        if (ebase.Is_e() && eexp == i*π) {
-            Become(-1);
+        if (ebase.Is_e()) {
+            if (eexp.IsProduct()) {
+                auto p = Product::cast(eexp);
+                if (p->Has(constant::π) && p->Has(constant::i)) { // TODO : sequence does metter
+//                    ebase = -1;
+//                    eexp /= constant::i;
+//                    eexp /= constant::π;
+                }
+            }
         }
 
         if (ebase.IsInt()) {
