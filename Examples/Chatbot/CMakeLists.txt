@@ -7,6 +7,7 @@ if(NOT ZLIB_FOUND)
 #		BUILD_IN_SOURCE 1
 #		INSTALL_DIR "${CMAKE_BINARY_DIR}/zlib-prefix"
 		)
+	set(meta_deps zlib)
 endif()
 ExternalProject_Add(icu
     SVN_REPOSITORY http://source.icu-project.org/repos/icu/tags/latest
@@ -23,7 +24,7 @@ ExternalProject_Add(icu
     INSTALL_COMMAND make install
     )
 ExternalProject_Add(meta GIT_REPOSITORY https://github.com/meta-toolkit/meta.git)
-add_dependencies(meta boost zlib icu)
+add_dependencies(meta ${meta_deps} boost icu)
 
 
 file(GLOB src *.cpp)

@@ -1,0 +1,3 @@
+if(${OPENMIND_BUILD_SAMPLES})
+	fold()
+ENDIF()

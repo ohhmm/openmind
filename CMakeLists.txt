@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 set(PRODUCT_NAME "OpenMind")
+project(${PRODUCT_NAME})
+enable_language(CXX)
 set (CMAKE_CXX_STANDARD 17)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -12,6 +14,7 @@ option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 
+include(ExternalData)
 include(ExternalProject)
 
 add_definitions(
@@ -111,13 +114,106 @@ include_directories(${OPENCL_INCLUDE_DIR})
 if (${OPENMIND_BUILD_TESTS})
     enable_testing()
 endif ()
-add_subdirectory(OpenMind)
-add_subdirectory(omnn)
-if(${OPENMIND_BUILD_SAMPLES})
-	add_subdirectory(Examples/ChatBot)
-	add_subdirectory(Examples/IdleTimeWorker)
-	add_subdirectory(Examples/Arithmetics)
-    add_subdirectory(Examples/Mnist)
-    add_subdirectory(Examples/opengl-rt-laby)
-ENDIF()
 
+macro(lib)
+	set(deps ${ARGN})
+    get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
+    project(${this_target})
+    file(GLOB src *.cpp *.h)
+    add_library(${this_target} ${src})
+    if(NOT MSVC)
+        target_link_libraries(${this_target} ${deps})
+    endif()
+endmacro()
+
+function(test)
+	set(test_libs ${ARGN})
+	get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+	SET (this_target test_${lib_target})
+	project(${this_target})
+	file(GLOB src *.cpp)
+	add_definitions(
+	    -DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+	    -DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
+	    )
+	link_directories(
+	    ${Boost_LIBRARIES}
+	    /usr/local/lib
+	    ${Boost_INCLUDE_DIR}/stage/lib
+	    )
+	message("test_libs ${test_libs}")
+	set(libs ${test_libs}
+		boost_test_exec_monitor boost_thread boost_serialization boost_system
+		${OpenCL_LIBRARY}
+		)
+	message("libs ${libs}")
+	foreach(tg ${libs})
+		message("${tg}")
+		if(TARGET ${tg})
+			get_target_property(type ${tg} TYPE)
+			message("tg type ${type}")
+			if(${type} STREQUAL UTILITY)
+				set(dep_on_targets ${dep_on_targets} ${tg})
+				list(REMOVE_ITEM libs ${tg})
+				message("removed ${tg} from libs: ${libs}")
+			endif()
+    	endif()
+    endforeach()
+	message("targets ${dep_on_targets}")
+	foreach(TEST ${src})
+	    get_filename_component(TEST_NAME ${TEST} NAME_WE)
+	    add_executable(${TEST_NAME} ${TEST_NAME})
+	    target_link_libraries(${TEST_NAME} ${libs})
+	    add_test(NAME ${TEST_NAME} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
+	    if(${dep_on_targets})
+			add_dependencies(${TEST_NAME} ${dep_on_targets})
+		endif()
+	endforeach()
+endfunction()
+
+include_directories(${CMAKE_BINARY_DIR}/include)
+link_directories(${CMAKE_BINARY_DIR}/lib)
+
+macro(ext name location)
+	ExternalProject_Add(${name}
+		GIT_REPOSITORY ${location}
+		BUILD_IN_SOURCE 1
+		INSTALL_DIR ${CMAKE_BINARY_DIR}
+		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+	)
+	if(TARGET ${name})
+		message("${name} is target")
+	else()
+		message("${name} is not a target")
+	endif()
+endmacro()
+
+macro(dep dep)
+	if(dep MATCHES /)
+		set(repo "https://github.com/${dep}.git")
+		ext(${dep} ${repo})
+	else()
+		find_package(${dep})
+		if(${dep}_FOUND)
+			include_directories(${FANN_INCLUDE_DIR})	
+		else()
+    		set(repo "https://github.com/lib${dep}/${dep}.git")
+			ext(${dep} ${repo})	
+    	endif()
+	endif()
+	message("Dependency ${dep} took from ${repo}")
+endmacro()
+
+macro(fold)
+	file(GLOB items *)
+	foreach(item ${items})
+		IF(IS_DIRECTORY ${item})
+			if(EXISTS ${item}/CMakeLists.txt)
+				add_subdirectory(${item})
+			endif()
+		endif()
+	endforeach()
+endmacro()
+
+fold()

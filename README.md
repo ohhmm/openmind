@@ -24,7 +24,7 @@ Plans:
     To complete Generic Context Framework
     Implement self learning Chatbot as OpenMind sample
     lobby of dynamic class generation to C++ standard
-    Introduce Neural network support as part of current Facilities framework (FANN?)
+    Introduce Neural network support as part of current Facilities framework
     context based neural network serialization and swapping
   
 Support: sergeikrivonos@gmail.com

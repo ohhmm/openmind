@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(Shl_test)
     BOOST_TEST(t == 2);
 }
 
-BOOST_AUTO_TEST_CASE(Sh_test, *disabled())
+BOOST_AUTO_TEST_CASE(Sh_test)
 {
     // http://static.righto.com/images/bitcoin/block_diagram_ghash.png
     auto _ = "0x02000000"_v
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(Sh_test, *disabled())
             "358b0553"_v
             "535f0119"_v
             "48750833"_v
-            "63"_v; // 161b
+            "63"_v; // 81b
     auto sh = "0x0000000000000000"_v
                 "e067a478024addfe"_v
                 "cdc93628978aa52d"_v
@@ -145,8 +145,10 @@ BOOST_AUTO_TEST_CASE(Sh_test, *disabled())
             << _ << std::endl
             << sh << std::endl;
     _.save(L"sh.v"); // shasum -a256 -b sh.v
-    // 26b4a1075393e09e13c9121b963eabfd0659dc6248a8d243afe37c9624a1997a *sh.v
-    _ = _.sh(161);
+    std::cout
+        << "0000000000000000e067a478024addfecdc93628978aa52d91fabd4292982a50 bsha" << std::endl
+        << "26b4a1075393e09e13c9121b963eabfd0659dc6248a8d243afe37c9624a1997a *sh.v" << std::endl;
+    _ = _.sh(81*8);
     std::cout << std::hex << _ << std::endl;
     BOOST_TEST(_==sh);
 }

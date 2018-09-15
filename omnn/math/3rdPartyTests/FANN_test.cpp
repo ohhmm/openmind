@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(FANN_test_simple)
     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
-    fann_train_on_file(ann, CMAKE_CURRENT_SOURCE_DIR "/xor.data", max_epochs, epochs_between_reports, desired_error);
+    fann_train_on_file(ann, TEST_SRC_DIR "/xor.data", max_epochs, epochs_between_reports, desired_error);
 
     fann_save(ann, "xor_float.net");
 
