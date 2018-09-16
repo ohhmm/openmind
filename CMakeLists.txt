@@ -156,6 +156,7 @@ function(test)
 			if(${type} STREQUAL UTILITY)
 				set(dep_on_targets ${dep_on_targets} ${tg})
 				list(REMOVE_ITEM libs ${tg})
+				list(APPEND libs ${${tg}_LIBRARIES})
 				message("removed ${tg} from libs: ${libs}")
 			endif()
     	endif()
@@ -166,7 +167,8 @@ function(test)
 	    add_executable(${TEST_NAME} ${TEST_NAME})
 	    target_link_libraries(${TEST_NAME} ${libs})
 	    add_test(NAME ${TEST_NAME} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
-	    if(${dep_on_targets})
+	    if(NOT ${dep_on_targets} STREQUAL "")
+	    	message("making ${TEST_NAME} depend on ${dep_on_targets}")
 			add_dependencies(${TEST_NAME} ${dep_on_targets})
 		endif()
 	endforeach()
@@ -180,13 +182,17 @@ macro(ext name location)
 		GIT_REPOSITORY ${location}
 		BUILD_IN_SOURCE 1
 		INSTALL_DIR ${CMAKE_BINARY_DIR}
-		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+		CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 	)
 	if(TARGET ${name})
 		message("${name} is target")
 	else()
 		message("${name} is not a target")
 	endif()
+	set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/lib${name}${CMAKE_STATIC_LIBRARY_SUFFIX})
 endmacro()
 
 macro(dep dep)
