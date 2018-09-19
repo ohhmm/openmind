@@ -13,6 +13,7 @@ endif()
 option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
+option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 
 include(ExternalData)
 include(ExternalProject)
@@ -95,6 +96,7 @@ else()
         add_custom_target(conf)
     endif()
 endif()
+
 function(add_library targetName)
     _add_library(${targetName} ${ARGN})
     add_dependencies(${targetName} boost) 
@@ -178,21 +180,35 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
 macro(ext name location)
-	ExternalProject_Add(${name}
-		GIT_REPOSITORY ${location}
-		BUILD_IN_SOURCE 1
-		INSTALL_DIR ${CMAKE_BINARY_DIR}
-		CMAKE_ARGS
-            -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-	)
+    if(OPENMIND_UPDATE_EXTERNAL_DEPS)
+    	ExternalProject_Add(${name}
+			GIT_REPOSITORY ${location}
+			BUILD_IN_SOURCE 1
+			INSTALL_DIR ${CMAKE_BINARY_DIR}
+			CMAKE_ARGS
+	            -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+	            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+			)
+    else()
+        	ExternalProject_Add(${name}
+			GIT_REPOSITORY ${location}
+			BUILD_IN_SOURCE 1
+			INSTALL_DIR ${CMAKE_BINARY_DIR}
+			UPDATE_COMMAND ""
+			CMAKE_ARGS
+	            -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+	            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+			)
+    endif()
 	if(TARGET ${name})
 		message("${name} is target")
 	else()
 		message("${name} is not a target")
 	endif()
-	set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/lib${name}${CMAKE_STATIC_LIBRARY_SUFFIX})
+	set(${name}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include CACHE PATH "Path")
+	set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/lib${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
 endmacro()
 
 macro(dep dep)
