@@ -16,6 +16,7 @@
 #include <execution>
 #endif
 #include <map>
+#include <stack>
 #include <thread>
 #include <type_traits>
 
@@ -746,9 +747,10 @@ namespace math {
             }
             else
             {
-                auto va = Variable::cast(m);
-                if (va && *va == v) {
+                if (m.IsVa() && m == v) {
                     ++coefficients[1];
+                    if(grade < 1)
+                        grade = 1;
                 }
                 else
                 {
@@ -777,8 +779,10 @@ namespace math {
             }
         }
         }
-        c0.optimized = optimized;
-        coefficients[0] = std::move(c0);
+        if(c0.size()){
+            c0.optimized = optimized;
+            coefficients[0] = std::move(c0);
+        }
         return grade;
     }
     
@@ -826,8 +830,12 @@ namespace math {
             auto it = coVa.find(va);
             if (it != coVa.end()) {
                 todo /= it->first ^ it->second;
-                if (todo.HasVa(va))
-                    IMPLEMENT;
+                if (todo.HasVa(va)){
+                    if(augmentation == 0)
+                        solutions.insert(0);
+                    else
+                        IMPLEMENT
+                }
                 if (it->second < 0) {
                     _ *= it->first ^ -it->second;
                     return _(va, todo);
@@ -893,7 +901,13 @@ namespace math {
         
         std::vector<Valuable> coefs;
         auto grade = FillPolyCoeff(coefs, va);
-        if (coefs.size() && grade && grade <= 2)
+        if(!grade){
+#ifndef NDEBUG
+            grade = FillPolyCoeff(coefs, va);
+#endif
+            return s;
+        }
+        if (coefs.size() && grade && grade < 5)
         {
             solve(va, s, coefs, grade);
             for (auto i=s.begin(); i != s.end();) {
@@ -908,6 +922,79 @@ namespace math {
 
         if (!s.size())
         {
+            auto testSolutions = [&](const auto& solutions){
+                bool added = {};
+                for(auto& so : solutions){
+                    Valuable c = *this;
+                    c.Eval(va, so);
+                    c.optimize();
+                    if (c==0) // valid solution
+                    {
+                        s.insert(so);
+                        added = true;
+                    }
+                }
+                return added;
+            };
+
+            if(!coefs[0]) // no free coef -> zero root
+            {
+                if(testSolutions(solutions_t{0}))
+                {
+                    Valuable c = *this;
+                    c /= va;
+                    for(auto& so: c(va)){ // complete solving
+                        s.insert(so);
+                    }
+                    return s;
+                }
+            }
+
+            // diffirrentials roots test
+            std::stack<Valuable> diffs;
+            {
+            auto d = *this;
+            for(int g = grade; g --> 1;){
+                d.d(va);
+                diffs.push(d);
+            }
+            }
+            // try diffs solutions
+            auto tryCoupleTopDiffSolutions = [&](){
+                bool added = {};
+                for(int i=0; i<2; ++i){ // first two are simple to calculate
+                    if(diffs.size()){
+                        auto& d = diffs.top();
+                        if(testSolutions(d(va)))
+                            added = true;
+                        diffs.pop();
+                    }
+                }
+                return added;
+            };
+
+            if(!tryCoupleTopDiffSolutions()) // check if some solutions found
+            {
+                // continue couple more grades
+                if(tryCoupleTopDiffSolutions()
+// TODO :                  || testSolutions(GetIntegerSolution(va)) // try integer root
+                   )
+                {
+                    Valuable c = *this;
+                    for(auto& so: s)
+                        c /= va.Equals(so);
+                    for(auto& so: c(va)){ // complete solving
+                        s.insert(so);
+                    }
+                    return s;
+                }
+                else
+                {
+                    // TODO : IMPLEMENT
+                }
+            }
+            
+            // TODO : IMPLEMENT, the next here needs debugging
             Valuable augmentation = 0_v;
             Valuable _ = 0_v;
             for(auto& m : *this)

@@ -93,6 +93,7 @@ namespace math {
 		void CollectVa(std::set<Variable>& s) const override;
 		void Eval(const Variable& va, const Valuable& v) override;
 		bool IsSimple() const;
+        Valuable& sq() override;
 	};
 
 }}

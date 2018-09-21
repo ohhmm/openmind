@@ -109,7 +109,7 @@ namespace math {
             {
                 if (dn && *dn == 0_v)
                     throw "NaN";
-                Become(0);
+                Become(std::move(numerator));
                 return;
             }
             if (dn)
@@ -399,6 +399,13 @@ namespace math {
         return base::operator ==(v);
     }
     
+    Valuable& Fraction::sq(){
+        numerator.sq();
+        denominator.sq();
+        optimize();
+        return *this;
+    }
+
     Valuable Fraction::sqrt() const
     {
         return numerator.sqrt() / denominator.sqrt();

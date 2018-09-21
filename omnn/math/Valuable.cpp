@@ -888,11 +888,60 @@ namespace math {
             IMPLEMENT
     }
     
-//    Valuable Valuable::ifz(const Valuable& z, const Valuable& Then, const Valuable& Else) const
-//    {
-//        return ((z)^2+(Then)^2)(((((z)^2)+((Then)^2))(Else))^2+(Else)^2);
-//    }
-    
+    Valuable Valuable::Equals(const Valuable& v) const {
+        return *this - v;
+    }
+
+    Valuable Valuable::Abet(std::initializer_list<Valuable> l) const
+    {
+        Valuable a;
+        for(auto& item :l)
+            a*=item;
+        return a;
+    }
+
+    Valuable Valuable::NE(const Valuable& to, const Valuable& abet) const
+    {
+        return abet / (*this-to);
+    }
+
+    Valuable Valuable::NE(const Valuable& to, std::initializer_list<Valuable> abet) const
+    {
+        return Abet(abet)/(*this-to);
+    }
+
+    Valuable Valuable::LogicAnd(const Valuable& v) const
+    {
+        return Sq()+v.Sq();
+    }
+
+    Valuable& Valuable::logic_or(const Valuable& v)
+    {
+        return operator*=(v);
+    }
+
+    Valuable Valuable::LogicOr(const Valuable& v) const
+    {
+        return *this * v;
+    }
+
+    Valuable Valuable::Ifz(const Valuable& Then, const Valuable& Else) const
+    {
+        auto thisAndThen = LogicAnd(Then);
+        return thisAndThen.LogicOr(thisAndThen.LogicOr(Else).LogicAnd(Else));
+    }
+
+    Valuable Valuable::IfEq(const Valuable& e, const Valuable& Then, const Valuable& Else) const
+    {
+        auto equalsAndThen = Equals(e).LogicAnd(Then);
+        return equalsAndThen.LogicOr(equalsAndThen.LogicOr(Else).LogicAnd(Else));
+    }
+
+    Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
+    {
+        IMPLEMENT
+    }
+
     Valuable Valuable::bit(const Valuable& n) const
     {
         if (exp)
@@ -1293,3 +1342,4 @@ namespace std
 {
     return ::omnn::math::Fraction(v);
 }
+

@@ -252,11 +252,7 @@ public:
     virtual a_int& a();
     virtual const a_int& ca() const;
     
-//    virtual Valuable ifz(const Valuable& z, const Valuable& Then, const Valuable& Else) const;
-//    Valuable For(const Valuable& initialValue, const Valuable& lambda) const
-//    {
-//
-//    }
+    // bits
     virtual Valuable bit(const Valuable& n) const;
     virtual Valuable bits(int n, int l) const;
     virtual Valuable Or(const Valuable& n, const Valuable& v) const;
@@ -270,6 +266,19 @@ public:
     virtual Valuable sh(const Valuable& n) const;
     virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const;
     
+    // logic
+    Valuable Abet(std::initializer_list<Valuable>) const;
+    Valuable Equals(const Valuable& v) const;
+    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
+    Valuable NE(const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
+    Valuable LogicAnd(const Valuable& v) const;
+    Valuable LogicOr(const Valuable& v) const;
+    Valuable& logic_or(const Valuable&); // inplace
+    Valuable Ifz(const Valuable& Then, const Valuable& Else) const;
+    Valuable IfEq(const Valuable& v, const Valuable& Then, const Valuable& Else) const;
+    Valuable For(const Valuable& initialValue, const Valuable& lambda) const;
+
+
     size_t Hash() const;
     std::string str() const;
     virtual std::wstring save(const std::wstring&) const;

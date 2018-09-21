@@ -263,13 +263,13 @@ namespace math {
                                         IMPLEMENT
                                     if (isInt && (n % 2_v) == 0_v)
                                     {
-                                        x *= x;
+                                        x.sq();
                                         n /= 2;
                                     }
                                     else
                                     {
                                         y *= x;
-                                        x *= x;
+                                        x.sq();
                                         --n;
                                         n /= 2;
                                     }
@@ -334,6 +334,20 @@ namespace math {
     {
         const Exponentiation* e;
         const Fraction* f;
+        const Product* fdn = {};
+        const Exponentiation* fdne;
+        auto isProdHasExpWithSameBase = [this](const Product* p) -> const Exponentiation*
+        {
+            for(auto& it : *p){
+                if (it.IsExponentiation()) {
+                    auto e = Exponentiation::cast(it);
+                    if (ebase == e->getBase()) {
+                        return e;
+                    }
+                }
+            }
+            return {};
+        };
         if (v.IsExponentiation()
             && ebase == (e = cast(v))->ebase)
         {
@@ -347,6 +361,23 @@ namespace math {
             optimized={};
             optimize();
             return *this *= f->getNumerator();
+        }
+        else if(v.IsFraction()
+                && f->getDenominator().IsProduct()
+                && (fdn = Product::cast(f->getDenominator()))->Has(ebase))
+        {
+            --eexp;
+            optimized={};
+            optimize();
+            return *this *= f->getNumerator() / (*fdn / ebase);
+        }
+        else if(fdn
+                && (fdne = isProdHasExpWithSameBase(fdn)))
+        {
+            eexp -= fdne->eexp;
+            optimized={};
+            optimize();
+            return *this *= f->getNumerator() / (*fdn / *fdne);
         }
         else if(ebase == v && v.FindVa())
         {
@@ -363,7 +394,7 @@ namespace math {
         }
         else
         {
-            return Become(Product{*this, v});
+            return Become(Product{v, *this});
         }
 
         optimize();
