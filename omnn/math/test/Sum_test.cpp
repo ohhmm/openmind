@@ -156,11 +156,18 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST(t==0);
     
     _ = ((v3 + (2040_v/v1)) / ((-1_v/v1)*v2));
-    auto ss = _(v3);
+    {
+    auto ss = _.solutions(v3);
     BOOST_TEST(ss.size() == 1);
     BOOST_TEST(!ss.begin()->HasVa(v3));
-    _ = *ss.begin();
+    auto _ = *ss.begin();
     BOOST_TEST(_ == -2040_v/v1);
+    }
+    {
+    auto ss = _(v3);
+    BOOST_TEST(!ss.HasVa(v3));
+    BOOST_TEST(ss == -2040_v/v1);
+    }
     
     _1 = x*-1+y*-2;
     _1 /= z;
@@ -184,10 +191,7 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     
     // -1_v*(v8^2_v)*v13 + -1_v*v14*v7*v8 + -1_v*v12*v9*v8 -1_v*v11*v10*v8 + 2723_v*v8 == v6(-v10*v13 - v9*v14 + 174_v)
     // v6 == (-1_v*(v8^2_v)*v13 + -1_v*v14*v7*v8 + -1_v*v12*v9*v8 -1_v*v11*v10*v8 + 2723_v*v8) / (-v10*v13 - v9*v14 + 174_v)
-    ss = _(v6);
-    BOOST_TEST(ss.size() == 1);
-    BOOST_TEST(!ss.begin()->HasVa(v6));
-    _1 = *ss.begin();
+    _1 = _(v6);
     _2 = Fraction((v8^2_v)*v13 + v14*v7*v8 + v12*v9*v8 + v11*v10*v8 - 2723_v*v8,
                   v10*v13 + v9*v14 - 174_v);
     BOOST_TEST(_1 == _2);
@@ -285,4 +289,17 @@ BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang
     auto _ = _1/_2; // hang
     BOOST_TEST(_.IsFraction());
     BOOST_TEST(_1/_2 == (((va^2)-va*2+1)/((va^2)-1)));
+}
+
+BOOST_AUTO_TEST_CASE(Modulo
+                     ,*disabled()
+                     )
+{
+    Variable va;
+    auto _ = (va + 5) / (va + 1);
+    auto p = (va + 5) % (va + 1);
+    BOOST_TEST(p == (4_v % (va + 1)));
+    p.Eval(va, 2);
+    p.optimize();
+    BOOST_TEST(7_v % 3 == p);
 }

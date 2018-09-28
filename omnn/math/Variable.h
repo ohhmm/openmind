@@ -33,7 +33,7 @@ public:
     Valuable& operator +=(const Valuable&) override;
     Valuable& operator *=(const Valuable&) override;
     Valuable& operator /=(const Valuable&) override;
-//    Valuable& operator %=(const Valuable&) override;
+    Valuable& operator %=(const Valuable&) override;
     Valuable& operator ^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
     bool operator<(const Valuable& number) const override;
@@ -55,7 +55,7 @@ public:
     void Eval(const Variable& va, const Valuable& v) override;
     
     const vars_cont_t& getCommonVars() const override;
-    solutions_t operator()(const Variable&, const Valuable& augmentation) const override;
+    Valuable operator()(const Variable&, const Valuable& augmentation) const override;
 };
 
 

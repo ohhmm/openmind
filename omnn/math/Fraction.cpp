@@ -525,7 +525,7 @@ namespace math {
             IMPLEMENT;
     }
     
-    Fraction::solutions_t Fraction::operator()(const Variable& v, const Valuable& augmentation) const
+    Valuable Fraction::operator()(const Variable& v, const Valuable& augmentation) const
     {
         return (augmentation * denominator - numerator)(v);
     }

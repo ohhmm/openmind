@@ -48,6 +48,7 @@ public:
 	Valuable& operator +=(const Valuable& v) override;
 	Valuable& operator *=(const Valuable& v) override;
 	Valuable& operator /=(const Valuable& v) override;
+    Valuable& operator %=(const Valuable& v) override;
     Valuable& d(const Variable& x) override;
     void optimize() override;
     const vars_cont_t& getCommonVars() const override;
@@ -58,8 +59,8 @@ public:
     void solve(const Variable& va, solutions_t& solutions) const override;
     void solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const;
 
-    solutions_t operator()(const Variable& va) const override;
-    solutions_t operator()(const Variable& va, const Valuable& augmentation) const override;
+    Valuable operator()(const Variable& va) const override;
+    Valuable operator()(const Variable& va, const Valuable& augmentation) const override;
     
     using base::base;
 #ifdef _MSC_VER

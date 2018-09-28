@@ -602,6 +602,137 @@ namespace math {
         return Become(std::move(s));
 	}
 
+    Valuable& Sum::operator %=(const Valuable& v)
+    {
+        Valuable s = 0_v;
+        if (v.IsSum())
+        {
+            auto i = cast(v);
+            if(!v.FindVa())
+            {
+                for (auto& a : members) {
+                    for (auto& b : i->members) {
+                        s += a / b;
+                    }
+                }
+            }
+            else
+            {
+                if (size() < i->size())
+                {
+                    s = Fraction(*this, v);
+                }
+                else if (HasSameVars(v))
+                {
+                    auto b=i->begin();
+                    auto e = i->end();
+                    size_t offs = 0;
+                    std::deque<Valuable> hist {*this};
+                    
+                    auto icnt = size() * 2;
+                    while(*this != 0_v && icnt--)
+                    {
+                        if(IsSum())
+                        {
+                            auto it = begin();
+                            for (auto i=offs; it != end() && i--; ) {
+                                ++it;
+                            }
+                            if (it == end()) {
+                                IMPLEMENT;
+                            }
+                            auto vars = it->Vars();
+                            auto coVa = it->getCommonVars();
+                            auto maxVa = std::max_element(coVa.begin(), coVa.end(),
+                                                          [](auto&_1,auto&_2){return _1.second < _2.second;});
+                            auto it2 = b;
+                            while(it2 != e && it2->Vars() != vars)
+                                ++it2;
+                            if (it2 == e) {
+                                
+                                for (it2 = b; it2 != e; ++it2)
+                                {
+                                    bool found = {};
+                                    for(auto& v : it2->Vars())
+                                    {
+                                        found = v == maxVa->first;
+                                        if (found) {
+                                            auto coVa2 = it2->getCommonVars();
+                                            auto coVa2vIt = coVa2.find(v);
+                                            if (coVa2vIt == coVa2.end()) {
+                                                IMPLEMENT
+                                            }
+                                            auto coVa1vIt = coVa.find(v);
+                                            if (coVa1vIt == coVa.end()) {
+                                                IMPLEMENT
+                                            }
+                                            found = coVa1vIt->second >= coVa2vIt->second;
+                                            
+                                        }
+                                        
+                                        if (!found) {
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if(found)
+                                        break;
+                                }
+                                
+                                if (it2 == e) {
+                                    IMPLEMENT;
+                                }
+                            }
+                            
+                            auto t = *begin() / *it2;
+                            s += t;
+                            t *= v;
+                            *this -= t;
+                            if (std::find(hist.begin(), hist.end(), *this) == hist.end()) {
+                                hist.push_back(*this);
+                                constexpr size_t MaxHistSize = 8;
+                                if (hist.size() > MaxHistSize) {
+                                    hist.pop_front();
+                                    offs = 0;
+                                }
+                            }
+                            else
+                            {
+                                ++offs;
+                                hist.clear();
+                            }
+                        }
+                        else
+                        {
+                            IMPLEMENT
+                            //return Become(Modulo(*this, v));
+//                            Variable rest;
+//                            auto case0 = v.Equals(*this).logic_and(rest.Equals(0));
+//                            auto case1 = rest.Equals(*this);
+//                            auto case2 = rest.Equals(v);
+//                            auto allCases = (case0.logic_or(case1).logic_or(case2));
+//                            return Become(allCases(rest));
+                        }
+                    }
+                    if (*this != 0_v) {
+                        s = Fraction(*this, v);
+                    }
+                }
+                else
+                {
+                    s = Fraction(*this, v);
+                }
+            }
+        }
+        else
+        {
+            for (auto& a : members) {
+                s += a / v;
+            }
+        }
+        return Become(std::move(s));
+    }
+
     Valuable& Sum::d(const Variable& x)
     {
         Valuable sum = 0_v;
@@ -786,7 +917,7 @@ namespace math {
         return grade;
     }
     
-    Valuable::solutions_t Sum::operator()(const Variable& va, const Valuable& augmentation) const
+    Valuable Sum::operator()(const Variable& va, const Valuable& augmentation) const
     {
         solutions_t solutions;
         {
@@ -810,7 +941,7 @@ namespace math {
             }
             
             if (solutions.size()) {
-                return solutions;
+                return Valuable(solutions);
             }
         }
         }
@@ -858,11 +989,11 @@ namespace math {
                 {
                     if(stodo->begin()->IsFraction())
                     {
-                        solutions = (*stodo->begin())(va, _ - *stodo->rbegin());
+                        return (*stodo->begin())(va, _ - *stodo->rbegin());
                     }
                     else if(stodo->rbegin()->IsFraction())
                     {
-                        solutions = (*stodo->rbegin())(va, _ - *stodo->begin());
+                        return (*stodo->rbegin())(va, _ - *stodo->begin());
                     }
                     else
                     {
@@ -875,13 +1006,11 @@ namespace math {
                     for(auto& m : *stodo)
                     {IMPLEMENT
                         solutions_t incoming(std::move(solutions));
-                        for(auto& e : m(va, _))
+                        auto e = m(va, _);
+                        IMPLEMENT // test it
+                        for(auto& s : incoming)
                         {
-                            IMPLEMENT // test it
-                            for(auto& s : incoming)
-                            {
-                                solutions.insert(s + e);
-                            }
+                            solutions.insert(s + e);
                         }
                     }
                 }
@@ -889,13 +1018,13 @@ namespace math {
         }
         else
         {
-            solutions = todo(va, _);
+            return todo(va, _);
         }
 
-        return solutions;
+        return Valuable(solutions);
     }
     
-    Valuable::solutions_t Sum::operator()(const Variable& va) const
+    Valuable Sum::operator()(const Variable& va) const
     {
         Valuable::solutions_t s;
         
@@ -905,7 +1034,7 @@ namespace math {
 #ifndef NDEBUG
             grade = FillPolyCoeff(coefs, va);
 #endif
-            return s;
+            return Valuable(s);
         }
         if (coefs.size() && grade && grade < 5)
         {
@@ -943,10 +1072,10 @@ namespace math {
                 {
                     Valuable c = *this;
                     c /= va;
-                    for(auto& so: c(va)){ // complete solving
+                    for(auto& so: c.solutions(va)){ // complete solving
                         s.insert(so);
                     }
-                    return s;
+                    return Valuable(s);
                 }
             }
 
@@ -965,7 +1094,7 @@ namespace math {
                 for(int i=0; i<2; ++i){ // first two are simple to calculate
                     if(diffs.size()){
                         auto& d = diffs.top();
-                        if(testSolutions(d(va)))
+                        if(testSolutions(d.solutions(va)))
                             added = true;
                         diffs.pop();
                     }
@@ -983,10 +1112,10 @@ namespace math {
                     Valuable c = *this;
                     for(auto& so: s)
                         c /= va.Equals(so);
-                    for(auto& so: c(va)){ // complete solving
+                    for(auto& so: c.solutions(va)){ // complete solving
                         s.insert(so);
                     }
-                    return s;
+                    return Valuable(s);
                 }
                 else
                 {
@@ -1005,10 +1134,10 @@ namespace math {
                     augmentation -= m;
                 }
             }
-            s = _(va, augmentation);
+            return _(va, augmentation);
         }
         
-        return s;
+        return Valuable(s);
     }
     
     Valuable::solutions_t Sum::GetIntegerSolution(const Variable& va) const

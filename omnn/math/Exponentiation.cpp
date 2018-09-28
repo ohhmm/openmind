@@ -112,17 +112,14 @@ namespace math {
                 auto vars = ebase.Vars();
                 if (vars.size() == 1) {
                     auto va = *vars.begin();
-                    auto s = ebase(va);
-                    if (s.size()==1) {
-                        auto eq = va - *s.begin();
-                        auto sq = eq ^ d;
-                        auto check = ebase/sq;
-                        if (check.IsInt() || check.IsSimpleFraction()) {
-                            ebase = eq;
-                            eexp = f->getNumerator();
-                        } else {
-                            IMPLEMENT
-                        }
+                    auto eq = va - ebase(va);
+                    auto sq = eq ^ d;
+                    auto check = ebase/sq;
+                    if (check.IsInt() || check.IsSimpleFraction()) {
+                        ebase = eq;
+                        eexp = f->getNumerator();
+                    } else {
+                        IMPLEMENT
                     }
                 }
             }
@@ -137,17 +134,14 @@ namespace math {
                 auto vars = e.Vars();
                 if (vars.size() == 1) {
                     auto va = *vars.begin();
-                    auto s = e(va);
-                    if (s.size()==1) {
-                        auto eq = va - *s.begin();
-                        auto sq = eq ^ d;
-                        auto check = e/sq;
-                        if (check.IsInt() || check.IsSimpleFraction()) {
-                            Become(std::move(eq));
-                            return;
-                        } else {
-                            IMPLEMENT
-                        }
+                    auto eq = va - e(va);
+                    auto sq = eq ^ d;
+                    auto check = e / sq;
+                    if (check.IsInt() || check.IsSimpleFraction()) {
+                        Become(std::move(eq));
+                        return;
+                    } else {
+                        IMPLEMENT
                     }
                 }
             }
@@ -621,7 +615,7 @@ namespace math {
         return v;
     }
     
-    Valuable::solutions_t Exponentiation::operator()(const Variable& v, const Valuable& augmentation) const
+    Valuable Exponentiation::operator()(const Variable& v, const Valuable& augmentation) const
     {
         if (!eexp.FindVa() && eexp!=0 && augmentation==0) {
             return ebase(v,augmentation);

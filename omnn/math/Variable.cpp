@@ -83,6 +83,11 @@ namespace math {
         return *this;
     }
 
+    Valuable& Variable::operator %=(const Valuable& v)
+    {
+        return Become(Sum{*this} % v);
+    }
+
     Valuable& Variable::operator^=(const Valuable& v)
     {
         if(v.IsInt() && v == 0_v)
@@ -178,7 +183,7 @@ namespace math {
         return vars;
     }
     
-    Valuable::solutions_t Variable::operator()(const Variable& va, const Valuable& augmentation) const
+    Valuable Variable::operator()(const Variable& va, const Valuable& augmentation) const
     {
         if (*this == va) {
             return {augmentation};

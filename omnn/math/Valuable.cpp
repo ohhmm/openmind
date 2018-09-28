@@ -3,11 +3,14 @@
 //
 
 #include "Valuable.h"
+
+#include "i.h"
 #include "Fraction.h"
 #include "Infinity.h"
 #include "Integer.h"
 #include "VarHost.h"
 #include "Sum.h"
+
 #include <string>
 #include <stack>
 #include <map>
@@ -170,6 +173,31 @@ namespace math {
     Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
     Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
+
+    Valuable Valuable::Merge(const Valuable& v1, const Valuable& v2)
+    {
+        return ((v1+v2)+((-1_v)^(1_v/2)))/2;
+    }
+
+    Valuable::Valuable(const solutions_t& s)
+    {
+        switch (s.size()) {
+        case 0: IMPLEMENT; break;
+        case 1: operator=(*s.begin()); break;
+        case 2: {
+            auto it = s.begin();
+            operator=(Merge(*it, *++it));
+            break;
+        }
+        case 4: {
+            auto it = s.begin();
+            operator=(Merge(Merge(*it, *++it), Merge(*++it, *++it)));
+            break;
+        }
+        default:
+            IMPLEMENT // just do same as case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'
+        }
+    }
 
     Valuable::Valuable(const std::string& s, std::shared_ptr<VarHost> h)
     {
@@ -428,7 +456,7 @@ namespace math {
             IMPLEMENT
     }
 
-    Valuable::solutions_t Valuable::operator()(const Variable& va) const
+    Valuable Valuable::operator()(const Variable& va) const
     {
         if(exp) {
             return exp->operator()(va);
@@ -437,7 +465,7 @@ namespace math {
             IMPLEMENT
     }
     
-    Valuable::solutions_t Valuable::operator()(const Variable& v, const Valuable& augmentation) const
+    Valuable Valuable::operator()(const Variable& v, const Valuable& augmentation) const
     {
         if(exp) {
             return exp->operator()(v, augmentation);
@@ -651,10 +679,10 @@ namespace math {
     {
         if(exp)
             exp->SetView(v);
-		else {
-			optimized = optimized && view == v;
-			view = v;
-		}
+        else {
+            optimized = optimized && view == v;
+            view = v;
+        }
     }
     
     void Valuable::optimize()
@@ -915,6 +943,11 @@ namespace math {
         return Sq()+v.Sq();
     }
 
+    Valuable& Valuable::logic_and(const Valuable& v)
+    {
+        return sq()+=v.Sq();
+    }
+
     Valuable& Valuable::logic_or(const Valuable& v)
     {
         return operator*=(v);
@@ -951,6 +984,7 @@ namespace math {
         } else if (n == 0)
             // (this & 1) == (this % 2) == (1+((-1)^(this+1)))/2
             return (1_v+((-1_v)^(*this+1)))/2;
+//            return *this % 2;
         else
             IMPLEMENT;
     }

@@ -17,8 +17,8 @@ namespace math {
 		using base = ValuableDescendantContract<Fraction>;
 
 		Valuable numerator, denominator;
-        mutable vars_cont_t vars;
-        
+		mutable vars_cont_t vars;
+
 	protected:
 		std::ostream& print(std::ostream& out) const override;
 
@@ -28,16 +28,16 @@ namespace math {
 		Valuable& operator *=(const Valuable& v) override;
 		Valuable& operator /=(const Valuable& v) override;
 		Valuable& operator %=(const Valuable& v) override;
-        Valuable& operator^=(const Valuable&) override;
+		Valuable& operator^=(const Valuable&) override;
 		bool operator <(const Valuable& v) const override;
 		bool operator ==(const Valuable& v) const override;
 		void optimize() override;
-        Valuable sqrt() const override;
-        const vars_cont_t& getCommonVars() const override;
-        bool IsComesBefore(const Valuable& v) const override;
+		Valuable sqrt() const override;
+		const vars_cont_t& getCommonVars() const override;
+		bool IsComesBefore(const Valuable& v) const override;
 		bool IsFraction() const override { return true; }
-        bool IsSimpleFraction() const override { return IsSimple(); }
-        
+		bool IsSimpleFraction() const override { return IsSimple(); }
+
 		using base::base;
 
 		Fraction() : numerator(0), denominator(1)
@@ -85,7 +85,7 @@ namespace math {
         explicit operator unsigned char() const override;
         explicit operator a_int() const override;
         operator boost::multiprecision::cpp_dec_float_100() const;
-        solutions_t operator()(const Variable&, const Valuable& augmentation) const override;
+        Valuable operator()(const Variable&, const Valuable& augmentation) const override;
         
 		Fraction Reciprocal() const;
 		const Variable* FindVa() const override;

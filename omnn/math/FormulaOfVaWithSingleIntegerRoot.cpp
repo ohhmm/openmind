@@ -54,7 +54,7 @@ namespace math {
                 dx.d(getVa());
             }
             
-            auto solution = dx(getVa());
+            auto solution = dx.solutions(getVa());
             if (solution.size() != 1) {
                 IMPLEMENT
             } else {

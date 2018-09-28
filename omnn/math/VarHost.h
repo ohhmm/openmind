@@ -36,8 +36,6 @@ namespace math {
         Variable New(const T& id) {
             auto host = dynamic_cast<TypedVarHost<T>*>(this);
             if (host) {
-                using cv = const void;
-                using vp = cv*;
                 AddNewId(sizeof(void*) >= sizeof(T)
                          ? *(void**)(&id)
                          : (void*)(new T(id)));

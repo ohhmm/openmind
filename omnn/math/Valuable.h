@@ -17,6 +17,27 @@
 
 #define IMPLEMENT { implement(); throw; }
 
+
+namespace omnn{
+namespace math {
+    class Valuable;
+    size_t hash_value(const omnn::math::Valuable& v);
+}
+}
+
+namespace std
+{
+    omnn::math::Valuable abs(const omnn::math::Valuable& v);
+    omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
+    
+    template<>
+    struct hash<omnn::math::Valuable> {
+        size_t operator()(const omnn::math::Valuable& v) const {
+            return hash_value(v);
+        }
+    };
+}
+
 namespace omnn{
 namespace math {
     
@@ -197,11 +218,13 @@ public:
     virtual Valuable sqrt() const;
     virtual Valuable calcFreeMember() const;
     
-    using solutions_t = std::unordered_set<Valuable>; // do not use std::set<Valuable> until it tested. it may skip unequal items
-    virtual solutions_t operator()(const Variable&) const;
-    virtual solutions_t operator()(const Variable&, const Valuable& augmentation) const;
+    using solutions_t = std::unordered_set<Valuable>;
+    static Valuable Merge(const Valuable& v1, const Valuable& v2);
+    explicit Valuable(const solutions_t&);
+    virtual Valuable operator()(const Variable&) const;
+    virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;
     bool IsUnivariate() const;
-    
+
     virtual void solve(const Variable& va, solutions_t&) const;
     solutions_t solutions() const;
     solutions_t solutions(const Variable& v) const;
@@ -274,6 +297,7 @@ public:
     Valuable LogicAnd(const Valuable& v) const;
     Valuable LogicOr(const Valuable& v) const;
     Valuable& logic_or(const Valuable&); // inplace
+    Valuable& logic_and(const Valuable&);
     Valuable Ifz(const Valuable& Then, const Valuable& Else) const;
     Valuable IfEq(const Valuable& v, const Valuable& Then, const Valuable& Else) const;
     Valuable For(const Valuable& initialValue, const Valuable& lambda) const;
@@ -288,21 +312,7 @@ protected:
     bool optimized = false;
 };
 
-    size_t hash_value(const omnn::math::Valuable& v);
 }}
-
-namespace std
-{
-	omnn::math::Valuable abs(const omnn::math::Valuable& v);
-	omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
-    
-    template<>
-    struct hash<omnn::math::Valuable> {
-        size_t operator()(const omnn::math::Valuable& v) const {
-            return v.Hash();
-        }
-    };
-}
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
 ::omnn::math::Valuable operator"" _v(unsigned long long v);

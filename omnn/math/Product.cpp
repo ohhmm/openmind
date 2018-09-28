@@ -713,14 +713,14 @@ namespace math {
         return *this;
     }
     
-    Valuable::solutions_t Product::operator()(const Variable& va) const
+    Valuable Product::operator()(const Variable& va) const
     {
         return operator()(va, 0_v);
     }
     
-    Valuable::solutions_t Product::operator()(const Variable& va, const Valuable& augmentation) const
+    Valuable Product::operator()(const Variable& va, const Valuable& augmentation) const
     {
-        Valuable::solutions_t s;
+        Valuable s; s.SetView(Valuable::View::Flat);
        
         if(augmentation.HasVa(va)) {
             IMPLEMENT;
@@ -729,11 +729,11 @@ namespace math {
             auto it = coVa.find(va);
             if (it != coVa.end()) {
                 if (it->second < 0) {
-                    s.insert(((*this / (it->first ^ it->second)) / augmentation) ^ (1_v / -it->second));
+                    s = ((*this / (it->first ^ it->second)) / augmentation) ^ (1_v / -it->second);
                 }
                 else
                 {
-                    s.insert((augmentation / (*this / (it->first ^ it->second))) ^ (1_v / it->second));
+                    s = (augmentation / (*this / (it->first ^ it->second))) ^ (1_v / it->second);
                 }
             }
             else

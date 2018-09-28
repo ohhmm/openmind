@@ -133,8 +133,8 @@ public:
     Valuable Shr() const override;
     Valuable Shr(const Valuable& n) const override;
     
-    solutions_t operator()(const Variable&) const override { return {}; }
-    solutions_t operator()(const Variable&, const Valuable& augmentation) const override { return {}; }
+    Valuable operator()(const Variable&) const override { return {}; }
+    Valuable operator()(const Variable&, const Valuable& augmentation) const override { return {}; }
     
     const Variable* FindVa() const override { return nullptr; }
     bool HasVa(const Variable& va) const override { return {}; }
