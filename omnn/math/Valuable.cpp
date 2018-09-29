@@ -176,7 +176,7 @@ namespace math {
 
     Valuable Valuable::Merge(const Valuable& v1, const Valuable& v2)
     {
-        return ((v1+v2)+((-1_v)^(1_v/2)))/2;
+        return ((v1+v2)+((-1_v)^(1_v/2))*(v1-v2))/2;
     }
 
     Valuable::Valuable(const solutions_t& s)
