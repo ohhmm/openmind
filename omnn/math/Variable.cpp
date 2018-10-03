@@ -4,6 +4,7 @@
 #include "Variable.h"
 #include "Exponentiation.h"
 #include "Integer.h"
+#include "Modulo.h"
 #include "Product.h"
 #include "Sum.h"
 #include "VarHost.h"
@@ -85,7 +86,7 @@ namespace math {
 
     Valuable& Variable::operator %=(const Valuable& v)
     {
-        return Become(Sum{*this} % v);
+        return Become(Modulo(*this, v));
     }
 
     Valuable& Variable::operator^=(const Valuable& v)

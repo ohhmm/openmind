@@ -4,7 +4,8 @@
 
 #pragma once
 #include <boost/multiprecision/cpp_dec_float.hpp>
-#include "Variable.h"
+#include <omnn/math/Variable.h>
+#include <omnn/math/DuoValDescendant.h>
 
 namespace omnn{
 namespace math {
@@ -12,15 +13,18 @@ namespace math {
 	class Integer;
 
 	class Fraction
-			: public ValuableDescendantContract<Fraction>
+			: public DuoValDescendant<Fraction>
 	{
-		using base = ValuableDescendantContract<Fraction>;
+		using base = DuoValDescendant<Fraction>;
 
-		Valuable numerator, denominator;
 		mutable vars_cont_t vars;
 
 	protected:
-		std::ostream& print(std::ostream& out) const override;
+		Valuable& numerator() { return _1; }
+        const Valuable& numerator() const { return _1; }
+        Valuable& denominator() { return _2; }
+		const Valuable& denominator() const { return _2; }
+		std::ostream& print_sign(std::ostream& out) const override;
 
 	public:
 		Valuable operator -() const override;
@@ -30,7 +34,7 @@ namespace math {
 		Valuable& operator %=(const Valuable& v) override;
 		Valuable& operator^=(const Valuable&) override;
 		bool operator <(const Valuable& v) const override;
-		bool operator ==(const Valuable& v) const override;
+//		bool operator ==(const Valuable& v) const override;
 		void optimize() override;
 		Valuable sqrt() const override;
 		const vars_cont_t& getCommonVars() const override;
@@ -40,38 +44,17 @@ namespace math {
 
 		using base::base;
 
-		Fraction() : numerator(0), denominator(1)
-		{
-            hash = numerator.Hash() ^ denominator.Hash();
-        }
+		Fraction() : base(0, 1) {}
 
-		Fraction(int n)
-				: numerator(n), denominator(1)
-		{
-            hash = numerator.Hash() ^ denominator.Hash();
-        }
+		Fraction(int n) : base(n, 1) {}
 
 		Fraction(const Valuable& n)
-		: numerator(n)
-		, denominator(1)
+		: base(n, 1)
 		{
-			auto e = cast(n);
-			if (e)
-			{
-				numerator = e->numerator;
-				denominator = e->denominator;
-			}
-            hash = numerator.Hash() ^ denominator.Hash();
 		}
-        
+
 		Fraction(const Integer& n);
 
-		Fraction(const Valuable& n, const Valuable& d)
-				: numerator(n), denominator(d)
-		{
-            hash = numerator.Hash() ^ denominator.Hash();
-        }
-        
         Fraction(const boost::multiprecision::cpp_dec_float_100& f);
 
 		Fraction(Fraction&&) = default;
@@ -79,19 +62,18 @@ namespace math {
 		Fraction& operator=(const Fraction& f)=default;
 		Fraction& operator=(Fraction&& f)=default;
 
-        const Valuable& getDenominator() const { return denominator; }
-        const Valuable& getNumerator() const { return numerator; }
+        const Valuable& getDenominator() const { return _2; }
+        const Valuable& getNumerator() const { return _1; }
 
         explicit operator unsigned char() const override;
         explicit operator a_int() const override;
         operator boost::multiprecision::cpp_dec_float_100() const;
         Valuable operator()(const Variable&, const Valuable& augmentation) const override;
+        static a_int getMaxVaExp(const Valuable& _1, const Valuable& _2) {
+            return _1.getMaxVaExp();
+        }
         
 		Fraction Reciprocal() const;
-		const Variable* FindVa() const override;
-        bool HasVa(const Variable& va) const override { return numerator.HasVa(va) || denominator.HasVa(va); }
-		void CollectVa(std::set<Variable>& s) const override;
-		void Eval(const Variable& va, const Valuable& v) override;
 		bool IsSimple() const;
         Valuable& sq() override;
 	};

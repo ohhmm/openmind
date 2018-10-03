@@ -3,6 +3,7 @@
 //
 #pragma once
 #include "Exponentiation.h"
+#include "Modulo.h"
 #include "Sum.h"
 #include "Product.h"
 
@@ -31,7 +32,7 @@ namespace omnn::math {
 
         Valuable &operator%=(const Valuable &v) override
         {
-            IMPLEMENT
+            return base::Become(Modulo(*this,v));
         }
 
         Valuable &operator^=(const Valuable& v) override

@@ -291,9 +291,7 @@ BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang
     BOOST_TEST(_1/_2 == (((va^2)-va*2+1)/((va^2)-1)));
 }
 
-BOOST_AUTO_TEST_CASE(Modulo
-                     ,*disabled()
-                     )
+BOOST_AUTO_TEST_CASE(Modulo_test)
 {
     Variable va;
     auto _ = (va + 5) / (va + 1);

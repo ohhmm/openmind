@@ -7,17 +7,20 @@
 
 #include <omnn/math/Modulo.h>
 
-using namespace omnn::math
+using namespace omnn::math;
 
-Modulo::Modulo(const Valuable& n, const Valuable& d)
-: numerator(n)
-, denominator(d)
+std::ostream& Modulo::print_sign(std::ostream& out) const
 {
-    // TODO hash
-
+    return out << " mod ";
 }
 
-Modulo::~Modulo()
-{
-    // TODO Auto-generated destructor stub
+void Modulo::optimize(){
+    _1.optimize();
+    _2.optimize();
+    if(_1.IsInt() && _2.IsInt()) {
+        Become(std::move(_1 %= _2));
+    }
+    if (Is<Modulo>()) {
+        hash = _1.Hash() ^ _2.Hash();
+    }
 }

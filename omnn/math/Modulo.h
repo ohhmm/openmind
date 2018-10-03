@@ -7,22 +7,27 @@
 
 #pragma once
 
-#include <omnn/math/ValuableDescendantContract.h>
+#include <omnn/math/DuoValDescendant.h>
 
 namespace omnn
 {
 namespace math
 {
 
-class Modulo : public ValuableDescendantContract<Modulo>
+class Modulo : public DuoValDescendant<Modulo>
 {
-    using base = ValuableDescendantContract<Modulo>;
-
-    Valuable numerator, denominator;
+    using base = DuoValDescendant<Modulo>;
 
 public:
-    Modulo(const Valuable& n, const Valuable& d);
-    virtual ~Modulo();
+    using base::base;
+
+    std::ostream& print_sign(std::ostream& out) const override;
+    
+    static a_int getMaxVaExp(const Valuable& _1, const Valuable& _2) {
+        return _1.getMaxVaExp();
+    }
+    
+    void optimize() override;
 };
 
 } /* namespace math */

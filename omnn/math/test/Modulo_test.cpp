@@ -4,19 +4,15 @@
  *  Created on: Sep 29, 2018
  *      Author: sergejkrivonos
  */
-#define BOOST_TEST_MODULE Sum test
+#define BOOST_TEST_MODULE Modulo test
 #include <boost/test/unit_test.hpp>
 #include <omnn/math/Modulo.h>
-#include "Sum.h"
-#include "Variable.h"
-
+#include <omnn/math/Variable.h>
 
 using namespace omnn::math;
 using namespace boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(Modulo
-                     ,*disabled()
-                     )
+BOOST_AUTO_TEST_CASE(Modulo_test)
 {
     Variable va;
     auto _ = (va + 5) / (va + 1);

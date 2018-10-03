@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "Valuable.h"
+#include <omnn/math/Valuable.h>
 
 namespace omnn{
 namespace math {
@@ -79,7 +79,11 @@ namespace math {
 //        operator Valuable&&() {
 //            return std::move(Valuable(Move()));
 //        }
-        
+
+        bool is(const std::type_index& ti) const override {
+            return ti==std::type_index(typeid(Chld));
+        }
+
         static const Chld* cast(const Valuable& v){
             return Valuable::cast<Chld>(v);
         }

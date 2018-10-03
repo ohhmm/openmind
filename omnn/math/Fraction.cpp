@@ -17,9 +17,8 @@ namespace std{
 namespace omnn{
 namespace math {
 	Fraction::Fraction(const Integer& n)
-		:numerator(n), denominator(1)
+		: base(n, 1)
 	{
-        hash = numerator.Hash() ^ denominator.Hash();
 	}
     
     Fraction::Fraction(const boost::multiprecision::cpp_dec_float_100& f)
@@ -31,67 +30,67 @@ namespace math {
         auto doti = s.find_first_of('.');
         if (doti == -1)
         {
-            numerator = Integer(boost::multiprecision::cpp_int(f));
-            denominator = 1;
+            numerator() = Integer(boost::multiprecision::cpp_int(f));
+            denominator() = 1;
         }
         else
         {
             auto fsz = s.length() - doti - 1;
             s.erase(doti);
-            numerator = Integer(boost::multiprecision::cpp_int(s));
-            denominator = 10_v^Integer(fsz);
+            numerator() = Integer(boost::multiprecision::cpp_int(s));
+            denominator() = 10_v^Integer(fsz);
         }
     }
     
 	Valuable Fraction::operator -() const
     {
-        return Fraction(-numerator, denominator);
+        return Fraction(-getNumerator(), getDenominator());
     }
 
     void Fraction::optimize()
     {
 //        if (!optimizations) {
-//            hash = numerator.Hash() ^ denominator.Hash();
+//            hash = numerator().Hash() ^ denominator().Hash();
 //            return;
 //        }
     reoptimize_the_fraction:
-        numerator.optimize();
-        denominator.optimize();
+        numerator().optimize();
+        denominator().optimize();
         
-        while(denominator.IsFraction())
+        while(denominator().IsFraction())
         {
-            auto dn = cast(denominator);
-            numerator *= dn->denominator;
-            denominator = std::move(dn->numerator);
+            auto dn = cast(denominator());
+            numerator() *= dn->denominator();
+            denominator() = std::move(dn->numerator());
         }
 
-//        if (numerator.IsSum()) {
-//            Become(numerator/denominator);
+//        if (numerator().IsSum()) {
+//            Become(numerator()/denominator());
 //            return;
 //        }
         
-        if (denominator.IsInt())
+        if (denominator().IsInt())
         {
-            if (denominator == 1_v)
+            if (denominator() == 1_v)
             {
-                Become(std::move(numerator));
+                Become(std::move(numerator()));
                 return;
             }
-            else if (denominator < 0) {
-                numerator = -numerator;
-                denominator = -denominator;
+            else if (denominator() < 0) {
+                numerator() = -numerator();
+                denominator() = -denominator();
             }
         }
         
-        if (numerator.IsExponentiation()) {
-            auto e = Exponentiation::cast(numerator);
+        if (numerator().IsExponentiation()) {
+            auto e = Exponentiation::cast(numerator());
             auto& exp = e->getExponentiation();
             if (exp.IsInt() && exp < 0) {
-                denominator *= e->getBase() ^ (-exp);
-                numerator = 1;
+                denominator() *= e->getBase() ^ (-exp);
+                numerator() = 1;
             } else if (exp.IsFraction()) {
                 auto f = Fraction::cast(exp);
-                auto in = e->getBase() / (denominator ^ f->Reciprocal());
+                auto in = e->getBase() / (denominator() ^ f->Reciprocal());
                 if (in.IsInt())
                 {
                     Become(in ^ exp);
@@ -101,22 +100,22 @@ namespace math {
         }
 
         // integers
-        if (numerator.IsInt())
+        if (numerator().IsInt())
         {
-            auto n = Integer::cast(numerator);
-            auto dn = Integer::cast(denominator);
+            auto n = Integer::cast(numerator());
+            auto dn = Integer::cast(denominator());
             if (*n == 0_v)
             {
                 if (dn && *dn == 0_v)
                     throw "NaN";
-                Become(std::move(numerator));
+                Become(std::move(numerator()));
                 return;
             }
             if (dn)
             {
                 if (*n < 0 && *dn < 0) {
-                    numerator = -numerator;
-                    denominator = -denominator;
+                    numerator() = -numerator();
+                    denominator() = -denominator();
                     goto reoptimize_the_fraction;
                 }
                 if (*dn == 1_v)
@@ -131,8 +130,8 @@ namespace math {
                 }
                 auto d = boost::gcd(n->ca(), dn->ca());
                 if (d != 1) {
-                    numerator /= Integer(d);
-                    denominator /= Integer(d);
+                    numerator() /= Integer(d);
+                    denominator() /= Integer(d);
                     optimize();
                 }
             }
@@ -141,57 +140,57 @@ namespace math {
         {
             std::vector<Variable> coVa;
 
-            if (numerator.IsProduct()) {
-                //if (denominator.IsProduct()) {
-                    Become(numerator / denominator);
+            if (numerator().IsProduct()) {
+                //if (denominator().IsProduct()) {
+                    Become(numerator() / denominator());
                     return;
                 //}
                 //else
                 //{
-                //    auto n = Product::cast(numerator);
-                    //if (n->Has(denominator))
+                //    auto n = Product::cast(numerator());
+                    //if (n->Has(denominator()))
 					//{
-     //                   Become(*n / denominator);
+     //                   Become(*n / denominator());
      //                   return;
      //               }
      //           }
             }
-            else if (denominator.IsProduct())
+            else if (denominator().IsProduct())
             {
-                auto dn = Product::cast(denominator);
-                if (dn->Has(numerator)) {
-                    denominator /= numerator;
-                    numerator = 1_v;
+                auto dn = Product::cast(denominator());
+                if (dn->Has(numerator())) {
+                    denominator() /= numerator();
+                    numerator() = 1_v;
                     goto reoptimize_the_fraction;
                 }
-                else if (numerator.IsInt() || numerator.IsSimpleFraction()) {
+                else if (numerator().IsInt() || numerator().IsSimpleFraction()) {
                     for (auto& m : *dn)
                     {
                         if (m.IsVa()) {
-                            numerator *= m ^ -1;
+                            numerator() *= m ^ -1;
                         }
                         else if (m.IsExponentiation()) {
                             auto e = Exponentiation::cast(m);
-                            numerator *= e->getBase() ^ -e->getExponentiation();
+                            numerator() *= e->getBase() ^ -e->getExponentiation();
                         }
                         else
-                            numerator /= m;
+                            numerator() /= m;
                     }
-                    Become(std::move(numerator));
+                    Become(std::move(numerator()));
                     return;
                 }
             }
-            else if (denominator.FindVa() && !denominator.IsSum())
+            else if (denominator().FindVa() && !denominator().IsSum())
             {
-                Become(Product{numerator,Exponentiation(denominator, -1)});
+                Become(Product{numerator(),Exponentiation(denominator(), -1)});
             }
             else // no products
             {
                 // sum
-//                auto s = Sum::cast(numerator);
+//                auto s = Sum::cast(numerator());
 //                if (s) {
 //                    auto sum(std::move(*s));
-//                    sum /= denominator;
+//                    sum /= denominator();
 //                    Become(std::move(sum));
 //                    return;
 //                }
@@ -199,7 +198,7 @@ namespace math {
         }
         
         if (IsFraction()) {
-            hash = numerator.Hash() ^ denominator.Hash();
+            hash = numerator().Hash() ^ denominator().Hash();
         }
     }
     
@@ -208,14 +207,14 @@ namespace math {
         auto i = cast(v);
         if (i){
 			auto f = *i;
-            if(denominator != f.denominator) {
-                f.numerator *= denominator;
-                f.denominator *= denominator;
-                numerator *= i->denominator;
-                denominator *= i->denominator;
+            if(denominator() != f.denominator()) {
+                f.numerator() *= denominator();
+                f.denominator() *= denominator();
+                numerator() *= i->denominator();
+                denominator() *= i->denominator();
             }
 
-            numerator += f.numerator;
+            numerator() += f.numerator();
             optimize();
         }
         else
@@ -238,12 +237,12 @@ namespace math {
         if (v.IsFraction())
         {
             auto f = cast(v);
-            numerator *= f->numerator;
-            denominator *= f->denominator;
+            numerator() *= f->numerator();
+            denominator() *= f->denominator();
         }
         else if (v.IsInt())
         {
-            numerator *= v;
+            numerator() *= v;
         }
         else
         {
@@ -259,8 +258,8 @@ namespace math {
         if (v.IsFraction())
 		{
             auto f = cast(v);
-            numerator *= f->denominator;
-			denominator *= f->numerator;
+            numerator() *= f->denominator();
+			denominator() *= f->numerator();
 		}
         else if (v.IsProduct())
         {
@@ -269,7 +268,7 @@ namespace math {
         }
         else
         {
-			denominator *= v;
+			denominator() *= v;
         }
 		optimize();
 		return *this;
@@ -297,7 +296,7 @@ namespace math {
                 }
             }
             else { // zero
-                if (numerator == 0_v)
+                if (numerator() == 0_v)
                     throw "NaN"; // feel free to handle this properly
                 else
                     return Become(1_v);
@@ -308,8 +307,8 @@ namespace math {
             auto f = Fraction::cast(v);
             if (f->IsSimple())
             {
-                auto n = f->getNumerator();
-                auto dn = f->getDenominator();
+                auto n = f->numerator();
+                auto dn = f->denominator();
 
                 if (n != 1_v)
                     *this ^= n;
@@ -347,93 +346,37 @@ namespace math {
         if (v.IsFraction())
         {
             auto f = cast(v);
-            return numerator * f->denominator < f->numerator * denominator;
+            return numerator() * f->denominator() < f->numerator() * denominator();
         }
         else if (v.IsInt())
         {
-            return numerator < v * denominator;
+            return numerator() < v * denominator();
         }
         else
             return base::operator <(v);
     }
-
-    bool Fraction::operator ==(const Valuable& v) const
-    {
-        if (v.IsFraction())
-		{
-            auto f = cast(v);
-            return hash == f->Hash()
-                && denominator.Hash() == f->denominator.Hash()
-                && numerator.Hash() == f->numerator.Hash()
-                && ((denominator == f->denominator && numerator == f->numerator)
-//                    || (numerator * f->denominator == f->numerator * denominator)
-                    );
-        }
-        else if (v.IsVa()
-                 || (v.FindVa()==nullptr) != (FindVa()==nullptr))
-        {
-            return false;
-        }
-        else if (v.IsProduct())
-            return v==*this;
-        else
-        {
-			if (v.IsInt())
-			{
-                if (IsSimple())
-                {
-                    auto& n = Integer::cast(numerator)->as_const_base_int_ref();
-                    auto& dn = Integer::cast(denominator)->as_const_base_int_ref();
-                    auto g = boost::gcd(n,dn);
-                    auto i = Integer::cast(v);
-                    return (g == dn && n/g == i->as_const_base_int_ref()) || (n == 0 && *i == 0);
-                }
-                else
-                {
-                    return false;
-                }
-			}
-        }
-        
-        // no type matched
-        return base::operator ==(v);
-    }
     
     Valuable& Fraction::sq(){
-        numerator.sq();
-        denominator.sq();
+        numerator().sq();
+        denominator().sq();
         optimize();
         return *this;
     }
 
     Valuable Fraction::sqrt() const
     {
-        return numerator.sqrt() / denominator.sqrt();
+        return numerator().sqrt() / denominator().sqrt();
     }
 
-    std::ostream& Fraction::print(std::ostream& out) const
+    std::ostream& Fraction::print_sign(std::ostream& out) const
     {
-        auto noNeedBraces = [](auto& i) {
-            return Integer::cast(i) || Variable::cast(i);
-        };
-        out << '(';
-        if(!noNeedBraces(numerator))
-            out << '(' << numerator << ')';
-        else
-            out << numerator;
-        out << '/';
-        if(!noNeedBraces(denominator))
-            out << '(' << denominator << ')';
-        else
-            out << denominator;
-        out << ')';
-        return out;
+        return out << '/';
     }
     
     const Valuable::vars_cont_t& Fraction::getCommonVars() const
     {
-        vars = numerator.getCommonVars();
-        for(auto& r : denominator.getCommonVars())
+        vars = numerator().getCommonVars();
+        for(auto& r : denominator().getCommonVars())
         {
             vars[r.first] -= r.second;
         }
@@ -449,7 +392,7 @@ namespace math {
 //                : (va1 && va2
 //                   ? str().length() < v.str().length()
 //                   : va1!=nullptr );
-        auto mve = getMaxVaExp();
+        auto mve = base::getMaxVaExp();
         auto vmve = v.getMaxVaExp();
         auto is = mve > vmve;
         if (mve != vmve)
@@ -461,25 +404,25 @@ namespace math {
             else
             {
                 auto f = cast(v);
-                is = numerator.IsComesBefore(f->numerator) || denominator.IsComesBefore(f->denominator);
+                is = numerator().IsComesBefore(f->numerator()) || denominator().IsComesBefore(f->denominator());
             }
 //            auto e = cast(v);
-//            bool numeratorIsVa = numerator.IsVa();
-//            bool vbaseIsVa = e->numerator.IsVa();
-//            if (numeratorIsVa && vbaseIsVa)
-//                is = denominator == e->denominator ? numerator.IsComesBefore(e->numerator) : denominator > e->denominator;
-//            else if(numeratorIsVa)
+//            bool numerator()IsVa = numerator().IsVa();
+//            bool vbaseIsVa = e->numerator().IsVa();
+//            if (numerator()IsVa && vbaseIsVa)
+//                is = denominator() == e->denominator() ? numerator().IsComesBefore(e->numerator()) : denominator() > e->denominator();
+//            else if(numerator()IsVa)
 //                is = false;
 //            else if(vbaseIsVa)
 //                is = true;
-//            else if(numerator == e->numerator)
-//                is = denominator.IsComesBefore(e->denominator);
-//            else if(denominator == e->denominator)
-//                is = numerator.IsComesBefore(e->numerator);
+//            else if(numerator() == e->numerator())
+//                is = denominator().IsComesBefore(e->denominator());
+//            else if(denominator() == e->denominator())
+//                is = numerator().IsComesBefore(e->numerator());
 //            else
 //            {
-//                auto expComesBefore = denominator.IsComesBefore(e->denominator);
-//                auto ebaseComesBefore = numerator.IsComesBefore(e->numerator);
+//                auto expComesBefore = denominator().IsComesBefore(e->denominator());
+//                auto ebaseComesBefore = numerator().IsComesBefore(e->numerator());
 //                is = ebaseComesBefore || expComesBefore;//expComesBefore==ebaseComesBefore || str().length() > e->str().length();
 //            }
         }
@@ -507,16 +450,16 @@ namespace math {
         if (!IsSimple()) {
             IMPLEMENT
         }
-        return static_cast<a_int>(numerator)/static_cast<a_int>(denominator);
+        return static_cast<a_int>(numerator())/static_cast<a_int>(denominator());
     }
     
     Fraction::operator boost::multiprecision::cpp_dec_float_100() const
     {
         if (IsSimple())
         {
-            auto& num = *Integer::cast(numerator);
+            auto& num = *Integer::cast(numerator());
             boost::multiprecision::cpp_dec_float_100 f(num.as_const_base_int_ref());
-            auto & d = *Integer::cast(denominator);
+            auto & d = *Integer::cast(denominator());
             f /= boost::multiprecision::cpp_dec_float_100(d.as_const_base_int_ref());
             // TODO : check validity
             return f;
@@ -527,37 +470,18 @@ namespace math {
     
     Valuable Fraction::operator()(const Variable& v, const Valuable& augmentation) const
     {
-        return (augmentation * denominator - numerator)(v);
+        return (augmentation * denominator() - numerator())(v);
     }
     
     omnn::math::Fraction Fraction::Reciprocal() const
     {
-        return Fraction(denominator, numerator);
+        return Fraction(denominator(), numerator());
     }
 
-    const Variable* Fraction::FindVa() const
-    {
-        auto va = denominator.FindVa();
-        return va ? va : numerator.FindVa();
-    }
-
-    void Fraction::CollectVa(std::set<Variable>& s) const
-    {
-        numerator.CollectVa(s);
-        denominator.CollectVa(s);
-    }
-    
-    void Fraction::Eval(const Variable& va, const Valuable& v)
-    {
-        numerator.Eval(va, v);
-        denominator.Eval(va, v);
-//        optimize();
-    }
-    
     bool Fraction::IsSimple() const
     {
-        return Integer::cast(numerator)
-            && Integer::cast(denominator)
+        return numerator().IsInt()
+            && denominator().IsInt()
         ;
     }
 }}

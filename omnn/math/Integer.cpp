@@ -5,8 +5,10 @@
 #include "Integer.h"
 #include "Exponentiation.h"
 #include "Fraction.h"
-#include "Sum.h"
+#include "Modulo.h"
 #include "Product.h"
+#include "Sum.h"
+
 #include <algorithm>
 #include <codecvt>
 #include <cmath>
@@ -136,9 +138,7 @@ namespace math {
         }
         else
         {
-            // try other type
-            // no type matched
-            base::operator %=(v);
+            Become(Modulo(*this, v));
         }
         return *this;
     }

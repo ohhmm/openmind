@@ -7,6 +7,7 @@
 #include "Fraction.h"
 #include "Infinity.h"
 #include "Integer.h"
+#include "Modulo.h"
 #include "Product.h"
 #include "System.h"
 
@@ -704,31 +705,25 @@ namespace math {
                         }
                         else
                         {
-                            IMPLEMENT
-                            //return Become(Modulo(*this, v));
-//                            Variable rest;
-//                            auto case0 = v.Equals(*this).logic_and(rest.Equals(0));
-//                            auto case1 = rest.Equals(*this);
-//                            auto case2 = rest.Equals(v);
-//                            auto allCases = (case0.logic_or(case1).logic_or(case2));
-//                            return Become(allCases(rest));
+                            return Become(Modulo(*this, v));
                         }
                     }
                     if (*this != 0_v) {
-                        s = Fraction(*this, v);
+                        s = Modulo(*this, v);
                     }
                 }
                 else
                 {
-                    s = Fraction(*this, v);
+                    s = Modulo(*this, v);
                 }
             }
         }
         else
         {
             for (auto& a : members) {
-                s += a / v;
+                s += a % v;
             }
+            s = Modulo(s,v);
         }
         return Become(std::move(s));
     }

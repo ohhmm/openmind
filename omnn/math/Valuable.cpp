@@ -65,6 +65,18 @@ namespace math {
         this->sz = sz;
     }
     
+    Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
+    {
+        assert(!exp);
+    }
+
+    Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
+    {
+        assert(!exp);
+    }
+
     Valuable::operator std::type_index() const
     {
         return exp ? static_cast<std::type_index>(*exp) : std::type_index(typeid(*this));
@@ -640,6 +652,11 @@ namespace math {
     bool Valuable::Is_e() const { return exp && exp->Is_e(); }
     bool Valuable::Is_i() const { return exp && exp->Is_i(); }
     bool Valuable::Is_π() const { return exp && exp->Is_π(); }
+
+    bool Valuable::is(const std::type_index&) const
+    {
+        IMPLEMENT//ed in contract
+    }
 
     std::ostream& Valuable::print(std::ostream& out) const
     {
@@ -1376,4 +1393,3 @@ namespace std
 {
     return ::omnn::math::Fraction(v);
 }
-

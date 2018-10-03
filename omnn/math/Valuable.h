@@ -3,7 +3,8 @@
 //
 
 #pragma once
-#include "OpenOps.h"
+#include <omnn/math/OpenOps.h>
+
 #include <deque>
 #include <functional>
 #include <list>
@@ -61,6 +62,7 @@ public:
     encapsulated_instance exp = nullptr;
 
 protected:
+    const encapsulated_instance& getInst() const { return exp; }
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
@@ -91,23 +93,9 @@ protected:
     Valuable(ValuableDescendantMarker)
     {}
     
-    Valuable(const Valuable& v, ValuableDescendantMarker)
-    : hash(v.Hash())
-    , maxVaExp(v.getMaxVaExp())
-    , view(v.view)
-    , optimized(v.optimized)
-    {
-        assert(!exp);
-    }
+    Valuable(const Valuable& v, ValuableDescendantMarker);
     
-    Valuable(Valuable&& v, ValuableDescendantMarker)
-    : hash(v.Hash())
-    , maxVaExp(v.getMaxVaExp())
-    , view(v.view)
-    , optimized(v.optimized)
-    {
-        assert(!exp);
-    }
+    Valuable(Valuable&& v, ValuableDescendantMarker);
     
     virtual std::ostream& print(std::ostream& out) const;
     virtual std::ostream& code(std::ostream& out) const;
@@ -118,14 +106,14 @@ protected:
     size_t sz = sizeof(Valuable);
     a_int maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
     
-    std::function<Valuable()> DefaultCachedFm() {
+    std::function<Valuable()> DefaultCachedFn() {
         return [this]()->Valuable{
             auto c = calcFreeMember();
             this->cachedFreeMember = [c](){return c;};
             return c;
         };
     }
-    std::function<Valuable()> cachedFreeMember = DefaultCachedFm();
+    std::function<Valuable()> cachedFreeMember = DefaultCachedFn();
 
 public:
 
@@ -210,6 +198,13 @@ public:
     virtual bool Is_e() const;
     virtual bool Is_i() const;
     virtual bool Is_π() const;
+
+    virtual bool is(const std::type_index&) const;
+
+    template<class T>
+    bool Is() const {
+        return exp ? exp->Is<T>() : is(typeid(T));
+    }
 
     virtual Valuable& sq();
 
