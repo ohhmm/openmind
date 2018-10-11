@@ -65,12 +65,12 @@ bool getIdleMsec(unsigned& idleTime) {
 	return result;
 }
 
-#elif __APPLE__
-#include <CoreGraphics/CoreGraphics.h>
-bool getIdleMsec(unsigned& idleTime) {
-    throw "Implement!";
-    return true;
-}
+//#elif __APPLE__
+//#include <CoreGraphics/CoreGraphics.h>
+//bool getIdleMsec(unsigned& idleTime) {
+//    throw "Implement!";
+//    return true;
+//}
 
 #else
 # include <X11/extensions/scrnsaver.h>
@@ -92,7 +92,9 @@ unsigned int getIdleTime() {
 void WaitForComputerIdle::ReachNone()
 {
 	unsigned msec;
-	if (getIdleMsec(msec) && msec >= IdleMillisecondsCount)
+    auto success = getIdleMsec(msec);
+    assert(success);
+	if (success && msec >= IdleMillisecondsCount)
     {
         Facility::result_notification_f processStartedNotification =
             std::bind(&WaitForComputerIdle::ProcessStartedNotification, this, std::placeholders::_1);

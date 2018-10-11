@@ -4,6 +4,7 @@
 #include "Product.h"
 
 #include "Fraction.h"
+#include "Infinity.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "e.h"
@@ -18,6 +19,8 @@ namespace math {
     
     type_index order[] = {
         // for fast optimizing
+        typeid(MInfinity),
+        typeid(Infinity),
         typeid(Sum),
         typeid(Product),
         // general order
@@ -307,6 +310,8 @@ namespace math {
                 if (((c.IsInt() || c.IsFraction()) && (it2->IsFraction() || it2->IsInt()))
                     || (c.IsVa() && ((it2->IsVa() && c==*it2) || (it2->IsExponentiation() && e2->getBase() == c)))
                     || (c.IsExponentiation() && ((it2->IsVa() && e->getBase() == *it2) || (e2 && e->getBase() == e2->getBase())))
+                    || ((c.IsInfinity() || c.IsMInfinity()) && (it2->IsInt() || it2->IsSimpleFraction()))
+                    || ((c.IsInt() || c.IsSimpleFraction()) && (it2->IsInfinity() || it2->IsMInfinity()))
                     )
                 {
                     c *= *it2;
@@ -701,6 +706,15 @@ namespace math {
 		return base::operator %=(v);
 	}
 
+    Product::operator double() const
+    {
+        double d=1;
+        for(auto& i:members)
+        {
+            d*=static_cast<double>(i);
+        }
+        return d;
+    }
     Valuable& Product::d(const Variable& x)
     {
         if(vars.find(x) != vars.end())

@@ -34,7 +34,8 @@ namespace math {
 		Valuable& operator %=(const Valuable& v) override;
 		Valuable& operator^=(const Valuable&) override;
 		bool operator <(const Valuable& v) const override;
-//		bool operator ==(const Valuable& v) const override;
+        explicit operator double() const override;
+        
 		void optimize() override;
 		Valuable sqrt() const override;
 		const vars_cont_t& getCommonVars() const override;
@@ -47,7 +48,11 @@ namespace math {
 		Fraction() : base(0, 1) {}
 
 		Fraction(int n) : base(n, 1) {}
-
+        
+        Fraction(double d)
+        : Fraction(boost::multiprecision::cpp_dec_float_100(d))
+        { }
+        
 		Fraction(const Valuable& n)
 		: base(n, 1)
 		{

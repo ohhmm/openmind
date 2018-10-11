@@ -49,6 +49,7 @@ public:
 	Valuable& operator *=(const Valuable& v) override;
 	Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;
+    explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     void optimize() override;
     const vars_cont_t& getCommonVars() const override;

@@ -225,8 +225,10 @@ public:
     solutions_t solutions(const Variable& v) const;
     Valuable::solutions_t GetIntegerSolution() const;
     virtual Valuable::solutions_t GetIntegerSolution(const Variable& va) const;
+    bool Test(const Variable& va, const Valuable& v) const;
     
-    using extrenums_t = std::vector<std::pair<Valuable/*value*/,Valuable/*direction*/> >;
+    using extrenum_t = std::pair<Valuable/*value*/,Valuable/*direction*/>;
+    using extrenums_t = std::vector<extrenum_t>;
     extrenums_t extrenums() const;
     extrenums_t extrenums(const Variable& v) const;
     extrenums_t& extrenums(const Variable& v, extrenums_t& extrs) const;
@@ -285,14 +287,42 @@ public:
     virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const;
     
     // logic
-    Valuable Abet(std::initializer_list<Valuable>) const;
+    Valuable Abet(const Variable& x, std::initializer_list<Valuable>) const;
     Valuable Equals(const Valuable& v) const;
     Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
-    Valuable NE(const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
+    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
     Valuable LogicAnd(const Valuable& v) const;
     Valuable LogicOr(const Valuable& v) const;
     Valuable& logic_or(const Valuable&); // inplace
     Valuable& logic_and(const Valuable&);
+    
+//    distinctZeros
+//
+//    distinct intersect
+//
+//    _1 = (x-1)(x-2),   _2 =(x-2)(x-3)
+//
+//    distinct union of (x-1)(x-2), (x-2)(x-3)   ==  (x-1)(x-2)(x-3)
+//
+//    (x-1)(x-2)   (x-1)                         (x-1)
+//    ---------- = -----    =>  equation form :  ----- = 0    solve : x=1
+//    (x-2)(x-3)   (x-3)                         (x-3)
+//
+//    _1 / solve = intersect:
+//
+//    (x-1)(x-2) / (x-1) == (x-2)
+    
+//    Valuable DistinctIntersect(const Valuable& with, const Variable& va){
+//        auto toSolve = *this / with;
+//        toSolve
+//    }
+    
+    Valuable& intersect(const Valuable& with, const Variable& va){
+        return logic_and(with);
+    }
+    Valuable Intersect(const Valuable& with, const Variable& va){
+        return LogicAnd(with);
+    }
     Valuable Ifz(const Valuable& Then, const Valuable& Else) const;
     Valuable IfEq(const Valuable& v, const Valuable& Then, const Valuable& Else) const;
     Valuable For(const Valuable& initialValue, const Valuable& lambda) const;

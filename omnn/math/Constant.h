@@ -43,7 +43,7 @@ namespace math {
         
         bool operator==(const Valuable& v) const override
         {
-            return {};
+            return this->OfSameType(v);
         }
     };
 }}

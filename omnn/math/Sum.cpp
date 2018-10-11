@@ -2,13 +2,15 @@
 // Created by Сергей Кривонос on 25.09.17.
 //
 #include "Sum.h"
-
+#include "e.h"
 #include "Formula.h"
 #include "Fraction.h"
+#include "i.h"
 #include "Infinity.h"
 #include "Integer.h"
 #include "Modulo.h"
 #include "Product.h"
+#include "π.h"
 #include "System.h"
 
 #include <algorithm>
@@ -46,12 +48,18 @@ namespace math {
         using namespace std;
         
         type_index order[] = {
+            typeid(MInfinity),
             typeid(Sum),
             typeid(Product),
             typeid(Exponentiation),
             typeid(Variable),
+            typeid(Euler),
+            typeid(Pi),
+            typeid(MinusOneSq),
             typeid(Integer),
             typeid(Fraction),
+            typeid(Modulo),
+            typeid(Infinity),
         };
         
         auto ob = std::begin(order);
@@ -214,6 +222,8 @@ namespace math {
                     if (((c.IsFraction() || c.IsInt()) && it2->IsSimpleFraction())
                         || (it2->IsInt() && (c.IsInt() || c.IsSimpleFraction()))
                         || (c.IsProduct() && mc == *it2)
+                        || c.IsInfinity() || c.IsMInfinity()
+                        || it2->IsInfinity() || it2->IsMInfinity()
                         )
                     {
                         c += *it2;
@@ -580,8 +590,9 @@ namespace math {
                         }
                         else
                         {
-                            s += *this / v;
-                            break;
+                            operator/=(v);
+                            operator+=(s);
+                            return *this;
                         }
                     }
                     if (*this != 0_v) {
@@ -726,6 +737,14 @@ namespace math {
             s = Modulo(s,v);
         }
         return Become(std::move(s));
+    }
+
+    Sum::operator double() const
+    {
+        double sum = 0;
+        for(auto& i : members)
+            sum += static_cast<double>(i);
+        return sum;
     }
 
     Valuable& Sum::d(const Variable& x)
@@ -1031,7 +1050,7 @@ namespace math {
 #endif
             return Valuable(s);
         }
-        if (coefs.size() && grade && grade < 5)
+        if (coefs.size() && grade && grade < 3)
         {
             solve(va, s, coefs, grade);
             for (auto i=s.begin(); i != s.end();) {
@@ -1140,7 +1159,7 @@ namespace math {
         solutions_t solutions;
         Valuable singleIntegerRoot;
         bool haveMin = false;
-        auto _ = *this;
+        Valuable _ = *this;
         _.optimize();
         auto sum = cast(_);
         if (!sum) {
@@ -1149,7 +1168,7 @@ namespace math {
         
         std::vector<Valuable> coefficients;
         auto g = sum->FillPolyCoeff(coefficients,va);
-        if (g<5)
+        if (g<3)
         {
             sum->solve(va, solutions, coefficients, g);
             
@@ -1221,7 +1240,23 @@ namespace math {
     {
         std::vector<Valuable> coefficients;
         auto grade = FillPolyCoeff(coefficients, va);
-        solve(va, solutions, coefficients, grade);
+        if(grade > 2)
+        {
+            auto t = *this;
+            auto intSol = GetIntegerSolution(va);
+            for(auto is : intSol)
+                if(Test(va,is))
+                {
+                    solutions.insert(is);
+                    t /= va.Equals(is);
+                }
+            if(intSol.size())
+                t.solve(va,solutions);
+            else
+                solve(va, solutions, coefficients, grade);
+        }
+        else
+            solve(va, solutions, coefficients, grade);
     }
     
     void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const

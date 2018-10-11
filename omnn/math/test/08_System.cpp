@@ -158,7 +158,12 @@ BOOST_AUTO_TEST_CASE(Sudoku_simple_test) // solve sudoku through a system of equ
         s << sumInRow << sumInCol << sumInSq;
     }
 
-    
+//    std::atomic<int> MaxTasks = boost::thread::hardware_concurrency();
+//    std::deque<std::function<void()>> tasks;
+//    auto ChooseNextTask = [&tasks](){
+//
+//    };
+//    auto AddPoolTask = [](std::function<
     // solving
     auto sysMutex = std::make_shared<boost::shared_mutex>();
     for(auto rowIdx = data.size(); rowIdx--;){
@@ -167,7 +172,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_simple_test) // solve sudoku through a system of equ
             if(!i){
                 std::function<void()> addThisTask;
                 addThisTask = [colIdx,rowIdx,sysMutex,&s,&at,addThisTask](){
-                    std::async([colIdx,rowIdx, sysMutex, &s, &at, addThisTask](){
+                    auto t = std::async([colIdx,rowIdx, sysMutex, &s, &at, addThisTask](){
                         Variable find;
                         sysMutex->lock_shared();
                         decltype(s) localSystem = s;

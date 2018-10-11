@@ -5,11 +5,13 @@
 
 #include "e.h"
 #include "i.h"
+#include "Infinity.h"
 #include "π.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
 
+#include <cmath>
 
 namespace omnn{
 namespace math {
@@ -180,13 +182,17 @@ namespace math {
                     IMPLEMENT;
             } else if (ebase()==-1 && eexp().IsInt() && eexp() > 0 && eexp()!=1) {
                 eexp() = eexp().bit(0);
-            }
+            } else if (eexp().IsInfinity())
+                IMPLEMENT
         }
 
         bool ebz = ebase() == 0_v;
         bool exz = eexp() == 0_v;
         if(exz)
         {
+            if (ebase().IsInfinity() || ebase().IsMInfinity()) {
+                IMPLEMENT
+            }
             if(ebz)
                 throw "NaN";
 
@@ -204,6 +210,23 @@ namespace math {
                 throw "NaN";
             Become(0_v);
             return;
+        }
+        else if (ebase().IsInfinity())
+        {
+            if (eexp() > 0) {
+                Become(std::move(ebase()));
+            } else
+                IMPLEMENT
+        }
+        else if (ebase().IsMInfinity())
+        {
+            if (eexp() > 0) {
+                if ((eexp() % 2) > 0) // TODO : test with non-ints
+                    Become(std::move(ebase()));
+                else
+                    Become(Infinity());
+            } else
+                IMPLEMENT
         }
         else
         {
@@ -437,6 +460,11 @@ namespace math {
         return *this;
     }
     
+    Exponentiation::operator double() const
+    {
+        return std::pow(static_cast<double>(ebase()), static_cast<double>(eexp()));
+    }
+
     Valuable& Exponentiation::d(const Variable& x)
     {
         optimized={};
@@ -533,6 +561,8 @@ namespace math {
 //        {is=}
         else if(v.IsVa())
             is = !!FindVa();
+        else if(v.IsSum())
+            is = IsComesBefore(*Sum::cast(v)->begin());
         else
             IMPLEMENT
 

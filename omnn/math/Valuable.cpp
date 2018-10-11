@@ -10,7 +10,7 @@
 #include "Integer.h"
 #include "VarHost.h"
 #include "Sum.h"
-
+#include <iterator>
 #include <string>
 #include <stack>
 #include <map>
@@ -531,6 +531,14 @@ namespace math {
             IMPLEMENT
     }
     
+    bool Valuable::Test(const Variable& va, const Valuable& v) const
+    {
+        auto t = *this;
+        t.Eval(va, v);
+        t.optimize();
+        return t==0;
+    }
+    
     using extrenums_t = std::vector<std::pair<Valuable/*value*/,Valuable/*direction*/> >;
     extrenums_t Valuable::extrenums() const
     {
@@ -558,7 +566,11 @@ namespace math {
         f.optimize();
         auto dd = f; dd.d(v);
         dd.optimize();
-        for(auto& s : f.solutions(v))
+        auto fs = f.solutions(v);
+        std::list<decltype(fs)::value_type> ls;
+        ls.assign(fs.begin(), fs.end());
+        ls.sort();
+        for(auto& s : ls)
         {
             auto ddc = dd;
             ddc.Eval(v, s);
@@ -578,7 +590,7 @@ namespace math {
 
     zero_zone_t Valuable::get_zeros_zones(const Variable& v, const extrenums_t& extrs) const
     {
-        zero_zone_t z {{Infinity(), MInfinity()},{}};
+        zero_zone_t z {{MInfinity(), Infinity()},{}};
         if (!extrs.size()) {
             return z;
         }
@@ -586,6 +598,7 @@ namespace math {
         auto y = [&](auto x){
             auto _y = *this;
             _y.Eval(v, x);
+            _y.optimize();
             return _y;
         };
         
@@ -603,22 +616,13 @@ namespace math {
 //        if ((y(b-inf) < b && b > 0) || (y(b-inf) > b && b < 0)){
 //            z.second.push_back({MInfinity(), b});
 //        }
-        for(auto& e : extrs)
-        {
-            if(valPrevious > 0 != e.first > 0) {
-                z.second.push_back({valPrevious, e.first});
-                if (z.first.first > valPrevious) {
-                    z.first.first = valPrevious;
-                }
-                if (z.first.second < e.first) {
-                    z.first.second = e.first;
-                }
-            }
-            else if(valPrevious == 0 || e.first == 0) {
-                IMPLEMENT
-            }
+        auto addz = [&](const extrenum_t& e){
+            z.second.push_back({valPrevious, e.first});
             valPrevious = e.first;
-        }
+        };
+        for(auto& e : extrs)
+            addz(e);
+        addz({inf,{}});
         
         return z;
     }
@@ -627,6 +631,14 @@ namespace math {
     {
         if(exp)
             return exp->operator<(v);
+        else if (!FindVa()) {
+            double _1 = operator double();
+            double _2 = static_cast<double>(v);
+            if(_1 == _2) {
+                IMPLEMENT
+            }
+            return _1 < _2;
+        }
         else
             IMPLEMENT
     }
@@ -937,12 +949,12 @@ namespace math {
         return *this - v;
     }
 
-    Valuable Valuable::Abet(std::initializer_list<Valuable> l) const
+    Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l) const
     {
-        Valuable a;
-        for(auto& item :l)
-            a*=item;
-        return a;
+        Product a;
+        for(auto& item : l)
+            a.Add(item.Equals(x));
+        return Valuable(a.Move());
     }
 
     Valuable Valuable::NE(const Valuable& to, const Valuable& abet) const
@@ -950,9 +962,9 @@ namespace math {
         return abet / (*this-to);
     }
 
-    Valuable Valuable::NE(const Valuable& to, std::initializer_list<Valuable> abet) const
+    Valuable Valuable::NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const
     {
-        return Abet(abet)/(*this-to);
+        return Abet(x, abet)/(*this-to);
     }
 
     Valuable Valuable::LogicAnd(const Valuable& v) const
@@ -1391,5 +1403,5 @@ namespace std
 
 ::omnn::math::Valuable operator"" _v(long double v)
 {
-    return ::omnn::math::Fraction(v);
+    return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }

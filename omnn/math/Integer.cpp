@@ -384,20 +384,21 @@ namespace math {
     {
         if (v.IsInt())
             return arbitrary < v.ca();
-        else
-        {
-            if (v.IsFraction())
-            {
-                return !(v < *this) && *this!=v;
+        else if (v.IsFraction())
+            return !(v < *this) && *this!=v;
+        else if(v.IsMInfinity())
+            return {};
+        else if(v.IsInfinity())
+            return true;
+        else if (!v.FindVa()) {
+            double _1 = boost::numeric_cast<double>(arbitrary);
+            double _2 = static_cast<double>(v);
+            if(_1 == _2) {
+                IMPLEMENT
             }
-            else
-            {
-                // try other type
-                // no type matched
-            }
-        }
-        // not implemented comparison to this Valuable descent
-        return base::operator <(v);
+            return _1 < _2;
+       } else
+            return base::operator <(v);
     }
 
     bool Integer::operator ==(const Valuable& v) const
@@ -436,19 +437,25 @@ namespace math {
         auto from = 1_v;
         if (scanz) {
             if (zz.first.second < up) {
-                up = zz.first.second;
+                if(zz.first.second.IsInt())
+                    up = zz.first.second;
+                else
+                    up = static_cast<int>(static_cast<double>(zz.first.second));
             }
             if (zz.first.first > from) {
-                from = zz.first.first;
+                if(zz.first.first.IsInt())
+                    from = zz.first.first;
+                else
+                    from = static_cast<int>(static_cast<double>(zz.first.first));
             }
             scanIt = zz.second.begin();
             while (scanIt != zz.second.end() && scanIt->second < from) {
                 ++scanIt;
             }
         }
-        if (!zz.second.empty()) {
-            IMPLEMENT
-        }
+//        if (!zz.second.empty()) {
+//            IMPLEMENT
+//        }
 //        if (arbitrary > std::numeric_limits<cl_long>::max()) {
 //        #pragma omp parallel for shared(up)
         for (auto i = from; i < up; ++i) {
@@ -461,16 +468,16 @@ namespace math {
                 }
             }
             
-//            if (i > scanIt->second) {
-//                ++scanIt;
-//                if (scanIt == zz.second.end()) {
-//                    break;
-//                }
-//                i = scanIt->first;
-//                if (!i.IsInt()) {
-//                    IMPLEMENT;
-//                }
-//            }
+            if (i > scanIt->second) {
+                ++scanIt;
+                if (scanIt == zz.second.end()) {
+                    break;
+                }
+                i = scanIt->first;
+                if (!i.IsInt()) {
+                    IMPLEMENT;
+                }
+            }
 ////            while (scai > scanIt.s) {
 ////                <#statements#>
 ////            }

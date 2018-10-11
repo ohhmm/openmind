@@ -282,13 +282,13 @@ namespace math {
 
     Valuable& Fraction::operator^=(const Valuable& v)
     {
-        auto i = Integer::cast(v);
-        if(i)
+        if(v.IsInt())
         {
-            if (*i != 0_v) {
-                if (*i > 1_v) {
+            auto i = v.ca();
+            if (i != 0_v) {
+                if (i > 1_v) {
                     auto a = *this;
-                    for (auto n = *i; n > 1_v; --n) {
+                    for (auto n = i; n > 1_v; --n) {
                         *this *= a;
                     }
                     optimize();
@@ -354,6 +354,11 @@ namespace math {
         }
         else
             return base::operator <(v);
+    }
+    
+    Fraction::operator double() const
+    {
+        return static_cast<double>(numerator()) / static_cast<double>(denominator());
     }
     
     Valuable& Fraction::sq(){

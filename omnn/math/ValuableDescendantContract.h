@@ -13,6 +13,10 @@ namespace math {
     public:
         using Valuable::Valuable;
         Valuable& operator^=(const Valuable& v) override;
+        Valuable& operator+=(const Valuable &v) override;
+        Valuable& operator*=(const Valuable &v) override;
+        Valuable& operator/=(const Valuable &v) override;
+        Valuable& operator%=(const Valuable &v) override;
     };
 
     template <class Chld>

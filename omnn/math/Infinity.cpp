@@ -22,13 +22,19 @@ Valuable& Infinity::operator +=(const Valuable& v)
 
 Valuable& Infinity::operator *=(const Valuable& v)
 {
-    if (v.IsMInfinity()) {
+    if (v.IsInt()) {
+        if (v.ca() < 0) {
+            Become(MInfinity());
+        } else if(v.ca() == 0) {
+            IMPLEMENT;
+        } else {
+            //Infinity
+        }
+    } else if (v.IsMInfinity()) {
         IMPLEMENT;
-    }
-    else if (v < 0_v)
+    } else if (v < 0_v)
         Become(MInfinity());
-    else if (v == 0_v)
-        IMPLEMENT;
+        
     return *this;
 }
 
@@ -91,7 +97,7 @@ Valuable& MInfinity::operator *=(const Valuable& v)
     if (v.IsInfinity())
         IMPLEMENT
     else if (v < 0_v)
-        Become(MInfinity());
+        Become(Infinity());
     else if (v == 0_v)
         IMPLEMENT
     return *this;

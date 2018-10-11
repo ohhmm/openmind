@@ -231,6 +231,9 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     _2 = 2 * v5 + v7 + 3;
     _ = Sum{ _1 } / _2;
     BOOST_TEST(_ == _1 / _2);
+    
+    _ = (x-1)/(x-3);
+    BOOST_TEST(_ == 1+2/(x-3));
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)
@@ -255,6 +258,31 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     BOOST_TEST(solution1.abs() == 2_v);
     auto solution2 = *++sol.begin();
     BOOST_TEST(solution1 == -solution2);
+    
+    auto equation = (v-1)*(v-2)*(v-3);
+    sol = equation.solutions();
+    BOOST_TEST(sol.size()==3);
+    auto found = sol.find(1) != sol.end();
+    BOOST_TEST(found);
+    found = sol.find(2) != sol.end();
+    BOOST_TEST(found);
+    found = sol.find(3) != sol.end();
+    BOOST_TEST(found);
+
+    equation *= v+4;
+    sol = equation.solutions();
+    BOOST_TEST(sol.size()==4);
+    found = sol.find(1) != sol.end();
+    BOOST_TEST(found);
+    found = sol.find(2) != sol.end();
+    BOOST_TEST(found);
+    found = sol.find(3) != sol.end();
+    BOOST_TEST(found);
+    found = sol.find(4) != sol.end();
+    BOOST_TEST(found);
+    found = sol.find(-4) != sol.end();
+    BOOST_TEST(found);
+    
 }
 
 BOOST_AUTO_TEST_CASE(Containers_test)
@@ -301,3 +329,16 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     p.optimize();
     BOOST_TEST(7_v % 3 == p);
 }
+
+BOOST_AUTO_TEST_CASE(test_logic_intersection)
+{
+    Variable x;
+    auto _1 = x.Abet(x, {1,2});
+    auto _2 = x.Abet(x, {2,3});
+    auto _ = _1.Intersect(_2, x);
+    auto solutions = _.solutions(x);
+    _.optimize();
+    std::cout << _ << std::endl;
+    BOOST_TEST(_ == 2);
+}
+
