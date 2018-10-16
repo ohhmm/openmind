@@ -84,8 +84,8 @@ namespace math {
     
     Valuable& Valuable::Become(Valuable&& i)
     {
+        auto newWasView = GetView(); // TODO: fix it, supervise all View usages
         auto h = i.Hash();
-        auto v = i.view;
         auto e = i.exp;
         if(e)
         {
@@ -124,17 +124,11 @@ namespace math {
                 if (Hash() != h) {
                     IMPLEMENT
                 }
-                if (v != view) {
-                    IMPLEMENT
-                }
                 optimize();
             }
             else if(exp && exp->getAllocSize() >= newSize)
             {
                 exp->Become(std::move(i));
-                if (v != exp->view) {
-                    IMPLEMENT
-                }
             }
             else
             {
@@ -145,13 +139,10 @@ namespace math {
                 if (Hash() != h) {
                     IMPLEMENT
                 }
-                if (v != view) {
-                    IMPLEMENT
-                }
                 optimize();
             }
         }
-        
+        SetView(newWasView);
         return *this;
     }
 
@@ -176,7 +167,7 @@ namespace math {
     {
     }
 
-    Valuable::Valuable(double d) : exp(new Fraction(d)) {}
+    Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(int i) : exp(new Integer(i)) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
     Valuable::Valuable(a_int&& i) : exp(new Integer(std::move(i))) {}
@@ -225,7 +216,7 @@ namespace math {
                 st.push(c);
             else if (s[c] == ')')
             {
-                bracketsmap.insert(std::pair(st.top(), c));
+                bracketsmap.insert({st.top(), c});
                 st.pop();
             }
             c++;
@@ -507,7 +498,14 @@ namespace math {
     Valuable::solutions_t Valuable::solutions(const Variable& v) const
     {
         solutions_t solutions;
-        solve(v, solutions);
+        if(this->view == View::Solving)
+            solve(v,solutions);
+        else {
+            auto c = *this;
+            c.SetView(View::Solving);
+            c.optimize();
+            c.solve(v, solutions);
+        }
         return solutions;
     }
 
@@ -536,94 +534,73 @@ namespace math {
         auto t = *this;
         t.Eval(va, v);
         t.optimize();
+#ifndef NDEBUG
+        if (t!=0) {
+            std::cout << t << '\n';
+        }
+#endif
         return t==0;
-    }
-    
-    using extrenums_t = std::vector<std::pair<Valuable/*value*/,Valuable/*direction*/> >;
-    extrenums_t Valuable::extrenums() const
-    {
-        extrenums_t e;
-        std::set<Variable> vars;
-        CollectVa(vars);
-        if (vars.size() == 1) {
-            extrenums(*vars.begin(), e);
-        }
-        else
-            IMPLEMENT;
-        return e;
-    }
-
-    extrenums_t Valuable::extrenums(const Variable& v) const
-    {
-        extrenums_t e;
-        return extrenums(v, e);
-    }
-
-    extrenums_t& Valuable::extrenums(const Variable& v, extrenums_t& e) const
-    {
-        auto f = *this;
-        f.d(v);
-        f.optimize();
-        auto dd = f; dd.d(v);
-        dd.optimize();
-        auto fs = f.solutions(v);
-        std::list<decltype(fs)::value_type> ls;
-        ls.assign(fs.begin(), fs.end());
-        ls.sort();
-        for(auto& s : ls)
-        {
-            auto ddc = dd;
-            ddc.Eval(v, s);
-            ddc.optimize();
-            e.push_back({s, ddc});
-        }
-        return e;
     }
     
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
     using zero_zone_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
 
-    zero_zone_t Valuable::get_zeros_zones(const Variable& v) const
+    zero_zone_t Valuable::get_zeros_zones(const Variable& v, solutions_t& some) const
     {
-        return get_zeros_zones(v, extrenums(v));
-    }
-
-    zero_zone_t Valuable::get_zeros_zones(const Variable& v, const extrenums_t& extrs) const
-    {
-        zero_zone_t z {{MInfinity(), Infinity()},{}};
-        if (!extrs.size()) {
-            return z;
-        }
+        auto fm = calcFreeMember().abs();
+        zero_zone_t z {{-fm, fm},{}};
         
+        auto f = *this;
+        f.d(v); f.optimize();
+        auto fs = f.solutions(v);
+        
+        std::list<decltype(fs)::value_type> ls;
+        ls.assign(fs.begin(), fs.end());
+        ls.sort();
+
         auto y = [&](auto x){
             auto _y = *this;
             _y.Eval(v, x);
             _y.optimize();
             return _y;
         };
-        
-        auto dv = *this; dv.d(v);
-        dv.optimize();
-//        auto dxval = [&](auto x){
-//            auto dy = dv;
-//            dy.Eval(v, x);
-//            return dy;
-//        };
-        
-        auto inf = Infinity();
-        auto valPrevious = y(MInfinity());
-//        auto& b = extrs.begin()->first;
-//        if ((y(b-inf) < b && b > 0) || (y(b-inf) > b && b < 0)){
-//            z.second.push_back({MInfinity(), b});
-//        }
-        auto addz = [&](const extrenum_t& e){
-            z.second.push_back({valPrevious, e.first});
-            valPrevious = e.first;
+        auto prev = -fm;
+        auto valPrevious = y(prev);
+        if (valPrevious == 0) {
+            some.insert(prev);
+        }
+        auto addz = [&](auto& e){
+            Valuable& from = prev;
+            Valuable atFromVal = valPrevious;
+            Valuable& to = e;
+            Valuable val = y(e);
+            auto isAtFromNeg = atFromVal < 0;
+            auto isAtFromPos = atFromVal > 0;
+            auto isAtToNeg = val < 0;
+            auto isAtToPos = val > 0;
+            if( (isAtFromNeg && isAtToPos) || (isAtFromPos && isAtToNeg) ) {
+                if (z.second.size() && z.second.back().second == from)
+                    z.second.back().second = to;
+                else
+                    z.second.push_back({from, to});
+            }
+            else if (val == 0) {
+                some.insert(e);
+            } else {
+                IMPLEMENT
+            }
+            prev = to;
+            valPrevious = val;
         };
-        for(auto& e : extrs)
-            addz(e);
-        addz({inf,{}});
         
+        for(auto& e : ls)
+            addz(e);
+        addz(fm);
+        
+        if(z.second.size()) {
+            z.first.first = z.second.begin()->first;
+            z.first.second = z.second.rbegin()->second;
+        }
         return z;
     }
     
@@ -704,6 +681,11 @@ namespace math {
             IMPLEMENT
     }
 
+    Valuable::View Valuable::GetView() const
+    {
+        return exp ? exp->GetView() : view;
+    }
+    
     void Valuable::SetView(View v)
     {
         if(exp)
@@ -784,7 +766,12 @@ namespace math {
     void Valuable::Eval(const Variable& va, const Valuable& v)
     {
         if (exp) {
-            exp->Eval(va, v);
+            if (v.HasVa(va)) {
+                Variable t;
+                Eval(va, t);
+                Eval(t, v);
+            } else
+                exp->Eval(va, v);
             while (exp->exp) {
                 exp = exp->exp;
             }

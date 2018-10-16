@@ -247,7 +247,7 @@ namespace math {
         if(arbitrary == 0 || arbitrary == 1)
         {
             if (v == 0) {
-                throw "Implement!"; //NaN
+                IMPLEMENT; //NaN
             }
             else {
                 return *this;
@@ -421,6 +421,16 @@ namespace math {
         return *this;
     }
 
+    std::deque<Valuable> Integer::Facts() const
+    {
+        std::deque<Valuable> f;
+        Factorization([&](auto& v){
+            f.push_back(v);
+            return false;
+        }, abs());
+        return f;
+    }
+
     bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, const Valuable& max, const zero_zone_t& zz) const
     {
         using namespace boost::compute;
@@ -458,8 +468,12 @@ namespace math {
 //        }
 //        if (arbitrary > std::numeric_limits<cl_long>::max()) {
 //        #pragma omp parallel for shared(up)
+        auto absolute = abs();
+        if(from==up)
+            return f(up);
+        else
         for (auto i = from; i < up; ++i) {
-            auto a = *this / i;
+            auto a = absolute / i;
             if (a.IsInt()) {
                 if(f(i) || f(a))
                     return true;
@@ -468,7 +482,7 @@ namespace math {
                 }
             }
             
-            if (i > scanIt->second) {
+            if (scanz && i > scanIt->second) {
                 ++scanIt;
                 if (scanIt == zz.second.end()) {
                     break;

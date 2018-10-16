@@ -67,10 +67,6 @@ namespace math {
             }
         }
         
-        
-        //auto extrenums = sum->extrenums(getVa());
-        //sum->get_zeros_zones(getVa(), extrenums);
-        
         Valuable closest;
         auto closestY = fx(closest);
         auto finder = [&](const Integer* i) -> bool

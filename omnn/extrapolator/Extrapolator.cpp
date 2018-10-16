@@ -51,7 +51,7 @@ Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const V
         }
     }
     Valuable::optimizations = optsWas;
-    return e;
+    return Valuable(std::move(e));
 }
 
 Extrapolator::operator Formula() const

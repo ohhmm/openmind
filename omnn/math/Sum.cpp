@@ -12,12 +12,14 @@
 #include "Product.h"
 #include "π.h"
 #include "System.h"
+#include "VarHost.h"
 
 #include <algorithm>
 #include <cmath>
 #ifdef _WIN32
 #include <execution>
 #endif
+#include <future>
 #include <map>
 #include <stack>
 #include <thread>
@@ -356,16 +358,20 @@ namespace math {
                     }
                 } while (scan);
                 
-                auto it = members.begin();
-                auto gcd = it->varless();
-                for (; it != members.end(); ++it) {
-                    gcd = boost::gcd(gcd, it->varless());
-                }
-                
-                if(gcd!=1_v){
-                    operator/=(gcd);
-                }
-                // todo : make all va exponentiations > 0
+                if(IsSum())
+                {
+                    auto it = members.begin();
+                    auto gcd = it->varless();
+                    for (; it != members.end(); ++it) {
+                        gcd = boost::gcd(gcd, it->varless());
+                    }
+                    
+                    if(gcd!=1_v){
+                        operator/=(gcd);
+                    }
+                    // todo : make all va exponentiations > 0
+                } else
+                    return;
             }
             
             if (view == Equation) {
@@ -373,7 +379,6 @@ namespace math {
                 if (coVa.size()) {
                     *this /= VaVal(coVa);
                     if (!IsSum()) {
-                        isOptimizing = {};
                         return;
                     }
                 }
@@ -491,6 +496,8 @@ namespace math {
 	Valuable& Sum::operator /=(const Valuable& v)
 	{
         Valuable s = 0_v;
+        auto view = GetView();
+        SetView(None);
 		if (v.IsSum())
 		{
             auto i = cast(v);
@@ -514,7 +521,6 @@ namespace math {
                     auto e = i->end();
                     size_t offs = 0;
                     std::deque<Valuable> hist {*this};
-                    
                     auto icnt = size() * 2;
                     while(*this != 0_v && icnt--)
                     {
@@ -592,6 +598,8 @@ namespace math {
                         {
                             operator/=(v);
                             operator+=(s);
+                            SetView(view);
+                            optimize();
                             return *this;
                         }
                     }
@@ -611,6 +619,8 @@ namespace math {
                 s += a / v;
             }
 		}
+        s.SetView(view);
+        SetView(view);
         return Become(std::move(s));
 	}
 
@@ -925,7 +935,7 @@ namespace math {
         }
         }
         if(c0.size()){
-            c0.optimized = optimized;
+//            c0.optimized = optimized;
             coefficients[0] = std::move(c0);
         }
         return grade;
@@ -1177,9 +1187,22 @@ namespace math {
                 return solutions;
             }
         }
-        
-        auto extrenums = sum->extrenums(va);
-        auto zz = sum->get_zeros_zones(va, extrenums);
+
+        solutions_t zs;
+        auto zz = sum->get_zeros_zones(va, zs);
+        if(zs.size())
+        {
+            bool foundIntSolution = {};
+            for(auto& s : zs)
+            {
+                foundIntSolution |= s.IsInt();
+                solutions.insert(s);
+            }
+            if(foundIntSolution)
+                return solutions;
+            else
+                IMPLEMENT
+        }
         
         Valuable min;
         Valuable closest;
@@ -1197,7 +1220,7 @@ namespace math {
                                         _.Eval(va, i);
                                         _.optimize();
                                         
-                                        bool found = _ == 0_v;
+                                        auto found = _ == 0_v;
                                         if (found) {
                                             std::cout << "found " << i << std::endl;
                                             singleIntegerRoot = i;
@@ -1231,7 +1254,7 @@ namespace math {
             return solutions;
         }
         
-        
+        return solutions;
         IMPLEMENT
 
     }
@@ -1240,22 +1263,24 @@ namespace math {
     {
         std::vector<Valuable> coefficients;
         auto grade = FillPolyCoeff(coefficients, va);
-        if(grade > 2)
-        {
-            auto t = *this;
-            auto intSol = GetIntegerSolution(va);
-            for(auto is : intSol)
-                if(Test(va,is))
-                {
-                    solutions.insert(is);
-                    t /= va.Equals(is);
-                }
-            if(intSol.size())
-                t.solve(va,solutions);
-            else
-                solve(va, solutions, coefficients, grade);
-        }
-        else
+//        if(grade > 2)
+//        {
+//            auto t = *this;
+//            auto intSol = GetIntegerSolution(va);
+//            for(auto is : intSol)
+//                if(Test(va,is))
+//                {
+//                    solutions.insert(is);
+//                    t /= va.Equals(is);
+//                }
+//            if(intSol.size()) {
+//                t.optimize();
+//                t.solve(va,solutions);
+//            } else {
+//                solve(va, solutions, coefficients, grade);
+//            }
+//        }
+//        else
             solve(va, solutions, coefficients, grade);
     }
     
@@ -1281,17 +1306,171 @@ namespace math {
                 solutions.insert((dsq-b)/a2);
                 break;
             }
+            default: {
+                // RATIONAL ROOT TEST
+                if(GetView() != View::Solving && GetView() != View::Equation) {
+//                    auto 
+                }
+                auto a = coefficients[grade];
+                auto k = coefficients[0];
+                if(!(a.IsInt() && k.IsInt())) {
+                    IMPLEMENT
+                } else {
+                    Valuable test;
+                    auto found = Integer::cast(a)->Factorization([&](const auto& i){
+                        return i!=0
+                            && Integer::cast(k)->Factorization([&](const auto& ik)->bool{
+                                test = ik / i;
+                                return Test(va, test) || Test(va, test=-test);
+                                }, Infinity());
+                        }, Infinity());
+                    if(found) {
+                        (*this / va.Equals(test)).solve(va, solutions);
+                        solutions.insert(std::move(test));
+                        return;
+                    }
+                }
+            }
+        }
+        if(solutions.size())
+            return;
+        
+        // no rational roots
+        
+        switch (grade) {
             case 3: {
-                // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_real_coefficients
-                auto& a = coefficients[3];
-                auto& b = coefficients[2];
-                auto& c = coefficients[1];
-                auto& d = coefficients[0];
-                auto asq = a.Sq();
-                auto bsq = b.Sq();
-                auto ac3 = a * c * 3;
-                auto di = bsq*c.Sq() - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*asq*d.Sq() + ac3*(18/3)*b*d;
-                auto d0 = bsq - ac3;
+//                static const VarHost::ptr VH(VarHost::make<std::string>());
+////                static const Variable X = VH->New(std::string("x"));
+////                static const Variable y = VH->New(std::string("y"));
+////                static const Variable lambda = VH->New(std::string("lambda"));
+//                Variable X,y,lambda;
+//                auto co = *this;
+//                co.Eval(va,X+(1_v/2));
+//                co.Eval(X,y+lambda/y);
+//                co.optimize();
+//                co *= y^3;
+//
+//
+//
+
+//                // https://www.wolframalpha.com/input/?i=ax3%2Bbx2%2Bcx%2Bk%3D0
+//                static const Variable a = VH->New(std::string("a"));
+//                static const Variable b = VH->New(std::string("b"));
+//                static const Variable c = VH->New(std::string("c"));
+//                static const Variable k = VH->New(std::string("k"));
+//                //(sqrt((-27 a^2 k + 9 a b c - 2 b^3)^2 + 4 (3 a c - b^2)^3) - 27 a^2 k + 9 a b c - 2 b^3)^(1/3)/(3 2^(1/3) a) - (2^(1/3) (3 a c - b^2))/(3 a (sqrt((-27 a^2 k + 9 a b c - 2 b^3)^2 + 4 (3 a c - b^2)^3) - 27 a^2 k + 9 a b c - 2 b^3)^(1/3)) - b/(3 a)
+//                static const Valuable
+//                    m27a2k = a.Sq()*k*-27,
+//                    b2 = b.Sq(),
+//                    m2b3 = b2*b*-2,
+//                    _3ac = a*c*3,
+//                    _9abc = _3ac*b*3,
+//                    m27a2k_9abc_m2b3 = m27a2k+_9abc+m2b3, // -27 a^2 k + 9 a b c - 2 b^3
+//                    _3ac_mb2 = _3ac-b.Sq(),
+//                    sqrt__sq_m27a2k_9abc_m2b3__4_3ac_mb2_3 = (m27a2k_9abc_m2b3.Sq() + _3ac_mb2.Sq()*_3ac_mb2*4)^(1_v/2),
+//                    cubrt = (sqrt__sq_m27a2k_9abc_m2b3__4_3ac_mb2_3 + m27a2k_9abc_m2b3) ^ (1_v/3),
+//                    cubrt2 = 2_v^(1_v/3),
+//                    X3 = cubrt/(a*cubrt2*3) - cubrt2*_3ac_mb2/(a*3*cubrt) -b/(a*3);
+//                Valuable x = X3;
+//                auto o = optimizations;
+//                optimizations = {};
+//                x.Eval(a,coefficients[3]);
+//                x.Eval(b,coefficients[2]);
+//                x.Eval(c,coefficients[1]);
+//                x.Eval(k,coefficients[0]);
+//                optimizations = o;
+//                x.optimize();
+//                if(!Test(va,x))
+//                {
+//                    Variable x1,x2,x3;
+//                    // Viets:
+//                    // x3 = -k/(a*x1*x2)
+//                    // x1*x2 + x1*x3 + x2*x3 = c/a
+//
+//                    IMPLEMENT
+//                }
+                
+//                // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_real_coefficients
+//                auto& a = coefficients[3];
+//                auto& b = coefficients[2];
+//                auto& c = coefficients[1];
+//                auto& d = coefficients[0];
+
+//                auto _1 = -(va*c+d);
+//                auto _2 = (va*a+b);
+//                auto _ = _1 % _2;
+//                auto m = Modulo::cast(_);
+//                if(m)
+//                {
+//                    auto _a = (m->get1() - _1) / _2;
+//
+//                }
+//                else
+//                {
+//                    IMPLEMENT
+//                }
+//                auto xsq = -(va*c+d)/(va*a+b);
+//
+//                auto _3a = a*3;
+//                auto mbd3a = -b/_3a;
+//                auto cd3a = c/_3a;
+//                auto dd2a = d/(a*2);
+//                auto mbd3a_sq = mbd3a.Sq();
+//                auto mbd3a_cube = mbd3a_sq * mbd3a;
+//                auto cd3a_m_mbd3a_sq = cd3a - mbd3a_sq;
+//                auto cd3a_m_mbd3a_sq_cube = cd3a_m_mbd3a_sq ^ 3;
+//                _ = mbd3a_cube /*- cd3a*mbd3a*3/2 - dd2a*/ + (b*c-a*3*d)/(a.Sq()*2);
+//                _1 = (_.Sq() + cd3a_m_mbd3a_sq_cube).sqrt();
+//                auto x = ((_+_1)^1/3) + ((_-_1)^1/3) + mbd3a;
+//                if(Test(va,x)){
+//                    (*this / va.Equals(x)).solve(va, solutions);
+//                    solutions.insert(std::move(x));
+//                    break;
+//                }else{
+//                    //IMPLEMENT
+//
+//                    // four grade equation ax^4+bx^3+cx^2+dx+e=0
+//                    // see https://math.stackexchange.com/questions/785/is-there-a-general-formula-for-solving-4th-degree-equations-quartic
+//                    auto z = 0_v;
+//                    auto& a = z;
+//                    auto& b = coefficients[3];
+//                    auto& c = coefficients[2];
+//                    auto& d = coefficients[1];
+//                    auto& e = coefficients[0];
+//                    auto sa = a*a;
+//                    auto sb = b*b;
+//                    auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
+//                    auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).sqrt();
+//                    auto qp2 = (p2/2)^(1_v/3);
+//                    p1.optimize();
+//                    p2.optimize();
+//                    qp2.optimize();
+//                    auto p3 = (c*c-3*b*d+12*a*e)/(3*a*qp2)+qp2/(3*a);
+//                    auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).sqrt();
+//                    auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
+//                    auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
+//                    auto xp1 = b/(-4*a);
+//                    auto xp2 = p4/2;
+//                    auto xp3_1 = (p5-p6).sqrt()/2;
+//                    auto xp3_2 = (p5+p6).sqrt()/2;
+//                    solutions.insert(xp1-xp2-xp3_1);
+//                    solutions.insert(xp1-xp2+xp3_1);
+//                    solutions.insert(xp1+xp2-xp3_2);
+//                    solutions.insert(xp1+xp2+xp3_2);
+//                    break;
+//                }
+//
+//                //
+                auto& a = coefficients[3]; // 2
+                auto& b = coefficients[2]; // -3
+                auto& c = coefficients[1]; // -13
+                auto& d = coefficients[0]; // 19
+                
+                auto asq = a.Sq(); // 4
+                auto bsq = b.Sq(); // 9
+                auto ac3 = a * c * 3; // -78
+                auto di = bsq*c.Sq() - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*asq*d.Sq() + ac3*(18_v/3)*b*d; // 8837
+                auto d0 = bsq - ac3; //87
                 if (di == 0)
                 {
                     if (d0 == 0)
@@ -1306,14 +1485,36 @@ namespace math {
                 }
                 else
                 {
-                    auto d1 = (bsq * 2 - ac3 * 3)*b + asq * d * 27;
+                    auto d1 = (bsq * 2 - ac3 * 3)*b + asq * d * 27; // +
                     auto subC = (asq*di*-27).sqrt();
-                    auto C1 = ((d1 + subC) / 2) ^ (1_v / 3);
-                    auto C2 = ((d1 - subC) / 2) ^ (1_v / 3);
-                    solutions.insert((b + C1 + d0 / C1) / (a*-3));
-                    solutions.insert((b + C1 + d0 / C2) / (a*-3));
-                    solutions.insert((b + C2 + d0 / C1) / (a*-3));
-                    solutions.insert((b + C2 + d0 / C2) / (a*-3));
+                    auto C = ((d1+((d1.Sq()-d0.Sq()*d0*4)^(1_v/2)))/2)^(1_v/3); // +
+                    auto _1 = -1_v/(a*3); // +
+                    auto _2 = b+C+(d0/C); // +
+                    auto x = _1*_2; // complex with real part that is root
+                    if(Test(va,x)) // << error in Eval
+                    {
+                        (*this / va.Equals(x)).solve(va, solutions);
+                        solutions.insert(std::move(x));
+                        return;
+                    }
+                    else
+                    {
+                        IMPLEMENT
+                    }
+//                    auto C1 = ((d1 + subC) / 2) ^ (1_v / 3);
+//                    auto C2 = ((d1 - subC) / 2) ^ (1_v / 3);
+//                    auto x = (b + C1 + d0 / C1) / (a*-3);
+//                    if(Test(va, x))
+//                        solutions.insert(x);
+//                    x = (b + C1 + d0 / C2) / (a*-3);
+//                    if(Test(va, x))
+//                        solutions.insert(x);
+//                    x = (b + C2 + d0 / C1) / (a*-3);
+//                    if(Test(va, x))
+//                        solutions.insert(x);
+//                    x = (b + C2 + d0 / C2) / (a*-3);
+//                    if(Test(va, x))
+//                        solutions.insert(x);
                 }
                 break;
             }
@@ -1393,7 +1594,7 @@ namespace math {
                 for(auto i = wgsz; i-->0;)
                     if (z[i] == 0) {
                         // lets recheck on host
-                        auto copy = *this;
+                        Valuable copy = *this;
                         copy.Eval(va, i);
                         copy.optimize();
                         if (copy == 0_v) {
@@ -1540,7 +1741,7 @@ namespace math {
                 break;
             }
             default: {
-                throw "Implement!";
+                IMPLEMENT
                 break;
             }
         }

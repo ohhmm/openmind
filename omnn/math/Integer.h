@@ -151,7 +151,7 @@ public:
     bool Factorization(const std::function<bool(const Valuable&)>& f,
                        const Valuable& max,
                        const zero_zone_t& zz = empty_zero_zone) const;
-
+    std::deque<Valuable> Facts() const;
 private:
 	base_int arbitrary = 0;
 };

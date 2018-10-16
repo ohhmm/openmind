@@ -17,6 +17,14 @@ namespace math {
         Valuable& operator*=(const Valuable &v) override;
         Valuable& operator/=(const Valuable &v) override;
         Valuable& operator%=(const Valuable &v) override;
+        
+        Valuable operator -() const override {
+            return *this * -1;
+        }
+        
+        Valuable& operator --() override { optimized={}; return *this+=-1_v; }
+        Valuable& operator ++() override { optimized={}; return *this+=1_v; }
+
     };
 
     template <class Chld>
@@ -96,13 +104,6 @@ namespace math {
             return Valuable::cast<Chld>(v);
         }
         
-        Valuable operator -() const override {
-            return *this * -1;
-        }
-
-        Valuable& operator --() override { optimized={}; return *this+=-1_v; }
-        Valuable& operator ++() override { optimized={}; return *this+=1_v; }
-
         Valuable abs() const override
         {
             auto i = const_cast<Chld*>(cast(*this));

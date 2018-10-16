@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     bfo.SetMin(0); bfo.SetMax(255);
     
-    const auto d = 0; // 5
+    const auto d = 2; // 5
     cols+=d;rows+=d;
     dst = decltype(src)(rows+d, cols+d);
     dv = view(dst);

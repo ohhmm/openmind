@@ -112,7 +112,10 @@ namespace math {
                 auto vars = ebase().Vars();
                 if (vars.size() == 1) {
                     auto va = *vars.begin();
-                    auto eq = va - ebase()(va);
+                    auto baseToSolve = ebase();
+                    baseToSolve.SetView(View::Solving);
+                    baseToSolve.optimize();
+                    auto eq = va - baseToSolve(va);
                     auto sq = eq ^ d;
                     auto check = ebase()/sq;
                     if (check.IsInt() || check.IsSimpleFraction()) {
@@ -232,9 +235,10 @@ namespace math {
         {
             switch(view)
             {
-                case View::None: {
-                    auto iexp = Integer::cast(eexp());
-                    if (iexp) {
+                case View::None:
+                case View::Calc:
+                {
+                    if (eexp().IsInt() && eexp()>0) {
                         auto b = 1_v;
                         for (; eexp()--;) {
                             b *= ebase();
@@ -242,9 +246,8 @@ namespace math {
                         Become(std::move(b));
                         return;
                     }
-                    auto ibase = Integer::cast(ebase());
-                    if (ibase && iexp) {
-                        Become(*ibase ^ *iexp);
+                    if (ebase().IsInt() && eexp().IsInt()) {
+                        Become(ebase() ^ eexp());
                         return;
                     }
                     break;

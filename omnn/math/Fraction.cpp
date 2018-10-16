@@ -35,10 +35,15 @@ namespace math {
         }
         else
         {
-            auto fsz = s.length() - doti - 1;
-            s.erase(doti);
-            numerator() = Integer(boost::multiprecision::cpp_int(s));
+            auto afterDotI = doti + 1;
+            auto fsz = s.length() - afterDotI;
             denominator() = 10_v^Integer(fsz);
+            numerator() = Integer(boost::multiprecision::cpp_int(s.c_str()+afterDotI));
+            if (s[0]=='-') {
+                numerator() = -numerator();
+            }
+            s.erase(doti);
+            numerator() += Integer(boost::multiprecision::cpp_int(s)) * denominator();
         }
     }
     

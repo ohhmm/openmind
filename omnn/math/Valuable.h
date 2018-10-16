@@ -120,6 +120,7 @@ public:
     enum View
     {
         None,
+        Calc,
         Condensed,
         Equation,
         Flat,
@@ -182,7 +183,8 @@ public:
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
-    virtual void SetView(View v);
+    View GetView() const;
+    void SetView(View v);
 
     // identify
     virtual bool IsInt() const;
@@ -227,16 +229,15 @@ public:
     virtual Valuable::solutions_t GetIntegerSolution(const Variable& va) const;
     bool Test(const Variable& va, const Valuable& v) const;
     
-    using extrenum_t = std::pair<Valuable/*value*/,Valuable/*direction*/>;
-    using extrenums_t = std::vector<extrenum_t>;
-    extrenums_t extrenums() const;
-    extrenums_t extrenums(const Variable& v) const;
-    extrenums_t& extrenums(const Variable& v, extrenums_t& extrs) const;
+    using extrenum_t = std::pair<Valuable, // extrema: value = x for f'(x) == 0, points where function is changing direction
+                            std::pair<  Valuable,// from direction = g''(x), g(x)=f(-x), has previous direction sign
+                                        Valuable // to direction = f''(x), has new direction sign
+                                        >
+                        >;
 
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
     using zero_zone_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
-    zero_zone_t get_zeros_zones(const Variable& v) const;
-    zero_zone_t get_zeros_zones(const Variable& v, const extrenums_t&) const;
+    zero_zone_t get_zeros_zones(const Variable& v, solutions_t& some) const;
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     

@@ -144,6 +144,7 @@ namespace math {
         
         void Eval(const Variable& va, const Valuable& v) override
         {
+            Valuable::SetView(Valuable::View::Calc);
             auto& c = GetCont();
             auto e = c.end();
             bool updated;
@@ -184,11 +185,6 @@ namespace math {
             c.erase(it++);
         }
 
-        Valuable& operator^=(const Valuable& v) override
-        {
-            return base::Become(Exponentiation(*this,v));
-        }
-        
         bool operator ==(const Valuable& v) const override
         {
             auto c = Chld::cast(v);

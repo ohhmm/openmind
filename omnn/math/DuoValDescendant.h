@@ -50,6 +50,9 @@ namespace omnn::math {
             return {};
         }
 
+        const Valuable& get1() const { return _1; }
+        const Valuable& get2() const { return _2; }
+        
         using base::base;
 
         DuoValDescendant(const Valuable& v1, const Valuable& v2)
