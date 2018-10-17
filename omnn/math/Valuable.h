@@ -223,8 +223,10 @@ public:
     bool IsUnivariate() const;
 
     virtual void solve(const Variable& va, solutions_t&) const;
-    solutions_t solutions() const;
-    solutions_t solutions(const Variable& v) const;
+    solutions_t Solutions() const;
+    solutions_t IntSolutions() const;
+    solutions_t Solutions(const Variable& v) const;
+    solutions_t IntSolutions(const Variable& v) const;
     Valuable::solutions_t GetIntegerSolution() const;
     virtual Valuable::solutions_t GetIntegerSolution(const Variable& va) const;
     bool Test(const Variable& va, const Valuable& v) const;

@@ -1096,7 +1096,7 @@ namespace math {
                 {
                     Valuable c = *this;
                     c /= va;
-                    for(auto& so: c.solutions(va)){ // complete solving
+                    for(auto& so: c.Solutions(va)){ // complete solving
                         s.insert(so);
                     }
                     return Valuable(s);
@@ -1118,7 +1118,7 @@ namespace math {
                 for(int i=0; i<2; ++i){ // first two are simple to calculate
                     if(diffs.size()){
                         auto& d = diffs.top();
-                        if(testSolutions(d.solutions(va)))
+                        if(testSolutions(d.Solutions(va)))
                             added = true;
                         diffs.pop();
                     }
@@ -1136,7 +1136,7 @@ namespace math {
                     Valuable c = *this;
                     for(auto& so: s)
                         c /= va.Equals(so);
-                    for(auto& so: c.solutions(va)){ // complete solving
+                    for(auto& so: c.Solutions(va)){ // complete solving
                         s.insert(so);
                     }
                     return Valuable(s);

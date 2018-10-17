@@ -79,7 +79,7 @@ bool System::Add(const Valuable& v)
         {
             for (auto& va : _.Vars())
             {
-                for (auto& s : _.solutions(va))
+                for (auto& s : _.Solutions(va))
                     Add(va, s);
             }
         }
@@ -131,7 +131,7 @@ bool System::Fetch(const Variable& va)
     {
         e.CollectVa(vars);
         if (e.HasVa(va))
-            for(auto& _ : e.solutions(va))
+            for(auto& _ : e.Solutions(va))
             {
                 modified = Add(va, _) || modified;
                 if (_.Vars().size() == 0) {

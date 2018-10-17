@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     
     _ = ((v3 + (2040_v/v1)) / ((-1_v/v1)*v2));
     {
-    auto ss = _.solutions(v3);
+    auto ss = _.Solutions(v3);
     BOOST_TEST(ss.size() == 1);
     BOOST_TEST(!ss.begin()->HasVa(v3));
     auto _ = *ss.begin();
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(Become_tests)
 BOOST_AUTO_TEST_CASE(Solution_tests)
 {
     Variable v;
-    auto sol = ((v^2)-4_v).solutions(v);
+    auto sol = ((v^2)-4_v).Solutions(v);
     BOOST_TEST(sol.size()==2);
     auto solution1 = *sol.begin();
     BOOST_TEST(solution1.abs() == 2_v);
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     auto _2 = v.Equals(-2.5);
     auto _3 = v.Equals(3);
     auto equation = _1.LogicOr(_2).LogicOr(_3);
-    sol = equation.solutions();
+    sol = equation.Solutions();
     BOOST_TEST(sol.size()==3);
     auto found = sol.find(1.5) != sol.end();
     BOOST_TEST(found);
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     equation = v.Equals(_1)
                 .LogicOr(v.Equals(_2))
                 .LogicOr(v.Equals(_3));
-    sol = equation.solutions();
+    sol = equation.Solutions();
     BOOST_TEST(sol.size()==3);
     found = sol.find(_1) != sol.end();
     BOOST_TEST(found);
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     BOOST_TEST(found);
     
     equation = (v-1)*(v-2)*(v-3);
-    sol = equation.solutions();
+    sol = equation.Solutions();
     BOOST_TEST(sol.size()==3);
     found = sol.find(1) != sol.end();
     BOOST_TEST(found);
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     BOOST_TEST(found);
 
     equation *= v+4;
-    sol = equation.solutions();
+    sol = equation.Solutions();
     BOOST_TEST(sol.size()==4);
     found = sol.find(1) != sol.end();
     BOOST_TEST(found);
@@ -364,17 +364,15 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     BOOST_TEST(7_v % 3 == p);
 }
 
-BOOST_AUTO_TEST_CASE(test_logic_intersection
-                     ,*disabled()
-                     )
+BOOST_AUTO_TEST_CASE(test_logic_intersection)
 {
     Variable x;
     auto _1 = x.Abet(x, {1,2});
     auto _2 = x.Abet(x, {2,3});
     auto _ = _1.Intersect(_2, x);
-    auto solutions = _.solutions(x);
-    _.optimize();
-    std::cout << _ << std::endl;
+    auto solutions = _.IntSolutions(x);
+    BOOST_TEST(solutions.size() == 1);
+    _ = *solutions.begin();
     BOOST_TEST(_ == 2);
 }
 

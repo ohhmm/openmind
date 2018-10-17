@@ -484,18 +484,18 @@ namespace math {
         return (vars.size() == 1);
     }
 
-    Valuable::solutions_t Valuable::solutions() const
+    Valuable::solutions_t Valuable::Solutions() const
     {
         std::set<Variable> vars;
         CollectVa(vars);
         if (vars.size() == 1) {
-            return solutions(*vars.begin());
+            return Solutions(*vars.begin());
         }
         else
             IMPLEMENT
     }
     
-    Valuable::solutions_t Valuable::solutions(const Variable& v) const
+    Valuable::solutions_t Valuable::Solutions(const Variable& v) const
     {
         solutions_t solutions;
         if(this->view == View::Solving)
@@ -505,6 +505,38 @@ namespace math {
             c.SetView(View::Solving);
             c.optimize();
             c.solve(v, solutions);
+        }
+        return solutions;
+    }
+
+    Valuable::solutions_t Valuable::IntSolutions() const
+    {
+        std::set<Variable> vars;
+        CollectVa(vars);
+        if (vars.size() == 1) {
+            return IntSolutions(*vars.begin());
+        }
+        else
+            IMPLEMENT
+    }
+
+    Valuable::solutions_t Valuable::IntSolutions(const Variable& v) const
+    {
+        solutions_t solutions;
+        if(this->view == View::Solving)
+            solve(v,solutions);
+        else {
+            auto c = *this;
+            c.SetView(View::Solving);
+            c.optimize();
+            c.solve(v, solutions);
+        }
+        for(auto it = solutions.begin(); it != solutions.end(); ++it){
+            while (it!=solutions.end() && !it->IsInt()) {
+                it = solutions.erase(it);
+            }
+            if(it==solutions.end())
+                break;
         }
         return solutions;
     }
@@ -552,7 +584,7 @@ namespace math {
         
         auto f = *this;
         f.d(v); f.optimize();
-        auto fs = f.solutions(v);
+        auto fs = f.Solutions(v);
         
         std::list<decltype(fs)::value_type> ls;
         ls.assign(fs.begin(), fs.end());
