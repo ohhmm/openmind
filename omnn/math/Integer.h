@@ -139,6 +139,7 @@ public:
     const Variable* FindVa() const override { return nullptr; }
     bool HasVa(const Variable& va) const override { return {}; }
     void CollectVa(std::set<Variable>&) const override { }
+    Valuable& eval(const std::map<Variable, Valuable>& with) override { return *this; }
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }

@@ -124,7 +124,9 @@ BOOST_AUTO_TEST_CASE(Shl_test)
     BOOST_TEST(t == 2);
 }
 
-BOOST_AUTO_TEST_CASE(Sh_test)
+BOOST_AUTO_TEST_CASE(Sh_test
+                     ,*disabled()
+                     )
 {
     // http://static.righto.com/images/bitcoin/block_diagram_ghash.png
     auto _ = "0x02000000"_v

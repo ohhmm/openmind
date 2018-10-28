@@ -18,13 +18,25 @@ namespace math {
         Valuable& operator/=(const Valuable &v) override;
         Valuable& operator%=(const Valuable &v) override;
         
-        Valuable operator -() const override {
-            return *this * -1;
-        }
+        Valuable operator -() const override;
         
         Valuable& operator --() override { optimized={}; return *this+=-1_v; }
         Valuable& operator ++() override { optimized={}; return *this+=1_v; }
 
+        Valuable& sq() override { return *this *= *this; }
+        
+        Valuable abs() const override
+        {
+            return *this < 0_v ? -*this : Valuable(*this);
+        }
+        void optimize() override { }
+        //void expand() override { }
+        Valuable sqrt() const override { IMPLEMENT }
+        
+        bool IsComesBefore(const Valuable& v) const override
+        {
+            return *this > v;
+        }
     };
 
     template <class Chld>
@@ -104,23 +116,8 @@ namespace math {
             return Valuable::cast<Chld>(v);
         }
         
-        Valuable abs() const override
-        {
-            auto i = const_cast<Chld*>(cast(*this));
-            if(*i < 0_v)
-            {
-                return *cast(-*i);
-            }
-            return *this;
-        }
-        void optimize() override { }
-        //void expand() override { }
-        Valuable sqrt() const override { IMPLEMENT }
-        Valuable& sq() override { return *this *= *this; }
-
-        bool IsComesBefore(const Valuable& v) const override
-        {
-            return *this > v;
-        }
     };
-}}
+
+
+}
+}

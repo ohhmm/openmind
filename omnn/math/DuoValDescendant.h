@@ -87,6 +87,16 @@ namespace omnn::math {
             _2.CollectVa(s);
         }
 
+        Valuable& eval(const std::map<Variable, Valuable>& with) override {
+            Valuable::optimized={};
+            _1.eval(with);
+            _2.eval(with);
+            //        optimize();
+            // or
+            Valuable::hash = _1.Hash() ^ _2.Hash();
+            return *this;
+        }
+
         void Eval(const Variable& va, const Valuable& v) override {
             Valuable::optimized={};
             _1.Eval(va, v);

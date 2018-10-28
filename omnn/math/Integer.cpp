@@ -309,14 +309,29 @@ namespace math {
             auto f = Fraction::cast(v);
             auto n = f->getNumerator();
             auto dn = f->getDenominator();
-            
+
             if (n != 1)
                 *this ^= n;
             if (dn != 1)
             {
+                Valuable x = *this;
+                if(x<0_v && !dn.bit(0)){
+                    auto xFactors = Facts();
+                    std::sort(xFactors.begin(), xFactors.end());
+                    while(xFactors.size()){
+                        auto xFactor = std::move(xFactors.back());
+                        if(xFactor>1_v){
+                            auto f = xFactor ^ v;
+                            if(f.IsInt())
+                                return Become(f*((x/xFactor)^v));
+                        }
+                        xFactors.pop_back();
+                    }
+                }
+
                 Valuable nroot;
                 bool rootFound = false;
-                Valuable left =0, right = *this;
+                Valuable left =0, right = std::move(x);
                 
                 while (!rootFound)
                 {

@@ -34,4 +34,10 @@ Valuable& ValuableDescendantBase::operator%=(const Valuable &v)
 {
     return Become(Modulo(*this,v));
 }
+
+Valuable ValuableDescendantBase::operator -() const
+{
+    return *this * -1;
+}
+
 }}

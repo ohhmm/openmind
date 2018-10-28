@@ -12,7 +12,7 @@ class Exponentiation
         : public DuoValDescendant<Exponentiation>
 {
 	using base = DuoValDescendant<Exponentiation>;
-    mutable vars_cont_t v;
+    vars_cont_t v;
 protected:
     std::ostream& print_sign(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override;

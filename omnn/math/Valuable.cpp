@@ -177,8 +177,29 @@ namespace math {
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
     Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
 
-    Valuable Valuable::Merge(const Valuable& v1, const Valuable& v2)
+    Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2)
     {
+        Variable x;
+        auto s = x.Equals(v1).logic_or(x.Equals(v2));
+        if(s.IsSum())
+        {
+            auto sum = Sum::cast(s);
+            std::vector<Valuable> coefficients;
+            sum->FillPolyCoeff(coefficients, x);
+            auto& a = coefficients[2];
+            auto& b = coefficients[1];
+            auto& c = coefficients[0];
+            auto d = (b ^ 2) - 4_v * a * c;
+            return ((d^(1_v/2))-b)/(a*2);
+        }else{
+            IMPLEMENT
+        }
+        return (x);
+    }
+
+    Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
+    {
+        Variable x;
         return ((v1+v2)+((-1_v)^(1_v/2))*(v1-v2))/2;
     }
 
@@ -189,12 +210,12 @@ namespace math {
         case 1: operator=(*s.begin()); break;
         case 2: {
             auto it = s.begin();
-            operator=(Merge(*it, *++it));
+            operator=(MergeOr(*it, *++it));
             break;
         }
         case 4: {
             auto it = s.begin();
-            operator=(Merge(Merge(*it, *++it), Merge(*++it, *++it)));
+            operator=(MergeOr(MergeOr(*it, *++it), MergeOr(*++it, *++it)));
             break;
         }
         default:
@@ -795,6 +816,13 @@ namespace math {
         return vars;
     }
     
+    Valuable& Valuable::eval(const std::map<Variable, Valuable>& with){
+        if (exp)
+            return exp->eval(with);
+        else
+            IMPLEMENT
+    }
+
     void Valuable::Eval(const Variable& va, const Valuable& v)
     {
         if (exp) {
@@ -967,6 +995,10 @@ namespace math {
     Valuable Valuable::Equals(const Valuable& v) const {
         return *this - v;
     }
+    
+    Valuable Valuable::NotEquals(const Valuable& v) const {
+        return IfEq(v,1,0);
+    }
 
     Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l) const
     {
@@ -976,15 +1008,15 @@ namespace math {
         return Valuable(a.Move());
     }
 
-    Valuable Valuable::NE(const Valuable& to, const Valuable& abet) const
-    {
-        return abet / (*this-to);
-    }
-
-    Valuable Valuable::NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const
-    {
-        return Abet(x, abet)/(*this-to);
-    }
+//    Valuable Valuable::NE(const Valuable& to, const Valuable& abet) const
+//    {
+//        return abet / (*this-to);
+//    }
+//
+//    Valuable Valuable::NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const
+//    {
+//        return Abet(x, abet)/(*this-to);
+//    }
 
     Valuable Valuable::LogicAnd(const Valuable& v) const
     {

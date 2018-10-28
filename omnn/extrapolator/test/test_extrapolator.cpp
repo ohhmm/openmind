@@ -188,8 +188,8 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
 
 BOOST_AUTO_TEST_CASE(Codec_test)
 {
-    // this tiny math optimization goal seems unreachable with today calculation speed:
-    Extrapolator ex {{    //  input   output
+    Extrapolator ex {{
+        //  input   output
         {0,0,0,0, 0,0,0},
         // verticals
         {1,0,1,0, 1,0,0},

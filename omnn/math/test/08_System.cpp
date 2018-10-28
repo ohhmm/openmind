@@ -24,6 +24,21 @@
 #include <boost/thread/thread_pool.hpp>
 #include <boost/tokenizer.hpp>
 
+#include <chrono>
+
+template<typename TimeT = std::chrono::milliseconds>
+struct measure
+{
+    template<typename F, typename ...Args>
+    static typename TimeT::rep execution(F&& func, Args&&... args)
+    {
+        auto start = std::chrono::steady_clock::now();
+        std::forward<decltype(func)>(func)(std::forward<Args>(args)...);
+        auto duration = std::chrono::duration_cast<TimeT>(std::chrono::steady_clock::now() - start);
+        return duration.count();
+    }
+};
+
 using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace std;
@@ -98,11 +113,10 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 //    BOOST_TEST(values);
 }
 
-BOOST_AUTO_TEST_CASE(Sudoku_simple_test) // solve sudoku through a system of equations though
+BOOST_AUTO_TEST_CASE(hello_sudoku_world,*disabled())
 {
-    System s;
-    Variable x,y,v;
-    std::array<std::array<int, 9>, 9> data {{
+    constexpr unsigned Sz = 9;
+    int data[Sz][Sz] = {
         {0, 9, 8, 0, 4, 0, 0, 0, 0},
         {4, 2, 0, 0, 9, 0, 0, 8, 0},
         {0, 0, 0, 3, 0, 1, 0, 0, 0},
@@ -112,7 +126,207 @@ BOOST_AUTO_TEST_CASE(Sudoku_simple_test) // solve sudoku through a system of equ
         {0, 0, 0, 4, 0, 3, 0, 0, 0},
         {0, 6, 0, 0, 1, 0, 0, 4, 9},
         {0, 0, 0, 0, 5, 0, 8, 3, 0}
-    }};
+    };
+    Variable value[Sz][Sz];
+    
+    auto f = 1*2*3*4*5*6*7*8*9;
+    System world;
+    for (auto x=Sz; x--;) {
+        Valuable sumx, sumy, mulx(1), muly(1);
+        for (auto y=Sz; y--; ) {
+            sumx += value[x][y];
+            sumy += value[y][x];
+            mulx *= value[x][y];
+            muly *= value[y][x];
+            if (data[x][y]) {
+                world << value[x][y].Equals(data[x][y]);
+            }
+        }
+        world << sumx.Equals(45) << sumy.Equals(45)
+            << mulx.Equals(f) << muly.Equals(f);
+    }
+    
+    auto known = world.Solve(value[1][0]);
+    for (auto x=Sz; x--;) {
+        for (auto y=Sz; y--; ) {
+            
+            auto s = world.Solve(value[x][y]);
+            if (s.size()!=1) {
+                IMPLEMENT
+            }else{
+                std::cout << *s.begin() << ' ';
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
+                     ,*disabled()
+                     ) // solve sudoku through a system of equations though
+{
+    Valuable s;
+    Variable x,y,v;
+    constexpr unsigned Sz = 9;
+    int data[Sz][Sz] = {
+        {0, 9, 8, 0, 4, 0, 0, 0, 0},
+        {4, 2, 0, 0, 9, 0, 0, 8, 0},
+        {0, 0, 0, 3, 0, 1, 0, 0, 0},
+        {6, 3, 9, 0, 0, 8, 7, 0, 0},
+        {2, 0, 4, 9, 0, 7, 3, 0, 8},
+        {0, 0, 7, 5, 0, 0, 9, 2, 6},
+        {0, 0, 0, 4, 0, 3, 0, 0, 0},
+        {0, 6, 0, 0, 1, 0, 0, 4, 9},
+        {0, 0, 0, 0, 5, 0, 8, 3, 0}
+    };
+    Variable value[Sz][Sz];
+    
+    Valuable::optimizations = {};
+    
+    auto at = [&](const Valuable& xx, const Valuable& yy, const Valuable& vv){
+        return x.Equals(xx).LogicAnd(y.Equals(yy)).LogicAnd(v.Equals(vv));
+    };
+    
+    // define known data
+    for(auto rowIdx = Sz; rowIdx--;){
+        for(auto colIdx = Sz; colIdx--;){
+            auto& i = data[rowIdx][colIdx];
+            if(i)
+                s += at(colIdx,rowIdx,i).sq();
+        }
+    }
+    
+    // define the universe
+    // for simplicity check only row/col/square sum equalities to 45
+    for(int xx=0; xx<=8; ++xx){
+        auto sumInRow = -45_v;
+        auto sumInCol = -45_v;
+        auto sumInSq = -45_v;
+        for(int yy=0; yy<=8; ++yy){
+//            if (data[yy][xx]) {
+//                <#statements#>
+//            }
+//            auto a = at(xx,yy,value)(value);
+            sumInRow += at(xx,yy,value[xx][yy])(value[xx][yy]);
+            sumInCol += at(yy,xx,value[xx][yy])(value[xx][yy]);
+            auto sqn = xx;
+            auto sqx = sqn%3;
+            auto sqy = (sqn - sqx) / 3;
+            auto insqn = yy;
+            auto insqx = insqn % 3;
+            auto insqy = (insqn - insqx) / 3;
+            auto sqxx = sqx*3+insqx;
+            auto sqyy = sqy*3+insqy;
+            sumInSq += at(sqxx,sqyy,value[sqxx][sqyy])(value[sqxx][sqyy]);
+        }
+        s += sumInRow ^ 2;
+        s += sumInCol ^ 2;
+        s += sumInSq ^ 2;
+    }
+    
+//    Valuable::optimizations = true;
+//    std::cout << measure<>::execution([&](){
+//        s.optimize();
+//    }) << std::endl;
+//    Valuable::optimizations = {};
+
+    //    std::atomic<int> MaxTasks = boost::thread::hardware_concurrency();
+    std::deque<std::future<void>> tasks;
+    //    auto ChooseNextTask = [&tasks](){
+    //
+    //    };
+    //    auto AddPoolTask = [](std::function<
+    // solving
+    auto sysMutex = std::make_shared<boost::shared_mutex>();
+    for(auto rowIdx = Sz; rowIdx--;){
+        for(auto colIdx = Sz; colIdx--;){
+            auto& i = data[rowIdx][colIdx];
+            if(!i){
+                auto co = s;
+                co.eval({{x, colIdx},{y, rowIdx}});
+//                Valuable::optimizations = true;
+//                co.optimize();
+                auto is = co.IntSolutions(v);
+                if(is.size()==1 && is.begin()->IsInt()){
+                    i = static_cast<int>(*is.begin());
+                    s += at(colIdx, rowIdx, i);
+                } else {
+                    IMPLEMENT
+                }
+//                tasks.push_back(
+//                                std::async([colIdx, rowIdx, sysMutex,
+//                                            &s, &at, &data](){
+//                    Variable find;
+//                    sysMutex->lock_shared();
+//                    decltype(s) localSystem = s;
+//                    sysMutex->unlock_shared();
+//                    localSystem << at(colIdx,rowIdx, find);
+//                    auto solutions = localSystem.Solve(find);
+//                    if (solutions.size()) {
+//                        if (solutions.size()==1) {
+//                            auto solution = *solutions.begin();
+//                            if (!solution.IsInt()) {
+//                                IMPLEMENT
+//                            }
+//                            else
+//                            {
+//                                data[rowIdx][colIdx] = static_cast<int>(solution);
+//                                auto item = at(colIdx,rowIdx,solution);
+//                                sysMutex->lock();
+//                                s << item;
+//                                sysMutex->unlock();
+//                            }
+//                        }
+//                        else
+//                        {
+//                            // intersect into possible solutions array for this x,y
+//                            auto values = 1_v;
+//                            for(auto& solution: solutions){
+//                                values.logic_or(at(colIdx,rowIdx,solution));
+//                            }
+//                            sysMutex->lock();
+//                            s<<values;
+//                            sysMutex->unlock();
+//                        }
+//                    }
+//                }));
+            }
+        }
+    }
+    do {
+        tasks.pop_front();
+    } while (tasks.size());
+    
+    ofstream o(TEST_SRC_DIR"sudoku.txt", fstream::out);
+    for(auto rowIdx = Sz; rowIdx--;){
+        for(auto colIdx = Sz; colIdx--;){
+            auto& i = data[colIdx][rowIdx];
+            BOOST_TEST(i != 0);
+            o << setw(2) << i;
+        }
+        o << endl;
+    }
+    o.close();
+}
+
+BOOST_AUTO_TEST_CASE(Sudoku_simple_test
+                     ,*disabled()
+) // solve sudoku through a system of equations though
+{
+    System s;
+    Variable x,y,v;
+    constexpr unsigned Sz = 9;
+    int data[Sz][Sz] = {
+        {0, 9, 8, 0, 4, 0, 0, 0, 0},
+        {4, 2, 0, 0, 9, 0, 0, 8, 0},
+        {0, 0, 0, 3, 0, 1, 0, 0, 0},
+        {6, 3, 9, 0, 0, 8, 7, 0, 0},
+        {2, 0, 4, 9, 0, 7, 3, 0, 8},
+        {0, 0, 7, 5, 0, 0, 9, 2, 6},
+        {0, 0, 0, 4, 0, 3, 0, 0, 0},
+        {0, 6, 0, 0, 1, 0, 0, 4, 9},
+        {0, 0, 0, 0, 5, 0, 8, 3, 0}
+    };
     
     // at
     auto at = [&](auto& xx, auto& yy, auto& vv){
@@ -120,22 +334,13 @@ BOOST_AUTO_TEST_CASE(Sudoku_simple_test) // solve sudoku through a system of equ
     };
     
     // define known data
-    for(auto rowIdx = data.size(); rowIdx--;){
-        for(auto colIdx = data[rowIdx].size(); colIdx--;){
+    for(auto rowIdx = Sz; rowIdx--;){
+        for(auto colIdx = Sz; colIdx--;){
             auto& i = data[rowIdx][colIdx];
             if(i)
                 s << at(colIdx,rowIdx,i);
         }
     }
-    
-    // define possible values
-    auto abet = [](const Variable& x) {
-        auto v = 1_v;
-        for(int i=1; i<10; ++i){
-            v.logic_or(x.Equals(i));
-        }
-        return v;
-    };
     
     // define the universe
     // for simplicity check only row/col/square sum equalities to 45
@@ -145,72 +350,79 @@ BOOST_AUTO_TEST_CASE(Sudoku_simple_test) // solve sudoku through a system of equ
         auto sumInCol = -45_v;
         auto sumInSq = -45_v;
         for(int yy=0; yy<=8; ++yy){
-//            sumInRow += at(xx,yy,value)(value);
-//            sumInCol += at(yy,xx,value)(value);
+            //            sumInRow += at(xx,yy,value)(value);
+            //            sumInCol += at(yy,xx,value)(value);
             auto sqn = xx;
             auto sqx = sqn%3;
             auto sqy = (sqn - sqx) / 3;
             auto insqn = yy;
             auto insqx = insqn % 3;
             auto insqy = (insqn - insqx) / 3;
-//            sumInSq += at(sqx*3+insqx,sqy*3+insqy,value)(value);
+            //            sumInSq += at(sqx*3+insqx,sqy*3+insqy,value)(value);
         }
         s << sumInRow << sumInCol << sumInSq;
     }
-
-//    std::atomic<int> MaxTasks = boost::thread::hardware_concurrency();
-//    std::deque<std::function<void()>> tasks;
-//    auto ChooseNextTask = [&tasks](){
-//
-//    };
-//    auto AddPoolTask = [](std::function<
+    
+    //    std::atomic<int> MaxTasks = boost::thread::hardware_concurrency();
+    std::deque<std::future<void>> tasks;
+    //    auto ChooseNextTask = [&tasks](){
+    //
+    //    };
+    //    auto AddPoolTask = [](std::function<
     // solving
     auto sysMutex = std::make_shared<boost::shared_mutex>();
-    for(auto rowIdx = data.size(); rowIdx--;){
-        for(auto colIdx = data[rowIdx].size(); colIdx--;){
+    for(auto rowIdx = Sz; rowIdx--;){
+        for(auto colIdx = Sz; colIdx--;){
             auto& i = data[rowIdx][colIdx];
             if(!i){
-                std::function<void()> addThisTask;
-                addThisTask = [colIdx,rowIdx,sysMutex,&s,&at,addThisTask](){
-                    auto t = std::async([colIdx,rowIdx, sysMutex, &s, &at, addThisTask](){
-                        Variable find;
-                        sysMutex->lock_shared();
-                        decltype(s) localSystem = s;
-                        sysMutex->unlock_shared();
-                        localSystem << at(colIdx,rowIdx, find);
-                        auto solutions = localSystem.Solve(find);
-                        if (solutions.size()) {
-                            if (solutions.size()==1) {
-                                auto solution = *solutions.begin();
-                                if (!solution.IsInt()) {
-                                    IMPLEMENT
-                                }
-                                else
-                                {
-                                    auto item = at(colIdx,rowIdx,solution);
-                                    sysMutex->lock();
-                                    s << item;
-                                    sysMutex->unlock();
-                                }
+                tasks.push_back(
+                                std::async([colIdx, rowIdx, sysMutex,
+                                            &s, &at, &data](){
+                    Variable find;
+                    sysMutex->lock_shared();
+                    decltype(s) localSystem = s;
+                    sysMutex->unlock_shared();
+                    localSystem << at(colIdx,rowIdx, find);
+                    auto solutions = localSystem.Solve(find);
+                    if (solutions.size()) {
+                        if (solutions.size()==1) {
+                            auto solution = *solutions.begin();
+                            if (!solution.IsInt()) {
+                                IMPLEMENT
                             }
                             else
                             {
-                                // todo : intersect into possible solutions array for this x,y
-                                for(auto& solution: solutions){
-                                    
-                                }
+                                data[rowIdx][colIdx] = static_cast<int>(solution);
+                                auto item = at(colIdx,rowIdx,solution);
+                                sysMutex->lock();
+                                s << item;
+                                sysMutex->unlock();
                             }
                         }
-                    });
-                };
+                        else
+                        {
+                            // intersect into possible solutions array for this x,y
+                            auto values = 1_v;
+                            for(auto& solution: solutions){
+                                values.logic_or(at(colIdx,rowIdx,solution));
+                            }
+                            sysMutex->lock();
+                            s<<values;
+                            sysMutex->unlock();
+                        }
+                    }
+                }));
             }
         }
     }
-    
-
+    do {
+        tasks.pop_front();
+    } while (tasks.size());
 }
 
-BOOST_AUTO_TEST_CASE(Sudoku_test, *disabled()) // solve sudoku through a system of equations though
+BOOST_AUTO_TEST_CASE(Sudoku_test
+                     ,*disabled()
+                     ) // solve sudoku through a system of equations though
 {
     System s;
     Variable x,y,v;

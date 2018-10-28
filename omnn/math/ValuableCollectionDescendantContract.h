@@ -3,6 +3,7 @@
 //
 #pragma once
 #include "Exponentiation.h"
+#include <future>
 
 namespace omnn{
 namespace math {
@@ -78,10 +79,15 @@ namespace math {
             auto it = hint == c.end() ? getit(c.insert(item)) : getit(c.insert(hint, item));
             return it;
         }
-        
+
         const iterator Add(const Valuable& item)
         {
             return Add(item, GetCont().end());
+        }
+        
+        const iterator Add(Valuable&& item)
+        {
+            return Add(std::move(item), GetCont().end());
         }
 
         template<class T>
@@ -142,6 +148,37 @@ namespace math {
                 i.CollectVa(s);
         }
         
+        Valuable& eval(const std::map<Variable, Valuable>& with) override {
+            auto& members = GetCont();
+            Valuable::SetView(Valuable::View::Calc);
+            Chld c;
+            if (true || members.size() < 10) {
+                for(auto&& m:GetCont()){
+                    c.Add(std::move(const_cast<Valuable&&>(m).eval(with)));
+                }
+            } else {
+                std::deque<std::future<Valuable>> jobs;
+                for(auto& m : members) {
+                    jobs.push_back(std::async([&with,
+    //                                           &&m
+                                               item=m
+                                               ]() {
+                        Valuable t = const_cast<Valuable&&>(std::move(item));
+                        return std::move(t.eval(with));
+                    }));
+                }
+                for (auto sz = jobs.size(); sz; ) {
+                    --sz;
+                    auto& f = jobs.front();
+                    f.wait();
+                    c.Add(f.get());
+                    jobs.pop_front();
+                }
+            }
+            Valuable::Become(std::move(c));
+            return *this;
+        }
+        
         void Eval(const Variable& va, const Valuable& v) override
         {
             Valuable::SetView(Valuable::View::Calc);
@@ -187,10 +224,9 @@ namespace math {
 
         bool operator ==(const Valuable& v) const override
         {
-            auto c = Chld::cast(v);
-            return c
-                && Valuable::hash == v.Hash()
-                && GetConstCont()==c->GetConstCont();
+            return Valuable::hash == v.Hash()
+                && v.Is<Chld>()
+                && GetConstCont()==Chld::cast(v)->GetConstCont();
         }
     };
 }}

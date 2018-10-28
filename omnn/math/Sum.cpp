@@ -852,13 +852,15 @@ namespace math {
 
     size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const
     {
+        auto wasopt=optimizations;
+        optimizations=true;
         size_t grade = 0;
-        coefficients.resize(members.size());
+        coefficients.resize(static_cast<int>(getMaxVaExp())+1);
         Sum c0;
         auto add = [&](auto i, Valuable&& a) {
-            if (i)
+            if (i) {
                 coefficients[i] += a;
-            else
+            } else
                 c0.Add(a);
         };
 	    // TODO : openmp
@@ -874,11 +876,18 @@ namespace math {
                 auto noVa = it == coVa.end();
                 if (noVa && m.HasVa(v))
                 {
-                    auto s = *this;
-                    s.SetView(View::Solving);
-                    s.optimize();
-                    coefficients.clear();
-                    return s.FillPolyCoeff(coefficients, v);
+                    auto mco = m;
+                    mco.optimize();
+                    auto& coVa = m.getCommonVars();
+                    it = coVa.find(v);
+                    noVa = it == coVa.end();
+                    if(noVa){
+                        auto s = *this;
+                        s.SetView(View::Solving);
+                        s.optimize();
+                        coefficients.clear();
+                        return s.FillPolyCoeff(coefficients, v);
+                    }
                 }
 
                 auto vcnt = noVa ? 0 : it->second; // exponentation of va
@@ -900,44 +909,45 @@ namespace math {
 
                 add(ie, m / (v^vcnt));
             }
-            else
+            else if (m.IsVa() && m == v) {
+                ++coefficients[1];
+                if(grade < 1)
+                    grade = 1;
+            }
+            else if(m.IsExponentiation())
             {
-                if (m.IsVa() && m == v) {
-                    ++coefficients[1];
-                    if(grade < 1)
-                        grade = 1;
-                }
-                else
+                auto e = Exponentiation::cast(m);
+                if (e && e->getBase()==v)
                 {
-                    auto e = Exponentiation::cast(m);
-                    if (e && e->getBase()==v)
-                    {
-                        auto& ee = e->getExponentiation();
-                        if (ee.IsInt()) {
-                            auto i = static_cast<decltype(grade)>(ee.ca());
-                            if (i > grade) {
-                                grade = i;
-                                if (i >= coefficients.size()) {
-                                    coefficients.resize(i+1);
-                                }
+                    auto& ee = e->getExponentiation();
+                    if (ee.IsInt()) {
+                        auto i = static_cast<decltype(grade)>(ee.ca());
+                        if (i > grade) {
+                            grade = i;
+                            if (i >= coefficients.size()) {
+                                coefficients.resize(i+1);
                             }
-                            add(i, 1);
                         }
-                        else
-                            IMPLEMENT
+                        add(i, 1);
                     }
                     else
-                    {
-                        c0.Add(m);
-                    }
+                        IMPLEMENT
                 }
+
             }
+            else if(!m.HasVa(v))
+            {
+                c0.Add(m);
+            }
+            else
+                IMPLEMENT
         }
         }
         if(c0.size()){
 //            c0.optimized = optimized;
             coefficients[0] = std::move(c0);
         }
+        optimizations=wasopt;
         return grade;
     }
     
@@ -1313,6 +1323,10 @@ namespace math {
                 }
                 auto a = coefficients[grade];
                 auto k = coefficients[0];
+                if(!k.IsInt()) {
+                    std::cout << k << std::endl;
+                    k.optimize();
+                }
                 if(!(a.IsInt() && k.IsInt())) {
                     IMPLEMENT
                 } else {

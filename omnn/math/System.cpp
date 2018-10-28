@@ -165,6 +165,18 @@ System::solutions_t System::Solve(const Variable& va)
         return solution;
     }
 
+//    auto it = vEs.find(va);
+//    if(it!=vEs.end()){
+//        auto sit = it->second.find({});
+//        if (sit!=it->second.end()) {
+//            solution = sit->second;
+//            if (solution.size()) {
+//                solving.erase(va);
+//                return solution;
+//            }
+//        }
+//    }
+    
     //solution = sqs(va);
     if (solution.size()) {
         Valuable::var_set_t vars;

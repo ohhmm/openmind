@@ -216,7 +216,8 @@ public:
     virtual Valuable calcFreeMember() const;
     
     using solutions_t = std::unordered_set<Valuable>;
-    static Valuable Merge(const Valuable& v1, const Valuable& v2);
+    static Valuable MergeAnd(const Valuable& v1, const Valuable& v2);
+    static Valuable MergeOr(const Valuable& v1, const Valuable& v2);
     explicit Valuable(const solutions_t&);
     virtual Valuable operator()(const Variable&) const;
     virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;
@@ -242,6 +243,15 @@ public:
     zero_zone_t get_zeros_zones(const Variable& v, solutions_t& some) const;
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
+
+    virtual a_int getMaxVaExp() const;
+    using vars_cont_t = std::map<Variable, Valuable>;
+    virtual const vars_cont_t& getCommonVars() const;
+    static const vars_cont_t& emptyCommonVars();
+    Valuable varless() const;
+    static Valuable VaVal(const vars_cont_t& v);
+    Valuable getVaVal() const;
+    virtual Valuable& eval(const std::map<Variable, Valuable>& with);
     
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;
@@ -255,14 +265,6 @@ public:
     bool OfSameType(const Valuable& v) const;
     bool HasSameVars(const Valuable& v) const;
     bool IsMonic() const;
-
-    virtual a_int getMaxVaExp() const;
-    using vars_cont_t = std::map<Variable, Valuable>;
-    virtual const vars_cont_t& getCommonVars() const;
-    static const vars_cont_t& emptyCommonVars();
-    Valuable varless() const;
-    static Valuable VaVal(const vars_cont_t& v);
-    Valuable getVaVal() const;
 
     explicit operator bool() const;
     virtual explicit operator int() const;
@@ -292,8 +294,9 @@ public:
     // logic
     Valuable Abet(const Variable& x, std::initializer_list<Valuable>) const;
     Valuable Equals(const Valuable& v) const;
-    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
-    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
+    Valuable NotEquals(const Valuable& v) const;
+//    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
+//    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
     Valuable LogicAnd(const Valuable& v) const;
     Valuable LogicOr(const Valuable& v) const;
     Valuable& logic_or(const Valuable&); // inplace
