@@ -376,3 +376,22 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection)
     BOOST_TEST(_ == 2);
 }
 
+BOOST_AUTO_TEST_CASE(test_logic_intersection_simplifying
+                     ,*disabled()
+                     )
+{
+    Variable x;
+    auto _1 = x.Abet(x, {1,2});
+    auto _2 = x.Abet(x, {2,3});
+    auto i = _1.Intersect(_2, x);
+    auto solutions = i.IntSolutions(x);
+    BOOST_TEST(solutions.size() == 1);
+    auto _ = *solutions.begin();
+    BOOST_TEST(_ == 2);
+    
+    auto sum = Sum::cast(i);
+    std::vector<Valuable> coefficients;
+    auto grade = sum->FillPolyCoeff(coefficients, x);
+    BOOST_TEST(grade == 1);
+}
+

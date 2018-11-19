@@ -821,8 +821,9 @@ namespace math {
 		return out;
 	}
     
-    Valuable Sum::sqrt() const
+    Valuable Sum::Sqrt() const
     {
+        IMPLEMENT
         return Exponentiation(*this, 1_v/2);
     }
 
@@ -855,7 +856,8 @@ namespace math {
         auto wasopt=optimizations;
         optimizations=true;
         size_t grade = 0;
-        coefficients.resize(static_cast<int>(getMaxVaExp())+1);
+        auto sz = static_cast<size_t>((Valuable(getMaxVaExp())+1).ca());
+        coefficients.resize(sz);
         Sum c0;
         auto add = [&](auto i, Valuable&& a) {
             if (i) {
@@ -1070,7 +1072,14 @@ namespace math {
 #endif
             return Valuable(s);
         }
-        if (coefs.size() && grade && grade < 3)
+        if (grade == 2) {
+            auto& a = coefs[2];
+            auto& b = coefs[1];
+            auto& c = coefs[0];
+            auto d = (b ^ 2) - 4_v * a * c;
+            return ((d^(1_v/2))-b)/(a*2);
+        }
+        else if (coefs.size() && grade && grade < 3)
         {
             solve(va, s, coefs, grade);
             for (auto i=s.begin(); i != s.end();) {
@@ -1310,7 +1319,7 @@ namespace math {
                 auto& b = coefficients[1];
                 auto& c = coefficients[0];
                 auto d = (b ^ 2) - 4_v * a * c;
-                auto dsq = d.sqrt();
+                auto dsq = d.Sqrt();
                 auto a2 = a * 2;
                 solutions.insert((-dsq-b)/a2);
                 solutions.insert((dsq-b)/a2);
@@ -1500,7 +1509,7 @@ namespace math {
                 else
                 {
                     auto d1 = (bsq * 2 - ac3 * 3)*b + asq * d * 27; // +
-                    auto subC = (asq*di*-27).sqrt();
+                    auto subC = (asq*di*-27).Sqrt();
                     auto C = ((d1+((d1.Sq()-d0.Sq()*d0*4)^(1_v/2)))/2)^(1_v/3); // +
                     auto _1 = -1_v/(a*3); // +
                     auto _2 = b+C+(d0/C); // +
@@ -1543,19 +1552,19 @@ namespace math {
                 auto sa = a*a;
                 auto sb = b*b;
                 auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
-                auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).sqrt();
+                auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).Sqrt();
                 auto qp2 = (p2/2)^(1_v/3);
                 p1.optimize();
                 p2.optimize();
                 qp2.optimize();
                 auto p3 = (c*c-3*b*d+12*a*e)/(3*a*qp2)+qp2/(3*a);
-                auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).sqrt();
+                auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).Sqrt();
                 auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
                 auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
                 auto xp1 = b/(-4*a);
                 auto xp2 = p4/2;
-                auto xp3_1 = (p5-p6).sqrt()/2;
-                auto xp3_2 = (p5+p6).sqrt()/2;
+                auto xp3_1 = (p5-p6).Sqrt()/2;
+                auto xp3_2 = (p5+p6).Sqrt()/2;
                 solutions.insert(xp1-xp2-xp3_1);
                 solutions.insert(xp1-xp2+xp3_1);
                 solutions.insert(xp1+xp2-xp3_2);
@@ -1727,7 +1736,7 @@ namespace math {
                 auto& a = coefficients[2];
                 auto& b = coefficients[1];
                 auto& c = coefficients[0];
-                fx = ((b*b-4*a*c).sqrt()-b)/(2*a);
+                fx = ((b*b-4*a*c).Sqrt()-b)/(2*a);
                 break;
             }
             case 4: {
@@ -1741,16 +1750,16 @@ namespace math {
                 auto sa = a*a;
                 auto sb = b*b;
                 auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
-                auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).sqrt();
+                auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).Sqrt();
                 auto qp2 = (p2/2)^(1_v/3);
                 p1.optimize();
                 p2.optimize();
                 qp2.optimize();
                 auto p3 = (c*c-3*b*d+12*a*e)/(3*a*qp2)+qp2/(3*a);
-                auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).sqrt();
+                auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).Sqrt();
                 auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
                 auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
-                fx = -b/(4*a)+p4/2+(p5+p6).sqrt()/2;
+                fx = -b/(4*a)+p4/2+(p5+p6).Sqrt()/2;
 //                fx.optimize();
                 break;
             }

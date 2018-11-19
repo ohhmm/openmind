@@ -113,8 +113,8 @@ namespace math {
             auto newSize = i.getTypeSize();
             
             if (newSize <= sizeWas) {
-                constexpr decltype(newSize) BufSz = 512;
-                assert(BufSz >= newSize);
+                constexpr decltype(newSize) BufSz = 768;
+                assert(BufSz >= newSize && "Increase BufSz");
                 char buf[BufSz];
                 i.New(buf, std::move(i));
                 Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
@@ -176,6 +176,7 @@ namespace math {
     Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
     Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
     Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
+    Valuable::Valuable(boost::rational<a_int>&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
 
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2)
     {
@@ -190,7 +191,7 @@ namespace math {
             auto& b = coefficients[1];
             auto& c = coefficients[0];
             auto d = (b ^ 2) - 4_v * a * c;
-            return ((d^(1_v/2))-b)/(a*2);
+            return (Exponentiation(d, 1_v/2)-b)/(a*2);
         }else{
             IMPLEMENT
         }
@@ -471,6 +472,28 @@ namespace math {
             IMPLEMENT
     }
     
+    Valuable Valuable::I(const Variable& x, const Variable& C) const
+    {
+        if(exp) {
+            return exp->I(x,C);
+        }
+        else
+            IMPLEMENT
+    }
+
+    Valuable& Valuable::i(const Variable& x, const Variable& C)
+    {
+        if(exp) {
+            Valuable& o = exp->i(x,C);
+            if (o.exp) {
+                exp = o.exp;
+            }
+            return *this;
+        }
+        else
+            IMPLEMENT
+    }
+
     void Valuable::solve(const Variable& va, solutions_t& solutions) const
     {
         if(exp) {
@@ -765,9 +788,9 @@ namespace math {
             IMPLEMENT
     }
 
-	Valuable Valuable::sqrt() const {
+	Valuable Valuable::Sqrt() const {
         if(exp)
-            return exp->sqrt();
+            return exp->Sqrt();
         else
             IMPLEMENT
     }
@@ -867,7 +890,7 @@ namespace math {
         return vars.size() == 1;
     }
     
-    a_int Valuable::getMaxVaExp() const
+    max_exp_t Valuable::getMaxVaExp() const
     {
         return exp ? exp->getMaxVaExp() : maxVaExp;
     }
@@ -1438,13 +1461,27 @@ namespace std
     }
     ::omnn::math::Valuable sqrt(const ::omnn::math::Valuable& v)
     {
-        return v.sqrt();
+        return v.Sqrt();
     }
 }
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t)
 {
-    return ::omnn::math::Integer(boost::multiprecision::cpp_int(v));
+    using namespace ::omnn::math;
+    if ((*v >= '0' && *v <= '9') || (*v == '-' && (v[1] >= '0' && v[1] <= '9')))
+        return ::omnn::math::Integer(boost::multiprecision::cpp_int(v));
+    else {
+        static auto h = VarHost::make<std::string>();
+        return Valuable(v,h);
+    }
+}
+
+const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t)
+{
+    using namespace ::omnn::math;
+    static auto h = VarHost::make<std::string>();
+    std::string id = v;
+    return h->Host(id);
 }
 
 ::omnn::math::Valuable operator"" _v(unsigned long long v)

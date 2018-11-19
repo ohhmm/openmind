@@ -37,7 +37,7 @@ namespace math {
         explicit operator double() const override;
         
 		void optimize() override;
-		Valuable sqrt() const override;
+		Valuable Sqrt() const override;
 		const vars_cont_t& getCommonVars() const override;
 		bool IsComesBefore(const Valuable& v) const override;
 		bool IsFraction() const override { return true; }
@@ -58,9 +58,9 @@ namespace math {
 		{
 		}
 
-		Fraction(const Integer& n);
-
-        Fraction(const boost::multiprecision::cpp_dec_float_100& f);
+		Fraction(const Integer&);
+		Fraction(boost::rational<a_int>&&);
+		Fraction(const boost::multiprecision::cpp_dec_float_100&);
 
 		Fraction(Fraction&&) = default;
 		Fraction(const Fraction&)=default;
@@ -74,7 +74,7 @@ namespace math {
         explicit operator a_int() const override;
         operator boost::multiprecision::cpp_dec_float_100() const;
         Valuable operator()(const Variable&, const Valuable& augmentation) const override;
-        static a_int getMaxVaExp(const Valuable& _1, const Valuable& _2) {
+        static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
             return _1.getMaxVaExp();
         }
         

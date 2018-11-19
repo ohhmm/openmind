@@ -143,7 +143,7 @@ public:
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
-    Valuable sqrt() const override { return *this^(1_v/2); }
+    Valuable Sqrt() const override;
     bool IsComesBefore(const Valuable& v) const override;
     
     std::wstring save(const std::wstring&) const override;

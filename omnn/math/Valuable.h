@@ -13,8 +13,10 @@
 #include <set>
 #include <typeindex>
 #include <unordered_set>
+
 //#include <boost/shared_ptr.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/rational.hpp>
 
 #define IMPLEMENT { implement(); throw; }
 
@@ -43,6 +45,7 @@ namespace omnn{
 namespace math {
     
     using a_int = boost::multiprecision::cpp_int;
+    using max_exp_t = boost::rational<a_int>;
     namespace ptrs = ::std;
 
     class VarHost;
@@ -104,7 +107,7 @@ protected:
     
     size_t hash = 0;
     size_t sz = sizeof(Valuable);
-    a_int maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
+    max_exp_t maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
     
     std::function<Valuable()> DefaultCachedFn() {
         return [this]()->Valuable{
@@ -158,13 +161,14 @@ public:
     
     Valuable(double d);
     Valuable(int i = 0);
-    Valuable(const a_int&);
-    Valuable(a_int&&);
     Valuable(const long);
     Valuable(unsigned);
     Valuable(unsigned long);
     Valuable(unsigned long long);
 	Valuable(int64_t);
+    Valuable(const a_int&);
+    Valuable(a_int&&);
+    Valuable(boost::rational<a_int>&&);
 
     Valuable(const std::string&, std::shared_ptr<VarHost>);
 
@@ -179,7 +183,8 @@ public:
     virtual Valuable& operator++();
     virtual Valuable& operator^=(const Valuable&);
     virtual Valuable& d(const Variable& x);
-//    virtual Valuable& I(const Variable& x);
+    virtual Valuable I(const Variable& x, const Variable& C) const;
+    virtual Valuable& i(const Variable& x, const Variable& C);
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
@@ -212,7 +217,7 @@ public:
 
     Valuable Sq() const;
     virtual Valuable abs() const;
-    virtual Valuable sqrt() const;
+    virtual Valuable Sqrt() const;
     virtual Valuable calcFreeMember() const;
     
     using solutions_t = std::unordered_set<Valuable>;
@@ -244,7 +249,7 @@ public:
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
 
-    virtual a_int getMaxVaExp() const;
+    virtual max_exp_t getMaxVaExp()  const;
     using vars_cont_t = std::map<Variable, Valuable>;
     virtual const vars_cont_t& getCommonVars() const;
     static const vars_cont_t& emptyCommonVars();
@@ -346,6 +351,7 @@ protected:
 }}
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
+const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
 ::omnn::math::Valuable operator"" _v(unsigned long long v);
 ::omnn::math::Valuable operator"" _v(long double v);
 

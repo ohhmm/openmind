@@ -20,7 +20,12 @@ namespace math {
 		: base(n, 1)
 	{
 	}
-    
+
+	Fraction::Fraction(boost::rational<a_int>&& r)
+	: base(r.numerator(), r.denominator())
+	{
+	}
+
     Fraction::Fraction(const boost::multiprecision::cpp_dec_float_100& f)
     {
         auto s = boost::lexical_cast<std::string>(f);
@@ -373,9 +378,9 @@ namespace math {
         return *this;
     }
 
-    Valuable Fraction::sqrt() const
+    Valuable Fraction::Sqrt() const
     {
-        return numerator().sqrt() / denominator().sqrt();
+        return numerator().Sqrt() / denominator().Sqrt();
     }
 
     std::ostream& Fraction::print_sign(std::ostream& out) const

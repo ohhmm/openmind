@@ -53,7 +53,7 @@ public:
     Valuable& d(const Variable& x) override;
     void optimize() override;
     const vars_cont_t& getCommonVars() const override;
-    Valuable sqrt() const override;
+    Valuable Sqrt() const override;
     Valuable& sq() override;
     Valuable calcFreeMember() const override;
     solutions_t GetIntegerSolution(const Variable& va) const override;

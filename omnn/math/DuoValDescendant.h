@@ -44,7 +44,7 @@ namespace omnn::math {
         }
 
     public:
-        static a_int getMaxVaExp(const Valuable& _1, const Valuable& _2) {
+        static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
             if(_1.FindVa() || _2.FindVa())
                 IMPLEMENT // in Child
             return {};
@@ -106,7 +106,7 @@ namespace omnn::math {
             Valuable::hash = _1.Hash() ^ _2.Hash();
         }
 
-        a_int getMaxVaExp() const override {
+        max_exp_t getMaxVaExp()  const override {
             return Chld::getMaxVaExp(_1, _2);
         }
     };

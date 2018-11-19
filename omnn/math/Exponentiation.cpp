@@ -16,14 +16,12 @@
 namespace omnn{
 namespace math {
 
-    a_int Exponentiation::getMaxVaExp(const Valuable& b, const Valuable& e)
+    max_exp_t Exponentiation::getMaxVaExp(const Valuable& b, const Valuable& e)
     {
         if (e.IsInt()) {
-            a_int _ = e.ca();
-            _ *= b.getMaxVaExp();
-            return _;
+            return b.getMaxVaExp() * e.ca();
         } else if (e.FindVa()) {
-            a_int i = b.getMaxVaExp();
+            auto i = b.getMaxVaExp();
             if (i) {
                 auto _ = e;
                 const Variable* v;
@@ -35,9 +33,12 @@ namespace math {
             }
             return i;
         } else {
-            auto maxVaExp = e * Integer(b.getMaxVaExp());
+            auto maxVaExp = e * b.getMaxVaExp();
             if (maxVaExp.IsInt()) {
                 return maxVaExp.ca();
+            } else if (maxVaExp.IsSimpleFraction()) {
+                auto f = Fraction::cast(maxVaExp);
+                return {f->getNumerator().ca(), f->getDenominator().ca()};
             } else if(!optimizations) {
                 optimizations = true;
                 maxVaExp.optimize();
@@ -51,7 +52,7 @@ namespace math {
         IMPLEMENT
     }
 
-    a_int Exponentiation::getMaxVaExp() const
+    max_exp_t Exponentiation::getMaxVaExp() const
     {
         return getMaxVaExp(getBase(), getExponentiation());
     }
@@ -176,11 +177,14 @@ namespace math {
 
         if (ebase().IsInt()) {
             if (ebase()==1) {
-                if (eexp().IsInt()
-                    || (eexp().IsFraction() && !eexp().FindVa())
-                    ) {
+                if (eexp().IsInt()) {
                     Become(std::move(ebase()));
                     return;
+                } else if (eexp().IsSimpleFraction()) {
+                    if (Fraction::cast(eexp())->getDenominator().bit(0)) {
+                        Become(std::move(ebase()));
+                        return;
+                    }
                 } else
                     IMPLEMENT;
             } else if (ebase()==-1 && eexp().IsInt() && eexp() > 0 && eexp()!=1) {
@@ -279,7 +283,7 @@ namespace math {
                                     bool isInt = n.IsInt();
                                     if (!isInt)
                                         IMPLEMENT
-                                    if (isInt && (n % 2_v) == 0_v)
+                                    if (isInt && n.bit(0) == 0_v)
                                     {
                                         x.sq();
                                         n /= 2;
@@ -489,6 +493,30 @@ namespace math {
             Become(0_v);
         optimize();
         return *this;
+    }
+    
+    Valuable& Exponentiation::i(const Variable& x, const Variable& C)
+    {
+        if ((eexp().IsInt() || eexp().IsSimpleFraction()) && ebase()==x) {
+            ++eexp();
+            operator/=(eexp());
+            operator+=(C);
+        } else {
+            IMPLEMENT
+        }
+        
+        optimize();
+        return *this;
+    }
+
+    Valuable Exponentiation::I(const Variable& x, const Variable& C) const
+    {
+        if ((eexp().IsInt() || eexp().IsSimpleFraction()) && ebase()==x) {
+            auto einc = eexp()+1;
+            return (ebase() ^ einc) / einc + C;
+        } else {
+            IMPLEMENT
+        }
     }
 
     bool Exponentiation::operator <(const Valuable& v) const

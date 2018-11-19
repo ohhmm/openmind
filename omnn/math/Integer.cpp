@@ -33,6 +33,7 @@ namespace std {
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/detail/integer_ops.hpp>
+#include <boost/multiprecision/integer.hpp>
 //#include <libiomp/omp.h>
 
 using boost::multiprecision::cpp_int;
@@ -244,14 +245,16 @@ namespace math {
     
     Valuable& Integer::operator^=(const Valuable& v)
     {
-        if(arbitrary == 0 || arbitrary == 1)
+        if(arbitrary == 0 || (arbitrary == 1 && v.IsInt()))
         {
             if (v == 0) {
                 IMPLEMENT; //NaN
             }
-            else {
+            return *this;
+        } else if (arbitrary == 1 && v.IsSimpleFraction()) {
+            auto f = Fraction::cast(v);
+            if(f->getDenominator().bit(0)==1)
                 return *this;
-            }
         }
         if(v.IsInt())
         {
@@ -315,13 +318,16 @@ namespace math {
             if (dn != 1)
             {
                 Valuable x = *this;
-                if(x<0_v && !dn.bit(0)){
+                auto even = !dn.bit(0);
+                if(even && x<0_v){
                     auto xFactors = Facts();
                     std::sort(xFactors.begin(), xFactors.end());
                     while(xFactors.size()){
                         auto xFactor = std::move(xFactors.back());
                         if(xFactor>1_v){
                             auto f = xFactor ^ v;
+                            if(!f.IsInt())
+                                f /= 1_v ^ v;
                             if(f.IsInt())
                                 return Become(f*((x/xFactor)^v));
                         }
@@ -340,21 +346,14 @@ namespace math {
                     if (d!=0) {
                         nroot = left + d / 2;
                         auto result = nroot ^ dn;
-                        if (result == *this)
-                        {
-                            return Become(std::move(nroot));
-                        }
+                        rootFound = result == *this;
+                        if (rootFound)
+                            Become(std::move(nroot));
                         else
-                        {
                             if (result > *this)
-                            {
                                 right = nroot;
-                            }
                             else
-                            {
                                 left = nroot;
-                            }
-                        }
                     }
                     else
                         return Become(Exponentiation(*this, 1_v/dn));
@@ -362,13 +361,15 @@ namespace math {
                     // this == nroot^dn +
                     // TODO : IMPLEMENT//return Become(Sum {nroot, (*this-(nroot^dn))^(1/dn)});
                 }
+                if(even)
+                    Become(Exponentiation(1,1_v/2)**this);
             }
         }
         else
         {
             return Become(Exponentiation(*this, v));
         }
-        
+
         optimize();
         return *this;
     }
@@ -382,6 +383,15 @@ namespace math {
     bool Integer::IsComesBefore(const Valuable& v) const
     {
         return v.IsInt() && *this > v;
+    }
+
+    Valuable Integer::Sqrt() const
+    {
+        if(arbitrary < 0) {
+            IMPLEMENT
+        }
+        auto _ = boost::multiprecision::sqrt(arbitrary);
+        return Integer(_);
     }
 
     std::wstring Integer::save(const std::wstring& f) const

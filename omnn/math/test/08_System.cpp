@@ -113,7 +113,9 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 //    BOOST_TEST(values);
 }
 
-BOOST_AUTO_TEST_CASE(hello_sudoku_world,*disabled())
+BOOST_AUTO_TEST_CASE(hello_sudoku_world
+                     ,*disabled()
+                    )
 {
     constexpr unsigned Sz = 9;
     int data[Sz][Sz] = {

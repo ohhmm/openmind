@@ -67,7 +67,7 @@ public:
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
 	void optimize() override;
-    Valuable sqrt() const override;
+    Valuable Sqrt() const override;
     Valuable& sq() override;
 
 	bool IsProduct() const override { return true; }

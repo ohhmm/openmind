@@ -23,7 +23,7 @@ public:
 
     std::ostream& print_sign(std::ostream& out) const override;
     
-    static a_int getMaxVaExp(const Valuable& _1, const Valuable& _2) {
+    static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
         return _1.getMaxVaExp();
     }
     

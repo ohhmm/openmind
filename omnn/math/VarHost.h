@@ -83,6 +83,7 @@ namespace math {
         virtual bool CompareIdsLess(const any::any& a, const any::any& b) const = 0;
         virtual bool CompareIdsEqual(const any::any& a, const any::any& b) const = 0;
         virtual std::ostream& print(std::ostream& out, const any::any& v) const = 0;
+        virtual const Variable& Host(const any::any& id) = 0;
     };
     
     /**
@@ -92,6 +93,7 @@ namespace math {
     class TypedVarHost : public VarHost
     {
         std::set<T> varIds;
+        std::map<T, Variable> hosted;
         friend class VarHost;
         TypedVarHost()=default;
         
@@ -175,6 +177,14 @@ namespace math {
             if (std::is_integral<T>::value || std::is_same<T, Valuable>::value)
                 out << 'v';
             return out << c;
+        }
+        
+        const Variable& Host(const any::any& id) override {
+            auto idT = any::any_cast<T>(id);
+            auto it = hosted.find(idT);
+            if(it == hosted.end())
+                it = hosted.insert({idT, New(idT)}).first;
+            return it->second;
         }
     };
 

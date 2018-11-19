@@ -90,14 +90,12 @@ namespace math {
         if (!e.IsInt()) {
             IMPLEMENT
         }
-        auto ie = Integer::cast(e);
-        auto wasMax = maxVaExp == ie->as_const_base_int_ref();
+        auto wasMax = maxVaExp == e.ca();
         e += exponentiation;
-        ie = Integer::cast(e);
       
-        auto isMax = maxVaExp < ie->as_const_base_int_ref();
+        auto isMax = maxVaExp < e.ca();
         if (isMax) {
-            maxVaExp = ie->as_const_base_int_ref();
+            maxVaExp = e.ca();
         }
         
         if (e == 0) {
@@ -396,9 +394,9 @@ namespace math {
             Become(std::move(*const_cast<Valuable*>(&*members.begin())));
     }
 
-    Valuable Product::sqrt() const
+    Valuable Product::Sqrt() const
     {
-        return *this ^ (1_v/2);
+        return Each([](auto& m){ return m.Sqrt(); });
     }
 
     Valuable & Product::sq()

@@ -31,7 +31,7 @@ namespace math {
         }
         void optimize() override { }
         //void expand() override { }
-        Valuable sqrt() const override { IMPLEMENT }
+        Valuable Sqrt() const override { IMPLEMENT }
         
         bool IsComesBefore(const Valuable& v) const override
         {

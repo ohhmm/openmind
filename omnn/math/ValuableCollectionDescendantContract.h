@@ -142,12 +142,18 @@ namespace math {
             return false;
         }
         
-        void CollectVa(std::set<Variable>& s) const override
-        {
+        void CollectVa(std::set<Variable>& s) const override {
             for (auto& i : GetConstCont())
                 i.CollectVa(s);
         }
         
+        Valuable Each(const std::function<Valuable(const Valuable&)>& m) const {
+            Chld c;
+            for(auto& i:GetConstCont())
+                c.Add(m(i));
+            return c;
+        }
+
         Valuable& eval(const std::map<Variable, Valuable>& with) override {
             auto& members = GetCont();
             Valuable::SetView(Valuable::View::Calc);

@@ -14,13 +14,13 @@ endif()
 Find_Package(icu)
 if(NOT ICU_FOUND)
     ExternalProject_Add(icu
-        SVN_REPOSITORY http://source.icu-project.org/repos/icu/tags/latest
+        GIT_REPOSITORY https://github.com/unicode-org/icu.git
         CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env
                 CC=${CMAKE_C_COMPILER}
                 CXX=${CMAKE_CXX_COMPILER}
                 CFLAGS=${ICU_CFLAGS}
                 CXXFLAGS=${ICU_CXXFLAGS}
-                sh ${ICU_EP_PREFIX}/src/ExternalICU/source/configure
+                sh ${ICU_EP_PREFIX}/icu4c/source/configure
                 --disable-shared --enable-static --disable-dyload --disable-extras
                 --disable-tests --disable-samples
                 --prefix=<INSTALL_DIR>
