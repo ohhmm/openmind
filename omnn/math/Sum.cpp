@@ -823,8 +823,8 @@ namespace math {
     
     Valuable Sum::Sqrt() const
     {
-        IMPLEMENT
-        return Exponentiation(*this, 1_v/2);
+        IMPLEMENT // TODO : try to get rid of this call instead by substituting to ^(1_v/2) which is not equivalent to sqrt by the way https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
+        return Exponentiation(*this, 1_v/2); // TODO  :  this is wrong  because of https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
     }
 
     Valuable& Sum::sq()
@@ -941,8 +941,10 @@ namespace math {
             {
                 c0.Add(m);
             }
-            else
+            else {
+                std::cout << m << std::endl;
                 IMPLEMENT
+            }
         }
         }
         if(c0.size()){
@@ -1314,16 +1316,18 @@ namespace math {
                 break;
             }
             case 2: {
-                // square equation x=(-b+√(b*b-4*a*c))/(2*a)
-                auto& a = coefficients[2];
-                auto& b = coefficients[1];
-                auto& c = coefficients[0];
-                auto d = (b ^ 2) - 4_v * a * c;
-                auto dsq = d.Sqrt();
-                auto a2 = a * 2;
-                solutions.insert((-dsq-b)/a2);
-                solutions.insert((dsq-b)/a2);
-                break;
+                if(!enforce_solve_using_rational_root_test_only){
+                    // square equation x=(-b+√(b*b-4*a*c))/(2*a)
+                    auto& a = coefficients[2];
+                    auto& b = coefficients[1];
+                    auto& c = coefficients[0];
+                    auto d = (b ^ 2) - 4_v * a * c;
+                    auto dsq = d.Sqrt();
+                    auto a2 = a * 2;
+                    solutions.insert((-dsq-b)/a2);
+                    solutions.insert((dsq-b)/a2);
+                    break;
+                }
             }
             default: {
                 // RATIONAL ROOT TEST

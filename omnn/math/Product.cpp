@@ -803,6 +803,34 @@ namespace math {
         return s;
     }
     
+    void Product::solve(const Variable& va, solutions_t& solutions) const
+    {
+        auto it = members.find(va);
+        if(it != members.end())
+            solutions.insert(0_v);
+        else {
+            it = begin();
+            bool found = {};
+            const Exponentiation* e = {};
+            while (!(it != end()
+                     && it->IsExponentiation()
+                     && (e=Exponentiation::cast(*it))
+                     && (found = e->getBase() == va)
+                     ) ) {
+                ++it;
+            }
+            if (found) {
+                if (e->getExponentiation() == 0_v) {
+                    IMPLEMENT
+                }
+                solutions.insert(0_v);
+            }
+            else {
+                IMPLEMENT // TODO: find exponentiations of va
+            }
+        }
+    }
+
 	std::ostream& Product::print(std::ostream& out) const
 	{
         std::stringstream s;

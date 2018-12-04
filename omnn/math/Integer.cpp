@@ -1,8 +1,9 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
-
 #include "Integer.h"
+
+#include "i.h"
 #include "Exponentiation.h"
 #include "Fraction.h"
 #include "Modulo.h"
@@ -387,11 +388,29 @@ namespace math {
 
     Valuable Integer::Sqrt() const
     {
-        if(arbitrary < 0) {
+        auto minus = arbitrary < 0;
+
+        // build an equation, find using RRT:
+        Variable x;
+        Valuable eq = *this;
+        auto _ = x.Sq();
+        eq += minus ? _ : -_;
+        eq.SetView(View::Solving);
+
+        auto esurrto = enforce_solve_using_rational_root_test_only;
+        enforce_solve_using_rational_root_test_only = true;
+        auto sols = eq.Solutions(x);
+        enforce_solve_using_rational_root_test_only = esurrto;
+
+        if(!sols.size()){
             IMPLEMENT
         }
-        auto _ = boost::multiprecision::sqrt(arbitrary);
-        return Integer(_);
+        auto it = sols.begin();
+        if(*it < 0)
+            ++it;
+        _ = *it;
+
+        return minus ? constant::i * _ : _;
     }
 
     std::wstring Integer::save(const std::wstring& f) const

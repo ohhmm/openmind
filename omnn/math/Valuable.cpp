@@ -1,7 +1,6 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
-
 #include "Valuable.h"
 
 #include "i.h"
@@ -22,6 +21,7 @@ namespace omnn{
 namespace math {
 
     thread_local bool Valuable::optimizations = true;
+    thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
     
     void implement()
     {
@@ -610,11 +610,11 @@ namespace math {
         auto t = *this;
         t.Eval(va, v);
         t.optimize();
-#ifndef NDEBUG
-        if (t!=0) {
-            std::cout << t << '\n';
-        }
-#endif
+//#ifndef NDEBUG // for debug
+//        if (t!=0) {
+//            std::cout << t << '\n';
+//        }
+//#endif
         return t==0;
     }
     

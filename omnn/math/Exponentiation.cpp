@@ -123,7 +123,7 @@ namespace math {
                         ebase() = eq;
                         eexp() = f->getNumerator();
                     } else {
-                        IMPLEMENT
+                        // TODO : IMPLEMENT
                     }
                 }
             }
@@ -145,7 +145,7 @@ namespace math {
                         Become(std::move(eq));
                         return;
                     } else {
-                        IMPLEMENT
+                        // TODO : IMPLEMENT
                     }
                 }
             }

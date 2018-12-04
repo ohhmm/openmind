@@ -261,24 +261,15 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
 {
     Variable v;
     auto sol = ((v^2)-4_v).Solutions(v);
-    BOOST_TEST(sol.size()==2);
-    auto solution1 = *sol.begin();
-    BOOST_TEST(solution1.abs() == 2_v);
-    auto solution2 = *++sol.begin();
-    BOOST_TEST(solution1 == -solution2);
+    using sol_t = decltype(sol);
+    BOOST_TEST(sol == sol_t({2,-2}));
  
     auto _1 = v.Equals(1.5);
     auto _2 = v.Equals(-2.5);
     auto _3 = v.Equals(3);
     auto equation = _1.LogicOr(_2).LogicOr(_3);
     sol = equation.Solutions();
-    BOOST_TEST(sol.size()==3);
-    auto found = sol.find(1.5) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(-2.5) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(3) != sol.end();
-    BOOST_TEST(found);
+    BOOST_TEST(sol == sol_t({1.5,-2.5,3}));
     
     _1 = 1.5;
     _2 = -2.5;
@@ -287,36 +278,15 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
                 .LogicOr(v.Equals(_2))
                 .LogicOr(v.Equals(_3));
     sol = equation.Solutions();
-    BOOST_TEST(sol.size()==3);
-    found = sol.find(_1) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(_2) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(_3) != sol.end();
-    BOOST_TEST(found);
+    BOOST_TEST(sol == sol_t({_1,_2,_3}));
     
     equation = (v-1)*(v-2)*(v-3);
     sol = equation.Solutions();
-    BOOST_TEST(sol.size()==3);
-    found = sol.find(1) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(2) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(3) != sol.end();
-    BOOST_TEST(found);
+    BOOST_TEST(sol == sol_t({1,2,3}));
 
     equation *= v+4;
     sol = equation.Solutions();
-    BOOST_TEST(sol.size()==4);
-    found = sol.find(1) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(2) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(3) != sol.end();
-    BOOST_TEST(found);
-    found = sol.find(-4) != sol.end();
-    BOOST_TEST(found);
-    
+    BOOST_TEST(sol == sol_t({1,2,3,-4}));    
 }
 
 BOOST_AUTO_TEST_CASE(Containers_test)

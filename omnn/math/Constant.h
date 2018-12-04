@@ -17,13 +17,11 @@ namespace math {
     public:
         using base::base;
 
-        const Variable* FindVa() const override
-        {
+        const Variable* FindVa() const override {
             return {};
         }
         
-        bool HasVa(const Variable& va) const override
-        {
+        bool HasVa(const Variable& va) const override {
             return {};
         }
         
@@ -33,17 +31,19 @@ namespace math {
         void Eval(const Variable& va, const Valuable& v) override
         { }
         
-        Valuable& operator *=(const Valuable& v) override
-        {
+        Valuable& operator *=(const Valuable& v) override {
             if(v.IsProduct())
                 return this->Become(v**this);
             else
                 return this->Become(Product{*this,v});
         }
         
-        bool operator==(const Valuable& v) const override
-        {
+        bool operator==(const Valuable& v) const override {
             return this->OfSameType(v);
+        }
+        
+        const Valuable::vars_cont_t& getCommonVars() const override {
+            return Valuable::emptyCommonVars();
         }
     };
 }}

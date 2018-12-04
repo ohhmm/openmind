@@ -49,19 +49,19 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     Variable x, y, z;
     std::list<Variable> formulaParamSequence = { y, x };
     auto fa = a.Factors(y, x, z);
-    fa.SetView(Valuable::View::Flat);
+//    fa.SetView(Valuable::View::Flat);
     fa.optimize();
     std::cout << fa << std::endl;
     auto fr = r.Factors(y, x, z);
-    fr.SetView(Valuable::View::Flat);
+//    fr.SetView(Valuable::View::Flat);
     fr.optimize();
     std::cout << fr << std::endl;
     auto fg = g.Factors(y, x, z);
-    fg.SetView(Valuable::View::Flat);
+//    fg.SetView(Valuable::View::Flat);
     fg.optimize();
     std::cout << fg << std::endl;
     auto fb = b.Factors(y, x, z);
-    fb.SetView(Valuable::View::Flat);
+//    fb.SetView(Valuable::View::Flat);
     fb.optimize();
     std::cout << fb << std::endl;
 

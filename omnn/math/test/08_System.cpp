@@ -73,14 +73,16 @@ BOOST_AUTO_TEST_CASE(System_tests)
     }
 }
 
-BOOST_AUTO_TEST_CASE(sq_System_test, *disabled())
+BOOST_AUTO_TEST_CASE(sq_System_test
+                     , *disabled()
+                     )
 {
     System s;
     Variable a,b,x;
 	s << a - b - 3
 		<< a + b - x
 		<< a * b * 4 - (49 - 9)
-		//<< x * x - 49
+		<< x * x - 49
         << x*b + 9 +2*a*b + 3*b - 49
         ;
 
