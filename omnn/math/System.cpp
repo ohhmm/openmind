@@ -100,17 +100,34 @@ Valuable::var_set_t System::CollectVa(const Variable& va) const
 bool System::Eval(const Variable& va, const Valuable& v)
 {
     bool modified = {};
-    if(!v.HasVa(va))
-        for(auto& e : equs)
+    if(!v.HasVa(va)) {
+        auto subst = v.IsInt() || v.IsSimpleFraction();
+        auto prev = equs.begin();
+        auto e = equs.end();
+        for(auto it = prev; it != e; ++it)
         {
+            auto& e = *it;
             if (e.HasVa(va))
             {
                 auto eva = e;
                 eva.Eval(va, v);
                 eva.optimize();
-                modified = Add(eva) || modified;
+                if (subst) {
+                    auto del = it;
+                    auto b = equs.begin();
+                    auto setBegin = prev==b;
+                    equs.erase(del);
+                    it = setBegin
+                        ? equs.begin() // reevaluate begin as it could be changed
+                        : prev;
+                    auto it_b = equs.insert(eva);
+                    modified = it_b.second;
+                } else
+                    modified = Add(eva) || modified;
             }
+            prev = it;
         }
+    }
     return modified;
 }
 
