@@ -386,32 +386,41 @@ namespace math {
         return v.IsInt() && *this > v;
     }
 
+    // sqrt using boost
     Valuable Integer::Sqrt() const
     {
         auto minus = arbitrary < 0;
-
-        // build an equation, find using RRT:
-        Variable x;
-        Valuable eq = *this;
-        auto _ = x.Sq();
-        eq += minus ? _ : -_;
-        eq.SetView(View::Solving);
-
-        auto esurrto = enforce_solve_using_rational_root_test_only;
-        enforce_solve_using_rational_root_test_only = true;
-        auto sols = eq.Solutions(x);
-        enforce_solve_using_rational_root_test_only = esurrto;
-
-        if(!sols.size()){
-            IMPLEMENT
-        }
-        auto it = sols.begin();
-        if(*it < 0)
-            ++it;
-        _ = *it;
-
+        auto _ = boost::multiprecision::sqrt(minus ? -arbitrary : arbitrary);
         return minus ? constant::i * _ : _;
     }
+
+    // Sqrt using rational root test
+//    Valuable Integer::Sqrt() const
+//    {
+//        auto minus = arbitrary < 0;
+//
+//        // build an equation, find using RRT:
+//        Variable x;
+//        Valuable eq = *this;
+//        auto _ = x.Sq();
+//        eq += minus ? _ : -_;
+//        eq.SetView(View::Solving);
+//
+//        auto esurrto = enforce_solve_using_rational_root_test_only;
+//        enforce_solve_using_rational_root_test_only = true;
+//        auto sols = eq.Solutions(x);
+//        enforce_solve_using_rational_root_test_only = esurrto;
+//
+//        if(!sols.size()){
+//            IMPLEMENT
+//        }
+//        auto it = sols.begin();
+//        if(*it < 0)
+//            ++it;
+//        _ = *it;
+//
+//        return minus ? constant::i * _ : _;
+//    }
 
     std::wstring Integer::save(const std::wstring& f) const
     {

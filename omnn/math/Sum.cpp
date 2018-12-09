@@ -1344,9 +1344,11 @@ namespace math {
                     IMPLEMENT
                 } else {
                     Valuable test;
-                    auto found = Integer::cast(a)->Factorization([&](const auto& i){
+                    auto ai = Integer::cast(a);
+                    auto ki = Integer::cast(k);
+                    auto found = ai->Factorization([&](const auto& i){
                         return i!=0
-                            && Integer::cast(k)->Factorization([&](const auto& ik)->bool{
+                            && ki->Factorization([&](const auto& ik)->bool{
                                 test = ik / i;
                                 return Test(va, test) || Test(va, test=-test);
                                 }, Infinity());
