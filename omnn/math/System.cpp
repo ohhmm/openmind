@@ -102,31 +102,34 @@ bool System::Eval(const Variable& va, const Valuable& v)
     bool modified = {};
     if(!v.HasVa(va)) {
         auto subst = v.IsInt() || v.IsSimpleFraction();
-        auto prev = equs.begin();
         auto e = equs.end();
-        for(auto it = prev; it != e; ++it)
-        {
-            auto& e = *it;
-            if (e.HasVa(va))
+        bool again;
+        do {
+            again = {};
+            auto prev = equs.begin();
+            for(auto it = prev; it != e && !again; ++it)
             {
-                auto eva = e;
-                eva.Eval(va, v);
-                eva.optimize();
-                if (subst) {
-                    auto del = it;
-                    auto b = equs.begin();
-                    auto setBegin = prev==b;
-                    equs.erase(del);
-                    it = setBegin
-                        ? equs.begin() // reevaluate begin as it could be changed
-                        : prev;
-                    auto it_b = equs.insert(eva);
-                    modified = it_b.second;
-                } else
-                    modified = Add(eva) || modified;
+                auto& e = *it;
+                if (e.HasVa(va))
+                {
+                    auto eva = e;
+                    eva.Eval(va, v);
+                    eva.optimize();
+                    if (subst) {
+                        auto del = it;
+                        auto b = equs.begin();
+                        again = prev==b;
+                        equs.erase(del);
+                        auto it_b = equs.insert(eva);
+                        modified = it_b.second;
+                        it = prev;
+                    } else
+                        modified = Add(eva) || modified;
+                }
+                prev = it;
             }
-            prev = it;
-        }
+        } while (again);
+        
     }
     return modified;
 }
@@ -144,19 +147,30 @@ bool System::Fetch(const Variable& va)
     }
     
     Valuable::var_set_t vars;
-    for(auto& e : equs)
-    {
-        e.CollectVa(vars);
-        if (e.HasVa(va))
-            for(auto& _ : e.Solutions(va))
-            {
+    bool again;
+    do {
+        again = {};
+        auto prev = equs.begin();
+        for (auto it=prev; it!=equs.end() && !again; ++it) {
+            auto& e = *it;
+            e.CollectVa(vars);
+            if (e.HasVa(va)) {
+                auto _ = e(va);
                 modified = Add(va, _) || modified;
                 if (_.Vars().size() == 0) {
                     fetched = true;
                 }
-                modified = Eval(va, _) || modified;
+                
+                auto evaluated = Eval(va, _);
+                if (evaluated) {
+                    again = prev == equs.begin();
+                    it = prev;
+                }
+                modified = evaluated || modified;
             }
-    }
+            prev = it;
+        }
+    } while (again);
     
     if (!fetched) {
         vars.erase(va);
