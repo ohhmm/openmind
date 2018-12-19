@@ -323,26 +323,18 @@ namespace math {
                 if (n != 1_v)
                     *this ^= n;
                 Valuable nroot;
-                bool rootFound = false;
                 Valuable left =0, right = *this;
 
-                while (!rootFound)
+                for (;;)
                 {
                     nroot = left +(right - left) / 2_v;
                     auto result = nroot ^ dn;
                     if (result == *this)
-                    {
-                        rootFound = true;
                         return Become(std::move(nroot));
-                    }
                     else if (*this < result)
-                    {
                         right = nroot;
-                    }
                     else
-                    {
                         left = nroot;
-                    }
                 }
             }
         }
@@ -350,7 +342,16 @@ namespace math {
         return Become(Exponentiation(*this, v));
     }
     
-
+    Valuable& Fraction::d(const Variable& x)
+    {
+        if (IsSimpleFraction()) {
+            Become(0_v);
+        } else {
+            IMPLEMENT
+        }
+        return *this;
+    }
+    
     bool Fraction::operator <(const Valuable& v) const
     {
         if (v.IsFraction())

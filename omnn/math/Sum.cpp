@@ -143,6 +143,15 @@ namespace math {
 		return s;
 	}
 
+    Valuable Sum::GCD() const {
+        auto it = members.begin();
+        auto gcd = it->varless();
+        for (; it != members.end(); ++it) {
+            gcd = boost::gcd(gcd, it->varless());
+        }
+        return gcd;
+    }
+    
     void Sum::optimize()
     {
         if (optimized || !optimizations) return;
@@ -221,6 +230,9 @@ namespace math {
                 
                 for (; it2 != members.end();)
                 {
+                    if(c.IsSum()){
+                        IMPLEMENT
+                    }
                     if (((c.IsFraction() || c.IsInt()) && it2->IsSimpleFraction())
                         || (it2->IsInt() && (c.IsInt() || c.IsSimpleFraction()))
                         || (c.IsProduct() && mc == *it2)
@@ -360,12 +372,7 @@ namespace math {
                 
                 if(IsSum())
                 {
-                    auto it = members.begin();
-                    auto gcd = it->varless();
-                    for (; it != members.end(); ++it) {
-                        gcd = boost::gcd(gcd, it->varless());
-                    }
-                    
+                    auto gcd = GCD();
                     if(gcd!=1_v){
                         operator/=(gcd);
                     }
@@ -1080,6 +1087,8 @@ namespace math {
             auto& c = coefs[0];
             auto d = (b ^ 2) - 4_v * a * c;
             return ((d^(1_v/2))-b)/(a*2);
+        } else if (grade == 3) {
+            return Valuable(Solutions(va));
         }
         else if (coefs.size() && grade && grade < 3)
         {
@@ -1115,12 +1124,9 @@ namespace math {
             {
                 if(testSolutions(solutions_t{0}))
                 {
-                    Valuable c = *this;
-                    c /= va;
-                    for(auto& so: c.Solutions(va)){ // complete solving
-                        s.insert(so);
-                    }
-                    return Valuable(s);
+                    return 0_v;
+                } else {
+                    IMPLEMENT
                 }
             }
 

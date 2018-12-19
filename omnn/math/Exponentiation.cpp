@@ -104,52 +104,52 @@ namespace math {
             }
         }
 
-        // todo : comment this and try System test
-        if (ebase().IsSum() && eexp().IsFraction())
-        {
-            auto f = Fraction::cast(eexp());
-            auto& d = f->getDenominator();
-            if (d == ebase().getMaxVaExp()) {
-                auto vars = ebase().Vars();
-                if (vars.size() == 1) {
-                    auto va = *vars.begin();
-                    auto baseToSolve = ebase();
-                    baseToSolve.SetView(View::Solving);
-                    baseToSolve.optimize();
-                    auto eq = va - baseToSolve(va);
-                    auto sq = eq ^ d;
-                    auto check = ebase()/sq;
-                    if (check.IsInt() || check.IsSimpleFraction()) {
-                        ebase() = eq;
-                        eexp() = f->getNumerator();
-                    } else {
-                        // TODO : IMPLEMENT
-                    }
-                }
-            }
-        }
-        
-        if (ebase().IsSum() && eexp().IsFraction())
-        {
-            auto f = Fraction::cast(eexp());
-            auto& d = f->getDenominator();
-            auto e = ebase() ^ f->getNumerator();
-            if (d == e.getMaxVaExp()) {
-                auto vars = e.Vars();
-                if (vars.size() == 1) {
-                    auto va = *vars.begin();
-                    auto eq = va - e(va);
-                    auto sq = eq ^ d;
-                    auto check = e / sq;
-                    if (check.IsInt() || check.IsSimpleFraction()) {
-                        Become(std::move(eq));
-                        return;
-                    } else {
-                        // TODO : IMPLEMENT
-                    }
-                }
-            }
-        }
+        // todo : check it, comment this and try System test
+//        if (ebase().IsSum() && eexp().IsFraction())
+//        {
+//            auto f = Fraction::cast(eexp());
+//            auto& d = f->getDenominator();
+//            if (d == ebase().getMaxVaExp()) {
+//                auto vars = ebase().Vars();
+//                if (vars.size() == 1) {
+//                    auto va = *vars.begin();
+//                    auto baseToSolve = ebase();
+//                    baseToSolve.SetView(View::Solving);
+//                    baseToSolve.optimize();
+//                    auto eq = va - baseToSolve(va);
+//                    auto sq = eq ^ d;
+//                    auto check = ebase()/sq;
+//                    if (check.IsInt() || check.IsSimpleFraction()) {
+//                        ebase() = eq;
+//                        eexp() = f->getNumerator();
+//                    } else {
+//                        // TODO : IMPLEMENT
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (ebase().IsSum() && eexp().IsFraction())
+//        {
+//            auto f = Fraction::cast(eexp());
+//            auto& d = f->getDenominator();
+//            auto e = ebase() ^ f->getNumerator();
+//            if (d == e.getMaxVaExp()) {
+//                auto vars = e.Vars();
+//                if (vars.size() == 1) {
+//                    auto va = *vars.begin();
+//                    auto eq = va - e(va);
+//                    auto sq = eq ^ d;
+//                    auto check = e / sq;
+//                    if (check.IsInt() || check.IsSimpleFraction()) {
+//                        Become(std::move(eq));
+//                        return;
+//                    } else {
+//                        // TODO : IMPLEMENT
+//                    }
+//                }
+//            }
+//        }
         
 //        if (eexp().IsFraction() && ebase().IsInt()) {
 //            auto f = Fraction::cast(eexp());
@@ -239,6 +239,8 @@ namespace math {
         {
             switch(view)
             {
+                case View::Solving:
+
                 case View::None:
                 case View::Calc:
                 {

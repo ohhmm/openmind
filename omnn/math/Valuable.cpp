@@ -214,6 +214,11 @@ namespace math {
             operator=(MergeOr(*it, *++it));
             break;
         }
+        case 3: {
+            auto it = s.begin();
+            operator=(MergeOr(MergeOr(*it, *++it), *++it));
+            break;
+        }
         case 4: {
             auto it = s.begin();
             operator=(MergeOr(MergeOr(*it, *++it), MergeOr(*++it, *++it)));

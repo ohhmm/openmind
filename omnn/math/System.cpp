@@ -161,9 +161,10 @@ bool System::Fetch(const Variable& va)
                     fetched = true;
                 }
                 
+                auto isStart = prev == equs.begin();
                 auto evaluated = Eval(va, _);
                 if (evaluated) {
-                    again = prev == equs.begin();
+                    again = isStart;
                     it = prev;
                 }
                 modified = evaluated || modified;

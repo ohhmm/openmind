@@ -122,7 +122,7 @@ namespace math {
                 hash = std::hash<base_int>()(arbitrary);
             }
             else
-                Become(Fraction(*this, v.ca()));
+                Become(Fraction(*this, v));
         }
         else if(v.FindVa())
 			*this *= v^-1;
