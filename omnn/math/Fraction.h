@@ -40,6 +40,7 @@ namespace math {
 		void optimize() override;
 		Valuable Sqrt() const override;
 		const vars_cont_t& getCommonVars() const override;
+        Valuable InCommonWith(const Valuable& v) const override;
 		bool IsComesBefore(const Valuable& v) const override;
 		bool IsFraction() const override { return true; }
 		bool IsSimpleFraction() const override { return IsSimple(); }

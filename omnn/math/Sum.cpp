@@ -209,7 +209,7 @@ namespace math {
                 auto it2 = it;
                 ++it2;
                 Valuable c = *it;
-                Valuable mc;
+                Valuable mc, inc;
                 
                 auto up = [&](){
                     mc = -c;
@@ -264,9 +264,25 @@ namespace math {
                             c = sum;
                             Delete(it2);
                             up();
-                        }
-                        else
+                        } else
                             ++it2;
+                    }
+                    else if ((inc = it2->InCommonWith(c)) != 1_v) {
+                        auto sum = c / inc + *it2 / inc;
+                        if(!sum.IsSum()){
+                            sum *= inc;
+                            c = sum;
+                            Delete(it2);
+                            up();
+                        } else
+                            ++it2;
+                    }
+                    else if (c.IsFraction() && it2->IsFraction()
+                             && Fraction::cast(c)->getDenominator() == Fraction::cast(*it2)->getDenominator())
+                    {
+                        c += *it2;
+                        Delete(it2);
+                        up();
                     }
                     else
                         ++it2;
@@ -436,6 +452,22 @@ namespace math {
         }
 
         return vars;
+    }
+    
+    Valuable Sum::InCommonWith(const Valuable& v) const
+    {
+        if(v.IsSum())
+            IMPLEMENT;
+        auto c = v;
+        auto b = GetConstCont().begin();
+        auto e = GetConstCont().end();
+        if(b != e)
+        {
+            auto it = b;
+            while(c != 1_v && ++it != e)
+                c = it->InCommonWith(c);
+        }
+        return c;
     }
     
     Valuable& Sum::operator +=(const Valuable& v)
@@ -1133,8 +1165,8 @@ namespace math {
             // diffirrentials roots test
             std::stack<Valuable> diffs;
             {
-            auto d = *this;
-            for(int g = grade; g --> 1;){
+            Valuable d = *this;
+            for(int g = grade; g --> 1 ;){
                 d.d(va);
                 diffs.push(d);
             }
@@ -1145,7 +1177,7 @@ namespace math {
                 for(int i=0; i<2; ++i){ // first two are simple to calculate
                     if(diffs.size()){
                         auto& d = diffs.top();
-                        if(testSolutions(d.Solutions(va)))
+                        if(!d.IsInt() && testSolutions(d.Solutions(va)))
                             added = true;
                         diffs.pop();
                     }

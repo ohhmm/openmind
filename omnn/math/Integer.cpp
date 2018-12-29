@@ -385,6 +385,11 @@ namespace math {
     {
         return v.IsInt() && *this > v;
     }
+    
+    Valuable Integer::InCommonWith(const Valuable& v) const
+    {
+        return (v.IsInt() && v!=0_v && *this!=0_v) ? boost::gcd(v.ca(),ca()) : 1_v;
+    }
 
     // sqrt using boost
     Valuable Integer::Sqrt() const

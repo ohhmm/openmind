@@ -193,6 +193,32 @@ namespace math {
         return vars;
     }
     
+    Valuable Variable::InCommonWith(const Valuable& v) const
+    {
+        auto c = 1_v;
+        if (v.IsProduct()) {
+            c = v.InCommonWith(*this);
+        } else if (v.IsExponentiation()) {
+            auto e = Exponentiation::cast(v);
+            if (e->getBase() == *this) {
+                if (e->getExponentiation().IsInt()) {
+                    if (e->getExponentiation() > 0) {
+                        c = *this;
+                    }
+                } else {
+                    IMPLEMENT
+                }
+            }
+        } else if (v.IsVa()) {
+            if (*this == v)
+                c = v;
+        } else if (v.IsInt() || v.IsSimpleFraction()) {
+        } else {
+            IMPLEMENT
+        }
+        return c;
+    }
+    
     Valuable Variable::operator()(const Variable& va, const Valuable& augmentation) const
     {
         if (*this == va) {

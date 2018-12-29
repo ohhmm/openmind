@@ -145,7 +145,8 @@ public:
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
     Valuable Sqrt() const override;
     bool IsComesBefore(const Valuable& v) const override;
-    
+    Valuable InCommonWith(const Valuable& v) const override;
+
     std::wstring save(const std::wstring&) const override;
     
     static const zero_zone_t empty_zero_zone;

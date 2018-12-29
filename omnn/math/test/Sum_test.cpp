@@ -242,6 +242,22 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     _.SetView(Valuable::View::Solving);
     _ /= x-3;
     BOOST_TEST(_ == (4*(x^2)+4*x-15));
+    
+    auto v = "v"_va;
+    _ = (4_v*(v^2) + 2048)^(1_v/2);
+    _.SetView(Valuable::View::Solving);
+    _.optimize();
+    t=4_v;
+    auto c=2048_v;
+    a = "a"_va;
+    
+    
+    
+    _ = (32_v*((4_v*(v^2) + 2048)^((1_v/2)))*((4_v*(v^2) + 2044)^((1_v/2)))*((4_v*(v^2) + 1948)^((1_v/2))) + -15604_v*((4_v*(v^2) + 2032)^((1_v/2)))*((4_v*(v^2) + 892)^((1_v/2))));
+    sum = Sum::cast(_);
+    BOOST_TEST(*sum == _);
+    // TODO:    _ = _(v);
+    
 }
 
 BOOST_AUTO_TEST_CASE(Become_tests)
@@ -251,15 +267,15 @@ BOOST_AUTO_TEST_CASE(Become_tests)
     auto s = f+v;
     
     BOOST_TEST(reinterpret_cast<Valuable*>(&s)->exp);
-    bool isValuableType = typeid(s)==typeid(Valuable);
+    auto isValuableType = typeid(s)==typeid(Valuable);
     BOOST_TEST(isValuableType);
-    bool isInnerSum = typeid(*s.exp.get())==typeid(Sum);
+    auto isInnerSum = typeid(*s.exp.get())==typeid(Sum);
     BOOST_TEST(isInnerSum);
 }
 
 BOOST_AUTO_TEST_CASE(Solution_tests)
 {
-    Variable v;
+    auto v = "v"_va;
     auto sol = ((v^2)-4_v).Solutions(v);
     using sol_t = decltype(sol);
     BOOST_TEST(sol == sol_t({2,-2}));
@@ -279,6 +295,10 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
                 .LogicOr(v.Equals(_3));
     sol = equation.Solutions();
     BOOST_TEST(sol == sol_t({_1,_2,_3}));
+    auto s = Valuable::MergeOr(Valuable::MergeOr(_1,_2),_3);
+    auto x = equation(v);
+    x.optimize(); //TODO : complete optimization for uncomment
+    //    BOOST_TEST(s == x); // TODO: uncomment when complete optimization of x
     
     equation = (v-1)*(v-2)*(v-3);
     sol = equation.Solutions();

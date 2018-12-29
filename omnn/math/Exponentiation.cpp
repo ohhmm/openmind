@@ -627,6 +627,49 @@ namespace math {
         return v;
     }
     
+    Valuable Exponentiation::InCommonWith(const Valuable& v) const
+    {
+        auto c = 1_v;
+        if (v.IsProduct()) {
+            for(auto& m: Product::cast(v)->GetConstCont()){
+                c = InCommonWith(m);
+                if (c != 1_v) {
+                    break;
+                }
+            }
+        } else if (v.IsExponentiation()) {
+            auto e = Exponentiation::cast(v);
+            if (e->getBase() == getBase()) {
+                if (e->getExponentiation() == getExponentiation()) {
+                    c = *e;
+                } else if (getExponentiation().IsInt() && e->getExponentiation().IsInt()) {
+                    if (getExponentiation() > 0 || e->getExponentiation() > 0) {
+                        if (e->getExponentiation() >= getExponentiation()) {
+                            c = *this;
+                        } else
+                            c = *e;
+                    } else if (getExponentiation() < 0 || e->getExponentiation() < 0) {
+                        if (e->getExponentiation() >= getExponentiation()) {
+                            c = *e;
+                        } else
+                            c = *this;
+                    } else {
+                        IMPLEMENT
+                    }
+                } else {
+                    IMPLEMENT
+                }
+            }
+        } else if (getExponentiation().IsInt()) {
+            if(getExponentiation() > 0)
+                c = getBase().InCommonWith(v);
+        } else if (getExponentiation().IsFraction()) {
+        } else {
+            IMPLEMENT
+        }
+        return c;
+    }
+    
     Valuable Exponentiation::operator()(const Variable& v, const Valuable& augmentation) const
     {
         if (!getExponentiation().FindVa() && getExponentiation()!=0 && augmentation==0) {

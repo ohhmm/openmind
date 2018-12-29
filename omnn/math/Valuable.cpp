@@ -916,6 +916,14 @@ namespace math {
             IMPLEMENT
     }
     
+    Valuable Valuable::InCommonWith(const Valuable& v) const
+    {
+        if (exp)
+            return exp->InCommonWith(v);
+        else
+            IMPLEMENT
+    }
+
     Valuable Valuable::varless() const
     {
         return *this / getVaVal();
@@ -1026,6 +1034,7 @@ namespace math {
     
     Valuable Valuable::NotEquals(const Valuable& v) const {
         return IfEq(v,1,0);
+        //todo: check: return Equals(v) ^ -1;
     }
 
     Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l) const

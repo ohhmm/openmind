@@ -456,6 +456,30 @@ namespace math {
         return VaVal(getCommonVars(with.getCommonVars()));
     }
 
+    Valuable Product::InCommonWith(const Valuable& v) const
+    {
+        auto _ = 1_v;
+        auto check = [&](auto& with){
+            if (members.find(with) != members.end())
+                _ *= with;
+            else
+                for(auto&m:members){
+                    auto c = m.InCommonWith(with);
+                    if (c!=1_v)
+                        _*=c;
+                }
+        };
+
+        if (v.IsProduct())
+            for(auto& m : Product::cast(v)->GetConstCont())
+                check(m);
+        else if (v.IsSum())
+            _ = v.InCommonWith(*this);
+        else
+            check(v);
+        return _;
+    }
+
     // NOTE : inequality must cover all cases for bugless Sum::Add
     bool Product::IsComesBefore(const Valuable& v) const
     {
@@ -529,7 +553,7 @@ namespace math {
         if(*this == -v)
             return Become(0_v);
         
-        auto cv = getCommonVars();
+        auto& cv = getCommonVars();
         if (!cv.empty() && cv == v.getCommonVars())
         {
             auto valuable = varless() + v.varless();

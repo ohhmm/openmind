@@ -398,6 +398,21 @@ namespace math {
         }
         return vars;
     }
+    
+    Valuable Fraction::InCommonWith(const Valuable& v) const
+    {
+        auto c = 1_v;
+        if (v.IsFraction()) {
+            auto f = Fraction::cast(v);
+            c *= getNumerator().InCommonWith(f->getNumerator());
+            c /= getDenominator().InCommonWith(f->getDenominator());
+        }
+        else
+        {
+            c = getNumerator().InCommonWith(v);
+        }
+        return c;
+    }
 
     bool Fraction::IsComesBefore(const Valuable& v) const
     {

@@ -253,6 +253,7 @@ public:
     virtual max_exp_t getMaxVaExp()  const;
     using vars_cont_t = std::map<Variable, Valuable>;
     virtual const vars_cont_t& getCommonVars() const;
+    virtual Valuable InCommonWith(const Valuable& v) const;
     static const vars_cont_t& emptyCommonVars();
     Valuable varless() const;
     static Valuable VaVal(const vars_cont_t& v);

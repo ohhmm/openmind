@@ -54,6 +54,8 @@ BOOST_AUTO_TEST_CASE(Stasis
             auto co = world.eval({{x,xx},{y,yy}});
             Valuable::optimizations = true;
             co.optimize();
+            co.SetView(Valuable::View::Solving);
+            co.optimize();
             Valuable::optimizations = {};
             auto s = co(v);
             if (!s.IsInt()

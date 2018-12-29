@@ -54,6 +54,7 @@ public:
     vars_cont_t getCommonVars(const vars_cont_t& with) const;
     
     Valuable getCommVal(const Product& with) const;
+    Valuable InCommonWith(const Valuable& v) const override;
     int findMaxVaExp();
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;

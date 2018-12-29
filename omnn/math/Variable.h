@@ -57,6 +57,7 @@ public:
     void Eval(const Variable& va, const Valuable& v) override;
     
     const vars_cont_t& getCommonVars() const override;
+    Valuable InCommonWith(const Valuable& v) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
 };
 
