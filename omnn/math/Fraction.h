@@ -34,6 +34,7 @@ namespace math {
 		Valuable& operator %=(const Valuable& v) override;
 		Valuable& operator^=(const Valuable&) override;
         Valuable& d(const Variable& x) override;
+        bool operator ==(const Valuable& v) const override;
 		bool operator <(const Valuable& v) const override;
         explicit operator double() const override;
         
@@ -44,6 +45,7 @@ namespace math {
 		bool IsComesBefore(const Valuable& v) const override;
 		bool IsFraction() const override { return true; }
 		bool IsSimpleFraction() const override { return IsSimple(); }
+        YesNoMaybe IsMultival() const override { return _1.IsMultival() || _2.IsMultival(); }
 
 		using base::base;
 

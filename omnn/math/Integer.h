@@ -99,6 +99,9 @@ public:
     explicit operator int64_t() const;
 
     bool IsInt() const override { return true; }
+    YesNoMaybe IsEven() const override;
+    YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+    void Values(const std::function<bool(const Valuable&)>& f) const { f(*this); }
     
     // virtual operators 
     Valuable operator -() const override;
@@ -109,6 +112,9 @@ public:
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override;
     Valuable& operator ++() override;
+    omnn::math::Valuable &extracted(const omnn::math::Valuable &dn, const omnn::math::Valuable &exponentiating, const omnn::math::Valuable &x);
+    
+    std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const;
     Valuable& operator^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
     bool operator <(const Valuable& v) const override;
@@ -130,6 +136,7 @@ public:
     Valuable Xor(const Valuable& n, const Valuable& v) const override;
     Valuable Not(const Valuable& n) const override;
     Valuable& shl(const Valuable& n) override;
+    Valuable& shr(const Valuable& n) override;
     Valuable Shr() const override;
     Valuable Shr(const Valuable& n) const override;
     
@@ -139,7 +146,7 @@ public:
     const Variable* FindVa() const override { return nullptr; }
     bool HasVa(const Variable& va) const override { return {}; }
     void CollectVa(std::set<Variable>&) const override { }
-    Valuable& eval(const std::map<Variable, Valuable>& with) override { return *this; }
+    bool eval(const std::map<Variable, Valuable>& with) override { return {}; }
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }

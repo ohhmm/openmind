@@ -57,6 +57,19 @@ namespace math {
         return Fraction(-getNumerator(), getDenominator());
     }
 
+    bool Fraction::operator ==(const Valuable& v) const
+    {
+        const Fraction* ch;
+        return (v.IsFraction()
+                && Hash()==v.Hash()
+                && (ch = cast(v))
+                && _1.Hash() == ch->_1.Hash()
+                && _2.Hash() == ch->_2.Hash()
+                && _1 == ch->_1
+                && _2 == ch->_2
+                ) || (v.IsExponentiation() && v==*this);
+    }
+
     void Fraction::optimize()
     {
 //        if (!optimizations) {
@@ -103,7 +116,8 @@ namespace math {
                 auto in = e->getBase() / (denominator() ^ f->Reciprocal());
                 if (in.IsInt())
                 {
-                    Become(in ^ exp);
+                    e->ebase() = std::move(in);
+                    Become(std::move(*e));
                     return;
                 }
             }
@@ -193,6 +207,7 @@ namespace math {
             else if (denominator().FindVa() && !denominator().IsSum())
             {
                 Become(Product{numerator(),Exponentiation(denominator(), -1)});
+                return;
             }
             else // no products
             {
@@ -208,7 +223,10 @@ namespace math {
         }
         
         if (IsFraction()) {
-            hash = numerator().Hash() ^ denominator().Hash();
+            if(IsSimple())
+                hash = numerator().Hash() ^ denominator().Hash();
+            else
+                Become(numerator()*(denominator()^-1));
         }
     }
     
@@ -292,54 +310,68 @@ namespace math {
 
     Valuable& Fraction::operator^=(const Valuable& v)
     {
-        if(v.IsInt())
-        {
-            auto i = v.ca();
-            if (i != 0_v) {
-                if (i > 1_v) {
-                    auto a = *this;
-                    for (auto n = i; n > 1_v; --n) {
-                        *this *= a;
-                    }
-                    optimize();
-                    return *this;
-                }
-            }
-            else { // zero
-                if (numerator() == 0_v)
-                    throw "NaN"; // feel free to handle this properly
-                else
-                    return Become(1_v);
+        if(v.IsFraction()){
+            auto vf = Fraction::cast(v);
+            auto& vfdn = vf->denominator();
+            if (vfdn == 2_v)
+                ;
+            else if (vfdn.bit(0_v)!=1_v) {
+                IMPLEMENT
             }
         }
-        else if(IsSimple())
-        {
-            auto f = Fraction::cast(v);
-            if (f->IsSimple())
-            {
-                auto n = f->numerator();
-                auto dn = f->denominator();
-
-                if (n != 1_v)
-                    *this ^= n;
-                Valuable nroot;
-                Valuable left =0, right = *this;
-
-                for (;;)
-                {
-                    nroot = left +(right - left) / 2_v;
-                    auto result = nroot ^ dn;
-                    if (result == *this)
-                        return Become(std::move(nroot));
-                    else if (*this < result)
-                        right = nroot;
-                    else
-                        left = nroot;
-                }
-            }
-        }
-
-        return Become(Exponentiation(*this, v));
+        numerator() ^= v;
+        denominator() ^= v;
+        optimized = {};
+        optimize();
+        return *this;
+//        if(v.IsInt())
+//        {
+//            auto i = v.ca();
+//            if (i != 0_v) {
+//                if (i > 1_v) {
+//                    auto a = *this;
+//                    for (auto n = i; n > 1_v; --n) {
+//                        *this *= a;
+//                    }
+//                    optimize();
+//                    return *this;
+//                }
+//            }
+//            else { // zero
+//                if (numerator() == 0_v)
+//                    throw "NaN"; // feel free to handle this properly
+//                else
+//                    return Become(1_v);
+//            }
+//        }
+//        else if(IsSimple())
+//        {
+//            auto f = Fraction::cast(v);
+//            if (f->IsSimple())
+//            {
+//                auto n = f->numerator();
+//                auto dn = f->denominator();
+//
+//                if (n != 1_v)
+//                    *this ^= n;
+//                Valuable nroot;
+//                Valuable left =0, right = *this;
+//
+//                for (;;)
+//                {
+//                    nroot = left +(right - left) / 2_v;
+//                    auto result = nroot ^ dn;
+//                    if (result == *this)
+//                        return Become(std::move(nroot));
+//                    else if (*this < result)
+//                        right = nroot;
+//                    else
+//                        left = nroot;
+//                }
+//            }
+//        }
+//
+//        return Become(Exponentiation(*this, v));
     }
     
     Valuable& Fraction::d(const Variable& x)
@@ -361,7 +393,10 @@ namespace math {
         }
         else if (v.IsInt())
         {
-            return numerator() < v * denominator();
+            if(denominator()<0)
+                return -numerator() < v * -denominator();
+            else
+                return numerator() < v * denominator();
         }
         else
             return base::operator <(v);

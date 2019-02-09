@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE(Stasis
 
     for (auto xx=Sz; xx--;) {
         for (auto yy=Sz; yy--; ) {
-
-            auto co = world.eval({{x,xx},{y,yy}});
+            auto co = world;
+            co.eval({{x,xx},{y,yy}});
             Valuable::optimizations = true;
             co.optimize();
             co.SetView(Valuable::View::Solving);

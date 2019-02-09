@@ -164,13 +164,14 @@ namespace math {
         s.insert(*this);
     }
 
-    Valuable& Variable::eval(const std::map<Variable, Valuable>& with) {
+    bool Variable::eval(const std::map<Variable, Valuable>& with) {
         auto it = with.find(*this);
-        if(it != with.end()) {
+        auto evaluated = it != with.end();
+        if(evaluated) {
             auto c = it->second;
             Become(std::move(c));
         }
-        return *this;
+        return evaluated;
     }
     
     void Variable::Eval(const Variable& va, const Valuable& v)

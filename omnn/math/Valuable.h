@@ -54,6 +54,10 @@ namespace math {
     
     void implement();
 
+#ifdef BOOST_TEST_MODULE
+#define protected public
+#endif
+
 class Valuable
         : public OpenOps<Valuable>
 {
@@ -72,6 +76,8 @@ protected:
     virtual int getTypeSize() const;
     virtual size_t getAllocSize() const;
     virtual void setAllocSize(size_t sz);
+    const Valuable& get() const { return exp ? exp->get() : *this; }
+    Valuable& get() { return exp ? exp->get() : *this; }
     
     template<class T>
     static const T* cast(const Valuable& v)
@@ -91,7 +97,8 @@ protected:
         return t;
     }
     
-    template<class T> Valuable() {}
+    template<class T>
+    Valuable() {}
     
     Valuable(ValuableDescendantMarker)
     {}
@@ -129,6 +136,29 @@ public:
         Flat,
         Solving,
     };
+    
+    enum class YesNoMaybe : uint8_t {
+        Yes = 0b1, Maybe = 0b10, No = 0b100
+    };
+
+    template<class T>
+    const T& as() const {
+        auto& the = get();
+        assert(the.Is<T>());
+        return static_cast<const T&>(the);
+    }
+
+    template<class T>
+    T& as() {
+        auto& the = get();
+        assert(the.Is<T>());
+        return static_cast<T&>(the);
+    }
+
+//    friend operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
+    friend bool operator!(YesNoMaybe _) { return _!=YesNoMaybe::Yes; }
+    friend YesNoMaybe operator||(YesNoMaybe, YesNoMaybe);
+    friend YesNoMaybe operator&&(YesNoMaybe, YesNoMaybe);
 
     static thread_local bool optimizations;
     static thread_local bool enforce_solve_using_rational_root_test_only;
@@ -206,6 +236,9 @@ public:
     virtual bool Is_e() const;
     virtual bool Is_i() const;
     virtual bool Is_π() const;
+    virtual YesNoMaybe IsEven() const;
+    virtual YesNoMaybe IsMultival() const;
+    virtual void Values(const std::function<bool(const Valuable&)>&) const;
 
     virtual bool is(const std::type_index&) const;
 
@@ -258,7 +291,7 @@ public:
     Valuable varless() const;
     static Valuable VaVal(const vars_cont_t& v);
     Valuable getVaVal() const;
-    virtual Valuable& eval(const std::map<Variable, Valuable>& with);
+    virtual bool eval(const std::map<Variable, Valuable>& with);
     
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;
@@ -292,6 +325,7 @@ public:
     virtual Valuable Xor(const Valuable& n, const Valuable& v) const;
     virtual Valuable Not(const Valuable& n) const;
     virtual Valuable& shl(const Valuable& n);
+    virtual Valuable& shr(const Valuable& n);
     virtual Valuable Shl(const Valuable& n) const;
     virtual Valuable Shr(const Valuable& n) const;
     virtual Valuable Shr() const;
@@ -348,6 +382,7 @@ public:
 protected:
     View view = View::Flat;
     bool optimized = false;
+    //   TODO : std::shared_ptr<std::vector<Valuable>> cachedValues;
 };
 
 }}

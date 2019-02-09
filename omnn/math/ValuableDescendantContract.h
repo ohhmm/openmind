@@ -84,7 +84,7 @@ namespace math {
         // todo :
         //ValuableDescendantContract() : Valuable<>() {}
         // instead of
-        ValuableDescendantContract() : ValuableDescendantBase(ValuableDescendantMarker()) {}
+        constexpr ValuableDescendantContract() : ValuableDescendantBase(ValuableDescendantMarker()) {}
         ValuableDescendantContract(ValuableDescendantContract&& c)//        =default;
         : ValuableDescendantBase(std::move(c), ValuableDescendantMarker()) {}
         ValuableDescendantContract(const ValuableDescendantContract& c)//        =default;

@@ -3,6 +3,7 @@
 //
 #include "System.h"
 #include "Valuable.h"
+#include <algorithm>
 #ifdef _WIN32
 #include <execution>
 #endif
@@ -48,15 +49,9 @@ System& System::operator<<(const Valuable& v)
 bool System::Add(const Variable& va, const Valuable& v)
 {
     auto& es = vEs[va];
-    auto vars = v.Vars();
-    bool isNew = v != 0_v
-        ? es[vars].insert(v).second
-        : false;
-    if (isNew)
-    {
-        *this << v - va;
-    }
-    return isNew;
+    return v != 0_v
+        && es[v.Vars()].insert(v).second
+        && Add(va.Equals(v));
 }
 
 bool System::Add(const Valuable& v)
@@ -64,25 +59,30 @@ bool System::Add(const Valuable& v)
     auto _ = v;
     _.SetView(Valuable::View::Equation);
     _.optimize();
-    bool isNew = _ != 0_v
+    auto isNew = _ != 0_v &&
 #ifdef _WIN32
-        ? std::find(std::execution::par, std::begin(equs), std::end(equs), -_) == equs.end() && equs.insert(_).second
+        std::find(std::execution::par, std::begin(equs), std::end(equs), _) == equs.end()
+        && std::find(std::execution::par, std::begin(equs), std::end(equs), -_) == equs.end();
 #else
-        ? std::find(std::begin(equs), std::end(equs), -_) == equs.end() && equs.insert(_).second
+        std::find(std::begin(equs), std::end(equs), _) == equs.end()
+        && std::find(std::begin(equs), std::end(equs), -_) == equs.end();
 #endif
-        : false;
-    
+
     if (isNew) {
+        auto vars = v.Vars();
+        if(vars.size() == 1){
+            auto va = *vars.begin();
+            auto found = v(va);
+            equs.insert(va.Equals(found));
+            vEs[va][{}].insert(std::move(found));
+        } else
+            equs.insert(v);
         if (makeTotalEqu)
             sqs += _.Sq();
         if (doEarlyFetch)
-        {
             for (auto& va : _.Vars())
-            {
                 for (auto& s : _.Solutions(va))
                     Add(va, s);
-            }
-        }
     }
     return isNew;
 }
@@ -112,19 +112,27 @@ bool System::Eval(const Variable& va, const Valuable& v)
                 auto& e = *it;
                 if (e.HasVa(va))
                 {
+                    auto wasVars = e.Vars();
                     auto eva = e;
                     eva.Eval(va, v);
                     eva.optimize();
-                    if (subst) {
-                        auto del = it;
-                        auto b = equs.begin();
-                        again = prev==b;
-                        equs.erase(del);
-                        auto it_b = equs.insert(eva);
-                        modified = it_b.second;
-                        it = prev;
-                    } else
-                        modified = Add(eva) || modified;
+                    if (eva != 0) {
+                        auto becameVars = eva.Vars();
+                        if (becameVars.size()) {
+                            if (subst
+                                || std::includes(wasVars.begin(), wasVars.end(), becameVars.begin(), becameVars.end())
+                                ) {
+                                auto del = it;
+                                auto b = equs.begin();
+                                again = prev==b;
+                                equs.erase(del);
+                                modified = true;
+                                Add(eva);
+                                it = again ? equs.begin() : prev;
+                            } else
+                                modified = Add(eva) || modified;
+                        }
+                    }
                 }
                 prev = it;
             }
@@ -150,9 +158,7 @@ bool System::Fetch(const Variable& va)
     bool again;
     do {
         again = {};
-        auto prev = equs.begin();
-        for (auto it=prev; it!=equs.end() && !again; ++it) {
-            auto& e = *it;
+        for (auto& e : equs) {
             e.CollectVa(vars);
             if (e.HasVa(va)) {
                 auto _ = e(va);
@@ -161,15 +167,13 @@ bool System::Fetch(const Variable& va)
                     fetched = true;
                 }
                 
-                auto isStart = prev == equs.begin();
                 auto evaluated = Eval(va, _);
-                if (evaluated) {
-                    again = isStart;
-                    it = prev;
-                }
                 modified = evaluated || modified;
+                if (evaluated) {
+                    again = !fetched;
+                    break;
+                }
             }
-            prev = it;
         }
     } while (again);
     
@@ -177,7 +181,7 @@ bool System::Fetch(const Variable& va)
         vars.erase(va);
         each(vars,
              [&](auto& v){
-                 modified = modified || Fetch(v);
+                 modified = Fetch(v) || modified;
              });
         
         fetching.erase(va);
@@ -209,7 +213,8 @@ System::solutions_t System::Solve(const Variable& va)
 //        }
 //    }
     
-    //solution = sqs(va);
+    if(makeTotalEqu)
+        solution = sqs.Solutions(va);
     if (solution.size()) {
         Valuable::var_set_t vars;
         for(auto& s : solution)
@@ -289,7 +294,14 @@ System::solutions_t System::Solve(const Variable& va)
             do
             {
                 modified = {};
-                for(auto& v : CollectVa(va))
+                auto otherVars = CollectVa(va);
+                if (otherVars.empty()) {
+                    auto& solved = vEs[va][{}];
+                    if (solved.size()) {
+                        return solved;
+                    }
+                }
+                else for(auto& v : otherVars)
                 {
                     auto& vaFuncs = vEs[v];
                     auto toSolve = vaFuncs.size();
@@ -341,7 +353,7 @@ System::solutions_t System::Solve(const Variable& va)
                     singleVars.push_back(v);
                     for(auto& toEval : esi.second)
                     {
-                        modified = modified || Eval(v, toEval);
+                        modified = Eval(v, toEval) || modified;
                     }
                 }
                 else

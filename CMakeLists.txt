@@ -148,6 +148,7 @@ function(test)
 	set(libs ${test_libs}
 		boost_test_exec_monitor boost_thread boost_serialization boost_system
 		${OpenCL_LIBRARY}
+#pthread
 		)
 	message("libs ${libs}")
 	foreach(tg ${libs})

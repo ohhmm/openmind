@@ -267,7 +267,8 @@ namespace math {
                         } else
                             ++it2;
                     }
-                    else if ((inc = it2->InCommonWith(c)) != 1_v) {
+                    else if ((inc = it2->InCommonWith(c)) != 1_v
+                             && inc.IsMultival() != YesNoMaybe::Yes) {
                         auto sum = c / inc + *it2 / inc;
                         if(!sum.IsSum()){
                             sum *= inc;
@@ -1120,6 +1121,17 @@ namespace math {
             auto d = (b ^ 2) - 4_v * a * c;
             return ((d^(1_v/2))-b)/(a*2);
         } else if (grade == 3) {
+            //            auto de = *this;  de.d(va);
+            //            auto& a = coefs[3];
+            //            auto& b = coefs[2];
+            //            auto& c = coefs[1];
+            //            auto& d = coefs[0];
+            //            auto f = a*va+b;  // (a(x^3)+b(x^2))/(x^2)
+            //            auto s = c*va+d;  // cx+d
+            //            auto t=s/f;
+            //            auto fsgcd = //va.Sq()-t;
+            //            auto x1_x2  = fac(va);
+            //            auto x3 = va  - x1_x2;
             return Valuable(Solutions(va));
         }
         else if (coefs.size() && grade && grade < 3)

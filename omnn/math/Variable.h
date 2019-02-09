@@ -45,6 +45,7 @@ public:
     std::ostream& print(std::ostream& out) const override;
 
     bool IsVa() const override { return true; }
+    YesNoMaybe IsMultival() const override { return YesNoMaybe::Maybe; }
     bool IsComesBefore(const Valuable& v) const override;
     
     const Variable* FindVa() const override { return this; }
@@ -52,7 +53,7 @@ public:
     
     void CollectVa(std::set<Variable>& s) const override;
 
-    Valuable& eval(const std::map<Variable, Valuable>& with) override;
+    bool eval(const std::map<Variable, Valuable>& with) override;
     
     void Eval(const Variable& va, const Valuable& v) override;
     

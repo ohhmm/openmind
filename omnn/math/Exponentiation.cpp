@@ -151,13 +151,19 @@ namespace math {
 //            }
 //        }
         
-//        if (eexp().IsFraction() && ebase().IsInt()) {
-//            auto f = Fraction::cast(eexp());
-//            if (f->IsSimple()) {
-
-        
-//            }
-//        }
+        if (ebase().IsFraction() && eexp().IsMultival()==YesNoMaybe::No) {
+            auto& f = ebase().as<Fraction>();
+            auto _ = (f.getNumerator() ^ eexp()) / (f.getDenominator() ^ eexp());
+            if (_.IsExponentiation()) {
+                auto& e = _.as<Exponentiation>();
+                if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
+                    IMPLEMENT
+                }
+            } else {
+                Become(std::move(_));
+                return;
+            }
+        }
 
         if (ebase().IsFraction() && eexp().IsInt() && eexp() < 0_v) {
             eexp() = -eexp();
@@ -189,6 +195,9 @@ namespace math {
                     IMPLEMENT;
             } else if (ebase()==-1 && eexp().IsInt() && eexp() > 0 && eexp()!=1) {
                 eexp() = eexp().bit(0);
+            } else if (eexp()==-1) {
+                Become(Fraction{1,ebase()});
+                return;
             } else if (eexp().IsInfinity())
                 IMPLEMENT
         }
@@ -412,14 +421,17 @@ namespace math {
         {
             return Become(v * *this);
         }
-        else if(v.IsInt() && v==1)
+        else if(v.IsInt())
         {
-            return *this;
+            if(v==1)
+                return *this;
+            else if(eexp()==-1 && ebase().IsInt())
+                return Become(v/ebase());
+            else
+                return Become(Product{v, *this});
         }
         else
-        {
             return Become(Product{v, *this});
-        }
 
         optimize();
         return *this;
@@ -427,10 +439,27 @@ namespace math {
 
     Valuable& Exponentiation::operator /=(const Valuable& v)
     {
-        if (v.IsExponentiation())
+        auto isMultival = IsMultival()==YesNoMaybe::Yes;
+        auto vIsMultival = v.IsMultival()==YesNoMaybe::Yes;
+        if(isMultival && vIsMultival) {
+            solutions_t vals, thisValues;
+            Values([&](auto& thisVal){
+                thisValues.insert(thisVal);
+                return true;
+            });
+            
+            v.Values([&](auto&vVal){
+                for(auto& tv:thisValues)
+                    vals.insert(tv/vVal);
+                return true;
+            });
+            
+            return Become(Valuable(vals));
+        }
+        else if (v.IsExponentiation())
         {
             auto e = cast(v);
-            if(ebase() == e->getBase())
+            if(ebase() == e->getBase() && !ebase().IsMultival())
             {
                 eexp() -= e->getExponentiation();
             }
@@ -467,6 +496,24 @@ namespace math {
         optimized={};
         optimize();
         return *this;
+    }
+    
+    bool Exponentiation::operator ==(const Valuable& v) const
+    {
+        const Exponentiation* ch;
+        return (v.IsExponentiation()
+                && Hash()==v.Hash()
+                && (ch = cast(v))
+                && _1.Hash() == ch->_1.Hash()
+                && _2.Hash() == ch->_2.Hash()
+                && _1 == ch->_1
+                && _2 == ch->_2
+                ) ||
+                (v.IsFraction()
+                 && eexp().IsInt()
+                 && eexp() < 0
+                 && ebase() == (Fraction::cast(v)->getDenominator() ^ (-eexp()))
+                );
     }
     
     Exponentiation::operator double() const
@@ -538,6 +585,61 @@ namespace math {
     std::ostream& Exponentiation::print_sign(std::ostream& out) const
     {
         return out << "^";
+    }
+
+    Valuable::YesNoMaybe Exponentiation::IsMultival() const
+    {
+        auto is = _1.IsMultival() || _2.IsMultival();
+        if (is != YesNoMaybe::Yes)
+            if(_2.IsFraction())
+                is = _2.as<Fraction>().getDenominator().IsEven() || is;
+        return is;
+    }
+    
+    void Exponentiation::Values(const std::function<bool(const Valuable&)>& fun) const
+    {
+        if (fun) {
+            auto cache = optimized;
+            // TODO: multival caching (inspect all optimized and optimization transisions) auto isCached =
+            
+            std::set<Valuable> vals;
+            {
+            std::deque<Valuable> d1;
+            _1.Values([&](auto& v){
+                d1.push_back(v);
+                return true;
+            });
+            
+            _2.Values([&](auto& v){
+                auto vIsFrac = v.IsFraction();
+                const Fraction* f;
+                if(vIsFrac)
+                    f = &v.template as<Fraction>();
+                auto vMakesMultival = vIsFrac && f->getDenominator().IsEven()==YesNoMaybe::Yes;
+                
+                for(auto& item1:d1){
+                    if(vMakesMultival){
+                        Variable x;
+                        auto& dn = f->getDenominator();
+                        auto solutions = (x ^ dn).Equals(*this ^ dn).Solutions(x);
+                        for(auto&& s:solutions)
+                            vals.insert(s);
+                    } else {
+                        auto value=item1^v;
+                        if(value.IsMultival()==YesNoMaybe::No)
+                            vals.insert(value);
+                        else {
+                            IMPLEMENT
+                        }
+                    }
+                }
+                return true;
+            });
+            }
+            
+            for(auto& v:vals)
+                fun(v);
+        }
     }
 
     std::ostream& Exponentiation::code(std::ostream& out) const
@@ -656,6 +758,10 @@ namespace math {
                     } else {
                         IMPLEMENT
                     }
+                } else if (getExponentiation().IsSimpleFraction() && e->getExponentiation().IsSimpleFraction()) {
+                    if (getExponentiation()<0 == e->getExponentiation()<0) {
+                        IMPLEMENT
+                    }
                 } else {
                     IMPLEMENT
                 }
@@ -664,6 +770,10 @@ namespace math {
             if(getExponentiation() > 0)
                 c = getBase().InCommonWith(v);
         } else if (getExponentiation().IsFraction()) {
+        } else if (v.IsVa()) {
+            c = v.InCommonWith(*this);
+        } else if (v.IsInt()) {
+        } else if (getExponentiation().IsVa()) {
         } else {
             IMPLEMENT
         }

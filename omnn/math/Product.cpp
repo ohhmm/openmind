@@ -83,6 +83,9 @@ namespace math {
         if (!exponentiation.IsInt()) {
             IMPLEMENT // estimate in to be greater for those which you want to see first in sum sequence
         }
+        if(exponentiation==0)
+            return;
+
         auto i = Integer::cast(exponentiation);
         vaExpsSum += *i;
         
@@ -246,13 +249,13 @@ namespace math {
                 auto sum = std::move(const_cast<Valuable&&>(*it));
                 sum.optimize();
                 Delete(it);
-                auto was = optimizations;
-                //optimizations = false;
+//                auto was = optimizations;
+//                optimizations = false;
                 for (auto& it : members)
                 {
                     sum *= it;
                 }
-                optimizations = was;
+//                optimizations = was;
                 Become(std::move(sum));
                 return;
             }
@@ -615,10 +618,11 @@ namespace math {
         }
         else if (v.IsProduct())
         {
-            for(auto& m : *cast(v))
-            {
-                base::Add(m);
-            }
+            if(operator==(v))
+                sq();
+            else
+                for(auto& m : *cast(v))
+                    base::Add(m);
             goto yes;
         }
         else
@@ -663,9 +667,15 @@ namespace math {
             {
                 if (*it == v)
                 {
-                    Delete(it);
-                    optimize();
-                    return *this;
+                    if (v.IsMultival() == YesNoMaybe::No) {
+                        Delete(it);
+                        optimize();
+                        return *this;
+                    } else {
+                        Update(it, *it / v);
+                        optimize();
+                        return *this;
+                    }
                 }
                 else if (e && *it == e->getBase())
                 {

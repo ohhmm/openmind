@@ -9,7 +9,7 @@
 namespace omnn{
 namespace math {
 
-class System
+class System // TODO: resolve current problem, it mixes-up conjunction with disjunction and sees not all roots, if you are dealing with serious system, consider using total equation instead or  fix this  class first   
 {
     std::set<Variable> solving;
     std::set<Variable> fetching;

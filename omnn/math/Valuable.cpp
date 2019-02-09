@@ -16,12 +16,41 @@
 #include <algorithm>
 #include <boost/numeric/conversion/converter.hpp>
 
-
 namespace omnn{
 namespace math {
 
+    omnn::math::Valuable::YesNoMaybe operator||(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
+        constexpr omnn::math::Valuable::YesNoMaybe OrMap[] = {
+            // Yes = 1, Maybe = 10, No = 100
+            {},              // 000 bug
+            omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
+            omnn::math::Valuable::YesNoMaybe::Maybe, // 010 maybe
+            omnn::math::Valuable::YesNoMaybe::Yes,   // 011  yes, maybe
+            omnn::math::Valuable::YesNoMaybe::No, // 100 no
+            omnn::math::Valuable::YesNoMaybe::Yes, // 101 yes,no
+            omnn::math::Valuable::YesNoMaybe::Maybe, // 110 maybe,no
+            omnn::math::Valuable::YesNoMaybe::Yes, // 111 yes,maybe,no
+        };
+        return OrMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
+    }
+    omnn::math::Valuable::YesNoMaybe operator&&(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
+        constexpr omnn::math::Valuable::YesNoMaybe AndMap[] = {
+            // Yes = 1, Maybe = 10, No = 100
+            {},              // 000 bug
+            omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
+            omnn::math::Valuable::YesNoMaybe::Maybe, // 010 maybe
+            omnn::math::Valuable::YesNoMaybe::Maybe,   // 011  yes, maybe
+            omnn::math::Valuable::YesNoMaybe::No, // 100 no
+            omnn::math::Valuable::YesNoMaybe::No, // 101 yes,no
+            omnn::math::Valuable::YesNoMaybe::No, // 110 maybe,no
+            omnn::math::Valuable::YesNoMaybe::No, // 111 yes,maybe,no
+        };
+        return AndMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
+    }
+
     thread_local bool Valuable::optimizations = true;
     thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
+    
     
     void implement()
     {
@@ -180,20 +209,27 @@ namespace math {
 
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2)
     {
-        Variable x;
-        auto s = x.Equals(v1).logic_or(x.Equals(v2));
-        if(s.IsSum())
+        if(v1.IsInt() && v2.IsInt()
+           && v1.abs()==v2.abs())
         {
-            auto sum = Sum::cast(s);
-            std::vector<Valuable> coefficients;
-            sum->FillPolyCoeff(coefficients, x);
-            auto& a = coefficients[2];
-            auto& b = coefficients[1];
-            auto& c = coefficients[0];
-            auto d = (b ^ 2) - 4_v * a * c;
-            return (Exponentiation(d, 1_v/2)-b)/(a*2);
-        }else{
-            IMPLEMENT
+            return v1.abs() * (1_v ^ Fraction{1,2});
+        }
+        else {
+            Variable x;
+            auto s = x.Equals(v1).logic_or(x.Equals(v2));
+            if(s.IsSum())
+            {
+                auto sum = Sum::cast(s);
+                std::vector<Valuable> coefficients;
+                sum->FillPolyCoeff(coefficients, x);
+                auto& a = coefficients[2];
+                auto& b = coefficients[1];
+                auto& c = coefficients[0];
+                auto d = (b ^ 2) - 4_v * a * c;
+                return (Exponentiation(d, 1_v/2)-b)/(a*2);
+            }else{
+                IMPLEMENT
+            }
         }
         return (x);
     }
@@ -723,6 +759,27 @@ namespace math {
     bool Valuable::Is_i() const { return exp && exp->Is_i(); }
     bool Valuable::Is_π() const { return exp && exp->Is_π(); }
 
+    Valuable::YesNoMaybe Valuable::IsMultival() const {
+        if(exp)
+            return exp->IsMultival();
+        else
+            IMPLEMENT
+    }
+    
+    void Valuable::Values(const std::function<bool(const Valuable&)>& f) const {
+        if(exp)
+            exp->Values(f);
+        else
+            IMPLEMENT
+    }
+
+    Valuable::YesNoMaybe Valuable::IsEven() const {
+        if(exp)
+            return exp->IsEven();
+        else
+            IMPLEMENT
+    }
+
     bool Valuable::is(const std::type_index&) const
     {
         IMPLEMENT//ed in contract
@@ -844,7 +901,7 @@ namespace math {
         return vars;
     }
     
-    Valuable& Valuable::eval(const std::map<Variable, Valuable>& with){
+    bool Valuable::eval(const std::map<Variable, Valuable>& with){
         if (exp)
             return exp->eval(with);
         else
@@ -870,8 +927,8 @@ namespace math {
     
     bool Valuable::OfSameType(const Valuable& v) const
     {
-        const Valuable& v1 = *cast<Valuable>(*this);
-        const Valuable& v2 = *cast<Valuable>(v);
+        const Valuable& v1 = get();
+        const Valuable& v2 = v.get();
         return typeid(v1) == typeid(v2);
     }
     
@@ -926,7 +983,20 @@ namespace math {
 
     Valuable Valuable::varless() const
     {
-        return *this / getVaVal();
+        auto _ = *this / getVaVal();
+        if (_.FindVa()) {
+            if (_.IsProduct()) {
+                Product p;
+                for(auto&& m: Product::cast(_)->GetConstCont()){
+                    if (!m.FindVa()) {
+                        p.Add(std::move(const_cast<Valuable&&>(m)));
+                    }
+                }
+                _ = p;
+            } else
+                IMPLEMENT
+        }
+        return _;
     }
     
     Valuable Valuable::VaVal(const vars_cont_t& v)
@@ -1033,8 +1103,8 @@ namespace math {
     }
     
     Valuable Valuable::NotEquals(const Valuable& v) const {
-        return IfEq(v,1,0);
-        //todo: check: return Equals(v) ^ -1;
+//        return IfEq(v,1,0);
+        return Equals(v) ^ -1;
     }
 
     Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l) const
@@ -1189,6 +1259,11 @@ namespace math {
     Valuable& Valuable::shl(const Valuable& n)
     {
         return *this *= 2_v^n;
+    }
+    
+    Valuable& Valuable::shr(const Valuable& n)
+    {
+        return *this /= 2_v^n;
     }
 
     Valuable Valuable::Shl(const Valuable& n) const

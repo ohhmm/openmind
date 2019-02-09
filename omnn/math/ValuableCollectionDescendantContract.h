@@ -94,14 +94,11 @@ namespace math {
         auto GetFirstOccurence() const
         {
             auto& c = GetConstCont();
-            auto e = c.end();
-            for(auto i = c.begin(); i != e; ++i)
-            {
-                auto v = T::cast(*i);
-                if(v)
-                    return i;
-            }
-            return e;
+            auto i = c.begin();
+            for(auto e = c.end(); i != e; ++i)
+                if(i->template Is<T>())
+                    break;
+            return i;
         }
         
         bool HasValueType(const std::type_info& type) const
@@ -153,36 +150,47 @@ namespace math {
                 c.Add(m(i));
             return c;
         }
-
-        Valuable& eval(const std::map<Variable, Valuable>& with) override {
+ 
+        Valuable::YesNoMaybe IsMultival() const override {
+            if(size()==0) {
+                IMPLEMENT
+            }
+            auto it = begin();
+            auto is = it->IsMultival();
+            if(size()!=1)
+                while(++it != end())
+                    is = is || it->IsMultival();
+            return is;
+        }
+        
+        bool eval(const std::map<Variable, Valuable>& with) override {
+            bool evaluated = {};
             auto& members = GetCont();
             Valuable::SetView(Valuable::View::Calc);
             Chld c;
-            if (true || members.size() < 10) {
-                for(auto&& m:GetCont()){
-                    c.Add(std::move(const_cast<Valuable&&>(m).eval(with)));
+            if (members.size() < 100) {
+                for(auto&& cm:GetCont()){
+                    auto&& m = const_cast<Valuable&&>(cm);
+                    evaluated = m.eval(with) || evaluated;
+                    c.Add(std::move(m));
                 }
             } else {
-                std::deque<std::future<Valuable>> jobs;
+                std::deque<std::future<bool>> jobs;
                 for(auto& m : members) {
-                    jobs.push_back(std::async([&with,
-    //                                           &&m
-                                               item=m
-                                               ]() {
-                        Valuable t = const_cast<Valuable&&>(std::move(item));
-                        return std::move(t.eval(with));
+                    jobs.push_back(std::async(std::launch::async, [&]() {
+                        return const_cast<Valuable&>(m).eval(with);
                     }));
                 }
-                for (auto sz = jobs.size(); sz; ) {
-                    --sz;
+                for(auto&& m : members) {
                     auto& f = jobs.front();
-                    f.wait();
-                    c.Add(f.get());
+//                    f.wait();
+                    evaluated = f.get() || evaluated;
+                    c.Add(std::move(const_cast<Valuable&&>(m)));
                     jobs.pop_front();
                 }
             }
             Valuable::Become(std::move(c));
-            return *this;
+            return evaluated;
         }
         
         void Eval(const Variable& va, const Valuable& v) override

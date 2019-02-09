@@ -70,6 +70,11 @@ namespace math {
         return boost::numeric_cast<uint64_t>(arbitrary);
     }
     
+    Valuable::YesNoMaybe Integer::IsEven() const {
+        return (arbitrary >= 0 ? arbitrary : -arbitrary) & 1 ? YesNoMaybe::No : YesNoMaybe::Yes;
+    }
+
+    
     Valuable Integer::operator -() const
     {
         return Integer(-arbitrary);
@@ -202,11 +207,19 @@ namespace math {
     
     Valuable& Integer::shl(const Valuable& n)
     {
-        if (n.IsInt()) {
-            arbitrary = arbitrary << static_cast<unsigned>(n);
-        } else {
+        if (n.IsInt())
+            arbitrary = arbitrary << static_cast<int>(n);
+        else
             base::shl(n);
-        }
+        return *this;
+    }
+
+    Valuable& Integer::shr(const Valuable& n)
+    {
+        if (n.IsInt())
+            arbitrary = arbitrary >> static_cast<int>(n);
+        else
+            base::shl(n);
         return *this;
     }
 
@@ -244,6 +257,32 @@ namespace math {
         return Integer(~arbitrary);
     }
     
+    std::pair<Valuable,Valuable> Integer::GreatestCommonExp(const Valuable &e) const {
+        // test : 50_v.GCE(2) == 5_v
+        //        32_v.GCE(2) == 4_v
+        //  which is needed to be powered into 2 to get gretest devisor that may be powered into 2 to get devisor of the initial value
+        if(e==1_v)
+            return {*this,*this};
+
+        auto xFactors = Facts();
+        std::sort(xFactors.begin(), xFactors.end());
+        while(xFactors.size() > 1) {
+            auto&& xFactor = std::move(xFactors.back());
+            if(xFactor > 1_v) {
+                if(e == 2_v){
+                    Valuable v = boost::multiprecision::sqrt(xFactor.ca());
+                    if((v^e) == xFactor)
+                        return {v,xFactor};
+                }else{
+                    IMPLEMENT
+//                    auto v = boost::multiprecision::pow(xFactor, 1/e);
+                }
+            }
+            xFactors.pop_back();
+        }
+        return {1_v,1_v};
+    }
+
     Valuable& Integer::operator^=(const Valuable& v)
     {
         if(arbitrary == 0 || (arbitrary == 1 && v.IsInt()))
@@ -252,10 +291,12 @@ namespace math {
                 IMPLEMENT; //NaN
             }
             return *this;
-        } else if (arbitrary == 1 && v.IsSimpleFraction()) {
+        } else if ((arbitrary == 1 || arbitrary == -1) && v.IsSimpleFraction()) {
             auto f = Fraction::cast(v);
-            if(f->getDenominator().bit(0)==1)
+            if(!f->getDenominator().IsEven())
                 return *this;
+            else
+                return Become(Exponentiation{*this,v});
         }
         if(v.IsInt())
         {
@@ -271,6 +312,7 @@ namespace math {
                     if (n == 0_v)
                     {
                         arbitrary = 1;
+                        hash = std::hash<base_int>()(arbitrary);
                         return *this;
                     }
                     auto y = 1_v;
@@ -294,8 +336,7 @@ namespace math {
                     else
                         return Become(std::move(x));
                 } else if (v != 1) {
-                    *this ^= v.abs();
-                    Become(Fraction(1, *this));
+                    return Become(Exponentiation{*this, v});
                 }
             }
             else { // zero
@@ -311,34 +352,80 @@ namespace math {
         else if(v.IsSimpleFraction())
         {
             auto f = Fraction::cast(v);
-            auto n = f->getNumerator();
-            auto dn = f->getDenominator();
+            auto& nu = f->getNumerator();
+            Valuable mn;
+            auto nlz = nu < 0;
+            if(nlz)
+                mn = -nu;
+            auto& n = nlz ? mn : nu;
+            auto dn = nlz ? -f->getDenominator() : f->getDenominator();
 
-            if (n != 1)
+            auto numeratorIsOne = n == 1_v;
+            if (!numeratorIsOne)
                 *this ^= n;
-            if (dn != 1)
-            {
-                Valuable x = *this;
-                auto even = !dn.bit(0);
-                if(even && x<0_v){
-                    auto xFactors = Facts();
-                    std::sort(xFactors.begin(), xFactors.end());
-                    while(xFactors.size()){
-                        auto xFactor = std::move(xFactors.back());
-                        if(xFactor>1_v){
-                            auto f = xFactor ^ v;
-                            if(!f.IsInt())
-                                f /= 1_v ^ v;
-                            if(f.IsInt())
-                                return Become(f*((x/xFactor)^v));
+
+            auto isNeg = operator<(0_v);
+            auto signs = 0; //dimmensions
+            while(dn.IsEven() == YesNoMaybe::Yes) {
+                auto minus = arbitrary < 0;
+                auto _ = boost::multiprecision::sqrt(minus ? -arbitrary : arbitrary);
+                auto _sq = _ * _;
+                if (_sq == boost::multiprecision::abs(arbitrary)){
+                    arbitrary = _;
+    //                Become(isNeg ? -operator-().Sqrt() : Sqrt());
+                    dn /= 2;
+                    ++signs;
+                } else {
+//                    IMPLEMENT
+                    if(n!=1_v)
+                        IMPLEMENT;
+                    auto gce = GreatestCommonExp(dn);
+                    return Become(gce.first*Exponentiation{operator/=(gce.second),n/dn});
+                }
+            }
+            if(signs)
+                hash = std::hash<base_int>()(arbitrary);
+            
+            auto dnSubZ = dn < 0;
+            if(dnSubZ)
+                dn = -dn;
+            if(dn != 1_v) {
+                auto even = dn.IsEven();
+                if(even == YesNoMaybe::Yes){
+                    Valuable x = *this;
+                    if(x<0_v){
+                        Valuable exp;
+                        if (!numeratorIsOne) {
+                            *this ^= n;
+                            exp = 1_v / dn;
                         }
-                        xFactors.pop_back();
+                        auto& exponentiating = numeratorIsOne ? v : exp;
+                        auto xFactors = Facts();
+                        std::sort(xFactors.begin(), xFactors.end());
+                        while(xFactors.size() > 1) {
+                            auto xFactor = std::move(xFactors.back());
+                            if(xFactor > 1_v /* && !operator==(xFactor) */){
+                                auto e = xFactor ^ dn;
+                                if(operator==(e))
+                                    return Become(e*(1_v^exponentiating));
+                                auto f = xFactor ^ exponentiating;
+                                if(!f.IsInt())
+                                    f /= 1_v ^ exponentiating;
+                                if(f.IsInt())
+                                    return Become(f*((x/xFactor)^exponentiating));
+                            }
+                            xFactors.pop_back();
+                        }
+                        IMPLEMENT
                     }
                 }
+//                else if(dn==2_v) {
+//                    return Become(Sqrt()*(1^(1_v/2)));
+//                }
 
                 Valuable nroot;
                 bool rootFound = false;
-                Valuable left =0, right = std::move(x);
+                Valuable left =0, right = *this;
                 
                 while (!rootFound)
                 {
@@ -349,27 +436,31 @@ namespace math {
                         auto result = nroot ^ dn;
                         rootFound = result == *this;
                         if (rootFound)
-                            Become(std::move(nroot));
+                            break;
                         else
                             if (result > *this)
                                 right = nroot;
                             else
                                 left = nroot;
                     }
-                    else
-                        return Become(Exponentiation(*this, 1_v/dn));
+                    else {
+                        nroot = Exponentiation(*this, 1_v/dn);
+                        break;
+                    }
                     // *this ^ 1/dn  == (nroot^dn + t)^ 1/dn
                     // this == nroot^dn +
                     // TODO : IMPLEMENT//return Become(Sum {nroot, (*this-(nroot^dn))^(1/dn)});
                 }
-                if(even)
-                    Become(Exponentiation(1,1_v/2)**this);
+                return Become(std::move(nroot));
+            }
+            if(dnSubZ)
+                Become(1_v / *this);
+            if(signs) {
+                return operator*=((isNeg?-1_v:1_v)^(1_v/(1<<signs)));
             }
         }
         else
-        {
             return Become(Exponentiation(*this, v));
-        }
 
         optimize();
         return *this;
@@ -396,6 +487,11 @@ namespace math {
     {
         auto minus = arbitrary < 0;
         auto _ = boost::multiprecision::sqrt(minus ? -arbitrary : arbitrary);
+        auto _sq = _ * _;
+        if (_sq != boost::multiprecision::abs(arbitrary)){
+            auto d = GreatestCommonExp(2);
+            return (*this / d.second).Sqrt() * d.first;
+        }
         return minus ? constant::i * _ : _;
     }
 

@@ -11,6 +11,7 @@
 #include "π.h"
 
 #include <array>
+#include <chrono>
 #include <future>
 #include <iostream>     // cout, endl
 #include <fstream>      // fstream
@@ -24,7 +25,6 @@
 #include <boost/thread/thread_pool.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <chrono>
 
 template<typename TimeT = std::chrono::milliseconds>
 struct measure
@@ -149,12 +149,11 @@ BOOST_AUTO_TEST_CASE(hello_sudoku_world
         world << sumx.Equals(45) << sumy.Equals(45)
             << mulx.Equals(f) << muly.Equals(f);
     }
-    
-    auto known = world.Solve(value[1][0]);
+
     for (auto x=Sz; x--;) {
         for (auto y=Sz; y--; ) {
-            
-            auto s = world.Solve(value[x][y]);
+            auto& i = value[x][y];
+            auto s = world.Solve(i);
             if (s.size()!=1) {
                 IMPLEMENT
             }else{
@@ -247,9 +246,12 @@ BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
             auto& i = data[rowIdx][colIdx];
             if(!i){
                 auto co = s;
+                auto wasopt = Valuable::optimizations;
+                Valuable::optimizations = true;
                 co.eval({{x, colIdx},{y, rowIdx}});
-//                Valuable::optimizations = true;
-//                co.optimize();
+                std::cout << co.str() << std::endl;
+                co.optimize();
+                Valuable::optimizations = wasopt;
                 auto is = co.IntSolutions(v);
                 if(is.size()==1 && is.begin()->IsInt()){
                     i = static_cast<int>(*is.begin());
@@ -313,7 +315,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
     o.close();
 }
 
-BOOST_AUTO_TEST_CASE(Sudoku_simple_test
+BOOST_AUTO_TEST_CASE(Sudoku_system_test
                      ,*disabled()
 ) // solve sudoku through a system of equations though
 {

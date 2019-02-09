@@ -87,14 +87,16 @@ namespace omnn::math {
             _2.CollectVa(s);
         }
 
-        Valuable& eval(const std::map<Variable, Valuable>& with) override {
-            Valuable::optimized={};
-            _1.eval(with);
-            _2.eval(with);
-            //        optimize();
-            // or
-            Valuable::hash = _1.Hash() ^ _2.Hash();
-            return *this;
+        bool eval(const std::map<Variable, Valuable>& with) override {
+            auto evaluated = _1.eval(with);
+            evaluated = _2.eval(with) || evaluated;
+            if(evaluated){
+                Valuable::optimized={};
+                this->optimize();
+                // or
+                //            Valuable::hash = _1.Hash() ^ _2.Hash();
+            }
+            return evaluated;
         }
 
         void Eval(const Variable& va, const Valuable& v) override {
@@ -108,6 +110,41 @@ namespace omnn::math {
 
         max_exp_t getMaxVaExp()  const override {
             return Chld::getMaxVaExp(_1, _2);
+        }
+        
+        Valuable::YesNoMaybe IsMultival() const override {
+            return _1.IsMultival() || _2.IsMultival();
+        }
+        
+        void Values(const std::function<bool(const Valuable&)>& f) const override
+        {
+            if (f) {
+                if(this->IsSimpleFraction()){
+                    f(*this);
+                    return;
+                }
+                auto cache = Valuable::optimized;
+                // TODO: multival caching (inspect all optimized and optimization transisions) auto isCached = cach
+                
+                
+                Valuable::solutions_t vals, thisValues;
+                _1.Values([&](auto& thisVal){
+                    thisValues.insert(thisVal);
+                    return true;
+                });
+                
+                _2.Values([&](auto&vVal){
+                    for(auto& tv:thisValues){
+                        Valuable v = Chld{tv,vVal};
+                        v.optimize();
+                        vals.insert(std::move(v));
+                    }
+                    return true;
+                });
+                
+                for(auto& v:vals)
+                    f(v);
+            }
         }
     };
 }

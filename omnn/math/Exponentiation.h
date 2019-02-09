@@ -18,6 +18,8 @@ protected:
     std::ostream& code(std::ostream& out) const override;
 public:
     bool IsExponentiation() const override { return true; }
+    YesNoMaybe IsMultival() const override;
+    void Values(const std::function<bool(const Valuable&)>&) const override;
     const Valuable& ebase() const { return _1; }
     const Valuable& eexp() const { return _2; }
     Valuable& ebase() { return base::_1; }
@@ -34,6 +36,7 @@ public:
     Valuable& operator *=(const Valuable& v) override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator ^=(const Valuable&) override;
+    bool operator ==(const Valuable&) const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable I(const Variable& x, const Variable& C) const override;

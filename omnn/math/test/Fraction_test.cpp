@@ -4,6 +4,7 @@
 #include "Fraction.h"
 
 using namespace omnn::math;
+using namespace boost::unit_test_framework;
 
 std::string l(const omnn::math::Valuable& v)
 {
@@ -32,7 +33,8 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     Valuable _ = 3.1_v;
     BOOST_TEST(Fraction::cast(_));
 
-    BOOST_TEST((1_v/2)^2_v == 1_v/4);
+    _ = (1_v/2)^2_v;
+    BOOST_TEST(_ == 1_v/4);
     
     Variable v1, v2;
     _ = 1_v / (1_v / v1);
@@ -44,6 +46,31 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     _.optimize();
     BOOST_TEST(_ == -2040_v/v2);
     
+    BOOST_TEST((Fraction{1,-2}).operator<(0));
+
+    _ = 1_v^(1_v/2);
+    auto eq = _ == (1_v^(1_v/2));
+    BOOST_TEST(eq);
+    BOOST_TEST((_.IsMultival() == Valuable::YesNoMaybe::Yes));
+    _ /= 1_v^(1_v/2);
+    BOOST_TEST((_.IsMultival() == Valuable::YesNoMaybe::Yes));
+    eq = _ == (1_v^(1_v/2));
+    BOOST_TEST(eq);
 }
 
-
+BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests
+                     ,*disabled()
+                     )
+{
+    auto _ = 841_v/64;
+    _ ^= 1_v/2;
+    auto a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
+    a.optimize();
+    
+    for (int i=38; i --> 1; ) {
+        Valuable sh(1<<i);
+        _ = 1_v^(1_v/sh);
+        _ /= _;
+        BOOST_TEST(_ == 1_v^(1_v/sh));
+    }
+}

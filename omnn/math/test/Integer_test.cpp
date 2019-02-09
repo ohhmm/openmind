@@ -5,7 +5,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "Integer.h"
-#include "Valuable.h"
+#include "Fraction.h"
 
 #include <iostream>
 #include <chrono>
@@ -29,6 +29,7 @@ struct measure
 
 using namespace std;
 using namespace omnn::math;
+using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(BaseInt_tests)
 {
@@ -45,6 +46,45 @@ BOOST_AUTO_TEST_CASE(BaseInt_tests)
     --++_1;
     BOOST_TEST(!_1);
     BOOST_TEST(_1 == 0_v);
+}
+BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test
+                     ,*disabled()
+                     )
+{
+    Integer::base_int i = 32;
+    auto sq = boost::multiprecision::sqrt(i);
+    BOOST_TEST(sq*sq==i);
+}
+
+BOOST_AUTO_TEST_CASE(Integer_exptests)
+{
+    auto a=25_v;
+    a ^= 1_v/2;
+    BOOST_TEST(a==5_v*(1_v^(1_v/2)));
+    
+    a=-25_v;
+    a ^= 1_v/2;
+    BOOST_TEST(a==5_v*((-1_v)^(1_v/2)));
+    
+    a=25_v;
+    a ^= 1_v/-2;
+    BOOST_TEST(a==(1_v/5)*((1_v)^(1_v/2)));
+    
+    a=25_v;
+    a ^= -1_v/2;
+    BOOST_TEST(a==(1_v/5)*((1_v)^(1_v/2)));
+
+    a=-25_v;
+    a ^= 1_v/-2;
+    BOOST_TEST(a==(1_v/5)*((-1_v)^(1_v/2)));
+    
+    a=-25_v;
+    a ^= -1_v/2;
+    BOOST_TEST(a==(1_v/5)*((-1_v)^(1_v/2)));
+    
+    a=-25_v;
+    a ^= Fraction{-1,-2};
+    BOOST_TEST(a==5_v*((-1_v)^(1_v/2)));
 }
 
 BOOST_AUTO_TEST_CASE(Integer_tests)
@@ -117,4 +157,11 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
         BOOST_TEST(t==sqroot);
     }
 
+    auto _ = 4_v;
+    _ ^= 1_v/2;
+    BOOST_TEST(_.Sq()==4_v);
+    BOOST_TEST(_==2*((1)^(1_v/2)));
+    auto _1 = _;
+    _ *= _1;
+    BOOST_TEST(_==4_v);
 }
