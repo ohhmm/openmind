@@ -10,7 +10,7 @@
 #include "Integer.h"
 #include "Modulo.h"
 #include "Product.h"
-#include "π.h"
+#include "pi.h"
 #include "System.h"
 #include "VarHost.h"
 

@@ -54,17 +54,11 @@ namespace math {
     
     void implement();
 
-#ifdef BOOST_TEST_MODULE
-#define protected public
-#endif
 
 class Valuable
         : public OpenOps<Valuable>
 {
-#ifdef BOOST_TEST_MODULE
-public:
-#endif
-	using self = Valuable;
+    using self = Valuable;
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
 
@@ -282,6 +276,7 @@ public:
     zero_zone_t get_zeros_zones(const Variable& v, solutions_t& some) const;
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
+    friend std::istream& operator>>(std::istream& in, const Valuable& obj);
 
     virtual max_exp_t getMaxVaExp()  const;
     using vars_cont_t = std::map<Variable, Valuable>;

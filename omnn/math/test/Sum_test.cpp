@@ -260,16 +260,25 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     
 }
 
+class Pub : public Valuable
+{
+    using base = Valuable;
+public:
+    auto e() { return getInst(); }
+    void so(bool o) { optimized = o; }
+    using base::get;
+};
+
 BOOST_AUTO_TEST_CASE(Become_tests)
 {
     Variable v;
     Valuable f = 1_v/2;
     auto s = f+v;
-    
-    BOOST_TEST(reinterpret_cast<Valuable*>(&s)->exp);
+    auto pub = reinterpret_cast<Pub*>(&s);
+    BOOST_TEST(pub->e());
     auto isValuableType = typeid(s)==typeid(Valuable);
     BOOST_TEST(isValuableType);
-    auto isInnerSum = typeid(*s.exp.get())==typeid(Sum);
+    auto isInnerSum = typeid(pub->e().get())==typeid(Sum);
     BOOST_TEST(isInnerSum);
 }
 
@@ -297,7 +306,7 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     BOOST_TEST(sol == sol_t({_1,_2,_3}));
     auto s = Valuable::MergeOr(Valuable::MergeOr(_1,_2),_3);
     auto x = equation(v);
-    x.get().optimized = {};
+    reinterpret_cast<Pub*>(&reinterpret_cast<Pub*>(&x)->get())->so({});
     x.optimize(); //TODO : complete optimization for uncomment
 //    BOOST_TEST(s == x); // TODO: uncomment when complete optimization of x
     
@@ -342,6 +351,11 @@ BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang
     auto _ = _1/_2; // hang
 //    BOOST_TEST(_.IsFraction());
     BOOST_TEST(_1/_2 == (((va^2)-va*2+1)/((va^2)-1)));
+
+	auto p = (va + 5) / (va + 1);
+	p.Eval(va, 2);
+	p.optimize();
+	BOOST_TEST(7_v / 3 == p);
 }
 
 BOOST_AUTO_TEST_CASE(Modulo_test)

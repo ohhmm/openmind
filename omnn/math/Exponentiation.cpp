@@ -6,7 +6,7 @@
 #include "e.h"
 #include "i.h"
 #include "Infinity.h"
-#include "π.h"
+#include "pi.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"

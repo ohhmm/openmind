@@ -6,3 +6,4 @@ build*
 /.vs
 /.idea
 /cmake-build-debug
+*.user

@@ -15,8 +15,8 @@ BOOST_AUTO_TEST_CASE(Stasis
                      ,*disabled()
                      ) // Solve magic square
 {
-    constexpr uint Sz = 5;
-    constexpr uint m = (Sz*(Sz*Sz+1))/2;
+    constexpr auto Sz = 5;
+    constexpr auto m = (Sz*(Sz*Sz+1))/2;
     auto& x = "x"_va;
     auto& y = "y"_va;
     auto& v = "v"_va;

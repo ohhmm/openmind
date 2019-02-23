@@ -230,8 +230,8 @@ namespace math {
             }else{
                 IMPLEMENT
             }
+            return x;
         }
-        return (x);
     }
 
     Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
