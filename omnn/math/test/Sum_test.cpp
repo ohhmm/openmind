@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(Become_tests)
     BOOST_TEST(pub->e());
     auto isValuableType = typeid(s)==typeid(Valuable);
     BOOST_TEST(isValuableType);
-    auto isInnerSum = typeid(pub->e().get())==typeid(Sum);
+    auto isInnerSum = typeid(pub->get())==typeid(Sum);
     BOOST_TEST(isInnerSum);
 }
 

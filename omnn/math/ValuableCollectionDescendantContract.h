@@ -227,6 +227,7 @@ namespace math {
         {
             Delete(it);
             it=Add(v, it);
+            Valuable::optimized = {};
         }
 
         virtual void Delete(iterator& it)
@@ -234,6 +235,7 @@ namespace math {
             Valuable::hash ^= it->Hash();
             auto& c = GetCont();
             c.erase(it++);
+            Valuable::optimized = {};
         }
 
         bool operator ==(const Valuable& v) const override

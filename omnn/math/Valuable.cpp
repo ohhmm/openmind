@@ -457,8 +457,8 @@ namespace math {
             }
             return *this;
         }
-        else
-            IMPLEMENT
+        else // a - (n * int(a/n))
+            IMPLEMENT // https://math.stackexchange.com/a/2027475/118612
     }
 
     Valuable& Valuable::operator--()
@@ -1277,12 +1277,10 @@ namespace math {
             IMPLEMENT
         }
 
-        if (n>1)
-            return Shr(n-1).Shr();
-        else if (n!=0)
-            return Shr();
-        else
-            return *this;
+        if (n<0)
+            IMPLEMENT
+
+        return *this / (2_v^n);
     }
     
     Valuable Valuable::Shr() const

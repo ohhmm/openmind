@@ -41,6 +41,8 @@ public:
         this->makeTotalEqu = makeTotalEqu;
     }
 
+    Valuable Total() const { return sqs; }
+    
 private:
     expressions equs;
     v_es_t vEs;

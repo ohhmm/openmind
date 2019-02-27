@@ -28,6 +28,8 @@ include_directories(${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/boost/multiprecision/include
 )
 
+find_package(git)
+
 #find_package(OpenMP)
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -60,24 +62,28 @@ else()
 
     if(WIN32)
         set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
-        separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
-        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
+        set(BOOST_EXT_CONFIGURE "bootstrap.bat msvc")
+        set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
     else()
         set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
         separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
     endif()
     message("ExternalProject_Add ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
     if(_IS_DEBUG)
-        ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
+        ExternalProject_Add(boost
+            GIT_REPOSITORY https://github.com/boostorg/boost.git
+            GIT_TAG boost-1.69.0
+            #GIT_SUBMODULES ${BOOST_USED_COMPONENTS}
             BUILD_IN_SOURCE 1
-            CONFIGURE_COMMAND "" #${BOOST_EXT_CONFIGURE}
-            BUILD_COMMAND ${BOOST_BUILD_COMMAND}
+            LOG_CONFIGURE 1
+            CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
+            BUILD_COMMAND ${BOOST_BUILD_COMMAND} headers
             INSTALL_COMMAND ""
             )
     else()
         ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
             BUILD_IN_SOURCE 1
-            CONFIGURE_COMMAND "" #${BOOST_EXT_CONFIGURE}
+            CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
             BUILD_COMMAND ${BOOST_BUILD_COMMAND}
             INSTALL_COMMAND ""
             UPDATE_COMMAND ""

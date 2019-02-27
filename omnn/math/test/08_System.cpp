@@ -103,6 +103,7 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
         << g*250+b*6000+c*4000-40000;
     
     // c,g,b are integers, see https://math.stackexchange.com/a/1598552/118612
+    // TODO : try (x mod 1) or cos(2*PI*x) instead
     using namespace constant;
     s   << (e^(2*π*i*c))-1
         << (e^(2*π*i*g))-1
