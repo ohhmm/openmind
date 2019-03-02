@@ -101,7 +101,7 @@ public:
     bool IsInt() const override { return true; }
     YesNoMaybe IsEven() const override;
     YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
-    void Values(const std::function<bool(const Valuable&)>& f) const { f(*this); }
+    void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
     
     // virtual operators 
     Valuable operator -() const override;
@@ -137,6 +137,7 @@ public:
     Valuable Not(const Valuable& n) const override;
     Valuable& shl(const Valuable& n) override;
     Valuable& shr(const Valuable& n) override;
+    Valuable& shr() override { return shr(1); }
     Valuable Shr() const override;
     Valuable Shr(const Valuable& n) const override;
     

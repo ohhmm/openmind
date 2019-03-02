@@ -155,6 +155,7 @@ public:
     friend YesNoMaybe operator&&(YesNoMaybe, YesNoMaybe);
 
     static thread_local bool optimizations;
+    static thread_local bool bit_operation_optimizations;
     static thread_local bool enforce_solve_using_rational_root_test_only;
 
     explicit Valuable(Valuable* v);
@@ -321,6 +322,7 @@ public:
     virtual Valuable Not(const Valuable& n) const;
     virtual Valuable& shl(const Valuable& n);
     virtual Valuable& shr(const Valuable& n);
+    virtual Valuable& shr();
     virtual Valuable Shl(const Valuable& n) const;
     virtual Valuable Shr(const Valuable& n) const;
     virtual Valuable Shr() const;

@@ -494,6 +494,11 @@ namespace math {
         
         char vp[sizeof(Product)];
         auto isSameType = v.IsProduct();
+        if(!isSameType)
+        {
+            static const ProductOrderComparator oc;
+            return oc(*this,v);
+        }
         auto p = isSameType ? cast(v) : new(vp) Product{v};
         auto d = [isSameType](const Product* _){
             if (!isSameType && _){
@@ -504,6 +509,8 @@ namespace math {
         if (p)
         {
             if (vme != p->getMaxVaExp()) {
+                std::cout << vme << std::endl;
+                std::cout << p->getMaxVaExp() << std::endl;
                 IMPLEMENT
             }
 

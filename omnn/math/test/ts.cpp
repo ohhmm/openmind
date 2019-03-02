@@ -85,89 +85,10 @@ BOOST_AUTO_TEST_CASE(TS_1d)
     auto sumSqLens=SumSqLens();
 }
 
-//BOOST_AUTO_TEST_CASE(TS_1d_system,*disabled())
-//{
-//    System s;
-//    s.MakeTotalEqu(true);
-//    // y=f(x), where x is code of sequence
-//
-//    Variable time, price;
-//    int points[] = {
-//        10,1,30,5
-//    };
-//    int sz = std::size(points);
-//    int encodeBits = bits(sz);
-//    int mask = (1 << encodeBits) - 1;
-//
-//    Variable moves[sz]; // move is next point id
-//    Variable idx[sz], val[sz];
-//    Variable movelenv[sz];
-//    // example, point[0]=10, point[1]=1 : move[0]=1 describes first move made from point[0] to point[1]
-//    // move[1]=0 describes next move from point[1] to point[0]
-//    // move[i]!=move[i+1]
-//    // this is encoded layout in x for y(x)=(sum of shifted moves)
-//    Valuable code;
-//    for (int i = 0; i < sz; ++i) {
-//        code += moves[i].shl(encodeBits*i);
-//        s << idx[i].Equals(i) << val[i].Equals(points[i]);
-//    }
-//    for (int i = 1; i < sz; ++i) {
-//        s << moves[1].NotEquals(moves[2]);
-//    }
-//
-//    Variable x;
-//    s << x.Equals(code);
-//
-//    auto max = [](Valuable v1, Valuable v2) {
-//        return v1.IfLess(v2, v2, v1);
-//    };
-//    auto min = [](Valuable v1, Valuable v2) {
-//        return v1.IfLess(v2, v1, v2);
-//    };
-//
-//    auto distance = [&](int i1, int i2){
-//        return max(val[i1],val[i2])-min(val[i1],val[i2]);
-//    };
-//
-//    auto movelen =[&](int i){
-//        ++i;
-//        return x.And(encodeBits*i, mask<<(i*encodeBits)).shr(i-1);
-//    };
-//
-//    auto lastIdx = sz-1;
-//    s << movelenv[lastIdx].Equals(distance(0,lastIdx));
-//    for (int i = lastIdx; i > 0; --i) {
-//        s << movelenv[i].Equals(distance(i,i-1));
-//    }
-//
-//    auto sqlen=[&](int i1, int i2){
-//        return (moves[i1]-moves[i2])^2;
-//    };
-//
-//    Valuable sqlensum;
-//    for (int i = 1; i<sz; ++i) {
-//        sqlensum += movelen(i,i-1);
-//    }
-//
-//    Variable lenv;
-//    s << lenv.Equals(len);
-//
-//    auto y = s.Total();
-//
-//
-//    auto extremums = (y).d(x)(x);
-//    auto longest = extremums.Top();
-//
-//
-////    auto unix = xpath.equals((xmove[0] << (2 * 2)) + (xmove[1] << 2) + xmove[2]);
-////    auto uniy = ypath.equals((xmove[0] << (2 * 2)) + (xmove[1] << 2) + xmove[2]);
-////
-//    //    auto xext = unix(
-//
-//
-//}
 
-BOOST_AUTO_TEST_CASE(TS_2d)
+BOOST_AUTO_TEST_CASE(TS_2d
+                     ,*disabled()
+                     )
 {
 	Variable time, price;
     std::pair<Valuable,Valuable> points[] = {
@@ -185,5 +106,5 @@ BOOST_AUTO_TEST_CASE(TS_2d)
 
 //    auto xext = unix(
     
-
+IMPLEMENT
 }

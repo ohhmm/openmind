@@ -49,6 +49,7 @@ namespace math {
     }
 
     thread_local bool Valuable::optimizations = true;
+    thread_local bool Valuable::bit_operation_optimizations = {};
     thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
     
     
@@ -108,7 +109,7 @@ namespace math {
 
     Valuable::operator std::type_index() const
     {
-        return exp ? static_cast<std::type_index>(*exp) : std::type_index(typeid(*this));
+        return std::type_index(typeid(get()));
     }
     
     Valuable& Valuable::Become(Valuable&& i)
@@ -207,6 +208,11 @@ namespace math {
     Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
     Valuable::Valuable(boost::rational<a_int>&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
 
+    Variable x,a,b,c;
+//    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, 1_v/2)-b)/(a*2));
+//    auto aMergeOrF = MergeOrF(a);
+//    auto bMergeOrF = MergeOrF(b);
+//    auto cMergeOrF = MergeOrF(c);
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2)
     {
         if(v1.IsInt() && v2.IsInt()
@@ -1194,7 +1200,7 @@ namespace math {
             s += bit(i)*v.bit(i);
         }
         optimizations = ow;
-        if (ow) {
+        if (ow && bit_operation_optimizations) {
             s.optimize();
         }
         return s;
@@ -1213,7 +1219,7 @@ namespace math {
             s += _1+_2-_1*_2;
         }
         optimizations = ow;
-        if (ow) {
+        if (ow && bit_operation_optimizations) {
             s.optimize();
         }
         return s;
@@ -1232,7 +1238,7 @@ namespace math {
             s += (_1+_2).bit(0);
         }
         optimizations = ow;
-        if (ow) {
+        if (ow && bit_operation_optimizations) {
             s.optimize();
         }
         return s;
@@ -1250,7 +1256,7 @@ namespace math {
             s += (_1).bit(0);
         }
         optimizations = ow;
-        if (ow) {
+        if (ow && bit_operation_optimizations) {
             s.optimize();
         }
         return s;
@@ -1263,7 +1269,21 @@ namespace math {
     
     Valuable& Valuable::shr(const Valuable& n)
     {
-        return *this /= 2_v^n;
+        if(!n.IsInt()){
+            IMPLEMENT
+        }
+        
+        if (n>1)
+            return shr(n-1).shr();
+        else if (n!=0)
+            return shr();
+        else
+            return *this;
+    }
+    
+    Valuable& Valuable::shr()
+    {
+        return operator+=(-bit(0)).operator/=(2);
     }
 
     Valuable Valuable::Shl(const Valuable& n) const
@@ -1273,14 +1293,8 @@ namespace math {
 
     Valuable Valuable::Shr(const Valuable& n) const
     {
-        if(!n.IsInt()){
-            IMPLEMENT
-        }
-
-        if (n<0)
-            IMPLEMENT
-
-        return *this / (2_v^n);
+        auto v = Valuable(get());
+        return v.shr(n);
     }
     
     Valuable Valuable::Shr() const
@@ -1304,7 +1318,7 @@ namespace math {
             s += bit(i) * (2^(shi));
         }
         optimizations = ow;
-        if (ow) {
+        if (ow && bit_operation_optimizations) {
             s.optimize();
         }
         return s;

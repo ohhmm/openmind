@@ -762,6 +762,13 @@ namespace math {
                     if (getExponentiation()<0 == e->getExponentiation()<0) {
                         IMPLEMENT
                     }
+                } else if (getExponentiation().IsSum()) {
+                    auto sz = getExponentiation().as<Sum>().size();
+                    auto diff = getExponentiation() - e->getExponentiation();
+                    if (!diff.IsSum() || diff.as<Sum>().size() < sz)
+                        c = v;
+                } else if (e->getExponentiation().IsSum()) {
+                    c = e->InCommonWith(*this);
                 } else {
                     IMPLEMENT
                 }
@@ -772,7 +779,7 @@ namespace math {
         } else if (getExponentiation().IsFraction()) {
         } else if (v.IsVa()) {
             c = v.InCommonWith(*this);
-        } else if (v.IsInt()) {
+        } else if (v.IsInt() || v.IsSimpleFraction()) {
         } else if (getExponentiation().IsVa()) {
         } else {
             IMPLEMENT
