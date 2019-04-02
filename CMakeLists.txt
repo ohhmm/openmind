@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+﻿cmake_minimum_required(VERSION 3.0)
 set(PRODUCT_NAME "OpenMind")
 project(${PRODUCT_NAME})
 enable_language(CXX)
@@ -14,6 +14,7 @@ option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
+option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
 
 include(ExternalData)
 include(ExternalProject)
@@ -22,6 +23,9 @@ add_definitions(
     -DBOOST_SYSTEM_NO_DEPRECATED
     -DBOOST_ERROR_CODE_HEADER_ONLY
 )
+if(MSVC)
+    add_definitions(/source-charset:utf-8) #include "pi.h"
+endif()
 
 include_directories(${CMAKE_SOURCE_DIR}
 #    ${CMAKE_SOURCE_DIR}/boost/gil/include
@@ -116,8 +120,11 @@ IF (Boost_FOUND)
     endif()
 ENDIF()
 
-find_package(opencl)
-include_directories(${OPENCL_INCLUDE_DIR})
+if(${OPENMIND_USE_OPENCL})
+	find_package(opencl)
+	include_directories(${OPENCL_INCLUDE_DIR})
+	add_definitions(-DOPENMIND_USE_OPENCL)
+endif()
 
 if (${OPENMIND_BUILD_TESTS})
     enable_testing()

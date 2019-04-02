@@ -40,7 +40,9 @@ void random_shuffle( It f, It l )
 }
 }
 #endif
+#ifdef OPENMIND_USE_OPENCL
 #include <boost/compute.hpp>
+#endif
 
 namespace omnn{
 namespace math {
@@ -1178,7 +1180,7 @@ namespace math {
             std::stack<Valuable> diffs;
             {
             Valuable d = *this;
-            for(int g = grade; g --> 1 ;){
+            for(auto g = grade; g --> 1 ;){
                 d.d(va);
                 diffs.push(d);
             }
@@ -1629,7 +1631,8 @@ namespace math {
             }
             default: {
                 // build OpenCL kernel
-                using namespace boost::compute;
+#ifdef OPENMIND_USE_OPENCL
+				using namespace boost::compute;
                 auto copy = *this;
                 copy.optimize();
                 std::stringstream source;
@@ -1774,6 +1777,7 @@ namespace math {
                 else
                     IMPLEMENT;
                 break;
+#endif
             }
         }
     }

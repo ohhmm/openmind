@@ -28,7 +28,9 @@ namespace std {
     }
 }
 #endif
+#ifdef OPENMIND_USE_OPENCL
 #include <boost/compute.hpp>
+#endif
 #include <boost/functional/hash.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
@@ -587,7 +589,6 @@ namespace math {
 
     bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, const Valuable& max, const zero_zone_t& zz) const
     {
-        using namespace boost::compute;
         auto h = arbitrary;
         if(h < 0)
             h = -h;

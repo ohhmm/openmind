@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(TS_1d)
         auto targetId = x.And((i+1)*encodeBits,mask<<(i*encodeBits)).shr(i*encodeBits);
         return targetId;
     };
-    // last mobe back to start
+    // last move back to start
     auto statement = ExtractMove(sz-1).Equals(0);
 //    s << statement;
     sys.logic_and(statement);
