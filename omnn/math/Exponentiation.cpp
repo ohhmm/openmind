@@ -173,10 +173,10 @@ namespace math {
         if (ebase().Is_e()) {
             if (eexp().IsProduct()) {
                 auto p = Product::cast(eexp());
-                if (p->Has(constant::π) && p->Has(constant::i)) { // TODO : sequence does metter
+                if (p->Has(constant::pi) && p->Has(constant::i)) { // TODO : sequence does metter
 //                    ebase() = -1;
 //                    eexp() /= constant::i;
-//                    eexp() /= constant::π;
+//                    eexp() /= constant::pi;
                 }
             }
         }

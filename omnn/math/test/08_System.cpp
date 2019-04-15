@@ -105,9 +105,9 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
     // c,g,b are integers, see https://math.stackexchange.com/a/1598552/118612
     // TODO : try (x mod 1) or cos(2*PI*x) instead
     using namespace constant;
-    s   << (e^(2*π*i*c))-1
-        << (e^(2*π*i*g))-1
-        << (e^(2*π*i*b))-1
+    s   << (e^(2*pi*i*c))-1
+        << (e^(2*pi*i*g))-1
+        << (e^(2*pi*i*b))-1
     ;
     auto _ = s.Solve(c);
 //    auto cc = s.SolveSingleInteger(c);
@@ -521,9 +521,9 @@ BOOST_AUTO_TEST_CASE(Sudoku_test
 
     // x,y,v are integers, see https://math.stackexchange.com/a/1598552/118612
     //    using namespace constant;
-    //    s   << (e^(2*π*i*x))-1
-    //        << (e^(2*π*i*y))-1
-    //        << (e^(2*π*i*v))-1
+    //    s   << (e^(2*pi*i*x))-1
+    //        << (e^(2*pi*i*y))-1
+    //        << (e^(2*pi*i*v))-1
     //    ;
     
     // inequality in squares

@@ -108,7 +108,7 @@ protected:
     
     size_t hash = 0;
     size_t sz = sizeof(Valuable);
-    max_exp_t maxVaExp = 0; // ordering weight: vars max exponentiation in this valuable
+    max_exp_t maxVaExp = max_exp_t(0); // ordering weight: vars max exponentiation in this valuable
     
     std::function<Valuable()> DefaultCachedFn() {
         return [this]()->Valuable{
@@ -186,12 +186,11 @@ public:
     Valuable(Valuable&&) = default;
     
     Valuable(double d);
-    Valuable(int i = 0);
-    Valuable(const long);
-    Valuable(unsigned);
-    Valuable(unsigned long);
-    Valuable(unsigned long long);
+    Valuable(int32_t i = 0);
+    //Valuable(const int32_t);
+    Valuable(uint32_t);
 	Valuable(int64_t);
+	Valuable(uint64_t);
     Valuable(const a_int&);
     Valuable(a_int&&);
     Valuable(boost::rational<a_int>&&);
@@ -230,7 +229,7 @@ public:
     virtual bool IsMInfinity() const;
     virtual bool Is_e() const;
     virtual bool Is_i() const;
-    virtual bool Is_π() const;
+    virtual bool Is_pi() const;
     virtual YesNoMaybe IsEven() const;
     virtual YesNoMaybe IsMultival() const;
     virtual void Values(const std::function<bool(const Valuable&)>&) const;

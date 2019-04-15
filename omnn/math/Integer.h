@@ -42,32 +42,9 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
 
-    Integer(const long i)
+    template<class IntT>
+    Integer(typename std::enable_if<std::is_integral<IntT>::value>::type i)
     : arbitrary(i)
-    {
-        hash = std::hash<base_int>()(arbitrary);
-    }
-    
-    Integer(unsigned long i)
-    : arbitrary(i)
-    {
-        hash = std::hash<base_int>()(arbitrary);
-    }
-    
-    Integer(unsigned i)
-    : arbitrary(i)
-    {
-        hash = std::hash<base_int>()(arbitrary);
-    }
-    
-    Integer(unsigned long long i)
-    : arbitrary(i)
-    {
-        hash = std::hash<base_int>()(arbitrary);
-    }
-    
-    Integer(int64_t i)
-        : arbitrary(i)
     {
         hash = std::hash<base_int>()(arbitrary);
     }

@@ -25,24 +25,6 @@
 #include <thread>
 #include <type_traits>
 
-#ifndef NDEBUG
-# define BOOST_COMPUTE_DEBUG_KERNEL_COMPILATION
-#endif
-#if __cplusplus >= 201700
-#include <random>
-namespace std {
-template< class It >
-void random_shuffle( It f, It l )
-{
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(f, l, g);
-}
-}
-#endif
-#ifdef OPENMIND_USE_OPENCL
-#include <boost/compute.hpp>
-#endif
 
 namespace omnn{
 namespace math {

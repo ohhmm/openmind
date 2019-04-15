@@ -67,7 +67,7 @@ public:
     Valuable operator()(const Variable& va, const Valuable& augmentation) const override;
     
     using base::base;
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__GNUC__)
     Sum() = default;
 #endif
     
