@@ -18,6 +18,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #if __cplusplus >= 201700
 #include <random>
+#ifndef __GNUC__
 namespace std {
     template< class It >
     void random_shuffle( It f, It l )
@@ -27,6 +28,7 @@ namespace std {
         std::shuffle(f, l, g);
     }
 }
+#endif
 #endif
 #ifdef OPENMIND_USE_OPENCL
 #include <boost/compute.hpp>

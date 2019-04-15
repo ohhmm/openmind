@@ -198,13 +198,12 @@ namespace math {
     }
 
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
-    Valuable::Valuable(int i) : exp(new Integer(i)) {}
+    Valuable::Valuable(int32_t i) : exp(new Integer(i)) {}
+    //Valuable::Valuable(const int32_t i) : exp(new Integer(i)) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
     Valuable::Valuable(a_int&& i) : exp(new Integer(std::move(i))) {}
-    Valuable::Valuable(const long i) : exp(new Integer(i)) {}
-    Valuable::Valuable(unsigned i) : exp(new Integer(i)) {}
-    Valuable::Valuable(unsigned long i) : exp(new Integer(i)) {}
-    Valuable::Valuable(unsigned long long i) : exp(new Integer(i)) {}
+    Valuable::Valuable(uint32_t i) : exp(new Integer(i)) {}
+    Valuable::Valuable(uint64_t i) : exp(new Integer(i)) {}
     Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
     Valuable::Valuable(boost::rational<a_int>&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
 
@@ -763,7 +762,7 @@ namespace math {
     bool Valuable::IsMInfinity() const { return exp && exp->IsMInfinity(); }
     bool Valuable::Is_e() const { return exp && exp->Is_e(); }
     bool Valuable::Is_i() const { return exp && exp->Is_i(); }
-    bool Valuable::Is_π() const { return exp && exp->Is_π(); }
+    bool Valuable::Is_pi() const { return exp && exp->Is_pi(); }
 
     Valuable::YesNoMaybe Valuable::IsMultival() const {
         if(exp)

@@ -18,12 +18,12 @@ namespace omnn::math {
     public:
         using base::base;
 
-        bool Is_π() const override { return true; }
+        bool Is_pi() const override { return true; }
         bool operator==(const Valuable& v) const override
-        { return v.Is_π(); }
+        { return v.Is_pi(); }
     };
 
     namespace constant {
-        const Pi π;
+        const Pi pi;
     }
 }
