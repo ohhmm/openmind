@@ -32,6 +32,8 @@ public:
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable&) override;
     Valuable& operator *=(const Valuable&) override;
+    bool MultiplyIfSimplifiable(const Valuable& v) override;
+    std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
     Valuable& operator /=(const Valuable&) override;
     Valuable& operator %=(const Valuable&) override;
     Valuable& operator ^=(const Valuable&) override;
@@ -47,6 +49,7 @@ public:
     bool IsVa() const override { return true; }
     YesNoMaybe IsMultival() const override { return YesNoMaybe::Maybe; }
     bool IsComesBefore(const Valuable& v) const override;
+    a_int Complexity() const override { return 1; }
     
     const Variable* FindVa() const override { return this; }
     bool HasVa(const Variable& va) const override { return operator==(va); }

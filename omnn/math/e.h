@@ -26,6 +26,6 @@ namespace omnn::math {
     };
 
     namespace constant {
-        const Euler e;
+        static const Euler e;
     }
 }

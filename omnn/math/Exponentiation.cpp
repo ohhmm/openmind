@@ -382,7 +382,10 @@ namespace math {
             return {};
         };
         if (v.IsExponentiation()
-            && ebase() == (e = cast(v))->getBase())
+            && ebase() == (e = &v.as<Exponentiation>())->getBase()
+            && (eexp().IsInt() || eexp().IsSimpleFraction()) && eexp() > 0
+            && (e->eexp().IsInt() || e->eexp().IsSimpleFraction()) && e->eexp() > 0
+            )
         {
             eexp() += e->getExponentiation();
             optimized={};
@@ -435,6 +438,57 @@ namespace math {
 
         optimize();
         return *this;
+    }
+
+    bool Exponentiation::MultiplyIfSimplifiable(const Valuable& v)
+    {
+        auto is = v == getBase();
+        if (is) {
+            ++eexp();
+            optimized = {};
+            optimize();
+        } else if (v.IsExponentiation()) {
+            auto& vexpo = v.as<Exponentiation>();
+            is = vexpo.getBase() == getBase();
+            if (is) {
+                eexp() += vexpo.eexp();
+                optimized = {};
+                optimize();
+            } // TODO : else if ? (base^2 == v.base)
+        } else if (v.IsInt()) {
+            IMPLEMENT
+        } else {
+//            std::cout << str() << " * " << v.str() << std::endl;
+        }
+        return is;
+    }
+
+    std::pair<bool,Valuable> Exponentiation::IsMultiplicationSimplifiable(const Valuable& v) const
+    {
+        std::pair<bool,Valuable> is;
+        is.first = v == getBase();
+        if (is.first) {
+            is.second = getBase() ^ (getExponentiation()+1);
+        } else if (v.IsExponentiation()) {
+            auto& vexpo = v.as<Exponentiation>();
+            is.first = vexpo.getBase() == getBase();
+            if (is.first) {
+                is.second = ebase() ^ (eexp() + vexpo.eexp());
+            } // TODO : else if ? (base^2 == v.base)
+        } else if (v.IsInt()) {
+//            if (getBase().IsVa()) {
+//            } else if (getExponentiation().IsSimpleFraction()) {
+//                auto
+//                is.first = IsMultiplicationSimplifiable()
+//            } else if (getExponentiation().IsSimple()) {
+//                is = base::IsMultiplicationSimplifiable(v);
+//            } else {
+//                IMPLEMENT
+//            }
+        } else {
+            std::cout << str() << " * " << v.str() << std::endl;
+        }
+        return is;
     }
 
     Valuable& Exponentiation::operator /=(const Valuable& v)
@@ -599,8 +653,7 @@ namespace math {
     void Exponentiation::Values(const std::function<bool(const Valuable&)>& fun) const
     {
         if (fun) {
-            auto cache = optimized;
-            // TODO: multival caching (inspect all optimized and optimization transisions) auto isCached =
+            auto cache = optimized; // TODO: multival caching (inspect all optimized and optimization transisions) auto isCached =
             
             std::set<Valuable> vals;
             {

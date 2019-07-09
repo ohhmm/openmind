@@ -302,29 +302,14 @@ namespace math {
             }
 
             auto c = *it;
-            auto e = Exponentiation::cast(c);
             auto it2 = it;
             ++it2;
-            for (; it2 != members.end();)
+            while (it2 != members.end())
             {
-                const Exponentiation* e2 = Exponentiation::cast(*it2);
-                if (((c.IsInt() || c.IsFraction()) && (it2->IsFraction() || it2->IsInt()))
-                    || (c.IsVa() && ((it2->IsVa() && c==*it2) || (it2->IsExponentiation() && e2->getBase() == c)))
-                    || (c.IsExponentiation() && ((it2->IsVa() && e->getBase() == *it2) || (e2 && e->getBase() == e2->getBase())))
-                    || ((c.IsInfinity() || c.IsMInfinity()) && (it2->IsInt() || it2->IsSimpleFraction()))
-                    || ((c.IsInt() || c.IsSimpleFraction()) && (it2->IsInfinity() || it2->IsMInfinity()))
-                    )
-                {
-                    c *= *it2;
+                if (c.MultiplyIfSimplifiable(*it2)) {
+                    if (c.IsProduct())
+                        IMPLEMENT
                     Delete(it2);
-                    e = Exponentiation::cast(c);
-                    continue;
-                }
-                else if (c.IsVa() && it->Same(*it2))
-                {
-                    c ^= 2;
-                    Delete(it2);
-                    e = Exponentiation::cast(c);
                     continue;
                 }
                 else
@@ -678,8 +663,10 @@ namespace math {
                         Delete(it);
                         optimize();
                         return *this;
+//                    } else if (v.IsMultival() == YesNoMaybe::Maybe) {
+                        
                     } else {
-                        Update(it, *it / v);
+                        Update(it, *it * (v^-1));
                         optimize();
                         return *this;
                     }

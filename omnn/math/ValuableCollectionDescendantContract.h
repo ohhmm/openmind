@@ -101,22 +101,25 @@ namespace math {
             return i;
         }
         
+        a_int Complexity() const override {
+            a_int c = 0;
+            for(auto& m : GetConstCont())
+                c += m.Complexity();
+            return c;
+        }
+        
         bool HasValueType(const std::type_info& type) const
         {
             for(const auto& a : GetConstCont())
-            {
                 if(typeid(a) == type)
                     return true;
-            }
             return false;
         }
         
         bool Has(const Valuable& v) const
         {
             for(const auto& a : GetConstCont())
-            {
                 if(a==v) return true;
-            }
             return false;
         }
         

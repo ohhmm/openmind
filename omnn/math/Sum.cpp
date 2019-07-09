@@ -253,12 +253,19 @@ namespace math {
                     }
                     else if ((inc = it2->InCommonWith(c)) != 1_v
                              && inc.IsMultival() != YesNoMaybe::Yes) {
-                        auto sum = c / inc + *it2 / inc;
-                        if(!sum.IsSum()){
-                            sum *= inc;
-                            c = sum;
-                            Delete(it2);
-                            up();
+                        thread_local bool antiloop = false;
+                        if (!antiloop) {
+                            antiloop = true;
+                            auto sum = c / inc + *it2 / inc;
+                            if(!sum.IsSum())
+                            {
+                                sum *= inc;
+                                c = sum;
+                                Delete(it2);
+                                up();
+                            } else
+                                ++it2;
+                            antiloop = false;
                         } else
                             ++it2;
                     }
@@ -1356,10 +1363,16 @@ namespace math {
                     auto& b = coefficients[1];
                     auto& c = coefficients[0];
                     auto d = (b ^ 2) - 4_v * a * c;
-                    auto dsq = d.Sqrt();
                     auto a2 = a * 2;
-                    solutions.insert((-dsq-b)/a2);
-                    solutions.insert((dsq-b)/a2);
+                    if(d>0){
+                        auto dsq = d.Sqrt();
+                        solutions.insert((-dsq-b)/a2);
+                        solutions.insert((dsq-b)/a2);
+                    } else if (d==0) {
+                        solutions.insert(-b/a2);
+                    } else {
+                        solutions.insert(((d^(1_v/2))-b)/a2);
+                    }
                     break;
                 }
             }

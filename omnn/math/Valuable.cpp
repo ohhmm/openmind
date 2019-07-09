@@ -441,6 +441,32 @@ namespace math {
             IMPLEMENT
     }
 
+    a_int Valuable::Complexity() const
+    {
+        if(exp)
+            return exp->Complexity();
+        IMPLEMENT
+    }
+    
+    
+    bool Valuable::MultiplyIfSimplifiable(const Valuable& v)
+    {
+        if(exp)
+            return exp->MultiplyIfSimplifiable(v);
+        IMPLEMENT
+    }
+
+    std::pair<bool,Valuable> Valuable::IsMultiplicationSimplifiable(const Valuable& v) const
+    {
+        if(exp)
+            return exp->IsMultiplicationSimplifiable(v);
+        else {
+            IMPLEMENT
+            auto m = *this * v;
+            return { m.Complexity() < Complexity() + v.Complexity(), m };
+        }
+    }
+    
     Valuable& Valuable::operator /=(const Valuable& v)
     {
         if(exp) {
@@ -753,9 +779,11 @@ namespace math {
     bool Valuable::IsInt() const { return exp && exp->IsInt(); }
     bool Valuable::IsFraction() const { return exp && exp->IsFraction(); }
     bool Valuable::IsSimpleFraction() const { return exp && exp->IsSimpleFraction(); }
+    bool Valuable::IsSimple() const { return IsInt() || IsSimpleFraction(); }
     bool Valuable::IsFormula() const { return exp && exp->IsFormula(); }
     bool Valuable::IsExponentiation() const { return exp && exp->IsExponentiation(); }
     bool Valuable::IsVa() const { return exp && exp->IsVa(); }
+    bool Valuable::IsVaExp() const { return exp && exp->IsVaExp(); }
     bool Valuable::IsProduct() const { return exp && exp->IsProduct(); }
     bool Valuable::IsSum() const { return exp && exp->IsSum(); }
     bool Valuable::IsInfinity() const { return exp && exp->IsInfinity(); }

@@ -94,7 +94,7 @@ namespace math {
         
         if (denominator().IsInt())
         {
-            if (denominator() == 1_v)
+            if (denominator().ca() == 1)
             {
                 Become(std::move(numerator()));
                 return;
@@ -126,37 +126,40 @@ namespace math {
         // integers
         if (numerator().IsInt())
         {
-            auto n = Integer::cast(numerator());
-            auto dn = Integer::cast(denominator());
-            if (*n == 0_v)
+            auto& n = numerator().ca();
+            auto& denom = denominator();
+            auto dni = denom.IsInt();
+            if (n == 0)
             {
-                if (dn && *dn == 0_v)
+                if (dni && denom == 0_v)
                     throw "NaN";
                 Become(std::move(numerator()));
                 return;
             }
-            if (dn)
+            if (dni)
             {
-                if (*n < 0 && *dn < 0) {
+                auto& dn = denominator().ca();
+                if (n < 0 && dn < 0) {
                     numerator() = -numerator();
                     denominator() = -denominator();
                     goto reoptimize_the_fraction;
                 }
-                if (*dn == 1_v)
+                if (dn == 1)
                 {
-                    Become(std::move(*n));
+                    Become(std::move(numerator()));
                     return;
                 }
-                if (*dn == -1_v)
+                if (dn == -1)
                 {
-                    Become(-*n);
+                    Become(-numerator());
                     return;
                 }
-                auto d = boost::gcd(n->ca(), dn->ca());
+                auto d = boost::gcd(n, dn);
                 if (d != 1) {
                     numerator() /= Integer(d);
                     denominator() /= Integer(d);
                     optimize();
+                    return;
                 }
             }
         }
@@ -229,7 +232,38 @@ namespace math {
                 Become(numerator()*(denominator()^-1));
         }
     }
-    
+
+    bool Fraction::MultiplyIfSimplifiable(const Valuable& v)
+    {
+        auto is = IsSimpleFraction() && v.IsSimple();
+        if(is){
+            *this *= v;
+        } else if (!v.IsFraction()) {
+            auto s = v.IsMultiplicationSimplifiable(*this);
+            is = s.first;
+            if (is) {
+                Become(std::move(s.second));
+            }
+        } else {
+            IMPLEMENT
+        }
+        return is;
+    }
+
+    std::pair<bool,Valuable> Fraction::IsMultiplicationSimplifiable(const Valuable& v) const
+    {
+        std::pair<bool,Valuable> is;
+        is.first = IsSimpleFraction() && v.IsSimple();
+        if(is.first){
+            is.second = *this * v;
+        } else if (!v.IsFraction()) {
+            is = v.IsMultiplicationSimplifiable(*this);
+        } else {
+            IMPLEMENT
+        }
+        return is;
+    }
+
     Valuable& Fraction::operator +=(const Valuable& v)
     {
         auto i = cast(v);

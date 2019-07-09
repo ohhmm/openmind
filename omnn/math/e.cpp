@@ -4,6 +4,6 @@
 
 #include "e.h"
 
-using namespace omnn::math;
-
-const Euler e;
+namespace omnn::math::constant {
+//    static const Euler e;
+}

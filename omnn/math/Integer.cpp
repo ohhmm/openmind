@@ -119,6 +119,36 @@ namespace math {
         }
         return *this;
     }
+    
+    bool Integer::MultiplyIfSimplifiable(const Valuable& v)
+    {
+        auto is = v.IsInt();
+        if(is) {
+            arbitrary *= v.ca();
+            hash = std::hash<base_int>()(arbitrary);
+        } else {
+            auto s = v.IsMultiplicationSimplifiable(*this);
+            is = s.first;
+            if(is)
+                Become(std::move(s.second));
+        }
+        return is;
+    }
+
+    std::pair<bool,Valuable> Integer::IsMultiplicationSimplifiable(const Valuable& v) const
+    {
+        std::pair<bool,Valuable> is;
+        is.first = v.IsInt() || v.IsFraction();
+        if (is.first) {
+            is.second = v * *this;
+            if (is.second.Complexity() > v.Complexity())
+                IMPLEMENT;
+        } else if (v.IsVa() || v.IsExponentiation()) {
+        } else {
+            is = v.IsMultiplicationSimplifiable(*this);
+        }
+        return is;
+    }
 
     Valuable& Integer::operator /=(const Valuable& v)
     {

@@ -24,6 +24,6 @@ namespace omnn::math {
     };
 
     namespace constant {
-        const MinusOneSq i;
+        static const MinusOneSq i;
     }
 }
