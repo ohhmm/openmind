@@ -146,6 +146,10 @@ namespace omnn::math {
                     f(v);
             }
         }
+        
+        a_int Complexity() const override {
+            return _1.Complexity() + _2.Complexity();
+        }
     };
 }
 

@@ -106,7 +106,11 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     sq = (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4*(x^3) + 2*(x^2)*(y^2) + 2*(y^2)*(z^2) + 2*(x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324;
     sum = Sum::cast(sq);
     BOOST_TEST(sum);
-    BOOST_TEST(sum->size()==25);
+    if (sum->size()!=25) {
+        std::cout << sum->str() << std::endl;
+        BOOST_TEST(sum->size()==25);
+    }
+    
     auto sqc = sq;
     sqc.optimize();
     BOOST_TEST(sqc == sq);

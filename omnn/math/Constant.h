@@ -45,5 +45,7 @@ namespace math {
         const Valuable::vars_cont_t& getCommonVars() const override {
             return Valuable::emptyCommonVars();
         }
+        
+        a_int Complexity() const override { return 1; }
     };
 }}

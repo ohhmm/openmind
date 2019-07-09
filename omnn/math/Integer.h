@@ -85,6 +85,9 @@ public:
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator +=(int v) override;
     Valuable& operator *=(const Valuable& v) override;
+    a_int Complexity() const override { return 1; }
+    bool MultiplyIfSimplifiable(const Valuable& v) override;
+    std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override;

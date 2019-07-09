@@ -4,6 +4,7 @@
 
 #include "i.h"
 
-using namespace omnn::math;
-
-const MinusOneSq i;
+namespace omnn::math::constant
+{
+//    static const MinusOneSq i = {};
+}

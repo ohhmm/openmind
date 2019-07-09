@@ -150,7 +150,7 @@ public:
     }
 
 //    friend operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
-    friend bool operator!(YesNoMaybe _) { return _!=YesNoMaybe::Yes; }
+    friend bool operator!(YesNoMaybe _) { return _ == YesNoMaybe::No; }
     friend YesNoMaybe operator||(YesNoMaybe, YesNoMaybe);
     friend YesNoMaybe operator&&(YesNoMaybe, YesNoMaybe);
 
@@ -202,6 +202,8 @@ public:
     virtual Valuable& operator +=(const Valuable&);
     virtual Valuable& operator +=(int);
     virtual Valuable& operator *=(const Valuable&);
+    virtual bool MultiplyIfSimplifiable(const Valuable& v);
+    virtual std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
     virtual Valuable& operator /=(const Valuable&);
     virtual Valuable& operator %=(const Valuable&);
     virtual Valuable& operator--();
@@ -220,9 +222,11 @@ public:
     virtual bool IsInt() const;
     virtual bool IsFraction() const;
     virtual bool IsSimpleFraction() const;
+    bool IsSimple() const;
     virtual bool IsFormula() const;
     virtual bool IsExponentiation() const;
     virtual bool IsVa() const;
+    virtual bool IsVaExp() const;
     virtual bool IsProduct() const;
     virtual bool IsSum() const;
     virtual bool IsInfinity() const;
@@ -241,6 +245,7 @@ public:
         return exp ? exp->Is<T>() : is(typeid(T));
     }
 
+    virtual a_int Complexity() const;
     virtual Valuable& sq();
 
     Valuable Sq() const;

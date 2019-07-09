@@ -69,6 +69,38 @@ namespace math {
         return Become(Product{*this, v});
     }
     
+    bool Variable::MultiplyIfSimplifiable(const Valuable& v)
+    {
+        auto is = v.IsVa();
+        if (is) {
+            is = operator==(v);
+            if (is) {
+                sq();
+            }
+        } else if (v.IsSimple()) {
+        } else {
+            auto s = v.IsMultiplicationSimplifiable(*this);
+            is = s.first;
+            if (is) {
+                Become(std::move(s.second));
+            }
+        }
+        return is;
+    }
+
+    std::pair<bool,Valuable> Variable::IsMultiplicationSimplifiable(const Valuable& v) const
+    {
+        std::pair<bool,Valuable> is;
+        is.first = v.IsVa() && operator==(v);
+        if (is.first) {
+            is.second = Sq();
+        } else if (v.IsSimple()) {
+        } else {
+            is = v.IsMultiplicationSimplifiable(v);
+        }
+        return is;
+    }
+
     Valuable& Variable::operator /=(const Valuable& v)
     {
         auto i = cast(v);
