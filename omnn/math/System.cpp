@@ -107,7 +107,7 @@ bool System::Eval(const Variable& va, const Valuable& v)
         do {
             again = {};
             auto prev = equs.begin();
-            for(auto it = prev; it != e && !again; ++it)
+            for(auto it = prev; !again && it != e; ++it)
             {
                 auto& e = *it;
                 if (e.HasVa(va))

@@ -18,6 +18,8 @@
 
 namespace omnn{
 namespace math {
+    const a_int Valuable::a_int_cz = 0;
+    const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
     omnn::math::Valuable::YesNoMaybe operator||(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
         constexpr omnn::math::Valuable::YesNoMaybe OrMap[] = {
@@ -1612,10 +1614,21 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t)
     return h->Host(id);
 }
 
+//constexpr
+boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
+    return v;
+}
+
 ::omnn::math::Valuable operator"" _v(unsigned long long v)
 {
-    return ::omnn::math::Integer(boost::multiprecision::cpp_int(v));
+    const auto va = ull2cppint(v);
+    return ::omnn::math::Integer(va);
 }
+
+//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v)
+//{
+//    return ::omnn::math::vo<v>();
+//}
 
 ::omnn::math::Valuable operator"" _v(long double v)
 {
