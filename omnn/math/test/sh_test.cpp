@@ -3,9 +3,10 @@
 //
 #define BOOST_TEST_MODULE Sh test
 #include <boost/test/unit_test.hpp>
-#include <iostream>
-
+#include "Sum.h"
 #include "Variable.h"
+
+
 
 using namespace omnn::math;
 using namespace boost::unit_test;
@@ -39,11 +40,13 @@ BOOST_AUTO_TEST_CASE(And_test)
     t = _;
     t.Eval(v,1);
     t.optimize();
-    BOOST_TEST(t == 8);
+    constexpr const Valuable& _8 = vo<8>();
+    auto is = t == _8;
+    BOOST_TEST(is);
     
     _ = 53818796976214_v;
     _ = _.And(32, -1);
-    BOOST_TEST(_ == 2856757334);
+    BOOST_TEST(_ == 2856757334_v);
 }
 
 BOOST_AUTO_TEST_CASE(Or_test)

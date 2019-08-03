@@ -51,9 +51,8 @@ namespace math {
     class VarHost;
     class Variable;
     struct ValuableDescendantMarker {};
-    
-    void implement();
 
+    void implement();
 
 class Valuable
         : public OpenOps<Valuable>
@@ -61,6 +60,9 @@ class Valuable
     using self = Valuable;
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
+
+    static const a_int a_int_cz;
+    static const max_exp_t max_exp_cz;
 
 protected:
     const encapsulated_instance& getInst() const { return exp; }
@@ -108,7 +110,9 @@ protected:
     
     size_t hash = 0;
     size_t sz = sizeof(Valuable);
-    max_exp_t maxVaExp = max_exp_t(0); // ordering weight: vars max exponentiation in this valuable
+    static constexpr a_int const& a_int_z = a_int_cz;
+    static constexpr max_exp_t const& max_exp_z = max_exp_cz;
+    max_exp_t maxVaExp;// = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
     
     std::function<Valuable()> DefaultCachedFn() {
         return [this]()->Valuable{
@@ -186,6 +190,7 @@ public:
     Valuable(Valuable&&) = default;
     
     Valuable(double d);
+
     Valuable(int32_t i = 0);
     //Valuable(const int32_t);
     Valuable(uint32_t);
@@ -380,11 +385,25 @@ public:
     std::string str() const;
     virtual std::wstring save(const std::wstring&) const;
 
+    auto is_optimized() const { return optimized; }
+
 protected:
     View view = View::Flat;
     bool optimized = false;
     //   TODO : std::shared_ptr<std::vector<Valuable>> cachedValues;
 };
+
+template <const unsigned long long I>
+class vo {
+    static const Valuable val;
+public:
+    constexpr vo() {}
+    constexpr operator const Valuable& () {
+        return val;
+    }
+};
+template <const unsigned long long I>
+const Valuable vo<I>::val = I;
 
 }}
 

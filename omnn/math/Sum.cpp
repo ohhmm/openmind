@@ -508,9 +508,9 @@ namespace math {
             return *this;
         }
         else if (v.IsSum())
-            for(auto& _1 : *cast(v))
-				for (auto& _2 : members)
-                    sum.Add(_1*_2);
+            for (auto& _1 : *cast(v))
+                for (auto& _2 : members)
+                    sum.Add(_1 * _2);
         else
         {
             for (auto& a : members)

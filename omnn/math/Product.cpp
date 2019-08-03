@@ -638,23 +638,38 @@ namespace math {
         return *this;
     }
 
-	Valuable& Product::operator /=(const Valuable& v)
-	{
-        if (v == 1_v) {
-            return *this;
-        }
+    Valuable& Product::operator /=(const Valuable& v)
+    {
         if (v.IsProduct()) {
-            auto p = Product::cast(v);
-            for(auto& i : *p)
-            {
+            auto opts = optimizations;
+            optimizations = {};
+            for(auto& i : v.as<Product>())
                 *this /= i;
-            }
+            optimizations = opts;
             optimize();
             return *this;
         }
+        else if (v.IsSimple()) {
+            if (v == 1_v) {
+                return *this;
+            }
+            auto first = begin();
+            if (first->IsSimple()) {
+                auto _ = (*first) / v;
+                if (!_.IsInt())
+                    _.IsFraction();
+                Update(first, _);
+                optimize();
+                return *this;
+            }
+            else {
+                return operator *=(Fraction{ 1_v,v });
+            }
+        }
         else
         {
-            auto e = Exponentiation::cast(v);
+            auto vIsExp = v.IsExponentiation();
+            auto e = vIsExp ? &v.as<Exponentiation>() : nullptr;
             for (auto it = members.begin(); it != members.end(); ++it)
             {
                 if (*it == v)
@@ -671,13 +686,11 @@ namespace math {
                         return *this;
                     }
                 }
-                else if (e && *it == e->getBase())
+                else if (vIsExp && *it == e->getBase())
                 {
-                    *this *= e->getBase() ^ (-e->getExponentiation());
-                    optimize();
-                    return *this;
+                    return *this *= e->getBase() ^ (-e->getExponentiation());
                 }
-                else if (it->IsExponentiation() && Exponentiation::cast(*it)->getBase()==v)
+                else if (it->IsExponentiation() && it->as<Exponentiation>().getBase() == v)
                 {
                     Update(it, *it / v);
                     optimize();

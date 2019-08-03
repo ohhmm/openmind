@@ -2,6 +2,9 @@
 // Created by Sergej Krivonos on 25.02.18.
 //
 #define BOOST_TEST_MODULE System test
+#define BOOST_THREAD_PROVIDES_EXECUTORS
+#define BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
+#define BOOST_THREAD_USES_MOVE
 #include <boost/test/unit_test.hpp>
 
 #include "System.h"
@@ -23,6 +26,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/thread_pool.hpp>
+#include <boost/thread/executor.hpp>
+#include <boost/thread/executors/basic_thread_pool.hpp>
 #include <boost/tokenizer.hpp>
 
 
@@ -622,7 +627,9 @@ BOOST_AUTO_TEST_CASE(Sudoku_test
 
 BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
 {
-    boost::basic_thread_pool tp;
+    using namespace boost;
+    using namespace boost::executors;
+    basic_thread_pool tp;
 
     //TypedVarHost<std::string> vh;
 
