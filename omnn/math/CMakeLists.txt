@@ -1,4 +1,14 @@
-lib(boost_serialization)
+
+option(OPENMIND_MATH_USE_LEVELDB_CACHE "Use Google LevelDB library to cache solutions" FALSE)
+
+set(DEPENDENCIES boost_serialization)
+if(OPENMIND_MATH_USE_LEVELDB_CACHE)
+	add_definitions(-DOPENMIND_MATH_USE_LEVELDB_CACHE)
+	dep(google/leveldb)
+	set(DEPENDENCIES "${DEPENDENCIES} leveldb")
+endif()
+
+lib(${DEPENDENCIES})
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
