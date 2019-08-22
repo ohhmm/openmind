@@ -225,13 +225,19 @@ macro(ext name location)
 	else()
 		message("${name} is not a target")
 	endif()
+
 	set(${name}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include CACHE PATH "Path")
 	set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/lib${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
+
+	include_directories(${${name}_INCLUDE_DIR})
+
 endmacro()
 
-macro(dep dep)
+macro(dep)
+	set(dep ${ARGN})
 	if(dep MATCHES /)
 		set(repo "https://github.com/${dep}.git")
+		get_filename_component(dep ${ARGN} NAME)
 		ext(${dep} ${repo})
 	else()
 		find_package(${dep})
