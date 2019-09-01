@@ -129,6 +129,7 @@ endif()
 
 if (${OPENMIND_BUILD_TESTS})
     enable_testing()
+    set(TEST_DEPS "")
 endif ()
 
 macro(lib)
@@ -141,6 +142,7 @@ macro(lib)
     if(NOT MSVC)
         target_link_libraries(${this_target} ${deps})
     endif()
+    set(TEST_DEPS "${TEST_DEPS} ${deps}")
 endmacro()
 
 function(test)
@@ -161,6 +163,7 @@ function(test)
 	message("test_libs ${test_libs}")
 	set(libs ${test_libs}
 		${OpenCL_LIBRARY}
+		${TEST_DEPS}
 #pthread
 		)
 	if(NOT MSVC)
@@ -230,7 +233,7 @@ macro(ext name location)
 	set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/lib${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
 
 	include_directories(${${name}_INCLUDE_DIR})
-
+	link_directories(${CMAKE_BINARY_DIR}/lib)
 endmacro()
 
 macro(dep)

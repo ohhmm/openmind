@@ -718,25 +718,32 @@ namespace math {
         {}
         else if (v.IsExponentiation())
         {
-            auto e = cast(v);
+            auto& e = v.as<Exponentiation>();
             bool baseIsVa = getBase().IsVa();
-            bool vbaseIsVa = e->getBase().IsVa();
+            bool vbaseIsVa = e.getBase().IsVa();
             if (baseIsVa && vbaseIsVa)
-                is = getExponentiation() == e->getExponentiation() ? getBase().IsComesBefore(e->getBase()) : getExponentiation() > e->getExponentiation();
+                is = getExponentiation() == e.getExponentiation() ? getBase().IsComesBefore(e.getBase()) : getExponentiation() > e.getExponentiation();
             else if(baseIsVa)
                 is = false;
             else if(vbaseIsVa)
                 is = true;
-            else if(getBase() == e->getBase())
-                is = getExponentiation().IsComesBefore(e->getExponentiation());
-            else if(getExponentiation() == e->getExponentiation())
-                is = getBase().IsComesBefore(e->getBase());
+            else if(getBase() == e.ebase())
+                is = getExponentiation().IsComesBefore(e.getExponentiation());
+            else if(getExponentiation() == e.getExponentiation())
+                is = getBase().IsComesBefore(e.getBase());
             else
             {
-                is = getBase().IsComesBefore(e->getBase()) || getExponentiation().IsComesBefore(e->getExponentiation()); //  || str().length() > e->str().length();
-//                auto expComesBefore = eexp().IsComesBefore(e->eexp());
-//                auto ebase()ComesBefore = ebase().IsComesBefore(e->ebase());
-//                is = expComesBefore==ebase()ComesBefore || str().length() > e->str().length();
+                auto c = Complexity();
+                auto ec = e.Complexity();
+                if (c != ec)
+                    is = c > ec;
+                else {
+                    is = getBase().IsComesBefore(e.getBase()) || 
+                        (!e.ebase().IsComesBefore(ebase()) && getExponentiation().IsComesBefore(e.getExponentiation())); //  || str().length() > e->str().length();
+    //                auto expComesBefore = eexp().IsComesBefore(e->eexp());
+    //                auto ebase()ComesBefore = ebase().IsComesBefore(e->ebase());
+    //                is = expComesBefore==ebase()ComesBefore || str().length() > e->str().length();
+                }
             }
         }
         else if(v.IsProduct())

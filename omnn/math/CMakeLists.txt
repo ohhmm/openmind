@@ -1,7 +1,7 @@
 
 option(OPENMIND_MATH_USE_LEVELDB_CACHE "Use Google LevelDB library to cache solutions" FALSE)
 
-set(DEPENDENCIES boost_serialization)
+set(DEPENDENCIES "")
 if(OPENMIND_MATH_USE_LEVELDB_CACHE)
 	add_definitions(-DOPENMIND_MATH_USE_LEVELDB_CACHE)
 	dep(google/leveldb)

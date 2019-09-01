@@ -15,7 +15,7 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(And_test)
 {
     Variable v;
-    auto _ = v.And(2,3);
+    auto _ = v.And(vo<2>(), vo<3>());
     _.Eval(v, 1);
     _.optimize();
     BOOST_TEST(_==1);
