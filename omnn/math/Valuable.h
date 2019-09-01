@@ -397,11 +397,11 @@ template <const unsigned long long I>
 class vo {
     static const Valuable val;
 public:
-    constexpr vo() {}
-    constexpr operator const Valuable& () {
+    constexpr operator const Valuable& () const {
         return val;
     }
 };
+
 template <const unsigned long long I>
 const Valuable vo<I>::val = I;
 
@@ -409,7 +409,9 @@ const Valuable vo<I>::val = I;
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
+//constexpr 
 ::omnn::math::Valuable operator"" _v(unsigned long long v);
+//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
 ::omnn::math::Valuable operator"" _v(long double v);
 
 

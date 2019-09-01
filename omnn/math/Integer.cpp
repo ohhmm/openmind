@@ -277,7 +277,15 @@ namespace math {
     Valuable Integer::And(const Valuable& n, const Valuable& v) const
     {
         if (v.IsInt()) {
-            return decltype(arbitrary)(arbitrary & ((2_v^n)-1).a() & v.ca());
+            auto mask = std::move(--((vo<2>() ^ n).a()));
+            if (arbitrary < v.ca()) {
+                mask &= arbitrary;
+                mask &= v.ca();
+            } else {
+                mask &= v.ca();
+                mask &= arbitrary;
+            }
+            return Valuable(std::move(mask));
         }
         else
             return base::And(n, v);

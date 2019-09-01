@@ -13,6 +13,7 @@
 #include "pi.h"
 #include "System.h"
 #include "VarHost.h"
+#include "Cache.h"
 
 #include <algorithm>
 #include <cmath>
@@ -25,6 +26,7 @@
 #include <thread>
 #include <type_traits>
 
+#include "leveldb/db.h"
 
 namespace omnn{
 namespace math {
@@ -144,10 +146,43 @@ namespace math {
             return;
         isOptimizing = true;
 
+        auto s = str();
+        auto doCheck = s.length() > 10;
+        std::future<Valuable> checkCache;
+        if (doCheck)
+            checkCache = std::async(
+                [](std::string&& key) {
+                    std::string v;
+                    leveldb::DB* db = nullptr;
+                    leveldb::Options options;
+                    options.create_if_missing = true;
+                    leveldb::Status status = leveldb::DB::Open(options, "OptimizationsCache.db", &db);
+                    assert(status.ok());
+                    if (status.ok()) {
+                        status = db->Get({}, key, &v);
+                        delete db;
+                        if (!status.ok() || v.empty()) {
+                            throw;
+                        }
+                    }
+                    return Valuable(v, {});
+                }, s);
+
+        auto gotCached = [&]() -> bool {
+                return doCheck
+                    && checkCache.valid()
+                    && checkCache.wait_for(std::chrono::seconds()) == std::future_status::ready;
+            };
+
         Valuable w;
         do
         {
+            if (gotCached()) {
+                Become(checkCache.get());
+                return;
+            }
             w = *this;
+
             if (members.size() == 1) {
                 Valuable m;
                 {m = *members.begin();}
