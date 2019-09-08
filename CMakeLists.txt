@@ -10,7 +10,8 @@ else()
 	set(_IS_DEBUG FALSE)
 endif()
 
-option(OPENMIND_BUILD_SAMPLES "Build various samples" ${_IS_DEBUG})
+option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${MSVC})
+option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
@@ -45,7 +46,9 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
-find_package(Boost)
+if(NOT OPENMIND_BUILD_BOOST)
+    find_package(Boost)
+endif()
 if (Boost_FOUND)
     add_custom_target(boost)
 else()
@@ -76,7 +79,7 @@ else()
     if(_IS_DEBUG)
         ExternalProject_Add(boost
             GIT_REPOSITORY https://github.com/boostorg/boost.git
-            GIT_TAG boost-1.69.0
+            GIT_TAG boost-1.70.0
             #GIT_SUBMODULES ${BOOST_USED_COMPONENTS}
             BUILD_IN_SOURCE 1
             LOG_CONFIGURE 1
@@ -121,7 +124,7 @@ IF (Boost_FOUND)
 #    endif()
 ENDIF()
 
-if(${OPENMIND_USE_OPENCL})
+if(OPENMIND_USE_OPENCL)
 	find_package(opencl)
 	include_directories(${OPENCL_INCLUDE_DIR})
 	add_definitions(-DOPENMIND_USE_OPENCL)
