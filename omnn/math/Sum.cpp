@@ -26,10 +26,13 @@
 #include <thread>
 #include <type_traits>
 
-#include "leveldb/db.h"
+//TODO:
+//import std;
 
 namespace omnn{
 namespace math {
+
+    Cache DbSumOptimizationCache("DbSumOptimizationCache.solutions");
 
     namespace
     {
@@ -149,25 +152,18 @@ namespace math {
         auto s = str();
         auto doCheck = s.length() > 10;
         std::future<Valuable> checkCache;
-        if (doCheck)
-            checkCache = std::async(
-                [](std::string&& key) {
-                    std::string v;
-                    leveldb::DB* db = nullptr;
-                    leveldb::Options options;
-                    options.create_if_missing = true;
-                    leveldb::Status status = leveldb::DB::Open(options, "OptimizationsCache.db", &db);
-                    assert(status.ok());
-                    if (status.ok()) {
-                        status = db->Get({}, key, &v);
-                        delete db;
-                        if (!status.ok() || v.empty()) {
-                            throw;
-                        }
+        if (doCheck) {
+            checkCache = std::async(launch::async,
+                [](std::string&& key){
+                    auto one = DbSumOptimizationCache.GetOne(key);
+                    if (one.first) {
+                        return one.second;
+                    } else {
+                        IMPLEMENT
                     }
-                    return Valuable(v, {});
-                }, s);
-
+                },
+                std::move(s));
+        }
         auto gotCached = [&]() -> bool {
                 return doCheck
                     && checkCache.valid()
