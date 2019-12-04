@@ -171,11 +171,7 @@ function(test)
 	    ${Boost_INCLUDE_DIR}/stage/lib
 	    )
 	message("test_libs ${test_libs}")
-	set(libs ${test_libs}
-		${OpenCL_LIBRARY}
-		${TEST_DEPS}
-#pthread
-		)
+	set(libs ${test_libs} ${OpenCL_LIBRARY} ${TEST_DEPS})#pthread
 	if(NOT MSVC)
 		set(libs ${libs} boost_test_exec_monitor boost_thread boost_serialization boost_system)
 	endif()
@@ -198,7 +194,10 @@ function(test)
 	foreach(TEST ${src})
 	    get_filename_component(TEST_NAME ${TEST} NAME_WE)
 	    add_executable(${TEST_NAME} ${TEST_NAME})
-	    target_link_libraries(${TEST_NAME} ${libs})
+        foreach(ll ${libs})
+            string(STRIP ${ll} thelib)
+            target_link_libraries(${TEST_NAME} ${thelib})
+        endforeach()
         foreach(tg ${libs})
             if(TARGET ${tg})
                 add_dependencies(${TEST_NAME} ${tg})
