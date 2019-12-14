@@ -152,22 +152,22 @@ namespace math {
         auto s = str();
         auto doCheck = s.length() > 10;
         std::future<Valuable> checkCache;
+        std::atomic<bool> isInCache = {};
         if (doCheck) {
             checkCache = std::async(launch::async,
-                [](std::string&& key){
+                [&](std::string&& key){
                     auto one = DbSumOptimizationCache.GetOne(key);
-                    if (one.first) {
-                        return one.second;
-                    } else {
-                        IMPLEMENT
-                    }
+                    isInCache = one.first;
+                    auto value = isInCache ? one.second : Valuable();
+                    return value;
                 },
                 std::move(s));
         }
         auto gotCached = [&]() -> bool {
                 return doCheck
                     && checkCache.valid()
-                    && checkCache.wait_for(std::chrono::seconds()) == std::future_status::ready;
+                    && checkCache.wait_for(std::chrono::seconds()) == std::future_status::ready
+                    && isInCache;
             };
 
         Valuable w;

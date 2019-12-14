@@ -7,24 +7,27 @@
 using namespace omnn::math;
 using namespace boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(Perimetr)
+BOOST_AUTO_TEST_CASE(Perimeter)
 {
-    std::cout <<"zadacha_perimetr" <<std::endl;
-    Variable x, P, a, b;
+    std::cout <<std::endl <<"perimeter" <<std::endl<<std::endl;
+    
+    DECL_VA(x);
+    DECL_VA(P);
+    DECL_VA(a);
+    DECL_VA(b);
+
     auto formula = (a+b)*2 - P;
+    std::cout <<"formula " << formula.str() << std::endl;
+    
     formula.eval({
         { P, 20 },
         { a, x },
         { b, 6 }
     });
+    std::cout <<"evaluated " << formula.str() << std::endl;
     
-    auto solutions = formula.Solutions();
-    for(const Valuable& solution : solutions){
-        std::cout << solution.str() << std::endl;
-        formula.Eval(x, solution);
-        BOOST_TEST(formula == 0);
-    }
+    auto root = formula(x);
+    std::cout <<"x = " << root << std::endl;
     
-    BOOST_TEST(solutions.size() == 1);
-    BOOST_TEST(solutions.begin()->str() == "4");
+    BOOST_TEST(root == 4);
 }
