@@ -47,7 +47,7 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 if(NOT OPENMIND_BUILD_BOOST)
-    find_package(Boost)
+    find_package(Boost 1.72)
 endif()
 if (Boost_FOUND)
     add_custom_target(boost)
@@ -57,9 +57,11 @@ else()
         set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test)
     endif ()
     message("Finding boost components ${BOOST_USED_COMPONENTS}")
-    foreach(module ${BOOST_USED_COMPONENTS})
-        set(BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS} --with-${module}")
-    endforeach(module)
+    foreach(_module ${BOOST_USED_COMPONENTS})
+        message("${BOOST_BUILD_PARAMS}")
+        string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
+        message("${BOOST_BUILD_PARAMS}")
+    endforeach()
 
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
       set(Boost_address_model 64)
@@ -79,7 +81,7 @@ else()
     if(_IS_DEBUG)
         ExternalProject_Add(boost
             GIT_REPOSITORY https://github.com/boostorg/boost.git
-            GIT_TAG boost-1.70.0
+            GIT_TAG boost-1.72.0
             #GIT_SUBMODULES ${BOOST_USED_COMPONENTS}
             BUILD_IN_SOURCE 1
             LOG_CONFIGURE 1
