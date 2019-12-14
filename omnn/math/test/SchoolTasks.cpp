@@ -9,7 +9,10 @@ using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(Perimeter)
 {
-    std::cout <<std::endl <<"perimeter" <<std::endl<<std::endl;
+    std::cout
+        << std::endl
+        << "perimeter"
+        << std::endl;
     
     DECL_VA(x);
     DECL_VA(P);
@@ -17,17 +20,21 @@ BOOST_AUTO_TEST_CASE(Perimeter)
     DECL_VA(b);
 
     auto formula = (a+b)*2 - P;
-    std::cout <<"formula " << formula.str() << std::endl;
+    std::cout <<"formula: " << formula.str() << " = 0" << std::endl;
     
     formula.eval({
         { P, 20 },
         { a, x },
         { b, 6 }
     });
-    std::cout <<"evaluated " << formula.str() << std::endl;
+    std::cout <<"evaluated: " << formula.str() << " = 0" << std::endl;
     
     auto root = formula(x);
     std::cout <<"x = " << root << std::endl;
     
     BOOST_TEST(root == 4);
+    
+    formula.eval({ { x, root }});
+    std::cout << "check: " << formula << " = 0" << std::endl;
+    BOOST_TEST(formula == 0);
 }
