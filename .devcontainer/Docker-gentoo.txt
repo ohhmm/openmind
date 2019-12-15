@@ -4,8 +4,12 @@ LABEL platform agnostic container
 
 RUN emerge --sync
 
+RUN echo 'CFLAGS="-march=native -O3 -pipe"' > /etc/make.conf
+RUN echo 'CXXFLAGS="${CFLAGS}"' >> /etc/make.conf
+
 RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
+
 RUN echo "dev-libs/boost test" > /etc/portage/package.use/boost
 
 RUN emerge cmake
@@ -18,5 +22,18 @@ RUN emerge leveldb
 RUN emerge llvm
 RUN emerge bash-completion
 RUN emerge clang
+
 RUN emerge eix
 RUN eix-update
+
+RUN emerge x11-libs/libX11
+RUN emerge x11-libs/libxcb
+RUN emerge dev-libs/icu
+RUN emerge sys-process/htop
+RUN emerge sys-libs/zlib
+
+#RUN echo "dev-lang/rust **" >> /etc/portage/package.accept_keywords/rust
+#RUN echo "virtual/rust **" >> /etc/portage/package.accept_keywords/rust
+#RUN emerge =virtual/rust-1.58.1
+#RUN echo 'USE="opengl X xft"' >> /etc/make.conf
+#RUN emerge -j`nproc` x11-misc/xscreensaver
