@@ -153,22 +153,35 @@ namespace math {
         auto doCheck = s.length() > 10;
         std::future<Valuable> checkCache;
         std::atomic<bool> isInCache = {};
+        std::function<bool()> cacheCheckFinished, gotCached;
         if (doCheck) {
             checkCache = std::async(launch::async,
                 [&](std::string&& key){
                     auto one = DbSumOptimizationCache.GetOne(key);
+                    auto value = one.first ? one.second : Valuable();
                     isInCache = one.first;
-                    auto value = isInCache ? one.second : Valuable();
+                    if(one.first)
+                      std::cout << "fetched from cache " << key << " => " << value <<std::endl;
                     return value;
                 },
-                std::move(s));
-        }
-        auto gotCached = [&]() -> bool {
+                std::string(s));
+            cacheCheckFinished = [&]() -> bool {
                 return doCheck
                     && checkCache.valid()
                     && checkCache.wait_for(std::chrono::seconds()) == std::future_status::ready
-                    && isInCache;
+                    ;
             };
+            gotCached = [&]() -> bool {
+                 bool hasCachedValue = cacheCheckFinished();
+                 if (hasCachedValue){
+                     hasCachedValue = isInCache;
+                     gotCached = [=](){return hasCachedValue;};
+                 }
+                 return hasCachedValue;
+            };
+        } else {
+            gotCached = cacheCheckFinished = [=](){ return doCheck; };
+        }
 
         Valuable w;
         do
@@ -178,14 +191,22 @@ namespace math {
                 return;
             }
             w = *this;
-
+            if (gotCached()) {
+                Become(checkCache.get());
+                return;
+            }
+            
             if (members.size() == 1) {
                 Valuable m;
                 {m = *members.begin();}
                 Become(std::move(m));
                 return;
             }
-
+            if (gotCached()) {
+                Become(checkCache.get());
+                return;
+            }
+            
             for (auto it = members.begin(); it != members.end();)
             {
                 // optimize member
@@ -197,6 +218,11 @@ namespace math {
                     Update(it, copy);
                 else
                     ++it;
+                
+                if (gotCached()) {
+                    Become(checkCache.get());
+                    return;
+                }
             }
             
             if (view == Equation) {
@@ -208,6 +234,11 @@ namespace math {
                         return;
                     }
                 }
+            }
+            
+            if (gotCached()) {
+                Become(checkCache.get());
+                return;
             }
             
             for (auto it = members.begin(); it != members.end();)
@@ -245,6 +276,11 @@ namespace math {
                 
                 for (; it2 != members.end();)
                 {
+                    if (gotCached()) {
+                        Become(checkCache.get());
+                        return;
+                    }
+                    
                     if(c.IsSum()){
                         IMPLEMENT
                     }
@@ -322,8 +358,23 @@ namespace math {
             // optimize members
             for (auto it = members.begin(); it != members.end();)
             {
+                if (gotCached()) {
+                    Become(checkCache.get());
+                    return;
+                }
                 auto copy = *it;
+                
+                if (gotCached()) {
+                    Become(checkCache.get());
+                    return;
+                }
                 copy.optimize();
+                
+                if (gotCached()) {
+                    Become(checkCache.get());
+                    return;
+                }
+                
                 if (!it->Same(copy)) {
                     Update(it, copy);
                 }
@@ -429,6 +480,12 @@ namespace math {
                     }
                 }
             }
+        }
+        
+        if (cacheCheckFinished() && !gotCached()) {
+            std::async([](std::string&& k, std::string&& v){
+                DbSumOptimizationCache.Set(k, v);
+                }, std::move(s), str());
         }
         
         if (IsSum()) {
