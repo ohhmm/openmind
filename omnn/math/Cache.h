@@ -44,15 +44,19 @@ namespace omnn::math {
         
         std::pair<bool, Valuable> GetOne(const std::string& key)
         {
-            std::unique_ptr<leveldb::Iterator> it(db->NewIterator({}));
-            if(it){
-                it->Seek(key);
-                if (it->Valid() && it->key().ToString() == key)
-                    return { true, Valuable(it->value().ToString(), {})};
+          std::string value;
+          leveldb::Status s = db->Get(leveldb::ReadOptions(), key, &value);
+            if(s.ok()){
+              return { true, Valuable(value, {})};
             }
-            return {{},{}};
+            else
+              return {{},{}};
         }
         
+        bool Set(const std::string& key, const std::string& v)
+        {
+            return db->Put(leveldb::WriteOptions(), key, v).ok();
+        }
 //
 //        auto Get(const Valuable& key)
 //        {
