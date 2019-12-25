@@ -1,5 +1,5 @@
 
-option(OPENMIND_MATH_USE_LEVELDB_CACHE "Use Google LevelDB library to cache solutions" TRUE)
+option(OPENMIND_MATH_USE_LEVELDB_CACHE "Use Google LevelDB library to cache solutions" FALSE)
 
 if(OPENMIND_MATH_USE_LEVELDB_CACHE)
 	add_definitions(-DOPENMIND_MATH_USE_LEVELDB_CACHE)
