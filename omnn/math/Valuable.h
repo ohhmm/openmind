@@ -180,22 +180,23 @@ public:
      
     template<class T,
         typename = typename std::enable_if<
-                std::is_rvalue_reference<T>::value &&
-                !std::is_const<T>::value>::type
+            !std::is_const<T>::value &&
+            std::is_base_of<Valuable, T>::value
+        >::type
     >
-    Valuable(T t)
+    Valuable(T&& t)
     : exp(t.Move())
     { }
 
     Valuable(Valuable&&) = default;
-    
+    Valuable();
     Valuable(double d);
 
-    Valuable(int32_t i = 0);
-    //Valuable(const int32_t);
-    Valuable(uint32_t);
-	Valuable(int64_t);
-	Valuable(uint64_t);
+    template<class T,
+        typename = typename std::enable_if<!std::is_rvalue_reference<T>::value && std::is_integral<T>::value>::type
+    >
+    Valuable(T i = 0) : Valuable(a_int(i)) {}
+
     Valuable(const a_int&);
     Valuable(a_int&&);
     Valuable(boost::rational<a_int>&&);

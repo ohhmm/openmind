@@ -122,8 +122,8 @@ public:
     Valuable Shr() const override;
     Valuable Shr(const Valuable& n) const override;
     
-    Valuable operator()(const Variable&) const override { return {}; }
-    Valuable operator()(const Variable&, const Valuable& augmentation) const override { return {}; }
+    Valuable operator()(const Variable&) const override { return 0; }
+    Valuable operator()(const Variable&, const Valuable& augmentation) const override { return 0; }
     
     const Variable* FindVa() const override { return nullptr; }
     bool HasVa(const Variable& va) const override { return {}; }

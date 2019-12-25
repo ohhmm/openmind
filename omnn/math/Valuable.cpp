@@ -198,15 +198,9 @@ namespace math {
         exp(v)
     {
     }
-
+    Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
-    Valuable::Valuable(int32_t i) : exp(new Integer(i)) {}
-    //Valuable::Valuable(const int32_t i) : exp(new Integer(i)) {}
-    Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
     Valuable::Valuable(a_int&& i) : exp(new Integer(std::move(i))) {}
-    Valuable::Valuable(uint32_t i) : exp(new Integer(i)) {}
-    Valuable::Valuable(uint64_t i) : exp(new Integer(i)) {}
-    Valuable::Valuable(int64_t i) : exp(new Integer(i)) {}
     Valuable::Valuable(boost::rational<a_int>&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
 
     Variable x,a,b,c;
