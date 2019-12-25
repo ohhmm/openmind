@@ -150,15 +150,16 @@ namespace math {
         isOptimizing = true;
 
         auto s = str();
-//        CollectVaNames
         auto doCheck = s.length() > 10;
         std::future<Valuable> checkCache;
         std::atomic<bool> isInCache = {};
         std::function<bool()> cacheCheckFinished, gotCached;
         if (doCheck) {
             checkCache = std::async(launch::async,
-                [&](std::string&& key){
-                    auto one = DbSumOptimizationCache.GetOne(key);
+                [&isInCache,
+                 vaHost = getVaHost()
+                 ] (std::string&& key) {
+                    auto one = DbSumOptimizationCache.GetOne(key, vaHost);
                     auto value = one.first ? one.second : Valuable();
                     isInCache = one.first;
                     if(one.first)
