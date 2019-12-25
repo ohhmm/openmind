@@ -924,6 +924,14 @@ namespace math {
             IMPLEMENT
     }
 
+    void Valuable::CollectVaNames(std::map<std::string, Variable>& s) const
+    {
+        if (exp)
+            exp->CollectVaNames(s);
+        else
+            IMPLEMENT
+    }
+
     Valuable::var_set_t Valuable::Vars() const
     {
         var_set_t vars;

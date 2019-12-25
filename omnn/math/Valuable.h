@@ -303,6 +303,8 @@ public:
     virtual bool HasVa(const Variable&) const;
     using var_set_t = std::set<Variable>;
     virtual void CollectVa(var_set_t& s) const;
+    virtual void CollectVaNames(std::map<std::string, Variable>& s) const;
+    
     var_set_t Vars() const;
     virtual void Eval(const Variable& va, const Valuable& v);
     virtual bool IsComesBefore(const Valuable& v) const; /// accepts same type as param
