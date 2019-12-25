@@ -150,6 +150,7 @@ namespace math {
         isOptimizing = true;
 
         auto s = str();
+//        CollectVaNames
         auto doCheck = s.length() > 10;
         std::future<Valuable> checkCache;
         std::atomic<bool> isInCache = {};

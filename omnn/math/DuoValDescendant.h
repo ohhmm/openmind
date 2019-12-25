@@ -86,6 +86,10 @@ namespace omnn::math {
             _1.CollectVa(s);
             _2.CollectVa(s);
         }
+        void CollectVaNames(std::map<std::string, Variable>& s) const override {
+            _1.CollectVaNames(s);
+            _2.CollectVaNames(s);
+        }
 
         bool eval(const std::map<Variable, Valuable>& with) override {
             auto evaluated = _1.eval(with);

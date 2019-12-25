@@ -55,6 +55,7 @@ public:
     bool HasVa(const Variable& va) const override { return operator==(va); }
     
     void CollectVa(std::set<Variable>& s) const override;
+    void CollectVaNames(std::map<std::string, Variable>& s) const override;
 
     bool eval(const std::map<Variable, Valuable>& with) override;
     

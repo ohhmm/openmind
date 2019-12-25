@@ -146,6 +146,10 @@ namespace math {
             for (auto& i : GetConstCont())
                 i.CollectVa(s);
         }
+        void CollectVaNames(std::map<std::string, Variable>& s) const override {
+            for (auto& i : GetConstCont())
+                i.CollectVaNames(s);
+        }
         
         Valuable Each(const std::function<Valuable(const Valuable&)>& m) const {
             Chld c;

@@ -196,6 +196,10 @@ namespace math {
         s.insert(*this);
     }
 
+    void Variable::CollectVaNames(std::map<std::string, Variable>& s) const{
+        s[str()] = *this;
+    }
+
     bool Variable::eval(const std::map<Variable, Valuable>& with) {
         auto it = with.find(*this);
         auto evaluated = it != with.end();
