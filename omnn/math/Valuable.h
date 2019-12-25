@@ -303,7 +303,10 @@ public:
     virtual bool HasVa(const Variable&) const;
     using var_set_t = std::set<Variable>;
     virtual void CollectVa(var_set_t& s) const;
-    virtual void CollectVaNames(std::map<std::string, Variable>& s) const;
+    using va_names_t = std::map<std::string, Variable>;
+    virtual void CollectVaNames(va_names_t& s) const;
+    va_names_t VaNames() const;
+    virtual std::shared_ptr<VarHost> getVaHost() const;
     
     var_set_t Vars() const;
     virtual void Eval(const Variable& va, const Valuable& v);

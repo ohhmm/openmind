@@ -313,9 +313,12 @@ namespace math {
                     {
                         Become(Integer(s));
                     }
-                    else if (s[0] == 'v')
+                    else
                     {
-                        Become(h->New(std::stoi(s.c_str()+1)));
+                        if (s[0] == 'v')
+                            Become(Valuable(h->Host(std::stoi(s.c_str()+1)).Clone()));
+                        else
+                            IMPLEMENT
                     }
                 }
             }
@@ -930,6 +933,27 @@ namespace math {
             exp->CollectVaNames(s);
         else
             IMPLEMENT
+    }
+
+    Valuable::va_names_t Valuable::VaNames() const {
+        va_names_t vaNames;
+        CollectVaNames(vaNames);
+        return vaNames;
+    }
+
+    std::shared_ptr<VarHost> Valuable::getVaHost() const {
+        auto aVa = FindVa();
+        std::shared_ptr<VarHost> host;
+#ifndef NDEBUG
+        // check that all of Vars() has common va host.
+#endif
+        if (aVa)
+            host = aVa->getVaHost();
+        else {
+            static Variable AVa;
+            host = AVa.getVaHost();
+        }
+        return host;
     }
 
     Valuable::var_set_t Valuable::Vars() const

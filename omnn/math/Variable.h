@@ -28,6 +28,8 @@ public:
     Variable();
     Variable(const Variable& v);
     Variable(std::shared_ptr<VarHost>);
+    
+    std::shared_ptr<VarHost> getVaHost() const override { return varSetHost; }
 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable&) override;
