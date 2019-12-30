@@ -33,6 +33,10 @@ namespace omnn::math {
             if (!leveldb::DB::Open(options, path.c_str(), &db).ok()) {
                 auto err = path + " db connection error";
                 std::cerr << err << std::endl;
+#ifndef NDEBUG
+                std::system(("rm -rf " + path).c_str());
+                if (!leveldb::DB::Open(options, path.c_str(), &db).ok())
+#endif
                 throw err;
             }
 #endif
@@ -52,19 +56,29 @@ namespace omnn::math {
             if(db)
                 delete db; // hopely it has overloaded operator delete inside its image
         }
-        
-        std::pair<bool, Valuable> GetOne(const std::string& key, std::shared_ptr<VarHost> host)
+
+      using CheckCacheResult = std::pair<bool,Valuable>;
+      std::future<CheckCacheResult> AsyncFetch(const Valuable& v, bool itIsOptimized = false){
+          using self_t = std::remove_reference<decltype(*this)>::type;
+          return std::async(std::launch::async,
+                            &self_t::GetOne,
+                            this, v.str(), v.VaNames(), itIsOptimized);
+      }
+
+      CheckCacheResult GetOne(const std::string& key, const Valuable::va_names_t& vaNames, bool itIsOptimized = false)
         {
+            CheckCacheResult cachedValue;
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
             std::string value;
-            
-            leveldb::Status s = db->Get(leveldb::ReadOptions(), key, &value);
-            if(s.ok()){
-                return { true, Valuable(value, host)};
-            }
-            else
+            cachedValue.first = db->Get(leveldb::ReadOptions(), key, &value).ok();
+            if(cachedValue.first){
+                cachedValue.second = Valuable(value, vaNames, itIsOptimized);
+#ifndef NDEBUG
+                std::cout << "fetched from cache " << key << " => " << cachedValue.second << std::endl;
 #endif
-                return {};
+            }
+#endif
+            return cachedValue;
         }
         
         bool Set(const std::string& key, const std::string& v)
@@ -75,19 +89,6 @@ namespace omnn::math {
 #endif
                 ;
         }
-//
-//        auto Get(const Valuable& key)
-//        {
-//            std::set<Valuable> values;
-//            auto it = db->NewIterator({});
-//            for (it->Seek(start);
-//                 it->Valid() && it->key() == key.str();
-//                 it->Next()) {
-//            return values;
-//        }
-            
             
     };
 }
-
-//#endif
