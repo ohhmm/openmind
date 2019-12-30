@@ -200,7 +200,9 @@ public:
     Valuable(const a_int&);
     Valuable(a_int&&);
     Valuable(boost::rational<a_int>&&);
-
+    
+    using NewVaFn_t = std::function<Valuable(const std::string&)>;
+    Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string&, std::shared_ptr<VarHost>);
 
     virtual ~Valuable();
@@ -316,6 +318,8 @@ public:
     bool OfSameType(const Valuable& v) const;
     bool HasSameVars(const Valuable& v) const;
     bool IsMonic() const;
+
+    Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
 
     explicit operator bool() const;
     virtual explicit operator int() const;

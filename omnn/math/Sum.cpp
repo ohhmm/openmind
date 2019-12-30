@@ -151,22 +151,11 @@ namespace math {
 
         auto s = str();
         auto doCheck = s.length() > 10;
-        std::future<Valuable> checkCache;
-        std::atomic<bool> isInCache = {};
+        using CheckCacheResult = std::pair<bool,Valuable>;
+        std::future<CheckCacheResult> checkCache;
         std::function<bool()> cacheCheckFinished, gotCached;
         if (doCheck) {
-            checkCache = std::async(launch::async,
-                [&isInCache,
-                 vaHost = getVaHost()
-                 ] (std::string&& key) {
-                    auto one = DbSumOptimizationCache.GetOne(key, vaHost);
-                    auto value = one.first ? one.second : Valuable();
-                    isInCache = one.first;
-                    if(one.first)
-                      std::cout << "fetched from cache " << key << " => " << value <<std::endl;
-                    return value;
-                },
-                std::string(s));
+            checkCache = DbSumOptimizationCache.AsyncFetch(*this, true);
             cacheCheckFinished = [&]() -> bool {
                 return doCheck
                     && checkCache.valid()
@@ -176,7 +165,7 @@ namespace math {
             gotCached = [&]() -> bool {
                  bool hasCachedValue = cacheCheckFinished();
                  if (hasCachedValue){
-                     hasCachedValue = isInCache;
+                     hasCachedValue = checkCache.get().first;
                      gotCached = [=](){return hasCachedValue;};
                  }
                  return hasCachedValue;
@@ -189,12 +178,12 @@ namespace math {
         do
         {
             if (gotCached()) {
-                Become(checkCache.get());
+                Become(checkCache.get().second);
                 return;
             }
             w = *this;
             if (gotCached()) {
-                Become(checkCache.get());
+                Become(checkCache.get().second);
                 return;
             }
             
@@ -205,7 +194,7 @@ namespace math {
                 return;
             }
             if (gotCached()) {
-                Become(checkCache.get());
+                Become(checkCache.get().second);
                 return;
             }
             
@@ -222,7 +211,7 @@ namespace math {
                     ++it;
                 
                 if (gotCached()) {
-                    Become(checkCache.get());
+                    Become(checkCache.get().second);
                     return;
                 }
             }
@@ -239,7 +228,7 @@ namespace math {
             }
             
             if (gotCached()) {
-                Become(checkCache.get());
+                Become(checkCache.get().second);
                 return;
             }
             
@@ -279,7 +268,7 @@ namespace math {
                 for (; it2 != members.end();)
                 {
                     if (gotCached()) {
-                        Become(checkCache.get());
+                        Become(checkCache.get().second);
                         return;
                     }
                     
@@ -361,19 +350,19 @@ namespace math {
             for (auto it = members.begin(); it != members.end();)
             {
                 if (gotCached()) {
-                    Become(checkCache.get());
+                    Become(checkCache.get().second);
                     return;
                 }
                 auto copy = *it;
                 
                 if (gotCached()) {
-                    Become(checkCache.get());
+                    Become(checkCache.get().second);
                     return;
                 }
                 copy.optimize();
                 
                 if (gotCached()) {
-                    Become(checkCache.get());
+                    Become(checkCache.get().second);
                     return;
                 }
                 
