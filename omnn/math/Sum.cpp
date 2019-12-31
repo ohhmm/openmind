@@ -1161,6 +1161,11 @@ namespace math {
 #endif
             return Valuable(s);
         }
+        
+        auto doCheck = grade > 2;
+        auto checkCached = doCheck
+                            ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true)
+                            : Cache::Cached();
         if (grade == 2) {
             auto& a = coefs[2];
             auto& b = coefs[1];
@@ -1179,10 +1184,14 @@ namespace math {
             //            auto fsgcd = //va.Sq()-t;
             //            auto x1_x2  = fac(va);
             //            auto x3 = va  - x1_x2;
+            if(checkCached)
+                return checkCached;
             return Valuable(Solutions(va));
         }
         else if (coefs.size() && grade && grade < 3)
         {
+            if(checkCached)
+                return checkCached;
             solve(va, s, coefs, grade);
             for (auto i=s.begin(); i != s.end();) {
                 if (i->HasVa(va)) {
@@ -1220,6 +1229,8 @@ namespace math {
                     IMPLEMENT
                 }
             }
+            if(checkCached)
+                return checkCached;
 
             // diffirrentials roots test
             std::stack<Valuable> diffs;
@@ -1243,6 +1254,8 @@ namespace math {
                 }
                 return added;
             };
+            if(checkCached)
+                return checkCached;
 
             if(!tryCoupleTopDiffSolutions()) // check if some solutions found
             {
@@ -1251,12 +1264,22 @@ namespace math {
 // TODO :                  || testSolutions(GetIntegerSolution(va)) // try integer root
                    )
                 {
+                    if(checkCached)
+                        return checkCached;
+
                     Valuable c = *this;
-                    for(auto& so: s)
+                    for(auto& so: s) {
                         c /= va.Equals(so);
+                        if(checkCached)
+                            return checkCached;
+                    }
                     for(auto& so: c.Solutions(va)){ // complete solving
                         s.insert(so);
+                        if(checkCached)
+                            return checkCached;
                     }
+                    if(checkCached)
+                        return checkCached;
                     return Valuable(s);
                 }
                 else
@@ -1276,10 +1299,19 @@ namespace math {
                     augmentation -= m;
                 }
             }
+            if(checkCached)
+                return checkCached;
+
             return _(va, augmentation);
         }
         
-        return Valuable(s);
+        if(checkCached)
+            return checkCached;
+        
+        Valuable pluralSolutionsExpression(s);
+        if (checkCached.NotInCache())
+            DbSumSolutionsOptimizedCache.AsyncSet(str(), pluralSolutionsExpression.str());
+        return pluralSolutionsExpression;
     }
     
     Valuable::solutions_t Sum::GetIntegerSolution(const Variable& va) const
