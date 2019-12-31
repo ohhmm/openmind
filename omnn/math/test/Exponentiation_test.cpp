@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(Multival_test)
     auto a = 1_v ^ (1_v/2);
     BOOST_TEST(!!a.IsMultival() == true);
     
-    auto& x = "x"_va;
+    DECL_VA(x);
     BOOST_TEST(!!x.IsMultival() == true);
     a = x / x;
     BOOST_TEST(a != 1);

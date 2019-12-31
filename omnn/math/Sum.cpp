@@ -151,39 +151,18 @@ namespace math {
 
         auto s = str();
         auto doCheck = s.length() > 10;
-        using CheckCacheResult = std::pair<bool,Valuable>;
-        std::future<CheckCacheResult> checkCache;
-        std::function<bool()> cacheCheckFinished, gotCached;
-        if (doCheck) {
-            checkCache = DbSumOptimizationCache.AsyncFetch(*this, true);
-            cacheCheckFinished = [&]() -> bool {
-                return doCheck
-                    && checkCache.valid()
-                    && checkCache.wait_for(std::chrono::seconds()) == std::future_status::ready
-                    ;
-            };
-            gotCached = [&]() -> bool {
-                 bool hasCachedValue = cacheCheckFinished();
-                 if (hasCachedValue){
-                     hasCachedValue = checkCache.get().first;
-                     gotCached = [=](){return hasCachedValue;};
-                 }
-                 return hasCachedValue;
-            };
-        } else {
-            gotCached = cacheCheckFinished = [=](){ return doCheck; };
-        }
+        auto checkCache = doCheck ? DbSumOptimizationCache.AsyncFetch(*this, true) : Cache::Cached();
 
         Valuable w;
         do
         {
-            if (gotCached()) {
-                Become(checkCache.get().second);
+            if (checkCache) {
+                Become(checkCache);
                 return;
             }
             w = *this;
-            if (gotCached()) {
-                Become(checkCache.get().second);
+            if (checkCache) {
+                Become(checkCache);
                 return;
             }
             
@@ -193,8 +172,8 @@ namespace math {
                 Become(std::move(m));
                 return;
             }
-            if (gotCached()) {
-                Become(checkCache.get().second);
+            if (checkCache) {
+                Become(checkCache);
                 return;
             }
             
@@ -210,8 +189,8 @@ namespace math {
                 else
                     ++it;
                 
-                if (gotCached()) {
-                    Become(checkCache.get().second);
+                if (checkCache) {
+                    Become(checkCache);
                     return;
                 }
             }
@@ -227,8 +206,8 @@ namespace math {
                 }
             }
             
-            if (gotCached()) {
-                Become(checkCache.get().second);
+            if (checkCache) {
+                Become(checkCache);
                 return;
             }
             
@@ -267,8 +246,8 @@ namespace math {
                 
                 for (; it2 != members.end();)
                 {
-                    if (gotCached()) {
-                        Become(checkCache.get().second);
+                    if (checkCache) {
+                        Become(checkCache);
                         return;
                     }
                     
@@ -349,20 +328,20 @@ namespace math {
             // optimize members
             for (auto it = members.begin(); it != members.end();)
             {
-                if (gotCached()) {
-                    Become(checkCache.get().second);
+                if (checkCache) {
+                    Become(checkCache);
                     return;
                 }
                 auto copy = *it;
                 
-                if (gotCached()) {
-                    Become(checkCache.get().second);
+                if (checkCache) {
+                    Become(checkCache);
                     return;
                 }
                 copy.optimize();
                 
-                if (gotCached()) {
-                    Become(checkCache.get().second);
+                if (checkCache) {
+                    Become(checkCache);
                     return;
                 }
                 
@@ -472,11 +451,9 @@ namespace math {
                 }
             }
         }
-        
-        if (cacheCheckFinished() && !gotCached()) {
-            std::async([](std::string&& k, std::string&& v){
-                DbSumOptimizationCache.Set(k, v);
-                }, std::move(s), str());
+
+        if (doCheck && checkCache.NotInCache()) {
+            DbSumOptimizationCache.AsyncSet(std::move(s), str());
         }
         
         if (IsSum()) {

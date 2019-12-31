@@ -71,4 +71,4 @@ public:
 
 }}
 
-#define DECL_VA(x) auto x = #x##_va;
+#define DECL_VA(x) auto& x = #x##_va;
