@@ -389,8 +389,12 @@ namespace math {
             IMPLEMENT;
     }
 
-    Valuable::Valuable(const std::string& s, const Valuable::va_names_t& vaNames, bool itIsOptimized){
-        
+    Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized){
+		auto optimizationsWas = Valuable::optimizations;
+		Valuable::optimizations = !itIsOptimized && optimizationsWas;
+		// remove spaces
+		auto s = str;
+		s.erase(remove_if(s.begin(), s.end(), isspace), s.end());
         auto l = s.length();
         using index_t = decltype(l);
         std::stack <index_t> st;
@@ -412,11 +416,23 @@ namespace math {
             throw "parentneses relation missmatch";
         if (bracketsmap.empty())
         {
-            std::size_t found = s.find("*");
-            if (found != std::string::npos)
-            {
-                std::string lpart = s.substr(0, found);
-                std::string rpart = s.substr(found + 1, s.length() - found);
+            auto found = s.find("+");
+            if (found != std::string::npos) {
+                auto lpart = s.substr(0, found);
+				auto rpart = s.substr(found + 1, s.length() - found);
+                auto l = Valuable(lpart, vaNames, itIsOptimized);
+                if (itIsOptimized)
+                    l.optimized = itIsOptimized;
+                auto r = Valuable(rpart, vaNames, itIsOptimized);
+                if (itIsOptimized)
+                    r.optimized = itIsOptimized;
+                auto sum = l+r;
+                if (itIsOptimized)
+					sum.optimized = itIsOptimized;
+                Become(std::move(sum));
+            } else if ((found = s.find("*")) != std::string::npos) {
+                auto lpart = s.substr(0, found);
+				auto rpart = s.substr(found + 1, s.length() - found);
                 auto l = Valuable(lpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     l.optimized = itIsOptimized;
@@ -427,45 +443,44 @@ namespace math {
                 if (itIsOptimized)
                     product.optimized = itIsOptimized;
                 Become(std::move(product));
+			} else if((found = s.find("^")) != std::string::npos) {
+                std::string lpart = s.substr(0, found);
+                std::string rpart = s.substr(found + 1, s.length() - found);
+                auto l = Valuable(lpart, vaNames, itIsOptimized);
+                if (itIsOptimized)
+                    l.optimized = itIsOptimized;
+                auto r = Valuable(rpart, vaNames, itIsOptimized);
+                if (itIsOptimized)
+                    r.optimized = itIsOptimized;
+                auto exp = l ^ r;
+                if (itIsOptimized)
+                    exp.optimized = itIsOptimized;
+                Become(std::move(exp));
             }
-            else
-            {
-                found = s.find("^");
-                if (found != std::string::npos)
-                {
-                    std::string lpart = s.substr(0, found);
-                    std::string rpart = s.substr(found + 1, s.length() - found);
-                    auto l = Valuable(lpart, vaNames, itIsOptimized);
-                    if (itIsOptimized)
-                        l.optimized = itIsOptimized;
-                    auto r = Valuable(rpart, vaNames, itIsOptimized);
-                    if (itIsOptimized)
-                        r.optimized = itIsOptimized;
-                    auto exp = l ^ r;
-                    if (itIsOptimized)
-                        exp.optimized = itIsOptimized;
-                    Become(std::move(exp));
-                }
-                else
-                {
-                    found = s.find_first_not_of("0123456789");
-                    if (found == std::string::npos)
-                    {
-                        Become(Integer(s));
-                    }
-                    else
-                    {
-                        auto it = vaNames.find(s);
-                        if (it != vaNames.end()){
-                            Valuable v(it->second);
-                            if (itIsOptimized)
-                                v.optimized = itIsOptimized;
-                            Become(std::move(v));
-                        }else
-                            IMPLEMENT
-                    }
-                }
-            }
+			else
+			{
+				size_t offs = 0;
+				while (s[offs] == ' ')
+					++offs;
+				if (s[offs] == '-')
+					++offs;
+				found = s.find_first_not_of("0123456789", offs);
+				if (found == std::string::npos)
+					Become(Integer(s));
+				else
+				{
+					auto it = vaNames.find(s);
+					if (it != vaNames.end()) {
+						Valuable v(it->second);
+						if (itIsOptimized)
+							v.optimized = itIsOptimized;
+						Become(std::move(v));
+					}
+					else
+						IMPLEMENT
+				}
+			}
+
         }
         else {
             Sum sum;
@@ -535,12 +550,14 @@ namespace math {
             if (itIsOptimized)
                 sum.optimized = itIsOptimized;
             Become(std::move(sum));
+			Valuable::optimizations = optimizationsWas;
         }
 
-        auto _ = str();
+        auto _ = this->str();
         if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
             _ = _.substr(1, _.length()-2);
         
+		_.erase(remove_if(_.begin(), _.end(), isspace), _.end());
         if (s != _)
             IMPLEMENT;
     }

@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE School test
+﻿#define BOOST_TEST_MODULE School test
 #include <boost/test/unit_test.hpp>
 #include "Sum.h"
 #include "Variable.h"
@@ -6,6 +6,96 @@
 
 using namespace omnn::math;
 using namespace boost::unit_test;
+
+
+BOOST_AUTO_TEST_CASE(P_474)
+{
+	std::cout
+		<< std::endl
+		<< "No 474 Equations"
+		<< std::endl;
+
+	DECL_VA(x);
+	std::cout << "x+318=645		x=" << (x + 318 - 645)(x) << std::endl;
+
+	DECL_VA(y);
+	std::cout << "870-y=187		y=" << (870-y-187)(y) << std::endl;
+
+	DECL_VA(z);
+	std::cout << "z-234=356		z=" << (z-234-356)(z) << std::endl;
+
+
+}
+
+
+BOOST_AUTO_TEST_CASE(N456)
+{
+	std::cout
+		<< std::endl
+		<< 
+		"№456"
+		<< std::endl;
+
+	DECL_VA(all);
+	DECL_VA(soldfirst);
+	DECL_VA(soldsecond);
+	DECL_VA(free);
+
+	// Усього = ПродалиСпочатку + ПродалиПотім + ВільнихМісць
+	// (ПродалиСпочатку + ПродалиПотім + ВільнихМісць) - Усього == 0
+	auto formula = (soldfirst + soldsecond + free) - all;
+	std::cout << "formula: " << formula.str() << " = 0" << std::endl;
+
+	formula.eval({
+		{ all, 586 },
+		{ soldfirst, 29 },
+		{ soldsecond, 459 }
+		});
+	std::cout << "evaluated: " << formula.str() << " = 0" << std::endl;
+
+	auto root = formula(free);
+	std::cout << "x = " << root << std::endl;
+
+	formula.eval({ { free, root } });
+	std::cout << "check: " << formula << " = 0" << std::endl;
+	BOOST_TEST(formula == 0);
+}
+
+BOOST_AUTO_TEST_CASE(N_451_3)
+{
+	std::cout
+		<< std::endl
+		<< "451_3"
+		<< std::endl;
+
+	DECL_VA(S);
+	DECL_VA(P);
+	DECL_VA(x);
+
+	auto formula = (P + x) - S; // S = P+x
+	std::cout << "formula: " << formula.str() << " = 0" << std::endl;
+
+	formula.eval({
+		{ S, 235 },
+		{ P, 127 }
+		});
+	std::cout << "evaluated: " << formula.str() << " = 0" << std::endl;
+
+	auto root = formula(x);
+	std::cout << "x = " << root << std::endl;
+
+	formula.eval({ { x, root } });
+	std::cout << "check: " << formula << " = 0" << std::endl;
+	BOOST_TEST(formula == 0);
+}
+
+BOOST_AUTO_TEST_CASE(P_465_358)
+{
+	std::cout
+		<< std::endl
+		<< "Primer: 465-358=" << 586-459
+		<< std::endl;
+}
 
 BOOST_AUTO_TEST_CASE(Perimeter)
 {
@@ -38,3 +128,4 @@ BOOST_AUTO_TEST_CASE(Perimeter)
     std::cout << "check: " << formula << " = 0" << std::endl;
     BOOST_TEST(formula == 0);
 }
+
