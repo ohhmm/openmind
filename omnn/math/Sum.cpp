@@ -33,6 +33,7 @@ namespace omnn{
 namespace math {
 
     Cache DbSumOptimizationCache("DbSumOptimizationCache.solutions");
+    Cache DbSumSolutionsOptimizedCache("DbSumSolutionsOptimizedCache.solutions");
 
     namespace
     {
