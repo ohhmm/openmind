@@ -7,7 +7,12 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE)
 	set(DEPENDENCIES ${DEPENDENCIES} ${leveldb_LIBRARIES})
 endif()
 
-lib(${DEPENDENCIES})
+if(OPENMIND_USE_OPENCL)
+	add_definitions(-DOPENMIND_MATH_USE_OPENCL -DOPENMIND_USE_OPENCL)
+	set(DEPENDENCIES ${DEPENDENCIES} ${OpenCl_Library})
+endif()
+
+lib(${DEPENDENCIES} boost_thread boost_serialization boost_system)
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
