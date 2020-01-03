@@ -532,7 +532,8 @@ namespace math {
         auto _sq = _ * _;
         if (_sq != boost::multiprecision::abs(arbitrary)){
             auto d = GreatestCommonExp(2);
-            return (*this / d.second).Sqrt() * d.first;
+            if(d.second != 1)
+                return (*this / d.second).Sqrt() * d.first;
         }
         return minus ? constant::i * _ : _;
     }

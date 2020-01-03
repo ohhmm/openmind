@@ -1189,7 +1189,7 @@ namespace math {
                 return checkCached;
             return Valuable(Solutions(va));
         }
-        else if (coefs.size() && grade && grade < 3)
+        else if (coefs.size())// && grade && grade < 3)
         {
             if(checkCached)
                 return checkCached;
