@@ -7,6 +7,24 @@
 
 using namespace omnn::math;
 
+namespace {
+constexpr size_t MaxThreadsForCacheStoring = 1024;
+using CacheStoringTask = std::future<bool>;
+using CacheStoringTasksQueue = std::deque<CacheStoringTask>;
+
+void CleanupReadyTasks(CacheStoringTasksQueue &CacheStoringTasks) {
+  while (CacheStoringTasks.size() &&
+         ((CacheStoringTasks.front().valid() &&
+           CacheStoringTasks.front().wait_for(std::chrono::seconds()) ==
+               std::future_status::ready) ||
+          CacheStoringTasks.size() >= MaxThreadsForCacheStoring)) {
+    if (!CacheStoringTasks.front().get())
+      std::cerr << "Cache storing task failed" << std::endl;
+    CacheStoringTasks.pop_front();
+  }
+}
+}
+
 void Cache::DbOpen() {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
   leveldb::Options options;
@@ -60,6 +78,31 @@ Cache::CheckCacheResult Cache::GetOne(const std::string &key,
   return cachedValue;
 }
 
+Cache::CachedSet Cache::AsyncFetchSet(const Valuable& v, bool itIsOptimized){
+  using self_t = std::remove_reference<decltype(*this)>::type;
+  auto&& task = std::async(std::launch::async, &self_t::GetSet,
+                           this, v.str(), v.VaNames(), itIsOptimized);
+  return std::move(task);
+}
+
+Cache::CheckCachedSet Cache::GetSet(const std::string& key, const Valuable::va_names_t& vaNames, bool itIsOptimized){
+  CheckCachedSet cachedSet;
+#ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
+  std::string value;
+  cachedSet.first = db->Get(leveldb::ReadOptions(), key, &value).ok();
+  if(cachedSet.first){
+      char* token = nullptr;
+      while((token = strtok(const_cast<char*>(value.c_str()), " "))){
+          cachedSet.second.insert(Valuable(token, vaNames, itIsOptimized));
+      }
+#ifndef NDEBUG
+    std::cout << "fetched from cache " << key << " => " << value << std::endl;
+#endif
+  }
+#endif
+  return cachedSet;
+}
+
 bool Cache::Set(const std::string &key, const std::string &v) {
   return db
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
@@ -70,20 +113,9 @@ bool Cache::Set(const std::string &key, const std::string &v) {
 
 void Cache::AsyncSet(std::string &&key, std::string &&v) {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
-  constexpr size_t MaxThreadsForCacheStoring = 1024;
-  using CacheStoringTask = std::future<bool>;
-  static std::deque<CacheStoringTask> CacheStoringTasks;
+  static CacheStoringTasksQueue CacheStoringTasks;
 
-  // cleanup ready tasks:
-  while(CacheStoringTasks.size() &&
-        ((CacheStoringTasks.front().valid() &&
-        CacheStoringTasks.front().wait_for(std::chrono::seconds()) == std::future_status::ready)
-        || CacheStoringTasks.size() >= MaxThreadsForCacheStoring)
-        ) {
-    if(!CacheStoringTasks.front().get())
-      std::cerr << "Cache storing task failed" << std::endl;
-    CacheStoringTasks.pop_front();
-  }
+  CleanupReadyTasks(CacheStoringTasks);
 
   // add new task
   CacheStoringTasks.emplace_back(std::async(std::launch::async,
@@ -96,11 +128,14 @@ void Cache::AsyncSet(std::string &&key, std::string &&v) {
 #endif
 }
 
-Cache::Cached::operator bool() {
-  return valid()
-         && wait_for(std::chrono::seconds()) == std::future_status::ready
-         && get().first
-      ;
+void Cache::AsyncSetSet(const Valuable& key, const val_set_t& v) {
+  std::stringstream ss;
+  ss << v;
+  auto s = ss.str();
+  auto l = s.length();
+  if (s[l-1] == ' ')
+    s[l-1] = 0;
+  AsyncSet(key.str(), std::move(s));
 }
 
 Cache::Cached::operator Valuable() {
@@ -112,12 +147,11 @@ Cache::Cached::operator Valuable() {
   return got.second;
 }
 
-Cache::Cached::Cached(std::future<Cache::CheckCacheResult> && b)
-    :base(std::move(b))
-{}
-
-bool Cache::Cached::NotInCache(){
-    return valid()
-        && wait_for(std::chrono::seconds()) == std::future_status::ready
-        && !get().first;
+Cache::CachedSet::operator val_set_t() {
+  auto got = get();
+  assert(got.first);
+#ifndef NDEBUG
+    std::cout << "Used from cache: [ " << got.second << "]" << std::endl;
+#endif
+  return got.second;
 }

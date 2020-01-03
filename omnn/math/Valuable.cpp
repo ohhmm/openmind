@@ -1009,6 +1009,15 @@ namespace math {
         return obj.print(out);
     }
     
+    std::ostream& operator<<(std::ostream& out, const Valuable::solutions_t& obj)
+    {
+        for(auto& s : obj){
+            s.print(out);
+            out << ' ';
+        }
+        return out;
+    }
+
     Valuable Valuable::calcFreeMember() const
     {
         if(exp)

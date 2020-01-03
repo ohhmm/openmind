@@ -32,8 +32,10 @@
 namespace omnn{
 namespace math {
 
-    Cache DbSumOptimizationCache("DbSumOptimizationCache.solutions");
-    Cache DbSumSolutionsOptimizedCache("DbSumSolutionsOptimizedCache.solutions");
+    CACHE(DbSumOptimizationCache);
+    CACHE(DbSumSolutionsOptimizedCache);
+    CACHE(DbSumSolutionsAllRootsCache);
+    CACHE(DbSumSolutionsARootCache);
 
     namespace
     {
@@ -1467,6 +1469,11 @@ namespace math {
             }
             default: {
                 // RATIONAL ROOT TEST
+                auto checkCache = DbSumSolutionsAllRootsCache.AsyncFetchSet(*this);
+                if(checkCache){
+                    solutions = checkCache;
+                    return;
+                }
                 if(GetView() != View::Solving && GetView() != View::Equation) {
 //                    auto 
                 }
@@ -1489,9 +1496,20 @@ namespace math {
                                 return Test(va, test) || Test(va, test=-test);
                                 }, Infinity());
                         }, Infinity());
+                    if(checkCache){
+                        solutions = checkCache;
+                        return;
+                    }
                     if(found) {
-                        (*this / va.Equals(test)).solve(va, solutions);
+                        auto restToSolve = *this / va.Equals(test);
+                        if(checkCache){
+                            solutions = checkCache;
+                            return;
+                        }
+                        restToSolve.solve(va, solutions);
                         solutions.insert(std::move(test));
+                        if(checkCache.NotInCache())
+                            DbSumSolutionsAllRootsCache.AsyncSetSet(*this, solutions);
                         return;
                     }
                 }
