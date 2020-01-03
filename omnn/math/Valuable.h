@@ -290,6 +290,7 @@ public:
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     friend std::istream& operator>>(std::istream& in, const Valuable& obj);
+    friend std::ostream& operator<<(std::ostream& out, const Valuable::solutions_t& obj);
 
     virtual max_exp_t getMaxVaExp()  const;
     using vars_cont_t = std::map<Variable, Valuable>;

@@ -21,14 +21,46 @@ namespace omnn::math {
         using path_str_t = std::string;
         using CheckCacheResult = std::pair<bool,Valuable>;
 
-        class Cached : public std::future<CheckCacheResult> {
-            using base = std::future<CheckCacheResult>;
+        template <typename ResultT>
+        class CachedValueBase : public std::future<ResultT> {
+          using base = std::future<ResultT>;
+        public:
+          using base::base;
+
+          CachedValueBase(base&& b) : base(std::move(b))
+          {}
+
+          operator bool(){
+            return base::valid()
+                   && base::wait_for(std::chrono::seconds()) == std::future_status::ready
+                   && base::get().first
+                ;
+          }
+
+          bool NotInCache(){
+            return base::valid()
+                   && base::wait_for(std::chrono::seconds()) == std::future_status::ready
+                   && !base::get().first;
+          }
+        };
+
+        class Cached : public CachedValueBase<CheckCacheResult> {
+            using base = CachedValueBase<CheckCacheResult>;
         public:
             using base::base;
-            Cached(base&& b);
-            operator bool();
+//            Cached(base&& b);
             operator Valuable();
-            bool NotInCache();
+        };
+        
+        using val_set_t = Valuable::solutions_t;
+        using CheckCachedSet = std::pair<bool,val_set_t>;
+
+        class CachedSet : public CachedValueBase<CheckCachedSet> {
+            using base = CachedValueBase<CheckCachedSet>;
+        public:
+            using base::base;
+//            CachedSet(base&& b);
+            operator val_set_t();
         };
         
     private:
@@ -46,8 +78,16 @@ namespace omnn::math {
 
         Cached AsyncFetch(const Valuable& v, bool itIsOptimized = false);
         CheckCacheResult GetOne(const std::string& key, const Valuable::va_names_t& vaNames, bool itIsOptimized = false);
+        
+        CachedSet AsyncFetchSet(const Valuable& v, bool itIsOptimized = false);
+        CheckCachedSet GetSet(const std::string& key, const Valuable::va_names_t& vaNames, bool itIsOptimized = false);
 
         bool Set(const std::string& key, const std::string& v);
         void AsyncSet(std::string&& key, std::string&& v);
+        void AsyncSetSet(const Valuable& key, const val_set_t& v);
     };
 }
+
+#define CACHE(name) \
+    auto cachename##name = std::string(#name) + ".solutions"; \
+    Cache name(cachename##name);
