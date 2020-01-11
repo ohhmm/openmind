@@ -49,6 +49,7 @@ public:
     std::ostream& print(std::ostream& out) const override;
 
     bool IsVa() const override { return true; }
+    bool is_optimized() const override { return true; }
     YesNoMaybe IsMultival() const override { return YesNoMaybe::Maybe; }
     bool IsComesBefore(const Valuable& v) const override;
     a_int Complexity() const override { return 1; }

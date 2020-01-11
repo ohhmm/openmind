@@ -7,7 +7,8 @@
 using namespace omnn::math;
 using namespace boost::unit_test;
 
-std::string l(const Valuable& v)
+template<class T>
+std::string l(const T& v)
 {
     std::stringstream ss;
     ss << v;
@@ -395,8 +396,10 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection)
     auto _ = _1.Intersect(_2, x);
     auto solutions = _.IntSolutions(x);
     BOOST_TEST(solutions.size() == 1);
-    _ = *solutions.begin();
-    BOOST_TEST(_ == 2);
+    if(solutions.size()){
+        _ = *solutions.begin();
+        BOOST_TEST(_ == 2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(test_logic_intersection_simplifying

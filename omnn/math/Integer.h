@@ -68,6 +68,12 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
 
+    Integer(std::string_view s)
+        : arbitrary(s)
+    {
+        hash = std::hash<base_int>()(arbitrary);
+    }
+
     explicit Integer(const Fraction& f);
     
     const_base_int_ref as_const_base_int_ref() const {
@@ -77,6 +83,7 @@ public:
     explicit operator int64_t() const;
 
     bool IsInt() const override { return true; }
+    bool is_optimized() const override { return true; }
     YesNoMaybe IsEven() const override;
     YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }

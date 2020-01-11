@@ -16,9 +16,11 @@
 
 //#include <boost/shared_ptr.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/stringize.hpp>
 #include <boost/rational.hpp>
 
-#define IMPLEMENT { implement(); throw; }
+#define IMPLEMENT { implement(__FILE__ ":" BOOST_PP_STRINGIZE(__LINE__) " "); throw; } // " " __FUNCTION__
 
 
 namespace omnn{
@@ -52,8 +54,6 @@ namespace math {
     class Variable;
     struct ValuableDescendantMarker {};
 
-    void implement();
-
 class Valuable
         : public OpenOps<Valuable>
 {
@@ -66,6 +66,7 @@ class Valuable
 
 protected:
     const encapsulated_instance& getInst() const { return exp; }
+    Valuable Link();
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
@@ -321,6 +322,7 @@ public:
     bool IsMonic() const;
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
+    Valuable(std::string_view str, const Valuable::va_names_t& vaNames, bool itIsOptimized);
 
     explicit operator bool() const;
     virtual explicit operator int() const;
@@ -396,13 +398,18 @@ public:
     std::string str() const;
     virtual std::wstring save(const std::wstring&) const;
 
-    auto is_optimized() const { return optimized; }
+    virtual bool is_optimized() const;
 
 protected:
     View view = View::Flat;
     bool optimized = false;
+    void MarkAsOptimized();
+
     //   TODO : std::shared_ptr<std::vector<Valuable>> cachedValues;
 };
+
+
+Valuable implement(const char* str = "");
 
 template <const unsigned long long I>
 class vo {

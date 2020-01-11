@@ -24,6 +24,19 @@ namespace omnn::math {
         template <typename ResultT>
         class CachedValueBase : public std::future<ResultT> {
           using base = std::future<ResultT>;
+            ResultT result;
+            bool extracted = {};
+            void Extract() {
+                if(!extracted){
+                    result = base::get();
+                    extracted = true;
+                }
+            }
+        protected:
+            ResultT& Get() {
+                Extract();
+                return result;
+            }
         public:
           using base::base;
 
@@ -31,16 +44,18 @@ namespace omnn::math {
           {}
 
           operator bool(){
-            return base::valid()
-                   && base::wait_for(std::chrono::seconds()) == std::future_status::ready
-                   && base::get().first
+            return (extracted ||
+              ( base::valid()
+                && base::wait_for(std::chrono::seconds(0)) == std::future_status::ready
+                )) && Get().first
                 ;
           }
 
           bool NotInCache(){
-            return base::valid()
-                   && base::wait_for(std::chrono::seconds()) == std::future_status::ready
-                   && !base::get().first;
+            return (extracted ||
+                ( base::valid()
+                  && base::wait_for(std::chrono::seconds(0)) == std::future_status::ready
+                  )) && !Get().first;
           }
         };
 
@@ -48,6 +63,7 @@ namespace omnn::math {
             using base = CachedValueBase<CheckCacheResult>;
         public:
             using base::base;
+            using base::operator bool;
 //            Cached(base&& b);
             operator Valuable();
         };
@@ -59,6 +75,7 @@ namespace omnn::math {
             using base = CachedValueBase<CheckCachedSet>;
         public:
             using base::base;
+            using base::operator bool;
 //            CachedSet(base&& b);
             operator val_set_t();
         };
