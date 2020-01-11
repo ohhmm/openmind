@@ -2,12 +2,16 @@
 // Created by Sergej Krivonos on 31.12.2019.
 //
 #include "Cache.h"
+
 #include <deque>
 #include <future>
+
+#include <boost/tokenizer.hpp>
 
 using namespace omnn::math;
 
 namespace {
+
 constexpr size_t MaxThreadsForCacheStoring = 1024;
 using CacheStoringTask = std::future<bool>;
 using CacheStoringTasksQueue = std::deque<CacheStoringTask>;
@@ -15,7 +19,7 @@ using CacheStoringTasksQueue = std::deque<CacheStoringTask>;
 void CleanupReadyTasks(CacheStoringTasksQueue &CacheStoringTasks) {
   while (CacheStoringTasks.size() &&
          ((CacheStoringTasks.front().valid() &&
-           CacheStoringTasks.front().wait_for(std::chrono::seconds()) ==
+           CacheStoringTasks.front().wait_for(std::chrono::seconds(0)) ==
                std::future_status::ready) ||
           CacheStoringTasks.size() >= MaxThreadsForCacheStoring)) {
     if (!CacheStoringTasks.front().get())
@@ -23,6 +27,7 @@ void CleanupReadyTasks(CacheStoringTasksQueue &CacheStoringTasks) {
     CacheStoringTasks.pop_front();
   }
 }
+
 }
 
 void Cache::DbOpen() {
@@ -73,6 +78,7 @@ Cache::CheckCacheResult Cache::GetOne(const std::string &key,
 #ifndef NDEBUG
     std::cout << "fetched from cache " << key << " => " << cachedValue.second << std::endl;
 #endif
+    assert(cachedValue.second.is_optimized() == itIsOptimized);
   }
 #endif
   return cachedValue;
@@ -91,10 +97,8 @@ Cache::CheckCachedSet Cache::GetSet(const std::string& key, const Valuable::va_n
   std::string value;
   cachedSet.first = db->Get(leveldb::ReadOptions(), key, &value).ok();
   if(cachedSet.first){
-      char* token = nullptr;
-      while((token = strtok(const_cast<char*>(value.c_str()), " "))){
+      for(auto& token : boost::tokenizer<>(value))
           cachedSet.second.insert(Valuable(token, vaNames, itIsOptimized));
-      }
 #ifndef NDEBUG
     std::cout << "fetched from cache " << key << " => " << value << std::endl;
 #endif
@@ -139,11 +143,13 @@ void Cache::AsyncSetSet(const Valuable& key, const val_set_t& v) {
 }
 
 Cache::Cached::operator Valuable() {
-  auto got = get();
-  assert(got.first);
+  assert(operator bool());
+  auto& got = Get();
 #ifndef NDEBUG
+  assert(got.first);
   std::cout << "Used from cache: " << got.second << std::endl;
 #endif
+  assert(got.second.is_optimized()); // if cached value is not optimized then just remove this assert
   return got.second;
 }
 

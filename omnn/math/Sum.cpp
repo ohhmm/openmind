@@ -26,6 +26,9 @@
 #include <thread>
 #include <type_traits>
 
+#ifdef OPENMIND_USE_OPENCL
+#include <boost/compute.hpp>
+#endif
 //TODO:
 //import std;
 

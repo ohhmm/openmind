@@ -190,7 +190,6 @@ namespace math {
                 }
                 for(auto&& m : members) {
                     auto& f = jobs.front();
-//                    f.wait();
                     evaluated = f.get() || evaluated;
                     c.Add(std::move(const_cast<Valuable&&>(m)));
                     jobs.pop_front();
