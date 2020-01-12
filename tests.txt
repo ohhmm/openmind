@@ -1,0 +1,65 @@
+
+Showing All Messages
+
+Prepare build
+note: Using legacy build system
+
+
+Build target RUN_TESTS of project OpenMind with configuration Debug
+
+PhaseScriptExecution CMake\ PostBuild\ Rules /Users/sergejkrivonos/Sources/build/om-xcode-release/OpenMind.build/Debug/RUN_TESTS.build/Script-CAEE64D4525343F4AB12BD12.sh
+    cd /Users/sergejkrivonos/Projects/openmind
+    /bin/sh -c /Users/sergejkrivonos/Sources/build/om-xcode-release/OpenMind.build/Debug/RUN_TESTS.build/Script-CAEE64D4525343F4AB12BD12.sh
+
+/Applications/CMake.app/Contents/bin/ctest --force-new-ctest-process -C Debug
+Test project /Users/sergejkrivonos/Sources/build/om-xcode-release
+      Start  1: image_codec_test
+ 1/17 Test  #1: image_codec_test .................***Failed  4342.53 sec
+      Start  2: test_extrapolator
+ 2/17 Test  #2: test_extrapolator ................   Passed  1451.69 sec
+      Start  3: 08_System
+ 3/17 Test  #3: 08_System ........................   Passed    0.35 sec
+      Start  4: 8queens
+ 4/17 Test  #4: 8queens ..........................***Failed    1.66 sec
+      Start  5: Exponentiation_test
+ 5/17 Test  #5: Exponentiation_test ..............***Failed    0.25 sec
+      Start  6: Fraction_test
+ 6/17 Test  #6: Fraction_test ....................   Passed    0.23 sec
+      Start  7: Integer_test
+ 7/17 Test  #7: Integer_test .....................   Passed   57.73 sec
+      Start  8: Modulo_test
+ 8/17 Test  #8: Modulo_test ......................   Passed    0.22 sec
+      Start  9: Polyfit_test
+ 9/17 Test  #9: Polyfit_test .....................   Passed    0.15 sec
+      Start 10: Product_test
+10/17 Test #10: Product_test .....................   Passed    0.48 sec
+      Start 11: SchoolTasks
+11/17 Test #11: SchoolTasks ......................   Passed    0.20 sec
+      Start 12: Stasis
+12/17 Test #12: Stasis ...........................   Passed    0.21 sec
+      Start 13: Sum_test
+13/17 Test #13: Sum_test .........................***Failed  198.84 sec
+      Start 14: VarHost_test
+14/17 Test #14: VarHost_test .....................   Passed    0.28 sec
+      Start 15: logic
+15/17 Test #15: logic ............................   Passed   35.21 sec
+      Start 16: sh_test
+16/17 Test #16: sh_test ..........................***Failed    9.25 sec
+      Start 17: ts
+17/17 Test #17: ts ...............................***Failed   76.39 sec
+
+65% tests passed, 6 tests failed out of 17
+
+Total Test time (real) = 6176.79 sec
+
+The following tests FAILED:
+	  1 - image_codec_test (Failed)
+	  4 - 8queens (Failed)
+	  5 - Exponentiation_test (Failed)
+	 13 - Sum_test (Failed)
+	 16 - sh_test (Failed)
+	 17 - ts (Failed)
+Errors while running CTest
+make: *** [RUN_TESTS_buildpart_0] Error 8
+Command /bin/sh failed with exit code 2
+

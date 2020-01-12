@@ -76,7 +76,7 @@ Cache::CheckCacheResult Cache::GetOne(const std::string &key,
   if(cachedValue.first){
     cachedValue.second = Valuable(value, vaNames, itIsOptimized);
 #ifndef NDEBUG
-    std::cout << "fetched from cache " << key << " => " << cachedValue.second << std::endl;
+//    std::cout << "fetched from cache " << key << " => " << cachedValue.second << std::endl;
 #endif
     assert(cachedValue.second.is_optimized() == itIsOptimized);
   }
@@ -106,7 +106,7 @@ Cache::CheckCachedSet Cache::GetSet(const std::string& key, const Valuable::va_n
           token = strtok(nullptr, CachedSetDelimeters);
       }
 #ifndef NDEBUG
-    std::cout << "fetched from cache " << key << " => " << value << std::endl;
+//    std::cout << "fetched from cache " << key << " => " << value << std::endl;
 #endif
   }
 #endif
@@ -153,7 +153,7 @@ Cache::Cached::operator Valuable() {
   auto& got = Get();
 #ifndef NDEBUG
   assert(got.first);
-  std::cout << "Used from cache: " << got.second << std::endl;
+//  std::cout << "Used from cache: " << got.second << std::endl;
 #endif
   assert(got.second.is_optimized()); // if cached value is not optimized then just remove this assert
   return got.second;
@@ -164,7 +164,7 @@ Cache::CachedSet::operator val_set_t() {
   auto got = Get();
   assert(got.first);
 #ifndef NDEBUG
-    std::cout << "Used from cache: [ " << got.second << "]" << std::endl;
+//    std::cout << "Used from cache: [ " << got.second << "]" << std::endl;
 #endif
   return got.second;
 }

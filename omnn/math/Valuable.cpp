@@ -559,8 +559,12 @@ auto OmitOuterBrackets(std::string_view& s){
                             v.MarkAsOptimized();
                         Become(std::move(v));
                     }
-                    else
-                        IMPLEMENT
+                    else {
+#ifndef NDEBUG
+                      std::cout << s << " not var found" << std::endl;
+#endif
+                      IMPLEMENT
+                    }
                 }
             }
         }
