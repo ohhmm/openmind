@@ -16,6 +16,12 @@
 namespace omnn{
 namespace math {
 
+    Exponentiation::Exponentiation(const Valuable& _1, const Valuable& _2)
+    : base(_1,_2)
+    {
+        InitVars();
+    }
+
     max_exp_t Exponentiation::getMaxVaExp(const Valuable& b, const Valuable& e)
     {
         if (e.IsInt()) {
@@ -62,10 +68,17 @@ namespace math {
         return Product {*this, -1};
     }
 
+    void Exponentiation::InitVars() {
+        v.clear();
+        if (ebase().IsVa())
+            v[ebase().as<Variable>()] = eexp();
+    }
+
     void Exponentiation::optimize()
     {
-        if (optimized)
+        if (optimized) {
             return;
+        }
 
         if (!optimizations)
         {
@@ -349,12 +362,7 @@ namespace math {
         if (IsExponentiation()) {
             hash = ebase().Hash() ^ eexp().Hash();
             optimized = true;
-            v.clear();
-            if (ebase().IsVa())
-            {
-                auto vaBase = Variable::cast(ebase());
-                v[*vaBase] = eexp();
-            }
+            InitVars();
         }
     }
     

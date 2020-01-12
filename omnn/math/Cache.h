@@ -24,12 +24,12 @@ namespace omnn::math {
         template <typename ResultT>
         class CachedValueBase : public std::future<ResultT> {
           using base = std::future<ResultT>;
-            ResultT result;
+            ResultT result = {};
             bool extracted = {};
             void Extract() {
                 if(!extracted){
-                    result = base::get();
                     extracted = true;
+                    result = base::get();
                 }
             }
         protected:
