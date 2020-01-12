@@ -91,14 +91,20 @@ Cache::CachedSet Cache::AsyncFetchSet(const Valuable& v, bool itIsOptimized){
   return std::move(task);
 }
 
+namespace {
+constexpr auto CachedSetDelimeters = "<|>";
+}
 Cache::CheckCachedSet Cache::GetSet(const std::string& key, const Valuable::va_names_t& vaNames, bool itIsOptimized){
   CheckCachedSet cachedSet;
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
   std::string value;
   cachedSet.first = db->Get(leveldb::ReadOptions(), key, &value).ok();
   if(cachedSet.first){
-      for(auto& token : boost::tokenizer<>(value))
-          cachedSet.second.insert(Valuable(token, vaNames, itIsOptimized));
+      char* token = strtok(const_cast<char*>(value.c_str()), CachedSetDelimeters);
+      while(token){
+          cachedSet.second.insert(Valuable(std::string_view(token), vaNames, itIsOptimized));
+          token = strtok(nullptr, CachedSetDelimeters);
+      }
 #ifndef NDEBUG
     std::cout << "fetched from cache " << key << " => " << value << std::endl;
 #endif
@@ -154,7 +160,8 @@ Cache::Cached::operator Valuable() {
 }
 
 Cache::CachedSet::operator val_set_t() {
-  auto got = get();
+  assert(operator bool());
+  auto got = Get();
   assert(got.first);
 #ifndef NDEBUG
     std::cout << "Used from cache: [ " << got.second << "]" << std::endl;

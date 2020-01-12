@@ -397,7 +397,16 @@ namespace math {
 
     Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     :Valuable(std::string_view(str), vaNames, itIsOptimized)
-    {}
+    {
+#ifndef NDEBUG
+      auto _ = this->str();
+//      if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
+//        _ = _.substr(1, _.length()-2);
+//      _.erase(remove_if(_.begin(), _.end(), isspace), _.end());
+      if (str != _)
+        IMPLEMENT;
+#endif
+    }
 
 namespace{
 auto BracketsMap(const std::string_view& s){
@@ -554,16 +563,7 @@ auto OmitOuterBrackets(std::string_view& s){
                         IMPLEMENT
                 }
             }
-
         }
-
-        auto _ = this->str();
-        if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
-            _ = _.substr(1, _.length()-2);
-        
-//		_.erase(remove_if(_.begin(), _.end(), isspace), _.end());
-        if (s != _)
-            IMPLEMENT;
         
         Valuable::optimizations = optimizationsWas;
     }
@@ -1017,10 +1017,14 @@ auto OmitOuterBrackets(std::string_view& s){
     
     std::ostream& operator<<(std::ostream& out, const Valuable::solutions_t& obj)
     {
-        for(auto& s : obj){
-            s.print(out);
-            out << ' ';
-        }
+        std::stringstream s;
+        s << '<';
+        for (auto& o : obj)
+            s << o << '|';
+        auto str = s.str();
+        auto cstr = const_cast<char*>(str.c_str());
+        cstr[str.size() - 1] = '>';
+        out << cstr;
         return out;
     }
 

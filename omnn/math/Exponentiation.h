@@ -13,6 +13,7 @@ class Exponentiation
 {
 	using base = DuoValDescendant<Exponentiation>;
     vars_cont_t v;
+    void InitVars();
 protected:
     std::ostream& print_sign(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override;
@@ -49,6 +50,8 @@ public:
     void optimize() override;
     
     using base::base;
+    
+    Exponentiation(const Valuable& _1, const Valuable& _2);
 
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
