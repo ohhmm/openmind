@@ -12,7 +12,11 @@ if(OPENMIND_USE_OPENCL)
 	set(DEPENDENCIES ${DEPENDENCIES} ${OpenCl_Library})
 endif()
 
-lib(${DEPENDENCIES} boost_thread boost_serialization boost_system)
+if(NOT MSVC)
+	set(DEPENDENCIES ${DEPENDENCIES} boost_thread boost_serialization boost_system)
+endif()
+
+lib(${DEPENDENCIES})
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}

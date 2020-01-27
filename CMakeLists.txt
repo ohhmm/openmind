@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.14)
 set(PRODUCT_NAME "OpenMind")
 project(${PRODUCT_NAME})
 enable_language(CXX)

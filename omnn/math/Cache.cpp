@@ -159,7 +159,7 @@ Cache::Cached::operator Valuable() {
   return got.second;
 }
 
-Cache::CachedSet::operator val_set_t() {
+Cache::CachedSet::operator Cache::val_set_t() {
   assert(operator bool());
   auto got = Get();
   assert(got.first);
