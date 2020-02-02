@@ -399,12 +399,14 @@ namespace math {
     :Valuable(std::string_view(str), vaNames, itIsOptimized)
     {
 #ifndef NDEBUG
+#ifndef ALLOW_CACHE_UPGRADE
       auto _ = this->str();
 //      if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
 //        _ = _.substr(1, _.length()-2);
 //      _.erase(remove_if(_.begin(), _.end(), isspace), _.end());
       if (str != _)
         IMPLEMENT;
+#endif
 #endif
     }
 

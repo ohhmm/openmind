@@ -79,6 +79,15 @@ Cache::CheckCacheResult Cache::GetOne(const std::string &key,
 //    std::cout << "fetched from cache " << key << " => " << cachedValue.second << std::endl;
 #endif
     assert(cachedValue.second.is_optimized() == itIsOptimized);
+#ifdef ALLOW_CACHE_UPGRADE
+    auto gotValStr = cachedValue.second.str();
+    if (gotValStr != value) {
+    #ifndef NDEBUG
+    std::cout << "upgrading cached value for key " << key << ": " << value << " => " << gotValStr << std::endl;
+    #endif
+      AsyncSet(std::string(key), std::move(gotValStr));
+    }
+#endif
   }
 #endif
   return cachedValue;
