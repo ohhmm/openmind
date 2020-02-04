@@ -652,6 +652,25 @@ auto OmitOuterBrackets(std::string_view& s){
         }
     }
     
+    
+    bool Valuable::SumIfSimplifiable(const Valuable& v)
+    {
+        if(exp)
+            return exp->SumIfSimplifiable(v);
+        IMPLEMENT
+    }
+
+    std::pair<bool,Valuable> Valuable::IsSumationSimplifiable(const Valuable& v) const
+    {
+        if(exp)
+            return exp->IsSumationSimplifiable(v);
+        else {
+            IMPLEMENT
+            auto m = *this + v;
+            return { m.Complexity() < Complexity() + v.Complexity(), m };
+        }
+    }
+    
     Valuable& Valuable::operator /=(const Valuable& v)
     {
         if(exp) {

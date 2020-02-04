@@ -471,12 +471,14 @@ namespace math {
         return is;
     }
 
+    static auto one = 1_v;
     std::pair<bool,Valuable> Exponentiation::IsMultiplicationSimplifiable(const Valuable& v) const
     {
-        std::pair<bool,Valuable> is;
-        is.first = v == getBase();
+        std::pair<bool,Valuable> is, expSumSimplifiable = {};
+        is.first = v == getBase()
+            && (expSumSimplifiable = vo<1>::get().IsSumationSimplifiable(eexp())).first;
         if (is.first) {
-            is.second = getBase() ^ (getExponentiation()+1);
+            is.second = getBase() ^ expSumSimplifiable.second;
         } else if (v.IsExponentiation()) {
             auto& vexpo = v.as<Exponentiation>();
             is.first = vexpo.getBase() == getBase();
@@ -495,6 +497,33 @@ namespace math {
 //            }
         } else {
             std::cout << str() << " * " << v.str() << std::endl;
+        }
+        return is;
+    }
+
+    bool Exponentiation::SumIfSimplifiable(const Valuable& v)
+    {
+        auto is = !v.IsSimple() && !v.IsFraction() && !v.IsExponentiation();
+        if(is){
+            auto sumIfSimplifiable = v.IsSumationSimplifiable(*this);
+            is = sumIfSimplifiable.first;
+            if (is)
+                Become(std::move(sumIfSimplifiable.second));
+        }
+        return is;
+    }
+
+    std::pair<bool,Valuable> Exponentiation::IsSumationSimplifiable(const Valuable& v) const
+    {
+        std::pair<bool,Valuable> is = {};
+        if (is.first) {
+            IMPLEMENT
+            is.second = *this + v;
+            if (is.second.Complexity() > v.Complexity())
+                IMPLEMENT;
+        } else if (v.IsSimple() || v.IsExponentiation() || v.IsFraction()) {
+        } else {
+            is = v.IsSumationSimplifiable(*this);
         }
         return is;
     }

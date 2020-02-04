@@ -264,6 +264,37 @@ namespace math {
         return is;
     }
 
+bool Fraction::SumIfSimplifiable(const Valuable& v)
+{
+    auto is = IsSimpleFraction() && v.IsSimple();
+    if(is){
+        *this += v;
+    } else if (!v.IsFraction()) {
+        auto s = v.IsSumationSimplifiable(*this);
+        is = s.first;
+        if (is) {
+            Become(std::move(s.second));
+        }
+    } else {
+        IMPLEMENT
+    }
+    return is;
+}
+
+std::pair<bool,Valuable> Fraction::IsSumationSimplifiable(const Valuable& v) const
+{
+    std::pair<bool,Valuable> is;
+    is.first = IsSimpleFraction() && v.IsSimple();
+    if(is.first){
+        is.second = *this + v;
+    } else if (!v.IsFraction()) {
+        is = v.IsSumationSimplifiable(*this);
+    } else {
+        IMPLEMENT
+    }
+    return is;
+}
+
     Valuable& Fraction::operator +=(const Valuable& v)
     {
         auto i = cast(v);
