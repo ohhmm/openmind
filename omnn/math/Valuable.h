@@ -196,7 +196,7 @@ public:
     template<class T,
         typename = typename std::enable_if<!std::is_rvalue_reference<T>::value && std::is_integral<T>::value>::type
     >
-    Valuable(T i = 0) : Valuable(a_int(i)) {}
+    constexpr Valuable(T i = 0) : Valuable(a_int(i)) {}
 
     Valuable(const a_int&);
     Valuable(a_int&&);
@@ -213,6 +213,8 @@ public:
     virtual Valuable& operator *=(const Valuable&);
     virtual bool MultiplyIfSimplifiable(const Valuable& v);
     virtual std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
+    virtual bool SumIfSimplifiable(const Valuable& v);
+    virtual std::pair<bool,Valuable> IsSumationSimplifiable(const Valuable& v) const;
     virtual Valuable& operator /=(const Valuable&);
     virtual Valuable& operator %=(const Valuable&);
     virtual Valuable& operator--();
@@ -418,6 +420,7 @@ public:
     constexpr operator const Valuable& () const {
         return val;
     }
+    static const Valuable& get() { return val; }
 };
 
 template <const unsigned long long I>

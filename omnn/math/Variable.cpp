@@ -101,6 +101,38 @@ namespace math {
         return is;
     }
 
+    bool Variable::SumIfSimplifiable(const Valuable& v)
+    {
+        std::pair<bool,Valuable> is;
+        is.first = v.IsVa() && operator==(v);
+        if (is.first) {
+            Become(*this*2);
+        } else {
+            is = v.IsSumationSimplifiable(*this);
+            if(is.first)
+                Become(std::move(is.second));
+        }
+        return is.first;
+    }
+
+    std::pair<bool,Valuable> Variable::IsSumationSimplifiable(const Valuable& v) const
+    {
+        std::pair<bool,Valuable> is;
+        is.first = v.IsVa() && operator==(v);
+        if (is.first) {
+            is.second = v * 2;
+        } else if (v.IsSimple()) {
+        } else {
+            is = v.IsSumationSimplifiable(*this);
+            if(is.first)
+            {
+                if (is.second.Complexity() > v.Complexity())
+                    IMPLEMENT;
+            }
+        }
+        return is;
+    }
+
     Valuable& Variable::operator /=(const Valuable& v)
     {
         auto i = cast(v);
@@ -264,4 +296,5 @@ namespace math {
         else
             IMPLEMENT
     }
+
 }}

@@ -106,8 +106,8 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     cols+=d;rows+=d;
     dst = decltype(src)(rows+d, cols+d);
     dv = view(dst);
-    for (auto i = rows; i>=-d; --i) { // raw
-        for (auto j = cols; j>=-d; --j) { // column
+    for (auto i = rows; --i>=-d;) { // raw
+        for (auto j = cols; --j>=-d;) { // column
             auto c=j+d;
             auto r = i+d;
             auto& d = dv(r, c);

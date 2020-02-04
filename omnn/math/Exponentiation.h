@@ -38,6 +38,8 @@ public:
     Valuable& operator *=(const Valuable& v) override;
     bool MultiplyIfSimplifiable(const Valuable& v) override;
     std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
+    bool SumIfSimplifiable(const Valuable& v) override;
+    std::pair<bool,Valuable> IsSumationSimplifiable(const Valuable& v) const override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator ^=(const Valuable&) override;
     bool operator ==(const Valuable&) const override;

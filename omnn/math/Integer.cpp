@@ -126,6 +126,7 @@ namespace math {
         if(is) {
             arbitrary *= v.ca();
             hash = std::hash<base_int>()(arbitrary);
+        } else if (v.IsVa()) {
         } else {
             auto s = v.IsMultiplicationSimplifiable(*this);
             is = s.first;
@@ -146,6 +147,37 @@ namespace math {
         } else if (v.IsVa() || v.IsExponentiation()) {
         } else {
             is = v.IsMultiplicationSimplifiable(*this);
+        }
+        return is;
+    }
+
+    bool Integer::SumIfSimplifiable(const Valuable& v)
+    {
+        auto is = v.IsInt();
+        if(is) {
+            arbitrary += v.ca();
+            hash = std::hash<base_int>()(arbitrary);
+        } else {
+            auto s = v.IsSumationSimplifiable(*this);
+            is = s.first;
+            if(is)
+                Become(std::move(s.second));
+        }
+        return is;
+    }
+
+    std::pair<bool,Valuable> Integer::IsSumationSimplifiable(const Valuable& v) const
+    {
+        std::pair<bool,Valuable> is;
+        is.first = v.IsInt();
+        if (is.first) {
+            is.second = v + *this;
+        } else if (v.IsVa() || v.IsExponentiation()) {
+        } else if (v.IsProduct()) {
+        } else {
+            is = v.IsSumationSimplifiable(*this);
+            if (is.second.Complexity() > v.Complexity())
+                IMPLEMENT;
         }
         return is;
     }

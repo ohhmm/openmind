@@ -12,10 +12,44 @@ using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace std;
 
+
+
+//The following tests FAILED:
+//      1 - image_codec_test (Failed)
+//      4 - 8queens (Failed)
+//     16 - sh_test (Failed)
+//     17 - ts (Failed)
+
+BOOST_AUTO_TEST_CASE(bit_test)
+{
+    Variable v;
+    auto takeVa1stBit = v.bit(0);
+    auto bit = takeVa1stBit;
+    auto b = bit.eval({{v, 0}});
+    BOOST_TEST(b);
+    BOOST_TEST(bit==0);
+    bit = takeVa1stBit;
+    b = bit.eval({{v, 1}});
+    BOOST_TEST(b);
+    BOOST_TEST(bit==1);
+    bit = takeVa1stBit;
+    b = bit.eval({{v, 2}});
+    BOOST_TEST(b);
+    BOOST_TEST(bit==0);
+    bit = takeVa1stBit;
+    b = bit.eval({{v, 3}});
+    BOOST_TEST(b);
+    BOOST_TEST(bit==1);
+    bit = takeVa1stBit;
+    b = bit.eval({{v, 4}});
+    BOOST_TEST(b);
+    BOOST_TEST(bit==0);
+}
+
 BOOST_AUTO_TEST_CASE(And_test)
 {
     Variable v;
-    auto _ = v.And(vo<2>(), vo<3>());
+    auto _ = v.And(2, 3);
     _.Eval(v, 1);
     _.optimize();
     BOOST_TEST(_==1);
