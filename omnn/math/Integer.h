@@ -55,7 +55,7 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
     
-    //constexpr
+    constexpr
     Integer(base_int&& i)
     : arbitrary(std::move(i))
     {

@@ -80,6 +80,9 @@ public:
 
     size_t FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const;
 	Formula FormulaOfVa(const Variable& v) const;
+
+    bool SumIfSimplifiable(const Valuable& v) override;
+    std::pair<bool,Valuable> IsSumationSimplifiable(const Valuable& v) const override;
 };
 
 

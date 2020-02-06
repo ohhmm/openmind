@@ -564,6 +564,8 @@ namespace math {
         auto vIsInt = v.IsInt();
         if (vIsInt && v == 0)
         {
+            Become(0);
+            return *this;
         }
         else if (vIsInt && v == 1)
         {
@@ -1936,6 +1938,17 @@ namespace math {
         
         return Formula::DeclareFormula(v, fx);
 	}
-    
-    
+
+    bool Sum::SumIfSimplifiable(const Valuable& v){
+        auto is = IsSumationSimplifiable(v);
+        if(is.first)
+            Become(std::move(is.second));
+        return is.first;
+    }
+
+    std::pair<bool,Valuable> Sum::IsSumationSimplifiable(const Valuable& v) const{
+        // TODO : optimize
+        auto m = *this + v;
+        return { m.Complexity() < Complexity() + v.Complexity(), m };
+    }
 }}

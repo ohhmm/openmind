@@ -23,27 +23,24 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(bit_test)
 {
     Variable v;
-    auto takeVa1stBit = v.bit(0);
-    auto bit = takeVa1stBit;
-    auto b = bit.eval({{v, 0}});
-    BOOST_TEST(b);
-    BOOST_TEST(bit==0);
-    bit = takeVa1stBit;
-    b = bit.eval({{v, 1}});
-    BOOST_TEST(b);
-    BOOST_TEST(bit==1);
-    bit = takeVa1stBit;
-    b = bit.eval({{v, 2}});
-    BOOST_TEST(b);
-    BOOST_TEST(bit==0);
-    bit = takeVa1stBit;
-    b = bit.eval({{v, 3}});
-    BOOST_TEST(b);
-    BOOST_TEST(bit==1);
-    bit = takeVa1stBit;
-    b = bit.eval({{v, 4}});
-    BOOST_TEST(b);
-    BOOST_TEST(bit==0);
+    constexpr int NBits = 3, UpTo = 1<<NBits;
+    for (int i = 0; i < UpTo; ++i) {
+        int j = NBits;
+        for (int n=UpTo; (n=n>>1);) {
+            // bit test
+            auto etalon = i & n;
+            auto bit = v.bit(--j);
+            auto b = bit.eval({{v, i}});
+            BOOST_TEST(b);
+            BOOST_TEST(bit==!!etalon);
+            
+            // and test
+            auto an = v.And(NBits, n);
+            b = an.eval({{v, i}});
+            an.optimize();
+            BOOST_TEST(an==etalon);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE(And_test)
