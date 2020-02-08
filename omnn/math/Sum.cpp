@@ -1485,7 +1485,9 @@ namespace math {
                 auto a = coefficients[grade];
                 auto k = coefficients[0];
                 if(!k.IsInt()) {
-                    std::cout << k << std::endl;
+#ifndef NDEBUG
+                    std::cout << "free member needed optimization: " << k << std::endl;
+#endif
                     k.optimize();
                 }
                 if(!(a.IsInt() && k.IsInt())) {

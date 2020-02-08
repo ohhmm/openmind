@@ -485,7 +485,7 @@ namespace math {
             if (is.first) {
                 is.second = ebase() ^ (eexp() + vexpo.eexp());
             } // TODO : else if ? (base^2 == v.base)
-        } else if (v.IsInt()) {
+        } else if (v.IsSimple()) {
 //            if (getBase().IsVa()) {
 //            } else if (getExponentiation().IsSimpleFraction()) {
 //                auto
@@ -496,7 +496,9 @@ namespace math {
 //                IMPLEMENT
 //            }
         } else {
-            std::cout << str() << " * " << v.str() << std::endl;
+#ifndef NDEBUG
+            std::cout << "IsMultiplication simplifiable?: " << str() << " * " << v.str() << std::endl;
+#endif
         }
         return is;
     }
