@@ -1447,7 +1447,7 @@ auto OmitOuterBrackets(std::string_view& s){
             return exp->bit(n);
         else if (n > 0) {
             return Shr().bit(n-1);
-        } else if (n == 0)
+        } else if (n == 0){
             // (this & 1) == (this % 2) == (1+((-1)^(this+1)))/2
             // this=1: (1+(-1^2))/2 = 1
             // this=2: (1+(-1^3))/2 = 0
@@ -1457,9 +1457,13 @@ auto OmitOuterBrackets(std::string_view& s){
             // this=-2: (1+(-1^-1))/2=0
             // this=-3: (1+(-1^-2))/2=1
             // ...
-            return (1_v+((-1_v)^(*this+1)))/2;
+            auto e = *this+1;
+            auto m1p = (-1_v) ^ e;
+            ++m1p;
+            m1p /= 2;
+            return m1p;
 //            return *this % 2;
-        else
+        }else
             IMPLEMENT;
     }
     
@@ -1482,11 +1486,11 @@ auto OmitOuterBrackets(std::string_view& s){
             auto ab = a.bit(0);
             auto bb = b.bit(0);
             auto mul = ab*bb;
-            auto shmul = mul.shl(i);
-            s += shmul;
+            s += mul;
             if((i+1)<n){
                 a.shr();
                 b.shr();
+                s *= 2;
             }
         }
         optimizations = ow;
