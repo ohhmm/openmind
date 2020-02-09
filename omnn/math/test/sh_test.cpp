@@ -22,21 +22,21 @@ using namespace std;
 
 BOOST_AUTO_TEST_CASE(bit_test)
 {
-    Variable v;
+    DECL_VA(x);
     constexpr int NBits = 3, UpTo = 1<<NBits;
     for (int i = 0; i < UpTo; ++i) {
         int j = NBits;
         for (int n=UpTo; (n=n>>1);) {
             // bit test
             auto etalon = i & n;
-            auto bit = v.bit(--j);
-            auto b = bit.eval({{v, i}});
+            auto bit = x.bit(--j);
+            auto b = bit.eval({{x, i}});
             BOOST_TEST(b);
             BOOST_TEST(bit==!!etalon);
             
             // and test
-            auto an = v.And(NBits, n);
-            b = an.eval({{v, i}});
+            auto an = x.And(NBits, n);
+            b = an.eval({{x, i}});
             an.optimize();
             BOOST_TEST(an==etalon);
         }
