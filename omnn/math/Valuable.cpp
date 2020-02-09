@@ -1448,21 +1448,19 @@ auto OmitOuterBrackets(std::string_view& s){
         else if (n > 0) {
             return Shr().bit(n-1);
         } else if (n == 0){
-            // (this & 1) == (this % 2) == (1+((-1)^(this+1)))/2
-            // this=1: (1+(-1^2))/2 = 1
-            // this=2: (1+(-1^3))/2 = 0
-            // this=3: (1+(-1^4))/2 = 1
+            // bit0 = (this & 1) == (this % 2) == ((-1)^this)-1)/-2
+            // for this=0: ((-1)^0)-1)/-2 = 0
+            // this=1: ((-1^1)-1)/-2 = 1
+            // this=2: ((-1^2)-1)/-2 = 0
             // ...
-            // this=-1: (1+(-1^0))/2=1
-            // this=-2: (1+(-1^-1))/2=0
-            // this=-3: (1+(-1^-2))/2=1
+            // TODO: this=-1:
+            // TODO: this=-2:
+            // TODO: this=-3:
             // ...
-            auto e = *this+1;
-            auto m1p = (-1_v) ^ e;
-            ++m1p;
-            m1p /= 2;
-            return m1p;
-//            return *this % 2;
+            auto bit0 = (-1_v) ^ *this;
+            --bit0;
+            bit0 /= -2;
+            return bit0;
         }else
             IMPLEMENT;
     }
@@ -1481,16 +1479,17 @@ auto OmitOuterBrackets(std::string_view& s){
         optimizations = {};
         auto a = *this;
         auto b = v;
-        for(Integer i = 0; i < n; ++i)
+        for(Valuable i; i < n; )
         {
             auto ab = a.bit(0);
             auto bb = b.bit(0);
             auto mul = ab*bb;
-            s += mul;
-            if((i+1)<n){
-                a.shr();
-                b.shr();
-                s *= 2;
+            s += mul * (2_v ^ i);
+            if(++i < n){
+                a -= ab;
+                a /= 2;
+                b -= bb;
+                b /= 2;
             }
         }
         optimizations = ow;
