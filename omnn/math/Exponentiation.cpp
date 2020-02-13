@@ -195,6 +195,18 @@ namespace math {
         }
 
         if (ebase().IsInt()) {
+            if (eexp().IsProduct()) {
+                auto& p = eexp().as<Product>();
+                auto it = p.GetFirstOccurence<Integer>();
+                auto in = ebase() ^ *it;  // IsExponentiationSimplifiable
+                if (in.IsInt()) {
+                    ebase() = in;
+                    p.Delete(it);
+                    if (p.size() == 1) {
+                        eexp().optimize();
+                    }
+                }
+            }
             if (ebase()==1) {
                 if (eexp().IsInt()) {
                     Become(std::move(ebase()));
@@ -204,6 +216,10 @@ namespace math {
                         Become(std::move(ebase()));
                         return;
                     }
+                } else if (!!eexp().IsMultival()) {
+                } else if (!(eexp().IsInfinity() || eexp().IsMInfinity())) {
+                    Become(std::move(ebase()));
+                    return;
                 } else
                     IMPLEMENT;
             } else if (ebase()==-1 && eexp().IsInt() && eexp() > 0 && eexp()!=1) {
@@ -839,35 +855,37 @@ namespace math {
                 }
             }
         } else if (v.IsExponentiation()) {
-            auto e = Exponentiation::cast(v);
-            if (e->getBase() == getBase()) {
-                if (e->getExponentiation() == getExponentiation()) {
-                    c = *e;
-                } else if (getExponentiation().IsInt() && e->getExponentiation().IsInt()) {
-                    if (getExponentiation() > 0 || e->getExponentiation() > 0) {
-                        if (e->getExponentiation() >= getExponentiation()) {
+            auto& e = v.as<Exponentiation>();
+            if (e.getBase() == getBase()) {
+                if (e.getExponentiation() == getExponentiation()) {
+                    c = e;
+                } else if (getExponentiation().IsInt() && e.getExponentiation().IsInt()) {
+                    if (getExponentiation() > 0 || e.getExponentiation() > 0) {
+                        if (e.getExponentiation() >= getExponentiation()) {
                             c = *this;
                         } else
-                            c = *e;
-                    } else if (getExponentiation() < 0 || e->getExponentiation() < 0) {
-                        if (e->getExponentiation() >= getExponentiation()) {
-                            c = *e;
+                            c = e;
+                    } else if (getExponentiation() < 0 || e.getExponentiation() < 0) {
+                        if (e.getExponentiation() >= getExponentiation()) {
+                            c = e;
                         } else
                             c = *this;
                     } else {
                         IMPLEMENT
                     }
-                } else if (getExponentiation().IsSimpleFraction() && e->getExponentiation().IsSimpleFraction()) {
-                    if (getExponentiation()<0 == e->getExponentiation()<0) {
+                } else if (getExponentiation().IsSimpleFraction() && e.getExponentiation().IsSimpleFraction()) {
+                    if (getExponentiation()<0 == e.getExponentiation()<0) {
                         IMPLEMENT
                     }
                 } else if (getExponentiation().IsSum()) {
                     auto sz = getExponentiation().as<Sum>().size();
-                    auto diff = getExponentiation() - e->getExponentiation();
+                    auto diff = getExponentiation() - e.getExponentiation();
                     if (!diff.IsSum() || diff.as<Sum>().size() < sz)
                         c = v;
-                } else if (e->getExponentiation().IsSum()) {
-                    c = e->InCommonWith(*this);
+                } else if (e.getExponentiation().IsSum()) {
+                    c = e.InCommonWith(*this);
+                } else if (e.getExponentiation().IsProduct()) {
+                    c = ebase() ^ e.eexp().InCommonWith(eexp());
                 } else {
                     IMPLEMENT
                 }
