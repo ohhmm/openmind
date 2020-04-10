@@ -47,7 +47,7 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 if(NOT OPENMIND_BUILD_BOOST)
-    find_package(Boost 1.72)
+    find_package(Boost 1.71)
 endif()
 if (Boost_FOUND)
     add_custom_target(boost)
