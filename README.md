@@ -1,5 +1,25 @@
 # openmind
 
+Compilation:
+
+  Ubuntu 20.04
+
+    sudo apt install cmake g++ git libboost-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev libopengl-dev
+    git clone https://github.com/ohhmm/openmind
+    cd openmind
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_INCLUDE_DIR=/usr/include -DOPENMIND_BUILD_TESTS=OFF
+    make -j8
+
+    As result you can see following libraries produced:
+    FEATURED ./omnn/math/libmath.a - the libmath which describes Valuable and Variable polymorphic types
+    DEPENDENCY ./lib/libleveldb.a - LevelDB used by libmath for transparent solutions caching
+    FEATURED ./omnn/extrapolator/libextrapolator.a - deducing extrapolator based on libmath
+    PREVIEW ./omnn/rt/libomnn.a - openmind neural network library
+    PREVIEW ./omnn/ct/libct.a - compile-time lib
+    FEATURED ./OpenMind/libOpenMind.a - asynchronous goal-oriented state machine
+
 Features:
 
   Basic Goals Framework 
@@ -32,3 +52,4 @@ Support: sergeikrivonos@gmail.com
 Bitcoin: 17JNBmpsDxp1d4jcAh7qthSN4VRcN9EDxQ
 
 Thank you very much, appreciate your support.
+
