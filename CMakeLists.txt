@@ -135,7 +135,11 @@ endif()
 
 if (${OPENMIND_BUILD_TESTS})
     enable_testing()
-    set(TEST_DEPS "")
+	if(NOT MSVC)
+		if(NOT APPLE)
+    		set(TEST_DEPS "pthread")
+		endif()
+	endif()
 endif ()
 
 macro(lib)
