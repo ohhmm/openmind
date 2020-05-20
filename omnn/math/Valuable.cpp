@@ -1305,6 +1305,15 @@ auto OmitOuterBrackets(std::string_view& s){
         return *this != 0_v;
     }
     
+	Valuable Valuable::operator!() const
+	{
+		Variable whyNot;
+		auto is = LogicAnd(whyNot);
+		auto isNot = whyNot.Equals(1);
+		auto orNot = is.LogicOr(isNot);
+		return orNot.logic_and(isNot) (whyNot);
+	}
+
     Valuable::operator int() const
     {
         if (exp)
