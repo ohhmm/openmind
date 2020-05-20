@@ -325,7 +325,7 @@ public:
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
     Valuable(std::string_view str, const Valuable::va_names_t& vaNames, bool itIsOptimized);
-
+	Valuable operator!() const;
     explicit operator bool() const;
     virtual explicit operator int() const;
     virtual explicit operator a_int() const;

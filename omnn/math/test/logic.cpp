@@ -5,6 +5,23 @@
 
 using namespace omnn::math;
 
+BOOST_AUTO_TEST_CASE(not_tests)
+{
+	auto x = "x"_va;
+	auto x_eq_1 = x-1;
+	auto x_ne_1 = !x; // must mean all except this equation
+
+	auto eval_x_eq_1 = x_eq_1;
+	eval_x_eq_1.Eval(x, 1);
+	auto ok = eval_x_eq_1 == 0_v;
+	BOOST_TEST(ok);
+
+	auto eval_x_ne_1 = x_ne_1;
+	eval_x_ne_1.Eval(x, 7);
+	ok = eval_x_ne_1 != 0_v;
+	BOOST_TEST(ok);
+}
+
 BOOST_AUTO_TEST_CASE(ifz_tests)
 {
     // two different bits
