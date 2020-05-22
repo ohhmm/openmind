@@ -1307,7 +1307,7 @@ auto OmitOuterBrackets(std::string_view& s){
     
 	Valuable Valuable::operator!() const
 	{
-		Variable whyNot;
+		auto whyNot = getVaHost()->New();
 		auto is = LogicAnd(whyNot);
 		auto isNot = whyNot.Equals(1);
 		auto orNot = is.LogicOr(isNot);

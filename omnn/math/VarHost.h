@@ -121,18 +121,10 @@ namespace math {
         
         any::any NewVarId() override {
 
-            T t = 0;
+            T t = {};
             const auto& last = varIds.size() ? *varIds.rbegin() : t;
             if (std::is_same<std::string, T>::value) {
-                // TODO : find first digit to extract var name and num
-                throw "Implement";
-                //int index =
-                std::string name, num;
-                boost::multiprecision::cpp_int n;
-                std::stringstream(num) >> n;
-                std::stringstream s;
-                s<< name << ++n;
-                return s.str();
+                return TypedVarHost<T>::NewVarId();
             } else if (std::is_arithmetic<T>::value
                        || std::is_same<boost::multiprecision::cpp_int, T>::value
                        || std::is_same<Integer, T>::value
@@ -144,7 +136,7 @@ namespace math {
                 varIds.insert(n);
                 return n;
             } else {
-                throw "Implement!";
+                throw "Implement new specialization for the variable object template<> any::any TypedVarHost<T>::NewVarId()!";
             }
             
         }
@@ -197,5 +189,7 @@ namespace math {
         ++t;
     }
 
+    template<>
+    any::any TypedVarHost<std::string>::NewVarId();
 } /* namespace math */
 } /* namespace omnn */
