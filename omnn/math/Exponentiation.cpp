@@ -193,7 +193,7 @@ namespace math {
                 }
             }
         }
-
+        // todo : check
         if (ebase().IsInt()) {
             if (eexp().IsProduct()) {
                 auto& p = eexp().as<Product>();
@@ -511,6 +511,8 @@ namespace math {
 //            } else {
 //                IMPLEMENT
 //            }
+        } else if (v.IsVa()) {
+            // covered by (v==base()) case
         } else {
 #ifndef NDEBUG
             std::cout << "IsMultiplication simplifiable?: " << str() << " * " << v.str() << std::endl;
