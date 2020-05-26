@@ -1191,7 +1191,7 @@ auto OmitOuterBrackets(std::string_view& s){
     {
         if (exp) {
             if (v.HasVa(va)) {
-                Variable t;
+                Variable t(va.getVaHost());
                 Eval(va, t);
                 Eval(t, v);
             } else

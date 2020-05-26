@@ -260,6 +260,13 @@ namespace math {
                     if(c.IsSum()){
                         IMPLEMENT
                     }
+//                    auto simplified = it2->IsSumationSimplifiable(c);
+//                    if (simplified.first) {
+//                        c = std::move(simplified.second);
+//                        Delete(it2);
+////                        up();
+//                    }
+//                    else
                     if (((c.IsFraction() || c.IsInt()) && it2->IsSimpleFraction())
                         || (it2->IsInt() && (c.IsInt() || c.IsSimpleFraction()))
                         || (c.IsProduct() && mc == *it2)

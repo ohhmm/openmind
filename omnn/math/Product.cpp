@@ -81,6 +81,7 @@ namespace math {
     void Product::AddToVars(const Variable & va, const Valuable & exponentiation)
     {
         if (!exponentiation.IsInt()) {
+            std::cerr << va.str() << '^' << exponentiation.str() << std::endl;
             IMPLEMENT // estimate in to be greater for those which you want to see first in sum sequence
         }
         if(exponentiation==0)
@@ -559,6 +560,13 @@ namespace math {
 
         return Become(Sum { *this, v });
     }
+
+//    std::pair<bool,Valuable> Product::IsSumationSimplifiable(const Valuable& v) const
+//    {
+//        std::pair<bool,Valuable> is;
+//        is.first =
+//
+//    }
 
     Valuable& Product::operator *=(const Valuable& v)
     {
