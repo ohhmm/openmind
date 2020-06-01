@@ -73,9 +73,7 @@ protected:
     virtual int getTypeSize() const;
     virtual size_t getAllocSize() const;
     virtual void setAllocSize(size_t sz);
-    const Valuable& get() const { return exp ? exp->get() : *this; }
-    Valuable& get() { return exp ? exp->get() : *this; }
-    
+
     template<class T>
     static const T* cast(const Valuable& v)
     {
@@ -140,6 +138,9 @@ public:
         Yes = 0b1, Maybe = 0b10, No = 0b100
     };
 
+    const Valuable& get() const { return exp ? exp->get() : *this; }
+    Valuable& get() { return exp ? exp->get() : *this; }
+
     template<class T>
     const T& as() const {
         auto& the = get();
@@ -154,7 +155,7 @@ public:
         return static_cast<T&>(the);
     }
 
-//    friend operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
+    //    friend operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
     friend bool operator!(YesNoMaybe _) { return _ == YesNoMaybe::No; }
     friend YesNoMaybe operator||(YesNoMaybe, YesNoMaybe);
     friend YesNoMaybe operator&&(YesNoMaybe, YesNoMaybe);
@@ -325,6 +326,7 @@ public:
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
     Valuable(std::string_view str, const Valuable::va_names_t& vaNames, bool itIsOptimized);
+
 	Valuable operator!() const;
     explicit operator bool() const;
     virtual explicit operator int() const;

@@ -1304,10 +1304,13 @@ auto OmitOuterBrackets(std::string_view& s){
     {
         return *this != 0_v;
     }
-    
+
 	Valuable Valuable::operator!() const
 	{
-		auto whyNot = getVaHost()->New();
+        // if current expression equals to zero then it is
+        // we need to know why not
+		Variable whyNot(getVaHost()); // whyNot==0 when this!=0
+
 		auto is = LogicAnd(whyNot);
 		auto isNot = whyNot.Equals(1);
 		auto orNot = is.LogicOr(isNot);

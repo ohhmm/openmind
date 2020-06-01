@@ -35,7 +35,7 @@ Goal::ptr_t ConsoleGeneratorProxy::GenerateGoal()
 		i = boost::lexical_cast<size_t>(std::cin.get()) - '0';
 	} while (i && i > generatorsCount);
 
-	if (!i)
+	if (i==0)
 	{
 		exit(0);
 	}

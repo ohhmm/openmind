@@ -7,3 +7,10 @@ build*
 /.idea
 /cmake-build-debug
 *.user
+.cproject
+.project
+.settings/language.settings.xml
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
+*.solutions/*

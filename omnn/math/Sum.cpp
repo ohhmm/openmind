@@ -1170,7 +1170,7 @@ namespace math {
         
         std::vector<Valuable> coefs;
         auto grade = FillPolyCoeff(coefs, va);
-        if(!grade){
+        if(grade==0){
 #ifndef NDEBUG
             grade = FillPolyCoeff(coefs, va);
 #endif
@@ -1235,7 +1235,7 @@ namespace math {
                 return added;
             };
 
-            if(!coefs[0]) // no free coef -> zero root
+            if(coefs[0]==0_v) // no free coef -> zero root
             {
                 if(testSolutions(solutions_t{0}))
                 {
