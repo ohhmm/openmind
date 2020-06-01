@@ -69,8 +69,9 @@ BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests
     
     for (int i=38; i --> 1; ) {
         Valuable sh(1<<i);
-        _ = 1_v^(1_v/sh);
+        auto multi = 1_v^(1_v/sh);
+        _ = multi;
         _ /= _;
-        BOOST_TEST(_ == 1_v^(1_v/sh));
+        BOOST_TEST(_ == multi);
     }
 }

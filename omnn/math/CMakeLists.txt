@@ -5,7 +5,8 @@ option(OPENMIND_MATH_CACHE_ALLOW_CACHE_UPGRADE "Update uptimized cached values d
 if(OPENMIND_MATH_USE_LEVELDB_CACHE)
 	add_definitions(-DOPENMIND_MATH_USE_LEVELDB_CACHE)
 	dep(google/leveldb)
-	set(DEPENDENCIES ${DEPENDENCIES} ${leveldb_LIBRARIES})
+	message("leveldb_LIBRARIES: ${leveldb_LIBRARIES}")
+	set(DEPENDENCIES ${DEPENDENCIES} ${leveldb_LIBRARIES} pthread)
  
     if(OPENMIND_MATH_CACHE_ALLOW_CACHE_UPGRADE)
         add_definitions(-DALLOW_CACHE_UPGRADE)
