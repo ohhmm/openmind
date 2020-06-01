@@ -4,7 +4,7 @@ Compilation:
 
   Ubuntu 20.04
 
-    sudo apt install cmake g++ git libboost-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev libopengl-dev
+    sudo apt install cmake g++ git libboost-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev libopengl-dev freeglut3-dev
     git clone https://github.com/ohhmm/openmind
     cd openmind
     mkdir build
