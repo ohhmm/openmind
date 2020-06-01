@@ -65,9 +65,9 @@ namespace math {
         // inequality should cover all cases
         auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
         {
-            auto it1 = std::find(ob, oe, static_cast<type_index>(x));
+            auto it1 = std::find(ob, oe, x.Type());
             assert(it1!=oe); // IMPLEMENT
-            auto it2 = std::find(ob, oe, static_cast<type_index>(y));
+            auto it2 = std::find(ob, oe, y.Type());
             assert(it2!=oe); // IMPLEMENT
             return it1 == it2 ? *it1 > *it2 : it1 < it2;
         };

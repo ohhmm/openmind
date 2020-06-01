@@ -115,9 +115,11 @@ namespace math {
         assert(!exp);
     }
 
-    Valuable::operator std::type_index() const
+    std::type_index Valuable::Type() const
     {
-        return std::type_index(typeid(get()));
+    	if (exp)
+    		return exp->Type();
+        IMPLEMENT
     }
     
     Valuable& Valuable::Become(Valuable&& i)

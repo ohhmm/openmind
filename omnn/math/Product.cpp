@@ -39,10 +39,12 @@ namespace math {
     // inequality should cover all cases
     bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
     {
-        auto it1 = std::find(ob, oe, static_cast<type_index>(x));
-        assert(it1!=oe); // IMPLEMENT
-        auto it2 = std::find(ob, oe, static_cast<type_index>(y));
-        assert(it2!=oe); // IMPLEMENT
+        auto it1 = std::find(ob, oe, x.Type());
+        if (it1==oe) IMPLEMENT
+
+        auto it2 = std::find(ob, oe, y.Type());
+        if (it2==oe) IMPLEMENT
+
         return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
     }
     
@@ -515,9 +517,9 @@ namespace math {
             auto i1 = members.begin();
             auto i2 = p->members.begin();
             for (; i1 != members.end(); ++i1, ++i2) {
-                auto it1 = std::find(ob, oe, static_cast<type_index>(*i1));
+                auto it1 = std::find(ob, oe, i1->Type());
                 assert(it1!=oe); // IMPLEMENT, add to order table
-                auto it2 = std::find(ob, oe, static_cast<type_index>(*i2));
+                auto it2 = std::find(ob, oe, i2->Type());
                 assert(it2!=oe); // IMPLEMENT
                 if (it1 != it2) {
                     return it1 < it2;

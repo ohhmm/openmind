@@ -165,7 +165,7 @@ public:
     static thread_local bool enforce_solve_using_rational_root_test_only;
 
     explicit Valuable(Valuable* v);
-    operator std::type_index() const;
+    virtual std::type_index Type() const;
     
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(Valuable&& v);
