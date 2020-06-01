@@ -37,14 +37,16 @@ BOOST_AUTO_TEST_CASE(BaseInt_tests)
     BOOST_TEST(!i);
     BOOST_TEST(i==0);
     ++--i;
-    BOOST_TEST(!i);
+    BOOST_TEST(!i);  // had real bug there with the boost::cpp_int. it was reported and its fix is available since 1.68
     BOOST_TEST(i==0);
     BOOST_TEST(i==Integer::base_int(0));
 
     auto _1 = 0_v;
     BOOST_TEST(_1 == 0_v);
     --++_1;
-    BOOST_TEST(!_1);
+    // BOOST_TEST(!_1); // We cannot do that because !va is an expression that satisfies to everything but roots of va
+    // using cast to bool instead:
+    BOOST_TEST(!static_cast<bool>(_1));
     BOOST_TEST(_1 == 0_v);
 }
 BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test

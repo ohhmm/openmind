@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
     for(auto rowIdx = Sz; rowIdx--;){
         for(auto colIdx = Sz; colIdx--;){
             auto& i = data[rowIdx][colIdx];
-            if(!i){
+            if(i == 0){
                 auto co = s;
                 auto wasopt = Valuable::optimizations;
                 Valuable::optimizations = true;
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_system_test
     for(auto rowIdx = Sz; rowIdx--;){
         for(auto colIdx = Sz; colIdx--;){
             auto& i = data[rowIdx][colIdx];
-            if(!i){
+            if(i==0){
                 tasks.push_back(
                                 std::async([colIdx, rowIdx, sysMutex,
                                             &s, &at, &data](){
@@ -576,13 +576,15 @@ BOOST_AUTO_TEST_CASE(Sudoku_test
 //    }
 
     // solving
+    std::deque<std::future<void>> tasks;
     for(auto rowIdx = data.size(); rowIdx--;){
         for(auto colIdx = data[rowIdx].size(); colIdx--;){
             auto& i = data[rowIdx][colIdx];
-            if(!i){
+            if(i==0){
                 auto sysMutex = std::make_shared<boost::shared_mutex>();
-                std::function<void()> addThisTask = [colIdx,rowIdx,sysMutex,&s,&at,addThisTask](){
-                    std::async([colIdx,rowIdx, sysMutex, &s, &at, addThisTask](){
+                std::function<void()> addThisTask = [&tasks,colIdx,rowIdx,sysMutex,&s,&at,addThisTask](){
+                    tasks.push_back(
+                        std::async([colIdx,rowIdx, sysMutex, &s, &at, addThisTask](){
                         Variable find;
                         sysMutex->lock_shared();
                         decltype(s) localSystem = s;
@@ -611,7 +613,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_test
                                 }
                             }
                         }
-                    });
+                    }));
                 };
             }
         }
