@@ -209,7 +209,7 @@ namespace math {
             }
             else if (denominator().FindVa() && !denominator().IsSum())
             {
-                Become(Product{numerator(),Exponentiation(denominator(), -1)});
+                Become(Product{ std::move(numerator()), Exponentiation( std::move(denominator()), -1)});
                 return;
             }
             else // no products
