@@ -3,8 +3,11 @@
 //
 #include "Cache.h"
 
+#include <chrono>
 #include <deque>
 #include <future>
+#include <iostream>
+#include <thread>
 
 #include <boost/tokenizer.hpp>
 
@@ -36,14 +39,21 @@ void Cache::DbOpen() {
   options.create_if_missing = true;
   options.compression = leveldb::kSnappyCompression;
 
-  if (!leveldb::DB::Open(options, path.c_str(), &db).ok()) {
+  leveldb::Status status;
+  while (!((status = leveldb::DB::Open(options, path.c_str(), &db)).ok())) {
     auto err = path + " db connection error";
-    std::cerr << err << std::endl;
+    std::cerr << err << status.ToString() << std::endl;
+    if(status.IsIOError()){
+      std::cout << "DB is busy. Waiting. Retrying in 5 sec." << std::endl;
+      using namespace std::chrono_literals;
+      std::this_thread::sleep_for(5s);
+    } else {
 #ifndef NDEBUG
-    std::system(("rm -rf " + path).c_str());
-    if (!leveldb::DB::Open(options, path.c_str(), &db).ok())
+      std::system(("rm -rf " + path).c_str());
+      if (!leveldb::DB::Open(options, path.c_str(), &db).ok())
 #endif
       throw err;
+    }
   }
 #endif
 }
