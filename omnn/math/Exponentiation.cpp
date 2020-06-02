@@ -569,10 +569,10 @@ namespace math {
         }
         else if (v.IsExponentiation())
         {
-            auto e = cast(v);
-            if(ebase() == e->getBase() && !ebase().IsMultival())
+            auto& e = v.as<Exponentiation>();
+            if(ebase() == e.ebase() && (ebase().IsVa() || !ebase().IsMultival()))
             {
-                eexp() -= e->getExponentiation();
+                eexp() -= e.eexp();
             }
             else
             {
