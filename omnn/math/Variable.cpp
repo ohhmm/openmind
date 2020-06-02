@@ -38,6 +38,7 @@ namespace math {
     {
         if(!varHost)
             throw "the varHost is mandatory parameter";
+        varId = varHost->NewVarId();
         maxVaExp=1;
     }
     

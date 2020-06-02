@@ -142,7 +142,7 @@ namespace math {
         }
         
         any::any CloneId(const any::any& a) override {
-            return any::any_cast<T>(a);
+            return a;
         }
         
         bool Has(const any::any& id) const override {
