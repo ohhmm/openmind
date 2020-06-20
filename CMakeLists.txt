@@ -112,10 +112,11 @@ else()
     endif()
 endif()
 
-function(add_library targetName)
-    _add_library(${targetName} ${ARGN})
-    add_dependencies(${targetName} boost) 
-endfunction()
+# commented ot because it breaks vcpkg
+#function(add_library targetName)
+#    _add_library(${targetName} ${ARGN})
+#    add_dependencies(${targetName} boost) 
+#endfunction()
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 IF (Boost_FOUND)
