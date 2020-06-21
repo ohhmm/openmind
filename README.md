@@ -20,6 +20,10 @@ Compilation:
     PREVIEW ./omnn/ct/libct.a - compile-time lib
     FEATURED ./OpenMind/libOpenMind.a - asynchronous goal-oriented state machine
 
+  Windows VSCode:
+
+    ![Screenshot](build.png)
+
 Features:
 
   Basic Goals Framework 
