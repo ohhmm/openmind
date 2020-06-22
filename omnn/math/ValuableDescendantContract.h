@@ -38,14 +38,7 @@ namespace math {
             return *this > v;
         }
         
-        void Values(const std::function<bool(const Valuable&)>& fun) const override
-        {
-            auto imv = IsMultival();
-            if(imv==YesNoMaybe::No)
-                fun(*this);
-            else
-                IMPLEMENT
-        }
+        void Values(const std::function<bool(const Valuable&)> &fun) const override;
     };
 
     template <class Chld>
@@ -130,7 +123,5 @@ namespace math {
         }
         
     };
-
-
 }
 }

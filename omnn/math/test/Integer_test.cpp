@@ -48,6 +48,8 @@ BOOST_AUTO_TEST_CASE(BaseInt_tests)
     // using cast to bool instead:
     BOOST_TEST(!static_cast<bool>(_1));
     BOOST_TEST(_1 == 0_v);
+    BOOST_TEST(Valuable() == Integer::base_int());
+    BOOST_TEST(Integer() == Integer::base_int());
 }
 BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test
                      ,*disabled()
@@ -91,6 +93,8 @@ BOOST_AUTO_TEST_CASE(Integer_exptests)
 
 BOOST_AUTO_TEST_CASE(Integer_tests)
 {
+    Valuable vz;
+    BOOST_TEST(vz == 0);
     auto aa = Valuable(1_v);
     auto bb =aa;
     auto cc = std::move(aa);

@@ -38,6 +38,9 @@ void Cache::DbOpen() {
   leveldb::Options options;
   options.create_if_missing = true;
   options.compression = leveldb::kSnappyCompression;
+  options.max_file_size = 512*1024*1024;
+  options.block_size = 16*1024;
+  options.paranoid_checks=true;
 
   leveldb::Status status;
   while (!((status = leveldb::DB::Open(options, path.c_str(), &db)).ok())) {

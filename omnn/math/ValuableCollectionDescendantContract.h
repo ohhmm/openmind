@@ -23,6 +23,8 @@ namespace math {
         using const_reference = typename ContT::const_reference;
 
         using base::base;
+        ValuableCollectionDescendantContract(ValuableCollectionDescendantContract&&)=default;
+        ValuableCollectionDescendantContract(const ValuableCollectionDescendantContract&)=default;
 
         virtual const cont& GetConstCont() const = 0;
         
@@ -118,9 +120,8 @@ namespace math {
         
         bool Has(const Valuable& v) const
         {
-            for(const auto& a : GetConstCont())
-                if(a==v) return true;
-            return false;
+            auto& c = GetConstCont();
+            return c.find(v) != c.cend();
         }
         
         const Variable* FindVa() const override
@@ -157,7 +158,7 @@ namespace math {
                 c.Add(m(i));
             return c;
         }
- 
+
         Valuable::YesNoMaybe IsMultival() const override {
             if(size()==0) {
                 IMPLEMENT
@@ -244,6 +245,7 @@ namespace math {
             Valuable::optimized = {};
         }
 
+        /// For optimized values
         bool operator ==(const Valuable& v) const override
         {
             return Valuable::hash == v.Hash()

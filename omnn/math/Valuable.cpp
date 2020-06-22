@@ -159,7 +159,7 @@ namespace math {
                 i.New(buf, std::move(i));
                 Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
                 this->~Valuable();
-				bufv.New(this, std::move(bufv));
+                bufv.New(this, std::move(bufv));
                 setAllocSize(sizeWas);
                 if (Hash() != h) {
                     IMPLEMENT
@@ -1274,8 +1274,14 @@ auto OmitOuterBrackets(std::string_view& s){
                     }
                 }
                 _ = p;
-            } else
+            } else {
+                std::cout
+                    << "Some debug info: " << std::endl
+                    << "\t this = " << str() << std::endl
+                    << "\t getVaVal()  = " << getVaVal().str() << std::endl
+                    << "\t _ = " << _ << std::endl;
                 IMPLEMENT
+            }
         }
         return _;
     }
@@ -1307,17 +1313,18 @@ auto OmitOuterBrackets(std::string_view& s){
         return *this != 0_v;
     }
 
-	Valuable Valuable::operator!() const
-	{
+    Valuable Valuable::operator!() const
+    {
         // if current expression equals to zero then it is
         // we need to know why not
-		Variable whyNot(getVaHost()); // whyNot==0 when this!=0
+        Variable whyNot(getVaHost()); // whyNot==0 when this!=0
 
-		auto is = LogicAnd(whyNot);
-		auto isNot = whyNot.Equals(1);
-		auto orNot = is.LogicOr(isNot);
-		return orNot.logic_and(isNot) (whyNot);
-	}
+        auto is = LogicAnd(whyNot);
+        auto isNot = whyNot.Equals(1);
+        auto orNot = is.LogicOr(isNot).logic_and(isNot);
+        //std::cout << "orNot = " << orNot << std::endl;
+        return orNot (whyNot);
+    }
 
     Valuable::operator int() const
     {
