@@ -40,4 +40,12 @@ Valuable ValuableDescendantBase::operator -() const
     return *this * -1;
 }
 
+void ValuableDescendantBase::Values(const std::function<bool(const Valuable&)> &fun) const {
+    auto imv = IsMultival();
+    if (imv == YesNoMaybe::No)
+        fun(*this);
+    else
+        IMPLEMENT
+}
+
 }}
