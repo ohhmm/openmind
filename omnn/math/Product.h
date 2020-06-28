@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include <map>
+#include <set>
 #include <unordered_set>
 #include "ValuableCollectionDescendantContract.h"
 #include "Integer.h"
@@ -42,6 +42,8 @@ public:
     using base::base;
 
     Product();
+    Product(Product&&)=default;
+    Product(const Product&)=default;
     Product(const std::initializer_list<Valuable>& l);
     
 	const cont& GetConstCont() const override { return members; }
@@ -58,20 +60,23 @@ public:
     int findMaxVaExp();
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;
-    
+
 	// virtual operators
-	Valuable& operator +=(const Valuable& v) override;
-	Valuable& operator *=(const Valuable& v) override;
-	Valuable& operator /=(const Valuable& v) override;
-	Valuable& operator %=(const Valuable& v) override;
+    Valuable& operator +=(const Valuable& v) override;
+    std::pair<bool,Valuable> IsSumationSimplifiable(const Valuable& v) const override;
+    Valuable& operator *=(const Valuable& v) override;
+    Valuable& operator /=(const Valuable& v) override;
+    Valuable& operator %=(const Valuable& v) override;
     Valuable& operator ^=(const Valuable& v) override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
-	void optimize() override;
+    void optimize() override;
     Valuable Sqrt() const override;
     Valuable& sq() override;
 
-	bool IsProduct() const override { return true; }
+    bool IsProduct() const override { return true; }
+    std::pair<Valuable, Valuable> SplitSimplePart() const;
+    std::pair<Valuable, Valuable> split_simple_part();
   
     Valuable operator()(const Variable& va) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;

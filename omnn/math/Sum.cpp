@@ -260,13 +260,13 @@ namespace math {
                     if(c.IsSum()){
                         IMPLEMENT
                     }
-//                    auto simplified = it2->IsSumationSimplifiable(c);
-//                    if (simplified.first) {
-//                        c = std::move(simplified.second);
-//                        Delete(it2);
-////                        up();
-//                    }
-//                    else
+                    auto simplified = it2->IsSumationSimplifiable(c);
+                    if (simplified.first) {
+                        c = std::move(simplified.second);
+                        Delete(it2);
+                        up();
+                    }
+                    else
                     if (((c.IsFraction() || c.IsInt()) && it2->IsSimpleFraction())
                         || (it2->IsInt() && (c.IsInt() || c.IsSimpleFraction()))
                         || (c.IsProduct() && mc == *it2)
@@ -536,12 +536,9 @@ namespace math {
         if (v.IsInt() && v == 0) {
             return *this;
         }
-        if (v.IsSum()) {
-            auto s = cast(v);
-            for (auto& i : *s) {
+        if (v.IsSum())
+            for (auto& i : v.as<Sum>())
                 operator+=(i);
-            }
-        }
         else
         {
             for (auto it = members.begin(); it != members.end(); ++it)
@@ -551,6 +548,7 @@ namespace math {
                     auto s = *it + v;
                     if (!s.IsSum()) {
                         Update(it, s);
+                        optimized={};
                         optimize();
                         return *this;
                     }
@@ -559,6 +557,7 @@ namespace math {
 
             // add new member
             Add(v);
+            optimized={};
         }
 
         optimize();
@@ -578,10 +577,12 @@ namespace math {
         {
             return *this;
         }
-        else if (v.IsSum())
+        else if (v.IsSum()){
             for (auto& _1 : *cast(v))
                 for (auto& _2 : members)
                     sum.Add(_1 * _2);
+            optimized={};
+        }
         else
         {
             for (auto& a : members)
@@ -590,6 +591,8 @@ namespace math {
             }
             if (vIsInt)
                 sum.optimized = optimized;
+            else
+                optimized={};
         }
         Become(std::move(sum));
         return *this;
