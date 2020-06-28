@@ -5,21 +5,27 @@
 
 using namespace omnn::math;
 
+BOOST_AUTO_TEST_CASE(logic_or_tests)
+{
+    auto x = "x"_va;
+    auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
+    auto ok = eq(x);
+}
 BOOST_AUTO_TEST_CASE(not_tests)
 {
-	auto x = "x"_va;
-	auto x_eq_1 = x-1;
-	auto x_ne_1 = !x; // must mean all except this equation
+    auto x = "x"_va;
+    auto x_eq_1 = x-1;
+    auto x_ne_1 = !x; // must mean all except this equation
+    std::cout << x_ne_1 << std::endl;
+    auto eval_x_eq_1 = x_eq_1;
+    eval_x_eq_1.Eval(x, 1);
+    auto ok = eval_x_eq_1 == 0_v;
+    BOOST_TEST(ok);
 
-	auto eval_x_eq_1 = x_eq_1;
-	eval_x_eq_1.Eval(x, 1);
-	auto ok = eval_x_eq_1 == 0_v;
-	BOOST_TEST(ok);
-
-	auto eval_x_ne_1 = x_ne_1;
-	eval_x_ne_1.Eval(x, 7);
-	ok = eval_x_ne_1 != 0_v;
-	BOOST_TEST(ok);
+    auto eval_x_ne_1 = x_ne_1;
+    eval_x_ne_1.Eval(x, 7);
+    ok = eval_x_ne_1 != 0_v;
+    BOOST_TEST(ok);
 }
 
 BOOST_AUTO_TEST_CASE(ifz_tests)

@@ -550,7 +550,29 @@ namespace math {
             return *this *= 2;
         if(*this == -v)
             return Become(0_v);
-        
+        if(v.IsProduct()){
+            auto& vAsP = v.as<Product>();
+            Product thisHasNotCommonWithV, vHasNotinCommonWithThis;
+            Product common;
+            for(auto&& item : GetCont()){
+                if(!vAsP.Has(item))
+                    thisHasNotCommonWithV.Add(std::move(item));
+                else
+                    common.Add(std::move(item));
+            }
+            for(auto& item : vAsP.GetConstCont()){
+                if(!common.Has(item))
+                    vHasNotinCommonWithThis.Add(item);
+            }
+            if(!(common.size()==1 && *common.begin()==1)){ // unchanged
+                Valuable sum = Sum {thisHasNotCommonWithV, vHasNotinCommonWithThis};
+                sum.optimize();
+                sum *= common;
+                sum.optimize();
+                return Become(std::move(sum));
+            }
+        }
+        else{
         auto& cv = getCommonVars();
         if (!cv.empty() && cv == v.getCommonVars())
         {
@@ -559,21 +581,57 @@ namespace math {
                 valuable *= getVaVal();
             return Become(std::move(valuable));
         }
-
+        }
         return Become(Sum { *this, v });
     }
 
-//    std::pair<bool,Valuable> Product::IsSumationSimplifiable(const Valuable& v) const
-//    {
-//        std::pair<bool,Valuable> is;
-//        is.first =
-//
-//    }
+    std::pair<Valuable, Valuable> Product::SplitSimplePart() const {
+        std::pair<Valuable, Valuable> parts;
+        auto it = begin();
+        IMPLEMENT
+    }
+
+    std::pair<Valuable, Valuable> Product::split_simple_part(){
+        IMPLEMENT
+
+    }
+
+   std::pair<bool,Valuable> Product::IsSumationSimplifiable(const Valuable& v) const
+   {
+       std::pair<bool,Valuable> is;
+       is.first = v == 0;
+       if (is.first)
+           is.second = *this;
+       else if ((is.first = operator==(v)))
+           is.second = *this * 2;
+       else if (Has(v)) {
+           auto div = *this / v;
+           auto divPlusOneIsSimple = div.IsSumationSimplifiable(vo<1>::get());
+           is.first = divPlusOneIsSimple.first;
+           if(divPlusOneIsSimple.first) {
+               is.second = divPlusOneIsSimple.second * v;
+           }
+       } else if (v.IsExponentiation()) {
+       } else if (v.IsProduct()) {
+           auto& vp = v.as<Product>();
+           auto sp = SplitSimplePart();
+           auto vsp = vp.SplitSimplePart();
+           if(sp.second == vsp.second){
+
+               IMPLEMENT
+           }
+       } else {
+           IMPLEMENT
+       }
+       return is;
+   }
 
     Valuable& Product::operator *=(const Valuable& v)
     {
         if (v.IsInt() && v==0)
             return Become(0);
+        if (size() == 1 && *begin() == 1)
+            Become(Valuable(v));
         if (v.IsSum())
             return Become(v**this);
 
