@@ -23,6 +23,20 @@ void ohashes(const Valuable& v)
     }
 }
 
+BOOST_AUTO_TEST_CASE(_1_2_3_) {
+    auto x = "x"_va;
+    auto expr = x.Equals(1)
+        .logic_or(x.Equals(2))
+        .logic_or(x.Equals(3));
+    auto solution = expr(x);
+    std::cout << "Multival for 1, 2, 3 is " << solution << std::endl;
+    std::cout << "Distinct solutions are a follows:" << std::endl;
+    for (auto&& s : expr.Solutions()) {
+        std::cout << '\t' << s << std::endl;
+    }
+    std::cout << std::endl;
+}
+
 BOOST_AUTO_TEST_CASE(Sum_tests)
 {
     Variable v1,v2,v3;
