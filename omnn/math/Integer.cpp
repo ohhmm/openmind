@@ -158,7 +158,7 @@ namespace math {
             arbitrary += v.ca();
             hash = std::hash<base_int>()(arbitrary);
         } else {
-            auto s = v.IsSumationSimplifiable(*this);
+            auto s = v.IsSummationSimplifiable(*this);
             is = s.first;
             if(is)
                 Become(std::move(s.second));
@@ -166,7 +166,7 @@ namespace math {
         return is;
     }
 
-    std::pair<bool,Valuable> Integer::IsSumationSimplifiable(const Valuable& v) const
+    std::pair<bool,Valuable> Integer::IsSummationSimplifiable(const Valuable& v) const
     {
         std::pair<bool,Valuable> is;
         is.first = v.IsInt();
@@ -175,7 +175,7 @@ namespace math {
         } else if (v.IsVa() || v.IsExponentiation()) {
         } else if (v.IsProduct()) {
         } else {
-            is = v.IsSumationSimplifiable(*this);
+            is = v.IsSummationSimplifiable(*this);
             if (is.second.Complexity() > v.Complexity())
                 IMPLEMENT;
         }
@@ -637,7 +637,7 @@ namespace math {
         else if(v.FindVa())
             return false;
         else
-            return v == *this;
+            return v.operator==(*this);
     }
 
     std::ostream& Integer::print(std::ostream& out) const

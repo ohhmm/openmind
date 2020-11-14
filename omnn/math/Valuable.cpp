@@ -662,10 +662,10 @@ auto OmitOuterBrackets(std::string_view& s){
         IMPLEMENT
     }
 
-    std::pair<bool,Valuable> Valuable::IsSumationSimplifiable(const Valuable& v) const
+    std::pair<bool,Valuable> Valuable::IsSummationSimplifiable(const Valuable& v) const
     {
         if(exp)
-            return exp->IsSumationSimplifiable(v);
+            return exp->IsSummationSimplifiable(v);
         else {
             IMPLEMENT
             auto m = *this + v;

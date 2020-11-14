@@ -492,7 +492,7 @@ namespace math {
     {
         std::pair<bool,Valuable> is, expSumSimplifiable = {};
         is.first = v == getBase()
-            && (expSumSimplifiable = vo<1>::get().IsSumationSimplifiable(eexp())).first;
+            && (expSumSimplifiable = vo<1>::get().IsSummationSimplifiable(eexp())).first;
         if (is.first) {
             is.second = getBase() ^ expSumSimplifiable.second;
         } else if (v.IsExponentiation()) {
@@ -525,7 +525,7 @@ namespace math {
     {
         auto is = !v.IsSimple() && !v.IsFraction() && !v.IsExponentiation();
         if(is){
-            auto sumIfSimplifiable = v.IsSumationSimplifiable(*this);
+            auto sumIfSimplifiable = v.IsSummationSimplifiable(*this);
             is = sumIfSimplifiable.first;
             if (is)
                 Become(std::move(sumIfSimplifiable.second));
@@ -533,7 +533,7 @@ namespace math {
         return is;
     }
 
-    std::pair<bool,Valuable> Exponentiation::IsSumationSimplifiable(const Valuable& v) const
+    std::pair<bool,Valuable> Exponentiation::IsSummationSimplifiable(const Valuable& v) const
     {
         std::pair<bool,Valuable> is = {};
         if (is.first) {
@@ -541,9 +541,24 @@ namespace math {
             is.second = *this + v;
             if (is.second.Complexity() > v.Complexity())
                 IMPLEMENT;
-        } else if (v.IsSimple() || v.IsExponentiation() || v.IsFraction()) {
+        } else if (v.IsSimple()
+                || v.IsExponentiation()
+                || v.IsVa()
+                || v.IsFraction())
+        {
+        } else if (v.IsProduct()) {
+            auto& vAsP = v.as<Product>();
+            auto simplifaсtion = vAsP / *this;
+            if (simplifaсtion.IsSimple()) {
+                ++simplifaсtion;
+                is.first = simplifaсtion.IsSimple();
+                if (is.first) {
+                    simplifaсtion *= *this;
+                    is.second = std::move(simplifaсtion);
+                }
+            }
         } else {
-            is = v.IsSumationSimplifiable(*this);
+            is = v.IsSummationSimplifiable(*this);
         }
         return is;
     }

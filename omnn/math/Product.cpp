@@ -96,7 +96,7 @@ namespace math {
         if (!e.IsInt()) {
             IMPLEMENT
         }
-        auto wasMax = maxVaExp == e.ca();
+        auto wasMax = maxVaExp == max_exp_t(e.ca(), 1);
         e += exponentiation;
       
         auto isMax = maxVaExp < e.ca();
@@ -596,7 +596,7 @@ namespace math {
 
     }
 
-   std::pair<bool,Valuable> Product::IsSumationSimplifiable(const Valuable& v) const
+   std::pair<bool,Valuable> Product::IsSummationSimplifiable(const Valuable& v) const
    {
        std::pair<bool,Valuable> is;
        is.first = v == 0;
@@ -606,12 +606,13 @@ namespace math {
            is.second = *this * 2;
        else if (Has(v)) {
            auto div = *this / v;
-           auto divPlusOneIsSimple = div.IsSumationSimplifiable(vo<1>::get());
+           auto divPlusOneIsSimple = div.IsSummationSimplifiable(vo<1>::get());
            is.first = divPlusOneIsSimple.first;
            if(divPlusOneIsSimple.first) {
                is.second = divPlusOneIsSimple.second * v;
            }
        } else if (v.IsExponentiation()) {
+       } else if (v.IsSimple()) {
        } else if (v.IsProduct()) {
            auto& vp = v.as<Product>();
            auto sp = SplitSimplePart();
@@ -621,7 +622,8 @@ namespace math {
                IMPLEMENT
            }
        } else {
-           IMPLEMENT
+//           std::cout << v <<std::endl;
+           IMPLEMENT(v);
        }
        return is;
    }

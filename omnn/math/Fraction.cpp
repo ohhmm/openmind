@@ -67,7 +67,7 @@ namespace math {
                 && _2.Hash() == ch->_2.Hash()
                 && _1 == ch->_1
                 && _2 == ch->_2
-                ) || (v.IsExponentiation() && v==*this);
+                ) || (v.IsExponentiation() && v.operator==(*this));
     }
 
     void Fraction::optimize()
@@ -270,7 +270,7 @@ bool Fraction::SumIfSimplifiable(const Valuable& v)
     if(is){
         *this += v;
     } else if (!v.IsFraction()) {
-        auto s = v.IsSumationSimplifiable(*this);
+        auto s = v.IsSummationSimplifiable(*this);
         is = s.first;
         if (is) {
             Become(std::move(s.second));
@@ -281,14 +281,14 @@ bool Fraction::SumIfSimplifiable(const Valuable& v)
     return is;
 }
 
-std::pair<bool,Valuable> Fraction::IsSumationSimplifiable(const Valuable& v) const
+std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) const
 {
     std::pair<bool,Valuable> is;
     is.first = IsSimpleFraction() && v.IsSimple();
     if(is.first){
         is.second = *this + v;
     } else if (!v.IsFraction()) {
-        is = v.IsSumationSimplifiable(*this);
+        is = v.IsSummationSimplifiable(*this);
     } else {
         IMPLEMENT
     }
