@@ -81,7 +81,7 @@ else()
     if(_IS_DEBUG)
         ExternalProject_Add(boost
             GIT_REPOSITORY https://github.com/boostorg/boost.git
-            GIT_TAG boost-1.72.0
+            GIT_TAG boost-1.74.0
             GIT_SUBMODULES ${BOOST_USED_COMPONENTS}
             BUILD_IN_SOURCE 1
             LOG_CONFIGURE 1

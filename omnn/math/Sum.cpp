@@ -260,7 +260,7 @@ namespace math {
                     if(c.IsSum()){
                         IMPLEMENT
                     }
-                    auto simplified = it2->IsSumationSimplifiable(c);
+                    auto simplified = it2->IsSummationSimplifiable(c);
                     if (simplified.first) {
                         c = std::move(simplified.second);
                         Delete(it2);
@@ -1952,13 +1952,13 @@ namespace math {
 	}
 
     bool Sum::SumIfSimplifiable(const Valuable& v){
-        auto is = IsSumationSimplifiable(v);
+        auto is = IsSummationSimplifiable(v);
         if(is.first)
             Become(std::move(is.second));
         return is.first;
     }
 
-    std::pair<bool,Valuable> Sum::IsSumationSimplifiable(const Valuable& v) const{
+    std::pair<bool,Valuable> Sum::IsSummationSimplifiable(const Valuable& v) const{
         // TODO : optimize
         auto m = *this + v;
         return { m.Complexity() < Complexity() + v.Complexity(), m };
