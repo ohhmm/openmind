@@ -119,9 +119,12 @@ namespace math {
     std::pair<bool,Valuable> Variable::IsSummationSimplifiable(const Valuable& v) const
     {
         std::pair<bool,Valuable> is;
-        is.first = v.IsVa() && operator==(v);
+        is.first = v.IsVa();
         if (is.first) {
-            is.second = v * 2;
+            is.first = operator==(v);
+            if (is.first) {
+                is.second = v * 2;
+            }
         } else if (v.IsSimple()) {
         } else {
             is = v.IsSummationSimplifiable(*this);

@@ -613,14 +613,23 @@ namespace math {
            }
        } else if (v.IsExponentiation()) {
        } else if (v.IsSimple()) {
-       } else if (v.IsProduct()) {
-           auto& vp = v.as<Product>();
-           auto sp = SplitSimplePart();
-           auto vsp = vp.SplitSimplePart();
-           if(sp.second == vsp.second){
-
-               IMPLEMENT
+       } else if (v.IsProduct() || v.IsVa()) {
+           auto icw = InCommonWith(v);
+           if (icw != 1) {
+               auto thisNoCommon = *this / icw;
+               auto vNoCommon = v / icw;
+               is = thisNoCommon.IsSummationSimplifiable(vNoCommon);
+               if(is.first){
+                   is.second *= icw;
+               }
            }
+//           auto& vp = v.as<Product>();
+//           auto sp = SplitSimplePart();
+//           auto vsp = vp.SplitSimplePart();
+//           if(sp.second == vsp.second){
+//
+//               IMPLEMENT
+//           }
        } else {
 //           std::cout << v <<std::endl;
            IMPLEMENT(v);
