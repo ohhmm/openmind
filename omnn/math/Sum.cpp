@@ -961,11 +961,11 @@ namespace math {
         auto wasopt=optimizations;
         optimizations=true;
         size_t grade = 0;
-        auto sz = static_cast<size_t>((Valuable(getMaxVaExp())+1).ca());
-        coefficients.resize(sz);
         Sum c0;
         auto add = [&](auto i, Valuable&& a) {
             if (i) {
+                if (coefficients.size() < i)
+                    coefficients.resize(i);
                 coefficients[i] += a;
             } else
                 c0.Add(a);
@@ -1004,8 +1004,13 @@ namespace math {
                 int ie = static_cast<int>(vcnt);
                 if (ie < 0)
                 {
-                    coefficients.clear();
-                    return cast(*this * (v ^ (-ie)))->FillPolyCoeff(coefficients, v);
+                    auto normalized = (v ^ -ie) * *this;
+                    if(normalized.IsSum()){
+                        coefficients.clear();
+                        return normalized.as<Sum>().FillPolyCoeff(coefficients, v);
+                    } else {
+                        IMPLEMENT
+                    }
                 }
                 else if (ie > grade) {
                     grade = ie;
@@ -1017,9 +1022,12 @@ namespace math {
                 add(ie, m / (v^vcnt));
             }
             else if (m.IsVa() && m == v) {
-                ++coefficients[1];
-                if(grade < 1)
+                if(grade < 1) {
                     grade = 1;
+                    if (coefficients.size() < grade+1)
+                        coefficients.resize(grade+1);
+                }
+                ++coefficients[1];
             }
             else if(m.IsExponentiation())
             {
@@ -1173,6 +1181,10 @@ namespace math {
         
         std::vector<Valuable> coefs;
         auto grade = FillPolyCoeff(coefs, va);
+        if (coefs.size() != grade+1){
+            grade = FillPolyCoeff(coefs, va);
+            IMPLEMENT
+        }
         if(grade==0){
 #ifndef NDEBUG
             grade = FillPolyCoeff(coefs, va);
@@ -1454,6 +1466,10 @@ namespace math {
     
     void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const
     {
+        if(coefficients.size() != grade + 1) {
+            std::cout << "Solving grade " << grade << " equation: " << str() << std::endl;
+            IMPLEMENT
+        }
         switch (grade) {
             case 1: {
                 //x=-(b/a)
