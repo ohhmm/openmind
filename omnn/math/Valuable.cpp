@@ -5,7 +5,6 @@
 
 #include "i.h"
 #include "Fraction.h"
-#include "Infinity.h"
 #include "Integer.h"
 #include "VarHost.h"
 #include "Sum.h"

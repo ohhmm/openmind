@@ -19,7 +19,7 @@ if(OPENMIND_USE_OPENCL)
 	set(DEPENDENCIES ${DEPENDENCIES} ${OpenCl_Library})
 endif()
 
-if(NOT MSVC) # APPLE ONLY?
+if(APPLE)
 	set(DEPENDENCIES ${DEPENDENCIES} boost_thread boost_serialization boost_system)
 endif()
 
