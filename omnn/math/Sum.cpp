@@ -306,11 +306,11 @@ namespace math {
                         thread_local bool antiloop = false;
                         if (!antiloop) {
                             antiloop = true;
-                            auto sum = c / inc + *it2 / inc;
-                            if(!sum.IsSum())
+                            auto sum = (c / inc).IsSummationSimplifiable(*it2 / inc);
+                            if(sum.first)
                             {
-                                sum *= inc;
-                                c = sum;
+                                sum.second *= inc;
+                                c = sum.second;
                                 Delete(it2);
                                 up();
                             } else
