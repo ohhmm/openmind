@@ -548,13 +548,13 @@ namespace math {
         {
         } else if (v.IsProduct()) {
             auto& vAsP = v.as<Product>();
-            auto simplifaсtion = vAsP / *this;
-            if (simplifaсtion.IsSimple()) {
-                ++simplifaсtion;
-                is.first = simplifaсtion.IsSimple();
+            auto simplification = vAsP / *this;
+            if (simplification.IsSimple()) {
+                ++simplification;
+                is.first = simplification.IsSimple();
                 if (is.first) {
-                    simplifaсtion *= *this;
-                    is.second = std::move(simplifaсtion);
+                    simplification *= *this;
+                    is.second = std::move(simplification);
                 }
             }
         } else {

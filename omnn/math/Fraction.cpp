@@ -228,7 +228,7 @@ namespace math {
         if (IsFraction()) {
             if(IsSimple())
                 hash = numerator().Hash() ^ denominator().Hash();
-            else
+            else if (!(numerator().IsSum() && denominator().IsSum()))
                 Become(numerator()*(denominator()^-1));
         }
     }

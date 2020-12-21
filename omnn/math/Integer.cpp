@@ -196,7 +196,7 @@ namespace math {
                 Become(Fraction(*this, v));
         }
         else if(v.FindVa())
-			*this *= v^-1;
+            *this *= v^-1;
         else
             Become(Fraction(*this,v));
         return *this;
