@@ -19,7 +19,7 @@ if(OPENMIND_USE_OPENCL)
 	set(DEPENDENCIES ${DEPENDENCIES} ${OpenCl_Library})
 endif()
 
-if(APPLE)
+if(NOT WIN32)
 	set(DEPENDENCIES ${DEPENDENCIES} boost_thread boost_serialization boost_system)
 endif()
 
