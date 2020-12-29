@@ -15,7 +15,6 @@ using namespace std;
 
 
 //The following tests FAILED:
-//      1 - image_codec_test (Failed)
 //      4 - 8queens (Failed)
 //     16 - sh_test (Failed)
 //     17 - ts (Failed)
@@ -24,15 +23,23 @@ BOOST_AUTO_TEST_CASE(bit_test)
 {
     DECL_VA(x);
     constexpr int NBits = 3, UpTo = 1<<NBits;
-    for (int i = 0; i < UpTo; ++i) {
-        int j = NBits;
-        for (int n=UpTo; (n=n>>1);) {
-            // bit test
+    int j = NBits;
+    for (int n=UpTo; (n=n>>1);) {
+        auto bit = x.bit(--j);
+        BOOST_TEST(*bit.FindVa() == x);
+std::cout << j << " bit expression: " << bit << std::endl;
+        for (int i = 0; i < UpTo; ++i) {
+
             auto etalon = i & n;
-            auto bit = x.bit(--j);
-            auto b = bit.eval({{x, i}});
-            BOOST_TEST(b);
-            BOOST_TEST(bit==!!etalon);
+            auto b = bit;
+            BOOST_TEST(b.eval({{x, i}}));
+            if(b!=!!etalon){
+std::cout << i << '&' << n << '=' << etalon << " ;  " << j << " bit of " << i << " is " << b << std::endl;
+                b = bit;
+                b.eval({{x, i}});
+            }
+            BOOST_TEST(b.IsInt());
+            BOOST_TEST(b==!!etalon);
             
             // and test
             auto an = x.And(NBits, n);
