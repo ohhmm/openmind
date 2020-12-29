@@ -639,8 +639,21 @@ namespace math {
 
     Valuable& Product::operator *=(const Valuable& v)
     {
-        if (v.IsInt() && v==0)
-            return Become(0);
+        if (v.IsInt()){
+            if (v==0) {
+                return Become(0);
+            } else {
+                auto b = begin();
+                if(b->IsSimple()){
+                    auto up = *b * v;
+                    if(up == 1)
+                        Delete(b);
+                    else
+                        Update(b, up);
+                    goto yes;
+                }
+            }
+        }
         if (size() == 1 && *begin() == 1)
             Become(Valuable(v));
         if (v.IsSum())
@@ -701,7 +714,12 @@ namespace math {
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->OfSameType(v)) {
-                    Update(it, *it*v);
+                    auto up = *it * v;
+                    if(up == 1){
+                        Delete(it);
+                    } else {
+                        Update(it, up);
+                    }
                     goto yes;
                 }
                 else

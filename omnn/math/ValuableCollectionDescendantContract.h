@@ -250,7 +250,7 @@ namespace math {
         {
             return Valuable::hash == v.Hash()
                 && v.Is<Chld>()
-                && GetConstCont()==Chld::cast(v)->GetConstCont();
+                && GetConstCont() == v.as<Chld>().GetConstCont();
         }
     };
 }}
