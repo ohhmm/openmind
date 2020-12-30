@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(bit_test)
     for (int n=UpTo; (n=n>>1);) {
         auto bit = x.bit(--j);
         BOOST_TEST(*bit.FindVa() == x);
-std::cout << j << " bit expression: " << bit << std::endl;
+std::cout << "bit " << j << " of x is " << bit << std::endl;
         for (int i = 0; i < UpTo; ++i) {
 
             auto etalon = i & n;
