@@ -290,17 +290,6 @@ namespace math {
                         Delete(it2);
                         up();
                     }
-                    else if (comVaEq())
-                    {
-                        auto sum = c.IsProduct() ? c : Product{c};
-                        sum += *it2;
-                        if (!sum.IsSum()) {
-                            c = sum;
-                            Delete(it2);
-                            up();
-                        } else
-                            ++it2;
-                    }
                     else if ((inc = it2->InCommonWith(c)) != 1_v
                              && inc.IsMultival() != YesNoMaybe::Yes) {
                         thread_local bool antiloop = false;
