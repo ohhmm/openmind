@@ -70,6 +70,14 @@ namespace math {
                 ) || (v.IsExponentiation() && v.operator==(*this));
     }
 
+    void Fraction::solve(const Variable& va, solutions_t& s) const {
+        numerator().solve(va, s);
+        solutions_t exclude;
+        denominator().solve(va, exclude);
+        for(auto& so:exclude)
+            s.erase(so);
+    }
+    
     void Fraction::optimize()
     {
 //        if (!optimizations) {

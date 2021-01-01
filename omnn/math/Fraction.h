@@ -42,7 +42,8 @@ namespace math {
         bool operator ==(const Valuable& v) const override;
 		bool operator <(const Valuable& v) const override;
         explicit operator double() const override;
-        
+        void solve(const Variable& va, solutions_t&) const override;
+
 		void optimize() override;
 		Valuable Sqrt() const override;
 		const vars_cont_t& getCommonVars() const override;

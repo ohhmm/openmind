@@ -1506,7 +1506,7 @@ namespace math {
                     k.optimize();
                 }
                 if(!(a.IsInt() && k.IsInt())) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT(" solving " << str());
                 } else {
                     Valuable test;
                     auto ai = Integer::cast(a);
