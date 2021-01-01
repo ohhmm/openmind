@@ -4,6 +4,7 @@
 #include "Variable.h"
 
 using namespace omnn::math;
+using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(logic_or_tests)
 {
@@ -11,11 +12,13 @@ BOOST_AUTO_TEST_CASE(logic_or_tests)
     auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
     auto ok = eq(x);
 }
-BOOST_AUTO_TEST_CASE(not_tests)
+BOOST_AUTO_TEST_CASE(not_tests
+    ,*disabled()
+)
 {
     auto x = "x"_va;
     auto x_eq_1 = x-1;
-    auto x_ne_1 = !x; // must mean all except this equation
+    auto x_ne_1 = !x_eq_1; //!x; // must mean all except this equation
     std::cout << x_ne_1 << std::endl;
     auto eval_x_eq_1 = x_eq_1;
     eval_x_eq_1.Eval(x, 1);

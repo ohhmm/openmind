@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <typeindex>
 #include <unordered_set>
 
@@ -21,6 +22,9 @@
 #include <boost/rational.hpp>
 
 #define IMPLEMENT { implement(__FILE__ ":" BOOST_PP_STRINGIZE(__LINE__) " "); throw; } // " " __FUNCTION__
+#define LOG_AND_IMPLEMENT(Param) { \
+    implement( ((::std::stringstream&)(::std::stringstream() << __FILE__ ":" BOOST_PP_STRINGIZE(__LINE__) " " << Param)).str().c_str() ); throw; \
+}
 
 
 namespace omnn{
