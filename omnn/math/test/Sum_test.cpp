@@ -17,8 +17,7 @@ std::string l(const T& v)
 
 void ohashes(const Valuable& v)
 {
-    auto s = Sum::cast(v);
-    for(auto& i : *s)
+    for(auto& i : v.as<Sum>())
     {
         std::cout << i << " hash "<< i.Hash()<<std::endl;
     }
@@ -97,9 +96,9 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
 //    BOOST_TEST((((65851823091255177969664_v*v11*v11*v11*v11*v11 + -4433312658227724288*v11*v11*v11*v11*v11*v11))/(v11*v11*v11*v11*v11*v11*v11*v11*v11*v11*v11) + v9*v9*-23702740992/(v11*v11*v11*v11*v11) + v10*v10*-23702740992/(v11*v11*v11*v11*v11)) == (((65851823091255177969664*v11*v11*v11*v11*v11 + -4433312658227724288*v11*v11*v11*v11*v11*v11))/(v11*v11*v11*v11*v11*v11*v11*v11*v11*v11*v11) + v9*v9*-23702740992/(v11*v11*v11*v11*v11) + v10*v10*-23702740992/(v11*v11*v11*v11*v11)))
     s = (v3+1)+(v1+v2);
     s.optimize();
-    auto sc = Sum::cast(s);
-    BOOST_TEST(sc);
-    BOOST_TEST(sc->size()==4);
+    BOOST_TEST(s.IsSum());
+    auto& sc = s.as<Sum>();
+    BOOST_TEST(sc.size()==4);
     BOOST_TEST((((8_v + (((8*1 + 8*1 + -8 + (1_v^2)*-4 + (1_v^2)*-4))^((1_v/2)))))/2) == 4);
     
     Variable x,y,z;
@@ -107,20 +106,20 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     _2 = (x^2) - (y^2);
     BOOST_TEST(_1 == _2);
     sq = (x^4) + (z^4);
-    auto sum = Sum::cast(sq);
-    BOOST_TEST(sum);
+    BOOST_TEST(sq.IsSum());
+    auto sum = &sq.as<Sum>();
     if (sum) {
         BOOST_TEST(sum->size()==2);
     }
     t=-2*y-2*x;
-    sum=Sum::cast(t);
-    BOOST_TEST(sum);
+    BOOST_TEST(t.IsSum());
+    sum=&t.as<Sum>();
     if (sum) {
         BOOST_TEST(sum->size()==2);
     }
     sq = (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4*(x^3) + 2*(x^2)*(y^2) + 2*(y^2)*(z^2) + 2*(x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324;
-    sum = Sum::cast(sq);
-    BOOST_TEST(sum);
+    BOOST_TEST(sq.IsSum());
+    sum = &sq.as<Sum>();
     if (sum->size()!=25) {
         std::cout << sum->str() << std::endl;
         BOOST_TEST(sum->size()==25);
@@ -133,8 +132,8 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     auto _ = (z^2) -2*y + (y^2) -2*x + (x^2) -8*z + 18;
     BOOST_TEST(_.Sq() == sq);
 
-    sum = Sum::cast(_);
-    BOOST_TEST(sum);
+    BOOST_TEST(_.IsSum());
+    sum = &_.as<Sum>();
     BOOST_TEST(sum->size()==7);
     t = _;
     t.Eval(x,1);
@@ -156,10 +155,10 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     
     auto t1 = (v4^2)*v5*-4 + (v5^2)*-4*v4;
     auto t2 = (v5^2)*-4*v4 + (v4^2)*v5*-4;
-    auto s1 = Sum::cast(t1);
-    auto s2 = Sum::cast(t2);
-    BOOST_TEST(s1->size()==s2->size());
-    BOOST_TEST(s1->size()==2);
+    auto& s1 = t1.as<Sum>();
+    auto& s2 = t2.as<Sum>();
+    BOOST_TEST(s1.size()==s2.size());
+    BOOST_TEST(s1.size()==2);
 //    BOOST_TEST(*s1->begin()==*s2->GetConstCont().rbegin());
 //    BOOST_TEST(*s2->begin()==*s1->GetConstCont().rbegin());
     BOOST_TEST(t1 == t2);
@@ -173,8 +172,10 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     t.Eval(x,1); t.Eval(y,1); t.Eval(z, 4);
     t.optimize();
     BOOST_TEST(t==0);
-    
-    _ = ((v3 + (2040_v/v1)) / ((-1_v/v1)*v2));
+
+    _1 = v3 + (2040_v/v1);
+    _2 = (-1_v/v1)*v2;
+    _ = _1 / _2;
     {
     auto ss = _.Solutions(v3);
     BOOST_TEST(ss.size() == 1);
@@ -273,7 +274,7 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     
     
     _ = (32_v*((4_v*(v^2) + 2048)^((1_v/2)))*((4_v*(v^2) + 2044)^((1_v/2)))*((4_v*(v^2) + 1948)^((1_v/2))) + -15604_v*((4_v*(v^2) + 2032)^((1_v/2)))*((4_v*(v^2) + 892)^((1_v/2))));
-    sum = Sum::cast(_);
+    sum = &_.as<Sum>();
     BOOST_TEST(*sum == _);
     // TODO:    _ = _(v);
     
@@ -414,10 +415,10 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_simplifying
     BOOST_TEST(solutions.size() == 1);
     auto _ = *solutions.begin();
     BOOST_TEST(_ == 2);
-    
-    auto sum = Sum::cast(i);
+    BOOST_TEST(i.IsSum());
+    auto& sum = i.as<Sum>();
     std::vector<Valuable> coefficients;
-    auto grade = sum->FillPolyCoeff(coefficients, x);
+    auto grade = sum.FillPolyCoeff(coefficients, x);
     BOOST_TEST(grade == 1);
 }
 

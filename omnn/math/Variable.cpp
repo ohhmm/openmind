@@ -49,8 +49,7 @@ namespace math {
     
     Valuable& Variable::operator +=(const Valuable& v)
     {
-        auto c = cast(v);
-        if(c && *c==*this)
+        if(operator==(v))
         {
             Become(Product{2, *this});
         }
@@ -65,7 +64,7 @@ namespace math {
         if (Same(v)) {
             return Become(Exponentiation(*this, 2));
         }
-        else if (Exponentiation::cast(v))
+        else if (v.IsExponentiation() || v.IsProduct())
             return Become(v**this);
         return Become(Product{*this, v});
     }
@@ -139,8 +138,7 @@ namespace math {
 
     Valuable& Variable::operator /=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i && *this==*i)
+        if (operator==(v))
         {
             Become(Integer(1));
         }
@@ -173,13 +171,13 @@ namespace math {
     
     bool Variable::operator <(const Valuable& v) const
     {
-        auto i = cast(v);
-        if (i)
+        if (v.IsVa())
         {
-            if (varSetHost != i->varSetHost) {
+            auto& i = v.as<Variable>();
+            if (varSetHost != i.varSetHost) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }
-            return varSetHost->CompareIdsLess(varId, i->varId);
+            return varSetHost->CompareIdsLess(varId, i.varId);
         }
         
         // not implemented comparison to this Valuable descent
@@ -190,12 +188,12 @@ namespace math {
     {
         if (v.IsVa())
         {
-            auto i = cast(v);
-            if (varSetHost != i->varSetHost) {
+            auto& i = v.as<Variable>();
+            if (varSetHost != i.varSetHost) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }
             return hash == v.Hash()
-                && varSetHost->CompareIdsEqual(varId, i->varId);
+                && varSetHost->CompareIdsEqual(varId, i.varId);
         }
         else
         {   // compare with non-va
@@ -272,10 +270,10 @@ namespace math {
         if (v.IsProduct()) {
             c = v.InCommonWith(*this);
         } else if (v.IsExponentiation()) {
-            auto e = Exponentiation::cast(v);
-            if (e->getBase() == *this) {
-                if (e->getExponentiation().IsInt()) {
-                    if (e->getExponentiation() > 0) {
+            auto& e = v.as<Exponentiation>();
+            if (e.getBase() == *this) {
+                if (e.getExponentiation().IsInt()) {
+                    if (e.getExponentiation() > 0) {
                         c = *this;
                     }
                 } else {

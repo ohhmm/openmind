@@ -1,9 +1,15 @@
 
 option(OPENMIND_MATH_USE_LEVELDB_CACHE "Use Google LevelDB library to cache solutions" TRUE)
-option(OPENMIND_MATH_CACHE_ALLOW_CACHE_UPGRADE "Update uptimized cached values during fetch if new optimizations applied" TRUE)
+if(OPENMIND_MATH_USE_LEVELDB_CACHE)
+    option(OPENMIND_MATH_CACHE_ALLOW_CACHE_UPGRADE "Update uptimized cached values during fetch if new optimizations applied" TRUE)
+    option(OPENMIND_MATH_CACHE_VOLATILE "Clean cache each start (for debugging purposes)" ${_IS_DEBUG})
+endif(OPENMIND_MATH_USE_LEVELDB_CACHE)
 
 if(OPENMIND_MATH_USE_LEVELDB_CACHE)
 	add_definitions(-DOPENMIND_MATH_USE_LEVELDB_CACHE)
+	if(OPENMIND_MATH_CACHE_VOLATILE)
+		add_definitions(-DOPENMIND_MATH_CACHE_VOLATILE)
+	endif(OPENMIND_MATH_CACHE_VOLATILE)
 	dep(google/leveldb)
 	message("leveldb_LIBRARIES: ${leveldb_LIBRARIES}")
 	if(NOT WIN32)

@@ -22,13 +22,21 @@ namespace math {
 
 	protected:
 		Valuable& numerator() { return _1; }
-        const Valuable& numerator() const { return _1; }
         Valuable& denominator() { return _2; }
-		const Valuable& denominator() const { return _2; }
 		std::ostream& print_sign(std::ostream& out) const override;
 
 	public:
-		Valuable operator -() const override;
+        const Valuable& numerator() const { return _1; }
+        template<class T>
+        void setNumerator(T&& n)
+        { set1(std::forward<T>(n)); }
+
+        const Valuable& denominator() const { return _2; }
+		template<class T>
+        void setDumerator(T&& n)
+        { set2(std::forward<T>(n)); }
+
+        Valuable operator -() const override;
 		Valuable& operator +=(const Valuable& v) override;
 		Valuable& operator *=(const Valuable& v) override;
         bool MultiplyIfSimplifiable(const Valuable& v) override;

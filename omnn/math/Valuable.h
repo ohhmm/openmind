@@ -146,11 +146,7 @@ public:
     Valuable& get() { return exp ? exp->get() : *this; }
 
     template<class T>
-    const T& as() const {
-        auto& the = get();
-        assert(the.Is<T>());
-        return static_cast<const T&>(the);
-    }
+    const T& as() const;
 
     template<class T>
     T& as() {
@@ -418,6 +414,15 @@ protected:
 
 
 Valuable implement(const char* str = "");
+
+template<class T>
+const T& Valuable::as() const {
+    auto& the = get();
+    if(!the.Is<T>()){
+        IMPLEMENT
+    }
+    return static_cast<const T&>(the);
+}
 
 template <const unsigned long long I>
 class vo {

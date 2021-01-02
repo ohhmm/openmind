@@ -131,10 +131,9 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
             std::cout << subsyst << std::endl;
             
             eq *= subsyst;
-            
-            auto sum = Sum::cast(subsyst);
-            BOOST_TEST(sum);
-            auto formula = FormulaOfVaWithSingleIntegerRoot(z, *sum);
+
+            BOOST_TEST(subsyst.IsSum());
+            auto formula = FormulaOfVaWithSingleIntegerRoot(z, subsyst.as<Sum>());
             std::cout << "formula of value: " << formula << std::endl;
             auto evaluated = formula(vm(i, 0), vm(i, 1));
             std::cout << evaluated << std::endl;
@@ -157,9 +156,8 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
             BOOST_TEST(e == 0); //test current eq
         }
         std::cout << "Total equation:" << eq << std::endl;
-        auto s = Sum::cast(eq);
-        BOOST_TEST(s);
-        auto f = FormulaOfVaWithSingleIntegerRoot(z,*s);
+        BOOST_TEST(eq.IsSum());
+        auto f = FormulaOfVaWithSingleIntegerRoot(z, eq.as<Sum>());
         std::cout << "Formula : " << f << std::endl;
         // checking
         for (auto i=vm.size1(); i--;) {

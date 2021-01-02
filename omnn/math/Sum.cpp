@@ -29,6 +29,7 @@
 #ifdef OPENMIND_USE_OPENCL
 #include <boost/compute.hpp>
 #endif
+
 //TODO:
 //import std;
 
@@ -100,8 +101,7 @@ namespace math {
     {
         Sum::iterator it = end();
         if(item.IsSum()) {
-            auto s = cast(item);
-            for(auto& i : *s) {
+            for(auto& i : item.as<Sum>()) {
                 auto a = Add(i);
                 if (it == end() || soc(*a, *it)) {
                     it = a;
@@ -220,7 +220,7 @@ namespace math {
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->IsSum()) {
-                    for (auto& m : cast(*it)->members)
+                    for (auto& m : it->as<Sum>())
                     {
                         Add(std::move(m));
                     }
@@ -309,7 +309,7 @@ namespace math {
                             ++it2;
                     }
                     else if (c.IsFraction() && it2->IsFraction()
-                             && Fraction::cast(c)->getDenominator() == Fraction::cast(*it2)->getDenominator())
+                             && c.as<Fraction>().getDenominator() == it2->as<Fraction>().getDenominator())
                     {
                         c += *it2;
                         Delete(it2);
@@ -380,26 +380,26 @@ namespace math {
                         for (auto& m : members)
                         {
                             if (m.IsProduct()) {
-                                auto p = Product::cast(m);
-                                for (auto& m : *p) {
+                                auto& p = m.as<Product>();
+                                for (auto& m : p) {
                                     if (m.IsFraction()) {
-                                        operator*=(Fraction::cast(m)->getDenominator());
+                                        operator*=(m.as<Fraction>().getDenominator());
                                         scan = true;
                                         break;
                                     }
                                     else if (m.IsExponentiation()) {
-                                        auto e = Exponentiation::cast(m);
-                                        auto& ee = e->getExponentiation();
+                                        auto& e = m.as<Exponentiation>();
+                                        auto& ee = e.getExponentiation();
                                         if (ee.IsInt() && ee < 0) {
-                                            operator*=(e->getBase() ^ (-ee));
+                                            operator*=(e.getBase() ^ (-ee));
                                             scan = true;
                                             break;
                                         }
                                         else if (ee.IsFraction()) {
-                                            auto f = Fraction::cast(ee);
-                                            auto& d = f->getDenominator();
-                                            auto wo = *p / *e;
-                                            Become(((e->getBase() ^ f->getNumerator()) * (wo^d)) - ((-(*this - *p)) ^ d));
+                                            auto& f = ee.as<Fraction>();
+                                            auto& d = f.getDenominator();
+                                            auto wo = p / e;
+                                            Become(((e.getBase() ^ f.getNumerator()) * (wo^d)) - ((-(*this - p)) ^ d));
                                             scan = true;
                                             break;
                                         }
@@ -409,21 +409,21 @@ namespace math {
                                     break;
                             }
                             else if (m.IsFraction()) {
-                                operator*=(Fraction::cast(m)->getDenominator());
+                                operator*=(m.as<Fraction>().getDenominator());
                                 scan = true;
                                 break;
                             }
                             else if (m.IsExponentiation()) {
-                                auto e = Exponentiation::cast(m);
-                                auto& ee = e->getExponentiation();
+                                auto& e = m.as<Exponentiation>();
+                                auto& ee = e.getExponentiation();
                                 if (ee.IsInt() && ee < 0) {
-                                    operator*=(e->getBase() ^ (-ee));
+                                    operator*=(e.getBase() ^ (-ee));
                                     scan = true;
                                     break;
                                 }
                                 else if (ee.IsFraction()) {
-                                    auto f = Fraction::cast(ee);
-                                    Become((e->getBase() ^ f->getNumerator()) - ((-(*this - m)) ^ f->getDenominator()));
+                                    auto& f = ee.as<Fraction>();
+                                    Become((e.getBase() ^ f.getNumerator()) - ((-(*this - m)) ^ f.getDenominator()));
                                     scan = true;
                                     break;
                                 }
@@ -532,12 +532,23 @@ namespace math {
         {
             for (auto it = members.begin(); it != members.end(); ++it)
             {
+                auto simplified = it->IsSummationSimplifiable(v);
+                if (simplified.first) {
+                    Update(it, std::move(simplified.second));
+                    optimize();
+                    return *this;
+                }
                 if (it->OfSameType(v) && it->getCommonVars() == v.getCommonVars())
                 {
                     auto s = *it + v;
                     if (!s.IsSum()) {
+#ifndef NDEBUG
+                        std::cout << *it << " + " << v << " = " << s << "\t\tmust be covered by IsSummationSimpifiable call" << std::endl;
+                        s = *it + v;
+                        simplified = it->IsSummationSimplifiable(v);
+                        LOG_AND_IMPLEMENT(*it << " + " << v << " = " << s << "\t\tmust be covered by IsSummationSimpifiable call");
+#endif
                         Update(it, s);
-                        optimized={};
                         optimize();
                         return *this;
                     }
@@ -567,7 +578,7 @@ namespace math {
             return *this;
         }
         else if (v.IsSum()){
-            for (auto& _1 : *cast(v))
+            for (auto& _1 : v.as<Sum>())
                 for (auto& _2 : members)
                     sum.Add(_1 * _2);
             optimized={};
@@ -594,25 +605,25 @@ namespace math {
         SetView(None);
 		if (v.IsSum())
 		{
-            auto i = cast(v);
+            auto& i = v.as<Sum>();
             if(!v.FindVa())
             {
                 for (auto& a : members) {
-                    for (auto& b : i->members) {
+                    for (auto& b : i.members) {
                         s += a / b;
                     }
                 }
             }
             else
             {
-                if (size() < i->size())
+                if (size() < i.size())
                 {
                     s = Fraction(*this, v);
                 }
                 else if (HasSameVars(v))
                 {
-                    auto b=i->begin();
-                    auto e = i->end();
+                    auto b = i.begin();
+                    auto e = i.end();
                     size_t offs = 0;
                     std::deque<Valuable> hist {*this};
                     auto icnt = size() * 2;
@@ -723,25 +734,25 @@ namespace math {
         Valuable s = 0_v;
         if (v.IsSum())
         {
-            auto i = cast(v);
+            auto& i = v.as<Sum>();
             if(!v.FindVa())
             {
                 for (auto& a : members) {
-                    for (auto& b : i->members) {
+                    for (auto& b : i.members) {
                         s += a / b;
                     }
                 }
             }
             else
             {
-                if (size() < i->size())
+                if (size() < i.size())
                 {
                     s = Fraction(*this, v);
                 }
                 else if (HasSameVars(v))
                 {
-                    auto b=i->begin();
-                    auto e = i->end();
+                    auto b=i.begin();
+                    auto e = i.end();
                     size_t offs = 0;
                     std::deque<Valuable> hist {*this};
                     
@@ -857,7 +868,7 @@ namespace math {
         auto add = [&](const Valuable& m)
         {
             if (sum.IsSum()) {
-                Sum::cast(sum)->Add(m);
+                sum.as<Sum>().Add(m);
             }
             else
                 sum += m;
@@ -872,10 +883,11 @@ namespace math {
     {
         for (const auto& arg : l)
         {
-            auto a = cast(arg);
-            if(a)
-                for(auto& m: *a)
+            if(arg.IsSum()) {
+                auto& a = arg.as<Sum>();
+                for(auto& m: a)
                     this->Add(m, end());
+            }
             else
                 this->Add(arg, end());
         }
@@ -885,13 +897,13 @@ namespace math {
     {
         if (v.IsSum()) {
             auto sz1 = size();
-            auto s = Sum::cast(v);
-            auto sz2 = s->size();
+            auto& s = v.as<Sum>();
+            auto sz2 = s.size();
             if (sz1 != sz2) {
                 return sz1 > sz2;
             }
             
-            for (auto i1=begin(), i2=s->begin(); i1!=end(); ++i1, ++i2) {
+            for (auto i1=begin(), i2=s.begin(); i1!=end(); ++i1, ++i2) {
                 if (*i1 != *i2) {
                     return i1->IsComesBefore(*i2);
                 }
@@ -1020,10 +1032,10 @@ namespace math {
             }
             else if(m.IsExponentiation())
             {
-                auto e = Exponentiation::cast(m);
-                if (e && e->getBase()==v)
+                auto& e = m.as<Exponentiation>();
+                if (e.getBase() == v)
                 {
-                    auto& ee = e->getExponentiation();
+                    auto& ee = e.getExponentiation();
                     if (ee.IsInt()) {
                         auto i = static_cast<decltype(grade)>(ee.ca());
                         if (i > grade) {
@@ -1065,12 +1077,12 @@ namespace math {
         if (!e.IsSum()) {
             IMPLEMENT;
         }
-        auto es = cast(e);
+        auto& es = e.as<Sum>();
         std::vector<Valuable> coefs;
-        auto grade = es->FillPolyCoeff(coefs, va);
+        auto grade = es.FillPolyCoeff(coefs, va);
         if (coefs.size() && grade && grade <= 2)
         {
-            es->solve(va, solutions, coefs, grade);
+            es.solve(va, solutions, coefs, grade);
             for (auto i=solutions.begin(); i != solutions.end();) {
                 if (i->HasVa(va)) {
                     IMPLEMENT
@@ -1124,16 +1136,18 @@ namespace math {
             }
             else
             {
-                auto stodo = cast(todo);
-                if (stodo->size() == 2)
+                auto& stodo = todo.as<Sum>();
+                if (stodo.size() == 2)
                 {
-                    if(stodo->begin()->IsFraction())
+                    auto b = stodo.begin();
+                    auto rb = stodo.rbegin();
+                    if(b->IsFraction())
                     {
-                        return (*stodo->begin())(va, _ - *stodo->rbegin());
+                        return (*b)(va, _ - *rb);
                     }
-                    else if(stodo->rbegin()->IsFraction())
+                    else if(rb->IsFraction())
                     {
-                        return (*stodo->rbegin())(va, _ - *stodo->begin());
+                        return (*rb)(va, _ - *b);
                     }
                     else
                     {
@@ -1143,7 +1157,7 @@ namespace math {
                 else
                 {
                     solutions.insert(0_v);
-                    for(auto& m : *stodo)
+                    for(auto& m : stodo)
                     {IMPLEMENT
                         solutions_t incoming(std::move(solutions));
                         auto e = m(va, _);
@@ -1340,16 +1354,16 @@ namespace math {
         bool haveMin = false;
         Valuable _ = *this;
         _.optimize();
-        auto sum = cast(_);
-        if (!sum) {
+        if (!_.IsSum()) {
             IMPLEMENT
         }
-        
+
+        auto& sum = _.as<Sum>();
         std::vector<Valuable> coefficients;
-        auto g = sum->FillPolyCoeff(coefficients,va);
+        auto g = sum.FillPolyCoeff(coefficients,va);
         if (g<3)
         {
-            sum->solve(va, solutions, coefficients, g);
+            sum.solve(va, solutions, coefficients, g);
             
             if(solutions.size())
             {
@@ -1358,7 +1372,7 @@ namespace math {
         }
 
         solutions_t zs;
-        auto zz = sum->get_zeros_zones(va, zs);
+        auto zz = sum.get_zeros_zones(va, zs);
         if(zs.size())
         {
             bool foundIntSolution = {};
@@ -1414,12 +1428,12 @@ namespace math {
         };
         
         auto freeMember = _.calcFreeMember();
-        auto i = Integer::cast(freeMember);
-        if(!i) {
+        if(!freeMember.IsInt()) {
             IMPLEMENT
         }
+        auto& i = freeMember.as<Integer>();
         
-        if (finder(i)) {
+        if (finder(&i)) {
             return solutions;
         }
         
@@ -1509,11 +1523,11 @@ namespace math {
                     LOG_AND_IMPLEMENT(" solving " << str());
                 } else {
                     Valuable test;
-                    auto ai = Integer::cast(a);
-                    auto ki = Integer::cast(k);
-                    auto found = ai->Factorization([&](const auto& i){
+                    auto& ai = a.as<Integer>();
+                    auto& ki = k.as<Integer>();
+                    auto found = ai.Factorization([&](const auto& i){
                         return i!=0
-                            && ki->Factorization([&](const auto& ik)->bool{
+                            && ki.Factorization([&](const auto& ik)->bool{
                                 test = ik / i;
                                 return Test(va, test) || Test(va, test=-test);
                                 }, Infinity());

@@ -43,8 +43,8 @@ namespace math {
             if (maxVaExp.IsInt()) {
                 return maxVaExp.ca();
             } else if (maxVaExp.IsSimpleFraction()) {
-                auto f = Fraction::cast(maxVaExp);
-                return {f->getNumerator().ca(), f->getDenominator().ca()};
+                auto& f = maxVaExp.as<Fraction>();
+                return {f.getNumerator().ca(), f.getDenominator().ca()};
             } else if(!optimizations) {
                 optimizations = true;
                 maxVaExp.optimize();
@@ -98,20 +98,20 @@ namespace math {
         
         if (eexp().IsSum())
         {
-            auto s = Sum::cast(eexp());
-            auto sz = s->size();
+            auto& s = eexp().as<Sum>();
+            auto sz = s.size();
             auto v = 1_v;
-            for(auto it = s->begin(), e = s->end();
+            for(auto it = s.begin(), e = s.end();
                 it != e; )
             {
                 if (it->IsInt()) {
                     v *= ebase()^*it;
-                    s->Delete(it);
+                    s.Delete(it);
                 }
                 else
                     ++it;
             }
-            if (sz != s->size()) {
+            if (sz != s.size()) {
                 Become(*this * v);
                 return;
             }
@@ -180,13 +180,13 @@ namespace math {
 
         if (ebase().IsFraction() && eexp().IsInt() && eexp() < 0_v) {
             eexp() = -eexp();
-            ebase() = Fraction::cast(ebase())->Reciprocal();
+            ebase() = ebase().as<Fraction>().Reciprocal();
         }
 
         if (ebase().Is_e()) {
             if (eexp().IsProduct()) {
-                auto p = Product::cast(eexp());
-                if (p->Has(constant::pi) && p->Has(constant::i)) { // TODO : sequence does metter
+                auto& p = eexp().as<Product>();
+                if (p.Has(constant::pi) && p.Has(constant::i)) { // TODO : sequence does metter
 //                    ebase() = -1;
 //                    eexp() /= constant::i;
 //                    eexp() /= constant::pi;
@@ -194,7 +194,7 @@ namespace math {
             }
         }
         // todo : check
-        if (ebase().IsInt()) {
+        if (ebase().IsSimple()) {
             if (eexp().IsProduct()) {
                 auto& p = eexp().as<Product>();
                 auto it = p.GetFirstOccurence<Integer>();
@@ -212,7 +212,7 @@ namespace math {
                     Become(std::move(ebase()));
                     return;
                 } else if (eexp().IsSimpleFraction()) {
-                    if (Fraction::cast(eexp())->getDenominator().bit(0)) {
+                    if (eexp().as<Fraction>().getDenominator().bit(0)) {
                         Become(std::move(ebase()));
                         return;
                     }
@@ -227,8 +227,20 @@ namespace math {
             } else if (eexp()==-1) {
                 Become(Fraction{1,ebase()});
                 return;
-            } else if (eexp().IsInfinity())
+            } else if (eexp().IsInfinity()) {
                 IMPLEMENT
+            } else if (eexp().IsFraction()) {
+                auto& f = eexp().as<Fraction>();
+                auto& n = f.getNumerator();
+                if (n != 1) {
+                    // TODO: auto is = ebase().IsExponentiationSimplifiable(n);
+                    auto newBase = ebase() ^ n;
+                    if(!newBase.IsExponentiation()){
+                        Become(newBase ^ (1_v / f.getDenominator()));
+                        return;
+                    }
+                }
+            }
         }
 
         bool ebz = ebase() == 0_v;
@@ -366,12 +378,12 @@ namespace math {
 
         if(IsExponentiation() && ebase().IsExponentiation())
         {
-            auto e = cast(ebase());
-            auto& eeexp = e->getExponentiation();
+            auto& e = ebase().as<Exponentiation>();
+            auto& eeexp = e.getExponentiation();
             if ((eeexp.FindVa() == nullptr) == (eexp().FindVa() == nullptr)) {
                 eexp() *= eeexp;
                 // todo : copy if it shared
-                ebase() = std::move(const_cast<Valuable&>((e->getBase())));
+                ebase() = std::move(const_cast<Valuable&>((e.getBase())));
             }
         }
 
@@ -397,9 +409,9 @@ namespace math {
         {
             for(auto& it : *p){
                 if (it.IsExponentiation()) {
-                    auto e = Exponentiation::cast(it);
-                    if (ebase() == e->getBase()) {
-                        return e;
+                    auto& e = it.as<Exponentiation>();
+                    if (ebase() == e.getBase()) {
+                        return &e;
                     }
                 }
             }
@@ -415,7 +427,7 @@ namespace math {
             optimized={};
         }
         else if(v.IsFraction()
-                && (f = Fraction::cast(v))->getDenominator() == ebase())
+                && (f = &v.as<Fraction>())->getDenominator() == ebase())
         {
             --eexp();
             optimized={};
@@ -424,7 +436,7 @@ namespace math {
         }
         else if(v.IsFraction()
                 && f->getDenominator().IsProduct()
-                && (fdn = Product::cast(f->getDenominator()))->Has(ebase()))
+                && (fdn = &f->getDenominator().as<Product>())->Has(ebase()))
         {
             --eexp();
             optimized={};
@@ -535,12 +547,12 @@ namespace math {
 
     std::pair<bool,Valuable> Exponentiation::IsSummationSimplifiable(const Valuable& v) const
     {
-        std::pair<bool,Valuable> is = {};
+        std::pair<bool,Valuable> is;
+        is.first = operator==(v);
         if (is.first) {
-            IMPLEMENT
-            is.second = *this + v;
-            if (is.second.Complexity() > v.Complexity())
-                IMPLEMENT;
+            is.second = *this * 2;
+        } else if ((is.first = operator==(-v))) {
+                is.second = 0;
         } else if (v.IsSimple()
                 || v.IsExponentiation()
                 || v.IsVa()
@@ -597,8 +609,7 @@ namespace math {
         }
         else if(v.IsFraction())
         {
-            auto f = Fraction::cast(v);
-            *this *= f->Reciprocal();
+            *this *= v.as<Fraction>().Reciprocal();
             return *this;
         }
         else if(ebase() == v)
@@ -626,20 +637,19 @@ namespace math {
     
     bool Exponentiation::operator ==(const Valuable& v) const
     {
-        const Exponentiation* ch;
-        return (v.IsExponentiation()
-                && Hash()==v.Hash()
-                && (ch = cast(v))
-                && _1.Hash() == ch->_1.Hash()
-                && _2.Hash() == ch->_2.Hash()
-                && _1 == ch->_1
-                && _2 == ch->_2
-                ) ||
-                (v.IsFraction()
-                 && eexp().IsInt()
+        auto eq = v.IsExponentiation() && Hash()==v.Hash();
+        if(eq){
+            auto& e = v.as<Exponentiation>();
+            eq = _1.Hash() == e._1.Hash()
+                && _2.Hash() == e._2.Hash()
+                && _1 == e._1
+                && _2 == e._2;
+        } else if (v.IsFraction()) {
+            eq = eexp().IsInt()
                  && eexp() < 0
-                 && ebase() == (Fraction::cast(v)->getDenominator() ^ (-eexp()))
-                );
+                 && ebase() == (v.as<Fraction>().getDenominator() ^ (-eexp()));
+        }
+        return eq;
     }
     
     Exponentiation::operator double() const
@@ -696,13 +706,13 @@ namespace math {
 
     bool Exponentiation::operator <(const Valuable& v) const
     {
-        auto e = cast(v);
-        if (e)
+        if (v.IsExponentiation())
         {
-            if (e->getBase() == getBase())
-                return getExponentiation() < e->getExponentiation();
-            if (e->getExponentiation() == getExponentiation())
-                return getBase() < e->getBase();
+            auto& e = v.as<Exponentiation>();
+            if (e.getBase() == getBase())
+                return getExponentiation() < e.getExponentiation();
+            if (e.getExponentiation() == getExponentiation())
+                return getBase() < e.getBase();
         }
         
         return base::operator <(v);
@@ -829,7 +839,7 @@ namespace math {
         else if(v.IsVa())
             is = !!FindVa();
         else if(v.IsSum())
-            is = IsComesBefore(*Sum::cast(v)->begin());
+            is = IsComesBefore(*v.as<Sum>().begin());
         else
             IMPLEMENT
 
@@ -865,7 +875,7 @@ namespace math {
     {
         auto c = 1_v;
         if (v.IsProduct()) {
-            for(auto& m: Product::cast(v)->GetConstCont()){
+            for(auto& m: v.as<Product>()){
                 c = InCommonWith(m);
                 if (c != 1_v) {
                     break;
@@ -926,8 +936,8 @@ namespace math {
         if (!getExponentiation().FindVa() && getExponentiation()!=0 && augmentation==0) {
             return getBase()(v,augmentation);
         } else if (getExponentiation().IsSimpleFraction()) {
-            auto f = Fraction::cast(getExponentiation());
-            return (getBase()^f->getNumerator())(v,augmentation^f->getDenominator());
+            auto& f = getExponentiation().as<Fraction>();
+            return (getBase()^f.getNumerator())(v,augmentation^f.getDenominator());
         } else {
             IMPLEMENT
         }
