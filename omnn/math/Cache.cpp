@@ -31,10 +31,18 @@ void CleanupReadyTasks(CacheStoringTasksQueue &CacheStoringTasks) {
   }
 }
 
+void DeleteDB(const Cache::path_str_t& path) {
+  if(std::filesystem::exists(path))
+    std::filesystem::remove_all(path);  
+}
+
 }
 
 void Cache::DbOpen() {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
+#if OPENMIND_MATH_CACHE_VOLATILE
+  DeleteDB(path);
+#endif
   leveldb::Options options;
   options.create_if_missing = true;
   options.compression = leveldb::kSnappyCompression;
@@ -44,7 +52,7 @@ void Cache::DbOpen() {
 
   leveldb::Status status;
   while (!((status = leveldb::DB::Open(options, path.c_str(), &db)).ok())) {
-    auto err = path + " db connection error";
+    auto err = path.string() + " DB connection error";
     std::cerr << err << status.ToString() << std::endl;
     if(status.IsIOError()){
       std::cout << "DB is busy. Waiting. Retrying in 5 sec." << std::endl;
@@ -52,7 +60,7 @@ void Cache::DbOpen() {
       std::this_thread::sleep_for(5s);
     } else {
 #ifndef NDEBUG
-      std::system(("rm -rf " + path).c_str());
+      DeleteDB(path);
       if (!leveldb::DB::Open(options, path.c_str(), &db).ok())
 #endif
       throw err;

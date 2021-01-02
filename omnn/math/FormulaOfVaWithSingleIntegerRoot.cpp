@@ -17,17 +17,17 @@ namespace math {
         Valuable singleIntegerRoot;
         bool haveMin = false;
         _.optimize();
-        auto sum = Sum::cast(_);
-        if (!sum) {
+        if (!_.IsSum()) {
             IMPLEMENT
         }
         
         std::vector<Valuable> coefficients;
-        auto g = sum->FillPolyCoeff(coefficients,getVa());
+        auto& sum = _.as<Sum>();
+        auto g = sum.FillPolyCoeff(coefficients,getVa());
         if (g<3)
         {
             solutions_t solutions;
-            sum->solve(getVa(), solutions, coefficients, g);
+            sum.solve(getVa(), solutions, coefficients, g);
             
             if(solutions.size() == 1)
             {
@@ -47,10 +47,10 @@ namespace math {
         };
         
         auto knowNoZ = !(min.IsMInfinity() || max.IsInfinity()) ? fx(min)*fx(max) > 0 : 0; // strictly saying this may mean >1
-        if (sum->size() > 2) {
+        if (sum.size() > 2) {
             auto dx = _;
 
-            while (Sum::cast(dx)->size()>2) {
+            while (dx.as<Sum>().size()>2) {
                 dx.d(getVa());
             }
             
@@ -134,20 +134,20 @@ namespace math {
                                     );
         };
 
-        auto freeMember = sum->begin()->IsExponentiation() ? *sum->rbegin() : _.calcFreeMember();
+        auto freeMember = sum.begin()->IsExponentiation() ? *sum.rbegin() : _.calcFreeMember();
         if (freeMember.IsFraction()) {
             IMPLEMENT
         } else if (!freeMember.IsInt()) {
             freeMember = 0_v;
         }
-        auto i = Integer::cast(freeMember);
-        if(!i)
+        if(!freeMember.IsInt())
             IMPLEMENT
+        auto& i = freeMember.as<Integer>();
         
         if(mode!=Strict && haveMin)
             return closest;
 
-        if (finder(i)) {
+        if (finder(&i)) {
             return singleIntegerRoot;
         } else if (!min.IsMInfinity() && !max.IsInfinity()){
             for (auto i = min; i <= max; ++i) {

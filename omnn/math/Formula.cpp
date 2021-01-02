@@ -47,25 +47,25 @@ namespace math {
                              Valuable const ** value)
     {
         bool is = {};
-        auto e = Exponentiation::cast(_);
-        if (e) {
+        if (_.IsExponentiation()) {
+            auto& e = _.as<Exponentiation>();
             static const Valuable z = 0_v;
-            bool isSum = e->getBase().IsSum();
-            Valuable sum = Sum{e->getBase(), z};
-            auto s = Sum::cast(isSum ? e->getBase() : sum);
+            bool isSum = e.getBase().IsSum();
+            Valuable sum = Sum{e.getBase(), z};
+            auto& s = (isSum ? e.getBase() : sum).as<Sum>();
             if (s) {
-                if (s->size() != 2) {
+                if (s.size() != 2) {
                     IMPLEMENT
                 }
-                auto va = s->template GetFirstOccurence<Variable>();
-                if (va != s->end())
+                auto va = s.template GetFirstOccurence<Variable>();
+                if (va != s.end())
                 {
-                    auto it = vaVals.find(*Variable::cast(*va));
+                    auto it = vaVals.find(va->as<Variable>());
                     auto isValue = it == vaVals.end();
                     is = isValue;
                     auto isCoord = !isValue;
                     
-                    if (va == s->begin())
+                    if (va == s.begin())
                         ++va;
                     else --va;
                     auto maxCoord = -*va;
@@ -91,9 +91,9 @@ namespace math {
     bool Formula::InCoordFactorization(const VaValMap& vaVals) const
     {
         bool is = {};
-        auto p = Product::cast(e);
-        if (p)
+        if (e.IsProduct())
         {
+            auto& p = e.as<Product>();
             // if it in range of product - then just find it by coordinates
             // check left gauge
             //auto first = p->begin();
@@ -104,15 +104,15 @@ namespace math {
             if(is)
             {
                 // check right gauge
-                auto it =p->rbegin();
+                auto it =p.rbegin();
                 if (*it==1)
                     ++it;
                 auto& l = *it;
-                auto s = Sum::cast(l);
-                if (!s) {
+                if (!l.IsSum()) {
                     IMPLEMENT
                 }
-                is = std::all_of(std::begin(*s), std::end(*s),
+                auto& s = l.as<Sum>();
+                is = std::all_of(std::begin(s), std::end(s),
                                  [&](auto& _) {
                                      return coordMatch(vaVals, _,
                                                       [](auto& v, auto& c){
@@ -128,11 +128,11 @@ namespace math {
     {
         Valuable root;
         auto vaCount = vaVals.size()+1;
-        auto p = Product::cast(e);
-        assert(p);
-        for(auto& m : *p)
+        assert(e.IsProduct());
+        auto& p = e.as<Product>();
+        for(auto& m : p)
         {
-            auto s = Sum::cast(m);
+            const Sum* s = m.IsSum() ? (&m.as<Sum>()) : nullptr;
             if(s && s->size() == vaCount)
             {
                 Valuable const * value = {};

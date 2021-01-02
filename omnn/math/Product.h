@@ -61,13 +61,15 @@ public:
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;
 
-	// virtual operators
+    // virtual operators
     Valuable& operator +=(const Valuable& v) override;
     std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     Valuable& operator *=(const Valuable& v) override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator ^=(const Valuable& v) override;
+    bool operator ==(const Valuable& v) const override;
+
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     void optimize() override;

@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 	BOOST_TEST(a - d == 0);
 
     Valuable _ = 3.1_v;
-    BOOST_TEST(Fraction::cast(_));
+    BOOST_TEST(_.IsFraction());
 
     _ = (1_v/2)^2_v;
     BOOST_TEST(_ == 1_v/4);

@@ -72,12 +72,12 @@ Extrapolator::operator Formula() const
     }
     Valuable::optimizations = true;
     e.optimize();
-    auto s = Sum::cast(e);
-    if(!s)
+    if(!e.IsSum())
         throw "Debug!";
+    auto& s = e.as<Sum>();
     if(integers)
-        return FormulaOfVaWithSingleIntegerRoot(vv, *s);
+        return FormulaOfVaWithSingleIntegerRoot(vv, s);
     else
-        return s->FormulaOfVa(vv);
+        return s.FormulaOfVa(vv);
 }
 

@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
         t = a;
         BOOST_TEST(t==a);
 
-        Valuable tt(const_cast<Variable*>(Variable::cast(t))->Move());
+        Valuable tt(t.as<Variable>().Move());
         BOOST_TEST(tt==a);
     }
     
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
         t = a;
         BOOST_TEST(t==a);
         
-        Valuable tt(const_cast<Variable*>(Variable::cast(t))->Move());
+        Valuable tt(t.as<Variable>().Move());
         BOOST_TEST(tt==a);
     }
     

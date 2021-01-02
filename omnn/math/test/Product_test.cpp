@@ -20,8 +20,8 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     Variable v1, v2;
     auto p1 = 1_v/2*v1*v2;
     auto p2 = v1*v2*1_v/2;
-    BOOST_TEST(Product::cast(p1));
-    BOOST_TEST(Product::cast(p2));
+    BOOST_TEST(p1.IsProduct());
+    BOOST_TEST(p2.IsProduct());
     BOOST_TEST(p1 == p2);
     p1.Eval(v1, 3);
     p1.Eval(v2, 4);
@@ -77,9 +77,9 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     
     _2 += _1;
     _2 *= v1 ^ 4;
-    BOOST_TEST(Sum::cast(_2)->begin()->getCommonVars().begin()->second == 8);
+    BOOST_TEST(_2.as<Sum>().begin()->getCommonVars().begin()->second == 8);
     
-    Product::cast(_1)->Add(v1^2);
+    _1.as<Product>().Add(v1^2);
     BOOST_TEST(_1.getCommonVars().begin()->second == 4);
     
     _1 = (((v1 + 0))^2);

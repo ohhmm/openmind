@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <omnn/math/ValuableDescendantContract.h>
+#include <utility>
 
 namespace omnn::math {
 
@@ -51,7 +52,30 @@ namespace omnn::math {
         }
 
         const Valuable& get1() const { return _1; }
+        template<class T>
+        void set1(T&& p) {
+            _1 = std::forward<T>(p);
+            Valuable::hash = _1.Hash() ^ _2.Hash();
+        }
+        template<class T>
+        void update1(T&& p) {
+            Valuable::hash ^= _1.Hash();
+            _1 = std::forward<T>(p);
+            Valuable::hash ^= _1.Hash();
+        }
+        
         const Valuable& get2() const { return _2; }
+        template<class T>
+        void set2(T&& p) {
+            _2 = std::forward<T>(p);
+            Valuable::hash = _1.Hash() ^ _2.Hash();
+        }
+        template<class T>
+        void update2(T&& p) {
+            Valuable::hash ^= _2.Hash();
+            _2 = std::forward<T>(p);
+            Valuable::hash ^= _2.Hash();
+        }
         
         using base::base;
 
@@ -63,14 +87,15 @@ namespace omnn::math {
         }
 
         bool operator ==(const Valuable& v) const override{
-            const Chld* ch;
-            return Valuable::Hash()==v.Hash()
-                    && v.Is<Chld>()
-                    && (ch = Chld::cast(v))
-                    && _1.Hash() == ch->_1.Hash()
-                    && _2.Hash() == ch->_2.Hash()
-                    && _1 == ch->_1
-                    && _2 == ch->_2;
+            auto eq = v.Is<Chld>() && Valuable::hash == v.Hash();
+            if (eq) {
+                auto& ch = v.as<Chld>();
+                eq = _1.Hash() == ch._1.Hash()
+                    && _2.Hash() == ch._2.Hash()
+                    && _1 == ch._1
+                    && _2 == ch._2;
+            }
+            return eq;
         }
 
         const Variable* FindVa() const override {

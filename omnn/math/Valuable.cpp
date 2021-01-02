@@ -228,9 +228,8 @@ namespace math {
             auto s = x.Equals(v1).logic_or(x.Equals(v2));
             if(s.IsSum())
             {
-                auto sum = Sum::cast(s);
                 std::vector<Valuable> coefficients;
-                sum->FillPolyCoeff(coefficients, x);
+                s.as<Sum>().FillPolyCoeff(coefficients, x);
                 auto& a = coefficients[2];
                 auto& b = coefficients[1];
                 auto& c = coefficients[0];
@@ -1267,12 +1266,12 @@ auto OmitOuterBrackets(std::string_view& s){
         if (_.FindVa()) {
             if (_.IsProduct()) {
                 Product p;
-                for(auto&& m: Product::cast(_)->GetConstCont()){
+                for(auto&& m: _.as<Product>()){
                     if (!m.FindVa()) {
-                        p.Add(std::move(const_cast<Valuable&&>(m)));
+                        p.Add(std::move(m));
                     }
                 }
-                _ = p;
+                _ = std::move(p);
             } else {
                 std::cout
                     << "Some debug info: " << std::endl

@@ -82,14 +82,10 @@ namespace math {
             return it;
         }
 
-        const iterator Add(const Valuable& item)
+        template <class ItemT>
+        const iterator Add(ItemT&& item)
         {
-            return Add(item, GetCont().end());
-        }
-        
-        const iterator Add(Valuable&& item)
-        {
-            return Add(std::move(item), GetCont().end());
+            return Add(std::forward<ItemT>(item), GetCont().end());
         }
 
         template<class T>

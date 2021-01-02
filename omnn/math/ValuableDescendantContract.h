@@ -77,8 +77,7 @@ namespace math {
         }
 
         void New(void* addr, Valuable&& v) override {
-            auto ch = const_cast<Chld*>(Chld::cast(v));
-            new(addr) Chld(std::move(*ch));
+            new(addr) Chld(std::move(v.as<Chld>()));
         }
         
     public:
@@ -114,13 +113,13 @@ namespace math {
         	return typeid(Chld);
         }
 
-        static const Chld* cast(const Valuable& v){
-            return Valuable::cast<Chld>(v);
-        }
-
-        static Chld* cast(Valuable& v){
-            return Valuable::cast<Chld>(v);
-        }
+//         static const Chld* cast(const Valuable& v){
+//             return Valuable::cast<Chld>(v);
+//         }
+// 
+//         static Chld* cast(Valuable& v){
+//             return Valuable::cast<Chld>(v);
+//         }
         
     };
 }

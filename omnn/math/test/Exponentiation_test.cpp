@@ -35,12 +35,12 @@ BOOST_AUTO_TEST_CASE(Compare_test)
 {
     auto _1 = 25 ^ Fraction{1_v,-2};
     auto _2 = (1_v / 5)*(1_v^(1_v/2));
-    auto p =Product::cast(_1);
-    if (p) for(auto&a:*p)
-        std::cout << a.Hash() << std::endl;
-    p =Product::cast(_2);
-    if (p) for(auto&a:*p)
-        std::cout << a.Hash() << std::endl;
+    if (_1.IsProduct())
+        for(auto&a:_1.as<Product>())
+            std::cout << a.Hash() << std::endl;
+    if (_2.IsProduct())
+        for(auto&a:_2.as<Product>())
+            std::cout << a.Hash() << std::endl;
     auto c = _1 == _2;
     BOOST_TEST(c);
 }
@@ -88,17 +88,15 @@ BOOST_AUTO_TEST_CASE(Polynomial_Exp_test
     auto ab = 0_v;
     _.eval({{b,ab}});
     
-    auto e = Exponentiation::cast(_);
-    auto eb = e->getBase();
-    auto ebs = Sum::cast(eb);
-    for(auto&m:*ebs){
+    auto& ebs = _.as<Exponentiation>().getBase().as<Sum>();
+    for(auto& m: ebs){
 //        if (m.) {
 //            <#statements#>
 //        }
     }
-    auto it =ebs->begin();
-    auto m1=*it;
-    for(auto& v:it->getCommonVars())
+    auto it = ebs.begin();
+    auto m1 = *it;
+    for(auto& v: it->getCommonVars())
         std::cout << v.first.str() << '^' << v.second.str() << std::endl;
     auto m2 =*++it;
     auto ms = m1+m2;

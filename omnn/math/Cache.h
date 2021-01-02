@@ -7,6 +7,7 @@ namespace leveldb{
 class DB;
 }
 #endif
+#include <filesystem>
 #include <future>
 #include <memory>
 #include <string>
@@ -18,7 +19,7 @@ namespace omnn::math {
     class Cache
     {
     public:
-        using path_str_t = std::string;
+        using path_str_t = std::filesystem::path;
         using CheckCacheResult = std::pair<bool,Valuable>;
 
         template <typename ResultT>

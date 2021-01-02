@@ -582,7 +582,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_test
             auto& i = data[rowIdx][colIdx];
             if(i==0){
                 auto sysMutex = std::make_shared<boost::shared_mutex>();
-                std::function<void()> addThisTask = [&tasks,colIdx,rowIdx,sysMutex,&s,&at,addThisTask](){
+                std::function<void()> addThisTask = [&tasks,colIdx,rowIdx,sysMutex,&s,&at,&addThisTask](){
                     tasks.push_back(
                         std::async([colIdx,rowIdx, sysMutex, &s, &at, addThisTask](){
                         Variable find;

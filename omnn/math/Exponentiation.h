@@ -15,6 +15,8 @@ class Exponentiation
     vars_cont_t v;
     void InitVars();
 protected:
+    Valuable& ebase() { return base::_1; }
+    Valuable& eexp() { return base::_2; }
     std::ostream& print_sign(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override;
 public:
@@ -22,13 +24,24 @@ public:
     bool IsVaExp() const override { return ebase().IsVa(); }
     YesNoMaybe IsMultival() const override;
     void Values(const std::function<bool(const Valuable&)>&) const override;
-    const Valuable& ebase() const { return _1; }
-    const Valuable& eexp() const { return _2; }
-    Valuable& ebase() { return base::_1; }
-    Valuable& eexp() { return base::_2; }
     const Valuable& getBase() const { return _1; }
-    const Valuable& getExponentiation() const { return _2; }
+    const Valuable& ebase() const { return _1; }
+    template<class T>
+    void setBase(T&& b)
+    { set1(::std::forward<T>(b)); }
+    template<class T>
+    void updateBase(T&& b)
+    { update1(std::forward<T>(b)); }
 
+    const Valuable& eexp() const { return _2; }
+    const Valuable& getExponentiation() const { return _2; }
+    template<class T>
+    void setExponentiation(T&& exponentiation)
+    { set1(std::forward<T>(exponentiation)); }
+    template<class T>
+    void updateExponentiation(T&& exponentiation)
+    { update2(std::forward<T>(exponentiation)); }
+    
     static max_exp_t getMaxVaExp(const Valuable& b, const Valuable& e);
     max_exp_t getMaxVaExp()  const override;
 

@@ -59,15 +59,17 @@ namespace math {
 
     bool Fraction::operator ==(const Valuable& v) const
     {
-        const Fraction* ch;
-        return (v.IsFraction()
-                && Hash()==v.Hash()
-                && (ch = cast(v))
-                && _1.Hash() == ch->_1.Hash()
-                && _2.Hash() == ch->_2.Hash()
-                && _1 == ch->_1
-                && _2 == ch->_2
-                ) || (v.IsExponentiation() && v.operator==(*this));
+        auto eq = v.IsFraction() && Hash()==v.Hash();
+        if(eq){
+            auto& ch = v.as<Fraction>();
+            eq= _1.Hash() == ch._1.Hash()
+                && _2.Hash() == ch._2.Hash()
+                && _1 == ch._1
+                && _2 == ch._2;
+        } else if (v.IsExponentiation()) {
+            eq = v.operator==(*this);
+        }
+        return eq;
     }
 
     void Fraction::solve(const Variable& va, solutions_t& s) const {
@@ -90,9 +92,9 @@ namespace math {
         
         while(denominator().IsFraction())
         {
-            auto dn = cast(denominator());
-            numerator() *= dn->denominator();
-            denominator() = std::move(dn->numerator());
+            auto& fdn = denominator().as<Fraction>();
+            numerator() *= fdn.denominator();
+            denominator() = std::move(fdn.numerator());
         }
 
 //        if (numerator().IsSum()) {
@@ -114,18 +116,18 @@ namespace math {
         }
         
         if (numerator().IsExponentiation()) {
-            auto e = Exponentiation::cast(numerator());
-            auto& exp = e->getExponentiation();
+            auto& e = numerator().as<Exponentiation>();
+            auto& exp = e.getExponentiation();
             if (exp.IsInt() && exp < 0) {
-                denominator() *= e->getBase() ^ (-exp);
+                denominator() *= e.getBase() ^ (-exp);
                 numerator() = 1;
             } else if (exp.IsFraction()) {
-                auto f = Fraction::cast(exp);
-                auto in = e->getBase() / (denominator() ^ f->Reciprocal());
+                auto& f = exp.as<Fraction>();
+                auto in = e.getBase() / (denominator() ^ f.Reciprocal());
                 if (in.IsInt())
                 {
-                    e->ebase() = std::move(in);
-                    Become(std::move(*e));
+                    e.setBase(std::move(in));
+                    Become(std::move(e));
                     return;
                 }
             }
@@ -192,21 +194,21 @@ namespace math {
             }
             else if (denominator().IsProduct())
             {
-                auto dn = Product::cast(denominator());
-                if (dn->Has(numerator())) {
+                auto& dn = denominator().as<Product>();
+                if (dn.Has(numerator())) {
                     denominator() /= numerator();
                     numerator() = 1_v;
                     goto reoptimize_the_fraction;
                 }
                 else if (numerator().IsInt() || numerator().IsSimpleFraction()) {
-                    for (auto& m : *dn)
+                    for (auto& m : dn)
                     {
                         if (m.IsVa()) {
                             numerator() *= m ^ -1;
                         }
                         else if (m.IsExponentiation()) {
-                            auto e = Exponentiation::cast(m);
-                            numerator() *= e->getBase() ^ -e->getExponentiation();
+                            auto& e = m.as<Exponentiation>();
+                            numerator() *= e.getBase() ^ -e.getExponentiation();
                         }
                         else
                             numerator() /= m;
@@ -236,7 +238,7 @@ namespace math {
         if (IsFraction()) {
             if(IsSimple())
                 hash = numerator().Hash() ^ denominator().Hash();
-            else if (!(numerator().IsSum() && denominator().IsSum()))
+            else if (!denominator().IsSum())
                 Become(numerator()*(denominator()^-1));
         }
     }
@@ -305,31 +307,22 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
 
     Valuable& Fraction::operator +=(const Valuable& v)
     {
-        auto i = cast(v);
-        if (i){
-			auto f = *i;
-            if(denominator() != f.denominator()) {
-                f.numerator() *= denominator();
-                f.denominator() *= denominator();
-                numerator() *= i->denominator();
-                denominator() *= i->denominator();
+        if (v.IsFraction()){
+            auto& f = v.as<Fraction>();
+            if(denominator() == f.denominator()) {
+                numerator() += f.numerator();
+            } else {
+                numerator() = numerator() * f.denominator() + f.numerator() * denominator();
+                denominator() *= f.denominator();
             }
+        }
+        else if(v.IsInt() && IsSimple()) {
+            setNumerator(numerator() + denominator() * v.as<Integer>());
+        } else {
+            return Become(Sum {*this, v});
+        }
 
-            numerator() += f.numerator();
-            optimize();
-        }
-        else
-        {
-            if(v.IsInt() && IsSimple())
-            {
-                auto i = Integer::cast(v);
-                *this += Fraction(*i);
-            }
-            else
-            {
-                return Become(Sum {*this, v});
-            }
-        }
+        optimize();
         return *this;
     }
 
@@ -337,9 +330,9 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     {
         if (v.IsFraction())
         {
-            auto f = cast(v);
-            numerator() *= f->numerator();
-            denominator() *= f->denominator();
+            auto& f = v.as<Fraction>();
+            numerator() *= f.numerator();
+            denominator() *= f.denominator();
         }
         else if (v.IsInt())
         {
@@ -357,22 +350,22 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     Valuable& Fraction::operator /=(const Valuable& v)
     {
         if (v.IsFraction())
-		{
-            auto f = cast(v);
-            numerator() *= f->denominator();
-			denominator() *= f->numerator();
-		}
+        {
+            auto& f = v.as<Fraction>();
+            numerator() *= f.denominator();
+            denominator() *= f.numerator();
+        }
         else if (v.IsProduct())
         {
-            for(auto& _ : *Product::cast(v))
+            for(auto& _ : v.as<Product>())
                 *this /= _;
         }
         else
         {
-			denominator() *= v;
+            denominator() *= v;
         }
-		optimize();
-		return *this;
+        optimize();
+        return *this;
     }
 
     Valuable& Fraction::operator %=(const Valuable& v)
@@ -384,8 +377,8 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     Valuable& Fraction::operator^=(const Valuable& v)
     {
         if(v.IsFraction()){
-            auto vf = Fraction::cast(v);
-            auto& vfdn = vf->denominator();
+            auto& vf = v.as<Fraction>();
+            auto& vfdn = vf.denominator();
             if (vfdn == 2_v)
                 ;
             else if (vfdn.bit(0_v)!=1_v) {
@@ -461,8 +454,8 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     {
         if (v.IsFraction())
         {
-            auto f = cast(v);
-            return numerator() * f->denominator() < f->numerator() * denominator();
+            auto& f = v.as<Fraction>();
+            return numerator() * f.denominator() < f.numerator() * denominator();
         }
         else if (v.IsInt())
         {
@@ -511,9 +504,9 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     {
         auto c = 1_v;
         if (v.IsFraction()) {
-            auto f = Fraction::cast(v);
-            c *= getNumerator().InCommonWith(f->getNumerator());
-            c /= getDenominator().InCommonWith(f->getDenominator());
+            auto& f = v.as<Fraction>();
+            c *= getNumerator().InCommonWith(f.getNumerator());
+            c /= getDenominator().InCommonWith(f.getDenominator());
         }
         else
         {
@@ -542,8 +535,8 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
                 is = *this < v;
             else
             {
-                auto f = cast(v);
-                is = numerator().IsComesBefore(f->numerator()) || denominator().IsComesBefore(f->denominator());
+                auto& f = v.as<Fraction>();
+                is = numerator().IsComesBefore(f.numerator()) || denominator().IsComesBefore(f.denominator());
             }
 //            auto e = cast(v);
 //            bool numerator()IsVa = numerator().IsVa();
@@ -596,10 +589,8 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     {
         if (IsSimple())
         {
-            auto& num = *Integer::cast(numerator());
-            boost::multiprecision::cpp_dec_float_100 f(num.as_const_base_int_ref());
-            auto & d = *Integer::cast(denominator());
-            f /= boost::multiprecision::cpp_dec_float_100(d.as_const_base_int_ref());
+            boost::multiprecision::cpp_dec_float_100 f(numerator().ca());
+            f /= boost::multiprecision::cpp_dec_float_100(denominator().ca());
             // TODO : check validity
             return f;
         }

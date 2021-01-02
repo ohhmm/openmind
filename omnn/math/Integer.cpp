@@ -49,7 +49,7 @@ namespace math {
     const Integer::zero_zone_t Integer::empty_zero_zone;
 
     Integer::Integer(const Fraction& f)
-    : arbitrary(Integer::cast(f.getNumerator())->arbitrary / Integer::cast(f.getDenominator())->arbitrary)
+    : arbitrary(f.getNumerator().ca() / f.getDenominator().ca())
     {
         
     }
@@ -366,8 +366,7 @@ namespace math {
             }
             return *this;
         } else if ((arbitrary == 1 || arbitrary == -1) && v.IsSimpleFraction()) {
-            auto f = Fraction::cast(v);
-            if(!f->getDenominator().IsEven())
+            if(!v.as<Fraction>().getDenominator().IsEven())
                 return *this;
             else
                 return Become(Exponentiation{*this,v});
@@ -425,14 +424,14 @@ namespace math {
         }
         else if(v.IsSimpleFraction())
         {
-            auto f = Fraction::cast(v);
-            auto& nu = f->getNumerator();
+            auto& f = v.as<Fraction>();
+            auto& nu = f.getNumerator();
             Valuable mn;
             auto nlz = nu < 0;
             if(nlz)
                 mn = -nu;
             auto& n = nlz ? mn : nu;
-            auto dn = nlz ? -f->getDenominator() : f->getDenominator();
+            auto dn = nlz ? -f.getDenominator() : f.getDenominator();
 
             auto numeratorIsOne = n == 1_v;
             if (!numeratorIsOne)
