@@ -75,7 +75,7 @@ else()
         separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
     else()
         set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
-        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
+        set(BOOST_BUILD_COMMAND "./b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
     endif()
     message("ExternalProject_Add ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
     if(_IS_DEBUG)
@@ -252,50 +252,56 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
 macro(ext name location)
-    if(OPENMIND_UPDATE_EXTERNAL_DEPS)
-    	ExternalProject_Add(${name}
-			GIT_REPOSITORY ${location}
-			BUILD_IN_SOURCE 1
-			INSTALL_DIR ${CMAKE_BINARY_DIR}
-			CMAKE_ARGS
-	            -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-	            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-	            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+	if(NOT TARGET ${name})
+		if(OPENMIND_UPDATE_EXTERNAL_DEPS)
+			ExternalProject_Add(${name}
+				GIT_REPOSITORY ${location}
+				BUILD_IN_SOURCE 1
+				INSTALL_DIR ${CMAKE_BINARY_DIR}
+				CMAKE_ARGS
+					-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+					-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+					-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+				)
+		else()
+			ExternalProject_Add(${name}
+				GIT_REPOSITORY ${location}
+				BUILD_IN_SOURCE 1
+				INSTALL_DIR ${CMAKE_BINARY_DIR}
+				UPDATE_COMMAND ""
+				CMAKE_ARGS
+					-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+					-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+					-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 			)
-    else()
-        	ExternalProject_Add(${name}
-			GIT_REPOSITORY ${location}
-			BUILD_IN_SOURCE 1
-			INSTALL_DIR ${CMAKE_BINARY_DIR}
-			UPDATE_COMMAND ""
-			CMAKE_ARGS
-	            -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-	            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-	            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-			)
-    endif()
-	if(TARGET ${name})
-		message("${name} is target")
-	else()
-		message("${name} is not a target")
-	endif()
+		endif()
+		if(TARGET ${name})
+			message("${name} is new target")
+		else()
+			message("${name} is not a target")
+		endif()
 
-	set(${name}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include CACHE PATH "Path")
-	if(MSVC)
-		set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
-	else()
-		set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
-	endif()
+		set(${name}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include CACHE PATH "Path")
+		if(MSVC)
+			set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
+		else()
+			set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
+		endif()
 
-	include_directories(${${name}_INCLUDE_DIR})
-	link_directories(${CMAKE_BINARY_DIR}/lib)
+		include_directories(${${name}_INCLUDE_DIR})
+		link_directories(${CMAKE_BINARY_DIR}/lib)
+	else()
+		message("${name} target exists")
+	endif()
 endmacro()
 
 macro(dep)
-	set(dep ${ARGN})
+	message("dep ARGN: ${ARGN}")
+	foreach(dep ${ARGN})
+	message("dep: ${dep}")
 	if(dep MATCHES /)
 		set(repo "https://github.com/${dep}.git")
-		get_filename_component(dep ${ARGN} NAME)
+		get_filename_component(dep "${dep}" NAME)
 		find_package(${dep})
 		if(${dep}_FOUND)
 			include_directories(${${dep}_INCLUDE_DIR})
@@ -305,7 +311,12 @@ macro(dep)
 			message("${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
 			set(repo SYSTEM)
 		else()
-			ext(${dep} ${repo})
+			if(NOT TARGET boost)
+				ext(${dep} ${repo})
+			endif()
+			if(TARGET boost)
+				add_dependencies(${dep} boost)
+			endif()
 		endif()
 	else()
 		find_package(${dep})
@@ -319,6 +330,7 @@ macro(dep)
     	endif()
 	endif()
 	message("Dependency ${dep} took from ${repo}")
+	endforeach()
 endmacro()
 
 macro(fold)
