@@ -1219,7 +1219,7 @@ namespace math {
             //            auto x3 = va  - x1_x2;
             if(checkCached)
                 return checkCached;
-            return Valuable(Solutions(va));
+            return Valuable(Solutions(va)); // TODO : debug this and uncomment custom solution
         }
         else if (coefs.size())// && grade && grade < 3)
         {
@@ -1520,6 +1520,8 @@ namespace math {
                     k.optimize();
                 }
                 if(!(a.IsInt() && k.IsInt())) {
+                    std::cout << "free member: " << k << std::endl;
+                    std::cout << "first member coefficient: " << a << std::endl;
                     LOG_AND_IMPLEMENT(" solving " << str());
                 } else {
                     Valuable test;

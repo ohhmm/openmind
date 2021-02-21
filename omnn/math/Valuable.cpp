@@ -1315,13 +1315,13 @@ auto OmitOuterBrackets(std::string_view& s){
     {
         // if current expression equals to zero then it is
         // we need to know why not
-        Variable whyNot(getVaHost()); // whyNot==0 when this!=0
+        Variable whyNot(getVaHost()); // whyNot==1 when this!=0
 
-        auto is = LogicAnd(whyNot);
-        auto isNot = whyNot.Equals(1);
-        auto orNot = is.LogicOr(isNot).logic_and(isNot);
+        auto is = LogicAnd(whyNot); // THIS==0 AND WHYNOT==0
+        auto isNot = whyNot.Equals(1); // WHYNOT==1
+        auto orNot = is.LogicOr(isNot).logic_and(isNot); // ((THIS==0 AND WHYNOT==0) OR (WHYNOT==1)) AND (WHYNOT==1)
         //std::cout << "orNot = " << orNot << std::endl;
-        return orNot (whyNot);
+        return orNot (whyNot); // try to express out the WHYNOT va and leave only f(x)==0
     }
 
     Valuable::operator int() const

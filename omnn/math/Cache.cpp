@@ -51,8 +51,9 @@ void Cache::DbOpen() {
   options.paranoid_checks=true;
 
   leveldb::Status status;
-  while (!((status = leveldb::DB::Open(options, path.c_str(), &db)).ok())) {
-    auto err = path.string() + " DB connection error";
+  auto strPath = path.string();
+  while (!((status = leveldb::DB::Open(options, strPath, &db)).ok())) {
+    auto err = strPath + " DB connection error";
     std::cerr << err << status.ToString() << std::endl;
     if(status.IsIOError()){
       std::cout << "DB is busy. Waiting. Retrying in 5 sec." << std::endl;
@@ -61,7 +62,7 @@ void Cache::DbOpen() {
     } else {
 #ifndef NDEBUG
       DeleteDB(path);
-      if (!leveldb::DB::Open(options, path.c_str(), &db).ok())
+      if (!leveldb::DB::Open(options, strPath, &db).ok())
 #endif
       throw err;
     }
