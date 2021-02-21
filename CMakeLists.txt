@@ -77,19 +77,8 @@ else()
         set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
         set(BOOST_BUILD_COMMAND "./b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
     endif()
-    message("ExternalProject_Add ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
-    if(_IS_DEBUG)
-        ExternalProject_Add(boost
-            GIT_REPOSITORY https://github.com/boostorg/boost.git
-            GIT_TAG boost-1.74.0
-            GIT_SUBMODULES ${BOOST_USED_COMPONENTS}
-            BUILD_IN_SOURCE 1
-            LOG_CONFIGURE 1
-            CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
-            BUILD_COMMAND ${BOOST_BUILD_COMMAND} headers
-            INSTALL_COMMAND ""
-            )
-    else()
+
+        message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
         ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
             BUILD_IN_SOURCE 1
             CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
@@ -97,7 +86,7 @@ else()
             INSTALL_COMMAND ""
             UPDATE_COMMAND ""
             )
-    endif()
+            
     set(Boost_INCLUDE_DIR ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
     build_command(BOOST_BUILD_CMD TARGET boost)
     message(BOOST_BUILD_CMD ${BOOST_BUILD_CMD})

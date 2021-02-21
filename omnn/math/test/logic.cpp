@@ -12,24 +12,6 @@ BOOST_AUTO_TEST_CASE(logic_or_tests)
     auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
     auto ok = eq(x);
 }
-BOOST_AUTO_TEST_CASE(not_tests
-    ,*disabled()
-)
-{
-    auto x = "x"_va;
-    auto x_eq_1 = x-1;
-    auto x_ne_1 = !x_eq_1; //!x; // must mean all except this equation
-    std::cout << x_ne_1 << std::endl;
-    auto eval_x_eq_1 = x_eq_1;
-    eval_x_eq_1.Eval(x, 1);
-    auto ok = eval_x_eq_1 == 0_v;
-    BOOST_TEST(ok);
-
-    auto eval_x_ne_1 = x_ne_1;
-    eval_x_ne_1.Eval(x, 7);
-    ok = eval_x_ne_1 != 0_v;
-    BOOST_TEST(ok);
-}
 
 BOOST_AUTO_TEST_CASE(ifz_tests)
 {
@@ -52,21 +34,23 @@ BOOST_AUTO_TEST_CASE(ifz_tests)
         ee.optimize();
         BOOST_TEST(ee==0);
     }
-// TODO :   {
-//        auto ee = e;
-//        ee.Eval(a,1); // b == 0
-//        ee.optimize();
-//        auto solutions = ee(b);
-//        BOOST_TEST(solutions.size()==1);
-//        BOOST_TEST(*solutions.begin()==0);
-//    }
-// TODO :
-//    {
-//        auto ee = e;
-//        ee.Eval(a, 0); // b == 1
-//        ee.optimize();
-//        auto solutions = ee(b);
-//        BOOST_TEST(solutions.size()==1);
-//        BOOST_TEST(*solutions.begin()==1);
-//    }
+}
+
+BOOST_AUTO_TEST_CASE(not_tests
+    ,*disabled()
+)
+{
+    auto x = "x"_va;
+    auto x_eq_1 = x-1;
+    auto x_ne_1 = !x_eq_1; //!x; // must mean all except this equation
+    std::cout << x_ne_1 << std::endl;
+    auto eval_x_eq_1 = x_eq_1;
+    eval_x_eq_1.Eval(x, 1);
+    auto ok = eval_x_eq_1 == 0_v;
+    BOOST_TEST(ok);
+
+    auto eval_x_ne_1 = x_ne_1;
+    eval_x_ne_1.Eval(x, 7);
+    ok = eval_x_ne_1 != 0_v;
+    BOOST_TEST(ok);
 }
