@@ -3,8 +3,13 @@
 //
 #define BOOST_TEST_MODULE Sh test
 #include <boost/test/unit_test.hpp>
+
 #include "Sum.h"
 #include "Variable.h"
+
+#include <future>
+#include <thread>
+#include <queue>
 
 
 
@@ -22,30 +27,39 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(bit_test)
 {
     DECL_VA(x);
+    std::queue<std::future<void>> tasks;
+    auto hwThreads = std::thread::hardware_concurrency();
+    std::cout << "std::thread::hardware_concurrency() is " << hwThreads << std::endl;
     constexpr int NBits = 3, UpTo = 1<<NBits;
     int j = NBits;
     for (int n=UpTo; (n=n>>1);) {
         auto bit = x.bit(--j);
         BOOST_TEST(*bit.FindVa() == x);
-std::cout << "bit " << j << " of x is " << bit << std::endl;
+        std::cout << "bit " << j << " of x is " << bit << std::endl;
         for (int i = 0; i < UpTo; ++i) {
-
-            auto etalon = i & n;
-            auto b = bit;
-            BOOST_TEST(b.eval({{x, i}}));
-            if(b!=!!etalon){
-std::cout << i << '&' << n << '=' << etalon << " ;  " << j << " bit of " << i << " is " << b << std::endl;
-                b = bit;
-                b.eval({{x, i}});
-            }
-            BOOST_TEST(b.IsInt());
-            BOOST_TEST(b==!!etalon);
-            
-            // and test
-            auto an = x.And(NBits, n);
-            b = an.eval({{x, i}});
-            an.optimize();
-            BOOST_TEST(an==etalon);
+            tasks.emplace(std::async([=](){
+                auto etalon = i & n;
+                auto b = bit;
+                BOOST_TEST(b.eval({{x, i}}));
+                if(b!=!!etalon){
+                    std::cout << i << '&' << n << '=' << etalon << " ;  " << j << " bit of " << i << " is " << b << std::endl;
+                    b.optimizations=true;   
+                    b.is_optimized();
+                    b.optimize();
+                    b = bit;
+                    b.eval({{x, i}});
+                }
+                BOOST_TEST(b.IsInt());
+                BOOST_TEST(b==!!etalon);
+                
+                // and test
+                auto an = x.And(NBits, n);
+                b = an.eval({{x, i}});
+                an.optimize();
+                BOOST_TEST(an==etalon);
+            }));
+            if(tasks.size() > hwThreads)
+                tasks.pop();
         }
     }
 }

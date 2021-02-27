@@ -50,9 +50,11 @@ using namespace std;
 
 BOOST_AUTO_TEST_CASE(System_tests)
 {
+    DECL_VA(a);
+    DECL_VA(b);
+    DECL_VA(c);
     {
         System sys;
-        Variable a,b;
         Valuable t;
         t.SetView(Valuable::View::Equation);
         t = a - 8 - b;
@@ -70,12 +72,23 @@ BOOST_AUTO_TEST_CASE(System_tests)
     
     {
         System s;
-        Variable a,b;
         s << a - 8 - b;
         s << a + b - 21;
         auto _ = s.Solve(a);
         BOOST_TEST(_.size()==1);
     }
+    
+    {   // more grady system
+        DECL_VA(x);
+        System s;
+        s << (a + b + c).Equals(6);
+        s << ((a^2) + (b^2) + (c^2)).Equals(14);
+        s << ((a^3) + (b^3) + (c^3)).Equals(36);
+        s << x.Equals(a*b*c);
+        auto _ = s.Solve(x);
+        BOOST_TEST(_.size()==1);
+    }
+
 }
 
 BOOST_AUTO_TEST_CASE(sq_System_test
@@ -84,17 +97,17 @@ BOOST_AUTO_TEST_CASE(sq_System_test
 {
     System s;
     Variable a,b,x;
-	s << a - b - 3
-		<< a + b - x
-		<< a * b * 4 - (49 - 9)
-		<< x * x - 49
+    s << a - b - 3
+        << a + b - x
+        << a * b * 4 - (49 - 9)
+        << x * x - 49
         << x*b + 9 +2*a*b + 3*b - 49
         ;
 
     auto _ = s.Solve(x);
     BOOST_TEST(_.size()==1);
-	auto sqx = *_.begin();
-	BOOST_TEST(sqx == 7);
+    auto sqx = *_.begin();
+    BOOST_TEST(sqx == 7);
 }
 
 BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
