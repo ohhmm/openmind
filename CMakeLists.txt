@@ -245,9 +245,6 @@ function(test)
 	endforeach()
 endfunction()
 
-include_directories(${CMAKE_BINARY_DIR}/include)
-link_directories(${CMAKE_BINARY_DIR}/lib)
-
 macro(ext name location)
 	if(NOT TARGET ${name})
 		if(OPENMIND_UPDATE_EXTERNAL_DEPS)
@@ -367,3 +364,5 @@ macro(exe)
 endmacro()
 
 fold()
+target_include_directories(${PRODUCT_NAME} INTERFACE ${CMAKE_BINARY_DIR}/include)
+target_link_directories(${PRODUCT_NAME} INTERFACE ${CMAKE_BINARY_DIR}/lib)
