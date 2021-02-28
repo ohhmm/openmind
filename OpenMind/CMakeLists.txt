@@ -186,4 +186,4 @@ if(${UNIX})
 #	target_link_libraries(${this_target} lib${this_target})
 endif(${UNIX})
 
-#add_dependencies(${this_target} conf)
+add_dependencies(${this_target} math)
