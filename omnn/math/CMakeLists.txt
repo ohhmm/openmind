@@ -31,7 +31,7 @@ endif()
 
 lib(${DEPENDENCIES})
 
-target_include_directories(${this_target} INTERFACE
+target_include_directories(${this_target} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${OpenCL_INCLUDE_DIR}
 	)
