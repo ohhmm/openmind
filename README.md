@@ -41,8 +41,6 @@ Features:
     Basically its meant to be like Sufix tree (like Trie, but Sufix tree) but more generic upon finish.
     Its planned to make its nodes able to be the Context structures as well.
 
-Please Donate to help reach this plans:
-    
 Plans:
 
     To complete Generic Context Framework
@@ -51,6 +49,10 @@ Plans:
     Introduce Neural network support as part of current Facilities framework
     context based neural network serialization and swapping
   
+Please Donate to help reach this plans:
+
+    https://salt.bountysource.com/teams/open-mind
+
 Support: sergeikrivonos@gmail.com
 
 Bitcoin: 17JNBmpsDxp1d4jcAh7qthSN4VRcN9EDxQ
