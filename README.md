@@ -51,7 +51,7 @@ Plans:
   
 Please Donate to help reach this plans:
 
-    [Bountysource: https://salt.bountysource.com/teams/open-mind](https://salt.bountysource.com/teams/open-mind)
+    [Bountysource]: https://salt.bountysource.com/teams/open-mind
 
 Support: sergeikrivonos@gmail.com
 
