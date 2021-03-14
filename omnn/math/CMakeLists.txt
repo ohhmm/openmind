@@ -10,7 +10,7 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE)
 	if(OPENMIND_MATH_CACHE_VOLATILE)
 		add_definitions(-DOPENMIND_MATH_CACHE_VOLATILE)
 	endif(OPENMIND_MATH_CACHE_VOLATILE)
-	dep(google/leveldb Boost)
+	deps(google/leveldb Boost)
 	message("leveldb_LIBRARIES: ${leveldb_LIBRARIES}")
 	if(NOT WIN32)
 		set(DEPENDENCIES ${DEPENDENCIES} ${leveldb_LIBRARIES} pthread)
@@ -32,7 +32,6 @@ endif()
 lib(${DEPENDENCIES})
 
 target_include_directories(${this_target} PUBLIC
-	${CMAKE_CURRENT_SOURCE_DIR}
 	${OpenCL_INCLUDE_DIR}
 	)
 
