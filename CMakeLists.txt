@@ -28,11 +28,6 @@ if(MSVC)
     add_definitions(/source-charset:utf-8) #include "pi.h"
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR}
-#    ${CMAKE_SOURCE_DIR}/boost/gil/include
-    ${CMAKE_SOURCE_DIR}/boost/multiprecision/include
-)
-
 find_package(Git)
 
 #find_package(OpenMP)
@@ -47,6 +42,7 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 if(NOT OPENMIND_BUILD_BOOST)
+    message("OPENMIND_BUILD_BOOST is disabled")
     find_package(Boost)
 endif()
 if (Boost_FOUND)
@@ -109,8 +105,10 @@ endif()
 
 IF (Boost_FOUND)
     message("Boost_FOUND")
-    ADD_DEFINITIONS( "-DHAS_BOOST" )
+    ADD_DEFINITIONS(-DHAS_BOOST)
+    message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+    message("Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
 	link_directories(${Boost_LIBRARY_DIR})
 #    if(MSVC)
 #	    link_directories(${Boost_INCLUDE_DIR}/stage/lib)
@@ -118,9 +116,8 @@ IF (Boost_FOUND)
 ENDIF()
 
 if(OPENMIND_USE_OPENCL)
-	find_package(opencl)
+	find_package(OpenCL)
 	include_directories(${OPENCL_INCLUDE_DIR})
-	target_include_directories(${PRODUCT_NAME} PUBLIC ${OPENCL_INCLUDE_DIR})
 	add_definitions(-DOPENMIND_USE_OPENCL)
 endif()
 
@@ -169,12 +166,8 @@ macro(dep)
 		if(${dep}_FOUND)
 			include_directories(${${dep}_INCLUDE_DIR})
 			message("${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
-			set(repo SYSTEM)
-		else()
-    		set(repo "https://github.com/lib${dep}/${dep}.git")
-			ext(${dep} ${repo})	
-    	endif()
-		message("Dependency ${dep} took from ${repo}")
+		endif()
+		message("Assuming the ${dep} is preinstalled")
 	endif()
 	endforeach()
 endmacro()
@@ -298,6 +291,7 @@ macro(lib)
     file(GLOB src *.cpp *.h)
     add_library(${this_target} ${src})
     target_include_directories(${this_target} PUBLIC
+        ${CMAKE_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
         ${Boost_INCLUDE_DIR}
@@ -319,6 +313,8 @@ macro(lib)
 				add_dependencies(${this_target} ${tg})
 				list(APPEND this_target_libs ${tg})
 			endif()
+		elseif(EXISTS ${tg})
+			list(APPEND this_target_libs ${tg})
 		else()
 			get_filename_component(t ${tg} NAME_WLE)
 			message("its ${t}")
@@ -395,5 +391,10 @@ macro(exe)
 endmacro()
 
 fold()
+
 target_include_directories(${PRODUCT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/include)
+if(OPENMIND_USE_OPENCL)
+	target_include_directories(${PRODUCT_NAME} PUBLIC ${OPENCL_INCLUDE_DIR})
+endif()
+
 target_link_directories(${PRODUCT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/lib)
