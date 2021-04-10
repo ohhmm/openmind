@@ -23,6 +23,7 @@ include(ExternalProject)
 add_definitions(
     -DBOOST_SYSTEM_NO_DEPRECATED
     -DBOOST_ERROR_CODE_HEADER_ONLY
+    -DBOOST_COMPUTE_USE_CPP11
 )
 if(MSVC)
     add_definitions(/source-charset:utf-8) #include "pi.h"

@@ -1886,9 +1886,9 @@ namespace math {
                 
                 auto teq = eq1*eq2;
                 std::vector<Valuable> teq_coefficients;
-                auto teqs = Sum::cast(teq);
-                if (teqs) {
-                    if (teqs->FillPolyCoeff(teq_coefficients, va) != grade) {
+                if (teq.IsSum()) {
+                    auto& teqs = teq.as<Sum>();
+                    if (teqs.FillPolyCoeff(teq_coefficients, va) != grade) {
                         IMPLEMENT
                     }
                 } else {
