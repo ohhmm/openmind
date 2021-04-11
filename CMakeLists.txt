@@ -345,8 +345,8 @@ macro(lib)
     endforeach()
 
     set(${this_target}_LIBRARIES ${this_target_libs} CACHE FILEPATH "${this_target} libs to link")
-    message("target_link_directories(${this_target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})")
-    target_link_directories(${this_target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    message("target_link_directories(${this_target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})")
+    target_link_directories(${this_target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
     message("${this_target} libs: ${this_target_libs}")
     target_link_libraries(${this_target} PUBLIC ${this_target_libs})
     
