@@ -63,6 +63,7 @@ public:
     void solve(const Variable& va, solutions_t& solutions) const override;
     void solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const;
 
+    static bool IsPowerX(const std::vector<Valuable>& coefficients);
     Valuable operator()(const Variable& va) const override;
     Valuable operator()(const Variable& va, const Valuable& augmentation) const override;
     

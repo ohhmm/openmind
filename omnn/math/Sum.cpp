@@ -977,7 +977,11 @@ namespace math {
         //#pragma omp for 
         for (auto& m : members)
         {
-            if (m.IsProduct())
+            if(!m.HasVa(v))
+            {
+                c0.Add(m);
+            }
+            else if (m.IsProduct())
             {
                 auto& coVa = m.getCommonVars();
                 auto it = coVa.find(v);
@@ -1050,10 +1054,6 @@ namespace math {
                         IMPLEMENT
                 }
 
-            }
-            else if(!m.HasVa(v))
-            {
-                c0.Add(m);
             }
             else {
                 std::cout << m << std::endl;
@@ -1178,6 +1178,16 @@ namespace math {
         return Valuable(solutions);
     }
     
+    bool Sum::IsPowerX(const std::vector<Valuable>& coefficients){
+        auto coefIdx = coefficients.size() - 1;
+        auto is = coefficients[coefIdx] != 0;
+        for(; is && coefIdx --> 1; )
+        {
+            is = is && coefficients[coefIdx] == 0;
+        }
+        return is;
+    }
+
     Valuable Sum::operator()(const Variable& va) const
     {
         Valuable::solutions_t s;
@@ -1193,6 +1203,10 @@ namespace math {
             grade = FillPolyCoeff(coefs, va);
 #endif
             return Valuable(s);
+        }
+
+        if(IsPowerX(coefs)){
+            return ((-coefs[0]) / (coefs[grade])) ^ (1_v / grade);
         }
         
         auto doCheck = grade > 2;
@@ -1519,11 +1533,7 @@ namespace math {
 #endif
                     k.optimize();
                 }
-                if(!(a.IsInt() && k.IsInt())) {
-                    std::cout << "free member: " << k << std::endl;
-                    std::cout << "first member coefficient: " << a << std::endl;
-                    LOG_AND_IMPLEMENT(" solving " << str());
-                } else {
+                if(a.IsInt() && k.IsInt()) {
                     Valuable test;
                     auto& ai = a.as<Integer>();
                     auto& ki = k.as<Integer>();
@@ -1550,6 +1560,11 @@ namespace math {
                             DbSumSolutionsAllRootsCache.AsyncSetSet(*this, solutions);
                         return;
                     }
+                } else {
+                    LOG_AND_IMPLEMENT("Solving " << str() << std::endl
+                        << "free member: " << k << std::endl
+                        << "first member coefficient: " << a << std::endl
+                        << "IsPowerX: " << IsPowerX(coefficients) << std::endl);
                 }
             }
         }
@@ -1717,6 +1732,16 @@ namespace math {
                         (*this / va.Equals(x)).solve(va, solutions);
                         solutions.insert(std::move(x));
                         return;
+                    }
+                    else if(x.IsMultival() == Valuable::YesNoMaybe::Yes
+                        && x.Vars().empty()
+                        && !x.IsSimple()
+                    ) {
+                        auto coef = coefficients;
+                        coef.clear();
+                        grade = FillPolyCoeff(coef, va);
+                        LOG_AND_IMPLEMENT(x << " split");
+                        //solutions = x.Spl;
                     }
                     else
                     {
