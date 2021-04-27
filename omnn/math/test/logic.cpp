@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(ifz_tests)
 }
 
 BOOST_AUTO_TEST_CASE(not_tests
-    ,*disabled()
+    ,*disabled() //TODO:
 )
 {
     auto x = "x"_va;
@@ -53,4 +53,69 @@ BOOST_AUTO_TEST_CASE(not_tests
     eval_x_ne_1.Eval(x, 7);
     ok = eval_x_ne_1 != 0_v;
     BOOST_TEST(ok);
+}
+
+BOOST_AUTO_TEST_CASE(test_logic_intersection)
+{
+    Variable x;
+    auto _1 = x.Abet(x, {1,2,3,3});
+    auto _2 = x.Abet(x, {2,3,3});
+    auto _ = _1.Intersect(_2, x);
+
+    auto solutions = _.IntSolutions(x);
+    if(solutions.size() != 2)
+		for (auto& s : solutions){
+			std::cout << s << std::endl;
+		}
+    BOOST_TEST(solutions.size() == 2);
+    if(solutions.size()){
+    	auto it = solutions.begin();
+        _ = *it;
+        BOOST_TEST(_ == 2);
+    	++it;
+        if(it != solutions.end()){
+        	_ = *it;
+        	BOOST_TEST(_ == 3);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_logic_intersection_with_exception
+    ,*disabled() //TODO:
+)
+{
+    Variable x;
+    auto _1 = x.Abet(x, {1,2,3,3});
+    auto _2 = x.Abet(x, {2,3,3});
+    auto _ = _1.Intersect(_2, x).logic_and(x.NotEquals(3));
+    
+    auto solutions = _.IntSolutions(x);
+    if(solutions.size() != 1)
+		for (auto& s : solutions){
+			std::cout << s << std::endl;
+		}
+    BOOST_TEST(solutions.size() == 1);
+    if(solutions.size()){
+        _ = *solutions.begin();
+        BOOST_TEST(_ == 2);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_logic_intersection_simplifying
+                      ,*disabled()
+                     )
+{
+    Variable x;
+    auto _1 = x.Abet(x, {1,2});
+    auto _2 = x.Abet(x, {2,3});
+    auto i = _1.Intersect(_2, x);
+    auto solutions = i.IntSolutions(x);
+    BOOST_TEST(solutions.size() == 1);
+    auto _ = *solutions.begin();
+    BOOST_TEST(_ == 2);
+    BOOST_TEST(i.IsSum());
+    auto& sum = i.as<Sum>();
+    std::vector<Valuable> coefficients;
+    auto grade = sum.FillPolyCoeff(coefficients, x);
+    BOOST_TEST(grade == 1);
 }
