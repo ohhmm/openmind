@@ -372,7 +372,7 @@ namespace math {
                     break;
                 }
                 default:
-                    IMPLEMENT
+                	LOG_AND_IMPLEMENT(str())
             }
         }
 

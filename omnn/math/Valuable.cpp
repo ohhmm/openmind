@@ -59,6 +59,7 @@ namespace math {
     
     Valuable implement(const char* str)
     {
+        std::cerr << str << std::endl;
         throw std::string(str) + " Implement!";
     }
     
