@@ -100,6 +100,24 @@ BOOST_AUTO_TEST_CASE(test_no_hang, *timeout(2))
     (2_v*((v3 + -255)^2)*(v2^2)).optimize();
 }
 
+BOOST_AUTO_TEST_CASE(products_summing_simplification)
+{
+    DECL_VA(x);
+    auto m1px = (-1_v)^x;
+    auto _1 = m1px / 4;
+    auto _2 = (1_v/2)*((-1_v)^((1_v/2)*x + _1 + ((-1_v)/4)));
+    std::cout << _1 << "  +  " << _2 << std::endl;
+    auto sum = _1 + _2;
+    auto simplify = _1.IsSummationSimplifiable(_2);
+    auto simplify2 = _2.IsSummationSimplifiable(_1);
+    BOOST_TEST(simplify.first == simplify2.first);
+
+    // original bug: _1 + _2 = (3/4)*((-1)^x)		IMPLEMENT: must be covered by IsSummationSimpifiable call
+    if(!sum.IsSum()){
+        BOOST_TEST(simplify.first == true);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(unordered_multiset_tests)
 {
     {

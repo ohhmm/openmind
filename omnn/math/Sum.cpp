@@ -543,7 +543,7 @@ namespace math {
                     auto s = *it + v;
                     if (!s.IsSum()) {
 #ifndef NDEBUG
-                        std::cout << *it << " + " << v << " = " << s << "\t\tmust be covered by IsSummationSimpifiable call" << std::endl;
+                        std::cout << *it << " + " << v << " = " << s << "\t\tIMPLEMENT: must be covered by IsSummationSimpifiable call" << std::endl;
                         s = *it + v;
                         simplified = it->IsSummationSimplifiable(v);
                         LOG_AND_IMPLEMENT(*it << " + " << v << " = " << s << "\t\tmust be covered by IsSummationSimpifiable call");
