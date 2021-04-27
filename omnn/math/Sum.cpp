@@ -1782,6 +1782,9 @@ namespace math {
                         << "    c[i] = "; copy.code(source);
                 source << ";}";
                 
+                auto devices = system::devices();
+                if(devices.size() == 0)
+                	return;
                 device cuwinner = system::default_device();
                 for(auto& p: system::platforms())
                     for(auto& d: p.devices())
