@@ -101,6 +101,8 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_with_exception
     }
 }
 
+#include "Sum.h"
+
 BOOST_AUTO_TEST_CASE(test_logic_intersection_simplifying
                       ,*disabled()
                      )
