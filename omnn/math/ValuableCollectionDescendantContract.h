@@ -117,7 +117,8 @@ namespace math {
         bool Has(const Valuable& v) const
         {
             auto& c = GetConstCont();
-            auto found = c.find(v);
+            // c.find uses order comparator
+            auto found = std::find(c.begin(), c.end(), v); // using simple equality finder std::find instead
             auto foundSome = found != c.cend();
             auto has = foundSome && found->Same(v);
             if(foundSome && !has){
