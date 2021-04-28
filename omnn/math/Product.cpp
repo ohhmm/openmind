@@ -179,8 +179,9 @@ namespace math {
                 it = base::Add(item, hint);
             }
         } else if (item.IsProduct()) {
+            it = hint;
             for (auto& i : item.as<Product>()) {
-                Add(i);
+                it = Add(i, it);
             }
         } else if (item.IsFraction() && item.FindVa()) {
             auto& f = item.as<Fraction>();
