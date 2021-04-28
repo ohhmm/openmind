@@ -43,6 +43,12 @@ BOOST_AUTO_TEST_CASE(Compare_test)
             std::cout << a.Hash() << std::endl;
     auto c = _1 == _2;
     BOOST_TEST(c);
+    
+    DECL_VA(x);
+    _1 =(-1_v)^x;
+    _2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
+    c = _1 == _2;
+    BOOST_TEST(c);
 }
 
 BOOST_AUTO_TEST_CASE(Sqrt_test)

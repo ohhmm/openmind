@@ -117,7 +117,13 @@ namespace math {
         bool Has(const Valuable& v) const
         {
             auto& c = GetConstCont();
-            return c.find(v) != c.cend();
+            auto found = c.find(v);
+            auto foundSome = found != c.cend();
+            auto has = foundSome && found->Same(v);
+            if(foundSome && !has){
+                LOG_AND_IMPLEMENT("Bug in comparator: " << this->str() << " has " << v);
+            }
+            return has;
         }
         
         const Variable* FindVa() const override
