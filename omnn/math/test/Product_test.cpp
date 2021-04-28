@@ -92,6 +92,13 @@ BOOST_AUTO_TEST_CASE(Product_tests)
 //    _ = -1_v*(v6^-1_v)*(v8^2_v)*v13;
 //    _ = _(v6, (-1_v*v14*v9 + -1_v*v13*v10 + 174_v));
 //    BOOST_TEST(_ == )
+    
+    
+    DECL_VA(x);
+    auto m1px =(-1_v)^x;
+    _ = (-1_v)^((1_v/2)*x + m1px/4 + ((-1_v)/4));
+    auto has = Product{_}.Has(m1px);
+    BOOST_TEST(has == false);
 }
 
 BOOST_AUTO_TEST_CASE(test_no_hang, *timeout(2))
