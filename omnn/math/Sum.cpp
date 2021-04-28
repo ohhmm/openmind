@@ -1147,7 +1147,7 @@ namespace math {
                     }
                     else
                     {
-                        IMPLEMENT
+                        LOG_AND_IMPLEMENT("Solving: " << stodo << " = " << _);
                     }
                 }
                 else

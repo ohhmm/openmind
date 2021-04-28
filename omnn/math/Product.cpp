@@ -473,7 +473,7 @@ namespace math {
     {
         auto _ = 1_v;
         auto check = [&](auto& with){
-            if (members.find(with) != members.end())
+            if (std::find(members.begin(), members.end(), with) != members.end())
                 _ *= with;
             else
                 for(auto&m:members){
@@ -1021,7 +1021,7 @@ namespace math {
     
     void Product::solve(const Variable& va, solutions_t& solutions) const
     {
-        auto it = members.find(va);
+        auto it = std::find(members.begin(), members.end(), va);
         if(it != members.end())
             solutions.insert(0_v);
         else {
