@@ -67,17 +67,8 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection)
 		for (auto& s : solutions){
 			std::cout << s << std::endl;
 		}
-    BOOST_TEST(solutions.size() == 2);
-    if(solutions.size()){
-    	auto it = solutions.begin();
-        _ = *it;
-        BOOST_TEST(_ == 2);
-    	++it;
-        if(it != solutions.end()){
-        	_ = *it;
-        	BOOST_TEST(_ == 3);
-        }
-    }
+    decltype(solutions) check = { 2, 3 };
+    BOOST_TEST(solutions == check);
 }
 
 BOOST_AUTO_TEST_CASE(test_logic_intersection_with_exception

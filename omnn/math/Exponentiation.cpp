@@ -371,8 +371,13 @@ namespace math {
 //                    IMPLEMENT
                     break;
                 }
+                case View::Equation: {
+                    if(eexp().IsSimple())
+                        Become(std::move(ebase()));
+                    break;
+                }
                 default:
-                	LOG_AND_IMPLEMENT(str())
+                	LOG_AND_IMPLEMENT(str() << " mode is " << view);
             }
         }
 

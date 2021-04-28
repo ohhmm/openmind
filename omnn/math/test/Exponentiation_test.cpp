@@ -110,6 +110,11 @@ BOOST_AUTO_TEST_CASE(Polynomial_Exp_test
     
 //    auto av = _(a);
     _.optimize();
+
+    DECL_VA(x);
+    auto _ = ((-18_v*(x^2) + 108*x -180)^((1/3)));
+    _.SetView(Valuable::View::Equation);
+    _.optimize();
 }
 
 // TODO : check with mathematicians which way is correct, fix te test and enable it
