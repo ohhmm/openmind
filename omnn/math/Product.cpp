@@ -359,17 +359,15 @@ namespace math {
                 auto& pd = dn.as<Product>();
                 for (auto it = members.begin(); it != members.end();)
                 {
-                    if (pd.Has(*it)) {
+                    if (it != f && pd.Has(*it)) {
                         fo *= *it;
                         Delete(it);
                         
-                        if (fo.IsFraction() &&
-                            fo.as<Fraction>().getDenominator().IsProduct()
+                        if (!fo.IsFraction() ||
+                            !fo.as<Fraction>().getDenominator().IsProduct()
                             ) {
-                            it = fo.as<Fraction>().getDenominator().as<Product>().begin();
-                        }
-                        else
                             break;
+                        }
                     }
                     else  ++it;
                 }
@@ -575,20 +573,20 @@ namespace math {
             return Become(0_v);
         if(v.IsProduct()){
             auto& vAsP = v.as<Product>();
-            Product thisHasNotCommonWithV, vHasNotinCommonWithThis;
+            Product thisHasNotCommonWithV, vHasNotInCommonWithThis;
             Product common;
             for(auto&& item : GetCont()){
-                if(!vAsP.Has(item))
-                    thisHasNotCommonWithV.Add(std::move(item));
-                else
+                if(vAsP.Has(item))
                     common.Add(std::move(item));
+                else
+                    thisHasNotCommonWithV.Add(std::move(item));
             }
             for(auto& item : vAsP.GetConstCont()){
                 if(!common.Has(item))
-                    vHasNotinCommonWithThis.Add(item);
+                    vHasNotInCommonWithThis.Add(item);
             }
             if(!(common.size()==1 && *common.begin()==1)){ // unchanged
-                Valuable sum = Sum {thisHasNotCommonWithV, vHasNotinCommonWithThis};
+                Valuable sum = Sum {thisHasNotCommonWithV, vHasNotInCommonWithThis};
                 sum.optimize();
                 sum *= common;
                 sum.optimize();

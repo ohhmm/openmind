@@ -1919,7 +1919,7 @@ boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
 ::omnn::math::Valuable operator"" _v(unsigned long long v)
 {
     const auto va = ull2cppint(v);
-    return ::omnn::math::Integer(va);
+    return std::move(::omnn::math::Integer(va));
 }
 
 //constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v)
