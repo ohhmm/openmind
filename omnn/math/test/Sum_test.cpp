@@ -304,6 +304,7 @@ BOOST_AUTO_TEST_CASE(Become_tests)
 
 BOOST_AUTO_TEST_CASE(Solution_tests)
 {
+    auto _ = (-1*(4_v^((1_v/2))) + (21_v/8)) ^ 2;
     auto v = "v"_va;
     auto sol = ((v^2)-4_v).Solutions(v);
     using sol_t = decltype(sol);
