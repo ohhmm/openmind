@@ -75,6 +75,7 @@ public:
 
     Valuable& sq() override;
 
+    Valuable operator()(const Variable&) const override;
     Valuable operator()(const Variable& v, const Valuable& augmentation) const override;
 };
 
