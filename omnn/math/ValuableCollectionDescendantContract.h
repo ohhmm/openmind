@@ -214,16 +214,13 @@ namespace math {
                 updated = {};
                 for(auto i = c.begin(); i != e;)
                 {
-                    auto co = *i;
-                    co.Eval(va,v);
-                    if (!i->Same(co))
-                    {
+                    if(i->HasVa(va)){
+                        auto co = *i;
+                        co.Eval(va,v);
                         co.optimize();
                         Update(i,co);
                         updated = true;
-                    }
-                    else
-                    {
+                    } else {
                         ++i;
                     }
                 }

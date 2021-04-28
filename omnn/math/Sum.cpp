@@ -99,15 +99,11 @@ namespace math {
     
     const Sum::iterator Sum::Add(const Valuable& item, const iterator hint)
     {
-        Sum::iterator it = end();
+        Sum::iterator it = hint;
         if(item.IsSum()) {
             for(auto& i : item.as<Sum>()) {
-                auto a = Add(i);
-                if (it == end() || soc(*a, *it)) {
-                    it = a;
-                }
+                it = Add(i, it);
             }
-            it = members.begin();
         }
         else
         {
