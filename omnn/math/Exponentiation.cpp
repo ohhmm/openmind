@@ -936,6 +936,11 @@ namespace math {
         return c;
     }
     
+    Valuable Exponentiation::operator()(const Variable& va) const
+    {
+        return operator()(va, 0_v);
+    }
+
     Valuable Exponentiation::operator()(const Variable& v, const Valuable& augmentation) const
     {
         if (!getExponentiation().FindVa() && getExponentiation()!=0 && augmentation==0) {
