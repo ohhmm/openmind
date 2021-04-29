@@ -131,8 +131,9 @@ namespace math {
                        || std::is_same<Valuable, T>::value) {
                 auto n = last;
                 typename decltype(varIds)::iterator inserted;
-                inc(n);
-                while(varIds.find(n)!=varIds.end());
+                do {
+                    inc(n);
+                } while(varIds.find(n)!=varIds.end());
                 varIds.insert(n);
                 return n;
             } else {

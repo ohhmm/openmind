@@ -227,11 +227,11 @@ namespace math {
     
     void Variable::CollectVa(std::set<Variable>& s) const
     {
-        s.insert(*this);
+        s.emplace(*this);
     }
 
     void Variable::CollectVaNames(std::map<std::string, Variable>& s) const{
-        s[str()] = *this;
+        s.emplace(str(), *this);
     }
 
     bool Variable::eval(const std::map<Variable, Valuable>& with) {
