@@ -164,6 +164,17 @@ public:
     static thread_local bool bit_operation_optimizations;
     static thread_local bool enforce_solve_using_rational_root_test_only;
 
+    class OptimizeOn {
+        bool opts;
+    public:
+        OptimizeOn() : opts(optimizations) {
+            optimizations = true;
+        }
+        ~OptimizeOn(){
+            optimizations = opts;
+        }
+    };
+
     explicit Valuable(Valuable* v);
     virtual std::type_index Type() const;
     
