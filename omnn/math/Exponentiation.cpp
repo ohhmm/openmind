@@ -907,7 +907,7 @@ namespace math {
                     }
                 } else if (getExponentiation().IsSimpleFraction() && e.getExponentiation().IsSimpleFraction()) {
                     if (getExponentiation()<0 == e.getExponentiation()<0) {
-                        IMPLEMENT
+                        c = getBase() ^ getExponentiation().InCommonWith(e.getExponentiation());
                     }
                 } else if (getExponentiation().IsSum()) {
                     auto sz = getExponentiation().as<Sum>().size();
