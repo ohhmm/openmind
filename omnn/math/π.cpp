@@ -5,5 +5,6 @@
 #include "pi.h"
 
 using namespace omnn::math;
-
-const Pi e;
+namespace constant {
+const Pi pi;
+}
