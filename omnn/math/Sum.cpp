@@ -351,9 +351,9 @@ namespace math {
             }
             
 #ifndef NDEBUG
-            if (w!=*this) {
+//            if (w!=*this) {
 //                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
-            }
+//            }
 #endif
         } while (w != *this);
 
@@ -1147,6 +1147,10 @@ namespace math {
                     }
                     else
                     {
+                        auto solving = as<Sum>();
+                        solving.SetView(Solving);
+                        OptimizeOn on;
+                        solving.optimize();
                         LOG_AND_IMPLEMENT("Solving: " << stodo << " = " << _);
                     }
                 }
