@@ -309,47 +309,53 @@ namespace math {
             else
                 ++it;
         }
-        
-        for (auto it = members.begin(); it != members.end();)
+
+        do
         {
-            if (members.size() == 1)
+            updated = {};
+            for (auto it = members.begin(); it != members.end();)
             {
-                Become(std::move(*const_cast<Valuable*>(&*it)));
-                return;
-            }
+                if (members.size() == 1)
+                {
+                    Become(std::move(*const_cast<Valuable*>(&*it)));
+                    return;
+                }
 
-            if (*it == 1)
-            {
-                Delete(it);
-                continue;
-            }
-
-            if (*it == 0)
-            {
-                Become(0);
-                return;
-            }
-
-            auto c = *it;
-            auto it2 = it;
-            ++it2;
-            while (it2 != members.end())
-            {
-                if (c.MultiplyIfSimplifiable(*it2)) {
-                    if (c.IsProduct())
-                        IMPLEMENT
-                    Delete(it2);
+                if (*it == 1)
+                {
+                    Delete(it);
                     continue;
                 }
-                else
-                    ++it2;
-            }
 
-            if (!it->Same(c))
-                Update(it, c);
-            else
-                ++it;
-        }
+                if (*it == 0)
+                {
+                    Become(0);
+                    return;
+                }
+
+                auto c = *it;
+                auto it2 = it;
+                ++it2;
+                while (it2 != members.end())
+                {
+                    if (c.MultiplyIfSimplifiable(*it2)) {
+                        if (c.IsProduct())
+                            IMPLEMENT
+                        Delete(it2);
+                        continue;
+                    }
+                    else
+                        ++it2;
+                }
+
+                if (!it->Same(c)) {
+                    Update(it, c);
+                    updated = true;
+                } else {
+                    ++it;
+                }
+            }
+        } while (updated);
         
         // fraction optimizations
         auto f = GetFirstOccurence<Fraction>();
@@ -636,6 +642,11 @@ namespace math {
                is.second = divPlusOneIsSimple.second * v;
            }
        } else if (v.IsExponentiation()) {
+           is.first = Has(v) && size() == 2 && begin()->IsSimple();
+           if(is.first) {
+               is.second++ = *this;
+               is.first = !is.second.IsSum();
+           }
        } else if (v.IsSimple()) {
        } else if (v.IsProduct() || v.IsVa()) {
            auto icw = InCommonWith(v);
@@ -879,14 +890,13 @@ namespace math {
     }
     bool Product::operator ==(const Valuable& v) const
     {
-        auto same = v.Is<Product>()
-            && (Valuable::hash & ~Hash1) == (v.Hash() & ~Hash1) // ignore multiplication by 1
-            ;
+        auto sameHash = (Valuable::hash & ~Hash1) == (v.Hash() & ~Hash1); // ignore multiplication by 1
+        auto same = v.Is<Product>() && sameHash;
+        auto& c1 = GetConstCont();
+        auto sz1 = c1.size();
         if (same) {
-            auto& c1 = GetConstCont();
             auto& vp = v.as<Product>();
             auto& c2 = vp.GetConstCont();
-            auto sz1 = c1.size();
             auto sz2 = c2.size();
             auto sameSizes = sz1 == sz2;
             if(sameSizes) {
@@ -915,6 +925,12 @@ namespace math {
             } else {
                 same = {};
             }
+        }
+        else if (sameHash
+                 && (sz1 == 1
+                     || (sz1 == 2 && c1.begin()->Same(1_v) )))
+        {
+            same = c1.rbegin()->operator==(v);
         }
         return same;
     }
