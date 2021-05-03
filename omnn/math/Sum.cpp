@@ -542,7 +542,7 @@ namespace math {
                         std::cout << *it << " + " << v << " = " << s << "\t\tIMPLEMENT: must be covered by IsSummationSimpifiable call" << std::endl;
                         s = *it + v;
                         simplified = it->IsSummationSimplifiable(v);
-                        LOG_AND_IMPLEMENT(*it << " + " << v << " = " << s << "\t\tmust be covered by IsSummationSimpifiable call");
+                        // TODO: fix all these cases: LOG_AND_IMPLEMENT(*it << " + " << v << " = " << s << "\t\tmust be covered by IsSummationSimpifiable call");
 #endif
                         Update(it, s);
                         optimize();

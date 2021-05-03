@@ -339,8 +339,14 @@ namespace math {
                 while (it2 != members.end())
                 {
                     if (c.MultiplyIfSimplifiable(*it2)) {
-                        if (c.IsProduct())
-                            IMPLEMENT
+                        if (c.IsProduct()) {
+                            auto& cAsP = c.as<Product>();
+                            if(cAsP.size() == 2 && cAsP.begin()->IsSimple()) {
+                                break;
+                            } else {
+                                IMPLEMENT
+                            }
+                        }
                         Delete(it2);
                         continue;
                     }
@@ -808,6 +814,12 @@ namespace math {
         }
         else
         {
+            auto it = std::find(begin(), end(), v);
+            if(it != end()){
+                Delete(it); // TODO : Review this branch to make it compatible with multivalue v
+                optimize();
+                return *this;
+            }
             auto vIsExp = v.IsExponentiation();
             auto e = vIsExp ? &v.as<Exponentiation>() : nullptr;
             for (auto it = members.begin(); it != members.end(); ++it)
