@@ -12,17 +12,10 @@
 #include <queue>
 
 
-
 using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace std;
 
-
-
-//The following tests FAILED:
-//      4 - 8queens (Failed)
-//     16 - sh_test (Failed)
-//     17 - ts (Failed)
 
 BOOST_AUTO_TEST_CASE(bit_test)
 {

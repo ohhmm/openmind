@@ -563,17 +563,6 @@ namespace math {
                 || v.IsVa()
                 || v.IsFraction())
         {
-        } else if (v.IsProduct()) {
-            auto& vAsP = v.as<Product>();
-            auto simplification = vAsP / *this;
-            if (simplification.IsSimple()) {
-                ++simplification;
-                is.first = simplification.IsSimple();
-                if (is.first) {
-                    simplification *= *this;
-                    is.second = std::move(simplification);
-                }
-            }
         } else {
             is = v.IsSummationSimplifiable(*this);
         }
