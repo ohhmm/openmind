@@ -20,6 +20,10 @@ Compilation:
     PREVIEW ./omnn/ct/libct.a - compile-time lib
     FEATURED ./OpenMind/libOpenMind.a - asynchronous goal-oriented state machine
 
+  Other package managers:
+
+    sudo dnf install git-gui cmake-gui clang boost-devel leveldb-devel libxcb-devel libX11-devel libXScrnSaver-devel ocl-icd-devel
+
   Windows VSCode:
 
     ![Screenshot](build.png)

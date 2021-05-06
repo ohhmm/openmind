@@ -61,9 +61,9 @@ BOOST_AUTO_TEST_CASE(System_tests)
         sys << t;
         sys << a + b - 100;
         auto s = sys.Solve(a);
-        auto haveOneSolution = s.size()==1;
-        BOOST_TEST(haveOneSolution);
-        if(haveOneSolution)
+        auto hasOneSolution = s.size()==1;
+        BOOST_TEST(hasOneSolution);
+        if(hasOneSolution)
         {
             auto _ = *s.begin();
             BOOST_TEST(_ == 54);

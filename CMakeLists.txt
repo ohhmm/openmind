@@ -7,7 +7,7 @@ set (CMAKE_CXX_STANDARD 20)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(_IS_DEBUG TRUE)
 else()
-	set(_IS_DEBUG FALSE)
+    set(_IS_DEBUG FALSE)
 endif()
 
 option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${MSVC})
