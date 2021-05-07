@@ -101,6 +101,14 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     BOOST_TEST(has == false);
 }
 
+BOOST_AUTO_TEST_CASE(Product_optimization_test)
+{
+    DECL_VA(x);
+    auto _1 = -x * (1_v^(1_v/2));
+    auto _2 =  x * (1_v^(1_v/2));
+    BOOST_TEST(_1 == _2);
+}
+
 BOOST_AUTO_TEST_CASE(test_no_hang, *timeout(2))
 {
     Variable v2, v3;

@@ -955,8 +955,8 @@ namespace math {
 
     size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const
     {
-        OptimizeOn opt;
         size_t grade = 0;
+        OptimizeOn opt;
         Sum c0;
         auto add = [&](auto i, Valuable&& a) {
             if (i) {

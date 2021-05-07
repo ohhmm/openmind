@@ -30,10 +30,21 @@ BOOST_AUTO_TEST_CASE(_1_2_3_) {
         .logic_or(x.Equals(3));
     auto solution = expr(x);
     std::cout << "Multival for 1, 2, 3 is " << solution << std::endl;
-    std::cout << "Distinct solutions are a follows:" << std::endl;
-    for (auto&& s : expr.Solutions()) {
+    std::cout << "Distinct of multival:" << std::endl;
+    auto solutions = solution.Distinct();
+    for (auto&& s : solutions) {
         std::cout << '\t' << s << std::endl;
     }
+    decltype(solutions) solutionsEtalon = { 1, 2, 3 };
+    BOOST_TEST(solutions == solutionsEtalon);
+    std::cout << std::endl;
+
+    std::cout << "Solutions of logic_or built equation " << expr << " :" << std::endl;
+    solutions = expr.Solutions();
+    for (auto&& s : solutions) {
+        std::cout << '\t' << s << std::endl;
+    }
+    BOOST_TEST(solutions == solutionsEtalon);
     std::cout << std::endl;
 }
 
