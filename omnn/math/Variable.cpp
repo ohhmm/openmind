@@ -157,9 +157,11 @@ namespace math {
 
     Valuable& Variable::operator^=(const Valuable& v)
     {
-        if(v.IsInt() && v == 0_v)
+        auto ii = v.IsInt();
+        if (ii && v == 0_v) {
             Become(1_v);
-        else
+        } else if (ii && v == 1_v) {
+        } else
             Become(Exponentiation(*this, v));
         return *this;
     }

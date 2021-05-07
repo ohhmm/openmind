@@ -805,11 +805,27 @@ auto OmitOuterBrackets(std::string_view& s){
             IMPLEMENT
     }
     
+    Valuable::solutions_t Valuable::Distinct() const
+    {
+        if(exp)
+            return exp->Distinct();
+        else
+            IMPLEMENT
+    }
+
     bool Valuable::IsUnivariate() const
     {
         std::set<Variable> vars;
         CollectVa(vars);
         return (vars.size() == 1);
+    }
+
+    Valuable Valuable::Univariate() const
+    {
+        if(exp)
+            return exp->Univariate();
+        else
+            IMPLEMENT
     }
 
     Valuable::solutions_t Valuable::Solutions() const

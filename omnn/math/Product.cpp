@@ -641,6 +641,7 @@ namespace math {
        else if ((is.first = operator==(-v)))
            is.second = 0;
        else if (Has(v)) {
+           OptimizeOn o;
            auto div = *this / v;
            auto divPlusOneIsSimple = div.IsSummationSimplifiable(vo<1>::get());
            is.first = divPlusOneIsSimple.first;
@@ -655,6 +656,7 @@ namespace math {
            }
        } else if (v.IsSimple()) {
        } else if (v.IsProduct() || v.IsVa()) {
+           OptimizeOn o;
            auto icw = InCommonWith(v);
            if (icw != 1) {
                auto thisNoCommon = *this / icw;
