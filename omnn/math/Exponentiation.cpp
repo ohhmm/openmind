@@ -941,4 +941,26 @@ namespace math {
             IMPLEMENT
         }
     }
+
+    Valuable::solutions_t Exponentiation::Distinct() const
+    {
+    	solutions_t branches;
+    	if (eexp().IsSimpleFraction()){
+    		auto& f = eexp().as<Fraction>();
+    		if (f.denominator().ca() | 1 = 0){
+                IMPLEMENT
+    		}
+    	}
+    	return branches;
+    }
+
+    Valuable Exponentiation::Univariate() const
+    {
+    	auto uni = 1_v;
+    	for(auto& branch : Distinct()) {
+    		uni.logic_or(branch);
+    	}
+    	LOG_AND_IMPLEMENT("move to base");
+    	return uni;
+    }
 }}

@@ -77,6 +77,9 @@ public:
 
     Valuable operator()(const Variable&) const override;
     Valuable operator()(const Variable& v, const Valuable& augmentation) const override;
+
+    solutions_t Distinct() const override;
+    Valuable Univariate() const override;
 };
 
 }}

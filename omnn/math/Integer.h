@@ -154,6 +154,9 @@ public:
                        const Valuable& max,
                        const zero_zone_t& zz = empty_zero_zone) const;
     std::deque<Valuable> Facts() const;
+
+    solutions_t Distinct() const final { return { *this }; }
+    Valuable Univariate() const final { return *this; }
 private:
 	base_int arbitrary = 0;
 };
