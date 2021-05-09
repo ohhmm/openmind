@@ -956,6 +956,15 @@ namespace math {
     size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const
     {
         size_t grade = 0;
+        if(IsMultival()== Valuable::YesNoMaybe::Yes){
+            auto univariate = Univariate();
+            if (!univariate.IsSum()) {
+                IMPLEMENT
+            } else {
+                grade = univariate.as<Sum>().FillPolyCoeff(coefficients, v);
+                return grade;
+            }
+        }
         OptimizeOn opt;
         Sum c0;
         auto add = [&](auto i, Valuable&& a) {

@@ -282,7 +282,7 @@ public:
     explicit Valuable(const solutions_t&);
     virtual Valuable operator()(const Variable&) const;
     virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;
-    bool IsUnivariate() const;
+    bool IsUnivariable() const;
 
     virtual void solve(const Variable& va, solutions_t&) const;
     virtual solutions_t Distinct() const;

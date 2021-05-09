@@ -813,7 +813,7 @@ auto OmitOuterBrackets(std::string_view& s){
             IMPLEMENT
     }
 
-    bool Valuable::IsUnivariate() const
+    bool Valuable::IsUnivariable() const
     {
         std::set<Variable> vars;
         CollectVa(vars);
@@ -832,9 +832,8 @@ auto OmitOuterBrackets(std::string_view& s){
     {
         std::set<Variable> vars;
         CollectVa(vars);
-        if (vars.size() == 1) {
+        if (vars.size() == 1)
             return Solutions(*vars.begin());
-        }
         else
             IMPLEMENT
     }
