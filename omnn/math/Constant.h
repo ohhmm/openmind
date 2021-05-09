@@ -49,5 +49,8 @@ namespace math {
         }
         
         a_int Complexity() const override { return 1; }
+
+        base::solutions_t Distinct() const override { return { *this }; }
+        Valuable Univariate() const override { return *this; }
     };
 }}
