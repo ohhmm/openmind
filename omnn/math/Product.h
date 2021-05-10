@@ -83,7 +83,7 @@ public:
     Valuable operator()(const Variable& va) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
     void solve(const Variable& va, solutions_t& solutions) const override;
-
+    Valuable::solutions_t Distinct() const override;
     
 protected:
     cont& GetCont() override { return members; }
