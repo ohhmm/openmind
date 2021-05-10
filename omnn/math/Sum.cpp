@@ -954,11 +954,11 @@ namespace math {
     }
 
     Valuable::solutions_t Sum::Distinct() const {
-        solutions_t branches = { *this };
-        for (auto &m : members) {
+        solutions_t branches = { 0_v };
+        for (auto& m : members) {
             solutions_t newBranches;
-            for (auto &&b : branches) {
-                for (auto &branch : m.Distinct()) {
+            for (auto& branch : m.Distinct()) {
+                for (auto& b : branches) {
                     newBranches.emplace(b + branch);
                 }
             }
