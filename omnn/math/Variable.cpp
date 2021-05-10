@@ -301,4 +301,8 @@ namespace math {
             IMPLEMENT
     }
 
+    Valuable::solutions_t Variable::Distinct() const {
+    	return {*this};
+    }
+
 }}

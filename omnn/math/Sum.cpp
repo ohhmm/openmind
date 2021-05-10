@@ -953,6 +953,20 @@ namespace math {
         return _;
     }
 
+    Valuable::solutions_t Sum::Distinct() const {
+        solutions_t branches = { *this };
+        for (auto &m : members) {
+            solutions_t newBranches;
+            for (auto &&b : branches) {
+                for (auto &branch : m.Distinct()) {
+                    newBranches.emplace(b + branch);
+                }
+            }
+            branches = std::move(newBranches);
+        }
+        return branches;
+    }
+
     size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const
     {
         size_t grade = 0;

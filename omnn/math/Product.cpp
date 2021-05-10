@@ -1077,6 +1077,20 @@ namespace math {
         }
     }
 
+    Valuable::solutions_t Product::Distinct() const {
+        solutions_t branches = { *this };
+        for (auto &m : members) {
+            solutions_t newBranches;
+            for (auto &&b : branches) {
+                for (auto &branch : m.Distinct()) {
+                    newBranches.emplace(b * branch);
+                }
+            }
+            branches = std::move(newBranches);
+        }
+        return branches;
+    }
+
 	std::ostream& Product::print(std::ostream& out) const
 	{
         std::stringstream s;

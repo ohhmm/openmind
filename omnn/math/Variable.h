@@ -63,14 +63,13 @@ public:
     void CollectVaNames(std::map<std::string, Variable>& s) const override;
 
     bool eval(const std::map<Variable, Valuable>& with) override;
-    
     void Eval(const Variable& va, const Valuable& v) override;
     
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
+    solutions_t Distinct() const override;
 };
-
 
 }}
 

@@ -62,6 +62,7 @@ public:
     solutions_t GetIntegerSolution(const Variable& va) const override;
     void solve(const Variable& va, solutions_t& solutions) const override;
     void solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const;
+    solutions_t Distinct() const override;
 
     static bool IsPowerX(const std::vector<Valuable>& coefficients);
     Valuable operator()(const Variable& va) const override;

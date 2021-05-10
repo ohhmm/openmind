@@ -51,6 +51,7 @@ namespace math {
 		bool operator <(const Valuable& v) const override;
         explicit operator double() const override;
         void solve(const Variable& va, solutions_t&) const override;
+        Valuable::solutions_t Distinct() const override;
 
 		void optimize() override;
 		Valuable Sqrt() const override;
@@ -72,7 +73,7 @@ namespace math {
         { }
         
 		Fraction(const Valuable& n)
-		: base(n, 1)
+		: base(n, 1_v)
 		{
 		}
 

@@ -80,6 +80,16 @@ namespace math {
             s.erase(so);
     }
     
+    Valuable::solutions_t Fraction::Distinct() const {
+    	Valuable::solutions_t branches;
+    	for (auto&& n : numerator().Distinct()) {
+    		for (auto&& d : denominator().Distinct()) {
+    			branches.emplace(n / d);
+    		}
+    	}
+    	return branches;
+    }
+
     void Fraction::optimize()
     {
 //        if (!optimizations) {

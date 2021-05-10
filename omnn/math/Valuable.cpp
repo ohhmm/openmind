@@ -809,8 +809,10 @@ auto OmitOuterBrackets(std::string_view& s){
     {
         if(exp)
             return exp->Distinct();
+        else if (IsSimple())
+            return { *this };
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Distinct " << str());
     }
 
     bool Valuable::IsUnivariable() const

@@ -947,20 +947,29 @@ namespace math {
 
     Valuable::solutions_t Exponentiation::Distinct() const
     {
-    	solutions_t branches;
-    	if (eexp().IsSimpleFraction()){
-    		auto& f = eexp().as<Fraction>();
-    		auto& denom = f.denominator().ca();
-    		if (denom | 1 == 0) {
-
-    			auto branchesSz = boost::multiprecision::msb(denom); // the largest bit
-
-    			static Variable x;
-    			Equals(x).solve(x, branches);
-    		}
-    	} else {
-    		branches.emplace(*this);
-    	}
-    	return branches;
+        solutions_t branches;
+        if (eexp().IsSimpleFraction()){
+            auto& f = eexp().as<Fraction>();
+            auto& denom = f.denominator().ca();
+            if (denom | 1 == 0) {
+                // TODO : de-recoursefy:
+//                auto branchesSz = boost::multiprecision::msb(denom); // the largest bit
+//                branches.reserve(branchesSz);
+//                ...
+                if(!ebase().IsInt()){
+                    LOG_AND_IMPLEMENT("Distinct for " << str());
+                } else {
+                    for (auto&& branch
+                            : (ebase().Sqrt() ^ (f.numerator() / Integer(denom >> 1))).Distinct())
+                    {
+                        branches.emplace(-branch);
+                        branches.emplace(std::move(branch));
+                    }
+                }
+            }
+        } else {
+            branches.emplace(*this);
+        }
+        return branches;
     }
 }}
