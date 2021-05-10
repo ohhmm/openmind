@@ -12,6 +12,9 @@
 #include "Product.h"
 
 #include <cmath>
+#include <limits>
+
+#include <boost/numeric/conversion/cast.hpp>
 
 namespace omnn{
 namespace math {
@@ -947,20 +950,17 @@ namespace math {
     	solutions_t branches;
     	if (eexp().IsSimpleFraction()){
     		auto& f = eexp().as<Fraction>();
-    		if (f.denominator().ca() | 1 = 0){
-                IMPLEMENT
+    		auto& denom = f.denominator().ca();
+    		if (denom | 1 == 0) {
+
+    			auto branchesSz = boost::multiprecision::msb(denom); // the largest bit
+
+    			static Variable x;
+    			Equals(x).solve(x, branches);
     		}
+    	} else {
+    		branches.emplace(*this);
     	}
     	return branches;
-    }
-
-    Valuable Exponentiation::Univariate() const
-    {
-    	auto uni = 1_v;
-    	for(auto& branch : Distinct()) {
-    		uni.logic_or(branch);
-    	}
-    	LOG_AND_IMPLEMENT("move to base");
-    	return uni;
     }
 }}
