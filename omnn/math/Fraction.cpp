@@ -304,9 +304,12 @@ bool Fraction::SumIfSimplifiable(const Valuable& v)
 std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) const
 {
     std::pair<bool,Valuable> is;
-    is.first = IsSimpleFraction() && v.IsSimple();
+    auto simple = IsSimpleFraction();
+    is.first = simple && v.IsSimple();
     if(is.first){
         is.second = *this + v;
+    } else if (v.IsVa() && !simple && HasVa(v.as<Variable>())) {
+        IMPLEMENT
     } else if (!v.IsFraction()) {
         is = v.IsSummationSimplifiable(*this);
     } else {

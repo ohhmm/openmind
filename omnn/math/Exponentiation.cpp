@@ -723,9 +723,8 @@ namespace math {
     Valuable::YesNoMaybe Exponentiation::IsMultival() const
     {
         auto is = _1.IsMultival() || _2.IsMultival();
-        if (is != YesNoMaybe::Yes)
-            if(_2.IsFraction())
-                is = _2.as<Fraction>().getDenominator().IsEven() || is;
+        if (is != YesNoMaybe::Yes && _2.IsFraction())
+            is = _2.as<Fraction>().getDenominator().IsEven() || is;
         return is;
     }
     
@@ -950,8 +949,8 @@ namespace math {
         solutions_t branches;
         if (eexp().IsSimpleFraction()){
             auto& f = eexp().as<Fraction>();
-            auto& denom = f.denominator().ca();
-            if (denom | 1 == 0) {
+            auto& denom = f.denominator();
+            if (denom.IsEven() == YesNoMaybe::Yes) {
                 // TODO : de-recoursefy:
 //                auto branchesSz = boost::multiprecision::msb(denom); // the largest bit
 //                branches.reserve(branchesSz);
@@ -960,7 +959,7 @@ namespace math {
                     LOG_AND_IMPLEMENT("Distinct for " << str());
                 } else {
                     for (auto&& branch
-                            : (ebase().Sqrt() ^ (f.numerator() / Integer(denom >> 1))).Distinct())
+                            : (ebase().Sqrt() ^ (f.numerator() / (denom / 2))).Distinct())
                     {
                         branches.emplace(-branch);
                         branches.emplace(std::move(branch));
