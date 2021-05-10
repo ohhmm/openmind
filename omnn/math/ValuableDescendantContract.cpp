@@ -48,4 +48,12 @@ void ValuableDescendantBase::Values(const std::function<bool(const Valuable&)> &
         IMPLEMENT
 }
 
+Valuable ValuableDescendantBase::Univariate() const {
+	auto uni = 1_v;
+	for (auto &branch : Distinct()) {
+		uni.logic_or(branch);
+	}
+	return uni;
+}
+
 }}

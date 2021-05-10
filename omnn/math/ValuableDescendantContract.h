@@ -39,6 +39,8 @@ namespace math {
         }
         
         void Values(const std::function<bool(const Valuable&)> &fun) const override;
+
+        Valuable Univariate() const override;
     };
 
     template <class Chld>
