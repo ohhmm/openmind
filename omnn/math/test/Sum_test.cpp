@@ -336,7 +336,6 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
                 .LogicOr(v.Equals(_3));
     sol = equation.Solutions();
     BOOST_TEST(sol == sol_t({_1,_2,_3}));
-    auto s = Valuable::MergeOr(Valuable::MergeOr(_1,_2),_3);
     auto x = equation(v);
     reinterpret_cast<Pub*>(&reinterpret_cast<Pub*>(&x)->get())->so({});
     x.optimize(); //TODO : complete optimization for uncomment
