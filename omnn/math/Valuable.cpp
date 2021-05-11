@@ -223,29 +223,29 @@ namespace math {
         if(v1 == v2)
             merged = v1;
         else {
-        	if(v1.IsInt() && v2.IsInt() && v1.abs()==v2.abs())
-				merged = v1.abs() * (1_v ^ Fraction{1,2});
-			else {
-				auto sum = x.Equals(v1).logic_or(x.Equals(v2));
-				merged = sum(x);
-			}
-        
+            if(v1.IsInt() && v2.IsInt() && v1.abs()==v2.abs())
+                merged = v1.abs() * (1_v ^ Fraction{1,2});
+            else {
+                auto sum = x.Equals(v1).logic_or(x.Equals(v2));
+                merged = sum(x);
+            }
+
 #ifndef NDEBUG
-			if (merged == v1 || merged == v2){
-				// debug this code
-				auto s = x.Equals(v1).logic_or(x.Equals(v2));
-				std::vector<Valuable> coefficients;
-				s.as<Sum>().FillPolyCoeff(coefficients, x);
-				auto& a = coefficients[2];
-				auto& b = coefficients[1];
-				auto& c = coefficients[0];
-				auto d = (b ^ 2) - 4_v * a * c;
-				merged = (Exponentiation(d, 1_v/2)-b)/(a*2);
+            if (merged == v1 || merged == v2){
+                // debug this code
+                auto s = x.Equals(v1).logic_or(x.Equals(v2));
+                std::vector<Valuable> coefficients;
+                s.as<Sum>().FillPolyCoeff(coefficients, x);
+                auto& a = coefficients[2];
+                auto& b = coefficients[1];
+                auto& c = coefficients[0];
+                auto d = (b ^ 2) - 4_v * a * c;
+                merged = (Exponentiation(d, 1_v/2)-b)/(a*2);
 
-				IMPLEMENT
-			}
+                IMPLEMENT
+            }
 
-			// TODO: complete check
+            // TODO: complete check
 #endif
         }
         return merged;

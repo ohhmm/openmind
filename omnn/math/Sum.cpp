@@ -967,10 +967,49 @@ namespace math {
         return branches;
     }
 
+    bool Sum::IsNormalizedPolynomial() const{
+        auto is = Vars().size() == 1;
+        if (is)
+        {
+            for (auto& m : members)
+            {
+                if(m.IsInt() || m.IsVa()){
+                    continue;
+                } else if(m.IsExponentiation()) {
+                    auto& e = m.as<Exponentiation>();
+                    is = is && e.ebase().IsVa()
+                            && e.eexp().IsInt()
+                            && e.eexp().ca() > 0
+                            ;
+                } else if(m.IsProduct()) {
+                    for(auto& m: m.as<Product>()){
+                        if(m.IsInt() || m.IsVa()){
+                            continue;
+                        } else if(m.IsExponentiation()) {
+                            auto& e = m.as<Exponentiation>();
+                            is = is && e.ebase().IsVa()
+                                    && e.eexp().IsInt()
+                                    && e.eexp().ca() > 0
+                                    ;
+                        } else {
+                            is = {};
+                        }
+                    }
+                } else {
+                    is = {};
+                }
+                if(!is)
+                    break;
+            }
+        }
+        return is;
+    }
+
     size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const
     {
         size_t grade = 0;
-        if(IsMultival()== Valuable::YesNoMaybe::Yes){
+        OptimizeOn opt;
+        if(IsMultival() == Valuable::YesNoMaybe::Yes){
             auto univariate = Univariate();
             if (!univariate.IsSum()) {
                 IMPLEMENT
@@ -978,8 +1017,17 @@ namespace math {
                 grade = univariate.as<Sum>().FillPolyCoeff(coefficients, v);
                 return grade;
             }
+        } else if(!IsNormalizedPolynomial()){
+            auto copy = *this;
+            copy.SetView(View::Solving);
+            copy.optimize(); // for Solving ^
+            if(IsNormalizedPolynomial()){
+                grade = copy.FillPolyCoeff(coefficients, v);
+                return grade;
+            } else {
+                LOG_AND_IMPLEMENT("Need normalized polynomial to get its coefficients: " << str());
+            }
         }
-        OptimizeOn opt;
         Sum c0;
         auto add = [&](auto i, Valuable&& a) {
             if (i) {
@@ -1213,7 +1261,10 @@ namespace math {
     Valuable Sum::operator()(const Variable& va) const
     {
         Valuable::solutions_t s;
-        
+        if(IsMultival()== Valuable::YesNoMaybe::Yes){
+            return Univariate()(va);
+        }
+
         std::vector<Valuable> coefs;
         auto grade = FillPolyCoeff(coefs, va);
         if (coefs.size() != grade+1){

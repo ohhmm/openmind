@@ -80,6 +80,7 @@ public:
 
     Sum(const std::initializer_list<Valuable>& l);
 
+    bool IsNormalizedPolynomial() const;
     size_t FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const;
     Formula FormulaOfVa(const Variable& v) const;
 
