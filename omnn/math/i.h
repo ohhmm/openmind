@@ -19,10 +19,13 @@ namespace omnn::math {
         using base::base;
 
         bool Is_i() const override { return true; }
+        YesNoMaybe IsMultival() const { return YesNoMaybe::No; }
+
         bool operator==(const Valuable& v) const override
         { return v.Is_i(); }
 
         std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable &v) const override;
+        bool MultiplyIfSimplifiable(const Valuable& v) override;
     };
 
     namespace constant {

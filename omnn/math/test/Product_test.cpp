@@ -101,7 +101,9 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     BOOST_TEST(has == false);
 }
 
-BOOST_AUTO_TEST_CASE(Product_optimization_test)
+BOOST_AUTO_TEST_CASE(Product_optimization_test
+                     ,*disabled()
+                     )
 {
     DECL_VA(x);
     auto _1 = -x * (1_v^(1_v/2));

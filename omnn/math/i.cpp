@@ -14,3 +14,9 @@ std::pair<bool, Valuable> MinusOneSq::IsMultiplicationSimplifiable(const Valuabl
     return is;
 }
 
+bool MinusOneSq::MultiplyIfSimplifiable(const Valuable& v)
+{
+    auto multiply = v.Is_i();
+    if (multiply)
+        Become(-1);
+}
