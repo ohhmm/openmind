@@ -76,7 +76,7 @@ bool System::Add(const Valuable& v)
             equs.insert(va.Equals(found));
             vEs[va][{}].insert(std::move(found));
         } else
-            equs.insert(v);
+            equs.insert(_);
         if (makeTotalEqu)
             sqs += _.Sq();
         if (doEarlyFetch)
