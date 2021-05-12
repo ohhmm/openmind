@@ -36,6 +36,7 @@
 namespace omnn{
 namespace math {
 
+    CACHE(DbSumBalancingCache);
     CACHE(DbSumOptimizationCache);
     CACHE(DbSumSolutionsOptimizedCache);
     CACHE(DbSumSolutionsAllRootsCache);
@@ -153,7 +154,10 @@ namespace math {
 
         auto s = str();
         auto doCheck = s.length() > 10;
-        auto checkCache = doCheck ? DbSumOptimizationCache.AsyncFetch(*this, true) : Cache::Cached();
+        auto isBalancing = view == View::Equation || view == View::Solving;
+        auto checkCache = doCheck
+                ? (isBalancing ? DbSumBalancingCache : DbSumOptimizationCache).AsyncFetch(*this, true)
+                : Cache::Cached();
 
         Valuable w;
         do
@@ -967,41 +971,50 @@ namespace math {
         return branches;
     }
 
-    bool Sum::IsNormalizedPolynomial() const{
-        auto is = Vars().size() == 1;
-        if (is)
+    bool Sum::IsNormalizedPolynomial(const Variable& v) const{
+        a_int maxExp = 0;
+        auto is = true;
+        for (auto& m : members)
         {
-            for (auto& m : members)
-            {
-                if(m.IsInt() || m.IsVa()){
-                    continue;
-                } else if(m.IsExponentiation()) {
-                    auto& e = m.as<Exponentiation>();
-                    is = is && e.ebase().IsVa()
-                            && e.eexp().IsInt()
-                            && e.eexp().ca() > 0
-                            ;
-                } else if(m.IsProduct()) {
-                    for(auto& m: m.as<Product>()){
-                        if(m.IsInt() || m.IsVa()){
-                            continue;
-                        } else if(m.IsExponentiation()) {
-                            auto& e = m.as<Exponentiation>();
-                            is = is && e.ebase().IsVa()
-                                    && e.eexp().IsInt()
-                                    && e.eexp().ca() > 0
-                                    ;
-                        } else {
-                            is = {};
+            if(m.IsInt() || m.IsVa()){
+                continue;
+            } else if(m.IsExponentiation()) {
+                auto& e = m.as<Exponentiation>();
+                is = is && e.ebase().IsVa()
+                        && e.eexp().IsInt()
+                        && e.eexp().ca() > 0
+                        ;
+            } else if(m.IsProduct()) {
+                for(auto& m: m.as<Product>()){
+                    if(m.IsInt() || m.IsVa()){
+                        continue;
+                    } else if(m.IsExponentiation()) {
+                        auto& e = m.as<Exponentiation>();
+                        auto& b = e.ebase();
+                        auto& ee = e.eexp();
+                        auto ebaseIsVa = b.IsVa();
+                        is = ebaseIsVa && ee.IsInt();
+                        if(is){
+                            auto& iexp = ee.ca();
+                            is = iexp > 0;
+                            if (is && b == v && iexp > maxExp) {
+                                maxExp = iexp;
+                            }
                         }
+                    } else {
+                        is = {};
                     }
-                } else {
-                    is = {};
                 }
-                if(!is)
-                    break;
+            } else {
+                is = {};
             }
+            if(!is)
+                break;
         }
+
+        if(is && maxExp >= 5)
+            is = Vars().size() == 1;
+
         return is;
     }
 
@@ -1017,11 +1030,11 @@ namespace math {
                 grade = univariate.as<Sum>().FillPolyCoeff(coefficients, v);
                 return grade;
             }
-        } else if(!IsNormalizedPolynomial()){
+        } else if(!IsNormalizedPolynomial(v)){
             auto copy = *this;
             copy.SetView(View::Solving);
             copy.optimize(); // for Solving ^
-            if(IsNormalizedPolynomial()){
+            if(copy.IsNormalizedPolynomial(v)){
                 grade = copy.FillPolyCoeff(coefficients, v);
                 return grade;
             } else {
@@ -1037,9 +1050,9 @@ namespace math {
             } else
                 c0.Add(a);
         };
-	    // TODO : openmp
-	    //#pragma omp parallel default(none) shared(grade,coefficients)
-	    {
+        // TODO : openmp
+        //#pragma omp parallel default(none) shared(grade,coefficients)
+        {
         //#pragma omp for 
         for (auto& m : members)
         {
