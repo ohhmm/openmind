@@ -1548,12 +1548,21 @@ auto OmitOuterBrackets(std::string_view& s){
         auto s = 0_v;
         auto ow = optimizations;
         optimizations = {};
-        for(auto i = n; i--;)
+        auto a = *this;
+        auto b = v;
+        for(Valuable i; i < n; )
         {
-            s *= 2;
-            auto _1 = bit(i);
-            auto _2 = v.bit(i);
-            s += _1+_2-_1*_2;
+            auto ab = a.bit(0);
+            auto bb = b.bit(0);
+            auto mul = ab*bb;
+            auto sum = ab+bb;
+            s += (sum-mul) * (2_v^i);
+            if(++i < n){
+                a -= ab;
+                a /= 2;
+                b -= bb;
+                b /= 2;
+            }
         }
         optimizations = ow;
         if (ow && bit_operation_optimizations) {

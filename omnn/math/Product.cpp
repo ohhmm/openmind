@@ -641,7 +641,7 @@ namespace math {
        else if ((is.first = operator==(-v)))
            is.second = 0;
        else if (Has(v)) {
-           OptimizeOn o;
+           //OptimizeOn o;
            auto div = *this / v;
            auto divPlusOneIsSimple = div.IsSummationSimplifiable(vo<1>::get());
            is.first = divPlusOneIsSimple.first;
@@ -656,7 +656,7 @@ namespace math {
            }
        } else if (v.IsSimple()) {
        } else if (v.IsProduct() || v.IsVa()) {
-           OptimizeOn o;
+           //OptimizeOn o;
            auto icw = InCommonWith(v);
            if (icw != 1) {
                auto thisNoCommon = *this / icw;
@@ -684,6 +684,9 @@ namespace math {
 
     Valuable& Product::operator *=(const Valuable& v)
     {
+        if ((size() == 1 && *begin() == 1) || size() == 0)
+            return Become(Valuable(v));
+
         if (v.IsInt()){
             if (v==0) {
                 return Become(0);
@@ -701,8 +704,7 @@ namespace math {
                 }
             }
         }
-        if (size() == 1 && *begin() == 1)
-            return Become(Valuable(v));
+
         if (v.IsSum())
             return Become(v**this);
 
