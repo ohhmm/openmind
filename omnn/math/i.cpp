@@ -4,7 +4,13 @@
 
 #include "i.h"
 
-namespace omnn::math::constant
-{
-//    static const MinusOneSq i = {};
+using namespace omnn::math;
+
+std::pair<bool, Valuable> MinusOneSq::IsMultiplicationSimplifiable(const Valuable &v) const {
+    std::pair<bool, Valuable> is;
+    is.first = v.Is_i();
+    if (is.first)
+        is.second = -1;
+    return is;
 }
+

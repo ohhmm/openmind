@@ -442,7 +442,7 @@ namespace math {
             if (view == Equation) {
                 auto& coVa = getCommonVars();
                 if (coVa.size()) {
-                    *this /= VaVal(coVa);
+                    *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
                     if (!IsSum()) {
                         return;
                     }

@@ -21,9 +21,13 @@ namespace omnn::math {
         bool Is_i() const override { return true; }
         bool operator==(const Valuable& v) const override
         { return v.Is_i(); }
+
+        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable &v) const override;
     };
 
     namespace constant {
         static const MinusOneSq i;
     }
+
+
 }
