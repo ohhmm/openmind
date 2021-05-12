@@ -1274,7 +1274,7 @@ namespace math {
     Valuable Sum::operator()(const Variable& va) const
     {
         Valuable::solutions_t s;
-        if(IsMultival()== Valuable::YesNoMaybe::Yes){
+        if(IsMultival() == Valuable::YesNoMaybe::Yes){
             return Univariate()(va);
         }
 
@@ -1641,7 +1641,7 @@ namespace math {
                             return;
                         }
                         restToSolve.solve(va, solutions);
-                        solutions.insert(std::move(test));
+                        solutions.emplace(std::move(test));
                         if(checkCache.NotInCache())
                             DbSumSolutionsAllRootsCache.AsyncSetSet(*this, solutions);
                         return;
