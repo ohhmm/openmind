@@ -584,6 +584,7 @@ auto OmitOuterBrackets(std::string_view& s){
 
     Valuable::~Valuable()
     {
+        // TODO: move exp deletion to idle priority thread queue
     }
     
     Valuable Valuable::operator -() const
