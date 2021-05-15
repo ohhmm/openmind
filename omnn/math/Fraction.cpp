@@ -308,8 +308,11 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     is.first = simple && v.IsSimple();
     if(is.first){
         is.second = *this + v;
-    } else if (v.IsVa() && !simple && HasVa(v.as<Variable>())) {
-        IMPLEMENT
+    } else if (v.IsVa()) {
+        is.first = !simple && HasVa(v.as<Variable>());
+        if (is.first) {
+            LOG_AND_IMPLEMENT("Optimize summation of " << *this << " with " << v);
+        }
     } else if (!v.IsFraction()) {
         is = v.IsSummationSimplifiable(*this);
     } else {
