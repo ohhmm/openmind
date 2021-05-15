@@ -370,6 +370,8 @@ public:
     
     // logic
     Valuable Abet(const Variable& x, std::initializer_list<Valuable>) const;
+    template <class Fwd>
+    Valuable& equals(Fwd&& v) { return operator -=(std::forward<Fwd>(v)); }
     Valuable Equals(const Valuable& v) const;
     Valuable NotEquals(const Valuable& v) const;
 //    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals

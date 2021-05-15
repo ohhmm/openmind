@@ -155,9 +155,8 @@ namespace math {
         auto s = str();
         auto doCheck = s.length() > 10;
         auto isBalancing = view == View::Equation || view == View::Solving;
-        auto checkCache = doCheck
-                ? (isBalancing ? DbSumBalancingCache : DbSumOptimizationCache).AsyncFetch(*this, true)
-                : Cache::Cached();
+        auto& db = isBalancing ? DbSumBalancingCache : DbSumOptimizationCache;
+        auto checkCache = doCheck ? db.AsyncFetch(*this, true) : Cache::Cached();
 
         Valuable w;
         do
@@ -370,7 +369,7 @@ namespace math {
                 cont::iterator b = members.begin();
                 Become(std::move(const_cast<Valuable&>(*b)));
             }
-            else if (view==Solving || view == Equation){
+            else if (isBalancing){
                 // make coefficients int to use https://simple.wikipedia.org/wiki/Rational_root_theorem
                 bool scan;
                 do {
@@ -431,7 +430,17 @@ namespace math {
                         }
                     }
                 } while (scan);
-                
+
+                if (IsSum()) {
+                    auto& coVa = getCommonVars();
+                    if (coVa.size()) {
+                        *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
+                        if (!IsSum()) {
+                            return;
+                        }
+                    }
+                }
+
                 if(IsSum())
                 {
                     auto gcd = GCD();
@@ -442,20 +451,10 @@ namespace math {
                 } else
                     return;
             }
-            
-            if (view == Equation) {
-                auto& coVa = getCommonVars();
-                if (coVa.size()) {
-                    *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
-                    if (!IsSum()) {
-                        return;
-                    }
-                }
-            }
         }
 
         if (doCheck && checkCache.NotInCache()) {
-            DbSumOptimizationCache.AsyncSet(std::move(s), str());
+            db.AsyncSet(std::move(s), str());
         }
         
         if (IsSum()) {
