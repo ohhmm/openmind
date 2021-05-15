@@ -14,7 +14,8 @@ namespace math {
             : public boost::operators<CT>
     {
     public:
-        CT& operator-=(const CT& v) { return *static_cast<CT*>(this) += -v; }
+        template <class Fwd>
+        CT& operator-=(Fwd&& v) { return *static_cast<CT*>(this) += -std::forward<Fwd>(v); }
 
         template<class T>
         friend bool operator<=(const T &x, const CT &y) { return !static_cast<bool>(x > y); }

@@ -73,10 +73,13 @@ bool System::Add(const Valuable& v)
         if(vars.size() == 1){
             auto va = *vars.begin();
             auto found = v(va);
-            equs.insert(va.Equals(found));
-            vEs[va][{}].insert(std::move(found));
+            auto equal = va.Equals(found);
+            equal.SetView(Valuable::View::Equation);
+            equal.optimize();
+            equs.emplace(std::move(equal));
+            vEs[va][{}].emplace(std::move(found));
         } else
-            equs.insert(_);
+            equs.emplace(_);
         if (makeTotalEqu)
             sqs += _.Sq();
         if (doEarlyFetch)

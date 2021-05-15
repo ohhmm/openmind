@@ -18,5 +18,6 @@ bool MinusOneSq::MultiplyIfSimplifiable(const Valuable& v)
 {
     auto multiply = v.Is_i();
     if (multiply)
-        Become(-1);
+        Become(-1_v);
+    return multiply;
 }
