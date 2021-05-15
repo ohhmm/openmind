@@ -12,9 +12,11 @@
 namespace omnn::math {
 
 class SySHA
-        : protected System
 {
+    Variable v[256];
     Valuable b[256];
+    System s;
+
 public:
     template <class F>
     SySHA& operator<<(F&& f) {
