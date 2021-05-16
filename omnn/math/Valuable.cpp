@@ -124,7 +124,10 @@ namespace math {
     
     Valuable& Valuable::Become(Valuable&& i)
     {
+        if (Same(i))
+            return *this;
         auto newWasView = GetView(); // TODO: fix it, supervise all View usages
+        i.SetView(newWasView);
         auto h = i.Hash();
         auto e = i.exp;
         if(e)
@@ -182,7 +185,11 @@ namespace math {
                 optimize();
             }
         }
-        SetView(newWasView);
+        if(GetView() != newWasView){
+            IMPLEMENT
+            SetView(newWasView);
+        }
+
         return *this;
     }
 

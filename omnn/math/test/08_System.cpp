@@ -58,6 +58,7 @@ BOOST_AUTO_TEST_CASE(System_tests)
         Valuable t;
         t.SetView(Valuable::View::Equation);
         t = a - 8 - b;
+        BOOST_TEST(t.GetView() == Valuable::View::Equation);
         sys << t;
         sys << a + b - 100;
         auto s = sys.Solve(a);
