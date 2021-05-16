@@ -54,6 +54,7 @@ public:
     Valuable GCD() const;
     
     void optimize() override;
+    void balance();
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
     Valuable Sqrt() const override;

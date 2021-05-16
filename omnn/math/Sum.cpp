@@ -165,7 +165,9 @@ namespace math {
                 Become(checkCache);
                 return;
             }
+
             w = *this;
+
             if (checkCache) {
                 Become(checkCache);
                 return;
@@ -177,11 +179,15 @@ namespace math {
                 Become(std::move(m));
                 return;
             }
+
             if (checkCache) {
                 Become(checkCache);
                 return;
             }
-            
+
+            if (isBalancing)
+                balance();
+
             for (auto it = members.begin(); it != members.end();)
             {
                 // optimize member
@@ -360,6 +366,21 @@ namespace math {
 #endif
         } while (w != *this);
 
+        if (isBalancing)
+            balance();
+
+        if (doCheck && checkCache.NotInCache()) {
+            db.AsyncSet(std::move(s), str());
+        }
+        
+        if (IsSum()) {
+            isOptimizing = false;
+            optimized = true;
+        }
+    }
+
+    void Sum::balance()
+    {
         if(IsSum())
         {
             if (members.size() == 0) {
@@ -369,7 +390,7 @@ namespace math {
                 cont::iterator b = members.begin();
                 Become(std::move(const_cast<Valuable&>(*b)));
             }
-            else if (isBalancing){
+            else {
                 // make coefficients int to use https://simple.wikipedia.org/wiki/Rational_root_theorem
                 bool scan;
                 do {
@@ -389,7 +410,7 @@ namespace math {
                                     else if (m.IsExponentiation()) {
                                         auto& e = m.as<Exponentiation>();
                                         auto& ee = e.getExponentiation();
-                                        if (ee.IsInt() && ee < 0) {
+                                        if (ee.IsInt() && ee.ca() < 0) {
                                             operator*=(e.getBase() ^ (-ee));
                                             scan = true;
                                             break;
@@ -435,31 +456,24 @@ namespace math {
                     auto& coVa = getCommonVars();
                     if (coVa.size()) {
                         *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
-                        if (!IsSum()) {
-                            return;
+                    }
+
+                    if(IsSum())
+                    {
+                        auto gcd = GCD();
+                        if(gcd != 1_v){
+                            operator/=(gcd);
+                        }
+
+                        if(IsMultival()== Valuable::YesNoMaybe::Yes){
+                            auto uni = Univariate();
+                            if(!Same(uni)){
+                                Become(std::move(uni));
+                            }
                         }
                     }
                 }
-
-                if(IsSum())
-                {
-                    auto gcd = GCD();
-                    if(gcd!=1_v){
-                        operator/=(gcd);
-                    }
-                    // todo : make all va exponentiations > 0
-                } else
-                    return;
             }
-        }
-
-        if (doCheck && checkCache.NotInCache()) {
-            db.AsyncSet(std::move(s), str());
-        }
-        
-        if (IsSum()) {
-            isOptimizing = false;
-            optimized = true;
         }
     }
 
