@@ -88,7 +88,7 @@ namespace math {
         IMPLEMENT
     }
    
-    int Valuable::getTypeSize() const
+    size_t Valuable::getTypeSize() const
     {
         return sizeof(Valuable);
     }
@@ -186,8 +186,8 @@ namespace math {
             }
         }
         if(GetView() != newWasView){
-            IMPLEMENT
             SetView(newWasView);
+            IMPLEMENT
         }
 
         return *this;
@@ -294,7 +294,7 @@ namespace math {
         using index_t = decltype(l);
         std::stack <index_t> st;
         std::map<index_t, index_t> bracketsmap;
-        int c = 0;
+        decltype(l) c = 0;
         std::string numbers = "0123456789";
         while (c < l)
         {
@@ -431,7 +431,7 @@ auto BracketsMap(const std::string_view& s){
     using index_t = decltype(l);
     std::stack <index_t> st;
     std::map<index_t, index_t> bracketsmap;
-    int c = 0;
+    decltype(l) c = 0;
     std::string numbers = "0123456789";
     while (c < l)
     {

@@ -71,7 +71,7 @@ namespace math {
             return static_cast<Valuable*>(new Chld(*static_cast<const Chld*>(this)));
         }
     
-        int getTypeSize() const override { return sizeof(Chld); }
+        size_t getTypeSize() const override { return sizeof(Chld); }
         
         Valuable* Move() override
         {

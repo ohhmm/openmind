@@ -74,7 +74,7 @@ protected:
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
-    virtual int getTypeSize() const;
+    virtual size_t getTypeSize() const;
     virtual size_t getAllocSize() const;
     virtual void setAllocSize(size_t sz);
 
