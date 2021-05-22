@@ -885,7 +885,7 @@ namespace math {
             if (e.getBase() == getBase()) {
                 if (e.getExponentiation() == getExponentiation()) {
                     c = e;
-                } else if (getExponentiation().IsInt() && e.getExponentiation().IsInt()) {
+                } else if (getExponentiation().IsSimple() && e.getExponentiation().IsSimple()) {
                     if (getExponentiation() > 0 || e.getExponentiation() > 0) {
                         if (e.getExponentiation() >= getExponentiation()) {
                             c = *this;
