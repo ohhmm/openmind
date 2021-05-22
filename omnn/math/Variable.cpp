@@ -269,7 +269,11 @@ namespace math {
     Valuable Variable::InCommonWith(const Valuable& v) const
     {
         auto c = 1_v;
-        if (v.IsProduct()) {
+        if(v.IsSimple())
+            ;
+        else if (v.IsProduct()
+                 || v.IsFraction()
+                 ) {
             c = v.InCommonWith(*this);
         } else if (v.IsExponentiation()) {
             auto& e = v.as<Exponentiation>();
@@ -285,7 +289,6 @@ namespace math {
         } else if (v.IsVa()) {
             if (*this == v)
                 c = v;
-        } else if (v.IsInt() || v.IsSimpleFraction()) {
         } else {
             IMPLEMENT
         }

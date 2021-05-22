@@ -655,7 +655,10 @@ namespace math {
                is.first = !is.second.IsSum();
            }
        } else if (v.IsSimple()) {
-       } else if (v.IsProduct() || v.IsVa()) {
+       } else if (v.IsProduct()
+                  || v.IsVa()
+                  || v.IsFraction()
+                  ) {
            //OptimizeOn o;
            auto icw = InCommonWith(v);
            if (icw != 1) {
