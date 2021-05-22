@@ -89,7 +89,7 @@ namespace math {
             Valuable::hash ^= item.Hash();
             auto& c = GetCont();
             this->optimized = {};
-            auto it = hint == c.end() ? getit(c.insert(item)) : getit(c.insert(hint, item));
+            auto it = hint == c.end() ? getit(c.emplace(item)) : getit(c.insert(hint, item));
             return it;
         }
 

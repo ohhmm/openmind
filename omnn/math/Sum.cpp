@@ -183,6 +183,10 @@ namespace math {
                 return;
             }
             
+            if (members.size() == 0) {
+                Become(0_v);
+                return;
+            }
             if (members.size() == 1) {
                 Valuable m;
                 {m = *members.begin();}
@@ -195,8 +199,8 @@ namespace math {
                 return;
             }
 
-//            if (isBalancing)
-//                balance();
+            if (isBalancing)
+                balance();
 
             for (auto it = members.begin(); it != members.end();)
             {
@@ -273,7 +277,7 @@ namespace math {
                     }
                     
                     if(c.IsSum()){
-                        IMPLEMENT
+                        break;
                     }
                     auto simplified = it2->IsSummationSimplifiable(c);
                     if (simplified.first) {
@@ -391,6 +395,9 @@ namespace math {
 
     void Sum::balance()
     {
+#ifndef NDEBUG
+        std::cout << "Balancing " << *this << std::endl;
+#endif
         if(IsSum())
         {
             if (members.size() == 0) {
@@ -1823,12 +1830,12 @@ namespace math {
                 {
                     if (d0 == 0)
                     {
-                        solutions.insert(b / (a*-3));
+                        solutions.emplace(b / (a*-3));
                     }
                     else
                     {
-                        solutions.insert((a*d * 9 - b * c) / (d0 * 2));
-                        solutions.insert((a*b*c * 4 + asq * d*-9 - bsq * b) / (d0 * a));
+                        solutions.emplace((a*d * 9 - b * c) / (d0 * 2));
+                        solutions.emplace((a*b*c * 4 + asq * d*-9 - bsq * b) / (d0 * a));
                     }
                 }
                 else
@@ -1842,18 +1849,13 @@ namespace math {
                     if(Test(va,x)) // << error in Eval
                     {
                         (*this / va.Equals(x)).solve(va, solutions);
-                        solutions.insert(std::move(x));
-                        return;
+                        solutions.emplace(std::move(x));
                     }
                     else if(x.IsMultival() == Valuable::YesNoMaybe::Yes
                         && x.Vars().empty()
                         && !x.IsSimple()
                     ) {
-                        auto coef = coefficients;
-                        coef.clear();
-                        grade = FillPolyCoeff(coef, va);
-                        LOG_AND_IMPLEMENT(x << " split");
-                        //solutions = x.Spl;
+                        solutions = x.Distinct(); //FIXME: TODO: Debug
                     }
                     else
                     {
@@ -1900,10 +1902,10 @@ namespace math {
                 auto xp2 = p4/2;
                 auto xp3_1 = (p5-p6).Sqrt()/2;
                 auto xp3_2 = (p5+p6).Sqrt()/2;
-                solutions.insert(xp1-xp2-xp3_1);
-                solutions.insert(xp1-xp2+xp3_1);
-                solutions.insert(xp1+xp2-xp3_2);
-                solutions.insert(xp1+xp2+xp3_2);
+                solutions.emplace(xp1-xp2-xp3_1);
+                solutions.emplace(xp1-xp2+xp3_1);
+                solutions.emplace(xp1+xp2-xp3_2);
+                solutions.emplace(xp1+xp2+xp3_2);
                 break;
             }
             default: {
