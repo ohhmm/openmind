@@ -1016,7 +1016,9 @@ auto OmitOuterBrackets(std::string_view& s){
     bool Valuable::operator==(const Valuable& v) const
     {
         if(exp)
-            return Hash()==v.Hash() && exp->operator==(v);
+            return
+// NO:                   Hash()==v.Hash() &&     // example: empty sum hash differs;  product 1*x*y == x*y ; etc
+                    exp->operator==(v);
         else
             IMPLEMENT
     }

@@ -143,6 +143,14 @@ namespace math {
         }
         return gcd;
     }
+
+    bool Sum::operator ==(const Valuable &v) const
+    {
+        return (Valuable::hash == v.Hash()
+                && v.IsSum()
+                && members == v.as<Sum>().GetConstCont())
+                || (members.empty() && v == 0_v);
+    }
     
     void Sum::optimize()
     {

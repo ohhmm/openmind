@@ -255,13 +255,5 @@ namespace math {
             c.erase(it++);
             Valuable::optimized = {};
         }
-
-        /// For optimized values
-        bool operator ==(const Valuable& v) const override
-        {
-            return Valuable::hash == v.Hash()
-                && v.Is<Chld>()
-                && GetConstCont() == v.as<Chld>().GetConstCont();
-        }
     };
 }}
