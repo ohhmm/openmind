@@ -185,8 +185,8 @@ namespace math {
                 return;
             }
 
-            if (isBalancing)
-                balance();
+//            if (isBalancing)
+//                balance();
 
             for (auto it = members.begin(); it != members.end();)
             {
@@ -580,6 +580,7 @@ namespace math {
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
         Sum sum;
+        sum.SetView(GetView());
         auto vIsInt = v.IsInt();
         if (vIsInt && v == 0)
         {

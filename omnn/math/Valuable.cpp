@@ -174,6 +174,7 @@ namespace math {
                 if (Hash() != h) {
                     IMPLEMENT
                 }
+                SetView(newWasView);
                 optimize();
             }
             else if(exp && exp->getAllocSize() >= newSize)
