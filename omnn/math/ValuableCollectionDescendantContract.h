@@ -17,6 +17,17 @@ namespace math {
     protected:
         using cont = ContT;
         virtual cont& GetCont() = 0;
+        bool IsSubObject(const Valuable& o) const override {
+            auto is = this == &o.get();
+            if (!is) {
+                for(auto& m : GetConstCont()) {
+                    is = &m.get() == &o.get();
+                    if(is)
+                        break;
+                }
+            }
+            return is;
+        }
         
     public:
         using iterator = typename cont::iterator;

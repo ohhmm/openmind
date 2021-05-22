@@ -63,6 +63,13 @@ namespace math {
         throw std::string(str) + " Implement!";
     }
     
+    bool Valuable::IsSubObject(const Valuable& o) const {
+        if (exp)
+            return exp->IsSubObject(o);
+        else
+            IMPLEMENT
+    }
+
     Valuable Valuable::Link() {
         IMPLEMENT
     }

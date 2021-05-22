@@ -70,6 +70,7 @@ class Valuable
 
 protected:
     const encapsulated_instance& getInst() const { return exp; }
+    virtual bool IsSubObject(const Valuable& o) const;
     Valuable Link();
     virtual Valuable* Clone() const;
     virtual Valuable* Move();

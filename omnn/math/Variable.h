@@ -23,6 +23,10 @@ class Variable
     
     friend class VarHost;
     void SetId(boost::any);
+protected:
+    bool IsSubObject(const Valuable& o) const override {
+        return this == &o.get();
+    }
 
 public:
     Variable();

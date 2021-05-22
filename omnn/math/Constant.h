@@ -14,6 +14,11 @@ namespace math {
     {
         using base = ValuableDescendantContract<Chld>;
 
+    protected:
+        bool IsSubObject(const Valuable& o) const override {
+            return this == &o.get();
+        }
+
     public:
         using base::base;
 
