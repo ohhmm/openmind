@@ -590,24 +590,26 @@ namespace math {
         {
             return *this;
         }
-        else if (v.IsSum()){
-            for (auto& _1 : v.as<Sum>())
-                for (auto& _2 : members)
-                    sum.Add(_1 * _2);
-            optimized={};
-        }
-        else
-        {
-            for (auto& a : members)
-            {
-                sum.Add(a * v);
-            }
-            if (vIsInt)
-                sum.optimized = optimized;
-            else
+        else {
+            if (v.IsSum()) {
+                for (auto& _1 : v.as<Sum>())
+                    for (auto& _2 : members)
+                        sum.Add(_1 * _2);
                 optimized={};
+            }
+            else
+            {
+                for (auto& a : members)
+                {
+                    sum.Add(a * v);
+                }
+                if (vIsInt)
+                    sum.optimized = optimized;
+                else
+                    optimized={};
+            }
+            Become(std::move(sum));
         }
-        Become(std::move(sum));
         return *this;
 	}
 

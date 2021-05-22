@@ -677,7 +677,7 @@ namespace math {
 //           }
        } else {
 //           std::cout << v <<std::endl;
-           LOG_AND_IMPLEMENT("Unknown case (need to implement) in Product::IsSummationSimplifiable for " << *this << " + " << v);
+           LOG_AND_IMPLEMENT("Unknown case (need to implement) in Product::IsSummationSimplifiable for " << *this << " and " << v);
        }
        return is;
    }
