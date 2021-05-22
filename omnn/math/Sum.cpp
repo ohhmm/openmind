@@ -148,7 +148,9 @@ namespace math {
     {
         return (Valuable::hash == v.Hash()
                 && v.IsSum()
-                && members == v.as<Sum>().GetConstCont())
+                && members == v.as<Sum>().GetConstCont()
+                )
+                || (members.size() == 1 && members.begin()->operator==(v))
                 || (members.empty() && v == 0_v);
     }
     
@@ -1874,7 +1876,7 @@ namespace math {
                 }
                 break;
             }
-            case 4: {
+            case 4: { // TODO: convert to sqrt-less form
                 // four grade equation ax^4+bx^3+cx^2+dx+e=0
                 // see https://math.stackexchange.com/questions/785/is-there-a-general-formula-for-solving-4th-degree-equations-quartic
                 auto& a = coefficients[4];

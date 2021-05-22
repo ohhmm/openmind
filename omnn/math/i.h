@@ -19,7 +19,7 @@ namespace omnn::math {
         using base::base;
 
         bool Is_i() const override { return true; }
-        YesNoMaybe IsMultival() const { return YesNoMaybe::No; }
+        YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
 
         bool operator==(const Valuable& v) const override
         { return v.Is_i(); }
