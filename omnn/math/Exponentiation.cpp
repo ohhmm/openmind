@@ -288,6 +288,9 @@ namespace math {
             } else
                 IMPLEMENT
         }
+        else if (ebase().IsVa() && eexp().IsSimple())
+        {
+        }
         else
         {
             switch(view)
