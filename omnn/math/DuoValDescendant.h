@@ -21,6 +21,10 @@ namespace omnn::math {
     protected:
         Valuable _1, _2;
 
+        bool IsSubObject(const Valuable& o) const override {
+            return this == &o.get() || &_1.get() == &o.get() || &_2.get() == &o.get();
+        }
+
         virtual std::ostream& print_sign(std::ostream& out) const = 0;
         virtual std::ostream& code_sign(std::ostream& out) const {
             return print_sign(out);
