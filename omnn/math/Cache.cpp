@@ -31,18 +31,19 @@ void CleanupReadyTasks(CacheStoringTasksQueue &CacheStoringTasks) {
   }
 }
 
+#ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
 void DeleteDB(const Cache::path_str_t& path) {
   if(std::filesystem::exists(path))
     std::filesystem::remove_all(path);  
 }
-
+#endif
 }
 
 void Cache::DbOpen() {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
-#if OPENMIND_MATH_CACHE_VOLATILE
+# if OPENMIND_MATH_CACHE_VOLATILE
   DeleteDB(path);
-#endif
+# endif
   leveldb::Options options;
   options.create_if_missing = true;
   options.compression = leveldb::kSnappyCompression;
