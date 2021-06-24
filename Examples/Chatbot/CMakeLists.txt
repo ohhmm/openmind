@@ -15,6 +15,7 @@ Find_Package(icu)
 if(NOT ICU_FOUND)
     ExternalProject_Add(icu
         GIT_REPOSITORY https://github.com/unicode-org/icu.git
+        GIT_TAG latest
         CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env
                 CC=${CMAKE_C_COMPILER}
                 CXX=${CMAKE_CXX_COMPILER}

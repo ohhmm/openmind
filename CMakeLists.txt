@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-set(PRODUCT_NAME "OpenMind")
+set(PRODUCT_NAME OpenMind)
 project(${PRODUCT_NAME})
 enable_language(CXX)
 set (CMAKE_CXX_STANDARD 20)
@@ -352,9 +352,13 @@ macro(lib)
     set(${this_target}_LIBRARIES ${this_target_libs} CACHE FILEPATH "${this_target} libs to link")
     message("target_link_directories(${this_target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})")
     target_link_directories(${this_target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-    message("${this_target} libs: ${this_target_libs}")
-    target_link_libraries(${this_target} PUBLIC ${this_target_libs})
-    
+    if(this_target_libs AND NOT this_target_libs STREQUAL "")
+        message("${this_target} libs: ${this_target_libs}")
+        target_link_libraries(${this_target} PUBLIC ${this_target_libs})
+    else()
+        message("${this_target} has no libs")
+    endif()
+
     if (OPENMIND_BUILD_TESTS AND EXISTS test)
         add_subdirectory(test)
     endif ()
@@ -363,8 +367,9 @@ endmacro()
 macro(fold)
 	file(GLOB items *)
 	foreach(item ${items})
-		IF(IS_DIRECTORY ${item})
-			if(EXISTS ${item}/CMakeLists.txt)
+		IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)
+            get_filename_component(name ${item} NAME)
+            if(NOT "${name}" STREQUAL "OpenMind") # already included first
 				add_subdirectory(${item})
 			endif()
 		endif()
@@ -389,6 +394,9 @@ macro(exe)
 			${Boost_INCLUDE_DIR}/stage/lib
 	)
 	add_executable(${this_target} ${src})
+    target_include_directories(${PRODUCT_NAME} PUBLIC
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_BINARY_DIR}/include)
 	target_link_libraries(${this_target} PUBLIC ${deps})
 	foreach(item ${deps})
 		message("adding ${item} sublib ${LIB} into ${this_target}")
@@ -396,11 +404,6 @@ macro(exe)
 	endforeach()
 endmacro()
 
+add_subdirectory(OpenMind) # first
 fold()
 
-target_include_directories(${PRODUCT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/include)
-if(OPENMIND_USE_OPENCL)
-	target_include_directories(${PRODUCT_NAME} PUBLIC ${OPENCL_INCLUDE_DIR})
-endif()
-
-target_link_directories(${PRODUCT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/lib)
