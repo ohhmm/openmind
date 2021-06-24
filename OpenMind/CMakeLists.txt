@@ -178,7 +178,8 @@ if(${UNIX})
 
 	set(${this_target}_Incs ${X11_X11_INCLUDE_PATH} ${X11_Xscreensaver_INCLUDE_PATH}
 			CACHE INTERNAL "${this_target}: Include Directories" FORCE)
-	include_directories(${${this_target}_Incs})
+	target_include_directories(${this_target} PUBLIC
+        ${${this_target}_Incs})
 
 	set(${this_target}_Libs ${X11_X11_LIB} ${X11_Xscreensaver_LIB} pthread
 			CACHE INTERNAL "${this_target}: Libraries" FORCE)
@@ -186,4 +187,20 @@ if(${UNIX})
 #	target_link_libraries(${this_target} lib${this_target})
 endif(${UNIX})
 
-add_dependencies(${this_target} math)
+
+target_include_directories(${this_target} PUBLIC
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_BINARY_DIR}/include
+    ${Boost_INCLUDE_DIR}
+    )
+if(OPENMIND_USE_OPENCL)
+    target_include_directories(${this_target} PUBLIC ${OPENCL_INCLUDE_DIR})
+endif()
+
+target_link_directories(${this_target} PUBLIC ${CMAKE_BINARY_DIR}/lib)
+
+target_link_libraries(${this_target} math)
+
+
+
+
