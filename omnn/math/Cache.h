@@ -12,6 +12,8 @@ class DB;
 #include <memory>
 #include <string>
 
+#include <boost/filesystem.hpp>
+
 #include "Variable.h"
 
 namespace omnn::math {
@@ -19,7 +21,7 @@ namespace omnn::math {
     class Cache
     {
     public:
-        using path_str_t = std::filesystem::path;
+        using path_str_t = boost::filesystem::path;
         using CheckCacheResult = std::pair<bool,Valuable>;
 
         template <typename ResultT>
