@@ -1071,7 +1071,7 @@ namespace math {
                 grade = copy.FillPolyCoeff(coefficients, v);
                 return grade;
             } else {
-                LOG_AND_IMPLEMENT("Need normalized polynomial to get its coefficients: " << str());
+                LOG_AND_IMPLEMENT("Need normalized polynomial of f(" << v << ") to get its coefficients: " << str());
             }
         }
         Sum c0;
