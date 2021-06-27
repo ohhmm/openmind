@@ -1,7 +1,7 @@
 //
 // Created by Сергей Кривонос on 10.07.17.
 //
-#include <glut/glut.h>
+#include <GL/glut.h>
 #include "omnn/rt/Neuron.h"
 
 int main()
