@@ -7,7 +7,7 @@ namespace leveldb{
 class DB;
 }
 #endif
-#include <filesystem>
+//#include <filesystem>
 #include <future>
 #include <memory>
 #include <string>
@@ -17,11 +17,13 @@ class DB;
 #include "Variable.h"
 
 namespace omnn::math {
-    
+
+namespace fs = boost::filesystem;
+
     class Cache
     {
     public:
-        using path_str_t = boost::filesystem::path;
+        using path_str_t = fs::path;
         using CheckCacheResult = std::pair<bool,Valuable>;
 
         template <typename ResultT>

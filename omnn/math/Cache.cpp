@@ -33,8 +33,8 @@ void CleanupReadyTasks(CacheStoringTasksQueue &CacheStoringTasks) {
 
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
 void DeleteDB(const Cache::path_str_t& path) {
-  if(std::filesystem::exists(path))
-    std::filesystem::remove_all(path);  
+  if(fs::exists(path))
+    fs::remove_all(path);
 }
 #endif
 }
