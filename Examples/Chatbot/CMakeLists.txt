@@ -1,17 +1,17 @@
 project(ChatBot)
 
 #dep(zlib)
-Find_Package(zlib)
+Find_Package(ZLIB)
 if(NOT ZLIB_FOUND)
 	ExternalProject_Add(zlib
 		GIT_REPOSITORY https://github.com/madler/zlib.git
-#		BUILD_IN_SOURCE 1
-#		INSTALL_DIR "${CMAKE_BINARY_DIR}/zlib-prefix"
+                BUILD_IN_SOURCE 1
+                INSTALL_DIR ${CMAKE_BINARY_DIR}
 		)
 	set(meta_deps zlib)
 endif()
 
-Find_Package(icu)
+Find_Package(ICU)
 if(NOT ICU_FOUND)
     ExternalProject_Add(icu
         GIT_REPOSITORY https://github.com/unicode-org/icu.git
