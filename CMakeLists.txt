@@ -103,6 +103,16 @@ else()
         add_custom_target(conf)
     endif()
 endif()
+set(BOOST_LINK_LIBS
+    boost_thread
+    boost_serialization
+    boost_system
+    boost_filesystem
+    )
+set(BOOST_TEST_LINK_LIBS
+    ${BOOST_LINK_LIBS}
+    boost_test_exec_monitor
+    )
 
 # commented ot because it breaks vcpkg
 #function(add_library targetName)
@@ -207,7 +217,7 @@ function(test)
         message("test_libs dir: ${Boost_INCLUDE_DIR}/stage/lib")
 	set(libs ${test_libs} ${OpenCL_LIBRARY} ${TEST_DEPS})#pthread
 	if(NOT MSVC)
-		set(libs ${libs} boost_test_exec_monitor boost_thread boost_serialization boost_system)
+		set(libs ${libs} ${BOOST_TEST_LINK_LIBS})
 	endif()
 
 	message("libs ${libs}")
@@ -311,7 +321,10 @@ macro(lib)
         add_dependencies(${this_target} boost)
     endif()
 	message("add_library(${this_target} ${src})")
-    #target_link_libraries(${this_target} PUBLIC ${deps})
+    target_link_libraries(${this_target} PUBLIC
+        ${BOOST_LINK_LIBS}
+        ${OpenCL_LIBRARY}
+        )
 	#message("target_link_libraries(${this_target} PUBLIC ${deps})")
     deps(${TEST_DEPS} ${deps})
 	set(this_target_libs "")
@@ -426,6 +439,7 @@ macro(exe)
             target_link_libraries(${this_target} PUBLIC ${item})
         endif()
 	endforeach()
+    target_link_libraries(${this_target} PUBLIC ${BOOST_LINK_LIBS})
 endmacro()
 
 add_subdirectory(omnn)
