@@ -17,6 +17,9 @@ option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare 
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
 
+set(OPENMIND_INCLUDE_DIR ${CMAKE_SOURCE_DIR})
+message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
+
 include(ExternalData)
 include(ExternalProject)
 
@@ -299,7 +302,7 @@ macro(lib)
     file(GLOB src *.cpp *.h)
     add_library(${this_target} ${src})
     target_include_directories(${this_target} PUBLIC
-        ${CMAKE_SOURCE_DIR}
+        ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
         ${Boost_INCLUDE_DIR}
@@ -373,7 +376,9 @@ macro(fold)
 	foreach(item ${items})
 		IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)
             get_filename_component(name ${item} NAME)
-            if(NOT "${name}" STREQUAL "OpenMind") # already included first
+            if(NOT "${name}" STREQUAL "OpenMind"
+                AND NOT "${name}" STREQUAL "omnn"
+                ) # already included first
 				add_subdirectory(${item})
 			endif()
 		endif()
@@ -387,7 +392,10 @@ macro(exe)
 	project(${this_target})
 	message("\nCreating Executable: ${this_target}")
 	file(GLOB src *.cpp *.h)
-	include_directories(${OpenMind_Incs})
+	include_directories(
+        ${OPENMIND_INCLUDE_DIR}
+        ${CMAKE_BINARY_DIR}/include
+        )
     foreach(item ${deps})
         message("adding include ${${item}_INCLUDE_DIR} into ${this_target} for dependency ${item}")
         include_directories(${${item}_INCLUDE_DIR})
@@ -399,15 +407,28 @@ macro(exe)
 	)
 	add_executable(${this_target} ${src})
     target_include_directories(${PRODUCT_NAME} PUBLIC
-        ${CMAKE_SOURCE_DIR}
+        ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include)
-	target_link_libraries(${this_target} PUBLIC ${deps})
 	foreach(item ${deps})
 		message("adding ${item} sublib ${LIB} into ${this_target}")
-		target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
+        if(TARGET ${item})
+            message("Linking target ${item}")
+            target_link_libraries(${this_target} PUBLIC ${item})
+        elseif(${item}_LIBRARIES)
+            message("Linking ${item}_LIBRARIES ${${item}_LIBRARIES}")
+            target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
+            if(NOT ${${item}_LIBRARIES} MATCHES ${item})
+                message(WARNING "${item}_LIBRARIES '${${item}_LIBRARIES}' has no ${item}")
+            endif()
+        elseif(${item}_LIBRARY)
+            target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARY})
+        else()
+            target_link_libraries(${this_target} PUBLIC ${item})
+        endif()
 	endforeach()
 endmacro()
 
-add_subdirectory(OpenMind) # first
+add_subdirectory(omnn)
+add_subdirectory(OpenMind)
 fold()
 
