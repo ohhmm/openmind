@@ -1636,11 +1636,35 @@ namespace math {
             }
             default: {
                 // RATIONAL ROOT TEST
-                auto checkCache = DbSumSolutionsAllRootsCache.AsyncFetchSet(*this);
-                if(checkCache){
-                    solutions = checkCache;
+                auto asyncCheckAllRootsCached = DbSumSolutionsAllRootsCache.AsyncFetchSet(*this);
+                if(asyncCheckAllRootsCached){
+                    solutions = asyncCheckAllRootsCached;
                     return;
                 }
+                auto asyncCheckAnyRootCached = DbSumSolutionsARootCache.AsyncFetch(*this, true);
+                if(asyncCheckAllRootsCached){
+                    solutions = asyncCheckAllRootsCached;
+                    return;
+                }
+                auto SolveTheRest = [&](Valuable&& oneRoot){
+                    if(asyncCheckAnyRootCached.NotInCache())
+                        DbSumSolutionsARootCache.AsyncSet(str(), oneRoot.str());
+                    auto restToSolve = *this / va.Equals(oneRoot);
+                    if(asyncCheckAllRootsCached){
+                        solutions = asyncCheckAllRootsCached;
+                        return;
+                    }
+                    restToSolve.solve(va, solutions);
+                    solutions.emplace(std::move(oneRoot));
+                    if(asyncCheckAllRootsCached.NotInCache())
+                        DbSumSolutionsAllRootsCache.AsyncSetSet(*this, solutions);
+                };
+                if (asyncCheckAnyRootCached) {
+                    SolveTheRest(asyncCheckAnyRootCached);
+                    return;
+                }
+
+
                 if(GetView() != View::Solving && GetView() != View::Equation) {
 //                    auto 
                 }
@@ -1663,20 +1687,12 @@ namespace math {
                                 return Test(va, test) || Test(va, test=-test);
                                 }, Infinity());
                         }, Infinity());
-                    if(checkCache){
-                        solutions = checkCache;
+                    if(asyncCheckAllRootsCached){
+                        solutions = asyncCheckAllRootsCached;
                         return;
                     }
                     if(found) {
-                        auto restToSolve = *this / va.Equals(test);
-                        if(checkCache){
-                            solutions = checkCache;
-                            return;
-                        }
-                        restToSolve.solve(va, solutions);
-                        solutions.emplace(std::move(test));
-                        if(checkCache.NotInCache())
-                            DbSumSolutionsAllRootsCache.AsyncSetSet(*this, solutions);
+                        SolveTheRest(std::move(test));
                         return;
                     }
                 } else {
