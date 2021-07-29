@@ -10,6 +10,9 @@ else()
     set(_IS_DEBUG FALSE)
     if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
         add_definitions(-DBOOST_ALL_STATIC_LINK)
+		if(MSVC)
+			add_compile_options($<$<CONFIG:Release>:/MT>)
+		endif()
     endif()
 endif()
 
@@ -58,9 +61,6 @@ else()
     set(BOOST_USED_COMPONENTS system filesystem serialization date_time thread)
     if (${OPENMIND_BUILD_TESTS})
         set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test)
-        if(MSVC)
-            set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} unit_test)
-        endif()
     endif ()
     message("Finding boost components ${BOOST_USED_COMPONENTS}")
     foreach(_module ${BOOST_USED_COMPONENTS})
@@ -130,9 +130,12 @@ IF (Boost_FOUND)
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
     message("Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
 	link_directories(${Boost_LIBRARY_DIR})
-#    if(MSVC)
-#	    link_directories(${Boost_INCLUDE_DIR}/stage/lib)
-#    endif()
+    if(MSVC)
+	    link_directories(
+			${Boost_INCLUDE_DIR}/stage/lib
+			C:/Boost/lib
+			)
+    endif()
 ENDIF()
 
 if(OPENMIND_USE_OPENCL)
@@ -211,13 +214,7 @@ function(test)
 	    -DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 	    -DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
 	    )
-	link_directories(
-	    ${Boost_LIBRARIES}
-	    /usr/local/lib
-	    ${Boost_INCLUDE_DIR}/stage/lib
-	    )
 	message("test_libs ${test_libs}")
-        message("test_libs dir: ${Boost_INCLUDE_DIR}/stage/lib")
 	set(libs ${test_libs} ${OpenCL_LIBRARY} ${TEST_DEPS})#pthread
 	if(NOT MSVC)
 		set(libs ${libs} ${BOOST_TEST_LINK_LIBS})
@@ -242,8 +239,15 @@ function(test)
 	    get_filename_component(TEST_NAME ${TEST} NAME_WE)
 		message("test ${TEST_NAME}")
 	    add_executable(${TEST_NAME} ${TEST_NAME})
+		target_link_directories(${TEST_NAME} PUBLIC
+			${Boost_LIBRARIES}
+			/usr/local/lib
+			${Boost_INCLUDE_DIR}/stage/lib
+			${Boost_INCLUDE_DIR}/../../lib
+			)
         foreach(ll ${libs})
             string(STRIP ${ll} thelib)
+			message("link ${thelib}")
             target_link_libraries(${TEST_NAME} PUBLIC ${thelib})
         endforeach()
         foreach(tg ${libs})
@@ -324,8 +328,10 @@ macro(lib)
         add_dependencies(${this_target} boost)
     endif()
 	message("add_library(${this_target} ${src})")
+	if(NOT MSVC)
+	    target_link_libraries(${this_target} PUBLIC ${BOOST_LINK_LIBS})
+	endif()
     target_link_libraries(${this_target} PUBLIC
-        ${BOOST_LINK_LIBS}
         ${OpenCL_LIBRARY}
         )
 	#message("target_link_libraries(${this_target} PUBLIC ${deps})")
@@ -408,28 +414,35 @@ macro(exe)
 	project(${this_target})
 	message("\nCreating Executable: ${this_target}")
 	file(GLOB src *.cpp *.h)
-	include_directories(
+	add_executable(${this_target} ${src})
+    target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include
-        )
-    foreach(item ${deps})
-        message("adding include ${${item}_INCLUDE_DIR} into ${this_target} for dependency ${item}")
-        include_directories(${${item}_INCLUDE_DIR})
-    endforeach()
-	link_directories(
-			${Boost_LIBRARIES}
-			/usr/local/lib
-			${Boost_INCLUDE_DIR}/stage/lib
-	)
-	add_executable(${this_target} ${src})
-    target_include_directories(${PRODUCT_NAME} PUBLIC
-        ${OPENMIND_INCLUDE_DIR}
-        ${CMAKE_BINARY_DIR}/include)
+		)
+	target_link_directories(${this_target} PUBLIC
+		${CMAKE_BINARY_DIR}/lib
+		${Boost_LIBRARIES}
+		${Boost_INCLUDE_DIR}/stage/lib
+		${Boost_INCLUDE_DIR}/../../lib
+		/usr/local/lib
+		)
 	foreach(item ${deps})
+        message("adding include ${${item}_INCLUDE_DIR} into ${this_target} for dependency ${item}")
+        target_include_directories(${this_target} PUBLIC
+			${${item}_INCLUDE_DIR}
+			)
+
 		message("adding ${item} sublib ${LIB} into ${this_target}")
         if(TARGET ${item})
             message("Linking target ${item}")
             target_link_libraries(${this_target} PUBLIC ${item})
+			if(${item}_LIBRARIES)
+				message("Linking ${item}_LIBRARIES ${${item}_LIBRARIES}")
+				target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
+				if(NOT "${${item}_LIBRARIES}" MATCHES ${item})
+					message(WARNING "${item}_LIBRARIES '${${item}_LIBRARIES}' has no ${item}")
+				endif()
+			endif()
         elseif(${item}_LIBRARIES)
             message("Linking ${item}_LIBRARIES ${${item}_LIBRARIES}")
             target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
@@ -442,9 +455,11 @@ macro(exe)
             target_link_libraries(${this_target} PUBLIC ${item})
         endif()
 	endforeach()
-    target_link_libraries(${this_target} PUBLIC ${BOOST_LINK_LIBS})
     if(NOT MSVC)
-        target_link_libraries(${this_target} PUBLIC pthread)
+        target_link_libraries(${this_target} PUBLIC
+			pthread
+			${BOOST_LINK_LIBS}
+			)
     endif()
 endmacro()
 

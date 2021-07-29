@@ -24,6 +24,6 @@ namespace omnn::math {
     };
 
     namespace constant {
-        const Pi pi;
+        static const Pi pi;
     }
 }

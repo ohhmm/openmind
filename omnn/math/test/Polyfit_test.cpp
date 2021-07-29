@@ -28,8 +28,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus, *tolerance(TestPrecision))
     
     
     // generate the data
-    std::vector<f128> oX(SZ);
-    std::vector<f128> oY(SZ);
+    std::vector<f128> oX(SZ), oY(SZ);
     for ( unsigned int i = 0; i < SZ; i++ )
     {
         oX[i] = i;
@@ -37,11 +36,11 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus, *tolerance(TestPrecision))
     }
     
     // polynomial fitting
-    std::vector<f128> oCoeff = polyfit( oX, oY, SZ );
-    std::vector<f128> oFittedY = polyval( oCoeff, oX );
+    auto oCoeff = polyfit( oX, oY, SZ );
+    auto oFittedY = polyval( oCoeff, oX );
     auto s = polystr(oCoeff);
     std::cout << s << std::endl;
-    for ( unsigned int i = 0; i < SZ; i++ )
+    for ( auto i = 0; i < SZ; i++ )
     {
         BOOST_TEST(oY[i]==oFittedY[i]);
     }

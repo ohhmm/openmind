@@ -1,4 +1,0 @@
-exe(
-    OpenGL glut
-    TrainedUnit
-    )

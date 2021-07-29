@@ -491,7 +491,7 @@ auto OmitOuterBrackets(std::string_view& s){
 
         //        if (bracketsmap.empty())
         {
-            auto search_start = 0;
+            size_t search_start = 0;
             auto FindSkippingParentneses = [&](char symbol){
                 // skip '(' for searching top level operations
                 auto offs = search_start;

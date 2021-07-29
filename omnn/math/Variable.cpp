@@ -185,25 +185,20 @@ namespace math {
         // not implemented comparison to this Valuable descent
         return base::operator <(v);
     }
-    
+
     bool Variable::operator ==(const Valuable& v) const
     {
-        if (v.IsVa())
-        {
-            auto& i = v.as<Variable>();
-            if (varSetHost != i.varSetHost) {
-                throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
-            }
-            return hash == v.Hash()
-                && varSetHost->CompareIdsEqual(varId, i.varId);
+		return v.IsVa()
+			&& operator==(v.as<Variable>());
+	}
+
+	bool Variable::operator==(const Variable& v) const
+	{
+        if (varSetHost != v.varSetHost) {
+            throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
         }
-        else
-        {   // compare with non-va
-            return false;
-        }
-        
-        // not implemented comparison to this Valuable descent
-        return base::operator ==(v);
+        return hash == v.Hash()
+            && varSetHost->CompareIdsEqual(varId, v.varId);
     }
     
     std::ostream& Variable::print(std::ostream& out) const
