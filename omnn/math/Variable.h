@@ -46,8 +46,9 @@ public:
     Valuable& operator %=(const Valuable&) override;
     Valuable& operator ^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
-    bool operator<(const Valuable& number) const override;
-    bool operator==(const Valuable& number) const override;
+    bool operator<(const Valuable&) const override;
+    bool operator==(const Valuable&) const override;
+    bool operator==(const Variable&) const;
     Valuable abs() const override { throw "Implement Abs Valuable Descendant to use it here"; }
     Valuable calcFreeMember() const override { return 0_v; }
 //    void optimize() override;

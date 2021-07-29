@@ -536,7 +536,7 @@ namespace math {
                 IMPLEMENT
             }
 
-            if (vaExpsSum != p->vaExpsSum)
+            if (vaExpsSum.ca() != p->vaExpsSum.ca())
             {
                 return vaExpsSum > p->vaExpsSum;
             }

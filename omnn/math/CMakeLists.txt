@@ -30,14 +30,16 @@ endif()
 
 lib(${DEPENDENCIES})
 
-target_include_directories(${this_target} PUBLIC
-	${OpenCL_INCLUDE_DIR}
-	)
+if (OPENMIND_USE_OPENCL)
+	target_include_directories(${this_target} PUBLIC
+		${OpenCL_INCLUDE_DIR}
+		)
+endif()
 
-if (${OPENMIND_BUILD_TESTS})
+if (OPENMIND_BUILD_TESTS)
     add_subdirectory(test)
 endif ()
 
-if (${OPENMIND_BUILD_3RD_PARTY_TESTS})
+if (OPENMIND_BUILD_3RD_PARTY_TESTS)
     add_subdirectory(3rdPartyTests)
 endif ()

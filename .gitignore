@@ -15,3 +15,4 @@ build*
 .vscode/tasks.json
 *.solutions/*
 .settings/*
+/CMakeSettings.json

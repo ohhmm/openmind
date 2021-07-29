@@ -45,7 +45,7 @@ namespace math {
         {
             auto afterDotI = doti + 1;
             auto fsz = s.length() - afterDotI;
-            denominator() = 10_v^Integer(fsz);
+            denominator() = 10_v ^ fsz;
             numerator() = Integer(boost::multiprecision::cpp_int(s.c_str()+afterDotI));
             if (s[0]=='-') {
                 numerator() = -numerator();

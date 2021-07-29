@@ -367,6 +367,13 @@ BOOST_AUTO_TEST_CASE(Containers_test)
     BOOST_TEST(vec.size()==3);
     BOOST_TEST(s.size()==3);
     BOOST_TEST(us.size()==3);
+
+    DECL_VA(b);
+    DECL_VA(c);
+    s.clear();
+
+    s.insert(b ^ 2);
+    s.find(c ^ 2);
 }
 
 BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang

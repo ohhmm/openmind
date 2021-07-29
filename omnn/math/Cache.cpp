@@ -77,8 +77,10 @@ Cache::Cache(const Cache::path_str_t &path) {
 }
 
 omnn::math::Cache::~Cache() {
+#ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
   if(db)
     delete db; // hopely it has overloaded operator delete inside its image
+#endif
 }
 
 Cache::Cached Cache::AsyncFetch(const Valuable &v, bool itIsOptimized) {

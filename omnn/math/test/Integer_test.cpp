@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
         int_t t;
         std::cout << measure<>::execution([&](){
             t = boost::multiprecision::sqrt(a.ca());
-            auto match = t != sqroot;
+            auto match = t != sqroot.ca();
             
             if(match)
             {
