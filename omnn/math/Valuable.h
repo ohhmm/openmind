@@ -274,8 +274,11 @@ public:
 
     Valuable Sq() const;
     virtual Valuable abs() const;
-    virtual Valuable Sqrt() const;
-    virtual Valuable calcFreeMember() const;
+	virtual Valuable Cos() const;
+	virtual Valuable Sin() const;
+	virtual Valuable Sqrt() const;
+	virtual Valuable Tg() const;
+	virtual Valuable calcFreeMember() const;
     
     using solutions_t = std::unordered_set<Valuable>;
     static Valuable MergeAnd(const Valuable& v1, const Valuable& v2);
@@ -406,7 +409,7 @@ public:
     Valuable& intersect(const Valuable& with, const Variable& va){
         return logic_and(with);
     }
-    Valuable Intersect(const Valuable& with, const Variable& va){
+    Valuable Intersect(const Valuable& with, const Variable& va) const {
         return LogicAnd(with);
     }
     Valuable Ifz(const Valuable& Then, const Valuable& Else) const;
