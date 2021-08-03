@@ -3,6 +3,7 @@
 //
 #include "Valuable.h"
 
+#include "e.h"
 #include "i.h"
 #include "Fraction.h"
 #include "Integer.h"
@@ -1143,6 +1144,23 @@ auto OmitOuterBrackets(std::string_view& s){
             IMPLEMENT
     }
 
+	Valuable Valuable::Cos() const {
+		if (exp)
+			return exp->Cos();
+		else {
+			return ((constant::e ^ Product{ constant::i, *this }) + (constant::e ^ Product{ -1_v, constant::i, *this })) / 2;
+		}
+	}
+
+	Valuable Valuable::Sin() const {
+		if (exp)
+			return exp->Sin();
+		else {
+			static const Product _2i{ 2, constant::i };
+			return ((constant::e ^ Product{ constant::i, *this }) - (constant::e ^ Product{ -1_v, constant::i, *this })) / _2i;
+		}
+	}
+
 	Valuable Valuable::Sqrt() const {
         if(exp)
             return exp->Sqrt();
@@ -1150,7 +1168,15 @@ auto OmitOuterBrackets(std::string_view& s){
             IMPLEMENT
     }
 
-    Valuable& Valuable::sq() {
+	Valuable Valuable::Tg() const {
+		if (exp)
+			return exp->Tg();
+		else {
+			return Sin() / Cos();
+		}
+	}
+
+	Valuable& Valuable::sq() {
         if (exp)
             return exp->sq();
         else
