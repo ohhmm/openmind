@@ -16,7 +16,16 @@ else()
     endif()
 endif()
 
-option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${MSVC})
+if(NOT OPENMIND_BUILD_BOOST)
+    message("OPENMIND_BUILD_BOOST is disabled")
+    if(MSVC)
+        find_package(Boost PATHS C:/Boost)
+    else()
+        find_package(Boost)
+    endif()
+endif()
+
+option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${Boost_FOUND})
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
@@ -180,6 +189,7 @@ macro(dep)
 				find_library(${dep}_LIBRARIES NAMES ${dep} lib${dep} ${dep}lib lib${dep}lib)
 			endif()
 			message("${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
+                if(EXISTS ${${dep}_LIBRARIES})
 			set(repo SYSTEM)
 		else()
 			ext(${dep} ${repo})
@@ -187,6 +197,12 @@ macro(dep)
 				add_dependencies(${dep} boost)
 			endif()
 		endif()
+            else()
+                ext(${dep} ${repo})
+                if(TARGET boost)
+                    add_dependencies(${dep} boost)
+                endif()
+            endif()
 		message("Dependency ${dep} took from ${repo}")
 	else()
 		find_package(${dep})
@@ -268,6 +284,7 @@ function(test)
 endfunction()
 
 macro(ext name location)
+	message("External ${name} ${location}")
 	if(NOT TARGET ${name})
 		if(OPENMIND_UPDATE_EXTERNAL_DEPS)
 			ExternalProject_Add(${name}
@@ -423,6 +440,8 @@ macro(exe)
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include
+        ${${this_target}_INCLUDE_DIR}
+        ${Boost_INCLUDE_DIR}
 		)
 	target_link_directories(${this_target} PUBLIC
 		${CMAKE_BINARY_DIR}/lib
@@ -433,9 +452,7 @@ macro(exe)
 		)
 	foreach(item ${deps})
         message("adding include ${${item}_INCLUDE_DIR} into ${this_target} for dependency ${item}")
-        target_include_directories(${this_target} PUBLIC
-			${${item}_INCLUDE_DIR}
-			)
+        target_include_directories(${this_target} PUBLIC ${${item}_INCLUDE_DIR})
 
 		message("adding ${item} sublib ${LIB} into ${this_target}")
         if(TARGET ${item})

@@ -274,22 +274,29 @@ namespace math {
 
     Valuable::Valuable(const solutions_t& s)
     {
+        auto it = s.begin();
         switch (s.size()) {
         case 0: IMPLEMENT; break;
-        case 1: operator=(*s.begin()); break;
+        case 1: operator=(*it); break;
         case 2: {
-            auto it = s.begin();
-            operator=(MergeOr(*it, *++it));
+            auto& _1 = *it++;
+            auto& _2 = *it;
+            operator=(MergeOr(_1, _2));
             break;
         }
         case 3: {
-            auto it = s.begin();
-            operator=(MergeOr(MergeOr(*it, *++it), *++it));
+            auto& _1 = *it++;
+            auto& _2 = *it++;
+            auto& _3 = *it;
+			operator=(MergeOr(MergeOr(_1, _2), _3));
             break;
         }
         case 4: {
-            auto it = s.begin();
-            operator=(MergeOr(MergeOr(*it, *++it), MergeOr(*++it, *++it)));
+            auto& _1 = *it++;
+            auto& _2 = *it++;
+            auto& _3 = *it++;
+            auto& _4 = *it;
+            operator=(MergeOr(MergeOr(_1, _2), MergeOr(_3, _4)));
             break;
         }
         default:
