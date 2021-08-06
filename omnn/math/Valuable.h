@@ -108,6 +108,7 @@ protected:
     Valuable(Valuable&& v, ValuableDescendantMarker);
     
     virtual std::ostream& print(std::ostream& out) const;
+    virtual std::wostream& print(std::wostream& out) const;
     virtual std::ostream& code(std::ostream& out) const;
     
     virtual Valuable& Become(Valuable&& i);
@@ -310,6 +311,7 @@ public:
     zero_zone_t get_zeros_zones(const Variable& v, solutions_t& some) const;
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
+    friend std::wostream& operator<<(std::wostream& out, const Valuable& obj);
     friend std::istream& operator>>(std::istream& in, const Valuable& obj);
     friend std::ostream& operator<<(std::ostream& out, const Valuable::solutions_t& obj);
 

@@ -1081,16 +1081,22 @@ auto OmitOuterBrackets(std::string_view& s){
             IMPLEMENT
     }
  
-    std::ostream& Valuable::code(std::ostream& out) const
-    {
-        return exp ? exp->code(out) : print(out);
+    std::wostream& Valuable::print(std::wostream& out) const {
+        if (exp)
+            return exp->print(out);
+        else
+            IMPLEMENT
     }
+
+    std::ostream& Valuable::code(std::ostream& out) const { return exp ? exp->code(out) : print(out); }
 
     std::ostream& operator<<(std::ostream& out, const Valuable& obj)
     {
         return obj.print(out);
     }
-    
+
+    std::wostream& operator<<(std::wostream& out, const Valuable& obj) { return obj.print(out); }
+
     std::ostream& operator<<(std::ostream& out, const Valuable::solutions_t& obj)
     {
         std::stringstream s;
