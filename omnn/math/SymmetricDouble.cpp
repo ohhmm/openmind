@@ -7,7 +7,10 @@ namespace std {
     }
     omnn::math::SymmetricDouble sqrt(const omnn::math::SymmetricDouble& n)
     {
-        if(n.AsDouble()<0) return -sqrt(-n.AsDouble());
-        else return sqrt(n.AsDouble());
+        return omnn::math::SymmetricDouble{
+            n.AsDouble() < 0
+            ? -sqrt(-n.AsDouble())
+            : sqrt(n.AsDouble())
+        };
     }
 }

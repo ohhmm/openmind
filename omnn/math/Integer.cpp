@@ -35,10 +35,12 @@ namespace std {
 #endif
 #include <boost/functional/hash.hpp>
 #include <boost/numeric/conversion/converter.hpp>
+#include <boost/math/special_functions/prime.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/detail/integer_ops.hpp>
 #include <boost/multiprecision/integer.hpp>
+
 //#include <libiomp/omp.h>
 
 using boost::multiprecision::cpp_int;
@@ -473,10 +475,10 @@ namespace math {
                             exp = 1_v / dn;
                         }
                         auto& exponentiating = numeratorIsOne ? v : exp;
-                        auto xFactors = Facts();
-                        std::sort(xFactors.begin(), xFactors.end());
-                        while(xFactors.size() > 1) {
-                            auto xFactor = std::move(xFactors.back());
+                        auto xFactors = FactSet();
+                        auto rb = xFactors.rbegin(), re = xFactors.rend();
+                        for (auto it = rb; it != re; ++it) {
+                            auto& xFactor = *it;
                             if(xFactor > 1_v /* && !operator==(xFactor) */){
                                 auto e = xFactor ^ dn;
                                 if(operator==(e))
@@ -487,7 +489,6 @@ namespace math {
                                 if(f.IsInt())
                                     return Become(f*((x/xFactor)^exponentiating));
                             }
-                            xFactors.pop_back();
                         }
                         IMPLEMENT
                     }
@@ -644,6 +645,11 @@ namespace math {
         return out << arbitrary;
     }
     
+    std::wostream& Integer::print(std::wostream& out) const
+    {
+        return out << arbitrary.str().c_str();
+    }
+
     Valuable Integer::calcFreeMember() const
     {
         return *this;
@@ -656,6 +662,18 @@ namespace math {
             f.push_back(v);
             return false;
         }, abs());
+        return f;
+    }
+
+    std::set<Valuable> Integer::FactSet() const {
+        std::set<Valuable> f;
+        Factorization(
+            [&](auto& v) {
+                f.emplace(std::move(v));
+                return false;
+            },
+            abs());
+        f.erase(0);
         return f;
     }
 

@@ -18,6 +18,7 @@ class Integer
 
 protected:
     std::ostream& print(std::ostream& out) const override;
+    std::wostream& print(std::wostream& out) const override;
     bool IsSubObject(const Valuable& o) const override { return this == &o.get(); }
 
 public:
@@ -109,6 +110,9 @@ public:
     Valuable& operator^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
     bool operator <(const Valuable& v) const override;
+    friend bool operator<(const Integer& _1, const Integer& _2) { return _1.arbitrary < _2.arbitrary; }
+    friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
+    friend bool operator<(const Integer& _1, int _2) { return _1.arbitrary < _2; }
     bool operator ==(const Valuable& v) const override;
     // virtual convert operators
     explicit operator int() const override;
@@ -155,6 +159,7 @@ public:
                        const Valuable& max,
                        const zero_zone_t& zz = empty_zero_zone) const;
     std::deque<Valuable> Facts() const;
+    std::set<Valuable> FactSet() const;
 
     solutions_t Distinct() const final { return { *this }; }
     Valuable Univariate() const final { return *this; }

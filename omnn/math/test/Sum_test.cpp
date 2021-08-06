@@ -356,6 +356,11 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
 BOOST_AUTO_TEST_CASE(Containers_test)
 {
     Variable va;
+    SumOrderComparator cmp;
+    auto _1 = ((va ^ 4) - 72 * (va ^ 2) + 240 * va - 144) ^ (1_v / 2);
+    auto _2 = -6_v * (((va ^ 4) - 72 * (va ^ 2) + 240 * va + -144) ^ ((1_v / 2))) * (va ^ (-1));
+    BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
+
     std::vector<Valuable> vec{0_v, va, va+1_v};
     std::set<Valuable, SumOrderComparator> s;
     std::unordered_set<Valuable> us;

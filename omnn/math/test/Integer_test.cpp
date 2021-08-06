@@ -10,6 +10,8 @@
 #include <iostream>
 #include <chrono>
 
+#include <boost/math/special_functions/prime.hpp>
+
 
 using int_t = omnn::math::Integer;
 
@@ -138,6 +140,30 @@ BOOST_AUTO_TEST_CASE(Integer_tests)
 #endif
 }
 
+BOOST_AUTO_TEST_CASE(Integer_Factorization_test) {
+    Integer a = 1;
+    auto maxPrimeIdx = 8;
+    for (auto i = maxPrimeIdx; i-- > 0;) {
+        a *= boost::math::prime(i);
+    }
+
+    std::cout << a << std::endl;
+    // test integer factors
+    auto factors = a.FactSet();
+    std::set<Valuable> testSet;
+    for (Integer i = 1; i <= a; ++i) {
+        auto d = a / i;
+        if (d.IsInt()) {
+            testSet.emplace(std::move(d));
+        }
+    }
+    BOOST_TEST(testSet == factors);
+
+    for (auto& f : factors) {
+        std::wcout << f << ' ';
+    }
+    std::cout << std::endl;
+}
 
 BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
 {

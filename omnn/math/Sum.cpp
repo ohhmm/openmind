@@ -160,7 +160,7 @@ namespace math {
 
         if (isOptimizing)
             return;
-        isOptimizing = true;
+        Optimizing o(*this);
 
         auto s = str();
         auto doCheck = s.length() > 10;
@@ -225,7 +225,6 @@ namespace math {
                 if (coVa.size()) {
                     *this /= VaVal(coVa);
                     if (!IsSum()) {
-                        isOptimizing = {};
                         return;
                     }
                 }
@@ -388,7 +387,6 @@ namespace math {
         }
         
         if (IsSum()) {
-            isOptimizing = false;
             optimized = true;
         }
     }
@@ -1176,6 +1174,12 @@ namespace math {
         if(c0.size()){
 //            c0.optimized = optimized;
             coefficients[0] = std::move(c0);
+        }
+
+        while (coefficients.size() && *coefficients.rbegin() == 0) {
+            coefficients.pop_back();
+            if (grade)
+                --grade;
         }
 
         return grade;

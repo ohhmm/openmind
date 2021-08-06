@@ -35,6 +35,24 @@ class Sum
     bool isOptimizing = false;
     mutable vars_cont_t vars;
 
+    class Optimizing {
+        Sum &sum;
+        bool opts;
+
+    public:
+        Optimizing(Sum &s)
+        : sum(s)
+        , opts(s.isOptimizing)
+        {
+            s.isOptimizing = true;
+        }
+
+        ~Optimizing() {
+            if (sum.IsSum())
+                sum.isOptimizing = opts;
+        }
+    };
+
 protected:
 	cont& GetCont() override { return members; }
 	std::ostream& print(std::ostream& out) const override;
