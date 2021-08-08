@@ -605,6 +605,8 @@ namespace math {
                 sum.optimize();
                 return Become(std::move(sum));
             }
+        } else if (v.IsSum()) {
+            return Become(v + *this);
         }
         else{
         auto& cv = getCommonVars();

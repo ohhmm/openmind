@@ -351,6 +351,11 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     equation *= v+4;
     sol = equation.Solutions();
     BOOST_TEST(sol == sol_t({1,2,3,-4}));    
+
+	equation = ((v ^ 4) + (13_v / 8) * (v ^ 3) + ((-101_v) / 16) * (v ^ 2) + ((-735_v) / 128) * v + (765_v / 64));
+    sol = equation.Solutions();
+    BOOST_TEST(sol.size() == 4);
+	// TODO: radical solutions test values
 }
 
 BOOST_AUTO_TEST_CASE(Containers_test)

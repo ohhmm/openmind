@@ -59,8 +59,8 @@ BOOST_AUTO_TEST_CASE(not_tests
 BOOST_AUTO_TEST_CASE(test_logic_intersection)
 {
     Variable x;
-    auto _1 = x.Abet(x, {1,2,3,3});
-    auto _2 = x.Abet(x, {2,3,3});
+    auto _1 = x.Abet({1,2,3,3});
+    auto _2 = x.Abet({2,3,3});
     auto _ = _1.Intersect(_2, x);
 
     auto solutions = _.IntSolutions(x);
@@ -77,8 +77,8 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_with_exception
 )
 {
     Variable x;
-    auto _1 = x.Abet(x, {1,2,3,3});
-    auto _2 = x.Abet(x, {2,3,3});
+    auto _1 = x.Abet({1,2,3,3});
+    auto _2 = x.Abet({2,3,3});
     auto _ = _1.Intersect(_2, x).logic_and(x.NotEquals(3));
     
     auto solutions = _.IntSolutions(x);
@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_simplifying
                      )
 {
     Variable x;
-    auto _1 = x.Abet(x, {1,2});
-    auto _2 = x.Abet(x, {2,3});
+    auto _1 = x.Abet({1,2});
+    auto _2 = x.Abet({2,3});
     auto i = _1.Intersect(_2, x);
     auto solutions = i.IntSolutions(x);
     BOOST_TEST(solutions.size() == 1);
