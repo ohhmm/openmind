@@ -74,6 +74,8 @@ public:
     Valuable InCommonWith(const Valuable& v) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
     solutions_t Distinct() const override;
+
+    Valuable Abet(std::initializer_list<Valuable>) const;
 };
 
 }}

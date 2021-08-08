@@ -1487,7 +1487,7 @@ auto OmitOuterBrackets(std::string_view& s){
         return Equals(v) ^ -1;
     }
 
-    Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l) const
+    Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l)
     {
         Product a;
         for(auto& item : l)

@@ -375,7 +375,7 @@ public:
     virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const;
     
     // logic
-    Valuable Abet(const Variable& x, std::initializer_list<Valuable>) const;
+    static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
     template <class Fwd>
     Valuable& equals(Fwd&& v) { return operator -=(std::forward<Fwd>(v)); }
     Valuable Equals(const Valuable& v) const;
@@ -383,7 +383,9 @@ public:
 //    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
 //    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
     Valuable LogicAnd(const Valuable& v) const;
+    Valuable operator&&(const Valuable& v) const { return LogicAnd(v); }
     Valuable LogicOr(const Valuable& v) const;
+    Valuable operator||(const Valuable& v) const { return LogicOr(v); }
     Valuable& logic_or(const Valuable&); // inplace
     Valuable& logic_and(const Valuable&);
     

@@ -10,6 +10,8 @@
 #include <boost/test/unit_test.hpp>
 #include "SymmetricDouble.h"
 #include "Polyfit.h"
+#include "Valuable.h"
+#include "pi.h"
 
 using namespace std;
 using namespace boost::unit_test;
