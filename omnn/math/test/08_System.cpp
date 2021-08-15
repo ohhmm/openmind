@@ -53,6 +53,34 @@ BOOST_AUTO_TEST_CASE(System_tests)
     DECL_VA(a);
     DECL_VA(b);
     DECL_VA(c);
+
+    {
+        System sys;
+        auto e1 = a.Abet({1, 2});
+        auto e2 = a.Abet({2, 3});
+        auto both = e1 && e2;
+
+        auto solExpInt = both.IntSolutions();
+        auto solExp = both.Solutions();
+        BOOST_TEST(solExpInt == solExp);
+
+        auto expHasOneSolution = solExp.size() == 1;
+        BOOST_TEST(expHasOneSolution);
+
+        sys << e1 << e2;
+
+        auto sysTotal = sys.Total();
+        BOOST_TEST(sysTotal == both);
+
+        auto solSys = sys.Solve(a);
+        auto sysHasOneSolution = solSys.size() == 1;
+        BOOST_TEST(sysHasOneSolution);
+        if (sysHasOneSolution) {
+            auto _ = *solSys.begin();
+            BOOST_TEST(_ == 2);
+        }
+    }
+
     {
         System sys;
         Valuable t;

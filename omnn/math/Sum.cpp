@@ -644,6 +644,31 @@ namespace math {
                         s += a / b;
                     }
                 }
+            } else if (i.IsBinomial() && HasSameVars(i)) {
+                auto& im = i.members;
+                auto root = -*im.rbegin();
+                std::vector<Valuable> coefficients;
+                auto& va = im.begin()->as<Variable>();
+                auto degree = FillPolyCoeff(coefficients, va);
+                if (degree) {
+                    auto coef = std::move(coefficients.back());
+                    coefficients.pop_back();
+                    for (; degree-- > 0;) {
+                        std::swap(coef, coefficients[degree]);
+                        coef += coefficients[degree] * root;
+                    }
+                    if (coef == 0) {
+                        auto powerX = 1_v;
+                        for (auto& coef : coefficients) {
+                            s += coef * powerX;
+                            powerX *= va;
+                        }
+                    } else {
+                        LOG_AND_IMPLEMENT(str() << " / " << v << " reminder " << coef);
+                    }
+                } else {
+                    IMPLEMENT
+                }
             }
             else
             {
@@ -1002,7 +1027,13 @@ namespace math {
         return branches;
     }
 
-    bool Sum::IsNormalizedPolynomial(const Variable& v) const{
+    bool Sum::IsBinomial() const {
+        return members.size() == 2 
+			&& members.begin()->IsVa()
+			&& members.rbegin()->FindVa() == nullptr;
+	}
+
+    bool Sum::IsNormalizedPolynomial(const Variable& v) const {
         a_int maxExp = 0;
         auto is = true;
         for (auto& m : members)
@@ -1685,6 +1716,10 @@ namespace math {
                     auto& ai = a.as<Integer>();
                     auto& ki = k.as<Integer>();
                     std::set<Valuable> kiFactors;
+                    if(asyncCheckAllRootsCached){
+                        solutions = asyncCheckAllRootsCached;
+                        return;
+                    }
                     auto found = ai.Factorization([&](const auto& i){
                             auto iz = i != 0;
                             auto checkValues = [&](const auto& ik) -> bool {
