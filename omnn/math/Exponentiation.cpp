@@ -829,7 +829,7 @@ namespace math {
         }
         else if(v.IsProduct())
         {
-            is = Product{*this}.IsComesBefore(v);
+            is = !v.IsComesBefore(*this);
         }
         else if(v.IsInt())
             is = true;
