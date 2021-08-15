@@ -228,7 +228,6 @@ namespace math {
     Valuable::Valuable(const a_int& i) : exp(new Integer(std::move(i))) {}
     Valuable::Valuable(boost::rational<a_int>&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
 
-    Variable x,a,b,c;
 //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, 1_v/2)-b)/(a*2));
 //    auto aMergeOrF = MergeOrF(a);
 //    auto bMergeOrF = MergeOrF(b);
@@ -239,7 +238,11 @@ namespace math {
         if(v1 == v2)
             merged = v1;
         else {
-            if(v1.IsInt() && v2.IsInt() && v1.abs()==v2.abs())
+            auto v = v1.FindVa();
+            if (!v)
+                v = v2.FindVa();
+            auto x = v ? v->getVaHost()->New() : Variable();
+            if (v1.IsInt() && v2.IsInt() && v1.abs() == v2.abs())
                 merged = v1.abs() * (1_v ^ Fraction{1,2});
             else {
                 auto sum = x.Equals(v1).logic_or(x.Equals(v2));

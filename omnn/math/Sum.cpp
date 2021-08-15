@@ -1684,12 +1684,21 @@ namespace math {
                     Valuable test;
                     auto& ai = a.as<Integer>();
                     auto& ki = k.as<Integer>();
+                    std::set<Valuable> kiFactors;
                     auto found = ai.Factorization([&](const auto& i){
-                        return i!=0
-                            && ki.Factorization([&](const auto& ik)->bool{
+                            auto iz = i != 0;
+                            auto checkValues = [&](const auto& ik) -> bool {
+                                kiFactors.insert(ik);
                                 test = ik / i;
-                                return Test(va, test) || Test(va, test=-test);
-                                }, Infinity());
+                                return Test(va, test) || Test(va, test = -test);
+                            };
+                            if (iz) {
+                                if (kiFactors.empty())
+                                    iz = ki.Factorization(checkValues, Infinity());
+                                else
+                                    iz = std::any_of(kiFactors.begin(), kiFactors.end(), checkValues);
+							}
+                            return iz;
                         }, Infinity());
                     if(asyncCheckAllRootsCached){
                         solutions = asyncCheckAllRootsCached;
