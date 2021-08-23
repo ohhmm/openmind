@@ -560,12 +560,14 @@ namespace math {
     Valuable Integer::Sqrt() const
     {
         auto minus = arbitrary < 0;
-        auto _ = boost::multiprecision::sqrt(minus ? -arbitrary : arbitrary);
+        auto _ = boost::multiprecision::sqrt(minus ? -arbitrary : arbitrary); // integer square root
         auto _sq = _ * _;
-        if (_sq != boost::multiprecision::abs(arbitrary)){
+        if (_sq != boost::multiprecision::abs(arbitrary)){ // no integer square root
             auto d = GreatestCommonExp(2);
-            if(d.second != 1)
+            if (d.second != 1)
                 return (*this / d.second).Sqrt() * d.first;
+            else
+                LOG_AND_IMPLEMENT(str() << " integer square root is " << _ << " and " << _ << "^2=" << _sq);
         }
         return minus ? constant::i * _ : _;
     }

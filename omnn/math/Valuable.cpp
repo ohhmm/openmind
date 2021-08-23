@@ -681,7 +681,7 @@ auto OmitOuterBrackets(std::string_view& s){
         if(exp)
             return exp->IsMultiplicationSimplifiable(v);
         else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT(str());
             auto m = *this * v;
             return { m.Complexity() < Complexity() + v.Complexity(), m };
         }
