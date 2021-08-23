@@ -21,10 +21,18 @@
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/rational.hpp>
 
-#define IMPLEMENT { implement(__FILE__ ":" BOOST_PP_STRINGIZE(__LINE__) " "); throw; } // " " __FUNCTION__
+#define _NUM2STR(x) #x
+#define NUM2STR(x) _NUM2STR(x)
+#define LINE_NUMBER_STR NUM2STR(__LINE__)
+
+#define IMPLEMENT {                                                                                                    \
+        implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                                   \
+        throw;                                                                                                         \
+    }
 #define LOG_AND_IMPLEMENT(Param) { \
-    implement( ((::std::stringstream&)(::std::stringstream() << __FILE__ ":" BOOST_PP_STRINGIZE(__LINE__) " " << Param)).str().c_str() ); throw; \
-}
+    implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
+        throw;                                                                                                          \
+    }
 
 
 namespace omnn{
