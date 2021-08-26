@@ -1228,9 +1228,10 @@ namespace math {
         auto& es = e.as<Sum>();
         std::vector<Valuable> coefs;
         auto grade = es.FillPolyCoeff(coefs, va);
-        if (coefs.size() && grade && grade <= 2)
+        if (coefs.size() && grade)
         {
             es.solve(va, solutions, coefs, grade);
+#ifndef NDEBUG
             for (auto i=solutions.begin(); i != solutions.end();) {
                 if (i->HasVa(va)) {
                     IMPLEMENT
@@ -1239,6 +1240,7 @@ namespace math {
                 else
                     ++i;
             }
+#endif
             
             if (solutions.size()) {
                 return Valuable(solutions);
@@ -1262,7 +1264,7 @@ namespace math {
             if (it != coVa.end()) {
                 todo /= it->first ^ it->second;
                 if (todo.HasVa(va)){
-                    if(augmentation == 0)
+                    if(_ == 0)
                         solutions.insert(0);
                     else
                         IMPLEMENT

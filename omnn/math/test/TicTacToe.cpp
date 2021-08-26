@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(TicTacToe_X_Won_test)
 
 
     Variant fieldVariant = {};
-    for (fieldVariant.code = 1 << 9; fieldVariant.code-->0; ) {
+    for (fieldVariant.code = -1; fieldVariant.code--; ) {
 
         System fieldExpression;
         fieldExpression << (x.Equals(1) && y.Equals(1) && v.Equals(fieldVariant.pack.hasXat1_1))

@@ -71,15 +71,11 @@ bool System::Add(const Valuable& v)
     if (isNew) {
         auto vars = v.Vars();
         if(vars.size() == 1){
-            auto va = *vars.begin();
-            auto found = v(va);
-            auto equal = va.Equals(found);
-            equal.SetView(Valuable::View::Equation);
-            equal.optimize();
-            equs.emplace(std::move(equal));
-            vEs[va][{}].emplace(std::move(found));
-        } else
-            equs.emplace(_);
+            auto& va = *vars.begin();
+            vEs[va][{}].emplace(v(va));
+        } 
+
+        equs.emplace(_);
         if (makeTotalEqu)
             sqs += _.Sq();
         if (doEarlyFetch)

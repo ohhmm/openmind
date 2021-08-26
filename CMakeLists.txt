@@ -264,6 +264,8 @@ function(test)
 			/usr/local/lib
 			${Boost_INCLUDE_DIR}/stage/lib
 			${Boost_INCLUDE_DIR}/../../lib
+			${CMAKE_BINARY_DIR}/lib
+			${CMAKE_BINARY_DIR}/lib64
 			)
         foreach(ll ${libs})
             string(STRIP ${ll} thelib)
