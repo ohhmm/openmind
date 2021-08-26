@@ -238,34 +238,12 @@ namespace math {
         if(v1 == v2)
             merged = v1;
         else {
-            auto v = v1.FindVa();
-            if (!v)
-                v = v2.FindVa();
-            auto x = v ? v->getVaHost()->New() : Variable();
-            if (v1.IsInt() && v2.IsInt() && v1.abs() == v2.abs())
-                merged = v1.abs() * (1_v ^ Fraction{1,2});
-            else {
-                auto sum = x.Equals(v1).logic_or(x.Equals(v2));
-                merged = sum(x);
-            }
-
-#ifndef NDEBUG
-            if (merged == v1 || merged == v2){
-                // debug this code
-                auto s = x.Equals(v1).logic_or(x.Equals(v2));
-                std::vector<Valuable> coefficients;
-                s.as<Sum>().FillPolyCoeff(coefficients, x);
-                auto& a = coefficients[2];
-                auto& b = coefficients[1];
-                auto& c = coefficients[0];
-                auto d = (b ^ 2) - 4_v * a * c;
-                merged = (Exponentiation(d, 1_v/2)-b)/(a*2);
-
-                IMPLEMENT
-            }
-
-            // TODO: complete check
-#endif
+            // a = 1;
+            auto s = v1 + v2;
+            // b = -s;
+			auto c = v1 * v2;
+            auto d = s.Sq() - c*4;
+            merged = (Exponentiation(d, 1_v / 2) + s) / 2;
         }
         return merged;
     }
@@ -291,7 +269,7 @@ namespace math {
             auto& _1 = *it++;
             auto& _2 = *it++;
             auto& _3 = *it;
-			operator=(MergeOr(MergeOr(_1, _2), _3));
+            operator=(MergeOr(MergeOr(_1, _2), _3));
             break;
         }
         case 4: {
