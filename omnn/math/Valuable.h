@@ -252,6 +252,7 @@ public:
     void SetView(View v);
 
     // identify
+    virtual bool IsConstant() const;
     virtual bool IsInt() const;
     virtual bool IsFraction() const;
     virtual bool IsSimpleFraction() const;

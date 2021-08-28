@@ -85,6 +85,7 @@ public:
     explicit operator int64_t() const;
 
     bool IsInt() const override { return true; }
+    bool IsConstant() const override { return true; }
     bool is_optimized() const override { return true; }
     YesNoMaybe IsEven() const override;
     YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }

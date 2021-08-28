@@ -659,7 +659,7 @@ auto OmitOuterBrackets(std::string_view& s){
         if(exp)
             return exp->IsMultiplicationSimplifiable(v);
         else {
-            LOG_AND_IMPLEMENT(str());
+            LOG_AND_IMPLEMENT(str() << "  *  " << v);
             auto m = *this * v;
             return { m.Complexity() < Complexity() + v.Complexity(), m };
         }
@@ -1012,6 +1012,7 @@ auto OmitOuterBrackets(std::string_view& s){
             IMPLEMENT
     }
 
+    bool Valuable::IsConstant() const { return exp && exp->IsConstant(); }
     bool Valuable::IsInt() const { return exp && exp->IsInt(); }
     bool Valuable::IsFraction() const { return exp && exp->IsFraction(); }
     bool Valuable::IsSimpleFraction() const { return exp && exp->IsSimpleFraction(); }
