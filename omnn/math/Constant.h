@@ -22,6 +22,8 @@ namespace math {
     public:
         using base::base;
 
+        bool IsConstant() const override { return true; }
+
         const Variable* FindVa() const override {
             return {};
         }
@@ -43,6 +45,20 @@ namespace math {
                 return this->Become(v**this);
             else
                 return this->Become(Product{*this,v});
+        }
+
+        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override {
+            std::pair<bool, Valuable> is;
+            is.first = v.IsConstant();
+            if (is.first) {
+                is.first = this->OfSameType(v);
+                if (is.first) {
+                    is.second = this->Sq();
+                }
+            } else if (!v.IsVa()) {
+                is = v.IsMultiplicationSimplifiable(*this);
+            }
+            return is;
         }
         
         bool operator==(const Valuable& v) const override {
