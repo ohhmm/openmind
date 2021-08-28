@@ -41,6 +41,7 @@ namespace math {
     CACHE(DbSumSolutionsOptimizedCache);
     CACHE(DbSumSolutionsAllRootsCache);
     CACHE(DbSumSolutionsARootCache);
+    CACHE(DbSumSolutionsSqCache);
 
     namespace
     {
@@ -992,16 +993,21 @@ namespace math {
 
     Valuable& Sum::sq()
     {
+        auto cached = DbSumSolutionsSqCache.AsyncFetch(*this, true);
         Sum s;
         auto e = end();
         for (auto i = begin(); i != e; ++i)
         {
+            if (cached)
+                return Become(cached);
             s.Add(i->Sq());
             for (auto j = i; ++j != e;)
             {
                 s.Add(*i * *j * 2);
             }
         }
+        if (cached.NotInCache())
+            DbSumSolutionsSqCache.AsyncSet(str(), s.str());
         return Become(std::move(s));
     }
 
