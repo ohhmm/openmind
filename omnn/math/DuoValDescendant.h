@@ -115,7 +115,7 @@ namespace omnn::math {
             _1.CollectVa(s);
             _2.CollectVa(s);
         }
-        void CollectVaNames(std::map<std::string, Variable>& s) const override {
+        void CollectVaNames(Valuable::va_names_t& s) const override {
             _1.CollectVaNames(s);
             _2.CollectVaNames(s);
         }

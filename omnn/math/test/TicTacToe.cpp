@@ -76,28 +76,26 @@ BOOST_AUTO_TEST_CASE(TicTacToe_X_Won_test)
     auto yIs2 = y.Equals(2);    auto yIs2sq = yIs2.Sq();
     auto yIs3 = y.Equals(3);    auto yIs3sq = yIs3.Sq();
     Variant fieldVariant = {};
-    for (fieldVariant.code = -1; fieldVariant.code--; ) {
-        std::cout << "checking\n    " << (fieldVariant.pack.hasXat1_1 ? 'X' : '0') << (fieldVariant.pack.hasXat1_2 ? 'X' : '0')
-                  << (fieldVariant.pack.hasXat1_3 ? 'X' : '0') << std::endl
+    for (fieldVariant.code = -1; fieldVariant.code--;) {
+        std::cout << "checking\n    " << (fieldVariant.pack.hasXat1_1 ? 'X' : '0')
+                  << (fieldVariant.pack.hasXat1_2 ? 'X' : '0') << (fieldVariant.pack.hasXat1_3 ? 'X' : '0') << std::endl
                   << "    " << (fieldVariant.pack.hasXat2_1 ? 'X' : '0') << (fieldVariant.pack.hasXat2_2 ? 'X' : '0')
                   << (fieldVariant.pack.hasXat2_3 ? 'X' : '0') << std::endl
                   << "    " << (fieldVariant.pack.hasXat3_1 ? 'X' : '0') << (fieldVariant.pack.hasXat3_2 ? 'X' : '0')
                   << (fieldVariant.pack.hasXat3_3 ? 'X' : '0') << std::endl;
 
-        System fieldExpression;
-        fieldExpression << xIs1sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq()
-                        << xIs1sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq()
-                        << xIs1sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq()
-                        << xIs2sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq()
-                        << xIs2sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq()
-                        << xIs2sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq()
-                        << xIs3sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq()
-                        << xIs3sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq()
-                        << xIs3sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq();
-        fieldExpression << // winExp;
-            isWon;
-
-		auto winSolutions = fieldExpression.Solve(win);
+        auto fieldExpression = Product{xIs1sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq(),
+                                       xIs1sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq(),
+                                       xIs1sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq(),
+                                       xIs2sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq(),
+                                       xIs2sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq(),
+                                       xIs2sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq(),
+                                       xIs3sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq(),
+                                       xIs3sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq(),
+                                       xIs3sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq()};
+        fieldExpression.logic_and(isWon);
+        fieldExpression.optimize();
+		auto winSolutions = fieldExpression.GetIntegerSolution(win);
         if (winSolutions.size() == 1) {
             auto it = winSolutions.begin();
             if (*it == 1) {

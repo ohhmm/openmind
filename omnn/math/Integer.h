@@ -143,7 +143,7 @@ public:
     const Variable* FindVa() const override { return nullptr; }
     bool HasVa(const Variable& va) const override { return {}; }
     void CollectVa(std::set<Variable>&) const override { }
-    void CollectVaNames(std::map<std::string, Variable>& s) const override { }
+    void CollectVaNames(Valuable::va_names_t& s) const override { }
     
     bool eval(const std::map<Variable, Valuable>& with) override { return {}; }
     void Eval(const Variable& va, const Valuable& v) override { }

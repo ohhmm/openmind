@@ -441,7 +441,7 @@ auto BracketsMap(const std::string_view& s){
             if (st.empty()) {
                 throw "parentneses relation missmatch";
             }
-            bracketsmap.insert({st.top(), c});
+            bracketsmap.emplace(st.top(), c);
             st.pop();
         }
         ++c;
@@ -568,7 +568,7 @@ auto OmitOuterBrackets(std::string_view& s){
                     Become(Integer(s));
                 else
                 {
-                    auto it = vaNames.find(std::string(s));
+                    auto it = vaNames.find(s);
                     if (it != vaNames.end()) {
                         Valuable v(it->second);
                         if (itIsOptimized)
@@ -1215,7 +1215,7 @@ auto OmitOuterBrackets(std::string_view& s){
             IMPLEMENT
     }
 
-    void Valuable::CollectVaNames(std::map<std::string, Variable>& s) const
+    void Valuable::CollectVaNames(Valuable::va_names_t&  s) const
     {
         if (exp)
             exp->CollectVaNames(s);
