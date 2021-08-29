@@ -80,4 +80,5 @@ public:
 
 }}
 
+// Named variable with the same name text
 #define DECL_VA(x) auto& x = #x##_va;

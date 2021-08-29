@@ -80,7 +80,7 @@ namespace math {
             cdx.d(getVa());
             
             auto nwtn = c / cdx;
-            auto& seq = getVaSequanceForOp();
+            auto& seq = getVaSequenceForOp();
             FormulaOfVaWithSingleIntegerRoot f(getVa(), cdx, &seq);
 //            std::cout << "searching: f(" << getVa() << ")=" << _ << "; f'=" << cdx << std::endl;
             Valuable was;

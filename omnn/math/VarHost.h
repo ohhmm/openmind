@@ -57,7 +57,7 @@ namespace math {
         }
 
     protected:
-        VarHost() = default;
+        constexpr VarHost() = default;
         virtual void AddNewId(const void* id) {
             throw "Implement!";
         }
@@ -66,11 +66,11 @@ namespace math {
             return shared_from_this();
         }
         template<class T = int>
-        static ptr make(){
+        constexpr static ptr make(){
             return ptr(static_cast<VarHost*>(new TypedVarHost<T>()));
         }
         template<class T = Valuable>
-        static VarHost& Global(){
+        constexpr static VarHost& Global(){
             static auto host = make<T>();
             return *host;
         }
@@ -95,7 +95,7 @@ namespace math {
         std::set<T> varIds;
         std::map<T, Variable> hosted;
         friend class VarHost;
-        TypedVarHost()=default;
+        constexpr TypedVarHost()=default;
         
     protected:
 

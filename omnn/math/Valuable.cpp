@@ -292,7 +292,6 @@ namespace math {
         std::stack <index_t> st;
         std::map<index_t, index_t> bracketsmap;
         decltype(l) c = 0;
-        std::string numbers = "0123456789";
         while (c < l)
         {
             if (s[c] == '(')
@@ -326,10 +325,13 @@ namespace math {
                 }
                 else
                 {
-                    found = s.find_first_not_of("0123456789");
+                    auto offs = 0;
+                    while (s.starts_with(' '))
+                        ++offs;
+                    found = s.find_first_not_of("0123456789", offs);
                     if (found == std::string::npos)
                     {
-                        Become(Integer(s));
+                        Become(offs ? Integer(std::string_view(s.c_str() + offs, s.size() - offs)) : Integer(s));
                     }
                     else
                     {
@@ -510,7 +512,7 @@ auto OmitOuterBrackets(std::string_view& s){
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto sum = l+r;
+                auto sum = itIsOptimized ? Sum{l, r} : l + r;
                 if (itIsOptimized)
                     sum.MarkAsOptimized();
                 Become(std::move(sum));
@@ -523,7 +525,7 @@ auto OmitOuterBrackets(std::string_view& s){
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto product = l*r;
+                auto product = itIsOptimized ? Product{l, r} : l * r;
                 if (itIsOptimized)
                     product.MarkAsOptimized();
                 Become(std::move(product));
@@ -536,7 +538,7 @@ auto OmitOuterBrackets(std::string_view& s){
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto devided = l/r;
+                auto devided = itIsOptimized ? Fraction{l, r} : l / r;
                 if (itIsOptimized)
                     devided.MarkAsOptimized();
                 Become(std::move(devided));
@@ -549,7 +551,7 @@ auto OmitOuterBrackets(std::string_view& s){
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto exp = l ^ r;
+                auto exp = itIsOptimized ? Exponentiation{l, r} : l ^ r;
                 if (itIsOptimized)
                     exp.MarkAsOptimized();
                 Become(std::move(exp));
@@ -651,7 +653,12 @@ auto OmitOuterBrackets(std::string_view& s){
     {
         if(exp)
             return exp->MultiplyIfSimplifiable(v);
-        IMPLEMENT
+        else {
+            auto is = IsMultiplicationSimplifiable(v);
+            if (is.first)
+                Become(std::move(is.second));
+            return is.first;
+        }
     }
 
     std::pair<bool,Valuable> Valuable::IsMultiplicationSimplifiable(const Valuable& v) const

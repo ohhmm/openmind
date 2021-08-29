@@ -55,7 +55,7 @@ public:
     
     const Variable& getVa() const { return v; }
     const Valuable& getEx() const { return e; }
-    const std::list<Variable>& getVaSequanceForOp() const { return s; }
+    const std::list<Variable>& getVaSequenceForOp() const { return s; }
     
     void optimize() override { e.optimize(); }
     Valuable calcFreeMember() const override { return e.calcFreeMember(); }
