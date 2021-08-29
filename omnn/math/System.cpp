@@ -12,10 +12,12 @@
 using namespace omnn;
 using namespace math;
 
-template<class T, class F>
-void each(const T& t, const F& f)
-{
-    std::for_each(t.begin(), t.end(), f);
+template<class T, class F> void each(const T& t, const F& f) {
+    auto b = std::begin(t), e = std::end(t);
+    if (std::size(t) > 100)
+        std::for_each(std::execution::par, b, e, f);
+    else
+        std::for_each(b, e, f);
 }
 
 
@@ -160,17 +162,19 @@ bool System::Fetch(const Variable& va)
         for (auto& e : equs) {
             e.CollectVa(vars);
             if (e.HasVa(va)) {
-                auto _ = e(va);
-                modified = Add(va, _) || modified;
-                if (_.Vars().size() == 0) {
-                    fetched = true;
-                }
-                
-                auto evaluated = Eval(va, _);
-                modified = evaluated || modified;
-                if (evaluated) {
-                    again = !fetched;
-                    break;
+                if (!e.IsSum() || e.as<Sum>().IsNormalizedPolynomial(va)) {
+                    auto _ = e(va);
+                    modified = Add(va, _) || modified;
+                    if (_.Vars().size() == 0) {
+                        fetched = true;
+                    }
+
+                    auto evaluated = Eval(va, _);
+                    modified = evaluated || modified;
+                    if (evaluated) {
+                        again = !fetched;
+                        break;
+                    }
                 }
             }
         }
