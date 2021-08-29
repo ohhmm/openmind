@@ -34,7 +34,7 @@ namespace math {
         
         void CollectVa(std::set<Variable>& s) const override
         { }
-        void CollectVaNames(std::map<std::string, Variable>& s) const override
+        void CollectVaNames(Valuable::va_names_t& s) const override
         { }
         
         void Eval(const Variable& va, const Valuable& v) override

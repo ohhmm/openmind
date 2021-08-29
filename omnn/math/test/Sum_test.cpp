@@ -6,6 +6,8 @@
 
 using namespace omnn::math;
 using namespace boost::unit_test;
+using namespace std::string_view_literals;
+
 
 template<class T>
 std::string l(const T& v)
@@ -22,6 +24,7 @@ void ohashes(const Valuable& v)
         std::cout << i << " hash "<< i.Hash()<<std::endl;
     }
 }
+
 
 BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
     SumOrderComparator cmp;
@@ -56,15 +59,15 @@ BOOST_AUTO_TEST_CASE(_1_2_3_) {
     BOOST_TEST(solutions == solutionsEtalon);
     std::cout << std::endl;
     // TODO : // FIXME: fix this
-//    auto solution = expr(x);
-//    std::cout << "Multival for 1, 2, 3 is " << solution << std::endl;
-//    std::cout << "Distinct of multival:" << std::endl;
-//    auto solutions = solution.Distinct();
-//    for (auto&& s : solutions) {
-//        std::cout << '\t' << s << std::endl;
-//    }
-//    BOOST_TEST(solutions == solutionsEtalon);
-//    std::cout << std::endl;
+    auto solution = expr(x);
+    std::cout << "Multival for 1, 2, 3 is " << solution << std::endl;
+    std::cout << "Distinct of multival:" << std::endl;
+    solutions = solution.Distinct();
+    for (auto&& s : solutions) {
+        std::cout << '\t' << s << std::endl;
+    }
+    BOOST_TEST(solutions == solutionsEtalon);
+    std::cout << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(Sum_tests)
@@ -147,7 +150,8 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     if (sum) {
         BOOST_TEST(sum->size()==2);
     }
-    sq = (x^4) + (z^4) + (y^4) - 4*x*(z^2) - 4 *(x^2)* y - 4*x*(y^2) - 4*y*(z^2) - 16*(x^2)*z - 16*(y^2)*z - 72*y - 72*x + 40*(x^2) + 40*(y^2) + 8*x*y + 32*x*z + 32*y*z - 4*(y^3) - 4*(x^3) + 2*(x^2)*(y^2) + 2*(y^2)*(z^2) + 2*(x^2)*(z^2)    - 16*(z^3) + 100*(z^2) - 288*z + 324;
+    sq = Valuable("(x ^ 4) + (z ^ 4) + (y ^ 4) - 4 * x * (z ^ 2) - 4 * (x ^ 2) * y - 4 * x * (y ^ 2) - 4 * y * (z ^ 2) -16 * (x ^ 2) * z - 16 * (y ^ 2) * z - 72 * y - 72 * x + 40 * (x ^ 2) + 40 * (y ^ 2) + 8 * x * y + 32 * x * z +         32 * y * z - 4 * (y ^ 3) - 4 * (x ^ 3) + 2 * (x ^ 2) * (y ^ 2) + 2 * (y ^ 2) * (z ^ 2) +         2 * (x ^ 2) * (z ^ 2) - 16 * (z ^ 3) + 100 * (z ^ 2) - 288 * z + 324 "sv,
+		{{"x",x},{"y",y},{"z",z}}, true);
     BOOST_TEST(sq.IsSum());
     sum = &sq.as<Sum>();
     if (sum->size()!=25) {
@@ -193,8 +197,8 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
 //    BOOST_TEST(*s2->begin()==*s1->GetConstCont().rbegin());
     BOOST_TEST(t1 == t2);
     
-    t1 = ((v4^4) + (v6^4) + (v5^4) + (v6^2)*-4*v4 + (v4^2)*v5*-4 + (v5^2)*-4*v4 + (v6^2)*v5*-4 + (v4^2)*-16*v6 + (v5^2)*-16*v6 + -72*v5 + -72*v4 + -288*v6 + 324 + (v6^2)*100 + (v4^2)*40 + (v5^2)*40 + 8*v5*v4 + (v6^3)*-16 + 32*v6*v4 + 32*v5*v6 + (v5^3)*-4 + (v4^3)*-4 + (v6^2)*(v5^2)*2 + (v5^2)*(v4^2)*2 + (v6^2)*(v4^2)*2);
-    t2 = ((v4^4) + (v6^4) + (v5^4) + (v6^2)*-4*v4 + (v5^2)*-4*v4 + (v4^2)*v5*-4 + (v6^2)*v5*-4 + (v4^2)*-16*v6 + (v5^2)*-16*v6 + -72*v5 + -72*v4 + -288*v6 + 324 + (v6^2)*100 + (v4^2)*40 + (v5^2)*40 + 8*v5*v4 + (v6^3)*-16 + 32*v6*v4 + 32*v5*v6 + (v5^3)*-4 + (v4^3)*-4 + (v6^2)*(v5^2)*2 + (v5^2)*(v4^2)*2 + (v6^2)*(v4^2)*2);
+    t1 = Valuable("((v4^4) + (v6^4) + (v5^4) + (v6^2)*-4*v4 + (v4^2)*v5*-4 + (v5^2)*-4*v4 + (v6^2)*v5*-4 + (v4^2)*-16*v6 + (v5^2)*-16*v6 + -72*v5 + -72*v4 + -288*v6 + 324 + (v6^2)*100 + (v4^2)*40 + (v5^2)*40 + 8*v5*v4 + (v6^3)*-16 + 32*v6*v4 + 32*v5*v6 + (v5^3)*-4 + (v4^3)*-4 + (v6^2)*(v5^2)*2 + (v5^2)*(v4^2)*2 + (v6^2)*(v4^2)*2)", x.getVaHost());
+    t2 = Valuable("((v4^4) + (v6^4) + (v5^4) + (v6^2)*-4*v4 + (v5^2)*-4*v4 + (v4^2)*v5*-4 + (v6^2)*v5*-4 + (v4^2)*-16*v6 + (v5^2)*-16*v6 + -72*v5 + -72*v4 + -288*v6 + 324 + (v6^2)*100 + (v4^2)*40 + (v5^2)*40 + 8*v5*v4 + (v6^3)*-16 + 32*v6*v4 + 32*v5*v6 + (v5^3)*-4 + (v4^3)*-4 + (v6^2)*(v5^2)*2 + (v5^2)*(v4^2)*2 + (v6^2)*(v4^2)*2)", x.getVaHost());
     BOOST_TEST(t1 == t2);
     t = _;
     t *= t;

@@ -161,7 +161,7 @@ namespace math {
             for (auto& i : GetConstCont())
                 i.CollectVa(s);
         }
-        void CollectVaNames(std::map<std::string, Variable>& s) const override {
+        void CollectVaNames(Valuable::va_names_t& s) const override {
             for (auto& i : GetConstCont())
                 i.CollectVaNames(s);
         }

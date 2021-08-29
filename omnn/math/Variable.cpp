@@ -227,7 +227,7 @@ namespace math {
         s.emplace(*this);
     }
 
-    void Variable::CollectVaNames(std::map<std::string, Variable>& s) const{
+    void Variable::CollectVaNames(Valuable::va_names_t&  s) const{
         s.emplace(str(), *this);
     }
 

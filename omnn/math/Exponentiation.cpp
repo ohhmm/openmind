@@ -959,7 +959,13 @@ namespace math {
 //                branches.reserve(branchesSz);
 //                ...
                 if(!ebase().IsInt()){
-                    LOG_AND_IMPLEMENT("Distinct for " << str());
+                    if (!ebase().FindVa() && ebase().IsMultival() == YesNoMaybe::Yes) {
+                        for (auto&& branch : ebase().Distinct()) {
+                            auto branchDistinct = (branch ^ eexp()).Distinct();
+                            branches.insert(branchDistinct.begin(), branchDistinct.end());
+                        }
+                    } else
+                        LOG_AND_IMPLEMENT("Distinct for " << str());
                 } else {
                     for (auto&& branch
                             : (ebase().Sqrt() ^ (f.numerator() / (denom / 2))).Distinct())

@@ -185,6 +185,17 @@ public:
         }
     };
 
+    class OptimizeOff {
+        bool opts;
+    public:
+        OptimizeOff() : opts(optimizations) {
+			optimizations = {};
+        }
+        ~OptimizeOff(){
+            optimizations = opts;
+        }
+    };
+
     explicit Valuable(Valuable* v);
     virtual std::type_index Type() const;
     
@@ -338,7 +349,7 @@ public:
     virtual bool HasVa(const Variable&) const;
     using var_set_t = std::set<Variable>;
     virtual void CollectVa(var_set_t& s) const;
-    using va_names_t = std::map<std::string, Variable>;
+    using va_names_t = std::map<std::string_view, Variable>;
     virtual void CollectVaNames(va_names_t& s) const;
     va_names_t VaNames() const;
     virtual std::shared_ptr<VarHost> getVaHost() const;
@@ -353,7 +364,7 @@ public:
     bool IsMonic() const;
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
-    Valuable(std::string_view str, const Valuable::va_names_t& vaNames, bool itIsOptimized);
+    Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
 
 	Valuable operator!() const;
     explicit operator bool() const;

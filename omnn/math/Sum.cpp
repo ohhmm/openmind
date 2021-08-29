@@ -1024,7 +1024,7 @@ namespace math {
         solutions_t branches = { 0_v };
         for (auto& m : members) {
             solutions_t newBranches;
-            for (auto& branch : m.Distinct()) {
+            for (auto&& branch : m.Distinct()) {
                 for (auto& b : branches) {
                     newBranches.emplace(b + branch);
                 }
