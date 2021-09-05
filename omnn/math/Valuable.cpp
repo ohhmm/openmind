@@ -577,7 +577,7 @@ auto OmitOuterBrackets(std::string_view& s){
                     }
                     else {
 #ifndef NDEBUG
-                      std::cout << s << " not var found" << std::endl;
+                      std::cout << s << ": no var found" << std::endl;
 #endif
                       IMPLEMENT
                     }

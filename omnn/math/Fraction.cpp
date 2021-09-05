@@ -279,6 +279,7 @@ namespace math {
         is.first = IsSimpleFraction() && v.IsSimple();
         if(is.first){
             is.second = *this * v;
+        } else if (v.IsConstant()) {
         } else if (!v.IsFraction()) {
             is = v.IsMultiplicationSimplifiable(*this);
         } else {
