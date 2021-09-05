@@ -13,4 +13,5 @@ namespace std {
             : sqrt(n.AsDouble())
         };
     }
-}
+} // namespace std
+

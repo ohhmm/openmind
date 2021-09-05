@@ -12,12 +12,18 @@
 using namespace omnn;
 using namespace math;
 
-template<class T, class F> void each(const T& t, const F& f) {
+template<class T, class F> void peach(const T& t, const F& f) {
     auto b = std::begin(t), e = std::end(t);
+    std::for_each(std::execution::par, b, e, f);
+}
+
+template <class T, class F> void each(const T& t, const F& f) {
     if (std::size(t) > 100)
-        std::for_each(std::execution::par, b, e, f);
-    else
+        peach(t, f);
+    else {
+        auto b = std::begin(t), e = std::end(t);
         std::for_each(b, e, f);
+    }
 }
 
 
@@ -159,6 +165,8 @@ bool System::Fetch(const Variable& va)
     bool again;
     do {
         again = {};
+        //std::all_of(equs, [&](auto it) { // todo: multithread System::Eval
+            //auto& e = *it;
         for (auto& e : equs) {
             e.CollectVa(vars);
             if (e.HasVa(va)) {
@@ -178,6 +186,7 @@ bool System::Fetch(const Variable& va)
                 }
             }
         }
+		//);
     } while (again);
     
     if (!fetched) {

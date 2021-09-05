@@ -28,9 +28,13 @@ namespace math {
         maxVaExp=1;
     }
     
-    void Variable::SetId(boost::any id) {
+    void Variable::SetId(any::any id) {
         varId = id;
         hash = varSetHost->Hash(id);
+    }
+
+    const ::omnn::math::any::any& Variable::GetId() const {
+        return varId;
     }
     
     Variable::Variable(VarHost::ptr varHost)
@@ -228,7 +232,7 @@ namespace math {
     }
 
     void Variable::CollectVaNames(Valuable::va_names_t&  s) const{
-        s.emplace(str(), *this);
+        s.emplace(varSetHost->GetName(varId), *this);
     }
 
     bool Variable::eval(const std::map<Variable, Valuable>& with) {

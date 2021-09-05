@@ -3,13 +3,15 @@
 //
 
 #pragma once
-//#include <any>
+#include <any>
 #include <memory>
-#include <boost/any.hpp>
+//#include <boost/any.hpp>
 #include "ValuableDescendantContract.h"
 
 namespace omnn{
 namespace math {
+
+namespace any = std;
 
 class VarHost;
 
@@ -18,11 +20,13 @@ class Variable
 {
     using base = ValuableDescendantContract<Variable>;
     std::shared_ptr<VarHost> varSetHost;
-    boost::any varId;
+    ::omnn::math::any::any varId;
     mutable vars_cont_t vars;
     
     friend class VarHost;
-    void SetId(boost::any);
+    void SetId(::omnn::math::any::any);
+    const ::omnn::math::any::any& GetId() const;
+
 protected:
     bool IsSubObject(const Valuable& o) const override {
         return this == &o.get();

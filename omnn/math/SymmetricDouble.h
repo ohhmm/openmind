@@ -72,4 +72,5 @@ public:
 namespace std {
     omnn::math::SymmetricDouble abs(const omnn::math::SymmetricDouble& n);
     omnn::math::SymmetricDouble sqrt(const omnn::math::SymmetricDouble& n);
-}
+} // namespace std
+

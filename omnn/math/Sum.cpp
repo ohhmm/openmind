@@ -97,7 +97,8 @@ namespace math {
         return it;
     }
 
-    auto Thr = std::thread::hardware_concurrency() << 3;
+    auto HwC = std::thread::hardware_concurrency();
+    auto Thr = ::std::min<decltype(HwC)>(HwC << 3, 128);
     
     const Sum::iterator Sum::Add(const Valuable& item, const iterator hint)
     {
@@ -111,7 +112,7 @@ namespace math {
         {
 #ifdef _WIN32
             if (members.size() > Thr)
-                it = std::find(std::execution::par, members.begin(), members.end(), item);
+                it = std::find(std::execution::par, members.begin(), members.end(), item); // TODO: check that it is faster
             else
 #endif
                 it = members.find(item);
