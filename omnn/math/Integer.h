@@ -38,6 +38,7 @@ public:
         return Integer(boost::multiprecision::cpp_int(i));
     }
 
+    constexpr
     Integer(int i = 0)
         : arbitrary(i)
     {
@@ -45,12 +46,14 @@ public:
     }
 
     template<class IntT>
+    constexpr
     Integer(typename std::enable_if<std::is_integral<IntT>::value>::type i)
     : arbitrary(i)
     {
         hash = std::hash<base_int>()(arbitrary);
     }
 
+    constexpr
     Integer(const base_int& i)
         : arbitrary(i)
     {
@@ -64,6 +67,7 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
     
+    constexpr
     Integer(const std::string& s)
         : arbitrary(s)
     {

@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 }
 
 BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests
-                     ,*disabled()
+                     ,*disabled() // TODO : enable
                      )
 {
     auto _ = 841_v/64;
@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests
     auto a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
     a.optimize();
     
-    for (int i=38; i --> 1; ) {
-        Valuable sh(1<<i);
+    for (int64_t i=38; i --> 1; ) {
+        Valuable sh(int64_t(1)<<i);
         auto multi = 1_v^(1_v/sh);
         _ = multi;
         _ /= _;

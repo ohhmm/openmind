@@ -23,6 +23,7 @@ namespace math {
         using base::base;
 
         bool IsConstant() const override { return true; }
+        Valuable::YesNoMaybe IsMultival() const override { return Valuable::YesNoMaybe::No; }
 
         const Variable* FindVa() const override {
             return {};
@@ -73,5 +74,11 @@ namespace math {
 
         typename base::solutions_t Distinct() const override { return { *this }; }
         Valuable Univariate() const override { return *this; }
+
+        Valuable InCommonWith(const Valuable& v) const override {
+            return v.IsConstant() && this->OfSameType(v) ? v
+				: (v.IsSimple() ? 1_v
+				: v.InCommonWith(*this));
+        }
     };
 }}
