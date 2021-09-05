@@ -646,7 +646,7 @@ namespace math {
                         s += a / b;
                     }
                 }
-            } else if (i.IsBinomial() && HasSameVars(i)) {
+            } else if (i.IsBinomial() && HasSameVars(i) && (!IsBinomial() && operator==(v))) {
                 auto& im = i.members;
                 auto root = -*im.rbegin();
                 std::vector<Valuable> coefficients;

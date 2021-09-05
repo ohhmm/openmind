@@ -73,9 +73,7 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test
     BOOST_TEST(e == 2*x-3*y);
 }
 
-BOOST_AUTO_TEST_CASE(Polynomial_Exp_test
-                     ,*disabled()
-                     )
+BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
 {
     auto v = "v"_va;
     auto a = "a"_va;
