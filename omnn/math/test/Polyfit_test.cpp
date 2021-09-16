@@ -8,16 +8,15 @@
 //#include <boost/multiprecision/float128.hpp>
 #define BOOST_TEST_MODULE Polyfit test
 #include <boost/test/unit_test.hpp>
+#include "pi.h"
 #include "SymmetricDouble.h"
 #include "Polyfit.h"
-#include "Valuable.h"
-#include "pi.h"
 
 using namespace std;
 using namespace boost::unit_test;
 using namespace omnn::math;
 
-using f128 = long double;
+using f128 = Valuable;
 
 const f128 TestPrecision = 0.000001;
 
@@ -25,16 +24,15 @@ const f128 TestPrecision = 0.000001;
 BOOST_AUTO_TEST_CASE(Polyfit_test_sinus, *tolerance(TestPrecision))
 {
     const int SZ = 73;
-    const f128  PI2 = 6.283185307179586476925286766559,
+    const f128  PI2 = constant::pi * 2,
                 SZf = SZ;
-    
     
     // generate the data
     std::vector<f128> oX(SZ), oY(SZ);
-    for ( unsigned int i = 0; i < SZ; i++ )
+    for (auto i = 0; i < SZ; ++i)
     {
         oX[i] = i;
-        oY[i] = sin( (f128)i/SZf * PI2 );
+        oY[i] = (PI2 * i / SZf).Sin();
     }
     
     // polynomial fitting
@@ -78,8 +76,8 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification, *tolerance(TestPrecision))
     auto SZ = oX.size();
 
     // polynomial fitting
-    std::vector<f128> oCoeff = polyfit( oX, oY, SZ );
-    std::vector<f128> oFittedY = polyval( oCoeff, oX );
+    auto oCoeff = polyfit( oX, oY, SZ ),
+        oFittedY = polyval( oCoeff, oX );
     for ( unsigned int i = 0; i < SZ; i++ )
     {
         BOOST_TEST(oY[i] == oFittedY[i]);
@@ -159,8 +157,8 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double, *disabled())
     auto SZ = oX.size();
     
     // polynomial fitting
-    std::vector<SymmetricDouble> oCoeff = polyfit( oX, oY, SZ );
-    std::vector<SymmetricDouble> oFittedY = polyval( oCoeff, oX );
+    auto oCoeff = polyfit( oX, oY, SZ );
+    auto oFittedY = polyval( oCoeff, oX );
     for ( unsigned int i = 0; i < SZ; i++ )
     {
         BOOST_TEST(oY[i] == oFittedY[i]);
@@ -211,7 +209,10 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double, *disabled())
 }
 
 
-BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification, /* *tolerance(0.1) ,*/ *disabled())
+BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
+//, *tolerance(0.1) 
+, *disabled()
+)
 {
     // generate the data
     std::vector<f128> oX = {{
@@ -254,8 +255,8 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification, /* *tolerance(0.1) ,*/ *d
     auto SZ = oX.size();
     
     // polynomial fitting
-    std::vector<f128> oCoeff = polyfit( oX, oY, SZ );
-    std::vector<f128> oFittedY = polyval( oCoeff, oX );
+    auto oCoeff = polyfit( oX, oY, SZ ),
+        oFittedY = polyval( oCoeff, oX );
     for ( unsigned int i = 0; i < SZ; i++ )
     {
         BOOST_TEST(oY[i] == oFittedY[i]);

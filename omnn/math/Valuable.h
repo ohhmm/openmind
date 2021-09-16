@@ -237,7 +237,7 @@ public:
     
     using NewVaFn_t = std::function<Valuable(const std::string&)>;
     Valuable(const std::string& s, NewVaFn_t newVa);
-    Valuable(const std::string&, std::shared_ptr<VarHost>);
+    Valuable(const std::string_view&, std::shared_ptr<VarHost>);
 
     virtual ~Valuable();
     virtual Valuable operator -() const;
@@ -440,6 +440,8 @@ public:
     Valuable IfEq(const Valuable& v, const Valuable& Then, const Valuable& Else) const;
     Valuable For(const Valuable& initialValue, const Valuable& lambda) const;
 
+    //constexpr 
+    virtual std::function<bool(std::initializer_list<Valuable>)> Functor() const;
 
     size_t Hash() const;
     std::string str() const;
