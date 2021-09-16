@@ -187,13 +187,33 @@ namespace math {
         }
         
         hosted_storage_t& HostedStorage(const any::any& id) override {
+            using namespace std::string_literals;
+
             const T* idTp = any::any_cast<T>(&id);
-            const T& idT = *idTp;
-            auto it = hosted.find(idT);
-            if (it == hosted.end()) {
-                using namespace std::string_literals;
-                it = hosted.emplace(idT, hosted_storage_t{New(idT), ""s}).first;
+
+            auto it = hosted.end();
+            if constexpr (std::is_same<T, std::string>::value) {
+                if (!idTp) { // try other string types
+                    const std::string_view* sv = any::any_cast<std::string_view>(&id);
+                    if (sv) {
+                        T id(*sv);
+                        it = hosted.find(id);
+                        if (it == hosted.end()) {
+                            it = hosted.emplace(id, hosted_storage_t{New(id), ""s}).first;
+                        }
+                    } else {
+						IMPLEMENT
+					}
+                }
             }
+            if (it == hosted.end()) {
+                const T& idT = *idTp;
+                it = hosted.find(idT);
+                if (it == hosted.end()) {
+                    it = hosted.emplace(idT, hosted_storage_t{New(idT), ""s}).first;
+                }
+            }
+
             return it->second;
         }
 
