@@ -6,6 +6,7 @@ set (CMAKE_CXX_STANDARD 20)
 
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
     set(_IS_DEBUG TRUE)
+    add_definitions(-DBOOST_ALL_DYNAMIC_LINK)
 else()
     set(_IS_DEBUG FALSE)
     if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
@@ -16,18 +17,45 @@ else()
     endif()
 endif()
 
-if(MSVC)
-    find_package(Boost PATHS C:/Boost)
-else()
-    find_package(Boost)
-endif()
-
-option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${Boost_FOUND})
+option(OPENMIND_BUILD_TESTS "Build various TESTS" _IS_DEBUG)
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
-option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
+
+set(BOOST_USED_COMPONENTS system filesystem serialization date_time thread)
+if(OPENMIND_BUILD_TESTS)
+	set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test unit_test_framework)
+endif()
+
+if(MSVC)
+    find_package(Boost
+		1.77.0
+		PATHS C:/Boost
+		COMPONENTS ${BOOST_USED_COMPONENTS}
+		)
+else()
+    find_package(Boost
+		1.77.0
+		COMPONENTS ${BOOST_USED_COMPONENTS}
+		)
+endif()
+
+if(NOT Boost_FOUND)
+	set(OPENMIND_BUILD_BOOST True)
+	message("Install local build boost library to omit building it with OM")
+else()
+	message("Boost_VERSION: ${Boost_VERSION}")
+	message("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+	message("BOOST_USED_COMPONENTS: ${BOOST_USED_COMPONENTS}")
+	message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
+	message("Boost_FILESYSTEM_LIBRARY: ${Boost_FILESYSTEM_LIBRARY}")
+	if(OPENMIND_BUILD_TESTS)
+		message("Boost_UNIT_TEST_FRAMEWORK_LIBRARY: ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
+	endif()
+endif()
+
+option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OPENMIND_BUILD_BOOST})
 
 set(OPENMIND_INCLUDE_DIR ${CMAKE_SOURCE_DIR})
 message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
@@ -60,10 +88,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 if (Boost_FOUND)
     add_custom_target(boost)
 elseif(OPENMIND_BUILD_BOOST)
-    set(BOOST_USED_COMPONENTS system filesystem serialization date_time thread)
-    if (${OPENMIND_BUILD_TESTS})
-        set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test)
-    endif ()
     message("Finding boost components ${BOOST_USED_COMPONENTS}")
     foreach(_module ${BOOST_USED_COMPONENTS})
         message("${BOOST_BUILD_PARAMS}")
@@ -99,7 +123,7 @@ elseif(OPENMIND_BUILD_BOOST)
     build_command(BOOST_BUILD_CMD TARGET boost)
     message("BOOST_BUILD_CMD ${BOOST_BUILD_CMD}")
     execute_process(COMMAND ${BOOST_BUILD_CMD}
-        WORKING_DIRECTORY ${Boost_INCLUDE_DIR}
+        WORKING_DIRECTORY ${Boost_INCLUDE_DIRS}
         )
     #find_package(Boost COMPONENTS ${BOOST_USED_COMPONENTS})
     if(NOT ${Boost_FOUND})
@@ -128,13 +152,13 @@ set(BOOST_TEST_LINK_LIBS
 IF (Boost_FOUND)
     message("Boost_FOUND")
     ADD_DEFINITIONS(-DHAS_BOOST)
-    message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
-    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+    message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIRS}")
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
     message("Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
 	link_directories(${Boost_LIBRARY_DIR})
     if(MSVC)
 	    link_directories(
-			${Boost_INCLUDE_DIR}/stage/lib
+			${Boost_INCLUDE_DIRS}/stage/lib
 			C:/Boost/lib
 			)
     endif()
@@ -248,11 +272,11 @@ function(test)
 	    get_filename_component(TEST_NAME ${TEST} NAME_WE)
 		message("test ${TEST_NAME}")
 	    add_executable(${TEST_NAME} ${TEST_NAME})
+        target_link_libraries(${TEST_NAME} PUBLIC ${Boost_LIBRARIES})
 		target_link_directories(${TEST_NAME} PUBLIC
-			${Boost_LIBRARIES}
 			/usr/local/lib
-			${Boost_INCLUDE_DIR}/stage/lib
-			${Boost_INCLUDE_DIR}/../../lib
+			${Boost_INCLUDE_DIRS}/stage/lib
+			${Boost_INCLUDE_DIRS}/../../lib
 			${CMAKE_BINARY_DIR}/lib
 			${CMAKE_BINARY_DIR}/lib64
 			)
@@ -310,6 +334,7 @@ macro(ext name location)
 			set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
 		else()
 			set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
+			#set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib64/${CMAKE_STATIC_LIBRARY_PREFIX}${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
 		endif()
 
 		include_directories(${${name}_INCLUDE_DIR})
@@ -334,7 +359,7 @@ macro(lib)
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
-        ${Boost_INCLUDE_DIR}
+        ${Boost_INCLUDE_DIRS}
         )
     if(TARGET boost)
         add_dependencies(${this_target} boost)
@@ -432,13 +457,13 @@ macro(exe)
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include
         ${${this_target}_INCLUDE_DIR}
-        ${Boost_INCLUDE_DIR}
+        ${Boost_INCLUDE_DIRS}
 		)
 	target_link_directories(${this_target} PUBLIC
 		${CMAKE_BINARY_DIR}/lib
 		${Boost_LIBRARIES}
-		${Boost_INCLUDE_DIR}/stage/lib
-		${Boost_INCLUDE_DIR}/../../lib
+		${Boost_INCLUDE_DIRS}/stage/lib
+		${Boost_INCLUDE_DIRS}/../../lib
 		/usr/local/lib
 		)
 	foreach(item ${deps})

@@ -285,7 +285,7 @@ namespace math {
         }
     }
 
-    Valuable::Valuable(const std::string& s, std::shared_ptr<VarHost> h)
+    Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h)
     {
         auto l = s.length();
         using index_t = decltype(l);
@@ -298,7 +298,7 @@ namespace math {
                 st.push(c);
             else if (s[c] == ')')
             {
-                bracketsmap.insert({st.top(), c});
+                bracketsmap.emplace(st.top(), c);
                 st.pop();
             }
             c++;
@@ -307,11 +307,11 @@ namespace math {
             throw "parentneses relation missmatch";
         if (bracketsmap.empty())
         {
-            std::size_t found = s.find("*");
+            auto found = s.find("*");
             if (found != std::string::npos)
             {
-                std::string lpart = s.substr(0, found);
-                std::string rpart = s.substr(found + 1, s.length() - found);
+                auto lpart = s.substr(0, found);
+                auto rpart = s.substr(found + 1, s.length() - found);
                 Become(Valuable(lpart, h)*Valuable(rpart, h));
             }
             else
@@ -319,8 +319,8 @@ namespace math {
                 found = s.find("^");
                 if (found != std::string::npos)
                 {
-                    std::string lpart = s.substr(0, found);
-                    std::string rpart = s.substr(found + 1, s.length() - found);
+                    auto lpart = s.substr(0, found);
+                    auto rpart = s.substr(found + 1, s.length() - found);
                     Become(Valuable(lpart, h) ^ Valuable(rpart, h));
                 }
                 else
@@ -331,14 +331,18 @@ namespace math {
                     found = s.find_first_not_of("0123456789", offs);
                     if (found == std::string::npos)
                     {
-                        Become(offs ? Integer(std::string_view(s.c_str() + offs, s.size() - offs)) : Integer(s));
+                        Become(offs ? Integer(s.substr(offs)) : Integer(s));
                     }
                     else
                     {
-                        if (s[0] == 'v')
-                            Become(Valuable(h->Host(std::stoi(s.c_str()+1)).Clone()));
+                        if (s[0] == 'v' && s.size() > 1 &&
+                            std::all_of(s.begin() + 1, s.end(),
+								[](auto ch) { return std::isdigit(ch); }
+								)
+							)
+                            Become(Valuable(h->Host(Valuable(a_int(s.substr(1))))));
                         else
-                            IMPLEMENT
+                            Become(Valuable(h->Host(s)));
                     }
                 }
             }
@@ -370,7 +374,7 @@ namespace math {
                 else if (c == 'v') {
                     auto next = s.find_first_not_of("0123456789", i+1);
                     auto id = s.substr(i + 1, next - i);
-                    o(std::move(h->New(std::stoi(id))));
+                    o(h->New(Valuable(a_int(id))));
                     i = next - 1;
                 }
                 else if ( (c >= '0' && c <= '9') || c == '-') {
@@ -393,7 +397,12 @@ namespace math {
                 }
                 else if (c == ' ') {
                 }
-                else {
+                else if (std::isalpha(c)){
+                    auto to = s.find_first_of(" */+-()", i+1);
+                    auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
+                    o(Valuable(h->Host(s)));
+                    i = to - 1;
+                } else {
                     IMPLEMENT
                 }
             }
@@ -1529,6 +1538,13 @@ auto OmitOuterBrackets(std::string_view& s){
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
         IMPLEMENT
+	}
+
+    std::function<bool(std::initializer_list<Valuable>)> Valuable::Functor() const {
+        if (exp)
+            return exp->Functor();
+        else
+            IMPLEMENT
     }
 
     Valuable Valuable::bit(const Valuable& n) const

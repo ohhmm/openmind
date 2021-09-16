@@ -52,6 +52,11 @@ BOOST_AUTO_TEST_CASE(BaseInt_tests)
     BOOST_TEST(_1 == 0_v);
     BOOST_TEST(Valuable() == Integer::base_int());
     BOOST_TEST(Integer() == Integer::base_int());
+
+
+    std::string_view s{"12345", 2};
+    i = Integer::base_int(s);
+    BOOST_TEST(i == 12); // fixed sice boost version 1.77.0
 }
 BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test
                      ,*disabled()
