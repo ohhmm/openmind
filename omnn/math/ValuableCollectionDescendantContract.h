@@ -36,6 +36,8 @@ namespace math {
         using base::base;
         ValuableCollectionDescendantContract(ValuableCollectionDescendantContract&&)=default;
         ValuableCollectionDescendantContract(const ValuableCollectionDescendantContract&)=default;
+        ValuableCollectionDescendantContract& operator=(ValuableCollectionDescendantContract&&)=default;
+        ValuableCollectionDescendantContract& operator=(const ValuableCollectionDescendantContract&)=default;
 
         virtual const cont& GetConstCont() const = 0;
         

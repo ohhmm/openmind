@@ -30,19 +30,19 @@ endif()
 
 if(MSVC)
     find_package(Boost
-		1.77.0
+                #1.77.0
 		PATHS C:/Boost
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 else()
     find_package(Boost
-		1.77.0
+                #1.77.0
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 endif()
 
 if(NOT Boost_FOUND)
-	set(OPENMIND_BUILD_BOOST True)
+        set(OM_BUILD_BOOST True)
 	message("Install local build boost library to omit building it with OM")
 else()
 	message("Boost_VERSION: ${Boost_VERSION}")
@@ -55,7 +55,7 @@ else()
 	endif()
 endif()
 
-option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OPENMIND_BUILD_BOOST})
+option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
 
 set(OPENMIND_INCLUDE_DIR ${CMAKE_SOURCE_DIR})
 message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")

@@ -17,7 +17,7 @@
 
 #include <algorithm>
 #include <cmath>
-#ifdef _WIN32
+#if __has_include(<execution>)
 #include <execution>
 #endif
 #include <future>
@@ -110,7 +110,7 @@ namespace math {
         }
         else
         {
-#ifdef _WIN32
+#if __has_include(<execution>)
             if (members.size() > Thr)
                 it = std::find(std::execution::par, members.begin(), members.end(), item); // TODO: check that it is faster
             else

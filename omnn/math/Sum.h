@@ -92,7 +92,11 @@ public:
 #if defined(_MSC_VER) || defined(__GNUC__)
     Sum() = default;
 #endif
-    
+    Sum(Sum&&) = default;
+    Sum(const Sum&) = default;
+    Sum& operator=(Sum&&) = default;
+    Sum& operator=(const Sum&) = default;
+
     iterator Had(iterator it) override;
     using base::Add;
     const iterator Add(const Valuable& item, const iterator hint) override;
