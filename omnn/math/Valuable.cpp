@@ -285,8 +285,8 @@ namespace math {
         }
     }
 
-    Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h)
-    {
+    Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
+	) {
         auto l = s.length();
         using index_t = decltype(l);
         std::stack <index_t> st;
@@ -312,7 +312,7 @@ namespace math {
             {
                 auto lpart = s.substr(0, found);
                 auto rpart = s.substr(found + 1, s.length() - found);
-                Become(Valuable(lpart, h)*Valuable(rpart, h));
+                Become(Valuable(lpart, h, itIsOptimized) * Valuable(rpart, h, itIsOptimized));
             }
             else
             {
@@ -321,7 +321,7 @@ namespace math {
                 {
                     auto lpart = s.substr(0, found);
                     auto rpart = s.substr(found + 1, s.length() - found);
-                    Become(Valuable(lpart, h) ^ Valuable(rpart, h));
+                    Become(Valuable(lpart, h, itIsOptimized) ^ Valuable(rpart, h, itIsOptimized));
                 }
                 else
                 {
@@ -346,20 +346,32 @@ namespace math {
                     }
                 }
             }
-        }
-        else {
+        } else {
             Sum sum;
             Valuable v;
-            auto o_mov = [&](Valuable&& val) {
-                v = std::move(val);
-            };
-            auto o_mul = [&](Valuable&& val) {
-                v *= std::move(val);
-            };
-            auto o_e = [&](Valuable&& val) {
-                v ^= std::move(val);
-            };
-            std::function<void(Valuable&&)> o = o_mov;
+            using op_t = std::function<void(Valuable &&)>;
+            auto o_mov = [&](Valuable&& val) { v = std::move(val); };
+            op_t o_sum, o_mul, o_exp;
+            if (itIsOptimized) {
+                o_sum = [&](Valuable&& val) {
+                    sum.operator=(std::move(Sum{std::move(sum), std::move(val)}));
+                    sum.MarkAsOptimized();
+                };
+                o_mul = [&](Valuable&& val) {
+                    v = Product{std::move(v), std::move(val)};
+                    v.MarkAsOptimized();
+                };
+                o_exp = [&](Valuable&& val) {
+                    v = Exponentiation{std::move(v), std::move(val)};
+                    v.MarkAsOptimized();
+                };
+            } else {
+                o_sum = [&](Valuable&& val) { sum += std::move(val); };
+                o_mul = [&](Valuable&& val) { v *= std::move(val); };
+                o_exp = [&](Valuable&& val) { v ^= std::move(val); };
+            }
+
+            op_t o = o_mov;
             //std::stack<char> op;
             for (index_t i = 0; i < l; ++i)
             {
@@ -368,14 +380,22 @@ namespace math {
                 {
                     auto cb = bracketsmap[i];
                     auto next = i + 1;
-                    o(Valuable(s.substr(next, cb - next), h));
+                    o(Valuable(s.substr(next, cb - next), h, itIsOptimized));
                     i = cb;
                 }
                 else if (c == 'v') {
-                    auto next = s.find_first_not_of("0123456789", i+1);
-                    auto id = s.substr(i + 1, next - i);
-                    o(h->New(Valuable(a_int(id))));
-                    i = next - 1;
+                    auto idStart = i + 1;
+                    auto next = s.find_first_not_of("0123456789", idStart);
+                    auto id = s.substr(idStart, next - idStart);
+                    if (id.empty()) {
+                        auto to = s.find_first_of(" */+-()", idStart);
+                        auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
+                        o(Valuable(h->Host(id)));
+                        i = to - 1;
+                    } else {
+                        o(h->New(Valuable(a_int(id))));
+                        i = next - 1;
+                    }
                 }
                 else if ( (c >= '0' && c <= '9') || c == '-') {
                     auto next = s.find_first_not_of("0123456789", i+1);
@@ -383,7 +403,7 @@ namespace math {
                     i = next - 1;
                 }
                 else if (c == '+') {
-                    sum.Add(v);
+                    o_sum(std::move(v));
                     v = 0;
                     o = o_mov;
                 }
@@ -393,29 +413,35 @@ namespace math {
                 else if (c == '^') {
                     IMPLEMENT
                     auto _ = o;
-                    o = o_e;
+                    o = o_exp;
                 }
                 else if (c == ' ') {
                 }
                 else if (std::isalpha(c)){
                     auto to = s.find_first_of(" */+-()", i+1);
                     auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
-                    o(Valuable(h->Host(s)));
+                    o(Valuable(h->Host(id)));
                     i = to - 1;
                 } else {
                     IMPLEMENT
                 }
             }
-            sum.Add(v);
-            Become(std::move(sum));
+
+            if (sum.size()) {
+                o_sum(std::move(v));
+                Become(std::move(sum));
+            } else {
+                Become(std::move(v));
+            }
         }
 
+#ifndef NDEBUG
         auto _ = str();
-        if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
-            _ = _.substr(1, _.length()-2);
-        
-        if (s != _)
+        auto same = s == _
+            || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
+        if (!same)
             IMPLEMENT;
+#endif // !NDEBUG
     }
 
     Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)

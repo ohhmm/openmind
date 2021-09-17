@@ -565,12 +565,12 @@ BOOST_AUTO_TEST_CASE(TicTacToe_X_Won_test)
 	//auto iPossibleValues = i.Abet({1, 2, 3});
 
     std::cout << "precalculatedOptimizedIsWon: \n" << precalculatedOptimizedIsWon;
-    Valuable isWon(precalculatedOptimizedIsWon, x.getVaHost()); // variables, true);
+    Valuable isWon(precalculatedOptimizedIsWon, x.getVaHost(), true); // variables, true);
 
     std::cout << "\nisWon initialized: \n" << isWon << std::endl;
     BOOST_TEST(precalculatedOptimizedIsWon == isWon.str());
 
-    Valuable isWonSq(std::string_view(precalculatedAndOptimizedIsWonSq), variables, true);
+    Valuable isWonSq(std::string_view(precalculatedAndOptimizedIsWonSq), x.getVaHost(), true);
     std::cout << "\nprecalculated isWon^2 initialized: \n" << isWonSq << std::endl;
     BOOST_TEST(precalculatedAndOptimizedIsWonSq == isWonSq.str());
 		

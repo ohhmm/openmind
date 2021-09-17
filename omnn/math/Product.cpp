@@ -57,7 +57,11 @@ namespace math {
     {
         for (const auto& arg : l)
         {
-            this->Add(arg, end());
+            if (arg.IsProduct())
+                for (auto& m : arg.as<Product>().members)
+                    this->Add(m, end());
+            else
+                this->Add(arg, end());
         }
     }
     

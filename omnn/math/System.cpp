@@ -4,7 +4,7 @@
 #include "System.h"
 #include "Valuable.h"
 #include <algorithm>
-#ifdef _WIN32
+#if __has_include(<execution>)
 #include <execution>
 #endif
 #include <numeric>
@@ -68,7 +68,7 @@ bool System::Add(const Valuable& v)
     _.SetView(Valuable::View::Equation);
     _.optimize();
     auto isNew = _ != 0_v &&
-#ifdef _WIN32
+#if __has_include(<execution>)
         std::find(std::execution::par, std::begin(equs), std::end(equs), _) == equs.end()
         && std::find(std::execution::par, std::begin(equs), std::end(equs), -_) == equs.end();
 #else
