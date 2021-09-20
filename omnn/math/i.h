@@ -11,12 +11,10 @@ namespace omnn::math {
     {
         using base = Constant<MinusOneSq>;
 
-    protected:
-        std::ostream &print(std::ostream &out) const override
-        { return out << 'i'; }
-
     public:
         using base::base;
+
+        static constinit std::string_view SerializationName;
 
         bool Is_i() const override { return true; }
         YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }

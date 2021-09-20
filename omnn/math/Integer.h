@@ -30,7 +30,8 @@ public:
 
     Integer(const Integer&)=default;
     Integer(Integer&&)=default;
-	Integer& operator=(const Integer& f) = default;
+    Integer& operator=(const Integer&) = default;
+    Integer& operator=(Integer&&) = default;
 
     template<class IntT>
     static Integer From(typename std::enable_if<std::is_integral<IntT>::value>::type i = 0)
@@ -89,7 +90,7 @@ public:
     explicit operator int64_t() const;
 
     bool IsInt() const override { return true; }
-    bool IsConstant() const override { return true; }
+    //bool IsConstant() const override { return true; }   The Integer object may be applied an arithmetic operation and this object value changed. Only Constant class objects should return IsConstant true.
     bool is_optimized() const override { return true; }
     YesNoMaybe IsEven() const override;
     YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }

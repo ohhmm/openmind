@@ -213,19 +213,13 @@ namespace math {
         return *this;
     }
 
-    Valuable::Valuable(const Valuable& v) :
-        exp(v.Clone())
-    {
-    }
-
-    Valuable::Valuable(Valuable* v) :
-        exp(v)
-    {
-    }
+    Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
+    Valuable::Valuable(Valuable* v) : exp(v) {}
+    Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
     Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(a_int&& i) : exp(new Integer(std::move(i))) {}
-    Valuable::Valuable(const a_int& i) : exp(new Integer(std::move(i))) {}
+    Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
     Valuable::Valuable(boost::rational<a_int>&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
 
 //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, 1_v/2)-b)/(a*2));
@@ -326,7 +320,7 @@ namespace math {
                 else
                 {
                     auto offs = 0;
-                    while (s.starts_with(' '))
+                    while (s[offs]==' ')
                         ++offs;
                     found = s.find_first_not_of("0123456789", offs);
                     if (found == std::string::npos)
@@ -611,10 +605,16 @@ auto OmitOuterBrackets(std::string_view& s){
                         Become(std::move(v));
                     }
                     else {
-#ifndef NDEBUG
-                      std::cout << s << ": no var found" << std::endl;
-#endif
-                      IMPLEMENT
+                        constexpr const auto& Constants = constants::ConstNameAdder::GetConstantNamesMap();
+                        auto it = Constants.find(s);
+                        if (it != Constants.end()) {
+                            Valuable v(it->second);
+                            if (itIsOptimized)
+                                v.MarkAsOptimized();
+                            Become(std::move(v));
+                        } else {
+                            LOG_AND_IMPLEMENT(s << ": no var/const found");
+                        }
                     }
                 }
             }

@@ -11,12 +11,10 @@ namespace omnn::math {
     {
         using base = Constant<Pi>;
 
-    protected:
-        std::ostream &print(std::ostream &out) const override
-        { return out << "pi"; }
-
     public:
         using base::base;
+
+        static constinit std::string_view SerializationName;
 
         bool Is_pi() const override { return true; }
         bool operator==(const Valuable& v) const override

@@ -6,6 +6,8 @@
 
 using namespace omnn::math;
 
+constinit std::string_view MinusOneSq::SerializationName = "i";
+
 std::pair<bool, Valuable> MinusOneSq::IsMultiplicationSimplifiable(const Valuable &v) const {
     std::pair<bool, Valuable> is;
     is.first = v.Is_i();
