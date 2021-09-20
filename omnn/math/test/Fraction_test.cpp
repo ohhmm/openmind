@@ -58,16 +58,19 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     BOOST_TEST(eq);
 }
 
-BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests
-                     ,*disabled() // TODO : enable
-                     )
+BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests)
 {
     auto _ = 841_v/64;
+    auto a = _.Sqrt();
     _ ^= 1_v/2;
-    auto a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
+
+    a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
+    // (573440 * (±29/±8) + 2115584) / 262144
     a.optimize();
+    auto ok = a.IsMultival() == Valuable::YesNoMaybe::Yes;
+    BOOST_TEST(ok);
     
-    for (int64_t i=38; i --> 1; ) {
+    for (int64_t i=8; i --> 1; ) {
         Valuable sh(int64_t(1)<<i);
         auto multi = 1_v^(1_v/sh);
         _ = multi;

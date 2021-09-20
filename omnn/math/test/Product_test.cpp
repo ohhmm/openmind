@@ -101,13 +101,24 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     BOOST_TEST(has == false);
 }
 
-BOOST_AUTO_TEST_CASE(Product_optimization_test
-                     ,*disabled()
-                     )
+BOOST_AUTO_TEST_CASE(Product_optimization_test)
 {
+    auto _1 = -8 * (1_v^(1_v/2));
+    auto _2 =  8 * (1_v^(1_v/2));
+    BOOST_TEST(_1 == _2);
+
     DECL_VA(x);
-    auto _1 = -x * (1_v^(1_v/2));
-    auto _2 =  x * (1_v^(1_v/2));
+    _1 = -x * (1_v^(1_v/2));
+    _2 =  x * (1_v^(1_v/2));
+    BOOST_TEST(_1 == _2);
+}
+
+BOOST_AUTO_TEST_CASE(Product_multivalues_simplification)
+{
+    auto _1 = -8 * (1_v^(1_v/2));
+    auto _2 =  8 * (1_v^(1_v/2));
+    _1 /= _2;
+    _2 = 1 * (1_v ^ (1_v / 2));
     BOOST_TEST(_1 == _2);
 }
 

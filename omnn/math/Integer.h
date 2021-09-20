@@ -75,8 +75,9 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
 
+    constexpr
     Integer(const std::string_view& s)
-		: arbitrary(std::string(s))
+		: arbitrary(s)
     {
         hash = std::hash<base_int>()(arbitrary);
     }

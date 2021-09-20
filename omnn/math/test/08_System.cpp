@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
     Valuable::optimizations = {};
     
     auto at = [&](const Valuable& xx, const Valuable& yy, const Valuable& vv){
-        return x.Equals(xx).LogicAnd(y.Equals(yy)).LogicAnd(v.Equals(vv));
+        return x.Equals(xx).sq() + y.Equals(yy).sq() + v.Equals(vv).sq();
     };
     
     // define known data
@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_system_test
     
     // at
     auto at = [&](auto& xx, auto& yy, auto& vv){
-        return x.Equals(xx).LogicAnd(y.Equals(yy)).LogicAnd(v.Equals(vv));
+        return x.Equals(xx).sq() + y.Equals(yy).sq() + v.Equals(vv).sq();
     };
     
     // define known data
