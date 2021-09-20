@@ -44,11 +44,9 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
 
 BOOST_AUTO_TEST_CASE(_1_2_3_) {
     auto x = "x"_va;
-    auto expr = x.Equals(1)
-        .logic_or(x.Equals(2))
-        .logic_or(x.Equals(3));
+    auto expr = x.Equals(1) || x.Equals(2) || x.Equals(3);
     std::cout
-        << "expr = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3))" << std::endl
+        << "expr = x.Equals(1) || x.Equals(2) || x.Equals(3)" << std::endl
         << expr << std::endl
         << "Solutions:" << std::endl;
     auto solutions = expr.Solutions();

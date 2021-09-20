@@ -4,6 +4,11 @@
 
 #include "e.h"
 
-namespace omnn::math::constant {
+using namespace omnn::math;
+
+constinit std::string_view Euler::SerializationName = "e";
+
+using namespace constant;
 //    static const Euler e;
-}
+
+

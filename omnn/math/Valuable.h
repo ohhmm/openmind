@@ -197,6 +197,7 @@ public:
     };
 
     explicit Valuable(Valuable* v);
+    explicit Valuable(const encapsulated_instance& e);
     virtual std::type_index Type() const;
     
     Valuable& operator =(const Valuable& v);

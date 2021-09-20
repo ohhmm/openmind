@@ -12,11 +12,10 @@ class Infinity
 {
     using base = Constant<Infinity>;
 
-protected:
-    std::ostream& print(std::ostream& out) const override;
-
 public:
     using base::base;
+
+    static constinit std::string_view SerializationName;
 
     bool IsInfinity() const override { return true; }
     Valuable operator -() const override;
@@ -36,11 +35,10 @@ class MInfinity
 {
     using base = Constant<MInfinity>;
 
-protected:
-    std::ostream& print(std::ostream& out) const override;
-
 public:
     using base::base;
+
+    static constinit std::string_view SerializationName;
 
     bool IsMInfinity() const override { return true; }
     Valuable operator -() const override;

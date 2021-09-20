@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(Stasis
     auto& v = "v"_va;
 
     auto at = [&](const Valuable& xx, const Valuable& yy, const Valuable& vv) -> Valuable {
-        return x.Equals(xx).LogicAnd(y.Equals(yy)).LogicAnd(v.Equals(vv));
+        return x.Equals(xx).sq() + y.Equals(yy).sq() + v.Equals(vv).sq();
     };
 
     auto world = at(0,0,1);

@@ -112,7 +112,7 @@ namespace math {
         {
 #if __has_include(<execution>)
             if (members.size() > Thr)
-                it = std::find(std::execution::par, members.begin(), members.end(), item); // TODO: check that it is faster
+                it = std::find(std::execution::par, members.begin(), members.end(), item);
             else
 #endif
                 it = members.find(item);

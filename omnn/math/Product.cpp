@@ -230,7 +230,8 @@ namespace math {
 
     void Product::optimize()
     {
-        if (!optimizations) return;
+        if (!optimizations || optimized)
+            return;
         
         // zero
         auto it = GetFirstOccurence<Integer>();

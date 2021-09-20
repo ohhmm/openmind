@@ -8,15 +8,27 @@
 namespace omnn{
 namespace math {
 
-    template <class Chld>
+namespace constants {
+class ConstNameAdder;
+} // namespace constants
+
+template <class Chld>
     class Constant
         : public ValuableDescendantContract<Chld>
     {
         using base = ValuableDescendantContract<Chld>;
+        friend class Constant<Chld>;
+
+        static constinit Chld GlobalObject;
+        static constinit constants::ConstNameAdder ConstNameToSerializationNamesMapAdder;
 
     protected:
         bool IsSubObject(const Valuable& o) const override {
             return this == &o.get();
+        }
+
+        std::ostream& print(std::ostream& out) const override {
+            return out << Chld::SerializationName;
         }
 
     public:
@@ -56,7 +68,7 @@ namespace math {
                 if (is.first) {
                     is.second = this->Sq();
                 }
-            } else if (!v.IsVa()) {
+            } else if (!(v.IsVa() || v.IsInt())) {
                 is = v.IsMultiplicationSimplifiable(*this);
             }
             return is;
@@ -81,4 +93,20 @@ namespace math {
 				: v.InCommonWith(*this));
         }
     };
-}}
+
+	namespace constants {
+    class ConstNameAdder {
+        static std::map<std::string_view, Valuable> SerializationNamesMap;
+
+    public:
+        ConstNameAdder(const std::string_view& name, const Valuable& obj);
+        static constexpr auto& GetConstantNamesMap() { return SerializationNamesMap; }
+    };
+    } // namespace constants
+
+	template <class Chld>
+	constinit constants::ConstNameAdder 
+		Constant<Chld>::ConstNameToSerializationNamesMapAdder(Chld::SerializationName, Constant<Chld>::GlobalObject);
+
+}} // namespace
+

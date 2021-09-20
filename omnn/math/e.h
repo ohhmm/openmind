@@ -11,12 +11,10 @@ namespace omnn::math {
     {
         using base = Constant<Euler>;
 
-    protected:
-        std::ostream &print(std::ostream &out) const override
-        { return out << 'e'; }
-
     public:
         using base::base;
+
+        static constinit std::string_view SerializationName;
 
         bool Is_e() const override { return true; }
         bool operator==(const Valuable& v) const override
