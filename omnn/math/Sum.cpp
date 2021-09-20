@@ -36,15 +36,15 @@
 namespace omnn{
 namespace math {
 
+namespace
+{
     CACHE(DbSumBalancingCache);
     CACHE(DbSumOptimizationCache);
     CACHE(DbSumSolutionsOptimizedCache);
     CACHE(DbSumSolutionsAllRootsCache);
     CACHE(DbSumSolutionsARootCache);
-    CACHE(DbSumSolutionsSqCache);
+    CACHE(DbSumSqCache);
 
-    namespace
-    {
         using namespace std;
         
         type_index order[] = {
@@ -994,7 +994,7 @@ namespace math {
 
     Valuable& Sum::sq()
     {
-        auto cached = DbSumSolutionsSqCache.AsyncFetch(*this, true);
+        auto cached = DbSumSqCache.AsyncFetch(*this, true);
         Sum s;
         auto e = end();
         for (auto i = begin(); i != e; ++i)
@@ -1008,7 +1008,7 @@ namespace math {
             }
         }
         if (cached.NotInCache())
-            DbSumSolutionsSqCache.AsyncSet(str(), s.str());
+            DbSumSqCache.AsyncSet(str(), s.str());
         return Become(std::move(s));
     }
 

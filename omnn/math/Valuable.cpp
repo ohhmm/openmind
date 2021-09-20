@@ -18,6 +18,10 @@
 #include <type_traits>
 
 #include <boost/numeric/conversion/converter.hpp>
+#ifndef NDEBUG
+#include <boost/algorithm/string/replace.hpp>
+#endif
+
 
 namespace omnn{
 namespace math {
@@ -279,6 +283,69 @@ namespace math {
         }
     }
 
+namespace{
+auto BracketsMap(const std::string_view& s){
+    auto l = s.length();
+    using index_t = decltype(l);
+    std::stack <index_t> st;
+    std::map<index_t, index_t> bracketsmap;
+    decltype(l) c = 0;
+    std::string numbers = "0123456789";
+    while (c < l)
+    {
+        if (s[c] == '(')
+            st.push(c);
+        else if (s[c] == ')')
+        {
+            if (st.empty()) {
+                throw "parentneses relation missmatch";
+            }
+            bracketsmap.emplace(st.top(), c);
+            st.pop();
+        }
+        ++c;
+    }
+    if (!st.empty())
+        throw "parentneses relation missmatch";
+    return bracketsmap;
+}
+
+std::string_view& Trim(std::string_view& s) {
+    s.remove_prefix(std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
+    s.remove_suffix((s.size() - 1) - std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
+    return s;
+}
+
+auto OmitOuterBrackets(std::string_view& s){
+    decltype(BracketsMap({})) bracketsmap;
+    bool outerBracketsDetected;
+    do{
+        outerBracketsDetected = {};
+        Trim(s);
+        bracketsmap = BracketsMap(s);
+        auto l = s.length();
+        auto first = bracketsmap.find(0);
+        outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
+        if (outerBracketsDetected)
+            s = s.substr(1,l-2);
+    } while(outerBracketsDetected);
+    return bracketsmap;
+}
+
+std::string Spaceless(std::string s) {
+    auto e = s.end();
+    for (auto it = s.begin(); it != e; ) {
+        if (std::isspace(*it)) {
+            it = s.erase(it);
+            e = s.end();
+        } else {
+            ++it;
+		}
+	}
+    return s;
+}
+}
+
     Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
 	) {
         auto l = s.length();
@@ -319,6 +386,8 @@ namespace math {
                 }
                 else
                 {
+                    auto copy = s;
+                    auto s = Trim(copy);
                     auto offs = 0;
                     while (s[offs]==' ')
                         ++offs;
@@ -335,29 +404,39 @@ namespace math {
 								)
 							)
                             Become(Valuable(h->Host(Valuable(a_int(s.substr(1))))));
+                        else if (s.length() > 2
+                            && s[0] == '0'
+                            && (s[1] == 'x' || s[1] == 'X')
+                            && std::isxdigit(s[2])
+                            && s.find_first_not_of("0123456789ABCDEFabcdef", 2) == std::string::npos
+                            )
+                            Become(Integer(s));
                         else
                             Become(Valuable(h->Host(s)));
                     }
                 }
             }
         } else {
-            Sum sum;
+            Valuable sum = Sum{};
             Valuable v;
             using op_t = std::function<void(Valuable &&)>;
-            auto o_mov = [&](Valuable&& val) { v = std::move(val); };
+            op_t o_mov = [&](Valuable&& val) { v = std::move(val); };
             op_t o_sum, o_mul, o_exp;
             if (itIsOptimized) {
                 o_sum = [&](Valuable&& val) {
-                    sum.operator=(std::move(Sum{std::move(sum), std::move(val)}));
-                    sum.MarkAsOptimized();
+                    Sum s{std::move(sum), std::move(val)};
+                    s.MarkAsOptimized();
+                    sum = std::move(s);
                 };
                 o_mul = [&](Valuable&& val) {
-                    v = Product{std::move(v), std::move(val)};
-                    v.MarkAsOptimized();
+                    Product p{std::move(v), std::move(val)};
+                    p.MarkAsOptimized();
+                    v = std::move(p);
                 };
                 o_exp = [&](Valuable&& val) {
-                    v = Exponentiation{std::move(v), std::move(val)};
-                    v.MarkAsOptimized();
+                    Exponentiation e{std::move(v), std::move(val)};
+                    e.MarkAsOptimized();
+                    v = std::move(e);
                 };
             } else {
                 o_sum = [&](Valuable&& val) { sum += std::move(val); };
@@ -365,9 +444,10 @@ namespace math {
                 o_exp = [&](Valuable&& val) { v ^= std::move(val); };
             }
 
-            op_t o = o_mov;
+            auto o = std::ref(o_mov);
             //std::stack<char> op;
-            for (index_t i = 0; i < l; ++i)
+            auto mulByNeg = false;
+            for (index_t i = s.find_first_not_of(" \t\n\r"); i < l; ++i)
             {
                 auto c = s[i];
                 if (c == '(')
@@ -387,13 +467,27 @@ namespace math {
                         o(Valuable(h->Host(id)));
                         i = to - 1;
                     } else {
-                        o(h->New(Valuable(a_int(id))));
+                        o(Valuable(h->Host(Valuable(a_int(id)))));
                         i = next - 1;
                     }
                 }
                 else if ( (c >= '0' && c <= '9') || c == '-') {
-                    auto next = s.find_first_not_of("0123456789", i+1);
-                    o(Integer(s.substr(i, next - i)));
+                    if (c == '-') {
+                        if (!mulByNeg) {
+                            o_sum(std::move(v));
+                            v = 0;
+                            o = o_mov;
+                        } else
+                            mulByNeg = false;
+                    }
+
+                    auto next = s.find_first_not_of(" 0123456789", i+1);
+                    auto ss = s.substr(i, next - i);
+                    Trim(ss);
+                    Valuable integer = ss.find(' ') == std::string::npos
+						? Integer(ss)
+						: Integer(Spaceless(std::string(ss)));
+                    o(std::move(integer));
                     i = next - 1;
                 }
                 else if (c == '+') {
@@ -403,10 +497,11 @@ namespace math {
                 }
                 else if (c == '*') {
                     o = o_mul;
+                    while (s[i + 1] == ' ')
+                        ++i;
+                    mulByNeg = s[i + 1] == '-';
                 }
                 else if (c == '^') {
-                    IMPLEMENT
-                    auto _ = o;
                     o = o_exp;
                 }
                 else if (c == ' ') {
@@ -421,20 +516,46 @@ namespace math {
                 }
             }
 
-            if (sum.size()) {
-                o_sum(std::move(v));
-                Become(std::move(sum));
-            } else {
-                Become(std::move(v));
-            }
+            o_sum(std::move(v));
+            Become(std::move(sum));
         }
 
 #ifndef NDEBUG
         auto _ = str();
         auto same = s == _
             || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
-        if (!same)
-            IMPLEMENT;
+        if (!same) {
+            auto _1 = Spaceless(str()), _2 = Spaceless(std::string(s));
+            same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
+            if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
+                _2 = a_int(s).str();
+                same = _1 == _2;
+			}
+            if (!same) {
+                boost::replace_all(_1, "+-", "-");
+                boost::replace_all(_2, "+-", "-");
+                same = _1 == _2;
+            }
+            if (!same && _1.front() == '(' && _1.back() == ')' && _2.length() == _1.length() - 2) {
+                _1 = _1.substr(1, _1.length() - 2);
+                same = _1 == _2;
+            }
+            if (!same && _1.length()==_2.length()) {
+                std::map<char, a_int> m1, m2;
+                for (char c : _1)
+                    ++m1[c];
+                for (char c : _2)
+                    ++m2[c];
+                same = m1 == m2;
+            }
+            if (!same) {
+                LOG_AND_IMPLEMENT("Deserialization check: "
+                    << _ << " != " << s << std::endl
+                    << std::endl
+                    << _1 << "\n !=\n"
+                    << _2 << std::endl);
+			}
+        }
 #endif // !NDEBUG
     }
 
@@ -452,56 +573,6 @@ namespace math {
 #endif
 #endif
     }
-
-namespace{
-auto BracketsMap(const std::string_view& s){
-    auto l = s.length();
-    using index_t = decltype(l);
-    std::stack <index_t> st;
-    std::map<index_t, index_t> bracketsmap;
-    decltype(l) c = 0;
-    std::string numbers = "0123456789";
-    while (c < l)
-    {
-        if (s[c] == '(')
-            st.push(c);
-        else if (s[c] == ')')
-        {
-            if (st.empty()) {
-                throw "parentneses relation missmatch";
-            }
-            bracketsmap.emplace(st.top(), c);
-            st.pop();
-        }
-        ++c;
-    }
-    if (!st.empty())
-        throw "parentneses relation missmatch";
-    return bracketsmap;
-}
-
-void Trim(std::string_view& s)
-{
-    s.remove_prefix(std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
-    s.remove_suffix((s.size() - 1) - std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
-}
-
-auto OmitOuterBrackets(std::string_view& s){
-    decltype(BracketsMap({})) bracketsmap;
-    bool outerBracketsDetected;
-    do{
-        outerBracketsDetected = {};
-        Trim(s);
-        bracketsmap = BracketsMap(s);
-        auto l = s.length();
-        auto first = bracketsmap.find(0);
-        outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
-        if (outerBracketsDetected)
-            s = s.substr(1,l-2);
-    } while(outerBracketsDetected);
-    return bracketsmap;
-}
-}
 
     Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized){
 		auto optimizationsWas = Valuable::optimizations;
@@ -2013,23 +2084,15 @@ namespace std
     }
 }
 
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t)
+::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)
 {
-    using namespace ::omnn::math;
-    if ((*v >= '0' && *v <= '9') || (*v == '-' && (v[1] >= '0' && v[1] <= '9')))
-        return ::omnn::math::Integer(boost::multiprecision::cpp_int(v));
-    else {
-        static auto h = VarHost::make<std::string>();
-        return Valuable(v,h);
-    }
+    static auto StrVaHost = ::omnn::math::VarHost::Global<std::string>().shared_from_this();
+    return {{v, l}, StrVaHost, true};
 }
 
-const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t)
+const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l)
 {
-    using namespace ::omnn::math;
-    static auto h = VarHost::make<std::string>();
-    std::string id = v;
-    return h->Host(id);
+    return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
 
 //constexpr

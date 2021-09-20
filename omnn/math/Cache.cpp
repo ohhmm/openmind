@@ -91,8 +91,8 @@ Cache::Cached Cache::AsyncFetch(const Valuable &v, bool itIsOptimized) {
   return std::move(task);
 }
 
-Cache::CheckCacheResult Cache::GetOne(const std::string &key,
-                                      const Valuable::va_names_t &vaNames,
+Cache::CheckCacheResult Cache::GetOne(std::string&& key,
+                                      Valuable::va_names_t&& vaNames,
                                       bool itIsOptimized) {
   CheckCacheResult cachedValue;
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE

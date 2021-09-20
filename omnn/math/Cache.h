@@ -99,7 +99,7 @@ namespace fs = boost::filesystem;
         ~Cache();
 
         Cached AsyncFetch(const Valuable& v, bool itIsOptimized = false);
-        CheckCacheResult GetOne(const std::string& key, const Valuable::va_names_t& vaNames, bool itIsOptimized = false);
+        CheckCacheResult GetOne(std::string&& key, Valuable::va_names_t&& vaNames, bool itIsOptimized = false);
         
         CachedSet AsyncFetchSet(const Valuable& v, bool itIsOptimized = false);
         CheckCachedSet GetSet(const std::string& key, const Valuable::va_names_t& vaNames, bool itIsOptimized = false);

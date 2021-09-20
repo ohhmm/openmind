@@ -117,17 +117,18 @@ BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
     }
 }
 
-// TODO : check with mathematicians which way is correct, fix te test and enable it
-BOOST_AUTO_TEST_CASE(Multival_test
-                    ,*disabled()
-                    )
+BOOST_AUTO_TEST_CASE(Multival_test)
 {
     auto a = 1_v ^ (1_v/2);
     BOOST_TEST(!!a.IsMultival() == true);
-    
-    DECL_VA(x);
-    BOOST_TEST(!!x.IsMultival() == true);
-    a = x / x;
+
+	a = a / a;
+    BOOST_TEST(!!a.IsMultival() == true);
+
+	// TODO : check with mathematicians which way is correct, fix the test and enable it
+    //DECL_VA(x);
+    //BOOST_TEST(!!x.IsMultival() == true);
+    //a = x / x;
     
     // Waht is the value of a?
     // first impression is that x/x is allways 1
@@ -140,9 +141,9 @@ BOOST_AUTO_TEST_CASE(Multival_test
     // so this way the answer should remain multival 1^(1/2)
     // 1^(1/2) / 1^(1/2) == 1^(1/2)
     // TODO : check with mathematicians which way is correct, fix te test and enable it
-    BOOST_TEST(a != 1);
-    
-    
-    BOOST_TEST(!!a.IsMultival() == true);
-    BOOST_TEST(a == x/x);
+    //BOOST_TEST(a != 1);
+    //
+    //
+    //BOOST_TEST(!!a.IsMultival() == true);
+    //BOOST_TEST(a == x/x);
 }
