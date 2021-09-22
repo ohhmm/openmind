@@ -277,6 +277,7 @@ public:
     virtual bool IsSum() const;
     virtual bool IsInfinity() const;
     virtual bool IsMInfinity() const;
+    virtual bool IsNaN() const;
     virtual bool Is_e() const;
     virtual bool Is_i() const;
     virtual bool Is_pi() const;
@@ -437,11 +438,22 @@ public:
     Valuable Intersect(const Valuable& with, const Variable& va) const {
         return LogicAnd(with);
     }
-    Valuable Ifz(const Valuable& Then, const Valuable& Else) const;
-    Valuable IfEq(const Valuable& v, const Valuable& Then, const Valuable& Else) const;
-    Valuable For(const Valuable& initialValue, const Valuable& lambda) const;
 
-    //constexpr 
+	/// conditional operators
+	//
+    Valuable Ifz(const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression is zero and @Else otherwise
+    Valuable IfEq(const Valuable& v, const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression equals to @v param and @Else otherwise
+
+	/// iterations
+	//
+    Valuable For(const Valuable& initialValue, const Valuable& lambda) const; // TODO : iterations operator
+
+	/// constrainting operators
+	//
+    Valuable MustBeInt() const; /// return an expression which equals to zero only when this expression is integer (see https://math.stackexchange.com/a/1598552/118612)
+
+	/// code builders
+    //
     virtual std::function<bool(std::initializer_list<Valuable>)> Functor() const;
 
     size_t Hash() const;

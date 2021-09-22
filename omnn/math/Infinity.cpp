@@ -137,3 +137,8 @@ Valuable& MInfinity::d(const Variable& x)
 {
     IMPLEMENT
 }
+
+
+// NaN
+
+constinit std::string_view NaN::SerializationName = "NaN";

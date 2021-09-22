@@ -333,15 +333,7 @@ auto OmitOuterBrackets(std::string_view& s){
 }
 
 std::string Spaceless(std::string s) {
-    auto e = s.end();
-    for (auto it = s.begin(); it != e; ) {
-        if (std::isspace(*it)) {
-            it = s.erase(it);
-            e = s.end();
-        } else {
-            ++it;
-		}
-	}
+    s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
     return s;
 }
 }
@@ -424,9 +416,11 @@ std::string Spaceless(std::string s) {
             op_t o_sum, o_mul, o_exp;
             if (itIsOptimized) {
                 o_sum = [&](Valuable&& val) {
-                    Sum s{std::move(sum), std::move(val)};
-                    s.MarkAsOptimized();
-                    sum = std::move(s);
+                    if (val != 0) {
+                        Sum s{std::move(sum), std::move(val)};
+                        s.MarkAsOptimized();
+                        sum = std::move(s);
+                    }
                 };
                 o_mul = [&](Valuable&& val) {
                     Product p{std::move(v), std::move(val)};
@@ -536,16 +530,18 @@ std::string Spaceless(std::string s) {
                 boost::replace_all(_2, "+-", "-");
                 same = _1 == _2;
             }
-            if (!same && _1.front() == '(' && _1.back() == ')' && _2.length() == _1.length() - 2) {
+            if (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
                 _1 = _1.substr(1, _1.length() - 2);
                 same = _1 == _2;
             }
-            if (!same && _1.length()==_2.length()) {
+            if (!same) {
                 std::map<char, a_int> m1, m2;
                 for (char c : _1)
-                    ++m1[c];
+                    if (c != '+')
+                        ++m1[c];
                 for (char c : _2)
-                    ++m2[c];
+                    if (c != '+')
+                        ++m2[c];
                 same = m1 == m2;
             }
             if (!same) {
@@ -595,17 +591,20 @@ std::string Spaceless(std::string s) {
                             ++search_start;
                         } else
                             offs = match;
-                    }else{
+                    } else if (offs) {
                         break;
+                    } else {
+                        ++offs;
                     }
                 }
                 return offs;
             };
 
+            std::string_view lpart, rpart;
             auto found = FindSkippingParentneses('+');
             if (found != std::string::npos) {
-                auto lpart = s.substr(search_start, found-search_start);
-                auto rpart = s.substr(found + 1, s.length() - (found + 1) - (search_start*2));
+                lpart = s.substr(search_start, found-search_start);
+                rpart = s.substr(found + 1, s.length() - (found + 1) - (search_start*2));
                 auto l = Valuable(lpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     l.MarkAsOptimized();
@@ -616,9 +615,20 @@ std::string Spaceless(std::string s) {
                 if (itIsOptimized)
                     sum.MarkAsOptimized();
                 Become(std::move(sum));
+            } else if ((found = FindSkippingParentneses('-')) != std::string::npos
+                    && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
+                    && !lpart.ends_with("*/^"))
+			{
+                rpart = s.substr(found, s.length() - found - search_start*2);
+                Valuable l(lpart, vaNames, itIsOptimized);
+                Valuable r(rpart, vaNames, itIsOptimized);
+                auto sum = itIsOptimized ? Sum{l, r} : l + r;
+                if (itIsOptimized)
+                    sum.MarkAsOptimized();
+                Become(std::move(sum));
             } else if ((found = FindSkippingParentneses('*')) != std::string::npos) {
-                auto lpart = s.substr(0, found);
-                auto rpart = s.substr(found + 1, s.length() - found);
+                lpart = s.substr(0, found);
+                rpart = s.substr(found + 1, s.length() - found);
                 auto l = Valuable(lpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     l.MarkAsOptimized();
@@ -630,8 +640,8 @@ std::string Spaceless(std::string s) {
                     product.MarkAsOptimized();
                 Become(std::move(product));
             } else if ((found = FindSkippingParentneses('/')) != std::string::npos) {
-                auto lpart = s.substr(0, found);
-                auto rpart = s.substr(found + 1, s.length() - found);
+                lpart = s.substr(0, found);
+                rpart = s.substr(found + 1, s.length() - found);
                 auto l = Valuable(lpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     l.MarkAsOptimized();
@@ -643,8 +653,8 @@ std::string Spaceless(std::string s) {
                     devided.MarkAsOptimized();
                 Become(std::move(devided));
             } else if((found = FindSkippingParentneses('^')) != std::string::npos) {
-                auto lpart = s.substr(0, found);
-                auto rpart = s.substr(found + 1, s.length() - found);
+                lpart = s.substr(0, found);
+                rpart = s.substr(found + 1, s.length() - found);
                 auto l = Valuable(lpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     l.MarkAsOptimized();
@@ -663,9 +673,14 @@ std::string Spaceless(std::string s) {
                     ++offs;
                 if (s[offs] == '-')
                     ++offs;
-                found = s.find_first_not_of("0123456789", offs);
-                if (found == std::string::npos)
-                    Become(Integer(s));
+                found = s.find_first_not_of(" 0123456789", offs);
+                if (found == std::string::npos) {
+                    Trim(s);
+                    auto integer = s.find(' ') == std::string::npos
+						? Integer(s)
+						: Integer(Spaceless(std::string(s)));
+                    Become(std::move(integer));
+                }
                 else
                 {
                     auto it = vaNames.find(s);
@@ -1138,6 +1153,7 @@ std::string Spaceless(std::string s) {
     bool Valuable::IsSum() const { return exp && exp->IsSum(); }
     bool Valuable::IsInfinity() const { return exp && exp->IsInfinity(); }
     bool Valuable::IsMInfinity() const { return exp && exp->IsMInfinity(); }
+    bool Valuable::IsNaN() const { return exp && exp->IsNaN(); }
     bool Valuable::Is_e() const { return exp && exp->Is_e(); }
     bool Valuable::Is_i() const { return exp && exp->Is_i(); }
     bool Valuable::Is_pi() const { return exp && exp->Is_pi(); }
@@ -1635,7 +1651,11 @@ std::string Spaceless(std::string s) {
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
         IMPLEMENT
-	}
+    }
+
+    Valuable Valuable::MustBeInt() const {
+        return *this % 1; // or (e^(*this*2*pi*i))-1
+    }
 
     std::function<bool(std::initializer_list<Valuable>)> Valuable::Functor() const {
         if (exp)

@@ -55,4 +55,28 @@ public:
     bool IsComesBefore(const Valuable& v) const override { return true; }
 };
 
+class NaN : public Constant<NaN> {
+    using base = Constant<NaN>;
+
+public:
+    using base::base;
+
+    static constinit std::string_view SerializationName;
+
+    bool IsNaN() const override { return true; }
+    Valuable operator-() const override { return *this; }
+    Valuable& operator+=(const Valuable& v) override { return *this; }
+    Valuable& operator*=(const Valuable& v) override { return *this; }
+    Valuable& operator/=(const Valuable& v) override { return *this; }
+    Valuable& operator%=(const Valuable& v) override { return *this; }
+    Valuable& operator --() override { return *this; }
+    Valuable& operator ++() override { return *this; }
+    Valuable& operator^=(const Valuable&) override { return *this; }
+    Valuable& d(const Variable& x) override { return *this; }
+
+    bool IsComesBefore(const Valuable& v) const override { return true; }
+
+    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {true, *this}; }
+};
+
 }}

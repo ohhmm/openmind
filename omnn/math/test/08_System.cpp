@@ -151,11 +151,8 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
     
     // c,g,b are integers, see https://math.stackexchange.com/a/1598552/118612
     // TODO : try (x mod 1) or cos(2*PI*x) instead
-    using namespace constant;
-    s   << (e^(2*pi*i*c))-1
-        << (e^(2*pi*i*g))-1
-        << (e^(2*pi*i*b))-1
-    ;
+    s << c.MustBeInt() << g.MustBeInt() << b.MustBeInt();
+
     auto _ = s.Solve(c);
 //    auto cc = s.SolveSingleInteger(c);
 //    auto gc = s.SolveSingleInteger(g);

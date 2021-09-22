@@ -6,6 +6,7 @@
  */
 
 #include "DuoValDescendant.h"
+#include "Product.h"
 
 namespace omnn::math {
 
@@ -23,6 +24,10 @@ std::ostream& PrintVal(std::ostream& out, const Valuable& v)
         out << v;
 
     return out;
+}
+
+Valuable Multiply(const Valuable& _1, const Valuable& _2) {
+    return Product{_1, _2};
 }
 
 } // omnn::math
