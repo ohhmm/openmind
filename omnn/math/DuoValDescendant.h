@@ -11,6 +11,7 @@
 namespace omnn::math {
 
     std::ostream& PrintVal(std::ostream&, const Valuable&);
+    Valuable Multiply(const Valuable&, const Valuable&);
 
     template <class Chld>
     class DuoValDescendant
@@ -89,6 +90,8 @@ namespace omnn::math {
             Valuable::hash = _1.Hash() ^ _2.Hash();
             Valuable::maxVaExp = Chld::getMaxVaExp(_1, _2);
         }
+
+        Valuable operator-() const override { return Multiply(-1, *this); }
 
         bool operator ==(const Valuable& v) const override{
             auto eq = v.Is<Chld>() && Valuable::hash == v.Hash();

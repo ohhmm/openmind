@@ -4,6 +4,7 @@
 #include "Integer.h"
 
 #include "i.h"
+#include "Infinity.h"
 #include "Exponentiation.h"
 #include "Fraction.h"
 #include "Modulo.h"
@@ -188,14 +189,23 @@ namespace math {
     {
         if (v.IsInt())
         {
-            auto div = arbitrary / v.ca();
-            if (div*v.ca() == arbitrary)
-            {
-                arbitrary = div;
-                hash = std::hash<base_int>()(arbitrary);
+            auto& a = v.ca();
+            if (a == 0) {
+                if (arbitrary < 0) {
+                    Become(MInfinity());
+                } else if (arbitrary > 0) {
+                    Become(Infinity());
+                } else {
+                    Become(NaN());
+                }
+            } else {
+                auto div = arbitrary / a;
+                if (div * a == arbitrary) {
+                    arbitrary = div;
+                    hash = std::hash<base_int>()(arbitrary);
+                } else
+                    Become(Fraction(*this, v));
             }
-            else
-                Become(Fraction(*this, v));
         }
         else if(v.FindVa())
             *this *= v^-1;

@@ -66,11 +66,6 @@ namespace math {
         return getMaxVaExp(getBase(), getExponentiation());
     }
     
-	Valuable Exponentiation::operator -() const
-    {
-        return Product {*this, -1};
-    }
-
     void Exponentiation::InitVars() {
         v.clear();
         if (ebase().IsVa())

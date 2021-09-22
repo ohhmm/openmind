@@ -4,6 +4,7 @@
 #include "Product.h"
 
 #include "Fraction.h"
+#include "Modulo.h"
 #include "Infinity.h"
 #include "Integer.h"
 #include "Sum.h"
@@ -19,6 +20,7 @@ namespace math {
     
     type_index order[] = {
         // for fast optimizing
+        typeid(NaN),
         typeid(MInfinity),
         typeid(Infinity),
         typeid(Sum),
@@ -31,6 +33,7 @@ namespace math {
         typeid(Fraction),
         typeid(Exponentiation),
         typeid(Variable),
+        typeid(Modulo),
     };
     
     auto ob = std::begin(order);
