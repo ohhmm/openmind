@@ -108,7 +108,7 @@ protected:
     template<class T>
     Valuable() {}
     
-    Valuable(ValuableDescendantMarker)
+    constexpr Valuable(ValuableDescendantMarker)
     {}
     
     Valuable(const Valuable& v, ValuableDescendantMarker);
@@ -127,15 +127,6 @@ protected:
     static constexpr max_exp_t const& max_exp_z = max_exp_cz;
     max_exp_t maxVaExp;// = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
     
-    std::function<Valuable()> DefaultCachedFn() {
-        return [this]()->Valuable{
-            auto c = calcFreeMember();
-            this->cachedFreeMember = [c](){return c;};
-            return c;
-        };
-    }
-    std::function<Valuable()> cachedFreeMember = DefaultCachedFn();
-
 public:
 
     enum View

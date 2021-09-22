@@ -5,6 +5,7 @@
 
 #include "e.h"
 #include "i.h"
+#include "pi.h"
 #include "Fraction.h"
 #include "Integer.h"
 #include "VarHost.h"
@@ -1654,7 +1655,10 @@ std::string Spaceless(std::string s) {
     }
 
     Valuable Valuable::MustBeInt() const {
-        return *this % 1; // or (e^(*this*2*pi*i))-1
+        using namespace constants;
+        return *this % 1;
+		 //or
+        //(e ^ (*this * 2 * i * pi)) - 1;
     }
 
     std::function<bool(std::initializer_list<Valuable>)> Valuable::Functor() const {
