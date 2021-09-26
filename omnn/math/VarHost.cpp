@@ -41,8 +41,13 @@ any::any TypedVarHost<std::string>::NewVarId()
 template <>
 std::string_view TypedVarHost<std::string>::GetName(const any::any& v) const
 {
-    auto c = any::any_cast<std::string>(&v);
-    return *c;
+    auto& storage = const_cast<TypedVarHost<std::string>*>(this)->HostedStorage(v);
+    auto& strCache = const_cast<std::string&>(storage.second);
+    if (strCache.empty()) {
+        auto& va = storage.first;
+        strCache = GetId(va);
+    }
+    return strCache;
 }
 
 template <>
