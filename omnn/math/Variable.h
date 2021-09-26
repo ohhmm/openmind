@@ -34,6 +34,9 @@ protected:
 
 public:
     Variable();
+    Variable(Variable&& v) = default;
+    Variable& operator=(Variable&& v) = default;
+    Variable& operator=(const Variable& v) = default;
     Variable(const Variable& v);
     Variable(std::shared_ptr<VarHost>);
     
