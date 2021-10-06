@@ -1,5 +1,4 @@
-//
-//Created by Sergej Krivonos on 31.12.2019.//
+
 #include "Cachefdb.h"
 
 #include <chrono>
