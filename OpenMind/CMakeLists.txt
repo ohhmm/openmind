@@ -29,17 +29,7 @@ IF (Boost_FOUND)
     SET(Boost_USE_STATIC_LIBS ON)
 ENDIF()
 
-IF(${UNIX})
-    FIND_PACKAGE(X11 REQUIRED)
-ENDIF()
-
 add_definitions(-DUNICODE -D_UNICODE)
-
-
-## section: include directory
-INCLUDE_DIRECTORIES(
-  
-  )
 
 file(GLOB ${this_target}_SOURCE_FILES *.cpp)
 
@@ -173,8 +163,9 @@ ENDIF(NOT MSVC)
 add_library(${this_target} ${${this_target}_SOURCE_FILES})
 #ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 
-if(${UNIX})
-	find_package(X11 REQUIRED)
+if(UNIX)
+        find_package(X11)
+        if(X11_FOUND)
 
 	set(${this_target}_Incs ${X11_X11_INCLUDE_PATH} ${X11_Xscreensaver_INCLUDE_PATH}
 			CACHE INTERNAL "${this_target}: Include Directories" FORCE)
@@ -185,7 +176,8 @@ if(${UNIX})
 			CACHE INTERNAL "${this_target}: Libraries" FORCE)
 	target_link_libraries(${this_target} ${${this_target}_Libs})
 #	target_link_libraries(${this_target} lib${this_target})
-endif(${UNIX})
+        endif()
+endif(UNIX)
 
 
 target_include_directories(${this_target} PUBLIC
