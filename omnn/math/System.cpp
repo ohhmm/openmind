@@ -6,6 +6,8 @@
 #include <algorithm>
 #if __has_include(<execution>)
 #include <execution>
+#elif __has_include(<experimental/execution>)
+#include <experimental/execution>
 #endif
 #include <numeric>
 
@@ -14,7 +16,11 @@ using namespace math;
 
 template<class T, class F> void peach(const T& t, const F& f) {
     auto b = std::begin(t), e = std::end(t);
-    std::for_each(std::execution::par, b, e, f);
+    std::for_each(
+#ifndef __APPLE__
+                  std::execution::par,
+#endif
+                  b, e, f);
 }
 
 template <class T, class F> void each(const T& t, const F& f) {
@@ -68,7 +74,7 @@ bool System::Add(const Valuable& v)
     _.SetView(Valuable::View::Equation);
     _.optimize();
     auto isNew = _ != 0_v &&
-#if __has_include(<execution>)
+#ifndef __APPLE__
         std::find(std::execution::par, std::begin(equs), std::end(equs), _) == equs.end()
         && std::find(std::execution::par, std::begin(equs), std::end(equs), -_) == equs.end();
 #else

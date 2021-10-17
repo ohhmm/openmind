@@ -155,7 +155,8 @@ IF (Boost_FOUND)
     message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIRS}")
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
     message("Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
-	link_directories(${Boost_LIBRARY_DIR})
+    message("Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
+    link_directories(${Boost_LIBRARY_DIRS})
     if(MSVC)
 	    link_directories(
 			${Boost_INCLUDE_DIRS}/stage/lib

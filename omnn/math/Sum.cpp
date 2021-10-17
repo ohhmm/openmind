@@ -112,7 +112,11 @@ namespace
         {
 #if __has_include(<execution>)
             if (members.size() > Thr)
-                it = std::find(std::execution::par, members.begin(), members.end(), item);
+                it = std::find(
+#ifndef __APPLE__
+                               std::execution::par,
+#endif
+                               members.begin(), members.end(), item);
             else
 #endif
                 it = members.find(item);

@@ -72,7 +72,7 @@ bool getIdleMsec(unsigned& idleTime) {
 //    return true;
 //}
 
-#else
+#elif __has_include(<X11/extensions/scrnsaver.h>)
 # include <X11/extensions/scrnsaver.h>
 bool getIdleMsec(unsigned& idleTime) {
 	XScreenSaverInfo info;
@@ -86,6 +86,10 @@ unsigned int getIdleTime() {
 	unsigned int result = (unsigned int)-1;
 
 	return result;
+}
+#else
+bool getIdleMsec(unsigned& idleTime) {
+    return {};
 }
 #endif
 
