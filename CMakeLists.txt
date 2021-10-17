@@ -305,7 +305,6 @@ macro(ext name location)
 		if(OPENMIND_UPDATE_EXTERNAL_DEPS)
 			ExternalProject_Add(${name}
 				GIT_REPOSITORY ${location}
-				BUILD_IN_SOURCE 1
 				INSTALL_DIR ${CMAKE_BINARY_DIR}
 				CMAKE_ARGS
 					-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
@@ -315,7 +314,6 @@ macro(ext name location)
 		else()
 			ExternalProject_Add(${name}
 				GIT_REPOSITORY ${location}
-				BUILD_IN_SOURCE 1
 				INSTALL_DIR ${CMAKE_BINARY_DIR}
 				UPDATE_COMMAND ""
 				CMAKE_ARGS
