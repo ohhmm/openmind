@@ -1,3 +1,5 @@
+project(math)
+cmake_minimum_required(VERSION 3.20)
 
 option(OPENMIND_MATH_USE_LEVELDB_CACHE "Use Google LevelDB library to cache solutions" TRUE)
 if(OPENMIND_MATH_USE_LEVELDB_CACHE)
@@ -28,7 +30,7 @@ if(NOT WIN32)
 	set(DEPENDENCIES ${DEPENDENCIES} boost_thread boost_serialization boost_system)
 endif()
 
-lib(${DEPENDENCIES})
+link_libraries(${DEPENDENCIES})
 
 if (OPENMIND_USE_OPENCL)
 	target_include_directories(${this_target} PUBLIC
