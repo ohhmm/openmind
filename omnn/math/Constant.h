@@ -17,10 +17,9 @@ template <class Chld>
         : public ValuableDescendantContract<Chld>
     {
         using base = ValuableDescendantContract<Chld>;
-        friend class Constant<Chld>;
 
-        static constinit Chld GlobalObject;
-        static constinit constants::ConstNameAdder ConstNameToSerializationNamesMapAdder;
+        static /*constinit*/ Chld GlobalObject;
+        static /*constinit*/ constants::ConstNameAdder ConstNameToSerializationNamesMapAdder;
 
     protected:
         bool IsSubObject(const Valuable& o) const override {
@@ -105,7 +104,7 @@ template <class Chld>
     } // namespace constants
 
 	template <class Chld>
-	constinit constants::ConstNameAdder 
+    /*constinit*/ constants::ConstNameAdder
 		Constant<Chld>::ConstNameToSerializationNamesMapAdder(Chld::SerializationName, Constant<Chld>::GlobalObject);
 
 }} // namespace

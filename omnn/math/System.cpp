@@ -9,18 +9,32 @@
 #elif __has_include(<experimental/execution>)
 #include <experimental/execution>
 #endif
+#include <future>
 #include <numeric>
+
+#include <rt/tasq.h>
+
 
 using namespace omnn;
 using namespace math;
 
-template<class T, class F> void peach(const T& t, const F& f) {
-    auto b = std::begin(t), e = std::end(t);
+
+StoringTasksQueue tasks;
+
+
+template<class T, class F> void peach(const T& c, const F& f) {
+    auto b = std::begin(c), e = std::end(c);
+#ifdef __APPLE__
+    for(auto& item : c){
+        tasks.AddTask(f, item);
+    }
+#else
     std::for_each(
 #ifndef __APPLE__
                   std::execution::par,
 #endif
                   b, e, f);
+#endif
 }
 
 template <class T, class F> void each(const T& t, const F& f) {

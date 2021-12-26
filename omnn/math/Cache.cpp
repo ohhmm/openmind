@@ -4,10 +4,10 @@
 #include "Cache.h"
 
 #include <chrono>
-#include <deque>
-#include <future>
 #include <iostream>
 #include <thread>
+
+#include <rt/tasq.h>
 
 #include <boost/tokenizer.hpp>
 
@@ -15,21 +15,6 @@ using namespace omnn::math;
 
 namespace {
 
-constexpr size_t MaxThreadsForCacheStoring = 1024;
-using CacheStoringTask = std::future<bool>;
-using CacheStoringTasksQueue = std::deque<CacheStoringTask>;
-
-void CleanupReadyTasks(CacheStoringTasksQueue &CacheStoringTasks) {
-  while (CacheStoringTasks.size() &&
-         ((CacheStoringTasks.front().valid() &&
-           CacheStoringTasks.front().wait_for(std::chrono::seconds(0)) ==
-               std::future_status::ready) ||
-          CacheStoringTasks.size() >= MaxThreadsForCacheStoring)) {
-    if (!CacheStoringTasks.front().get())
-      std::cerr << "Cache storing task failed" << std::endl;
-    CacheStoringTasks.pop_front();
-  }
-}
 
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
 void DeleteDB(const Cache::path_str_t& path) {
@@ -157,18 +142,16 @@ bool Cache::Set(const std::string &key, const std::string &v) {
 
 void Cache::AsyncSet(std::string &&key, std::string &&v) {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
-  static CacheStoringTasksQueue CacheStoringTasks;
-
-  CleanupReadyTasks(CacheStoringTasks);
+  static StoringTasksQueue CacheStoringTasks;
 
   // add new task
-  CacheStoringTasks.emplace_back(std::async(std::launch::async,
+  CacheStoringTasks.AddTask(
       [ This=this, // TODO: This=shared_from_this(),
         k=std::move(key), v=std::move(v)
        ](){
           return This->Set(k,v);
         }
-      ));
+      );
 #endif
 }
 

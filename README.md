@@ -2,9 +2,10 @@
 
 Compilation:
 
-  Ubuntu 20.04
+  Debian/Ubuntu:
 
-    sudo apt install cmake g++ git libboost-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev libopengl-dev freeglut3-dev libleveldb-dev libvulkan-dev
+    sudo apt install cmake g++ git libboost-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libvulkan-dev mono-devel liblz4-dev libfdb5-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev
+    
     git clone https://github.com/ohhmm/openmind
     cd openmind
     mkdir build
