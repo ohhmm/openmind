@@ -15,7 +15,7 @@ Find_Package(ICU)
 if(NOT ICU_FOUND)
     ExternalProject_Add(icu
         GIT_REPOSITORY https://github.com/unicode-org/icu.git
-        GIT_TAG latest
+        GIT_TAG release-70-1
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env
                 CC=${CMAKE_C_COMPILER}
@@ -32,7 +32,10 @@ if(NOT ICU_FOUND)
         )
 endif()
 
-ExternalProject_Add(meta GIT_REPOSITORY https://github.com/meta-toolkit/meta.git)
+ExternalProject_Add(meta
+    GIT_REPOSITORY https://github.com/meta-toolkit/meta.git
+    GIT_TAG v3.0.2
+    )
 add_dependencies(meta ${meta_deps} boost icu)
 
 
