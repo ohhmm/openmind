@@ -15,7 +15,7 @@ class Infinity
 public:
     using base::base;
 
-    static constinit std::string_view SerializationName;
+    static /*constinit*/ std::string_view SerializationName;
 
     bool IsInfinity() const override { return true; }
     Valuable operator -() const override;
@@ -38,7 +38,7 @@ class MInfinity
 public:
     using base::base;
 
-    static constinit std::string_view SerializationName;
+    static /*constinit*/ std::string_view SerializationName;
 
     bool IsMInfinity() const override { return true; }
     Valuable operator -() const override;
@@ -61,7 +61,7 @@ class NaN : public Constant<NaN> {
 public:
     using base::base;
 
-    static constinit std::string_view SerializationName;
+    static /*constinit*/ std::string_view SerializationName;
 
     bool IsNaN() const override { return true; }
     Valuable operator-() const override { return *this; }

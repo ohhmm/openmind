@@ -36,6 +36,8 @@ if(NOT WIN32)
 	set(DEPENDENCIES ${DEPENDENCIES} boost_thread boost_serialization boost_system)
 endif()
 
+set(DEPENDENCIES ${DEPENDENCIES} rt)
+    
 lib(${DEPENDENCIES})
 
 if (OPENMIND_USE_OPENCL)
