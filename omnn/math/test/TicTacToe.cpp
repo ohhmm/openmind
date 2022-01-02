@@ -512,15 +512,15 @@ BOOST_AUTO_TEST_CASE(TicTacToe_X_Won_test)
                   << "    " << (fieldVariant.pack.hasXat3_1 ? 'X' : '0') << (fieldVariant.pack.hasXat3_2 ? 'X' : '0')
                   << (fieldVariant.pack.hasXat3_3 ? 'X' : '0') << std::endl;
 
-        auto fieldExpression = Product{xIs1sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq(),
-                                       xIs1sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq(),
-                                       xIs1sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq(),
-                                       xIs2sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq(),
-                                       xIs2sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq(),
-                                       xIs2sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq(),
-                                       xIs3sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).Sq(),
-                                       xIs3sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).Sq(),
-                                       xIs3sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).Sq()};
+        auto fieldExpression = Product{xIs1sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).sq(),
+                                       xIs1sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).sq(),
+                                       xIs1sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).sq(),
+                                       xIs2sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).sq(),
+                                       xIs2sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).sq(),
+                                       xIs2sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).sq(),
+                                       xIs3sq + yIs1sq + v.Equals(fieldVariant.pack.hasXat1_1).sq(),
+                                       xIs3sq + yIs2sq + v.Equals(fieldVariant.pack.hasXat1_2).sq(),
+                                       xIs3sq + yIs3sq + v.Equals(fieldVariant.pack.hasXat1_3).sq()};
         fieldExpression.sq();
         fieldExpression += isWonSq;
 
