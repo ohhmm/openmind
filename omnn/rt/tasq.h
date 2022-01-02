@@ -12,10 +12,21 @@ class StoringTasksQueue
 protected:
     void CleanupReadyTasks();
 public:
-    template<class FnT, class... T>
-    void AddTask(const FnT& f, T&& ...p){
+    template<typename... T>
+    void AddTask(T&&... p) {
         this->CleanupReadyTasks();
-        auto&& task = std::async(std::launch::async, std::function<bool()>{f, std::forward(p)...});
+        auto&& task = std::async(std::launch::async, std::forward<T>(p)...);
+        emplace_back(std::move(task));
+    }
+    template <typename... T>
+    void AddTask(const std::function<void()>& f, T&&... p) {
+        this->CleanupReadyTasks();
+        auto&& task = std::async(
+            std::launch::async,
+            [&]() {
+                f(std::forward<T>(p)...);
+                return true;
+            });
         emplace_back(std::move(task));
     }
 };
