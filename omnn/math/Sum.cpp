@@ -167,6 +167,7 @@ namespace
         if (isOptimizing)
             return;
         Optimizing o(*this);
+        optimized = true;
 
         auto s = str();
         auto doCheck = s.length() > 10;
@@ -390,10 +391,6 @@ namespace
 
         if (doCheck && checkCache.NotInCache()) {
             db.AsyncSet(std::move(s), str());
-        }
-        
-        if (IsSum()) {
-            optimized = true;
         }
     }
 

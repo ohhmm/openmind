@@ -235,7 +235,8 @@ namespace math {
     {
         if (!optimizations || optimized)
             return;
-        
+        optimized = true;
+
         // zero
         auto it = GetFirstOccurence<Integer>();
         if (it != end()) {
@@ -267,10 +268,8 @@ namespace math {
                     else
                     {
                         Update(it, n);
-                        auto o = optimizations;
-                        optimizations = {};
+                        OptimizeOff o;
                         operator*=(defract);
-                        optimizations = o;
                     }
                     updated = true;
                 }
