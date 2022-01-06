@@ -47,6 +47,7 @@ if(NOT Boost_FOUND)
 	message("Install local build boost library to omit building it with OM")
 else()
 	message("Boost_VERSION: ${Boost_VERSION}")
+	message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 	message("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 	message("BOOST_USED_COMPONENTS: ${BOOST_USED_COMPONENTS}")
 	message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
@@ -125,14 +126,15 @@ elseif(OPENMIND_BUILD_BOOST)
         UPDATE_COMMAND ""
         )
             
-    set(Boost_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
+    set(EXTERNAL_FETCHED_BOOST ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
     build_command(BOOST_BUILD_CMD TARGET boost)
+	message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
     message("BOOST_BUILD_CMD ${BOOST_BUILD_CMD}")
     execute_process(COMMAND ${BOOST_BUILD_CMD}
-        WORKING_DIRECTORY ${Boost_INCLUDE_DIRS}
+        WORKING_DIRECTORY ${EXTERNAL_FETCHED_BOOST}
         )
     #find_package(Boost COMPONENTS ${BOOST_USED_COMPONENTS})
-    if(NOT ${Boost_FOUND})
+    if(NOT Boost_FOUND)
         add_custom_target(conf ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} DEPENDS boost)
     else()
         add_custom_target(conf)
@@ -160,14 +162,20 @@ set(BOOST_TEST_LINK_LIBS
 IF (Boost_FOUND)
     message("Boost_FOUND")
     ADD_DEFINITIONS(-DHAS_BOOST)
-    message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIRS}")
-    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+    message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
+    message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
+    INCLUDE_DIRECTORIES(
+		${Boost_INCLUDE_DIR}
+		${Boost_INCLUDE_DIRS}
+		${EXTERNAL_FETCHED_BOOST}
+		)
     message("Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
     message("Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
     link_directories(${Boost_LIBRARY_DIRS})
     if(MSVC)
 	    link_directories(
-			${Boost_INCLUDE_DIRS}/stage/lib
+			${Boost_INCLUDE_DIR}/stage/lib
+			${EXTERNAL_FETCHED_BOOST}/stage/lib
 			C:/Boost/lib
 			)
     endif()
@@ -299,12 +307,14 @@ function(test)
 	foreach(TEST ${src})
 	    get_filename_component(TEST_NAME ${TEST} NAME_WE)
 	    message("test ${TEST_NAME}")
-	    add_executable(${TEST_NAME} ${TEST_NAME})
+	    add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
         target_link_libraries(${TEST_NAME} PUBLIC ${Boost_LIBRARIES})
 		target_link_directories(${TEST_NAME} PUBLIC
 			/usr/local/lib
-			${Boost_INCLUDE_DIRS}/stage/lib
-			${Boost_INCLUDE_DIRS}/../../lib
+			${Boost_INCLUDE_DIR}/stage/lib
+			${Boost_INCLUDE_DIR}/../../lib
+			${EXTERNAL_FETCHED_BOOST}/stage/lib
+			${EXTERNAL_FETCHED_BOOST}/../../lib
 			${CMAKE_BINARY_DIR}/lib
 			${CMAKE_BINARY_DIR}/lib64
 			)
@@ -385,7 +395,9 @@ macro(lib)
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
-        ${Boost_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIR}
+		${Boost_INCLUDE_DIRS}
+        ${EXTERNAL_FETCHED_BOOST}
         )
     add_dependencies(${this_target} conf)
 	message("add_library(${this_target} ${src})")
@@ -496,13 +508,15 @@ macro(exe)
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include
         ${${this_target}_INCLUDE_DIR}
-        ${Boost_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIR}
+		${Boost_INCLUDE_DIRS}
+        ${EXTERNAL_FETCHED_BOOST}
 		)
 	target_link_directories(${this_target} PUBLIC
 		${CMAKE_BINARY_DIR}/lib
 		${Boost_LIBRARIES}
-		${Boost_INCLUDE_DIRS}/stage/lib
-		${Boost_INCLUDE_DIRS}/../../lib
+		${Boost_INCLUDE_DIR}/stage/lib
+		${Boost_INCLUDE_DIR}/../../lib
 		/usr/local/lib
 		)
 
