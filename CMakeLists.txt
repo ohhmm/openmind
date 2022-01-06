@@ -22,6 +22,7 @@ option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
+set(OPENMIND_REQUIRED_BOOST_VERSION 1.78.0 CACHE VERSION "Boost library version to use" FORCE)
 
 set(BOOST_USED_COMPONENTS system filesystem serialization date_time thread)
 if(OPENMIND_BUILD_TESTS)
@@ -30,13 +31,13 @@ endif()
 
 if(MSVC)
     find_package(Boost
-                #1.77.0
+		${OPENMIND_REQUIRED_BOOST_VERSION}
 		PATHS C:/Boost
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 else()
     find_package(Boost
-                #1.77.0
+		${OPENMIND_REQUIRED_BOOST_VERSION}
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 endif()
@@ -114,14 +115,15 @@ elseif(OPENMIND_BUILD_BOOST)
         separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
     endif()
 
-        message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
-        ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
-            BUILD_IN_SOURCE 1
-            CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
-            BUILD_COMMAND ${BOOST_BUILD_COMMAND}
-            INSTALL_COMMAND ""
-            UPDATE_COMMAND ""
-            )
+    message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
+    ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
+		GIT_TAG boost-${OPENMIND_REQUIRED_BOOST_VERSION}
+        BUILD_IN_SOURCE 1
+        CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
+        BUILD_COMMAND ${BOOST_BUILD_COMMAND}
+        INSTALL_COMMAND ""
+        UPDATE_COMMAND ""
+        )
             
     set(Boost_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
     build_command(BOOST_BUILD_CMD TARGET boost)
@@ -135,6 +137,8 @@ elseif(OPENMIND_BUILD_BOOST)
     else()
         add_custom_target(conf)
     endif()
+else()
+    add_custom_target(conf)
 endif()
 set(BOOST_LINK_LIBS
     boost_thread
