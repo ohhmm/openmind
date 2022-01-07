@@ -19,16 +19,12 @@ using namespace omnn;
 using namespace math;
 
 
-StoringTasksQueue tasks;
 
-
-template<class T, class F> void peach(const T& c, const F& f) {
-    auto b = std::begin(c), e = std::end(c);
+template<class T, class F> void peach(T&& c, F&& f) {
 #ifdef __APPLE__
-    for(auto& item : c){
-        tasks.AddTask(f, item);
-    }
+    StoringTasksQueue().AddTasks(std::forward<T>(c), std::forward<F>(f));
 #else
+    auto b = std::begin(c), e = std::end(c);
     std::for_each(
 #ifndef __APPLE__
                   std::execution::par,

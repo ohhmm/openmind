@@ -3,7 +3,7 @@
 //
 #include <chrono>
 
-#include "Variable.h"
+#include <omnn/math/Variable.h>
 
 
 int main()

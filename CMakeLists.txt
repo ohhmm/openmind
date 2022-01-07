@@ -30,14 +30,12 @@ if(OPENMIND_BUILD_TESTS)
 endif()
 
 if(MSVC)
-    find_package(Boost
-		${OPENMIND_REQUIRED_BOOST_VERSION}
+    find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 		PATHS C:/Boost
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 else()
-    find_package(Boost
-		${OPENMIND_REQUIRED_BOOST_VERSION}
+    find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 endif()
@@ -107,13 +105,18 @@ elseif(OPENMIND_BUILD_BOOST)
       set(Boost_address_model 32)
     endif()
 
+	set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
     if(WIN32)
         set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
         separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
-        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS} install")
+        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} install")
     else()
         set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
-        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./b2 address-model=${Boost_address_model} ${BOOST_BUILD_PARAMS}")
+		if(APPLE)
+#			separate_arguments(BOOST_EXT_CONFIGURE UNIX_COMMAND "${BOOST_EXT_CONFIGURE} --prefix=/Library/Developer")
+#			set(BOOST_BUILD_COMMAND "${BOOST_BUILD_COMMAND} install")
+		endif()
+        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND}")
     endif()
 
     message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
@@ -164,11 +167,15 @@ IF (Boost_FOUND)
     ADD_DEFINITIONS(-DHAS_BOOST)
     message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
     message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
-    INCLUDE_DIRECTORIES(
-		${Boost_INCLUDE_DIR}
-		${Boost_INCLUDE_DIRS}
-		${EXTERNAL_FETCHED_BOOST}
-		)
+	if(Boost_INCLUDE_DIR)
+    	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+	endif()
+	if(Boost_INCLUDE_DIRS)
+		INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+	endif()
+	if(EXTERNAL_FETCHED_BOOST)
+		INCLUDE_DIRECTORIES(${EXTERNAL_FETCHED_BOOST})
+	endif()
     message("Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
     message("Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
     link_directories(${Boost_LIBRARY_DIRS})
@@ -220,43 +227,50 @@ macro(dep)
 		get_filename_component(dep "${dep}" NAME)
 		find_package(${dep})
 		if(${dep}_FOUND)
-			include_directories(${${dep}_INCLUDE_DIR})
+			if(${dep}_INCLUDE_DIR)
+				include_directories(${${dep}_INCLUDE_DIR})
+			endif()
+			if(${dep}_INCLUDE_DIRS)
+				include_directories(${${dep}_INCLUDE_DIRS})
+			endif()
 			if(NOT ${dep}_LIBRARIES)
 				find_library(${dep}_LIBRARIES NAMES ${dep} lib${dep} ${dep}lib lib${dep}lib)
 			endif()
 			message("${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
-                if(EXISTS ${${dep}_LIBRARIES})
-			set(repo SYSTEM)
+			if(EXISTS ${${dep}_LIBRARIES})
+				set(repo SYSTEM)
+			else()
+				ext(${dep} ${repo})
+				if(OPENMIND_BUILD_BOOST)
+					add_dependencies(${dep} boost)
+				endif()
+			endif()
 		else()
 			ext(${dep} ${repo})
-            if(OPENMIND_BUILD_BOOST)
+			if(OPENMIND_BUILD_BOOST)
 				add_dependencies(${dep} boost)
 			endif()
 		endif()
-            else()
-                ext(${dep} ${repo})
-                if(OPENMIND_BUILD_BOOST)
-                    add_dependencies(${dep} boost)
-                endif()
-            endif()
 		message("Dependency ${dep} took from ${repo}")
 	else()
 		find_package(${dep})
 		if(${dep}_FOUND)
 			if(${dep}_INCLUDE_DIR)
 				target_include_directories(${this_target} PUBLIC ${${dep}_INCLUDE_DIR})
+			elseif(${dep}_INCLUDE_DIRS)
+				target_include_directories(${this_target} PUBLIC ${${dep}_INCLUDE_DIRS})
 			else()
-			    message(WARNING "No ${dep}_INCLUDE_DIR declared")
+			    message(WARNING "No ${dep}_INCLUDE_DIR[S] declared")
 			endif()
 			if(${dep}_LIBRARY)
 				message("${dep}_LIBRARY: ${${dep}_LIBRARY}")
-				target_include_directories(${this_target} PUBLIC ${dep}_LIBRARY)
+				target_link_libraries(${this_target} PUBLIC ${dep}_LIBRARY)
 			elseif(${dep}_LIBRARIES)
 				message("${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
-				target_include_directories(${this_target} PUBLIC ${dep}_LIBRARIES)
+				target_link_libraries(${this_target} PUBLIC ${dep}_LIBRARIES)
 			else()
 			    message(WARNING "No ${dep}_LIBRAR[Y|IES] declared")
-				target_include_directories(${this_target} PUBLIC ${dep})
+				target_link_libraries(${this_target} PUBLIC ${dep})
 			endif()
 		endif()
 		message("Assuming the ${dep} is preinstalled")
@@ -361,8 +375,9 @@ macro(ext name location)
 		endif()
 		if(TARGET ${name})
 			message("${name} is new target")
+			add_dependencies(${this_target} ${name})
 		else()
-			message("${name} is not a target")
+			message(WARNING "${name} is not a target")
 		endif()
 
 		set(${name}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include CACHE PATH "Path")
@@ -373,11 +388,26 @@ macro(ext name location)
 			#set(${name}_LIBRARIES ${CMAKE_BINARY_DIR}/lib64/${CMAKE_STATIC_LIBRARY_PREFIX}${name}${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE PATH "Path")
 		endif()
 
-		include_directories(${${name}_INCLUDE_DIR})
-                link_directories(
-                    ${CMAKE_BINARY_DIR}/lib
-                    ${CMAKE_BINARY_DIR}/lib64
-                    )
+		if(TARGET ${this_target})
+			if(${name}_INCLUDE_DIR)
+				target_include_directories(${this_target} PUBLIC ${${name}_INCLUDE_DIR})
+			endif()
+			if(${name}_INCLUDE_DIRS)
+				target_include_directories(${this_target} PUBLIC ${${name}_INCLUDE_DIRS})
+			endif()
+			target_link_directories(${this_target} PUBLIC
+				${CMAKE_BINARY_DIR}/lib
+				${CMAKE_BINARY_DIR}/lib64
+				)
+		else()
+			if(${name}_INCLUDE_DIR)
+				include_directories(${${name}_INCLUDE_DIR})
+			endif()
+			link_directories(
+				${CMAKE_BINARY_DIR}/lib
+				${CMAKE_BINARY_DIR}/lib64
+				)
+		endif()
 	else()
 		message("${name} target exists")
 	endif()
@@ -395,10 +425,16 @@ macro(lib)
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
-        ${Boost_INCLUDE_DIR}
-		${Boost_INCLUDE_DIRS}
-        ${EXTERNAL_FETCHED_BOOST}
         )
+	if(Boost_INCLUDE_DIR)
+		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
+	endif()
+	if(Boost_INCLUDE_DIRS)
+		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
+	endif()
+	if(EXTERNAL_FETCHED_BOOST)
+		target_include_directories(${this_target} PUBLIC ${EXTERNAL_FETCHED_BOOST})
+	endif()
     add_dependencies(${this_target} conf)
 	message("add_library(${this_target} ${src})")
 	if(NOT MSVC)
@@ -508,10 +544,16 @@ macro(exe)
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include
         ${${this_target}_INCLUDE_DIR}
-        ${Boost_INCLUDE_DIR}
-		${Boost_INCLUDE_DIRS}
-        ${EXTERNAL_FETCHED_BOOST}
 		)
+	if(Boost_INCLUDE_DIR)
+		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
+	endif()
+	if(Boost_INCLUDE_DIRS)
+		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
+	endif()
+	if(EXTERNAL_FETCHED_BOOST)
+		target_include_directories(${this_target} PUBLIC ${EXTERNAL_FETCHED_BOOST})
+	endif()
 	target_link_directories(${this_target} PUBLIC
 		${CMAKE_BINARY_DIR}/lib
 		${Boost_LIBRARIES}
@@ -522,7 +564,12 @@ macro(exe)
 
 	foreach(item ${deps})
         message("adding include ${${item}_INCLUDE_DIR} into ${this_target} for dependency ${item}")
-        target_include_directories(${this_target} PUBLIC ${${item}_INCLUDE_DIR})
+		if(${item}_INCLUDE_DIR)
+        	target_include_directories(${this_target} PUBLIC ${${item}_INCLUDE_DIR})
+		endif()
+		if(${item}_INCLUDE_DIRS)
+			target_include_directories(${this_target} PUBLIC ${${item}_INCLUDE_DIRS})
+		endif()
 
 		message("adding ${item} sublib ${LIB} into ${this_target}")
         if(TARGET ${item})

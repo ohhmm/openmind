@@ -24,7 +24,12 @@ ENDMACRO(ADD_MSVC_PRECOMPILED_HEADER)
 
 #FIND_PACKAGE(Boost)
 IF (Boost_FOUND)
-    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+	if(Boost_INCLUDE_DIR)
+		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
+	endif()
+	if(Boost_INCLUDE_DIRS)
+		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
+	endif()
     ADD_DEFINITIONS( "-DHAS_BOOST" )
     SET(Boost_USE_STATIC_LIBS ON)
 ENDIF()
@@ -164,27 +169,31 @@ add_library(${this_target} ${${this_target}_SOURCE_FILES})
 #ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 
 if(UNIX)
-        find_package(X11)
-        if(X11_FOUND)
+	find_package(X11)
+	if(X11_FOUND)
+		set(${this_target}_Incs ${X11_X11_INCLUDE_PATH} ${X11_Xscreensaver_INCLUDE_PATH}
+				CACHE INTERNAL "${this_target}: Include Directories" FORCE)
+		target_include_directories(${this_target} PUBLIC
+			${${this_target}_Incs})
 
-	set(${this_target}_Incs ${X11_X11_INCLUDE_PATH} ${X11_Xscreensaver_INCLUDE_PATH}
-			CACHE INTERNAL "${this_target}: Include Directories" FORCE)
-	target_include_directories(${this_target} PUBLIC
-        ${${this_target}_Incs})
-
-	set(${this_target}_Libs ${X11_X11_LIB} ${X11_Xscreensaver_LIB} pthread
-			CACHE INTERNAL "${this_target}: Libraries" FORCE)
-	target_link_libraries(${this_target} ${${this_target}_Libs})
-#	target_link_libraries(${this_target} lib${this_target})
-        endif()
+		set(${this_target}_Libs ${X11_X11_LIB} ${X11_Xscreensaver_LIB} pthread
+				CACHE INTERNAL "${this_target}: Libraries" FORCE)
+		target_link_libraries(${this_target} ${${this_target}_Libs})
+		#target_link_libraries(${this_target} lib${this_target})
+	endif()
 endif(UNIX)
 
 
 target_include_directories(${this_target} PUBLIC
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_BINARY_DIR}/include
-    ${Boost_INCLUDE_DIR}
     )
+if(Boost_INCLUDE_DIR)
+	target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
+endif()
+if(Boost_INCLUDE_DIRS)
+	target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
+endif()
 if(OPENMIND_USE_OPENCL)
     target_include_directories(${this_target} PUBLIC ${OPENCL_INCLUDE_DIR})
 endif()
