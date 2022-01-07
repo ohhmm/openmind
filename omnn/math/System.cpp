@@ -33,9 +33,9 @@ template<class T, class F> void peach(T&& c, F&& f) {
 #endif
 }
 
-template <class T, class F> void each(const T& t, const F& f) {
+template <class T, class F> void each(T&& t, F&& f) {
     if (std::size(t) > 100)
-        peach(t, f);
+        peach(std::forward<T>(t), std::forward<F>(f));
     else {
         auto b = std::begin(t), e = std::end(t);
         std::for_each(b, e, f);
@@ -81,7 +81,7 @@ bool System::Add(const Variable& va, const Valuable& v)
 bool System::Add(const Valuable& v)
 {
     auto _ = v;
-    _.SetView(Valuable::View::Equation);
+    _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
     _.optimize();
     auto isNew = _ != 0_v &&
 #ifndef __APPLE__
@@ -209,7 +209,9 @@ bool System::Fetch(const Variable& va)
         vars.erase(va);
         each(vars,
              [&](auto& v){
-                 modified = Fetch(v) || modified;
+                 auto fetched = Fetch(v);
+                 modified = fetched || modified;
+                 return fetched;
              });
         
         fetching.erase(va);
@@ -387,7 +389,7 @@ System::solutions_t System::Solve(const Variable& va)
                 else
                 {
                     Valuable::var_set_t vset;
-                    each(esi.first, [&](auto& v){vset.insert(v);});
+                    each(esi.first, [&](auto& v){ return vset.insert(v).second; });
                     vset.erase(va);
                     for(auto& v: vset)
                         Solve(v);
