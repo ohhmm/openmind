@@ -1,5 +1,6 @@
 #pragma once
 #include <deque>
+#include <functional>
 #include <future>
 #include <memory>
 #include <utility>
@@ -11,29 +12,22 @@ class StoringTasksQueue
 {
 protected:
     void CleanupReadyTasks();
+
 public:
-    template<typename F, typename... T>
-    void AddTask(F&& f, T&&... p) {
-        this->CleanupReadyTasks();
-        auto&& task = std::async(std::launch::async, std::forward<F>(f), std::forward<T>(p)...);
-        emplace_back(std::move(task));
-    }
+    void AddTask(const std::function<bool()>& f);
+    void AddTask(std::function<bool()>&& f);
 
-    template <typename... T>
-    void AddTask(const std::function<void()>& f, T&&... p) {
-        this->CleanupReadyTasks();
-        auto&& task = std::async(
-            std::launch::async,
-            [&]() {
-                f(std::forward<T>(p)...);
-                return true;
-            });
-        emplace_back(std::move(task));
-    }
-
-    template<typename C, typename F, typename... T>
-    void AddTasks(const C& cont, F&& f, T&&... p) {
+    template<typename C, typename F>
+    void AddTasks(const C& cont, const std::function<bool()>& f) {
         for(auto& item : cont)
-            AddTask(std::forward<F>(f), std::forward<T>(p)...);
+            AddTask(f);
+    }
+
+    template<typename C, typename F>
+    void AddTasks(C&& cont, F&& f) {
+        for(auto& item : cont) {
+            std::function<bool()> fn = std::bind(std::forward<F>(f), item);
+            AddTask(std::move(fn));
+        }
     }
 };
