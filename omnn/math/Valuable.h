@@ -59,7 +59,8 @@ namespace omnn{
 namespace math {
     
     using a_int = boost::multiprecision::cpp_int;
-    using max_exp_t = boost::rational<a_int>;
+    using a_rational = boost::multiprecision::cpp_rational;
+    using max_exp_t = a_rational;
     namespace ptrs = ::std;
 
     class VarHost;
@@ -226,6 +227,8 @@ public:
     Valuable(const a_int&);
     Valuable(a_int&&);
     Valuable(boost::rational<a_int>&&);
+    Valuable(a_rational&&);
+    Valuable(const a_rational&);
     
     using NewVaFn_t = std::function<Valuable(const std::string&)>;
     Valuable(const std::string& s, NewVaFn_t newVa);
@@ -449,6 +452,7 @@ public:
 
     size_t Hash() const;
     std::string str() const;
+    std::wstring wstr() const;
     virtual std::wstring save(const std::wstring&) const;
 
     virtual bool is_optimized() const;

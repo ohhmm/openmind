@@ -22,6 +22,7 @@
 #ifndef NDEBUG
 #include <boost/algorithm/string/replace.hpp>
 #endif
+#include <boost/thread/thread_pool.hpp>
 
 
 namespace omnn{
@@ -61,14 +62,14 @@ namespace math {
     thread_local bool Valuable::optimizations = true;
     thread_local bool Valuable::bit_operation_optimizations = {};
     thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
-    
-    
+
+
     Valuable implement(const char* str)
     {
         std::cerr << str << std::endl;
         throw std::string(str) + " Implement!";
     }
-    
+
     bool Valuable::IsSubObject(const Valuable& o) const {
         if (exp)
             return exp->IsSubObject(o);
@@ -95,12 +96,12 @@ namespace math {
         else
             IMPLEMENT
     }
-    
+
     void Valuable::New(void*, Valuable&&)
     {
         IMPLEMENT
     }
-   
+
     size_t Valuable::getTypeSize() const
     {
         return sizeof(Valuable);
@@ -110,12 +111,12 @@ namespace math {
     {
         return sz;
     }
-    
+
     void Valuable::setAllocSize(size_t sz)
     {
         this->sz = sz;
     }
-    
+
     Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
     {
@@ -134,7 +135,7 @@ namespace math {
     		return exp->Type();
         IMPLEMENT
     }
-    
+
     Valuable& Valuable::Become(Valuable&& i)
     {
         if (Same(i))
@@ -148,7 +149,7 @@ namespace math {
             while (e->exp) {
                 e = e->exp;
             }
-           
+
             if(exp)
             {
                 exp = e;
@@ -160,14 +161,14 @@ namespace math {
             {
                 Become(std::move(*e));
             }
-            
+
             e.reset();
         }
         else
         {
             auto sizeWas = getAllocSize();
             auto newSize = i.getTypeSize();
-            
+
             if (newSize <= sizeWas) {
                 constexpr decltype(newSize) BufSz = 768;
                 assert(BufSz >= newSize && "Increase BufSz");
@@ -225,7 +226,16 @@ namespace math {
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(a_int&& i) : exp(new Integer(std::move(i))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
+
     Valuable::Valuable(boost::rational<a_int>&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
+
+    Valuable::Valuable(const a_rational& r)
+        : exp(new Fraction{::boost::multiprecision::numerator(r), boost::multiprecision::denominator(r)})
+    {
+        exp->optimize();
+    }
+
+    Valuable::Valuable(a_rational&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
 
 //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, 1_v/2)-b)/(a*2));
 //    auto aMergeOrF = MergeOrF(a);
@@ -574,7 +584,7 @@ std::string Spaceless(std::string s) {
     Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized){
 		auto optimizationsWas = Valuable::optimizations;
 		Valuable::optimizations = !itIsOptimized && optimizationsWas;
-        
+
         auto bracketsmap = OmitOuterBrackets(s);
 
         //        if (bracketsmap.empty())
@@ -706,15 +716,18 @@ std::string Spaceless(std::string s) {
                 }
             }
         }
-        
+
         Valuable::optimizations = optimizationsWas;
     }
 
     Valuable::~Valuable()
     {
-        // TODO: move exp deletion to idle priority thread queue
+        // TODO: move exp deletion to idle priority thread pool
+        //
+        // https://stackoverflow.com/a/18884946
+        //static boost::thread::basic_thread_pool(1);
     }
-    
+
     Valuable Valuable::operator -() const
     {
         if(exp)
@@ -736,7 +749,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable& Valuable::operator +=(int v)
     {
         if(exp) {
@@ -769,8 +782,8 @@ std::string Spaceless(std::string s) {
             return exp->Complexity();
         IMPLEMENT
     }
-    
-    
+
+
     bool Valuable::MultiplyIfSimplifiable(const Valuable& v)
     {
         if(exp)
@@ -793,8 +806,8 @@ std::string Spaceless(std::string s) {
             return { m.Complexity() < Complexity() + v.Complexity(), m };
         }
     }
-    
-    
+
+
     bool Valuable::SumIfSimplifiable(const Valuable& v)
     {
         if(exp)
@@ -812,7 +825,7 @@ std::string Spaceless(std::string s) {
             return { m.Complexity() < Complexity() + v.Complexity(), m };
         }
     }
-    
+
     Valuable& Valuable::operator /=(const Valuable& v)
     {
         if(exp) {
@@ -850,7 +863,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable& Valuable::operator++()
     {
         if(exp) {
@@ -863,7 +876,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable& Valuable::operator^=(const Valuable& v)
     {
         if(exp) {
@@ -876,7 +889,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable& Valuable::d(const Variable& x)
     {
         if(exp) {
@@ -889,7 +902,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable Valuable::I(const Variable& x, const Variable& C) const
     {
         if(exp) {
@@ -929,7 +942,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable Valuable::operator()(const Variable& v, const Valuable& augmentation) const
     {
         if(exp) {
@@ -938,7 +951,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable::solutions_t Valuable::Distinct() const
     {
         if(exp)
@@ -973,7 +986,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable::solutions_t Valuable::Solutions(const Variable& v) const
     {
         solutions_t solutions;
@@ -1030,7 +1043,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable::solutions_t Valuable::GetIntegerSolution(const Variable& va) const
     {
         if(exp) {
@@ -1039,7 +1052,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     bool Valuable::Test(const Variable& va, const Valuable& v) const
     {
         auto t = *this;
@@ -1052,7 +1065,7 @@ std::string Spaceless(std::string s) {
 //#endif
         return t==0;
     }
-    
+
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
     using zero_zone_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
 
@@ -1060,11 +1073,11 @@ std::string Spaceless(std::string s) {
     {
         auto fm = calcFreeMember().abs();
         zero_zone_t z {{-fm, fm},{}};
-        
+
         auto f = *this;
         f.d(v); f.optimize();
         auto fs = f.Solutions(v);
-        
+
         std::list<decltype(fs)::value_type> ls;
         ls.assign(fs.begin(), fs.end());
         ls.sort();
@@ -1103,18 +1116,18 @@ std::string Spaceless(std::string s) {
             prev = to;
             valPrevious = val;
         };
-        
+
         for(auto& e : ls)
             addz(e);
         addz(fm);
-        
+
         if(z.second.size()) {
             z.first.first = z.second.begin()->first;
             z.first.second = z.second.rbegin()->second;
         }
         return z;
     }
-    
+
     bool Valuable::operator<(const Valuable& v) const
     {
         if(exp)
@@ -1165,7 +1178,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     void Valuable::Values(const std::function<bool(const Valuable&)>& f) const {
         if(exp)
             exp->Values(f);
@@ -1192,7 +1205,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
- 
+
     std::wostream& Valuable::print(std::wostream& out) const {
         if (exp)
             return exp->print(out);
@@ -1242,7 +1255,7 @@ std::string Spaceless(std::string s) {
     {
         return exp ? exp->GetView() : view;
     }
-    
+
     void Valuable::SetView(View v)
     {
         if(exp)
@@ -1252,7 +1265,7 @@ std::string Spaceless(std::string s) {
             view = v;
         }
     }
-    
+
     void Valuable::optimize()
     {
         if(optimizations && exp) {
@@ -1321,7 +1334,7 @@ std::string Spaceless(std::string s) {
         }
         IMPLEMENT
     }
-    
+
     bool Valuable::HasVa(const Variable& x) const
     {
         if (exp) {
@@ -1329,7 +1342,7 @@ std::string Spaceless(std::string s) {
         }
         IMPLEMENT
     }
-    
+
     void Valuable::CollectVa(std::set<Variable>& s) const
     {
         if (exp)
@@ -1373,7 +1386,7 @@ std::string Spaceless(std::string s) {
         CollectVa(vars);
         return vars;
     }
-    
+
     bool Valuable::eval(const std::map<Variable, Valuable>& with){
         if (exp)
             return exp->eval(with);
@@ -1397,19 +1410,19 @@ std::string Spaceless(std::string s) {
         }
         IMPLEMENT
     }
-    
+
     bool Valuable::OfSameType(const Valuable& v) const
     {
         const Valuable& v1 = get();
         const Valuable& v2 = v.get();
         return typeid(v1) == typeid(v2);
     }
-    
+
     bool Valuable::Same(const Valuable& v) const
     {
         return Hash()==v.Hash() && OfSameType(v) && operator==(v);
     }
- 
+
     bool Valuable::HasSameVars(const Valuable& v) const
     {
         std::set<Variable> thisVa, vVa;
@@ -1417,19 +1430,19 @@ std::string Spaceless(std::string s) {
         v.CollectVa(vVa);
         return thisVa == vVa;
     }
-    
+
     bool Valuable::IsMonic() const
     {
         std::set<Variable> vars;
         CollectVa(vars);
         return vars.size() == 1;
     }
-    
+
     max_exp_t Valuable::getMaxVaExp() const
     {
         return exp ? exp->getMaxVaExp() : maxVaExp;
     }
-    
+
     bool Valuable::IsComesBefore(const Valuable& v) const
     {
         if (exp)
@@ -1437,7 +1450,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     const Valuable::vars_cont_t& Valuable::getCommonVars() const
     {
         if (exp)
@@ -1445,7 +1458,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable Valuable::InCommonWith(const Valuable& v) const
     {
         if (exp)
@@ -1477,7 +1490,7 @@ std::string Spaceless(std::string s) {
         }
         return _;
     }
-    
+
     Valuable Valuable::VaVal(const vars_cont_t& v)
     {
         Valuable p(1);
@@ -1488,12 +1501,12 @@ std::string Spaceless(std::string s) {
         p.optimize();
         return p;
     }
-    
+
     Valuable Valuable::getVaVal() const
     {
         return VaVal(getCommonVars());
     }
-    
+
     const Valuable::vars_cont_t& Valuable::emptyCommonVars()
     {
         static const Valuable::vars_cont_t _;
@@ -1525,7 +1538,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-  
+
     Valuable::operator a_int() const
     {
         if (exp)
@@ -1533,7 +1546,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     a_int& Valuable::a()
     {
         if (exp)
@@ -1557,7 +1570,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable::operator double() const
     {
         if (exp)
@@ -1581,7 +1594,7 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable::operator unsigned char() const
     {
         if (exp)
@@ -1589,11 +1602,11 @@ std::string Spaceless(std::string s) {
         else
             IMPLEMENT
     }
-    
+
     Valuable Valuable::Equals(const Valuable& v) const {
         return *this - v;
     }
-    
+
     Valuable Valuable::NotEquals(const Valuable& v) const {
 //        return IfEq(v,1,0);
         return Equals(v) ^ -1;
@@ -1691,14 +1704,14 @@ std::string Spaceless(std::string s) {
         }else
             IMPLEMENT;
     }
-    
+
     Valuable Valuable::bits(int n, int l) const
     {
         if(n<0)
             IMPLEMENT
         return Shr(n).And(l, -1);
     }
-    
+
     Valuable Valuable::And(const Valuable& n, const Valuable& v) const
     {
         auto s = 0_v;
@@ -1725,7 +1738,7 @@ std::string Spaceless(std::string s) {
         }
         return s;
     }
-    
+
     Valuable Valuable::Or(const Valuable& n, const Valuable& v) const
     {
         auto s = 0_v;
@@ -1753,7 +1766,7 @@ std::string Spaceless(std::string s) {
         }
         return s;
     }
-    
+
     Valuable Valuable::Xor(const Valuable& n, const Valuable& v) const
     {
         auto s = 0_v;
@@ -1790,18 +1803,18 @@ std::string Spaceless(std::string s) {
         }
         return s;
     }
-    
+
     Valuable& Valuable::shl(const Valuable& n)
     {
         return *this *= 2_v^n;
     }
-    
+
     Valuable& Valuable::shr(const Valuable& n)
     {
         if(!n.IsInt()){
             IMPLEMENT
         }
-        
+
         if (n>1)
             return shr(n-1).shr();
         else if (n!=0)
@@ -1809,7 +1822,7 @@ std::string Spaceless(std::string s) {
         else
             return *this;
     }
-    
+
     Valuable& Valuable::shr()
     {
         return operator+=(-bit(0)).operator/=(2);
@@ -1825,12 +1838,12 @@ std::string Spaceless(std::string s) {
         auto v = Valuable(get());
         return v.shr(n);
     }
-    
+
     Valuable Valuable::Shr() const
     {
         return (*this-bit(0))/2;
     }
-    
+
     Valuable Valuable::Cyclic(const Valuable& total, const Valuable& shiftLeft) const
     {
         auto s = 0_v;
@@ -1852,7 +1865,7 @@ std::string Spaceless(std::string s) {
         }
         return s;
     }
-    
+
     auto sh_const =   "0x428a2f9871374491b5c0fbcfe9b5dba5" /*  0 */
                         "3956c25b59f111f1923f82a4ab1c5ed5"
                         "d807aa9812835b01243185be550c7dc3" /*  8 */
@@ -1869,7 +1882,7 @@ std::string Spaceless(std::string s) {
                         "391c0cb34ed8aa4a5b9cca4f682e6ff3"
                         "748f82ee78a5636f84c878148cc70208" /* 56 */
                         "90befffaa4506cebbef9a3f7c67178f2"_v;
-    
+
     const Valuable SHA256_K[64] = {
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
         0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -1927,7 +1940,7 @@ std::string Spaceless(std::string s) {
         auto Maj = [](const Valuable& _1, const Valuable& _2, const Valuable& _3) {
             return _3.Xor(32, _2).And(32,_1.Xor(32, _2)).Xor(32, _2);
         };
-        
+
 #define a(i) T[(0-i)&7]
 #define b(i) T[(1-i)&7]
 #define c(i) T[(2-i)&7]
@@ -1936,7 +1949,7 @@ std::string Spaceless(std::string s) {
 #define f(i) T[(5-i)&7]
 #define g(i) T[(6-i)&7]
 #define h(i) T[(7-i)&7]
-        
+
 #define R(i) h(i)+=S1(e(i))+Ch(e(i),f(i),g(i))+SHA256_K[i+j]+(j?blk2(i):blk0(i));\
 d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        auto _ = [&](auto i) {
@@ -1961,10 +1974,10 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
         state[5] += f(0);
         state[6] += g(0);
         state[7] += h(0);
-        
+
         return ((((((state[0].And(32,-1).Shl(32) + state[1].And(32,-1)).Shl(32) + state[2].And(32,-1)).Shl(32) + state[3].And(32,-1)).Shl(32) + state[4].And(32,-1)).Shl(32) + state[5].And(32,-1)).Shl(32) + state[6].And(32,-1)).Shl(32) + state[7].And(32,-1);
-        
-        
+
+
 //        Пояснения:
 //        Все переменные беззнаковые, имеют размер 32 бита и при вычислениях суммируются по модулю 232
 //        message — исходное двоичное сообщение
@@ -2053,14 +2066,14 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        Получить итоговое значение хеша:
 //        digest = hash = h0 ǁ h1 ǁ h2 ǁ h3 ǁ h4 ǁ h5 ǁ h6 ǁ h7
     }
-    
+
     size_t Valuable::Hash() const
     {
         return exp
             ? exp->Hash()
             : hash;
     }
-    
+
     void Valuable::MarkAsOptimized() {
         if (exp)
             exp->MarkAsOptimized();
@@ -2080,7 +2093,13 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
         print(s);
         return s.str();
     }
-    
+
+    std::wstring Valuable::wstr() const {
+        std::wstringstream s;
+        print(s);
+        return s.str();
+    }
+
     std::wstring Valuable::save(const std::wstring& f) const
     {
         if (exp) {

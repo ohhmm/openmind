@@ -29,6 +29,16 @@ namespace math {
 	{
 	}
 
+    Fraction::Fraction(a_rational&& r)
+    : base(::boost::multiprecision::numerator(r), boost::multiprecision::denominator(r))
+    {
+    }
+
+    Fraction::Fraction(const a_rational& r)
+    : base(::boost::multiprecision::numerator(r), boost::multiprecision::denominator(r))
+    {
+    }
+
     Fraction::Fraction(const boost::multiprecision::cpp_dec_float_100& f)
     {
         auto s = boost::lexical_cast<std::string>(f);

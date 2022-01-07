@@ -58,13 +58,19 @@ BOOST_AUTO_TEST_CASE(BaseInt_tests)
     i = Integer::base_int(s);
     BOOST_TEST(i == 12); // fixed sice boost version 1.77.0
 }
-BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test
-                     ,*disabled()
-                     )
+
+BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test)
 {
     Integer::base_int i = 32;
-    auto sq = boost::multiprecision::sqrt(i);
-    BOOST_TEST(sq*sq==i);
+    {
+        auto sq = boost::multiprecision::sqrt(i);
+        BOOST_TEST(sq * sq != i); // just to see if this thing ever changed
+    }
+    {
+        // TODO: test sqrt for cpp_rational
+        // auto sq = boost::multiprecision::sqrt(a_rational(i).); // https://stackoverflow.com/questions/36321295/rational-approximation-of-square-root-of-stdratio-at-compile-time
+        // BOOST_TEST(sq * sq == i);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(Integer_exptests)

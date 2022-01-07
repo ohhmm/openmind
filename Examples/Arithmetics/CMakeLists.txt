@@ -1,5 +1,5 @@
 
-exe(OpenMind)
+exe(OpenMind math)
 SOURCE_GROUP("Solvers\\Equation" FILES
     ../Arithmetics/GetEquation.cpp
     ../Arithmetics/SolveEquation.cpp
