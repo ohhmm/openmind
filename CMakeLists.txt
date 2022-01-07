@@ -492,6 +492,11 @@ macro(lib)
     else()
         message("${this_target} has no libs")
     endif()
+    if(NOT MSVC)
+        target_link_libraries(${this_target} PUBLIC
+                        pthread
+                        )
+    endif()
 
     if (OPENMIND_BUILD_TESTS AND EXISTS test)
         add_subdirectory(test)
