@@ -172,7 +172,7 @@ if(UNIX)
 
 		set(${this_target}_Libs ${X11_X11_LIB} ${X11_Xscreensaver_LIB} pthread
 				CACHE INTERNAL "${this_target}: Libraries" FORCE)
-		target_link_libraries(${this_target} ${${this_target}_Libs})
+                target_link_libraries(${this_target} PUBLIC ${${this_target}_Libs})
 		#target_link_libraries(${this_target} lib${this_target})
 	endif()
 endif(UNIX)
@@ -194,7 +194,7 @@ endif()
 
 target_link_directories(${this_target} PUBLIC ${CMAKE_BINARY_DIR}/lib)
 
-target_link_libraries(${this_target} math)
+target_link_libraries(${this_target} PUBLIC math)
 
 
 
