@@ -79,7 +79,9 @@ namespace math {
 
 		Fraction(const Integer&);
 		Fraction(boost::rational<a_int>&&);
-		Fraction(const boost::multiprecision::cpp_dec_float_100&);
+        Fraction(a_rational&&);
+        Fraction(const a_rational&);
+        Fraction(const boost::multiprecision::cpp_dec_float_100&);
 
 		Fraction(Fraction&&) = default;
 		Fraction(const Fraction&)=default;

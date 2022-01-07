@@ -354,28 +354,24 @@ macro(ext name location)
 	message("External ${name} ${location}")
 	if(NOT TARGET ${name})
 		if(OPENMIND_UPDATE_EXTERNAL_DEPS)
-			ExternalProject_Add(${name}
-				GIT_REPOSITORY ${location}
-				INSTALL_DIR ${CMAKE_BINARY_DIR}
-				CMAKE_ARGS
-					-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-					-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-					-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-				)
-		else()
-			ExternalProject_Add(${name}
-				GIT_REPOSITORY ${location}
-				INSTALL_DIR ${CMAKE_BINARY_DIR}
-				UPDATE_COMMAND ""
-				CMAKE_ARGS
-					-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-					-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-					-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-			)
+			set(OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM "UPDATE_COMMAND \"\"")
 		endif()
+		ExternalProject_Add(${name}
+			GIT_REPOSITORY ${location}
+			INSTALL_DIR ${CMAKE_BINARY_DIR}
+			${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
+			CMAKE_ARGS
+				-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+				-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+				-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+				-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+			)
 		if(TARGET ${name})
 			message("${name} is new target")
-			add_dependencies(${this_target} ${name})
+			if(TARGET ${this_target})
+				add_dependencies(${this_target} ${name})
+				message("Making ${this_target} depend on the ${name}")
+			endif()
 		else()
 			message(WARNING "${name} is not a target")
 		endif()
