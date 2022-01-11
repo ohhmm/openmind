@@ -1,1 +1,1 @@
-test(extrapolator)
+test()

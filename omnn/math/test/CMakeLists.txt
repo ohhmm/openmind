@@ -1,1 +1,1 @@
-test(math)
+test()

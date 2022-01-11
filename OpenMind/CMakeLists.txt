@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.6)
 
 SET (this_target OpenMind)
 PROJECT(${this_target})
@@ -187,9 +187,6 @@ if(Boost_INCLUDE_DIR)
 endif()
 if(Boost_INCLUDE_DIRS)
 	target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
-endif()
-if(OPENMIND_USE_OPENCL)
-    target_include_directories(${this_target} PUBLIC ${OPENCL_INCLUDE_DIR})
 endif()
 
 target_link_directories(${this_target} PUBLIC ${CMAKE_BINARY_DIR}/lib)

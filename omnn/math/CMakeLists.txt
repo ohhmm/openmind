@@ -29,7 +29,7 @@ endif(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
 
 if(OPENMIND_USE_OPENCL)
 	add_definitions(-DOPENMIND_MATH_USE_OPENCL -DOPENMIND_USE_OPENCL)
-	set(DEPENDENCIES ${DEPENDENCIES} ${OpenCl_Library})
+	set(DEPENDENCIES ${DEPENDENCIES} OpenCL)
 endif()
 
 if(NOT WIN32)
@@ -39,12 +39,6 @@ endif()
 set(DEPENDENCIES ${DEPENDENCIES} rt)
     
 lib(${DEPENDENCIES})
-
-if (OPENMIND_USE_OPENCL)
-	target_include_directories(${this_target} PUBLIC
-		${OpenCL_INCLUDE_DIR}
-		)
-endif()
 
 if (OPENMIND_BUILD_TESTS)
     add_subdirectory(test)
