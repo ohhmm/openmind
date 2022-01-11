@@ -3,6 +3,7 @@
 #include <functional>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <utility>
 
 
@@ -10,6 +11,8 @@ using StoringTask = std::future<bool>;
 class StoringTasksQueue
     : public std::deque<StoringTask>
 {
+    std::mutex DequeMutEx;
+
 protected:
     void CleanupReadyTasks();
 
