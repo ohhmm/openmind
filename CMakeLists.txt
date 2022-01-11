@@ -289,10 +289,6 @@ function(test)
 	project(${this_target})
 	message("\nCreating Tests for ${this_target}")
 	file(GLOB src *.cpp)
-	add_definitions(
-	    -DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
-	    -DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
-	    )
 	message("test_libs ${test_libs}")
 	set(libs ${test_libs} ${TEST_DEPS})#pthread
 	if(NOT MSVC)
@@ -318,6 +314,10 @@ function(test)
 	    get_filename_component(TEST_NAME ${TEST} NAME_WE)
 	    message("test ${TEST_NAME}")
 	    add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
+		target_compile_definitions(${TEST_NAME} PUBLIC
+			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
+			)
         target_link_libraries(${TEST_NAME} PUBLIC ${this_target})
 		add_dependencies(${TEST_NAME} ${this_target})
 		target_link_directories(${TEST_NAME} PUBLIC
@@ -414,6 +414,11 @@ macro(lib)
 	message("\nCreating Library: ${this_target}")
     file(GLOB src *.cpp *.h)
     add_library(${this_target} ${src})
+	if(_IS_DEBUG)
+	target_compile_definitions(${this_target} PUBLIC
+		-DSRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+		)
+	endif()
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
