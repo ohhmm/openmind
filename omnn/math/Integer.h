@@ -161,12 +161,16 @@ public:
 
     std::wstring save(const std::wstring&) const override;
     
-    static const zero_zone_t empty_zero_zone;
+    static const ranges_t empty_zero_zone;
     bool Factorization(const std::function<bool(const Valuable&)>& f,
                        const Valuable& max,
-                       const zero_zone_t& zz = empty_zero_zone) const;
+                       const ranges_t& zz = empty_zero_zone) const;
+    bool IsPrime() const;
     std::deque<Valuable> Facts() const;
     std::set<Valuable> FactSet() const;
+    bool SimpleFactorization(const std::function<bool(const Valuable&)>& f, const Valuable& max,
+                       const ranges_t& zz = empty_zero_zone) const;
+    std::set<Valuable> SimpleFactsSet() const;
 
     solutions_t Distinct() const final { return { *this }; }
     Valuable Univariate() const final { return *this; }
