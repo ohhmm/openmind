@@ -1,3 +1,4 @@
+#pragma once
 #include <boost/multiprecision/cpp_int.hpp>
 
 #ifndef NDEBUG
