@@ -414,11 +414,9 @@ macro(lib)
 	message("\nCreating Library: ${this_target}")
     file(GLOB src *.cpp *.h *.inc)
     add_library(${this_target} ${src})
-	if(_IS_DEBUG)
 	target_compile_definitions(${this_target} PUBLIC
-		-DSRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+		-D${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		)
-	endif()
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}

@@ -15,23 +15,24 @@ static const boost::multiprecision::cpp_int Primes[] = {
 };
 static const size_t PrimeItems = sizeof(Primes) / sizeof(Primes[0]);
 
-
-
 namespace {
-#ifdef SRC_DIR
-boost::filesystem::path PrimeListDir = SRC_DIR;
+#ifdef rt_SRC_DIR
+boost::filesystem::path PrimeListDir = rt_SRC_DIR;
 auto PrimeListPath = PrimeListDir / PRIME_LIST_FILENAME;
 #endif
-}
+} // namespace
 
 namespace omnn::rt {
 
 bool GrowPrime(const boost::multiprecision::cpp_int& upto,
                std::function<bool(boost::multiprecision::cpp_int)> is_prime) {
     auto& prev = Primes[PrimeItems - 1];
+    auto next = prev;
+    ++next;
+    static auto from = next;
     auto range = upto;
     range -= prev;
-    auto chunks = std::thread::hardware_concurrency(); //TODO:
+    auto chunks = std::thread::hardware_concurrency() * 2; //TODO:
     auto chunk = range;
     range /= chunks;
     std::deque<std::future<std::string>> primining;
@@ -40,7 +41,7 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
             std::stringstream ss;
             auto j = chunk;
             j *= i;
-            j += prev;
+            j += from;
             auto up = j + chunk;
             for (; j < up; ++j) {
                 if (is_prime(j))
@@ -50,11 +51,14 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
         }));
     }
 
-    std::ofstream PrimesIncFile(PrimeListPath.string(), std::ios_base::app);
     while (primining.size()) {
-        PrimesIncFile << primining.front().get();
+        auto line = primining.front().get();
+        std::ofstream PrimesIncFile(PrimeListPath.string(), std::ios_base::app);
+        PrimesIncFile << std::endl << line;
+        PrimesIncFile.close();
         primining.pop_front();
     }
+    from++ = upto;
     return true;
 }
 

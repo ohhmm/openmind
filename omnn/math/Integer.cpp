@@ -895,7 +895,7 @@ namespace math {
             {
 #ifndef NDEBUG
                 static bool OutOfPrimesTableWarning = {};
-                if (!OutOfPrimesTableWarning && primeIdx == maxPrimeIdx) {
+                if (!OutOfPrimesTableWarning) {
                     std::cerr
                         << primeUpmost
                         << " is the biggest prime number in the hardcoaded primes table used for fast factorization to "
@@ -903,6 +903,10 @@ namespace math {
                            "quicker."
                         << std::endl;
                     OutOfPrimesTableWarning = true;
+                    rt::GrowPrime(absolute,
+                        [](const decltype(absolute)& v) {
+                            return Integer(v).IsPrime();
+                        });
                 }
 #endif
                 // Fallback algorithm
