@@ -1067,12 +1067,12 @@ std::string Spaceless(std::string s) {
     }
 
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
-    using zero_zone_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
+    using ranges_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
 
-    zero_zone_t Valuable::get_zeros_zones(const Variable& v, solutions_t& some) const
+    ranges_t Valuable::get_zeros_zones(const Variable& v, solutions_t& some) const
     {
         auto fm = calcFreeMember().abs();
-        zero_zone_t z {{-fm, fm},{}};
+        ranges_t z {{-fm, fm},{}};
 
         auto f = *this;
         f.d(v); f.optimize();

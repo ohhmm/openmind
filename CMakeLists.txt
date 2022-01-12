@@ -412,7 +412,7 @@ macro(lib)
     set(${this_target}_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE FILEPATH "${this_target} include path")
     project(${this_target})
 	message("\nCreating Library: ${this_target}")
-    file(GLOB src *.cpp *.h)
+    file(GLOB src *.cpp *.h *.inc)
     add_library(${this_target} ${src})
 	if(_IS_DEBUG)
 	target_compile_definitions(${this_target} PUBLIC

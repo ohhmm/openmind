@@ -11,6 +11,9 @@
 #include "Product.h"
 #include "Sum.h"
 
+#include <rt/Prime.h>
+#include <rt/tasq.h>
+
 #include <algorithm>
 #include <codecvt>
 #include <cmath>
@@ -41,15 +44,15 @@ namespace std {
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/detail/integer_ops.hpp>
 #include <boost/multiprecision/integer.hpp>
+#include <boost/multiprecision/miller_rabin.hpp>
 
-//#include <libiomp/omp.h>
 
 using boost::multiprecision::cpp_int;
 
 namespace omnn{
 namespace math {
 
-    const Integer::zero_zone_t Integer::empty_zero_zone;
+    const Integer::ranges_t Integer::empty_zero_zone;
 
     Integer::Integer(const Fraction& f)
     : arbitrary(f.getNumerator().ca() / f.getDenominator().ca())
@@ -198,13 +201,11 @@ namespace math {
                 } else {
                     Become(NaN());
                 }
+            } else if (arbitrary % a == 0) {
+                arbitrary /= a;
+                hash = std::hash<base_int>()(arbitrary);
             } else {
-                auto div = arbitrary / a;
-                if (div * a == arbitrary) {
-                    arbitrary = div;
-                    hash = std::hash<base_int>()(arbitrary);
-                } else
-                    Become(Fraction(*this, v));
+                Become(Fraction(*this, v));
             }
         }
         else if(v.FindVa())
@@ -677,6 +678,31 @@ namespace math {
         return f;
     }
 
+    bool Integer::IsPrime() const
+    {
+        auto is = //boost::multiprecision::miller_rabin_test(boost::numeric_cast<uint64_t>(ca()), 3) &&
+            !Factorization(
+            [&](auto& v) {
+                auto isPrimeFactor = v == 0_v || v == 1_v || v == *this;
+                auto stop = !isPrimeFactor;
+                return stop;
+            },
+            abs());
+        return is;
+    }
+
+    std::set<Valuable> Integer::SimpleFactsSet() const {
+        std::set<Valuable> f;
+        SimpleFactorization(
+            [&](auto& v) {
+                f.emplace(std::move(v));
+                return false;
+            },
+            abs());
+        f.erase(0);
+        return f;
+    }
+
     std::set<Valuable> Integer::FactSet() const {
         std::set<Valuable> f;
         Factorization(
@@ -689,8 +715,8 @@ namespace math {
         return f;
     }
 
-    bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, const Valuable& max, const zero_zone_t& zz) const
-    {
+    bool Integer::SimpleFactorization(const std::function<bool(const Valuable&)>& f, const Valuable& max,
+                                const ranges_t& zz) const {
         auto h = arbitrary;
         if(h < 0)
             h = -h;
@@ -720,40 +746,245 @@ namespace math {
                 ++scanIt;
             }
         }
-//        if (!zz.second.empty()) {
-//            IMPLEMENT
-//        }
-//        if (arbitrary > std::numeric_limits<cl_long>::max()) {
-//        #pragma omp parallel for shared(up)
         auto absolute = abs();
         if(from==up)
             return f(up);
         else
-        for (auto i = from; i < up; ++i) {
-            auto a = absolute / i;
-            if (a.IsInt()) {
-                if(f(i) || f(a))
-                    return true;
-                if (a < up) {
-                    up = a;
+            for (auto i = from; i < up; ++i) {
+                auto a = absolute / i;
+                if (a.IsInt()) {
+                    if(f(i) || f(a))
+                        return true;
+                    if (a < up) {
+                        up = a;
+                    }
+                }
+
+                if (scanz && i > scanIt->second) {
+                    ++scanIt;
+                    if (scanIt == zz.second.end()) {
+                        break;
+                    }
+                    i = scanIt->first;
+                    if (!i.IsInt()) {
+                        IMPLEMENT;
+                    }
                 }
             }
-            
-            if (scanz && i > scanIt->second) {
-                ++scanIt;
-                if (scanIt == zz.second.end()) {
-                    break;
-                }
-                i = scanIt->first;
-                if (!i.IsInt()) {
-                    IMPLEMENT;
-                }
-            }
-////            while (scai > scanIt.s) {
-////                <#statements#>
-////            }
+        return false;
+    }
+
+    namespace {
+        StoringTasksQueue factorizationTasks;
+    }
+    bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, const Valuable& max, const ranges_t& zz) const
+    //{
+    //    std::set<Integer> factors;
+    //    return Factorization(f, max, factors, zz);
+    //}
+
+    //bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, 
+    //    const Valuable& max,
+    //    std::set<Integer>& factors,
+    //    const ranges_t& zz) const
+    {   // check division by primes
+        // iterate by primes to find factor and store it in factors set 
+        // togather with lowest factor found highest factor as result of division
+        // the highest factor reduces the search range to its value exclusively (1)
+        // after scan all the primes, need to scan permutations
+        // 
+        // starting from smallest prime factor, 
+        //   new set of non-prime factors is enreached with muiltiple multiplications to current prime to self and to each member of the new set
+        //   new set iterating starting from smallest too and until range out of upper bound (1)
+        //  ...
+
+        // Multi-threaded way:
+        // for devisible of thouse: isDevisible = (ResultOfDivision = This / iPrime).IsInt():
+        // add products of the Divisibles with factorization set numbers of result of division:
+        // (add all [ResultOfDivision factors starting from iPrime inclusively] time iPrime)  recursively
+        auto absolute = arbitrary;
+        if (absolute < 0)
+            absolute = -absolute;
+        decltype(arbitrary) from = 2;
+        if (zz.first.first > from) {
+            if(zz.first.first.IsInt())
+                from = zz.first.first.ca();
+            else
+                from = static_cast<int>(static_cast<double>(zz.first.first)); // FIXME: precision issues
         }
-//        }
+        else if (f(0_v) || f(1_v)) {
+            return true;
+        }
+        bool scanz = zz.second.size();
+        auto scanIt = zz.second.end();
+        Valuable up(absolute);
+        if (up > max) up = max;
+        auto primeIdx = 0;
+        if (zz.first.first < zz.first.second) {
+            if (zz.first.second < up) {
+                if (zz.first.second.IsInt())
+                    up = zz.first.second;
+                else
+                    up = static_cast<int>(static_cast<double>(zz.first.second)); // FIXME: precision issues
+            }
+        } else {
+            // assuming its current prime index stored
+            primeIdx = boost::numeric_cast<decltype(primeIdx)>(zz.first.second.ca());
+        }
+        if (absolute <= up && f(absolute)) {
+            return true;
+        }
+        if (scanz) {
+            scanIt = zz.second.begin();
+            while (scanIt != zz.second.end() && scanIt->second < from) {
+                ++scanIt;
+            }
+        }
+        if(from==up)
+            return f(up);
+        else {
+            std::set<decltype(arbitrary)> primeFactors, nonPrimeFactors;
+            auto maxPrimeIdx = omnn::rt::primes();
+            auto& primeUpmost = omnn::rt::prime(maxPrimeIdx);
+            auto prime = omnn::rt::prime(primeIdx);
+            while (prime < from)
+                prime = omnn::rt::prime(++primeIdx);
+            if (prime != from) { // from is not a prime number
+                for (auto i = from; i < prime; ++i) { // slow scan till first prime
+                    if (absolute % i == 0) {
+                        auto a = absolute;
+                        a /= i;
+                        if (f(i) || f(a))
+                            return true;
+                        if (a < up) {
+                            up = a;
+                        }
+                        nonPrimeFactors.emplace(a);
+                    }
+                    if (scanz && i > scanIt->second) {
+                        ++scanIt;
+                        if (scanIt == zz.second.end()) {
+                            break;
+                        }
+                        if (!scanIt->first.IsInt()) {
+                            IMPLEMENT;
+                        }
+                        i = scanIt->first.ca();
+                    }
+                }
+            }
+
+            // iterating by primes
+            while (from <= primeUpmost
+                && up >= prime && primeIdx < maxPrimeIdx)
+            {
+                if (absolute % prime == 0) {
+                    auto a = absolute;
+                    a /= prime;
+                    if(prime > a)
+                        break;
+                    if (f(prime) || f(a))
+                        return true;
+                    primeFactors.emplace(prime);
+                    nonPrimeFactors.emplace(a);
+                }
+                prime = omnn::rt::prime(++primeIdx);
+            }
+
+            if (primeIdx == maxPrimeIdx)
+            {
+#ifndef NDEBUG
+                static bool OutOfPrimesTableWarning = {};
+                if (!OutOfPrimesTableWarning && primeIdx == maxPrimeIdx) {
+                    std::cerr
+                        << primeUpmost
+                        << " is the biggest prime number in the hardcoaded primes table used for fast factorization to "
+                           "solve equations using RRT. Consider extending primes table to make this perform much "
+                           "quicker."
+                        << std::endl;
+                    OutOfPrimesTableWarning = true;
+                }
+#endif
+                // Fallback algorithm
+                for (auto i = from; i < up; ++i) {
+                    if (absolute % i == 0) {
+                        auto a = absolute;
+                        a /= i;
+                        if (f(i) || f(a))
+                            return true;
+                        if (a < up) {
+                            up = a;
+                        }
+                    }
+
+                    if (scanz && i > scanIt->second) {
+                        ++scanIt;
+                        if (scanIt == zz.second.end()) {
+                            break;
+                        }
+                        if (!scanIt->first.IsInt()) {
+                            IMPLEMENT;
+                        }
+                        i = scanIt->first.ca();
+                    }
+                }
+                return false;
+            }
+
+            for (auto& prime : primeFactors) {
+                auto mul = prime;
+                mul *= prime;
+                decltype(primeFactors) addNonPrime;
+                while (mul <= up)
+                {
+                    if (absolute % mul == 0) {
+                        auto a = absolute;
+                        a /= mul;
+                        if (nonPrimeFactors.find(mul) == nonPrimeFactors.end()
+                            && addNonPrime.emplace(mul).second)
+                        {
+                            if (f(mul))
+                                return true;
+                            if (nonPrimeFactors.find(a) == nonPrimeFactors.end()
+                                && addNonPrime.emplace(a).second) {
+                                if (f(a))
+                                    return true;
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+                    mul *= prime;
+                }
+
+                for (auto& nonPrime : nonPrimeFactors) {
+                    mul = nonPrime;
+                    for (;;) {
+                        mul *= prime;
+                        if (mul > up)
+                            break;
+                        if (absolute % mul == 0) {
+                            auto a = absolute;
+                            a /= mul;
+                            if (nonPrimeFactors.find(mul) == nonPrimeFactors.end() && addNonPrime.emplace(mul).second) {
+                                if (f(mul))
+                                    return true;
+                                if (nonPrimeFactors.find(a) == nonPrimeFactors.end() && addNonPrime.emplace(a).second) {
+                                    if (f(a))
+                                        return true;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                nonPrimeFactors.merge(std::move(addNonPrime));
+            }
+
+        }
+        //        }
 //        else
 //        {
 //            // build OpenCL kernel

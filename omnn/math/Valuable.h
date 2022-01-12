@@ -323,8 +323,8 @@ public:
                         >;
 
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
-    using zero_zone_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
-    zero_zone_t get_zeros_zones(const Variable& v, solutions_t& some) const;
+    using ranges_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
+    ranges_t get_zeros_zones(const Variable& v, solutions_t& some) const;
     
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     friend std::wostream& operator<<(std::wostream& out, const Valuable& obj);
