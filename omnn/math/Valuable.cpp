@@ -24,6 +24,8 @@
 #endif
 #include <boost/thread/thread_pool.hpp>
 
+#include <rt/GC.h>
+
 
 namespace omnn{
 namespace math {
@@ -723,9 +725,8 @@ std::string Spaceless(std::string s) {
     Valuable::~Valuable()
     {
         // TODO: move exp deletion to idle priority thread pool
-        //
-        // https://stackoverflow.com/a/18884946
-        //static boost::thread::basic_thread_pool(1);
+        //if (exp)
+        //    rt::GC::DispatchDispose(std::move(exp));
     }
 
     Valuable Valuable::operator -() const
