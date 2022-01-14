@@ -12,6 +12,7 @@
 #include "i.h"
 #include "pi.h"
 #include <type_traits>
+#include <boost/multiprecision/cpp_int.hpp>
 
 namespace omnn{
 namespace math {
@@ -674,6 +675,7 @@ namespace math {
                auto thisNoCommon = *this / icw;
                if (!operator==(thisNoCommon)) { //multivalue cases (example ((-17)/16)*(4^((1/2))) / (1/2)*(4^((1/2))) = ((-17)/16)*(4^((1/2)))
                    auto vNoCommon = v / icw;
+                   //std::cout << thisNoCommon << ".IsSummationSimplifiable(" << vNoCommon << ')' << std::endl;
                    is = thisNoCommon.IsSummationSimplifiable(vNoCommon);
                    if(is.first){
                        is.second *= icw;
@@ -913,8 +915,9 @@ namespace math {
 		return base::operator %=(v);
 	}
 
-	namespace{
-        const size_t Hash1 = Valuable(1).Hash();
+	namespace {
+        constexpr std::hash<a_int> Hasher;
+        const size_t Hash1 = Hasher(1);
     }
     bool Product::operator ==(const Valuable& v) const
     {

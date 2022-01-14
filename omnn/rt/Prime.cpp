@@ -32,20 +32,31 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
     static auto from = next;
     auto range = upto;
     range -= prev;
-    auto chunks = std::thread::hardware_concurrency() * 2; //TODO:
+    auto chunks = std::thread::hardware_concurrency() * 2; // TODO: 
     auto chunk = range;
-    range /= chunks;
+    chunk /= chunks;
+    if (from + chunk * chunks < upto) {
+        ++chunk;
+    }
     std::deque<std::future<std::string>> primining;
-    for (decltype(chunks) i = 0; i <= chunks; ++i) {
+    std::cout << "new prime table target: " << upto << '(' << from + chunk * chunks << ')'<<std::endl;
+    for (decltype(chunks) i = 0; i < chunks; ++i) {
         primining.emplace_back(std::async(std::launch::async, [=]() {
             std::stringstream ss;
             auto j = chunk;
             j *= i;
             j += from;
             auto up = j + chunk;
+            {
+                static std::mutex m;
+                std::lock_guard l(m);
+                std::cout << '[' << j << ',' << up << ')';
+            }
             for (; j < up; ++j) {
-                if (is_prime(j))
+                if (is_prime(j)) {
+                    std::cout << j << ',';
                     ss << j << ',';
+                }
             }
             return std::move(ss.str());
         }));

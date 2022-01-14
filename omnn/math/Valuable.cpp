@@ -114,7 +114,7 @@ namespace math {
         return sz;
     }
 
-    void Valuable::setAllocSize(size_t sz)
+    constexpr void Valuable::setAllocSize(size_t sz)
     {
         this->sz = sz;
     }
@@ -725,8 +725,8 @@ std::string Spaceless(std::string s) {
     Valuable::~Valuable()
     {
         // TODO: move exp deletion to idle priority thread pool
-        //if (exp)
-        //    rt::GC::DispatchDispose(std::move(exp));
+        if (exp)
+            rt::GC::DispatchDispose(std::move(exp));
     }
 
     Valuable Valuable::operator -() const
