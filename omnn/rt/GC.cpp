@@ -19,48 +19,31 @@
 namespace omnn::rt {
 
 
+
 namespace {
-boost::lockfree::stack<void*> Bin;
-boost::lockfree::stack<std::shared_ptr<void>> ShBin;
+boost::lockfree::stack<std::shared_ptr<void>> Bin(0);
 auto ContinueIdleWork = true;
 } // namespace
+struct Deleter {
+    ~Deleter() {
+        ContinueIdleWork = {};
+        GC::GCThread.join();
+    }
+};
 
-const int GC::InitStatus = GC::Init();
 std::thread GC::GCThread(GC::Routine);
-
-int GC::Init() {
-    return atexit(GC::DeInit);
-}
-
-void GC::DeInit() {
-    GC::GCThread.join();
-    ContinueIdleWork = {};
-}
+Deleter GCThreadDeleter;
 
 
 namespace {
-
-void Call(const std::function<void()>& f) {
-    f();
-}
-
-void Del(void* obj) { delete obj; }
 
 void Nop(std::shared_ptr<void> obj) { }
 
 } // namespace
 
-void GC::DispatchDispose(void* obj) {
-    if (GC::IsThreadGC()) {
-        Del(obj);
-    } else {
+void GC::DispatchDispose(std::shared_ptr<void>&& obj) {
+    if (!GC::IsThreadGC() && ContinueIdleWork)
         Bin.push(obj);
-    }
-}
-
-void GC::DispatchDispose(std::shared_ptr<void> obj) { 
-    if (!GC::IsThreadGC()) 
-        ShBin.push(obj);
 }
 
 bool GC::IsThreadGC() {
@@ -68,7 +51,7 @@ bool GC::IsThreadGC() {
 }
 
 void GC::Routine() {
-    auto h = GCThread.native_handle(); 
+    auto h = GCThread.native_handle();
 #ifdef _WIN32
     auto res = SetThreadPriority(h, THREAD_PRIORITY_IDLE);
     if (!res) {
@@ -77,11 +60,10 @@ void GC::Routine() {
     }
 #else
     sched_param sp={};
-    sched_setscheduler(h, SHED_IDLE, &sp);
+    sched_setscheduler(h, SCHED_IDLE, &sp);
 #endif
     while (ContinueIdleWork) {
-
-        if ((Bin.empty() ? 0 : Bin.consume_all(Del)) + (ShBin.empty() ? 0 : ShBin.consume_all(Nop))) {
+        if (Bin.consume_all(Nop)) {
             std::this_thread::yield();
         } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -89,6 +71,5 @@ void GC::Routine() {
     }
 }
 
-GC::GC() {}
 
 } // namespace omnn::rt

@@ -56,7 +56,7 @@ namespace math {
         
         class DepSz {
         public:
-            DepSz(self* ths) {
+            constexpr DepSz(self* ths) {
                 ths->setAllocSize(sizeof(Chld));
             }
         };

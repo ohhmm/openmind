@@ -65,7 +65,7 @@ namespace math {
 
     class VarHost;
     class Variable;
-    struct ValuableDescendantMarker {};
+    constexpr struct ValuableDescendantMarker {};
 
 class Valuable
         : public OpenOps<Valuable>
@@ -86,7 +86,7 @@ protected:
     virtual void New(void*, Valuable&&);
     virtual size_t getTypeSize() const;
     virtual size_t getAllocSize() const;
-    virtual void setAllocSize(size_t sz);
+    constexpr virtual void setAllocSize(size_t sz);
 
     template<class T>
     static const T* cast(const Valuable& v)
