@@ -32,7 +32,7 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
     static auto from = next;
     auto range = upto;
     range -= prev;
-    auto chunks = std::thread::hardware_concurrency() * 2; // TODO: 
+    auto chunks = std::thread::hardware_concurrency() - 1; // One thread left free for GC
     auto chunk = range;
     chunk /= chunks;
     if (from + chunk * chunks < upto) {
@@ -46,7 +46,8 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
             auto j = chunk;
             j *= i;
             j += from;
-            auto up = j + chunk;
+            auto up = j;
+            up += chunk; // NOTE: preserving up type same as j. Expression (j+chunk)  type differs from j type.
             {
                 static std::mutex m;
                 std::lock_guard l(m);
@@ -62,8 +63,10 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
         }));
     }
 
+    int i = -1;
     while (primining.size()) {
         auto line = primining.front().get();
+        std::cout << "Chunk " << ++i << std::endl << line << std::endl << "\n chunk is ready. Appending." << std::endl;
         std::ofstream PrimesIncFile(PrimeListPath.string(), std::ios_base::app);
         PrimesIncFile << std::endl << line;
         PrimesIncFile.close();

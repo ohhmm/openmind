@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <set>
 
 #include <boost/accumulators/statistics.hpp>
 #include <boost/any.hpp>
@@ -18,51 +19,35 @@
 
 namespace omnn::rt {
 
-
+std::jthread GC::GCThread(GC::Routine); // TODO : multiple idle threads
 
 namespace {
 boost::lockfree::stack<std::shared_ptr<void>> Bin(0);
-auto ContinueIdleWork = true;
-} // namespace
-struct Deleter {
-    ~Deleter() {
-        ContinueIdleWork = {};
-        GC::GCThread.join();
-    }
-};
-
-std::thread GC::GCThread(GC::Routine);
-Deleter GCThreadDeleter;
-
-
-namespace {
-
+std::set<std::thread::id> GCThreadIDs; // TODO : multiple idle threads
 void Nop(std::shared_ptr<void> obj) { }
 
 } // namespace
 
 void GC::DispatchDispose(std::shared_ptr<void>&& obj) {
-    if (!GC::IsThreadGC() && ContinueIdleWork)
+    if (!GC::IsThreadGC() && !GC::GCThread.get_stop_token().stop_requested())
         Bin.push(obj);
 }
 
-bool GC::IsThreadGC() {
-    return std::this_thread::get_id() == GCThread.get_id();
-}
+bool GC::IsThreadGC() { return GCThreadIDs.find(std::this_thread::get_id()) != GCThreadIDs.end(); }
 
 void GC::Routine() {
-    auto h = GCThread.native_handle();
+    GCThreadIDs.insert(std::this_thread::get_id());
 #ifdef _WIN32
-    auto res = SetThreadPriority(h, THREAD_PRIORITY_IDLE);
+    auto res = SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_IDLE);
     if (!res) {
         auto err = GetLastError();
         assert(res);
     }
 #else
-    sched_param sp={};
-    sched_setscheduler(h, SCHED_IDLE, &sp);
+    //sched_param sp={};
+    //sched_setscheduler(h, SCHED_IDLE, &sp);
 #endif
-    while (ContinueIdleWork) {
+    while (!GC::GCThread.get_stop_token().stop_requested()) {
         if (Bin.consume_all(Nop)) {
             std::this_thread::yield();
         } else {

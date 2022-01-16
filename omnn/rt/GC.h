@@ -8,10 +8,8 @@
 namespace omnn::rt {
 
 class GC {
-    static std::thread GCThread;
+    static std::jthread GCThread;
     static void Routine();
-    friend struct Deleter;
-    static void DeInit();
 
 public:
     static bool IsThreadGC();
