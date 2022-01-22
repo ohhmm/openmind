@@ -78,15 +78,15 @@ BOOST_AUTO_TEST_CASE(Integer_exptests)
     auto a=25_v;
     a ^= 1_v/2;
     BOOST_TEST(a==5_v*(1_v^(1_v/2)));
-    
+
     a=-25_v;
     a ^= 1_v/2;
     BOOST_TEST(a==5_v*((-1_v)^(1_v/2)));
-    
+
     a=25_v;
     a ^= 1_v/-2;
     BOOST_TEST(a==(1_v/5)*((1_v)^(1_v/2)));
-    
+
     a=25_v;
     a ^= -1_v/2;
     BOOST_TEST(a==(1_v/5)*((1_v)^(1_v/2)));
@@ -94,11 +94,11 @@ BOOST_AUTO_TEST_CASE(Integer_exptests)
     a=-25_v;
     a ^= 1_v/-2;
     BOOST_TEST(a==(1_v/5)*((-1_v)^(1_v/2)));
-    
+
     a=-25_v;
     a ^= -1_v/2;
     BOOST_TEST(a==(1_v/5)*((-1_v)^(1_v/2)));
-    
+
     a=-25_v;
     a ^= Fraction{-1,-2};
     BOOST_TEST(a==5_v*((-1_v)^(1_v/2)));
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(Integer_tests)
 //    BOOST_TEST(a==initial_a);
 
     BOOST_TEST((105321254912_v).str() == "105321254912");
-    
+
     for(;b-->z;)
     {
         a *= a;
@@ -161,22 +161,32 @@ BOOST_AUTO_TEST_CASE(Integer_Factorization_test) {
         BOOST_TEST(bp == p);
     }
 
-    //std::cout << "Primes:\n";
-    auto prevPrime = omnn::rt::prime(omnn::rt::primes());
-    decltype(prevPrime) newBound = unsigned(-1);
-    Integer up = newBound;
-    //for (Integer i = ++prevPrime; i < up; ++i) {
-    //    if (i.IsPrime()) {
-    //        std::cout << i << ',';
-    //    }
-    //}
-
     auto maxPrimeIdx = 8;
     for (auto i = maxPrimeIdx; i-- > 0;) {
         a *= boost::math::prime(i);
     }
 
     std::cout << a << std::endl;
+
+    std::cout << "Primes:\n";
+    auto lastPrimeIdx = omnn::rt::primes();
+    decltype(lastPrimeIdx) primeIdx = 0;
+    auto prevPrime = omnn::rt::prime(lastPrimeIdx);
+    decltype(prevPrime)
+        newBound = unsigned(-1),
+        nFact = 1,
+        next = 3,
+        prev = 1;
+    for (auto i = 2; i < lastPrimeIdx; ++prev, ++i, ++next) {
+        nFact *= i;
+        auto fastPrimeTest = (prev * (nFact % next));
+        if (fastPrimeTest != 0) {
+            auto prime = fastPrimeTest / i + 2;
+            std::cout << prime << ',';
+            if (primeIdx < prevPrime)
+                BOOST_TEST(omnn::rt::prime(primeIdx++) == prime);
+        }
+    }
     // test integer factors
     auto simpleMethodFactors = a.SimpleFactsSet();
     auto factors = a.FactSet(); // 256 items
@@ -203,7 +213,7 @@ BOOST_AUTO_TEST_CASE(Integer_Factorization_test) {
         39,      38,      35,      34,      33,      30,      26,     22,     21,     19,     17,     15,     14,
         13,      11,      10,      7,       6,       5,       3,      2,      1
     };
-    up = a;
+    auto up = a;
     for (Integer i = 1; i <= up; ++i) {
         auto d = a / i;
         if (d.IsInt()) {
@@ -251,7 +261,7 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
         std::cout << measure<>::execution([&](){
             t = boost::multiprecision::sqrt(a.ca());
             auto match = t != sqroot.ca();
-            
+
             if(match)
             {
                 t = boost::multiprecision::sqrt(a.a());

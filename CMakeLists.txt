@@ -7,6 +7,9 @@ set (CMAKE_CXX_STANDARD 20)
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
     set(_IS_DEBUG TRUE)
     #add_definitions(-DBOOST_ALL_DYN_LINK)
+	if(MSVC)
+		add_compile_options($<$<CONFIG:Debug>:/constexpr:steps1000000000>)
+	endif()
 else()
     set(_IS_DEBUG FALSE)
     if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
@@ -77,7 +80,13 @@ if(MSVC)
     add_definitions(/source-charset:utf-8) #include "pi.h"
 endif()
 
-find_package(Git)
+find_package(Git QUIET)
+if(NOT GIT_EXECUTABLE AND MSVC)
+	find_program(GIT_EXECUTABLE git PATHS 
+		"$ENV{ProgramFiles}/Microsoft Visual Studio/*/*/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/Git/mingw32/bin/"
+		)
+	find_package(Git)
+endif()
 
 #find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -359,6 +368,7 @@ macro(ext name location)
 		endif()
 		ExternalProject_Add(${name}
 			GIT_REPOSITORY ${location}
+			GIT_TAG HEAD
 			INSTALL_DIR ${CMAKE_BINARY_DIR}
 			${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
 			CMAKE_ARGS

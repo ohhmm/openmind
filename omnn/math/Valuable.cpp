@@ -22,7 +22,6 @@
 #ifndef NDEBUG
 #include <boost/algorithm/string/replace.hpp>
 #endif
-#include <boost/thread/thread_pool.hpp>
 
 #include <rt/GC.h>
 
@@ -112,11 +111,6 @@ namespace math {
     size_t Valuable::getAllocSize() const
     {
         return sz;
-    }
-
-    constexpr void Valuable::setAllocSize(size_t sz)
-    {
-        this->sz = sz;
     }
 
     Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
@@ -2147,8 +2141,9 @@ boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
 
 ::omnn::math::Valuable operator"" _v(unsigned long long v)
 {
+    using namespace ::omnn::math;
     const auto va = ull2cppint(v);
-    return std::move(::omnn::math::Integer(va));
+    return Valuable(Integer(va));
 }
 
 //constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v)

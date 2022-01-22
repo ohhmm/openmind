@@ -7,6 +7,7 @@ build*
 /.idea
 /cmake-build-debug
 *.user
+.DS_Store
 .cproject
 .project
 .settings/language.settings.xml
@@ -16,3 +17,4 @@ build*
 *.solutions/*
 .settings/*
 /CMakeSettings.json
+CMakeLists.txt.user.*
