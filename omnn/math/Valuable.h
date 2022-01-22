@@ -46,7 +46,7 @@ namespace std
 {
     omnn::math::Valuable abs(const omnn::math::Valuable& v);
     omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
-    
+
     template<>
     struct hash<omnn::math::Valuable> {
         size_t operator()(const omnn::math::Valuable& v) const {
@@ -57,7 +57,7 @@ namespace std
 
 namespace omnn{
 namespace math {
-    
+
     using a_int = boost::multiprecision::cpp_int;
     using a_rational = boost::multiprecision::cpp_rational;
     using max_exp_t = a_rational;
@@ -65,7 +65,7 @@ namespace math {
 
     class VarHost;
     class Variable;
-    constexpr struct ValuableDescendantMarker {};
+    struct ValuableDescendantMarker {};
 
 class Valuable
         : public OpenOps<Valuable>
@@ -86,7 +86,7 @@ protected:
     virtual void New(void*, Valuable&&);
     virtual size_t getTypeSize() const;
     virtual size_t getAllocSize() const;
-    constexpr virtual void setAllocSize(size_t sz);
+    constexpr virtual void setAllocSize(size_t sz) { this->sz = sz; }
 
     template<class T>
     static const T* cast(const Valuable& v)
@@ -96,7 +96,7 @@ protected:
         auto t = dynamic_cast<const T*>(e ? e.get() : &v);
         return t;
     }
-    
+
     template<class T>
     static T* cast(Valuable& v)
     {
@@ -105,29 +105,29 @@ protected:
         auto t = dynamic_cast<T*>(e ? e.get() : &v);
         return t;
     }
-    
+
     template<class T>
     Valuable() {}
-    
+
     constexpr Valuable(ValuableDescendantMarker)
     {}
-    
+
     Valuable(const Valuable& v, ValuableDescendantMarker);
-    
+
     Valuable(Valuable&& v, ValuableDescendantMarker);
-    
+
     virtual std::ostream& print(std::ostream& out) const;
     virtual std::wostream& print(std::wostream& out) const;
     virtual std::ostream& code(std::ostream& out) const;
-    
+
     virtual Valuable& Become(Valuable&& i);
-    
+
     size_t hash = 0;
     size_t sz = sizeof(Valuable);
     static constexpr a_int const& a_int_z = a_int_cz;
     static constexpr max_exp_t const& max_exp_z = max_exp_cz;
     max_exp_t maxVaExp;// = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
-    
+
 public:
 
     enum View
@@ -139,7 +139,7 @@ public:
         Flat,
         Solving,
     };
-    
+
     enum class YesNoMaybe : uint8_t {
         Yes = 0b1, Maybe = 0b10, No = 0b100
     };
@@ -191,11 +191,11 @@ public:
     explicit Valuable(Valuable* v);
     explicit Valuable(const encapsulated_instance& e);
     virtual std::type_index Type() const;
-    
+
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(Valuable&& v);
-    
-    
+
+
     Valuable(const Valuable& v);
 
     template<class T,
@@ -204,7 +204,7 @@ public:
     : exp(t.Clone())
     {
     }
-     
+
     template<class T,
         typename = typename std::enable_if<
             !std::is_const<T>::value &&
@@ -229,7 +229,7 @@ public:
     Valuable(boost::rational<a_int>&&);
     Valuable(a_rational&&);
     Valuable(const a_rational&);
-    
+
     using NewVaFn_t = std::function<Valuable(const std::string&)>;
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized = false);
@@ -296,7 +296,7 @@ public:
 	virtual Valuable Sqrt() const;
 	virtual Valuable Tg() const;
 	virtual Valuable calcFreeMember() const;
-    
+
     using solutions_t = std::unordered_set<Valuable>;
     static Valuable MergeAnd(const Valuable& v1, const Valuable& v2);
     static Valuable MergeOr(const Valuable& v1, const Valuable& v2);
@@ -315,7 +315,7 @@ public:
     Valuable::solutions_t GetIntegerSolution() const;
     virtual Valuable::solutions_t GetIntegerSolution(const Variable& va) const;
     bool Test(const Variable& va, const Valuable& v) const;
-    
+
     using extrenum_t = std::pair<Valuable, // extrema: value = x for f'(x) == 0, points where function is changing direction
                             std::pair<  Valuable,// from direction = g''(x), g(x)=f(-x), has previous direction sign
                                         Valuable // to direction = f''(x), has new direction sign
@@ -325,7 +325,7 @@ public:
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
     using ranges_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
     ranges_t get_zeros_zones(const Variable& v, solutions_t& some) const;
-    
+
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     friend std::wostream& operator<<(std::wostream& out, const Valuable& obj);
     friend std::istream& operator>>(std::istream& in, const Valuable& obj);
@@ -340,7 +340,7 @@ public:
     static Valuable VaVal(const vars_cont_t& v);
     Valuable getVaVal() const;
     virtual bool eval(const std::map<Variable, Valuable>& with);
-    
+
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;
     using var_set_t = std::set<Variable>;
@@ -349,11 +349,11 @@ public:
     virtual void CollectVaNames(va_names_t& s) const;
     va_names_t VaNames() const;
     virtual std::shared_ptr<VarHost> getVaHost() const;
-    
+
     var_set_t Vars() const;
     virtual void Eval(const Variable& va, const Valuable& v);
     virtual bool IsComesBefore(const Valuable& v) const; /// accepts same type as param
-    
+
     bool Same(const Valuable& v) const;
     bool OfSameType(const Valuable& v) const;
     bool HasSameVars(const Valuable& v) const;
@@ -373,7 +373,7 @@ public:
     virtual explicit operator unsigned char() const;
     virtual a_int& a();
     virtual const a_int& ca() const;
-    
+
     // bits
     virtual Valuable bit(const Valuable& n) const;
     virtual Valuable bits(int n, int l) const;
@@ -389,7 +389,7 @@ public:
     virtual Valuable Shr() const;
     virtual Valuable sh(const Valuable& n) const;
     virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const;
-    
+
     // logic
     static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
     template <class Fwd>
@@ -404,7 +404,7 @@ public:
     Valuable operator||(const Valuable& v) const { return LogicOr(v); }
     Valuable& logic_or(const Valuable&); // inplace
     Valuable& logic_and(const Valuable&);
-    
+
 //    distinctZeros
 //
 //    distinct intersect
@@ -420,12 +420,12 @@ public:
 //    _1 / solve = intersect:
 //
 //    (x-1)(x-2) / (x-1) == (x-2)
-    
+
 //    Valuable DistinctIntersect(const Valuable& with, const Variable& va){
 //        auto toSolve = *this / with;
 //        toSolve
 //    }
-    
+
     Valuable& intersect(const Valuable& with, const Variable& va){
         return logic_and(with);
     }
@@ -494,7 +494,7 @@ const Valuable vo<I>::val = I;
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
-//constexpr 
+//constexpr
 ::omnn::math::Valuable operator"" _v(unsigned long long v);
 //constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
 ::omnn::math::Valuable operator"" _v(long double v);
