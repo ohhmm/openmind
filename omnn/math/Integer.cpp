@@ -678,6 +678,14 @@ namespace math {
         return f;
     }
 
+	void Integer::factorial() {
+        if (arbitrary == 0)
+            arbitrary = 1;
+        else for (auto i = arbitrary; i-- > 1;)
+            arbitrary *= i;
+        hash = std::hash<base_int>()(arbitrary);
+	}
+
     bool Integer::IsPrime() const
     {
         auto is = //boost::multiprecision::miller_rabin_test(boost::numeric_cast<uint64_t>(ca()), 3) &&
@@ -875,8 +883,10 @@ namespace math {
             }
 
             // iterating by primes
+            auto primeScanUp = up;
             while (from <= primeUpmost
-                && up >= prime && primeIdx < maxPrimeIdx)
+                && primeScanUp >= prime
+				&& primeIdx < maxPrimeIdx)
             {
                 if (absolute % prime == 0) {
                     auto a = absolute;
@@ -887,13 +897,15 @@ namespace math {
                         return true;
                     primeFactors.emplace(prime);
                     nonPrimeFactors.emplace(a);
+                    if (a < primeScanUp)
+                        primeScanUp = a;
                 }
                 prime = omnn::rt::prime(++primeIdx);
             }
 
             if (primeIdx == maxPrimeIdx)
             {
-#ifndef NDEBUG
+#ifdef OPENMIND_PRIME_MINING
                 static bool OutOfPrimesTableWarning = {};
                 if (!OutOfPrimesTableWarning) {
                     std::cerr
@@ -980,6 +992,8 @@ namespace math {
                             } else {
                                 break;
                             }
+                        } else {
+                            break;
                         }
                     }
                 }

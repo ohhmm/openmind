@@ -414,7 +414,7 @@ BOOST_AUTO_TEST_CASE(Containers_test)
     s.clear();
 
     s.insert(b ^ 2);
-    s.find(c ^ 2);
+    auto it = s.find(c ^ 2);
 }
 
 BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang
