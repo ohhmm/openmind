@@ -73,9 +73,31 @@ BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test)
     }
 }
 
+BOOST_AUTO_TEST_CASE(Integer_Factorial) {
+    Integer i = 0;
+    i.factorial();
+    BOOST_TEST(i == 1);
+
+    i = 1;
+    i.factorial();
+    BOOST_TEST(i == 1);
+
+    i = 2;
+    i.factorial();
+    BOOST_TEST(i == 2);
+
+    i = 3;
+    i.factorial();
+    BOOST_TEST(i == 6);
+
+    i = 4;
+    i.factorial();
+    BOOST_TEST(i == 24);
+}
+
 BOOST_AUTO_TEST_CASE(Integer_exptests)
 {
-    auto a=25_v;
+	auto a = 25_v;
     a ^= 1_v/2;
     BOOST_TEST(a==5_v*(1_v^(1_v/2)));
 
@@ -161,6 +183,23 @@ BOOST_AUTO_TEST_CASE(Integer_Factorization_test) {
         BOOST_TEST(bp == p);
     }
 
+	//// build primes formula
+ //   DECL_VA(n);
+ //   DECL_VA(factorial);
+ //   DECL_VA(prime);
+ //   DECL_VA(primeTest);
+ //   DECL_VA(primeExists);
+
+ //   auto eq1 = factorial.Equals(n.Factorial());
+ //   auto eq2 = primeTest.Equals((n - 1) * (factorial % (n + 1)));
+ //   auto eq3 = primeExists.Equals(primeTest.Ifz(1, 0));
+ //   auto eq4 = primeExists.Equals(1);
+ //   auto eq5 = prime.Equals(primeTest / n + 2);
+
+ //   auto primesEquation = eq1.sq() + eq2.sq() + eq3.sq() + eq4.sq() + eq5.sq();
+
+ //   std::cout << " Primes general equation: " << primesEquation << std::endl;
+
     auto maxPrimeIdx = 8;
     for (auto i = maxPrimeIdx; i-- > 0;) {
         a *= boost::math::prime(i);
@@ -177,7 +216,7 @@ BOOST_AUTO_TEST_CASE(Integer_Factorization_test) {
         nFact = 1,
         next = 3,
         prev = 1;
-    for (auto i = 2; i < lastPrimeIdx; ++prev, ++i, ++next) {
+    for (auto i = 2; i < boost::math::max_prime; ++prev, ++i, ++next) {
         nFact *= i;
         auto fastPrimeTest = (prev * (nFact % next));
         if (fastPrimeTest != 0) {
@@ -187,6 +226,7 @@ BOOST_AUTO_TEST_CASE(Integer_Factorization_test) {
                 BOOST_TEST(omnn::rt::prime(primeIdx++) == prime);
         }
     }
+
     // test integer factors
     auto simpleMethodFactors = a.SimpleFactsSet();
     auto factors = a.FactSet(); // 256 items

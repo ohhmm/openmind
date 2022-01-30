@@ -9,7 +9,7 @@ namespace omnn::rt {
 const boost::multiprecision::cpp_int& prime(size_t idx);
 size_t primes();
 
-#ifndef NDEBUG
+#ifdef OPENMIND_PRIME_MINING
 bool GrowPrime(const boost::multiprecision::cpp_int& upto, std::function<bool(boost::multiprecision::cpp_int)> is_prime);
 #endif
 }

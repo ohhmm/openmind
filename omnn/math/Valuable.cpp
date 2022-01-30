@@ -1323,6 +1323,43 @@ std::string Spaceless(std::string s) {
         return t.sq();
     }
 
+	void Valuable::gamma() { // https://en.wikipedia.org/wiki/Gamma_function
+        if (exp)
+            exp->gamma();
+        else {
+            IMPLEMENT
+            //Integral({});
+        }
+    }
+	
+	Valuable Valuable::Gamma() const {
+        if (exp)
+            return exp->Gamma();
+        else {
+            auto g = *this;
+            g.gamma();
+            return g;
+        }
+    }
+
+	void Valuable::factorial() {
+        if (exp)
+            exp->factorial();
+        else {
+            operator++().gamma();
+        }
+    }
+    
+	Valuable Valuable::Factorial() const {
+        if (exp)
+            return exp->Factorial();
+        else {
+            auto f = *this;
+            f.factorial();
+            return f;
+        }
+	}
+
     const Variable* Valuable::FindVa() const
     {
         if (exp) {
@@ -1650,6 +1687,11 @@ std::string Spaceless(std::string s) {
     {
         auto thisAndThen = LogicAnd(Then);
         return thisAndThen.LogicOr(thisAndThen.LogicOr(Else).LogicAnd(Else));
+    }
+
+    Valuable Valuable::IfNZ(const Valuable& Then, const Valuable& Else) const
+    {
+        return Ifz(Else, Then);
     }
 
     Valuable Valuable::IfEq(const Valuable& e, const Valuable& Then, const Valuable& Else) const

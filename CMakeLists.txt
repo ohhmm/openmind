@@ -24,6 +24,7 @@ option(OPENMIND_BUILD_TESTS "Build various TESTS" _IS_DEBUG)
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
 option(OPENMIND_BUILD_GC "Use garbage collection. Faster but requires abundant memory." FALSE) 
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
+option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc source code file during CPU cores idle" _IS_DEBUG)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.78.0 CACHE VERSION "Boost library version to use" FORCE)
@@ -34,6 +35,9 @@ if(OPENMIND_BUILD_TESTS)
 endif()
 if(OPENMIND_BUILD_GC)
 	add_definitions(-DOPENMIND_BUILD_GC)
+endif()
+if(OPENMIND_PRIME_MINING)
+	add_definitions(-DOPENMIND_PRIME_MINING)
 endif()
 
 if(MSVC)
@@ -464,6 +468,8 @@ macro(lib)
 			endif()
 		elseif(EXISTS ${tg})
 			list(APPEND this_target_libs ${tg})
+		elseif(${tg}_LIBRARY)
+			list(APPEND this_target_libs ${${tg}_LIBRARY})
 		else()
 			get_filename_component(t ${tg} NAME_WLE)
 			message("its ${t}")
@@ -618,7 +624,8 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib
 			${CMAKE_BINARY_DIR}/lib64
 			)
 
-add_subdirectory(omnn)
-add_subdirectory(OpenMind)
-fold()
+fold(
+	omnn
+	OpenMind
+)
 

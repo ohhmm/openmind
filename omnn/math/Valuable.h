@@ -295,7 +295,11 @@ public:
 	virtual Valuable Sin() const;
 	virtual Valuable Sqrt() const;
 	virtual Valuable Tg() const;
-	virtual Valuable calcFreeMember() const;
+    virtual void gamma(); // https://en.wikipedia.org/wiki/Gamma_function
+    virtual Valuable Gamma() const;
+    virtual void factorial();
+    virtual Valuable Factorial() const;
+    virtual Valuable calcFreeMember() const;
 
     using solutions_t = std::unordered_set<Valuable>;
     static Valuable MergeAnd(const Valuable& v1, const Valuable& v2);
@@ -436,7 +440,10 @@ public:
 	/// conditional operators
 	//
     Valuable Ifz(const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression is zero and @Else otherwise
-    Valuable IfEq(const Valuable& v, const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression equals to @v param and @Else otherwise
+    Valuable IfNZ(const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression is not zero and @Else if it is zero
+    Valuable IfEq(const Valuable& v, const Valuable& Then,
+                  const Valuable& Else) const; /// returns an expression which equals to @Then when this expression
+                                               /// equals to @v param and @Else otherwise
 
 	/// iterations
 	//
