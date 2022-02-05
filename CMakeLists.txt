@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
 set(PRODUCT_NAME OpenMind)
-project(${PRODUCT_NAME})
+project(${PRODUCT_NAME} CXX)
 enable_language(CXX)
 set (CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
     set(_IS_DEBUG TRUE)
@@ -112,6 +115,9 @@ elseif(OPENMIND_BUILD_BOOST)
         if(NOT _module STREQUAL "unit_test_framework")
             string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
         endif()
+
+        string(TOUPPER ${_module} BOOST_MODULE_NAME_UPCASE)
+        add_definitions(-DBOOST_${BOOST_MODULE_NAME_UPCASE}_STATIC_LIB)
     endforeach()
     string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
     message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
@@ -158,9 +164,11 @@ elseif(OPENMIND_BUILD_BOOST)
         add_custom_target(conf ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} DEPENDS boost)
     else()
         add_custom_target(conf)
+        add_custom_target(boost)
     endif()
 else()
     add_custom_target(conf)
+    add_custom_target(boost)
 endif()
 set(BOOST_LINK_LIBS
     boost_thread
@@ -172,12 +180,6 @@ set(BOOST_TEST_LINK_LIBS
     ${BOOST_LINK_LIBS}
     boost_test_exec_monitor
     )
-
-# commented ot because it breaks vcpkg
-#function(add_library targetName)
-#    _add_library(${targetName} ${ARGN})
-#    add_dependencies(${targetName} boost) 
-#endfunction()
 
 IF (Boost_FOUND)
     message("Boost_FOUND")
@@ -229,6 +231,7 @@ macro(dep)
 
 	if(TARGET ${dep})
 		message("dep ${dep} target is ready")
+        add_dependencies(${this_target} ${dep})
 	elseif(${dep} STREQUAL pthread)
 		message("dep ${dep} is -pthread option")
 	elseif(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../${dep})
@@ -432,6 +435,7 @@ macro(lib)
 	message("\nCreating Library: ${this_target}")
     file(GLOB src *.cpp *.h *.inc)
     add_library(${this_target} ${src})
+    set_property(TARGET ${this_target} PROPERTY CXX_STANDARD ${CMAKE_CXX_STANDARD})
 	target_compile_definitions(${this_target} PUBLIC
 		-D${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		)

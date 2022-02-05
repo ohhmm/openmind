@@ -1,4 +1,5 @@
 #pragma once
+#ifdef OPENMIND_BUILD_GC
 #include <any>
 #include <functional>
 #include <memory>
@@ -26,3 +27,4 @@ public:
 
 
 } // namespace omnn::rt
+#endif

@@ -8,14 +8,6 @@
 
 #include <boost/lexical_cast.hpp>
 
-// 
-// namespace std{
-//     template<>
-//     struct is_signed<boost::multiprecision::cpp_int> {
-//         bool value = true;
-//     };
-// }
-//
 
 namespace omnn{
 namespace math {
