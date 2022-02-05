@@ -1,3 +1,4 @@
+#ifdef OPENMIND_BUILD_GC
 #include "GC.h"
 
 #include <cassert>
@@ -58,3 +59,4 @@ void GC::Routine() {
 
 
 } // namespace omnn::rt
+#endif

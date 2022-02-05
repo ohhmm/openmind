@@ -34,7 +34,7 @@ endif()
 
 ExternalProject_Add(meta
     GIT_REPOSITORY https://github.com/meta-toolkit/meta.git
-    GIT_TAG v3.0.2
+    GIT_TAG  HEAD
     )
 add_dependencies(meta ${meta_deps} boost icu)
 
