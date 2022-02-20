@@ -18,8 +18,7 @@ template <class Chld>
     {
         using base = ValuableDescendantContract<Chld>;
 
-        static /*constinit*/ Chld GlobalObject;
-        static /*constinit*/ constants::ConstNameAdder ConstNameToSerializationNamesMapAdder;
+        static const/*init*/ constants::ConstNameAdder ConstNameToSerializationNamesMapAdder;
 
     protected:
         bool IsSubObject(const Valuable& o) const override {
@@ -32,6 +31,7 @@ template <class Chld>
 
     public:
         using base::base;
+        static const /*init*/ Chld GlobalObject;
 
         bool IsConstant() const override { return true; }
         Valuable::YesNoMaybe IsMultival() const override { return Valuable::YesNoMaybe::No; }
@@ -104,7 +104,10 @@ template <class Chld>
     } // namespace constants
 
 	template <class Chld>
-    /*constinit*/ constants::ConstNameAdder
+    const/*init*/ Chld Constant<Chld>::GlobalObject;
+
+	template <class Chld>
+    const/*init*/ constants::ConstNameAdder
 		Constant<Chld>::ConstNameToSerializationNamesMapAdder(Chld::SerializationName, Constant<Chld>::GlobalObject);
 
 }} // namespace

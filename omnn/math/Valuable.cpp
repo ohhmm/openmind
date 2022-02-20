@@ -5,6 +5,7 @@
 
 #include "e.h"
 #include "i.h"
+#include "Infinity.h"
 #include "pi.h"
 #include "Fraction.h"
 #include "Integer.h"
@@ -30,6 +31,15 @@ namespace omnn{
 namespace math {
     const a_int Valuable::a_int_cz = 0;
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
+
+    namespace constants {
+    const Valuable& e = constant::e;
+    const Valuable& i = constant::i;
+    const Valuable& pi= constant::pi;
+    const Valuable& infinity = Infinity::GlobalObject;
+    const Valuable& minfinity = MInfinity::GlobalObject;
+    const Variable& integration_result_constant = "integration_result_constant"_va;
+    } // namespace constants
 
     omnn::math::Valuable::YesNoMaybe operator||(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
         constexpr omnn::math::Valuable::YesNoMaybe OrMap[] = {
@@ -899,23 +909,36 @@ std::string Spaceless(std::string s) {
             IMPLEMENT
     }
 
-    Valuable Valuable::I(const Variable& x, const Variable& C) const
-    {
-        if(exp) {
-            return exp->I(x,C);
-        }
-        else
+	Valuable Valuable::Integral(const Variable& x, const Variable& C // = constants::integration_result_constant
+    ) const {
+        auto t = *this;
+        t.integral(x, C);
+        return t;
+    }
+
+	void Valuable::integral(const Variable& x, const Valuable& from, const Valuable& to, const Variable& C) {
+        if (exp) {
+            exp->integral(x, from, to, C);
+        } else
             IMPLEMENT
     }
 
-    Valuable& Valuable::i(const Variable& x, const Variable& C)
+    Valuable Valuable::Integral(const Variable& x,
+		const Valuable& from // = constants::minfinity
+		,
+		const Valuable& to // = constants::infinity
+		,
+		const Variable& C // = constants::integration_result_constant
+	) const {
+        auto t = *this;
+        t.integral(x, from, to, C);
+        return t;
+    }
+
+	void Valuable::integral(const Variable& x, const Variable& C)
     {
         if(exp) {
-            Valuable& o = exp->i(x,C);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
+            exp->integral(x, C);
         }
         else
             IMPLEMENT

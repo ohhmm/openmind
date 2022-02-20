@@ -5,15 +5,28 @@
 #include <iostream>
 
 #include <boost/filesystem.hpp>
+#include <boost/iostreams/device/mapped_file.hpp>
+#ifdef OPENMIND_PRIME_TABLE_BOOST
+#include <boost/math/special_functions/prime.hpp>
+#endif
 #include <boost/multiprecision/miller_rabin.hpp>
+#ifndef OPENMIND_PRIME_TABLE_OM
+#include <boost/tokenizer.hpp>
+#endif
 
 #include <rt/tasq.h>
 
 #define PRIME_LIST_FILENAME "Primes.inc"
+#ifdef OPENMIND_PRIME_TABLE_OM
 static const boost::multiprecision::cpp_int Primes[] = {
 #include "Primes.inc"
 };
 static const size_t PrimeItems = sizeof(Primes) / sizeof(Primes[0]);
+#elif defined(OPENMIND_PRIME_TABLE_BOOST)
+static constexpr size_t PrimeItems = boost::math::max_prime + 1;
+#else
+static_assert(!"Specify primes table");
+#endif
 
 namespace {
 #ifdef rt_SRC_DIR
@@ -26,10 +39,32 @@ namespace omnn::rt {
 
 bool GrowPrime(const boost::multiprecision::cpp_int& upto,
                std::function<bool(boost::multiprecision::cpp_int)> is_prime) {
-    auto& prev = Primes[PrimeItems - 1];
+#ifdef OPENMIND_PRIME_TABLE_OM
+	auto& prev = Primes[PrimeItems - 1];
+#else
+    boost::filesystem::ifstream inpt(PrimeListPath);
+    char c;
+    std::string s;
+    inpt.seekg(0, std::ios::end);
+    auto pos = inpt.tellg();
+    do {
+        pos -= 1;
+        inpt.seekg(pos, std::ios::beg);
+        inpt.get(c);
+        if(std::isdigit(c))
+			s.insert(s.begin(), c);
+    } while (c != ',');
+    if (s.length() <= 1)
+        return {};
+    
+    boost::multiprecision::cpp_int prev(s);
+    if (upto <= prev)
+        return {};
+#endif // OPENMIND_PRIME_TABLE_OM
+
     auto next = prev;
     ++next;
-    static auto from = next;
+    static boost::multiprecision::cpp_int from = next;
     auto range = upto;
     range -= prev;
     auto chunks = std::thread::hardware_concurrency() - 1; // One thread left free for GC
@@ -63,11 +98,11 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
         }));
     }
 
-    int i = -1;
+    auto i = -1;
     while (primining.size()) {
         auto line = primining.front().get();
         std::cout << "Chunk " << ++i << std::endl << line << std::endl << "\n chunk is ready. Appending." << std::endl;
-        std::ofstream PrimesIncFile(PrimeListPath.string(), std::ios_base::app);
+        boost::filesystem::ofstream PrimesIncFile(PrimeListPath, std::ios_base::app);
         PrimesIncFile << std::endl << line;
         PrimesIncFile.close();
         primining.pop_front();
@@ -76,7 +111,11 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
     return true;
 }
 
-const boost::multiprecision::cpp_int& prime(size_t idx) {
+const boost::multiprecision::cpp_int
+#ifndef OPENMIND_PRIME_TABLE_BOOST
+&
+#endif
+ prime(size_t idx) {
 #ifndef NDEBUG
     auto haveThePrime = idx < PrimeItems;
     if (!haveThePrime) {
@@ -87,9 +126,23 @@ const boost::multiprecision::cpp_int& prime(size_t idx) {
         assert(haveThePrime);
     }
 #endif
+#ifdef OPENMIND_PRIME_TABLE_OM
     return Primes[idx];
+#elif defined(OPENMIND_PRIME_TABLE_BOOST)
+    return boost::math::prime(boost::numeric_cast<uint32_t>(idx));
+#else
+    static_assert(!"Specify primes table");
+#endif // OPENMIND_PRIME_TABLE_BOOST
 }
 
-size_t primes() { return PrimeItems - 1; }
+size_t primes() {
+#ifdef OPENMIND_PRIME_TABLE_OM
+    return PrimeItems - 1;
+#elif defined(OPENMIND_PRIME_TABLE_BOOST)
+    return boost::math::max_prime;
+#else
+    static_assert(!"Specify primes table");
+#endif // OPENMIND_PRIME_TABLE_BOOST
+}
 
 } // namespace omnn::rt

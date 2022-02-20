@@ -35,12 +35,13 @@
     }
 
 
-namespace omnn{
+namespace omnn {
 namespace math {
-    class Valuable;
-    size_t hash_value(const omnn::math::Valuable& v);
-}
-}
+class Valuable;
+class Variable;
+size_t hash_value(const omnn::math::Valuable& v);
+} // namespace math
+} // namespace omnn
 
 namespace std
 {
@@ -57,6 +58,15 @@ namespace std
 
 namespace omnn{
 namespace math {
+	
+namespace constants {
+extern const Valuable& e;
+extern const Valuable& i;
+extern const Valuable& infinity;
+extern const Valuable& minfinity;
+extern const Valuable& pi;
+extern const Variable& integration_result_constant;
+}
 
     using a_int = boost::multiprecision::cpp_int;
     using a_rational = boost::multiprecision::cpp_rational;
@@ -64,7 +74,6 @@ namespace math {
     namespace ptrs = ::std;
 
     class VarHost;
-    class Variable;
     struct ValuableDescendantMarker {};
 
 class Valuable
@@ -249,8 +258,23 @@ public:
     virtual Valuable& operator++();
     virtual Valuable& operator^=(const Valuable&);
     virtual Valuable& d(const Variable& x);
-    virtual Valuable I(const Variable& x, const Variable& C) const;
-    virtual Valuable& i(const Variable& x, const Variable& C);
+    struct IntegrationParams {
+        const Valuable& from = constants::minfinity;
+        const Valuable& to = constants::infinity;
+        const Variable& C = constants::integration_result_constant;
+    };
+    void integral(); // expects to be single-variable
+    virtual void integral(const Variable& x, const Variable& C);
+    void integral(const Variable& x) { integral(x, constants::integration_result_constant); }
+    virtual void integral(const Variable& x, const Valuable& from,
+                              const Valuable& to,
+                              const Variable& C);
+    Valuable Integral(const Variable& x, const Variable& C = constants::integration_result_constant) const;
+    Valuable Integral(const Variable& x,
+		const Valuable& from = constants::minfinity,
+		const Valuable& to = constants::infinity,
+                      const Variable& C = constants::integration_result_constant) const;
+
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type

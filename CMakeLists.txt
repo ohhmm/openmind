@@ -31,8 +31,22 @@ option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc sou
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.78.0 CACHE VERSION "Boost library version to use" FORCE)
+set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
+set(OPENMIND_PRIME_TABLE_OPTIONS Boost Bundled)
+set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
-set(BOOST_USED_COMPONENTS system filesystem serialization date_time thread)
+if(OPENMIND_PRIME_TABLE STREQUAL Boost)
+	add_definitions(-DOPENMIND_PRIME_TABLE_BOOST)
+elseif(OPENMIND_PRIME_TABLE STREQUAL Bundled)
+	add_definitions(-DOPENMIND_PRIME_TABLE_OM)
+endif()
+set(BOOST_USED_COMPONENTS
+	date_time
+	filesystem
+	iostreams
+	serialization
+	system
+	thread)
 if(OPENMIND_BUILD_TESTS)
 	set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test unit_test_framework)
 endif()
@@ -71,7 +85,7 @@ endif()
 
 option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
 
-set(OPENMIND_INCLUDE_DIR ${CMAKE_SOURCE_DIR})
+set(OPENMIND_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
 
 include(CPack)
