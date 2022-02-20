@@ -675,7 +675,7 @@ namespace math {
         return *this;
     }
     
-    Valuable& Exponentiation::i(const Variable& x, const Variable& C)
+    void Exponentiation::integral(const Variable& x, const Variable& C)
     {
         if ((eexp().IsInt() || eexp().IsSimpleFraction()) && ebase()==x) {
             ++eexp();
@@ -686,17 +686,6 @@ namespace math {
         }
         
         optimize();
-        return *this;
-    }
-
-    Valuable Exponentiation::I(const Variable& x, const Variable& C) const
-    {
-        if ((eexp().IsInt() || eexp().IsSimpleFraction()) && ebase()==x) {
-            auto einc = eexp()+1;
-            return (ebase() ^ einc) / einc + C;
-        } else {
-            IMPLEMENT
-        }
     }
 
     bool Exponentiation::operator <(const Valuable& v) const

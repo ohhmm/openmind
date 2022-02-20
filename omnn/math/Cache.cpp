@@ -119,7 +119,7 @@ Cache::CheckCachedSet Cache::GetSet(const std::string& key, const Valuable::va_n
   std::string value;
   cachedSet.first = db->Get(leveldb::ReadOptions(), key, &value).ok();
   if(cachedSet.first){
-      char* token = strtok(const_cast<char*>(value.c_str()), CachedSetDelimeters);
+      auto token = strtok(value.data(), CachedSetDelimeters);
       while(token){
           cachedSet.second.insert(Valuable(std::string_view(token), vaNames, itIsOptimized));
           token = strtok(nullptr, CachedSetDelimeters);

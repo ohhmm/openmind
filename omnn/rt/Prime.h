@@ -6,7 +6,11 @@
 #endif
 
 namespace omnn::rt {
-const boost::multiprecision::cpp_int& prime(size_t idx);
+const boost::multiprecision::cpp_int
+#ifndef OPENMIND_PRIME_TABLE_BOOST
+        &
+#endif
+        prime(size_t idx);
 size_t primes();
 
 #ifdef OPENMIND_PRIME_MINING

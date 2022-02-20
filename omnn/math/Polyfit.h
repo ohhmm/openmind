@@ -126,14 +126,12 @@ std::vector<T> polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
 template <class T>
 std::string polystr(const std::vector<T>& coeff)
 {
-    std::stringstream s;
-    auto it = std::begin(coeff);
-    auto e = std::end(coeff);
     int p = 0;
+    std::stringstream s;
     s << std::setprecision(100) << 0;
-    for (; it != e; ++it) {
+    for (auto& c: coeff) {
         s << '+';
-        s << '(' << *it << ')';
+        s << '(' << c << ')';
         s << "*x^" << p++;
     }
     return boost::replace_all_copy(s.str(), "e", "*10^");
