@@ -1,6 +1,11 @@
 #ifdef OPENMIND_BUILD_GC
 #include "GC.h"
 
+#ifdef OPENMIND_PRIME_MINING
+#include "Prime.h"
+#endif
+
+
 #include <cassert>
 #include <chrono>
 #include <set>
@@ -52,7 +57,12 @@ void GC::Routine() {
         if (Bin.consume_all(Nop)) {
             std::this_thread::yield();
         } else {
+#ifdef OPENMIND_PRIME_MINING
+            // TODO: omnn::rt::MineNextPrime();
+            std::this_thread::yield();
+#else
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
+#endif
         }
     }
 }
