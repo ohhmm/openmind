@@ -59,7 +59,7 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
     
     boost::multiprecision::cpp_int prev(s);
     if (upto <= prev)
-        return {};
+        return {};  // another table is in use
 #endif // OPENMIND_PRIME_TABLE_OM
 
     auto next = prev;
