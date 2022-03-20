@@ -541,7 +541,7 @@ namespace math {
             if(dnSubZ)
                 Become(1_v / *this);
             if(signs) {
-                return operator*=((isNeg?-1_v:1_v)^(1_v/(1<<signs)));
+                return operator*=((isNeg?-1_v:1_v)^(1_v/(2_v^signs)));
             }
         }
         else
@@ -915,10 +915,10 @@ namespace math {
                            "quicker."
                         << std::endl;
                     OutOfPrimesTableWarning = true;
-                    rt::GrowPrime(absolute,
-                        [](const decltype(absolute)& v) {
-                            return Integer(v).IsPrime();
-                        });
+                    //rt::GrowPrime(absolute,
+                    //    [](const decltype(absolute)& v) {
+                    //        return Integer(v).IsPrime();
+                    //    });
                 }
 #endif
                 // Fallback algorithm
