@@ -20,8 +20,8 @@ if(NOT ICU_FOUND)
         CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env
                 CC=${CMAKE_C_COMPILER}
                 CXX=${CMAKE_CXX_COMPILER}
-                CFLAGS=${ICU_CFLAGS}
-                CXXFLAGS=${ICU_CXXFLAGS}
+                CFLAGS=${CMAKE_C_FLAGS}
+                CXXFLAGS=${CMAKE_CXX_FLAGS}
                 ${CMAKE_CURRENT_BINARY_DIR}/icu-prefix/src/icu/icu4c/source/configure
                 --disable-shared --enable-static --disable-dyload --disable-extras
                 --disable-tests --disable-samples

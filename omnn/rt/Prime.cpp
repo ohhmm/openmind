@@ -6,6 +6,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/math/special_functions/factorials.hpp>
 #ifdef OPENMIND_PRIME_TABLE_BOOST
 #include <boost/math/special_functions/prime.hpp>
 #endif
@@ -37,11 +38,7 @@ auto PrimeListPath = PrimeListDir / PRIME_LIST_FILENAME;
 
 namespace omnn::rt {
 
-bool GrowPrime(const boost::multiprecision::cpp_int& upto,
-               std::function<bool(boost::multiprecision::cpp_int)> is_prime) {
-#ifdef OPENMIND_PRIME_TABLE_OM
-	auto& prev = Primes[PrimeItems - 1];
-#else
+auto NextToCheckForPrime() {
     boost::filesystem::ifstream inpt(PrimeListPath);
     char c;
     std::string s;
@@ -51,20 +48,21 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
         pos -= 1;
         inpt.seekg(pos, std::ios::beg);
         inpt.get(c);
-        if(std::isdigit(c))
-			s.insert(s.begin(), c);
+        if (std::isdigit(c))
+            s.insert(s.begin(), c);
     } while (c != ',');
-    if (s.length() <= 1)
-        return {};
-    
-    boost::multiprecision::cpp_int prev(s);
-    if (upto <= prev)
-        return {};  // another table is in use
-#endif // OPENMIND_PRIME_TABLE_OM
+    assert(s.length() > 1);
 
-    auto next = prev;
-    ++next;
-    static boost::multiprecision::cpp_int from = next;
+    return ++boost::multiprecision::cpp_int(s);
+}
+
+bool GrowPrime(const boost::multiprecision::cpp_int& upto,
+               std::function<bool(boost::multiprecision::cpp_int)> is_prime) {
+    static boost::multiprecision::cpp_int from = NextToCheckForPrime();
+    auto prev = from - 1;
+    if (upto <= prev)
+        return {}; // another table is in use
+
     auto range = upto;
     range -= prev;
     auto chunks = std::thread::hardware_concurrency() - 1; // One thread left free for GC
@@ -143,6 +141,52 @@ size_t primes() {
 #else
     static_assert(!"Specify primes table");
 #endif // OPENMIND_PRIME_TABLE_BOOST
+}
+
+auto GetNextToCheckForPrimeToMine() {
+    auto p = NextToCheckForPrime();
+    boost::filesystem::ofstream PrimesIncFile(PrimeListPath, std::ios_base::app);
+    PrimesIncFile << '\n';
+    PrimesIncFile.close();
+    return p;
+}
+
+
+namespace {
+boost::multiprecision::cpp_int factorial(const boost::multiprecision::cpp_int& n) {
+    auto result = n;
+    if (n == 0)
+        ++result;
+    else
+        for (auto i = n; --i > 1;)
+            result *= i;
+    return result;
+}
+}
+
+void MineNextPrime() {
+
+    static auto next = NextToCheckForPrime();
+    static auto i = next; --i;
+    static auto prev = i; --prev;
+    static auto nFact = factorial(prev);
+
+	for (;
+		i < boost::math::max_prime;
+		++prev, ++i, ++next)
+	{
+        nFact *= i;
+        auto fastPrimeTest = (prev * (nFact % next));
+        if (fastPrimeTest != 0) {
+            auto prime = fastPrimeTest / i + 2;
+            std::cout << prime << ',';
+
+                //boost::filesystem::ofstream PrimesIncFile(PrimeListPath, std::ios_base::app);
+                //PrimesIncFile << ',' << prime;
+                //PrimesIncFile.close();
+                break;
+        }
+    }
 }
 
 } // namespace omnn::rt

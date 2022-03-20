@@ -188,58 +188,48 @@ namespace math {
                 }
             }
         }
-        else
+        else if (numerator().IsProduct())
+		{
+            Become(numerator() / denominator());
+            return;
+        }
+        else if (denominator().IsProduct())
         {
-            std::vector<Variable> coVa;
-
-            if (numerator().IsProduct()) {
-                //if (denominator().IsProduct()) {
-                    Become(numerator() / denominator());
-                    return;
-                //}
-                //else
-                //{
-                //    auto n = Product::cast(numerator());
-                    //if (n->Has(denominator()))
-					//{
-     //                   Become(*n / denominator());
-     //                   return;
-     //               }
-     //           }
+            auto& dn = denominator().as<Product>();
+            if (dn.Has(numerator())) {
+                denominator() /= numerator();
+                numerator() = 1_v;
+                goto reoptimize_the_fraction;
             }
-            else if (denominator().IsProduct())
-            {
-                auto& dn = denominator().as<Product>();
-                if (dn.Has(numerator())) {
-                    denominator() /= numerator();
-                    numerator() = 1_v;
-                    goto reoptimize_the_fraction;
-                }
-                else if (numerator().IsInt() || numerator().IsSimpleFraction()) {
-                    for (auto& m : dn)
-                    {
-                        if (m.IsVa()) {
-                            numerator() *= m ^ -1;
-                        }
-                        else if (m.IsExponentiation()) {
-                            auto& e = m.as<Exponentiation>();
-                            numerator() *= e.getBase() ^ -e.getExponentiation();
-                        }
-                        else
-                            numerator() /= m;
+            else if (numerator().IsInt() || numerator().IsSimpleFraction()) {
+                for (auto& m : dn)
+                {
+                    if (m.IsVa()) {
+                        numerator() *= m ^ -1;
                     }
-                    Become(std::move(numerator()));
-                    return;
+                    else if (m.IsExponentiation()) {
+                        auto& e = m.as<Exponentiation>();
+                        numerator() *= e.getBase() ^ -e.getExponentiation();
+                    }
+                    else
+                        numerator() /= m;
                 }
-            }
-            else if (denominator().FindVa() && !denominator().IsSum())
-            {
-                Become(Product{ std::move(numerator()), Exponentiation( std::move(denominator()), -1)});
+                Become(std::move(numerator()));
                 return;
             }
-            else // no products
-            {
-                // sum
+        }
+        else if (denominator().FindVa() && !denominator().IsSum())
+        {
+            Become(Product{ std::move(numerator()), Exponentiation( std::move(denominator()), -1)});
+            return;
+        }
+        else // no products
+        {
+			// TODO :
+			// IMPLEMENT // uncomment to cover scenarios
+
+
+            // sum
 //                auto s = Sum::cast(numerator());
 //                if (s) {
 //                    auto sum(std::move(*s));
@@ -247,7 +237,6 @@ namespace math {
 //                    Become(std::move(sum));
 //                    return;
 //                }
-            }
         }
         
         if (IsFraction()) {

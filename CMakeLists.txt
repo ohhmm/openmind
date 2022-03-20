@@ -12,6 +12,7 @@ if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
     #add_definitions(-DBOOST_ALL_DYN_LINK)
 	if(MSVC)
 		add_compile_options($<$<CONFIG:Debug>:/constexpr:steps1000000000>)
+		add_link_options(/stack:1000000000)
 	endif()
 else()
     set(_IS_DEBUG FALSE)
@@ -142,7 +143,7 @@ elseif(OPENMIND_BUILD_BOOST)
       set(Boost_address_model 32)
     endif()
 
-	set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} runtime-link=static,shared ${BOOST_BUILD_PARAMS}")
+    set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} runtime-link=static,shared ${BOOST_BUILD_PARAMS}")
     if(WIN32)
         set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
         separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
@@ -158,7 +159,7 @@ elseif(OPENMIND_BUILD_BOOST)
 
     message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
     ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
-		GIT_TAG boost-${OPENMIND_REQUIRED_BOOST_VERSION}
+        GIT_TAG boost-${OPENMIND_REQUIRED_BOOST_VERSION}
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
         BUILD_COMMAND ${BOOST_BUILD_COMMAND}

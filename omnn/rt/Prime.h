@@ -15,5 +15,6 @@ size_t primes();
 
 #ifdef OPENMIND_PRIME_MINING
 bool GrowPrime(const boost::multiprecision::cpp_int& upto, std::function<bool(boost::multiprecision::cpp_int)> is_prime);
+void MineNextPrime();
 #endif
 }
