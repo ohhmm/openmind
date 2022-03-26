@@ -833,12 +833,12 @@ namespace math {
         else
         {
             if (v.IsMultival() != YesNoMaybe::Yes) {
-            auto it = std::find(begin(), end(), v);
-            if(it != end()){
-                Delete(it); // TODO : Review this branch to make it compatible with multivalue v
-                optimize();
-                return *this;
-            }
+                auto it = std::find(begin(), end(), v);
+                if (it != end()) {
+                    Delete(it); // TODO : Review this branch to make it compatible with multivalue v
+                    optimize();
+                    return *this;
+                }
             }
             auto vIsExp = v.IsExponentiation();
             auto e = vIsExp ? &v.as<Exponentiation>() : nullptr;

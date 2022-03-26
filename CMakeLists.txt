@@ -59,13 +59,11 @@ if(OPENMIND_PRIME_MINING)
 endif()
 
 if(MSVC)
-    add_definitions(-DMSVC_CONSTEXPR=constexpr)
     find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 		PATHS C:/Boost
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 else()
-    add_definitions(-DMSVC_CONSTEXPR=)
     find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
@@ -319,6 +317,18 @@ macro(deps)
     endforeach()
 endmacro()
 
+function(apply_target_commons this_target)
+	if(MSVC)
+		target_compile_definitions(${this_target} PUBLIC
+			MSVC_CONSTEXPR=constexpr
+			)
+	else()
+		target_compile_definitions(${this_target} PUBLIC
+			MSVC_CONSTEXPR=
+			)
+	endif()
+endfunction(apply_target_commons)
+
 function(test)
     string(STRIP "${ARGN}" test_libs)
 	get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
@@ -351,6 +361,7 @@ function(test)
 	    get_filename_component(TEST_NAME ${TEST} NAME_WE)
 	    message("test ${TEST_NAME}")
 	    add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
+		apply_target_commons(${TEST_NAME})
 		target_compile_definitions(${TEST_NAME} PUBLIC
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
@@ -453,6 +464,7 @@ macro(lib)
     file(GLOB headers *.h *.hpp *.inc)
     file(GLOB src *.cpp *.c *.CC *.cc)
     add_library(${this_target} ${src} ${headers})
+	APPLY_TARGET_COMMONS(${this_target})
     set_target_properties(${this_target} PROPERTIES
 		CXX_STANDARD ${CMAKE_CXX_STANDARD}
                 PUBLIC_HEADER "${headers}"
@@ -585,6 +597,7 @@ macro(exe)
 	message("\nCreating Executable: ${this_target}")
 	file(GLOB src *.cpp *.h)
 	add_executable(${this_target} ${src})
+	APPLY_TARGET_COMMONS(${this_target})
 	add_dependencies(${this_target} conf)
 	install(TARGETS ${this_target})
     target_include_directories(${this_target} PUBLIC
