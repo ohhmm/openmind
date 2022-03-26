@@ -12,6 +12,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <string>
 #include <typeindex>
 #include <unordered_set>
 
