@@ -1,15 +1,3 @@
-project(ChatBot)
-
-#dep(zlib)
-Find_Package(ZLIB)
-if(NOT ZLIB_FOUND)
-	ExternalProject_Add(zlib
-		GIT_REPOSITORY https://github.com/madler/zlib.git
-                BUILD_IN_SOURCE 1
-                INSTALL_DIR ${CMAKE_BINARY_DIR}
-		)
-	set(meta_deps zlib)
-endif()
 
 Find_Package(ICU)
 if(NOT ICU_FOUND)
@@ -32,15 +20,8 @@ if(NOT ICU_FOUND)
         )
 endif()
 
-ExternalProject_Add(meta
-    GIT_REPOSITORY https://github.com/meta-toolkit/meta.git
-    GIT_TAG  HEAD
+exe(
+	madler/zlib
+	meta-toolkit/meta
     )
-add_dependencies(meta ${meta_deps} boost icu)
-
-
-file(GLOB src *.cpp)
-add_executable(chatbot ${src})
-include_directories(${OpenMind_Incs})
-target_link_libraries(chatbot OpenMind ${OpenMind_Libs})
-add_dependencies(chatbot boost meta)
+add_dependencies(meta boost icu)

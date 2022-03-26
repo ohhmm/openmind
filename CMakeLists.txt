@@ -59,11 +59,13 @@ if(OPENMIND_PRIME_MINING)
 endif()
 
 if(MSVC)
+    add_definitions(-DMSVC_CONSTEXPR=constexpr)
     find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 		PATHS C:/Boost
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 else()
+    add_definitions(-DMSVC_CONSTEXPR=)
     find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
@@ -447,10 +449,14 @@ macro(lib)
     get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
     set(${this_target}_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE FILEPATH "${this_target} include path")
     project(${this_target})
-	message("\nCreating Library: ${this_target}")
-    file(GLOB src *.cpp *.h *.inc)
-    add_library(${this_target} ${src})
-    set_property(TARGET ${this_target} PROPERTY CXX_STANDARD ${CMAKE_CXX_STANDARD})
+    message("\nCreating Library: ${this_target}")
+    file(GLOB headers *.h *.hpp *.inc)
+    file(GLOB src *.cpp *.c *.CC *.cc)
+    add_library(${this_target} ${src} ${headers})
+    set_target_properties(${this_target} PROPERTIES
+		CXX_STANDARD ${CMAKE_CXX_STANDARD}
+                PUBLIC_HEADER "${headers}"
+		)
 	target_compile_definitions(${this_target} PUBLIC
 		-D${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		)
@@ -528,11 +534,15 @@ macro(lib)
     else()
         message("${this_target} has no libs")
     endif()
-    if(NOT MSVC)
+    if(MSVC)
+        target_compile_options(${this_target} PUBLIC /constexpr:steps1000000000>)
+    else()
         target_link_libraries(${this_target} PUBLIC
                         pthread
                         )
     endif()
+
+    install(TARGETS ${this_target})
 
     if (OPENMIND_BUILD_TESTS AND EXISTS test)
         add_subdirectory(test)

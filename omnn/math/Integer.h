@@ -28,13 +28,13 @@ public:
 	
 	using base::base;
 
-    Integer(const Integer&)=default;
-    Integer(Integer&&)=default;
-    Integer& operator=(const Integer&) = default;
-    Integer& operator=(Integer&&) = default;
+    MSVC_CONSTEXPR Integer(const Integer&)=default;
+    MSVC_CONSTEXPR Integer(Integer&&)=default;
+    MSVC_CONSTEXPR Integer& operator=(const Integer&) = default;
+    MSVC_CONSTEXPR Integer& operator=(Integer&&) = default;
 
     template<class IntT>
-    static Integer From(typename std::enable_if<std::is_integral<IntT>::value>::type i = 0)
+    static constexpr Integer From(typename std::enable_if<std::is_integral<IntT>::value>::type i = 0)
     {
         return Integer(boost::multiprecision::cpp_int(i));
     }

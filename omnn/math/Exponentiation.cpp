@@ -737,7 +737,7 @@ namespace math {
                 
                 for(auto& item1:d1){
                     if(vMakesMultival){
-                        Variable x;
+                        static const Variable x;
                         auto& dn = f->getDenominator();
                         auto solutions = (x ^ dn).Equals(*this ^ dn).Solutions(x);
                         for(auto&& s:solutions)
