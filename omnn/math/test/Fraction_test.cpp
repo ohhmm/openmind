@@ -92,9 +92,20 @@ BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests) {
     //  | (-29)^2 / 8^2  = 841/64     <===>  | (-29/8)^2 = 841/64    <===> 	 | -29/8 = 29/-8 = -3.625    <===> (841/64)^(1/2) = ±29/±8 = ±(29/8) = set(-3.625, 3.625)
     //  | (-29)^2 / (-8)^2 = 841/64          | (-29/-8)^2 = 841/64			 \___
 	//   \__                                  \__
-
-
-
+	//
+	//  (841/64)^(1/2) = ±(29/8)
+	//
+	// this framework emulates ± with multiplying by 1^(1/2) because it equals ±1 and ±1*x = ±x
+	// 
+    // Which makes  (841/64)^(1/2) = (29/8) * 1^(1/2)
+    a = (29_v / 8) * (1_v ^ (1_v / 2));
+    BOOST_TEST(_ == a);
+	//  this may seamlesly be used in other expressions
+	// 
+	// Multivalue expressions are detectable, splittable and buildable
+	//
+	// NOTE: this kind of math makes possible arithmetics with unordered sets of values
+	//
 
     a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
     // (573440 * (±29/±8) + 2115584) / 262144

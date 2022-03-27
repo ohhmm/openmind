@@ -10,7 +10,6 @@
 #include <chrono>
 #include <set>
 
-#include <boost/accumulators/statistics.hpp>
 #include <boost/any.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/stack.hpp>
@@ -39,7 +38,7 @@ void GC::DispatchDispose(std::shared_ptr<void>&& obj) {
 }
 
 bool GC::IsThreadGC() {
-    return std::this_thread::get_id() != GCThread.get_id();
+    return std::this_thread::get_id() == GCThread.get_id();
 }
 
 void GC::Routine() {
@@ -58,7 +57,7 @@ void GC::Routine() {
             std::this_thread::yield();
         } else {
 #ifdef OPENMIND_PRIME_MINING
-            // TODO: omnn::rt::MineNextPrime();
+            // TODO : omnn::rt::MineNextPrime();  (see factorial)
             std::this_thread::yield();
 #else
             std::this_thread::sleep_for(std::chrono::milliseconds(100));

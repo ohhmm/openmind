@@ -34,7 +34,7 @@
  
  */
 template<typename T>
-std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, int nDegree )
+std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree )
 {
     using namespace boost::numeric::ublas;
     
@@ -44,7 +44,7 @@ std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, int 
     // more intuative this way
     nDegree++;
     
-    size_t nCount =  oX.size();
+    auto nCount =  oX.size();
     matrix<T> oXMatrix( nCount, nDegree );
     matrix<T> oYMatrix( nCount, 1 );
     
@@ -58,7 +58,7 @@ std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, int 
     for ( size_t nRow = 0; nRow < nCount; nRow++ )
     {
         T nVal = 1.0f;
-        for ( int nCol = 0; nCol < nDegree; nCol++ )
+        for (size_t nCol = 0; nCol < nDegree; nCol++)
         {
             oXMatrix(nRow, nCol) = nVal;
             nVal *= oX[nRow];
@@ -100,8 +100,8 @@ std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, int 
 template<typename T>
 std::vector<T> polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
 {
-    size_t nCount =  oX.size();
-    size_t nDegree = oCoeff.size();
+    auto nCount =  oX.size();
+    auto nDegree = oCoeff.size();
     std::vector<T>	oY( nCount );
     
     for ( size_t i = 0; i < nCount; i++ )

@@ -209,19 +209,33 @@ namespace math {
                 if (eexp().IsInt()) {
                     Become(std::move(ebase()));
                     return;
-                } else if (eexp().IsSimpleFraction()) {
-                    if (eexp().as<Fraction>().getDenominator().bit(0)) {
-                        Become(std::move(ebase()));
+                } else if (eexp().IsSimpleFraction() && eexp() > 0_v) {
+                    auto& f = eexp().as<Fraction>();
+                    auto& n = f.getNumerator();
+                    if (n.IsEven() == YesNoMaybe::Yes) {
+                        auto&& toOptimize = std::move(eexp());
+                        toOptimize.optimize();
+                        setExponentiation(std::move(toOptimize));
+                        optimize();
                         return;
                     }
+                    auto& dn = f.getDenominator();
+                    if (dn.bit(0)) {
+                        Become(std::move(ebase()));
+                        return;
+                    } else if (n != 1_v) {
+                        hash ^= f.Hash();
+                        f.update1(1_v);
+                        hash ^= f.Hash();
+					}
                 } else if (!!eexp().IsMultival()) {
                 } else if (!(eexp().IsInfinity() || eexp().IsMInfinity())) {
                     Become(std::move(ebase()));
                     return;
                 } else
                     IMPLEMENT;
-            } else if (ebase()==-1 && eexp().IsInt() && eexp() > 0 && eexp()!=1) {
-                eexp() = eexp().bit(0);
+            } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0 && eexp() != 1) {
+                    eexp() = eexp().bit(0);
             } else if (eexp()==-1) {
                 Become(Fraction{1,ebase()});
                 return;
@@ -489,6 +503,20 @@ namespace math {
             ++eexp();
             optimized = {};
             optimize();
+        } else if (!FindVa() && IsMultival() == YesNoMaybe::Yes) {
+            solutions_t values;
+            for (auto& value : Distinct()) {
+                auto&& extract = std::move(const_cast<Valuable&>(value));
+                if (extract.MultiplyIfSimplifiable(v)) {
+                    is = true;
+				} else {
+                    extract *= v;
+				}
+                values.emplace(std::move(extract));
+            }
+            Become(Valuable(values));
+		} else if (v.IsMultival() == YesNoMaybe::Yes) {
+            IMPLEMENT
         } else if (v.IsExponentiation()) {
             auto& vexpo = v.as<Exponentiation>();
             is = vexpo.getBase() == getBase();

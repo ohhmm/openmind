@@ -7,9 +7,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/math/special_functions/factorials.hpp>
-#ifdef OPENMIND_PRIME_TABLE_BOOST
 #include <boost/math/special_functions/prime.hpp>
-#endif
 #include <boost/multiprecision/miller_rabin.hpp>
 #ifndef OPENMIND_PRIME_TABLE_OM
 #include <boost/tokenizer.hpp>

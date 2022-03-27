@@ -9,7 +9,7 @@ using namespace omnn::math;
 using namespace boost::unit_test;
 
 template<typename T>
-T bits(T v){
+T bits_in_use(T v){
     T bits = 0;
     while (v) {
         ++bits;
@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_CASE(TS_1d)
     int points[] = {
         10,1,30,5
     };
-    int sz = std::size(points);
-    int encodeBits = bits(sz);
+    auto sz = std::size(points);
+    auto encodeBits = bits_in_use(sz);
     int mask = (1 << encodeBits) - 1;
 
     auto sys = 0_v;
