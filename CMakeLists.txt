@@ -97,15 +97,6 @@ include(CPack)
 include(ExternalData)
 include(ExternalProject)
 
-add_definitions(
-    -DBOOST_SYSTEM_NO_DEPRECATED
-    -DBOOST_ERROR_CODE_HEADER_ONLY
-    -DBOOST_COMPUTE_USE_CPP11
-)
-if(MSVC)
-    add_definitions(/source-charset:utf-8) #include "pi.h"
-endif()
-
 find_package(Git QUIET)
 if(NOT GIT_EXECUTABLE AND MSVC)
 	find_program(GIT_EXECUTABLE git PATHS 
@@ -202,28 +193,10 @@ set(BOOST_TEST_LINK_LIBS
 
 IF (Boost_FOUND)
     message("Boost_FOUND")
-    ADD_DEFINITIONS(-DHAS_BOOST)
     message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
     message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
-	if(Boost_INCLUDE_DIR)
-    	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-	endif()
-	if(Boost_INCLUDE_DIRS)
-		INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-	endif()
-	if(EXTERNAL_FETCHED_BOOST)
-		INCLUDE_DIRECTORIES(${EXTERNAL_FETCHED_BOOST})
-	endif()
     message("Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
     message("Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
-    link_directories(${Boost_LIBRARY_DIRS})
-    if(MSVC)
-	    link_directories(
-			${Boost_INCLUDE_DIR}/stage/lib
-			${EXTERNAL_FETCHED_BOOST}/stage/lib
-			C:/Boost/lib
-			)
-    endif()
 ENDIF()
 
 if (${OPENMIND_BUILD_TESTS})
@@ -322,15 +295,44 @@ macro(deps)
 endmacro()
 
 function(apply_target_commons this_target)
+	target_compile_definitions(${this_target} PUBLIC
+		HAS_BOOST
+		BOOST_SYSTEM_NO_DEPRECATED
+		BOOST_ERROR_CODE_HEADER_ONLY
+		BOOST_COMPUTE_USE_CPP11
+		)
 	if(MSVC)
 		target_compile_definitions(${this_target} PUBLIC
 			MSVC_CONSTEXPR=constexpr
+			)
+		target_compile_options(${this_target} PUBLIC
+			/constexpr:steps1000000000>
+			/source-charset:utf-8
+			)
+	    target_link_directories(${this_target} PUBLIC
+			${Boost_INCLUDE_DIR}/stage/lib
+			${EXTERNAL_FETCHED_BOOST}/stage/lib
+			C:/Boost/lib
 			)
 	else()
 		target_compile_definitions(${this_target} PUBLIC
 			MSVC_CONSTEXPR=
 			)
 	endif()
+
+	if(Boost_INCLUDE_DIR)
+		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
+	endif()
+	if(Boost_INCLUDE_DIRS)
+		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
+	endif()
+	if(EXTERNAL_FETCHED_BOOST)
+		target_include_directories(${this_target} PUBLIC ${EXTERNAL_FETCHED_BOOST})
+	endif()
+
+    target_link_directories(${this_target} PUBLIC
+		${Boost_LIBRARY_DIRS}
+		)
 endfunction(apply_target_commons)
 
 function(test)
@@ -482,15 +484,6 @@ macro(lib)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
         )
-	if(Boost_INCLUDE_DIR)
-		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
-	endif()
-	if(Boost_INCLUDE_DIRS)
-		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
-	endif()
-	if(EXTERNAL_FETCHED_BOOST)
-		target_include_directories(${this_target} PUBLIC ${EXTERNAL_FETCHED_BOOST})
-	endif()
     add_dependencies(${this_target} conf)
 	message("add_library(${this_target} ${src})")
 	if(NOT MSVC)
@@ -610,15 +603,6 @@ macro(exe)
         ${CMAKE_BINARY_DIR}/include
         ${${this_target}_INCLUDE_DIR}
 		)
-	if(Boost_INCLUDE_DIR)
-		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
-	endif()
-	if(Boost_INCLUDE_DIRS)
-		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
-	endif()
-	if(EXTERNAL_FETCHED_BOOST)
-		target_include_directories(${this_target} PUBLIC ${EXTERNAL_FETCHED_BOOST})
-	endif()
 	target_link_directories(${this_target} PUBLIC
 		${CMAKE_BINARY_DIR}/lib
 		${Boost_LIBRARIES}
