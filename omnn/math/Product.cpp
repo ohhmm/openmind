@@ -851,7 +851,14 @@ namespace math {
                         optimize();
                         return *this;
 //                    } else if (v.IsMultival() == YesNoMaybe::Maybe) {
-                        
+                    } else if (v.IsMultival() == YesNoMaybe::Yes) {
+                        solutions_t s;
+                        for (auto& m : it->Distinct())
+                            for (auto& item : v.Distinct())
+                                s.emplace(m / item);
+                        Update(it, Valuable(s));
+                        optimize();
+                        return *this;
                     } else {
                         Update(it, *it * (v^-1));
                         optimize();

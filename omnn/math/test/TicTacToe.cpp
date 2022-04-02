@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE(TicTacToe_X_Won_test)
     auto yIs2 = y.Equals(2);    auto yIs2sq = yIs2.Sq();
     auto yIs3 = y.Equals(3);    auto yIs3sq = yIs3.Sq();
     Variant fieldVariant = {};
-    for (fieldVariant.code = -1; fieldVariant.code--;) {
+    for (fieldVariant.code = 0; fieldVariant.code <= 1023; fieldVariant.code++) {
         std::cout << "checking\n    " << (fieldVariant.pack.hasXat1_1 ? 'X' : '0')
                   << (fieldVariant.pack.hasXat1_2 ? 'X' : '0') << (fieldVariant.pack.hasXat1_3 ? 'X' : '0') << std::endl
                   << "    " << (fieldVariant.pack.hasXat2_1 ? 'X' : '0') << (fieldVariant.pack.hasXat2_2 ? 'X' : '0')

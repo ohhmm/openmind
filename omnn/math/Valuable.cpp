@@ -628,7 +628,7 @@ std::string Spaceless(std::string s) {
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto sum = itIsOptimized ? Sum{l, r} : l + r;
+                auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
                 if (itIsOptimized)
                     sum.MarkAsOptimized();
                 Become(std::move(sum));
@@ -639,7 +639,7 @@ std::string Spaceless(std::string s) {
                 rpart = s.substr(found, s.length() - found - search_start*2);
                 Valuable l(lpart, vaNames, itIsOptimized);
                 Valuable r(rpart, vaNames, itIsOptimized);
-                auto sum = itIsOptimized ? Sum{l, r} : l + r;
+                auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
                 if (itIsOptimized)
                     sum.MarkAsOptimized();
                 Become(std::move(sum));
@@ -652,7 +652,7 @@ std::string Spaceless(std::string s) {
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto product = itIsOptimized ? Product{l, r} : l * r;
+                auto product = itIsOptimized ? Valuable(Product{l, r}) : l * r;
                 if (itIsOptimized)
                     product.MarkAsOptimized();
                 Become(std::move(product));
@@ -665,7 +665,7 @@ std::string Spaceless(std::string s) {
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto devided = itIsOptimized ? Fraction{l, r} : l / r;
+                auto devided = itIsOptimized ? Valuable(Fraction{l, r}) : l / r;
                 if (itIsOptimized)
                     devided.MarkAsOptimized();
                 Become(std::move(devided));
@@ -678,7 +678,7 @@ std::string Spaceless(std::string s) {
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto exp = itIsOptimized ? Exponentiation{l, r} : l ^ r;
+                auto exp = itIsOptimized ? Valuable(Exponentiation{l, r}) : l ^ r;
                 if (itIsOptimized)
                     exp.MarkAsOptimized();
                 Become(std::move(exp));
