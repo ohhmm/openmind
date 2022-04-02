@@ -181,13 +181,32 @@ namespace math {
             ebase() = ebase().as<Fraction>().Reciprocal();
         }
 
+		// e^(i*pi) = -1
+                // it is a fundamental equation that gives us a hint on cross-dimmensional relations
+                // because i and -1 are 1 of different signs/dimmensions
         if (ebase().Is_e()) {
             if (eexp().IsProduct()) {
                 auto& p = eexp().as<Product>();
-                if (p.Has(constant::pi) && p.Has(constant::i)) { // TODO : sequence does metter
-//                    ebase() = -1;
-//                    eexp() /= constant::i;
-//                    eexp() /= constant::pi;
+                if (p.Has(constants::pi) &&
+                    p.Has(constants::i)) { // TODO : sequence does matter :
+																 // e^(i*pi) =?= e^(pi*i)
+																 // https://en.wikipedia.org/wiki/Commutative_property#Division,_subtraction,_and_exponentiation 
+																 // what about Commutativity on irrationals product?
+																 // lets assume yes for this particular expression, but there are some doubts, need a prove
+
+						// here is implementation for case of no commutativity:
+                                    // auto e = p.end();
+                                    // auto it = std::find(p.begin(), e, constant::i);
+                                    // auto has_i = it != e;
+                                    // if (has_i) {
+                                    //     it = std::find(++it, e, constant::pi);
+                                    //     auto has_pi_next_to_i = it != e; // maybe sequence does matter
+                                    // }
+
+                    p /= constant::i;
+                    p /= constant::pi;
+                    Become(Exponentiation{-1, p});
+                    return;
                 }
             }
         }
