@@ -114,8 +114,12 @@ BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests) {
     BOOST_TEST(ok);
     
     for (int64_t i=8; i --> 1; ) {
-        Valuable sh(int64_t(1)<<i);
-        auto multi = 1_v^(1_v/sh);
+        Valuable dimmensions(1<<i);
+        auto multi = 1_v ^ (1_v / dimmensions);
+        auto values = multi.Distinct();
+        auto n = values.size();
+        BOOST_TEST(n == dimmensions);
+
         _ = multi;
         _ /= _;
         BOOST_TEST(_ == multi);
