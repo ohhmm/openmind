@@ -68,7 +68,10 @@ namespace math {
         if (Same(v)) {
             return Become(Exponentiation(*this, 2));
         }
-        else if (v.IsExponentiation() || v.IsProduct())
+        else if (v.IsExponentiation()
+                 || v.IsProduct()
+                 || v.IsSum()
+                 )
             return Become(v**this);
         return Become(Product{*this, v});
     }
@@ -95,12 +98,15 @@ namespace math {
     std::pair<bool,Valuable> Variable::IsMultiplicationSimplifiable(const Valuable& v) const
     {
         std::pair<bool,Valuable> is;
-        is.first = v.IsVa() && operator==(v);
+        auto vIsVa = v.IsVa();
+        is.first = vIsVa && operator==(v);
         if (is.first) {
             is.second = Sq();
-        } else if (v.IsSimple()) {
+        } else if (v.IsSimple()
+			|| vIsVa
+			) {
         } else {
-            is = v.IsMultiplicationSimplifiable(v);
+            is = v.IsMultiplicationSimplifiable(*this);
         }
         return is;
     }

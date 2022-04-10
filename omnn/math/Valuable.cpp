@@ -19,13 +19,22 @@
 #include <map>
 #include <type_traits>
 
-#include <boost/numeric/conversion/converter.hpp>
 #ifndef NDEBUG
 #include <boost/algorithm/string/replace.hpp>
 #endif
+#include <boost/numeric/conversion/converter.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include <rt/GC.h>
 
+
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
 
 namespace omnn{
 namespace math {
@@ -41,7 +50,7 @@ namespace math {
     const Variable& integration_result_constant = "integration_result_constant"_va;
     } // namespace constants
 
-    omnn::math::Valuable::YesNoMaybe operator||(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
+    constexpr omnn::math::Valuable::YesNoMaybe operator||(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
         constexpr omnn::math::Valuable::YesNoMaybe OrMap[] = {
             // Yes = 1, Maybe = 10, No = 100
             {},              // 000 bug
@@ -55,7 +64,7 @@ namespace math {
         };
         return OrMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
     }
-    omnn::math::Valuable::YesNoMaybe operator&&(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
+    constexpr omnn::math::Valuable::YesNoMaybe operator&&(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
         constexpr omnn::math::Valuable::YesNoMaybe AndMap[] = {
             // Yes = 1, Maybe = 10, No = 100
             {},              // 000 bug
@@ -263,6 +272,22 @@ namespace math {
         return merged;
     }
 
+	Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
+        Valuable merged;
+        if (v1 == v2)
+            merged = v1;
+        else {
+            // a = 1;
+            auto s = v1 + v2;
+            // b = -s;
+            auto c = v1 * v2;
+            auto d = s.Sq() - c * 4;
+            merged = (Exponentiation(d, 1_v / 2) + s) / 2;
+        }
+        return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation 
+    }
+
+
     Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
     {
         return ((v1+v2)+((-1_v)^(1_v/2))*(v1-v2))/2;
@@ -284,7 +309,7 @@ namespace math {
             auto& _1 = *it++;
             auto& _2 = *it++;
             auto& _3 = *it;
-            operator=(MergeOr(MergeOr(_1, _2), _3));
+            operator=(MergeOr(_1, _2, _3));
             break;
         }
         case 4: {
@@ -298,6 +323,21 @@ namespace math {
         default:
             IMPLEMENT // just do same as case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'
         }
+        
+#ifndef NDEBUG
+        auto distinct = Distinct();
+        if (distinct != s) {
+            std::stringstream ss;
+            ss << '(';
+            for (auto& v : s)
+                ss << ' ' << v;
+            ss << " ) <> (";
+            for (auto& v : distinct)
+                ss << ' ' << v;
+            ss << " )";
+            LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+        }
+#endif
     }
 
 namespace{
@@ -307,7 +347,6 @@ auto BracketsMap(const std::string_view& s){
     std::stack <index_t> st;
     std::map<index_t, index_t> bracketsmap;
     decltype(l) c = 0;
-    std::string numbers = "0123456789";
     while (c < l)
     {
         if (s[c] == '(')
@@ -328,8 +367,8 @@ auto BracketsMap(const std::string_view& s){
 }
 
 std::string_view& Trim(std::string_view& s) {
-    s.remove_prefix(std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
-    s.remove_suffix((s.size() - 1) - std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
+    s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
+    s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
     return s;
 }
 
@@ -1664,8 +1703,8 @@ std::string Spaceless(std::string s) {
     }
 
     Valuable Valuable::NotEquals(const Valuable& v) const {
-//        return IfEq(v,1,0);
-        return Equals(v) ^ -1;
+        //return Equals(v) ^ -1;
+		return IfEq(v, 1, 0);
     }
 
     Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l)
@@ -2170,10 +2209,9 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
             IMPLEMENT
     }
 
-    size_t hash_value(const Valuable& v)
-    {
-        return v.Hash();
-    }
+    size_t hash_value(const Valuable& v) { return v.Hash(); }
+    size_t hash_value(const Sum& v) { return v.Hash(); }
+
 }}
 
 namespace std

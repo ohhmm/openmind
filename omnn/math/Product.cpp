@@ -640,6 +640,43 @@ namespace math {
 
     }
 
+	std::pair<bool, Valuable> Product::IsMultiplicationSimplifiable(const Valuable& v) const {
+        std::pair<bool, Valuable> is;
+        if (v.IsSum()) {
+            is = v.IsMultiplicationSimplifiable(*this);
+        } else {
+            Product p{};
+            for (auto& m : members) {
+                if (!is.first) {
+                    auto mIs = v.IsMultiplicationSimplifiable(m);
+                    if (mIs.first) {
+                        is.first |= mIs.first;
+                        p.Add(mIs.second);
+						continue;
+                    }
+                }
+                p.Add(m);
+            }
+            if (!is.first) {
+                p.Add(v);
+            }
+            is.second = p;
+            is.second.optimize();
+#ifndef NDEBUG
+            if (is.first) {
+                is.first = is.second.Complexity() <= Complexity() + v.Complexity();
+                if (!is.first) {
+                    LOG_AND_IMPLEMENT("IsMultiplicationSimplifiable: "
+                                      << str() << '[' << Complexity() << "] + " << v.str() << '[' << v.Complexity()
+                                      << "] = " << is.second.str() << '[' << is.second.Complexity() << ']');
+                }
+            }
+#endif
+        }
+        return is;
+    }
+
+
    std::pair<bool,Valuable> Product::IsSummationSimplifiable(const Valuable& v) const
    {
        std::pair<bool,Valuable> is;
@@ -670,15 +707,20 @@ namespace math {
                   || v.IsFraction()
                   ) {
            //OptimizeOn o;
-           auto icw = InCommonWith(v);
-           if (icw != 1) {
-               auto thisNoCommon = *this / icw;
+           auto common = InCommonWith(v);
+           if (common != 1) {
+               auto thisNoCommon = *this / common;
                if (!operator==(thisNoCommon)) { //multivalue cases (example ((-17)/16)*(4^((1/2))) / (1/2)*(4^((1/2))) = ((-17)/16)*(4^((1/2)))
-                   auto vNoCommon = v / icw;
-                   //std::cout << thisNoCommon << ".IsSummationSimplifiable(" << vNoCommon << ')' << std::endl;
-                   is = thisNoCommon.IsSummationSimplifiable(vNoCommon);
-                   if(is.first){
-                       is.second *= icw;
+                   auto vNoCommon = v / common;
+                   if (vNoCommon != v) {
+                       // std::cout << thisNoCommon << ".IsSummationSimplifiable(" << vNoCommon << ')' << std::endl;
+                       is = thisNoCommon.IsSummationSimplifiable(vNoCommon);
+                       if (is.first) {
+                           is.second *= common;
+                       } else {
+                           auto behindTheBrackets = thisNoCommon + vNoCommon;
+                           is = common.IsMultiplicationSimplifiable(behindTheBrackets);
+                       }
                    }
                }
            }
