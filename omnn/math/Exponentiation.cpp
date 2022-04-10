@@ -456,13 +456,14 @@ namespace math {
             }
             return {};
         };
+        auto& b = ebase();
         if (v.IsExponentiation()
-            && ebase() == (e = &v.as<Exponentiation>())->getBase()
+            && b == (e = &v.as<Exponentiation>())->getBase()
             && (eexp().IsInt() || eexp().IsSimpleFraction()) && eexp() > 0
             && (e->eexp().IsInt() || e->eexp().IsSimpleFraction()) && e->eexp() > 0
             )
         {
-            eexp() += e->getExponentiation();
+            updateExponentiation(eexp() + e->getExponentiation());
             optimized={};
         }
         else if(v.IsFraction()
@@ -490,10 +491,16 @@ namespace math {
             optimize();
             return *this *= f->getNumerator() / (*fdn / *fdne);
         }
-        else if(ebase() == v && v.FindVa())
+        else if(b == v && v.FindVa())
         {
-            ++eexp();
+            updateExponentiation(eexp()+1);
             optimized={};
+        }
+        else if(-b == v && v.FindVa())
+        {
+            updateExponentiation(eexp()+1);
+            optimized = {};
+            return Become(Product{-1, *this});
         }
         else if(v.IsProduct())
         {
@@ -552,7 +559,6 @@ namespace math {
         return is;
     }
 
-    static auto one = 1_v;
     std::pair<bool,Valuable> Exponentiation::IsMultiplicationSimplifiable(const Valuable& v) const
     {
         std::pair<bool,Valuable> is, expSumSimplifiable = {};
@@ -578,6 +584,16 @@ namespace math {
 //            }
         } else if (v.IsVa()) {
             // covered by (v==base()) case
+        } else if (v.IsProduct()) {
+            is=v.IsMultiplicationSimplifiable(*this);
+        } else if (v.IsSum()) {
+            auto& sum=v.as<Sum>();
+            is.first=sum==getBase()||-sum==getBase();
+            if(is.first){
+                is.second=*this*sum;
+            }else{
+                is=sum.IsMultiplicationSimplifiable(*this);
+            }
         } else {
 #ifndef NDEBUG
             std::cout << "IsMultiplication simplifiable?: " << str() << " * " << v.str() << std::endl;

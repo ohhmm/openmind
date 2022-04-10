@@ -149,7 +149,7 @@ namespace math {
         if (is.first) {
             is.second = v * *this;
             if (is.second.Complexity() > v.Complexity())
-                IMPLEMENT;
+                IMPLEMENT; // TODO: not a simple fraction
         } else if (v.IsVa() || v.IsExponentiation()) {
         } else {
             is = v.IsMultiplicationSimplifiable(*this);
