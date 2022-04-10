@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     _2 = _ * v1;
     auto is = _1.IsSummationSimplifiable(_2);
     BOOST_TEST(is.first);
-    BOOST_TEST(is.second==v1);
+    BOOST_TEST(is.second==-v2);
 }
 
 BOOST_AUTO_TEST_CASE(Product_optimization_test)

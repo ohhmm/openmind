@@ -2237,7 +2237,7 @@ namespace
         for (auto& m : members) {
             auto mIs = v.IsMultiplicationSimplifiable(m);
             if (mIs.first) {
-                is.first |= mIs.first;
+                is.first = mIs.first;
                 sum.Add(mIs.second);
             } else {
                 sum.Add(v * m);
@@ -2246,18 +2246,17 @@ namespace
         is.second = sum;
         is.second.optimize();
 
-		if (is.first) {
 #ifndef NDEBUG
+		if (is.first) {
             auto confirm = is.second.Complexity() < Complexity() + v.Complexity()
 				|| (is.second.IsSum()
                     && is.second.as<Sum>().members.size() < members.size() + (v.IsSum() ? v.as<Sum>().members.size() : 1));
             if (!confirm) {
                 is.first = confirm;
                 IMPLEMENT
-            } else
-#endif
-                is.second = sum;
+            }
         }
+#endif
 		return is;
     }
 

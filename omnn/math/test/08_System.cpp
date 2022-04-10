@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_system_test
     };
     
     // at
-    auto at = [&](auto& xx, auto& yy, auto& vv){
+    auto at = [&](const Valuable& xx, const Valuable& yy, const Valuable& vv) {
         return x.Equals(xx).sq() + y.Equals(yy).sq() + v.Equals(vv).sq();
     };
     
@@ -401,26 +401,22 @@ BOOST_AUTO_TEST_CASE(Sudoku_system_test
         auto sumInCol = -45_v;
         auto sumInSq = -45_v;
         for(int yy=0; yy<=8; ++yy){
-            //            sumInRow += at(xx,yy,value)(value);
-            //            sumInCol += at(yy,xx,value)(value);
+            sumInRow += at(xx,yy,value)(value);
+            sumInCol += at(yy,xx,value)(value);
             auto sqn = xx;
             auto sqx = sqn%3;
             auto sqy = (sqn - sqx) / 3;
             auto insqn = yy;
             auto insqx = insqn % 3;
             auto insqy = (insqn - insqx) / 3;
-            //            sumInSq += at(sqx*3+insqx,sqy*3+insqy,value)(value);
+            sumInSq += at(sqx * 3 + insqx, sqy * 3 + insqy, value)(value);
         }
         s << sumInRow << sumInCol << sumInSq;
     }
     
-    //    std::atomic<int> MaxTasks = boost::thread::hardware_concurrency();
     std::deque<std::future<void>> tasks;
-    //    auto ChooseNextTask = [&tasks](){
-    //
-    //    };
-    //    auto AddPoolTask = [](std::function<
-    // solving
+
+	// solving
     auto sysMutex = std::make_shared<boost::shared_mutex>();
     for(auto rowIdx = Sz; rowIdx--;){
         for(auto colIdx = Sz; colIdx--;){
@@ -469,6 +465,14 @@ BOOST_AUTO_TEST_CASE(Sudoku_system_test
     do {
         tasks.pop_front();
     } while (tasks.size());
+
+	for (auto& row : data) {
+        for (auto& cell : row) {
+            BOOST_TEST(cell != 0);
+            std::cout << cell << ' ';
+        }
+        std::cout << std::endl;
+    }
 }
 
 BOOST_AUTO_TEST_CASE(Sudoku_test

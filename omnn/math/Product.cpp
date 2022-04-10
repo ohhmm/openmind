@@ -642,15 +642,33 @@ namespace math {
 
 	std::pair<bool, Valuable> Product::IsMultiplicationSimplifiable(const Valuable& v) const {
         std::pair<bool, Valuable> is;
+        Product p{};
         if (v.IsSum()) {
-            is = v.IsMultiplicationSimplifiable(*this);
+            for (auto& m : members) {
+                if (!is.first) {
+                    if (m.IsExponentiation()) {
+                        auto& e = m.as<Exponentiation>();
+                        if (e.getBase().IsSum()) {
+                            is = m.IsMultiplicationSimplifiable(v);
+                            if (is.first) {
+                                p.Add(is.second);
+                                continue;
+                            }
+                        }
+                    }
+                }
+				p.Add(m);
+            }
+            if (is.first) {
+                is.second = p;
+            } else
+				is = v.IsMultiplicationSimplifiable(*this);
         } else {
-            Product p{};
             for (auto& m : members) {
                 if (!is.first) {
                     auto mIs = v.IsMultiplicationSimplifiable(m);
                     if (mIs.first) {
-                        is.first |= mIs.first;
+                        is.first = mIs.first;
                         p.Add(mIs.second);
 						continue;
                     }
@@ -661,10 +679,15 @@ namespace math {
                 p.Add(v);
             }
             is.second = p;
+        }
+        if(is.first)
+        {
             is.second.optimize();
 #ifndef NDEBUG
             if (is.first) {
-                is.first = is.second.Complexity() <= Complexity() + v.Complexity();
+                is.first = is.second.Complexity() < Complexity() + v.Complexity()
+					|| is.second.IsSum() // checked in Sum::IsMultiplicationSimplifiable
+                    || (is.second.IsProduct() && is.second.as<Product>().members.size() < (members.size() + (v.IsProduct() ? v.as<Product>().members.size() : 1)));
                 if (!is.first) {
                     LOG_AND_IMPLEMENT("IsMultiplicationSimplifiable: "
                                       << str() << '[' << Complexity() << "] + " << v.str() << '[' << v.Complexity()
