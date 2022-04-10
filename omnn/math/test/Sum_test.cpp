@@ -42,32 +42,6 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(_1_2_3_) {
-    DECL_VA(x);
-    auto expr = x.Equals(1) || x.Equals(2) || x.Equals(3);
-    std::cout
-        << "expr = x.Equals(1) || x.Equals(2) || x.Equals(3)" << std::endl
-        << expr << std::endl
-        << "Solutions:" << std::endl;
-    auto solutions = expr.Solutions();
-    decltype(solutions) solutionsEtalon = { 1, 2, 3 };
-    for (auto&& s : solutions) {
-        std::cout << '\t' << s << std::endl;
-    }
-    BOOST_TEST(solutions == solutionsEtalon);
-    std::cout << std::endl;
-    // TODO : // FIXME: fix this
-    auto solution = expr(x);
-    std::cout << "Multival for 1, 2, 3 is " << solution << std::endl;
-    std::cout << "Distinct of multival:" << std::endl;
-    solutions = solution.Distinct();
-    for (auto&& s : solutions) {
-        std::cout << '\t' << s << std::endl;
-    }
-    BOOST_TEST(solutions == solutionsEtalon);
-    std::cout << std::endl;
-}
-
 BOOST_AUTO_TEST_CASE(Sum_tests)
 {
     Variable v1,v2,v3;
@@ -181,6 +155,20 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     t.optimize();
     BOOST_TEST(t==0);
     
+	_1 = -1 * v1 + 100;
+    _2 = -1 * v2 / _1 + v3 / v1;
+	_2 *= _1;
+    _ = -1 * v2 + v3 * _1 / v1;
+    BOOST_TEST(_2 == _);
+    if (_2 != _) {
+        _2.optimize();
+        BOOST_TEST(_2 == _);
+    }
+	_1 = -1 * v1 + 100;
+    _2 = -1 * v2 / _1 + v3 / v1;
+	_1 *= _2;
+    BOOST_TEST(_1 == _);
+
     t = sqc;
     t.Eval(x,1); t.Eval(y,1); t.Eval(z, 4);
     t.optimize();
@@ -449,4 +437,30 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     p.Eval(va, 2);
     p.optimize();
     BOOST_TEST(7_v % 3 == p);
+}
+
+BOOST_AUTO_TEST_CASE(_1_2_3_) {
+    DECL_VA(x);
+    auto expr = x.Equals(1) || x.Equals(2) || x.Equals(3);
+    std::cout
+        << "expr = x.Equals(1) || x.Equals(2) || x.Equals(3)" << std::endl
+        << expr << std::endl
+        << "Solutions:" << std::endl;
+    auto solutions = expr.Solutions();
+    decltype(solutions) solutionsEtalon = { 1, 2, 3 };
+    for (auto&& s : solutions) {
+        std::cout << '\t' << s << std::endl;
+    }
+    BOOST_TEST(solutions == solutionsEtalon);
+    std::cout << std::endl;
+    // TODO : // FIXME: fix this
+    auto solution = expr(x);
+    std::cout << "Multival for 1, 2, 3 is " << solution << std::endl;
+    std::cout << "Distinct of multival:" << std::endl;
+    solutions = solution.Distinct();
+    for (auto&& s : solutions) {
+        std::cout << '\t' << s << std::endl;
+    }
+    BOOST_TEST(solutions == solutionsEtalon);
+    std::cout << std::endl;
 }

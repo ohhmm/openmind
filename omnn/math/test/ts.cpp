@@ -18,6 +18,7 @@ T bits_in_use(T v){
     return bits;
 }
 
+/// Control theory generalization hints are here: finds best moves/goods for single dimmention
 BOOST_AUTO_TEST_CASE(TS_1d)
 {
 //    System s;
@@ -42,12 +43,12 @@ BOOST_AUTO_TEST_CASE(TS_1d)
     // last move back to start
     auto statement = ExtractMove(sz-1).Equals(0);
 //    s << statement;
-    sys.logic_and(statement);
+    sys += statement.sq();
     // moves uniqueness
     for (int i=1; i<sz; ++i) {
-        statement = ExtractMove(i).NotEquals(ExtractMove(i-1));
+        statement = ExtractMove(i).NotEquals(ExtractMove(i-1));  // FIXME: NotEquals behaviour changed. It was 0 for a!=b and 1 for a==b.  then it became  /=(a-b) like if a=b then its a division by zero which must exclude branches, but does it or it just breaks expression
 //        s << statement;
-        sys.logic_and(statement);
+        sys += statement.sq();
     }
     // generate function of getting point value by its index
     auto ValueByIdx=[&](Valuable i){
@@ -56,7 +57,7 @@ BOOST_AUTO_TEST_CASE(TS_1d)
             auto data = 1_v;
             Variable val;
             for (int i=0; i<sz; ++i) {
-                data.logic_or(id.Equals(i).LogicAnd(val.Equals(points[i])));
+                data.logic_or(id.Equals(i).logic_and(val.Equals(points[i])));
             }
             return data(val);
         };

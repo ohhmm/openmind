@@ -5,7 +5,7 @@ enable_language(CXX)
 set (CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(OPENMIND_PRIME_TABLE_OPTIONS Boost Bundled)
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
@@ -118,7 +118,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 
 if (Boost_FOUND)
     add_custom_target(conf)
+    set_target_properties(conf PROPERTIES FOLDER "util")
     add_custom_target(boost)
+    set_target_properties(boost PROPERTIES FOLDER "util")
 elseif(OPENMIND_BUILD_BOOST)
     message("Finding boost components ${BOOST_USED_COMPONENTS}")
     foreach(_module ${BOOST_USED_COMPONENTS})
@@ -306,6 +308,8 @@ function(apply_target_commons this_target)
 			MSVC_CONSTEXPR=constexpr
 			)
 		target_compile_options(${this_target} PUBLIC
+			/bigobj
+			/FS
 			/constexpr:steps1000000000>
 			/source-charset:utf-8
 			)
@@ -368,6 +372,9 @@ function(test)
 	    message("test ${TEST_NAME}")
 	    add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
 		apply_target_commons(${TEST_NAME})
+		set_target_properties(${TEST_NAME} PROPERTIES
+			FOLDER "test"
+		)
 		target_compile_definitions(${TEST_NAME} PUBLIC
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
@@ -474,7 +481,8 @@ macro(lib)
 	APPLY_TARGET_COMMONS(${this_target})
     set_target_properties(${this_target} PROPERTIES
 		CXX_STANDARD ${CMAKE_CXX_STANDARD}
-                PUBLIC_HEADER "${headers}"
+		FOLDER "libs"
+		PUBLIC_HEADER "${headers}"
 		)
 	target_compile_definitions(${this_target} PUBLIC
 		-D${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
@@ -561,9 +569,12 @@ endmacro()
 
 macro(fold)
     string(STRIP "${ARGN}" first)
-	file(GLOB items *)
-
-	message("Folding ${CMAKE_CURRENT_SOURCE_DIR} (${first} first)")
+    file(GLOB items *)
+    if(first)
+        message("Folding ${CMAKE_CURRENT_SOURCE_DIR} (${first} first)")
+    else(first)
+        message("Folding ${CMAKE_CURRENT_SOURCE_DIR}")
+    endif(first)
 	foreach(item ${first})
 		set(item ${CMAKE_CURRENT_SOURCE_DIR}/${item})
 		IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)

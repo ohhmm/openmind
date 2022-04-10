@@ -64,7 +64,8 @@ public:
     // virtual operators
     Valuable& operator +=(const Valuable& v) override;
     std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
-    Valuable& operator *=(const Valuable& v) override;
+    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
+    Valuable& operator*=(const Valuable& v) override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator ^=(const Valuable& v) override;

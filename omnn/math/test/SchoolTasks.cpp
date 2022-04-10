@@ -2,11 +2,51 @@
 #include <boost/test/unit_test.hpp>
 #include "Sum.h"
 #include "Variable.h"
+#include "System.h"
 
 
 using namespace omnn::math;
 using namespace boost::unit_test;
 
+
+BOOST_AUTO_TEST_CASE(PotatoParadox)
+{
+	std::cout
+		<< std::endl
+		<< "The potato paradox is a mathematical calculation that has a counter-intuitive result.\n"
+			"\"You have 100kg of potatoes, which are 99% water by weight. You let them dehydrate until they're 98% water. How much do they weigh now?\"\n"
+			"The surprising answer is 50kg "
+		<< std::endl;
+
+	DECL_VA(potatoKg);
+    System system;
+    system << potatoKg.Equals(100);
+
+	DECL_VA(percentWater);
+    system << percentWater.Equals(99);
+
+	DECL_VA(percentWaterDehydrated);
+    system << percentWaterDehydrated.Equals(98);
+
+	DECL_VA(potatoPercentDehydrated);
+    system << potatoPercentDehydrated.Equals(100 - percentWater);
+
+	DECL_VA(potatoKgDehydrated);
+    system << potatoKgDehydrated.Equals(potatoKg * potatoPercentDehydrated / 100);
+
+	DECL_VA(weightWaterDehydrated);
+    auto proportion =  (weightWaterDehydrated / percentWaterDehydrated).equals(potatoKgDehydrated / (100 - percentWaterDehydrated));
+    system << proportion;
+
+	DECL_VA(newWeight);
+    system << newWeight.Equals(potatoKgDehydrated + weightWaterDehydrated);
+
+	auto total = system.Solve(newWeight);
+    BOOST_TEST(total.size() == 1);
+    auto solution = *total.begin();
+    std::cout << solution << std::endl;
+    BOOST_TEST(solution == 50);
+}
 
 BOOST_AUTO_TEST_CASE(P_474)
 {
@@ -23,8 +63,6 @@ BOOST_AUTO_TEST_CASE(P_474)
 
 	DECL_VA(z);
 	std::cout << "z-234=356		z=" << (z-234-356)(z) << std::endl;
-
-
 }
 
 

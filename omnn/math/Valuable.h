@@ -40,7 +40,9 @@ namespace omnn {
 namespace math {
 class Valuable;
 class Variable;
+class Sum;
 size_t hash_value(const omnn::math::Valuable& v);
+size_t hash_value(const omnn::math::Sum& v);
 } // namespace math
 } // namespace omnn
 
@@ -54,6 +56,11 @@ namespace std
         size_t operator()(const omnn::math::Valuable& v) const {
             return hash_value(v);
         }
+    };
+
+	template <>
+    struct hash<omnn::math::Sum> {
+        size_t operator()(const omnn::math::Sum& v) const { return hash_value(v); }
     };
 }
 
@@ -167,10 +174,10 @@ public:
         return static_cast<T&>(the);
     }
 
-    //    friend operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
-    friend bool operator!(YesNoMaybe _) { return _ == YesNoMaybe::No; }
-    friend YesNoMaybe operator||(YesNoMaybe, YesNoMaybe);
-    friend YesNoMaybe operator&&(YesNoMaybe, YesNoMaybe);
+    //    friend constexpr operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
+    friend constexpr bool operator!(YesNoMaybe _) { return _ == YesNoMaybe::No; }
+    friend constexpr YesNoMaybe operator||(YesNoMaybe, YesNoMaybe);
+    friend constexpr YesNoMaybe operator&&(YesNoMaybe, YesNoMaybe);
 
     static thread_local bool optimizations;
     static thread_local bool bit_operation_optimizations;
@@ -329,6 +336,7 @@ public:
     using solutions_t = std::unordered_set<Valuable>;
     static Valuable MergeAnd(const Valuable& v1, const Valuable& v2);
     static Valuable MergeOr(const Valuable& v1, const Valuable& v2);
+    static Valuable MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3);
     explicit Valuable(const solutions_t&);
     virtual Valuable operator()(const Variable&) const;
     virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;

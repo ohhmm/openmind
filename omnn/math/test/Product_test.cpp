@@ -17,22 +17,28 @@ BOOST_AUTO_TEST_CASE(Product_tests)
 	auto v = f * 20 * f1 * 5;
     BOOST_TEST(v==125_v/3);
     
-    Variable v1, v2;
-    auto p1 = 1_v/2*v1*v2;
-    auto p2 = v1*v2*1_v/2;
-    BOOST_TEST(p1.IsProduct());
-    BOOST_TEST(p2.IsProduct());
-    BOOST_TEST(p1 == p2);
-    p1.Eval(v1, 3);
-    p1.Eval(v2, 4);
-    p1.optimize();
-    BOOST_TEST(p1 == 6);
+    DECL_VA(v1);
+    DECL_VA(v2);
+    auto _1 = 1_v/2*v1*v2;
+    auto _2 = v1*v2*1_v/2;
+    BOOST_TEST(_1.IsProduct());
+    BOOST_TEST(_2.IsProduct());
+    BOOST_TEST(_1 == _2);
+    _1.Eval(v1, 3);
+    _1.Eval(v2, 4);
+    _1.optimize();
+    BOOST_TEST(_1 == 6);
     v *= v1;
     v += v1*v2;
     BOOST_TEST(v == (125_v/3*v1 + v1*v2));
-    cout<<v;
-    v += v1*v;
+    BOOST_TEST(v.str() == "(v2*v1 + (125/3)*v1)");
+    _1 = v1 * v;
+    BOOST_TEST(_1.str() == "((v1^2)*v2 + (125/3)*(v1^2))");
+    _2 = v;
+	_2 += _1;
+	v += v1*v;
     BOOST_TEST(v == (125_v/3*v1 + v1*v2 + 125_v/3*v1*v1 + v1*v1*v2));
+    BOOST_TEST(v.str() == "((v1^2)*v2 + (125/3)*(v1^2) + v2*v1 + (125/3)*v1)");
 
     v -= 125_v/3*v1 + v1*v2;
     std::cout << std::endl << v << " == " << 125_v/3*v1*v1 + v1*v1*v2 << std::endl;
@@ -58,8 +64,8 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     _ *= -v1;
     BOOST_TEST((v1^2)*v2  == _);
     
-    auto _1 = -1_v*v1*v2;
-    auto _2 = -1_v*v2*v1;
+    _1 = -1_v * v1 * v2;
+    _2 = -1_v * v2 * v1;
     BOOST_TEST(_1 == _2);
     
     _1 = -1_v*(v1^3);
@@ -99,6 +105,13 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     _ = (-1_v)^((1_v/2)*x + m1px/4 + ((-1_v)/4));
     auto has = Product{_}.Has(m1px);
     BOOST_TEST(has == false);
+
+	_ = ((-1 * v1 + 100) ^ (-1)) * v2;
+    _1 = _ * -100;
+    _2 = _ * v1;
+    auto is = _1.IsSummationSimplifiable(_2);
+    BOOST_TEST(is.first);
+    BOOST_TEST(is.second==v1);
 }
 
 BOOST_AUTO_TEST_CASE(Product_optimization_test)

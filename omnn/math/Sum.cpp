@@ -15,11 +15,14 @@
 #include "VarHost.h"
 #include "Cache.h"
 
+//TODO:
+//import std;
 #include <algorithm>
 #include <cmath>
 #if __has_include(<execution>)
 #include <execution>
 #endif
+#include <functional>
 #include <future>
 #include <map>
 #include <stack>
@@ -30,11 +33,8 @@
 #include <boost/compute.hpp>
 #endif
 
-//TODO:
-//import std;
 
-namespace omnn{
-namespace math {
+namespace omnn::math {
 
 namespace
 {
@@ -160,12 +160,39 @@ namespace
                 || (members.empty() && v == 0_v);
     }
     
+	namespace {
+		class SumOptimizationLoopDetect {
+            static thread_local std::unordered_set<Sum> SumOptimizingStack;
+            bool isLoop;
+            const Sum* sum;
+
+        public:
+            SumOptimizationLoopDetect(const Sum& sum) {
+                auto emplaced = SumOptimizingStack.emplace(sum);
+                this->sum = &*emplaced.first;
+                isLoop = !emplaced.second;
+			}
+
+            ~SumOptimizationLoopDetect() {
+                if (!isLoop)
+                    SumOptimizingStack.erase(*sum);
+			}
+
+			auto isLoopDetected() const { return isLoop; }
+		};
+        thread_local std::unordered_set<Sum> SumOptimizationLoopDetect::SumOptimizingStack;
+	}
     void Sum::optimize()
     {
         if (optimized || !optimizations) return;
 
         if (isOptimizing)
             return;
+
+        SumOptimizationLoopDetect antilooper(*this);
+        if (antilooper.isLoopDetected())
+            return;
+
         Optimizing o(*this);
         optimized = true;
 
@@ -317,9 +344,6 @@ namespace
                     }
                     else if ((inc = it2->InCommonWith(c)) != 1_v
                              && inc.IsMultival() != YesNoMaybe::Yes) {
-                        thread_local bool antiloop = false;
-                        if (!antiloop) {
-                            antiloop = true;
                             auto sum = (c / inc).IsSummationSimplifiable(*it2 / inc);
                             if(sum.first)
                             {
@@ -329,9 +353,6 @@ namespace
                                 up();
                             } else
                                 ++it2;
-                            antiloop = false;
-                        } else
-                            ++it2;
                     }
                     else if (c.IsFraction() && it2->IsFraction()
                              && c.as<Fraction>().getDenominator() == it2->as<Fraction>().getDenominator())
@@ -429,7 +450,8 @@ namespace
                                         auto& e = m.as<Exponentiation>();
                                         auto& ee = e.getExponentiation();
                                         if (ee.IsInt() && ee.ca() < 0) {
-                                            operator*=(e.getBase() ^ (-ee));
+                                            operator*=(e.getBase() ^ (-ee)); // FIXME: (-1*((-1*percentWaterDehydrated + 100)^(-1))*potatoKgDehydrated + (percentWaterDehydrated^(-1))*weightWaterDehydrated)  *  (-1*percentWaterDehydrated + 100)
+
                                             scan = true;
                                             break;
                                         }
@@ -2196,9 +2218,48 @@ namespace
         return is.first;
     }
 
-    std::pair<bool,Valuable> Sum::IsSummationSimplifiable(const Valuable& v) const{
-        // TODO : optimize
-        auto m = *this + v;
-        return { m.Complexity() < Complexity() + v.Complexity(), m };
+	bool Sum::MultiplyIfSimplifiable(const Valuable& v) {
+        auto is = IsMultiplicationSimplifiable(v);
+        if (is.first)
+            Become(std::move(is.second));
+        return is.first;
     }
-}}
+
+    std::pair<bool,Valuable> Sum::IsSummationSimplifiable(const Valuable& v) const{
+        std::pair<bool, Valuable> is{{}, v + *this};
+        is.first = is.second.Complexity() < Complexity() + v.Complexity();
+		return is;
+    }
+
+    std::pair<bool, Valuable> Sum::IsMultiplicationSimplifiable(const Valuable& v) const {
+        std::pair<bool, Valuable> is;
+        Sum sum{};
+        for (auto& m : members) {
+            auto mIs = v.IsMultiplicationSimplifiable(m);
+            if (mIs.first) {
+                is.first |= mIs.first;
+                sum.Add(mIs.second);
+            } else {
+                sum.Add(v * m);
+            }
+		}
+        is.second = sum;
+        is.second.optimize();
+
+		if (is.first) {
+#ifndef NDEBUG
+            auto confirm = is.second.Complexity() < Complexity() + v.Complexity()
+				|| (is.second.IsSum()
+                    && is.second.as<Sum>().members.size() < members.size() + (v.IsSum() ? v.as<Sum>().members.size() : 1));
+            if (!confirm) {
+                is.first = confirm;
+                IMPLEMENT
+            } else
+#endif
+                is.second = sum;
+        }
+		return is;
+    }
+
+
+}

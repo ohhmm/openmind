@@ -160,7 +160,14 @@ ENDIF(NOT MSVC)
 
 
 add_library(${this_target} ${${this_target}_SOURCE_FILES})
-#ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
+file(GLOB headers *.h *.hpp *.inc)
+APPLY_TARGET_COMMONS(${this_target})
+set_target_properties(${this_target} PROPERTIES
+	CXX_STANDARD ${CMAKE_CXX_STANDARD}
+	FOLDER "libs"
+	PUBLIC_HEADER "${headers}"
+	)
+
 
 if(UNIX)
 	find_package(X11)
