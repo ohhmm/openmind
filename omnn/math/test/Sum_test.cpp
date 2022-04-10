@@ -44,7 +44,9 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
 
 BOOST_AUTO_TEST_CASE(Sum_tests)
 {
-    Variable v1,v2,v3;
+    DECL_VA(v1);
+    DECL_VA(v2);
+    DECL_VA(v3);
     
     auto _1 = (v1 + -1)*v1;
     auto _2 = (v1^2) + -1*v1;
@@ -174,7 +176,9 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     t.optimize();
     BOOST_TEST(t==0);
     
-    Variable v4,v5,v6;
+    DECL_VA(v4);
+    DECL_VA(v5);
+    DECL_VA(v6);
     // shuffled compare test
     BOOST_TEST((v5^2)*-4*v4 == (v5^2)*-4*v4);
     BOOST_TEST(v4+v5 == v5+v4);

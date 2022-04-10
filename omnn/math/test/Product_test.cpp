@@ -121,8 +121,8 @@ BOOST_AUTO_TEST_CASE(Product_optimization_test)
     BOOST_TEST(_1 == _2);
 
     DECL_VA(x);
-    _1 = -x * (1_v^(1_v/2));
-    _2 =  x * (1_v^(1_v/2));
+    _1 = -x * constants::plus_minus_1;
+    _2 =  x * constants::plus_minus_1;
     BOOST_TEST(_1 == _2);
 }
 

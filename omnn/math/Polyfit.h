@@ -34,7 +34,7 @@
  
  */
 template<typename T>
-std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree )
+auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree )
 {
     using namespace boost::numeric::ublas;
     
@@ -74,7 +74,7 @@ std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size
     
     // lu decomposition
     permutation_matrix<int> pert(oXtXMatrix.size1());
-    const std::size_t singular = lu_factorize(oXtXMatrix, pert);
+    auto singular = lu_factorize(oXtXMatrix, pert);
     // must be singular
     BOOST_ASSERT( singular == 0 );
     
@@ -98,7 +98,7 @@ std::vector<T> polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size
  Fitted Y values.
  */
 template<typename T>
-std::vector<T> polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
+auto polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
 {
     auto nCount =  oX.size();
     auto nDegree = oCoeff.size();
