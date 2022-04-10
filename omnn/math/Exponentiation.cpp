@@ -529,7 +529,7 @@ namespace math {
             ++eexp();
             optimized = {};
             optimize();
-        } else if (!FindVa() && IsMultival() == YesNoMaybe::Yes) {
+        } else if (!FindVa() && IsMultival() == YesNoMaybe::Yes && !v.FindVa()) {
             solutions_t values;
             for (auto& value : Distinct()) {
                 auto&& extract = std::move(const_cast<Valuable&>(value));

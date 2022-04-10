@@ -34,7 +34,7 @@ public:
     MSVC_CONSTEXPR Integer& operator=(Integer&&) = default;
 
     template<class IntT>
-    static constexpr Integer From(typename std::enable_if<std::is_integral<IntT>::value>::type i = 0)
+    static MSVC_CONSTEXPR Integer From(typename std::enable_if<std::is_integral<IntT>::value>::type i = 0)
     {
         return Integer(boost::multiprecision::cpp_int(i));
     }

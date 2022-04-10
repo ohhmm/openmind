@@ -70,6 +70,7 @@ namespace math {
 namespace constants {
 extern const Valuable& e;
 extern const Valuable& i;
+extern const Valuable& plus_minus_1; // ±1
 extern const Valuable& infinity;
 extern const Valuable& minfinity;
 extern const Valuable& pi;

@@ -23,7 +23,6 @@
 #include <boost/algorithm/string/replace.hpp>
 #endif
 #include <boost/numeric/conversion/converter.hpp>
-#include <boost/test/included/unit_test.hpp>
 
 #include <rt/GC.h>
 
@@ -44,7 +43,8 @@ namespace math {
     namespace constants {
     const Valuable& e = constant::e;
     const Valuable& i = constant::i;
-    const Valuable& pi= constant::pi;
+    const Valuable& plus_minus_1 = 1_v^(1_v/2); // ±1
+    const Valuable& pi = constant::pi;
     const Valuable& infinity = Infinity::GlobalObject;
     const Valuable& minfinity = MInfinity::GlobalObject;
     const Variable& integration_result_constant = "integration_result_constant"_va;

@@ -250,6 +250,10 @@ namespace math {
             if (it->Same(1) && size() > 1) {
                 Delete(it);
             }
+            
+            if (*it < 0 && Has(constants::plus_minus_1)) {
+                Update(it, -*it);
+            }
         }
 
         // fractionless
