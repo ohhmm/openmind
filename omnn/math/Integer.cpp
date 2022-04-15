@@ -8,6 +8,7 @@
 #include "Exponentiation.h"
 #include "Fraction.h"
 #include "Modulo.h"
+#include "PrincipalSurd.h"
 #include "Product.h"
 #include "Sum.h"
 
@@ -19,6 +20,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+
 #include <boost/archive/binary_oarchive.hpp>
 #if __cplusplus >= 201700
 #include <random>
@@ -182,8 +184,8 @@ namespace math {
         } else if (v.IsProduct()) {
         } else {
             is = v.IsSummationSimplifiable(*this);
-            if (is.second.Complexity() > v.Complexity())
-                IMPLEMENT;
+            if (is.first && is.second.Complexity() > v.Complexity())
+                LOG_AND_IMPLEMENT("Simplification complexidy exceeds source complexity: " << v << "   +   " << str() << "   =   " << is.second);
         }
         return is;
     }
@@ -578,7 +580,10 @@ namespace math {
             if (d.second != 1)
                 return (*this / d.second).Sqrt() * d.first;
             else
-                LOG_AND_IMPLEMENT(str() << " integer square root is " << _ << " and " << _ << "^2=" << _sq);
+            {
+                return Valuable(std::make_shared<PrincipalSurd>(*this));
+                LOG_AND_IMPLEMENT(str() << " integer square root is " << _ << " and " << _ << "^2=" << _sq); // implement radicals support
+            }
         }
         return minus ? constant::i * _ : _;
     }

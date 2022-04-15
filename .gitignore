@@ -1,4 +1,6 @@
+*.autosave
 *.kdev4
+*.orig
 *.sdf
 *.suo
 
@@ -6,6 +8,7 @@ build*
 /.vs
 /.idea
 /cmake-build-debug
+/Testing
 *.user
 .DS_Store
 .cproject
@@ -19,3 +22,4 @@ build*
 /CMakeSettings.json
 CMakeLists.txt.user.*
 /enc_temp_folder/
+

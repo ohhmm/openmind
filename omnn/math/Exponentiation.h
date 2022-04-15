@@ -5,8 +5,7 @@
 #include <omnn/math/Variable.h>
 #include <omnn/math/DuoValDescendant.h>
 
-namespace omnn{
-namespace math {
+namespace omnn::math {
 
 class Exponentiation
         : public DuoValDescendant<Exponentiation>
@@ -63,8 +62,7 @@ public:
     void optimize() override;
     
     using base::base;
-    
-    Exponentiation(const Valuable& _1, const Valuable& _2);
+    Exponentiation(const Valuable& base, const Valuable& exponentiation);
 
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
@@ -79,4 +77,4 @@ public:
     solutions_t Distinct() const override;
 };
 
-}}
+}

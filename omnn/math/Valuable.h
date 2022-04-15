@@ -98,7 +98,8 @@ class Valuable
 protected:
     const encapsulated_instance& getInst() const { return exp; }
     virtual bool IsSubObject(const Valuable& o) const;
-    Valuable Link();
+    //Valuable Link(); // TODO : handle simulteneous values changes using copy-on-write to uncomment this
+    const Valuable Link() const;
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
@@ -177,8 +178,34 @@ public:
 
     //    friend constexpr operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
     friend constexpr bool operator!(YesNoMaybe _) { return _ == YesNoMaybe::No; }
-    friend constexpr YesNoMaybe operator||(YesNoMaybe, YesNoMaybe);
-    friend constexpr YesNoMaybe operator&&(YesNoMaybe, YesNoMaybe);
+    friend constexpr YesNoMaybe operator||(YesNoMaybe _1, YesNoMaybe _2){
+        constexpr omnn::math::Valuable::YesNoMaybe OrMap[] = {
+            // Yes = 1, Maybe = 10, No = 100
+            {},              // 000 bug
+            omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
+            omnn::math::Valuable::YesNoMaybe::Maybe, // 010 maybe
+            omnn::math::Valuable::YesNoMaybe::Yes,   // 011  yes, maybe
+            omnn::math::Valuable::YesNoMaybe::No, // 100 no
+            omnn::math::Valuable::YesNoMaybe::Yes, // 101 yes,no
+            omnn::math::Valuable::YesNoMaybe::Maybe, // 110 maybe,no
+            omnn::math::Valuable::YesNoMaybe::Yes, // 111 yes,maybe,no
+        };
+        return OrMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
+    }
+    friend constexpr YesNoMaybe operator&&(YesNoMaybe _1, YesNoMaybe _2){
+        constexpr omnn::math::Valuable::YesNoMaybe AndMap[] = {
+            // Yes = 1, Maybe = 10, No = 100
+            {},              // 000 bug
+            omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
+            omnn::math::Valuable::YesNoMaybe::Maybe, // 010 maybe
+            omnn::math::Valuable::YesNoMaybe::Maybe,   // 011  yes, maybe
+            omnn::math::Valuable::YesNoMaybe::No, // 100 no
+            omnn::math::Valuable::YesNoMaybe::No, // 101 yes,no
+            omnn::math::Valuable::YesNoMaybe::No, // 110 maybe,no
+            omnn::math::Valuable::YesNoMaybe::No, // 111 yes,maybe,no
+        };
+        return AndMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
+    }
 
     static thread_local bool optimizations;
     static thread_local bool bit_operation_optimizations;
