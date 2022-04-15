@@ -65,6 +65,7 @@ BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests) {
     auto _ = 841_v/64; // 841/64 = 13.140625
     auto a = _.Sqrt(); // 29/8 = 3.625   - square root stands for principal root (only positive branch).
 	// Branch reduction leads to backward-incompatible expressions which leads to calculation misstakes which is why this framework has limited support for principal root
+    BOOST_TEST(a == 3.625);
 
 	// Multivalue expression equivalent:
     _ ^= 1_v/2; // (841/64)^(1/2) = ?.. lets see possible ways to calculate (covering multivals)

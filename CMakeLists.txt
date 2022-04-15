@@ -562,9 +562,14 @@ macro(lib)
 
     install(TARGETS ${this_target})
 
-    if (OPENMIND_BUILD_TESTS AND EXISTS test)
-        add_subdirectory(test)
+    if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
     endif ()
+
+    if (OPENMIND_BUILD_3RD_PARTY_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rdPartyTests)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdPartyTests)
+    endif ()
+
 endmacro()
 
 macro(fold)

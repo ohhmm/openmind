@@ -19,8 +19,8 @@
 namespace omnn{
 namespace math {
 
-    Exponentiation::Exponentiation(const Valuable& _1, const Valuable& _2)
-    : base(_1,_2)
+    Exponentiation::Exponentiation(const Valuable& b, const Valuable& exponentiation)
+        : base(b, exponentiation)
     {
         InitVars();
     }

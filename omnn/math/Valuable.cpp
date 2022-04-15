@@ -50,35 +50,6 @@ namespace math {
     const Variable& integration_result_constant = "integration_result_constant"_va;
     } // namespace constants
 
-    constexpr omnn::math::Valuable::YesNoMaybe operator||(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
-        constexpr omnn::math::Valuable::YesNoMaybe OrMap[] = {
-            // Yes = 1, Maybe = 10, No = 100
-            {},              // 000 bug
-            omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
-            omnn::math::Valuable::YesNoMaybe::Maybe, // 010 maybe
-            omnn::math::Valuable::YesNoMaybe::Yes,   // 011  yes, maybe
-            omnn::math::Valuable::YesNoMaybe::No, // 100 no
-            omnn::math::Valuable::YesNoMaybe::Yes, // 101 yes,no
-            omnn::math::Valuable::YesNoMaybe::Maybe, // 110 maybe,no
-            omnn::math::Valuable::YesNoMaybe::Yes, // 111 yes,maybe,no
-        };
-        return OrMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
-    }
-    constexpr omnn::math::Valuable::YesNoMaybe operator&&(omnn::math::Valuable::YesNoMaybe _1, omnn::math::Valuable::YesNoMaybe _2){
-        constexpr omnn::math::Valuable::YesNoMaybe AndMap[] = {
-            // Yes = 1, Maybe = 10, No = 100
-            {},              // 000 bug
-            omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
-            omnn::math::Valuable::YesNoMaybe::Maybe, // 010 maybe
-            omnn::math::Valuable::YesNoMaybe::Maybe,   // 011  yes, maybe
-            omnn::math::Valuable::YesNoMaybe::No, // 100 no
-            omnn::math::Valuable::YesNoMaybe::No, // 101 yes,no
-            omnn::math::Valuable::YesNoMaybe::No, // 110 maybe,no
-            omnn::math::Valuable::YesNoMaybe::No, // 111 yes,maybe,no
-        };
-        return AndMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
-    }
-
     thread_local bool Valuable::optimizations = true;
     thread_local bool Valuable::bit_operation_optimizations = {};
     thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
@@ -97,7 +68,9 @@ namespace math {
             IMPLEMENT
     }
 
-    Valuable Valuable::Link() {
+    const Valuable Valuable::Link() const {
+        if(exp)
+            return Valuable(exp);
         IMPLEMENT
     }
 
@@ -1966,21 +1939,21 @@ std::string Spaceless(std::string s) {
         return s;
     }
 
-    auto sh_const =   "0x428a2f9871374491b5c0fbcfe9b5dba5" /*  0 */
+    auto sh_const =   "0x428a2f9871374491b5c0fbcfe9b5dba5" //  0
                         "3956c25b59f111f1923f82a4ab1c5ed5"
-                        "d807aa9812835b01243185be550c7dc3" /*  8 */
+                        "d807aa9812835b01243185be550c7dc3" //  8
                         "72be5d7480deb1fe9bdc06a7c19bf174"
-                        "e49b69c1efbe47860fc19dc6240ca1cc" /* 16 */
+                        "e49b69c1efbe47860fc19dc6240ca1cc" // 16
                         "2de92c6f4a7484aa5cb0a9dc76f988da"
-                        "983e5152a831c66db00327c8bf597fc7" /* 24 */
+                        "983e5152a831c66db00327c8bf597fc7" // 24
                         "c6e00bf3d5a7914706ca635114292967"
-                        "27b70a852e1b21384d2c6dfc53380d13" /* 32 */
+                        "27b70a852e1b21384d2c6dfc53380d13" // 32
                         "650a7354766a0abb81c2c92e92722c85"
-                        "a2bfe8a1a81a664bc24b8b70c76c51a3" /* 40 */
+                        "a2bfe8a1a81a664bc24b8b70c76c51a3" // 40
                         "d192e819d6990624f40e3585106aa070"
-                        "19a4c1161e376c082748774c34b0bcb5" /* 48 */
+                        "19a4c1161e376c082748774c34b0bcb5" // 48
                         "391c0cb34ed8aa4a5b9cca4f682e6ff3"
-                        "748f82ee78a5636f84c878148cc70208" /* 56 */
+                        "748f82ee78a5636f84c878148cc70208" // 56
                         "90befffaa4506cebbef9a3f7c67178f2"_v;
 
     const Valuable SHA256_K[64] = {

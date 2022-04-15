@@ -7,9 +7,12 @@
 #include <limits>
 #include <limits.h>
 #include <type_traits>
+
 //#include "Equation.h"
 //#include "Expression.h"
-#include "math/FormulaOfVaWithSingleIntegerRoot.h"
+
+#include <omnn/math/FormulaOfVaWithSingleIntegerRoot.h>
+
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
@@ -98,7 +101,7 @@ public:
         return solution;
     }
 
-    T Determinant()
+    auto Determinant() const
     {
         ublas::permutation_matrix<std::size_t> pivots(this->size1());
         auto mLu = *this;
@@ -106,7 +109,7 @@ public:
         if (isSingular)
             return static_cast<T>(0);
 
-        T det = static_cast<T>(1);
+        auto det = static_cast<T>(1);
         for (std::size_t i = 0; i < pivots.size(); ++i)
         {
             if (pivots(i) != i)

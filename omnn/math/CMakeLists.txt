@@ -35,11 +35,3 @@ if(OPENMIND_USE_OPENCL)
 endif()
 
 lib(${DEPENDENCIES})
-
-if (OPENMIND_BUILD_TESTS)
-    add_subdirectory(test)
-endif ()
-
-if (OPENMIND_BUILD_3RD_PARTY_TESTS)
-    add_subdirectory(3rdPartyTests)
-endif ()
