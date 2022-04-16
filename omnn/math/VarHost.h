@@ -81,6 +81,7 @@ namespace math {
         }
         template<class T>
         static void inc(T&);
+        virtual bool IsIntegerId() const = 0;
         virtual bool Has(const any::any& id) const = 0;
         virtual size_t Hash(const any::any& id) const = 0;
         virtual any::any NewVarId() = 0;
@@ -163,6 +164,10 @@ namespace math {
             return a;
         }
         
+        bool IsIntegerId() const override {
+            return std::is_integral<T>::value || std::is_same<T, Integer>::value;
+        }
+
         bool Has(const any::any& id) const override {
             return varIds.find(any::any_cast<T>(id)) != varIds.end();
         }

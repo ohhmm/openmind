@@ -419,8 +419,8 @@ std::string Spaceless(std::string s) {
                     }
                     else
                     {
-                        if (s[0] == 'v' && s.size() > 1 &&
-                            std::all_of(s.begin() + 1, s.end(),
+                        if (s[0] == 'v' && s.size() > 1 && h->IsIntegerId()
+                            && std::all_of(s.begin() + 1, s.end(),
 								[](auto ch) { return std::isdigit(ch); }
 								)
 							)
@@ -489,9 +489,12 @@ std::string Spaceless(std::string s) {
                         auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
                         o(Valuable(h->Host(id)));
                         i = to - 1;
-                    } else {
+                    } else if (h->IsIntegerId()){
                         o(Valuable(h->Host(Valuable(a_int(id)))));
                         i = next - 1;
+                    } else {
+                        id = s.substr(i, next - i);
+                        o(Valuable(h->Host(id)));
                     }
                 }
                 else if ( (c >= '0' && c <= '9') || c == '-') {
@@ -578,7 +581,14 @@ std::string Spaceless(std::string s) {
                     << _ << " != " << s << std::endl
                     << std::endl
                     << _1 << "\n !=\n"
-                    << _2 << std::endl);
+                    << _2 << std::endl
+                    << " potential reasons:\n"
+                        "  text expression ordering differs from this software expression building ordering"
+                        "  var host type is changed between integer-type and string-type var host"
+#ifndef NDEBUG
+                        "  this software code changed expression building ordering or other changes that could be a cause for this deserialization check error message (optimization changes for example)"
+#endif
+                    );
 			}
         }
 #endif // !NDEBUG
