@@ -445,12 +445,14 @@ namespace math {
             auto nlz = nu < 0;
             if(nlz)
                 mn = -nu;
-            auto& n = nlz ? mn : nu;
+            auto n = std::cref(nlz ? mn : nu);
             auto dn = nlz ? -f.getDenominator() : f.getDenominator();
 
             auto numeratorIsOne = n == 1_v;
-            if (!numeratorIsOne)
+            if (!numeratorIsOne){
                 *this ^= n;
+                n = std::cref(constants::one);
+            }
 
             auto isNeg = operator<(0_v);
             auto signs = 0; //dimmensions

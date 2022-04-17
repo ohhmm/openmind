@@ -175,6 +175,10 @@ namespace math {
             return c;
         }
 
+        bool IsSimple() const override {
+            return std::all_of(begin(), end(), [](auto& m){return m.IsSimple();});
+        }
+
         Valuable::YesNoMaybe IsMultival() const override {
             if(size()==0) {
                 IMPLEMENT

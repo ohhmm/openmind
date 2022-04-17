@@ -124,6 +124,10 @@ BOOST_AUTO_TEST_CASE(Integer_exptests)
     a=-25_v;
     a ^= Fraction{-1,-2};
     BOOST_TEST(a==5_v*((-1_v)^(1_v/2)));
+
+    a=8;
+    a^=3_v/2;
+
 }
 
 BOOST_AUTO_TEST_CASE(Integer_tests)

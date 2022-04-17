@@ -619,10 +619,4 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         return Fraction(denominator(), numerator());
     }
 
-    bool Fraction::IsSimple() const
-    {
-        return numerator().IsInt()
-            && denominator().IsInt()
-        ;
-    }
 }}

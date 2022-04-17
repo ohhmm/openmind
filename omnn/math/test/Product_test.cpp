@@ -157,6 +157,13 @@ BOOST_AUTO_TEST_CASE(products_summing_simplification)
     if(!sum.IsSum()){
         BOOST_TEST(simplify.first == true);
     }
+
+    _1 = (7_v/2)*constants::plus_minus_1;
+    _2 = 2*constants::plus_minus_1;
+    simplify = _1.IsSummationSimplifiable(_2);
+    auto _ = (11_v/2)*constants::plus_minus_1;
+    BOOST_TEST(simplify.first);
+    BOOST_TEST(simplify.second == _);
 }
 
 BOOST_AUTO_TEST_CASE(unordered_multiset_tests)

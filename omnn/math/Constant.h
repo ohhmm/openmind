@@ -34,6 +34,7 @@ template <class Chld>
         static const /*init*/ Chld GlobalObject;
 
         bool IsConstant() const override { return true; }
+        bool IsSimple() const override { return true; }
         Valuable::YesNoMaybe IsMultival() const override { return Valuable::YesNoMaybe::No; }
 
         const Variable* FindVa() const override {

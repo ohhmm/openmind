@@ -70,6 +70,7 @@ namespace math {
 namespace constants {
 extern const Valuable& e;
 extern const Valuable& i;
+extern const Valuable& one;
 extern const Valuable& plus_minus_1; // ±1
 extern const Valuable& infinity;
 extern const Valuable& minfinity;
@@ -322,7 +323,6 @@ public:
     virtual bool IsInt() const;
     virtual bool IsFraction() const;
     virtual bool IsSimpleFraction() const;
-    bool IsSimple() const;
     virtual bool IsFormula() const;
     virtual bool IsExponentiation() const;
     virtual bool IsVa() const;
@@ -335,6 +335,9 @@ public:
     virtual bool Is_e() const;
     virtual bool Is_i() const;
     virtual bool Is_pi() const;
+
+    virtual bool IsSimple() const;
+
     virtual YesNoMaybe IsEven() const;
     virtual YesNoMaybe IsMultival() const;
     virtual void Values(const std::function<bool(const Valuable&)>&) const; /// split multival to distinct values and return thouse using visitor pattern
