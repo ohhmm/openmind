@@ -37,7 +37,7 @@ option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare 
 option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc source code file during CPU cores idle" _IS_DEBUG)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
-set(OPENMIND_REQUIRED_BOOST_VERSION 1.78.0 CACHE VERSION "Boost library version to use" FORCE)
+set(OPENMIND_REQUIRED_BOOST_VERSION 1.79.0 CACHE VERSION "Boost library version to use" FORCE)
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
 if(OPENMIND_PRIME_TABLE STREQUAL Boost)
@@ -52,7 +52,7 @@ set(BOOST_USED_COMPONENTS
 	serialization
 	system
 	thread)
-if(OPENMIND_BUILD_TESTS)
+if(OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 	set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test unit_test_framework)
 endif()
 if(OPENMIND_BUILD_GC)
@@ -163,10 +163,15 @@ elseif(OPENMIND_BUILD_BOOST)
         INSTALL_COMMAND ""
         UPDATE_COMMAND ""
         )
-            
+        if(WIN32)
+            find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+                PATHS C:/Boost
+                COMPONENTS ${BOOST_USED_COMPONENTS}
+                )
+        endif()
     set(EXTERNAL_FETCHED_BOOST ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
     build_command(BOOST_BUILD_CMD TARGET boost)
-	message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
+    message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
     message("BOOST_BUILD_CMD ${BOOST_BUILD_CMD}")
     execute_process(COMMAND ${BOOST_BUILD_CMD}
         WORKING_DIRECTORY ${EXTERNAL_FETCHED_BOOST}
@@ -310,7 +315,7 @@ function(apply_target_commons this_target)
 		target_compile_options(${this_target} PUBLIC
 			/bigobj
 			/FS
-			/constexpr:steps1000000000>
+			/constexpr:steps1000000000
 			/source-charset:utf-8
 			)
 	    target_link_directories(${this_target} PUBLIC

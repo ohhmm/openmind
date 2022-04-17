@@ -99,8 +99,7 @@ namespace math {
             return _1.getMaxVaExp();
         }
         
-		Fraction Reciprocal() const;
-		bool IsSimple() const;
+        Fraction Reciprocal() const;
         Valuable& sq() override;
 	};
 

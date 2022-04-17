@@ -43,6 +43,7 @@ namespace math {
     namespace constants {
     const Valuable& e = constant::e;
     const Valuable& i = constant::i;
+    const Valuable& one = vo<1>();
     const Valuable& plus_minus_1 = 1_v^(1_v/2); // ±1
     const Valuable& pi = constant::pi;
     const Valuable& infinity = Infinity::GlobalObject;
@@ -1199,7 +1200,6 @@ std::string Spaceless(std::string s) {
     bool Valuable::IsInt() const { return exp && exp->IsInt(); }
     bool Valuable::IsFraction() const { return exp && exp->IsFraction(); }
     bool Valuable::IsSimpleFraction() const { return exp && exp->IsSimpleFraction(); }
-    bool Valuable::IsSimple() const { return IsInt() || IsSimpleFraction(); }
     bool Valuable::IsFormula() const { return exp && exp->IsFormula(); }
     bool Valuable::IsExponentiation() const { return exp && exp->IsExponentiation(); }
     bool Valuable::IsVa() const { return exp && exp->IsVa(); }
@@ -1212,6 +1212,13 @@ std::string Spaceless(std::string s) {
     bool Valuable::Is_e() const { return exp && exp->Is_e(); }
     bool Valuable::Is_i() const { return exp && exp->Is_i(); }
     bool Valuable::Is_pi() const { return exp && exp->Is_pi(); }
+
+    bool Valuable::IsSimple() const {
+        if(exp)
+            return exp->IsSimple();
+        else
+            IMPLEMENT
+    }
 
     Valuable::YesNoMaybe Valuable::IsMultival() const {
         if(exp)

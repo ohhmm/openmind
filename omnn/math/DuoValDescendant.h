@@ -148,6 +148,10 @@ namespace omnn::math {
             return Chld::getMaxVaExp(_1, _2);
         }
         
+        bool IsSimple() const override {
+            return _1.IsSimple() && _2.IsSimple();
+        }
+        
         Valuable::YesNoMaybe IsMultival() const override {
             return _1.IsMultival() || _2.IsMultival();
         }
