@@ -365,9 +365,10 @@ public:
     virtual Valuable calcFreeMember() const;
 
     using solutions_t = std::unordered_set<Valuable>;
-    static Valuable MergeAnd(const Valuable& v1, const Valuable& v2);
-    static Valuable MergeOr(const Valuable& v1, const Valuable& v2);
-    static Valuable MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3);
+    static Valuable MergeAnd(const Valuable&, const Valuable&); /// conjunctive merge of two values
+    static Valuable MergeOr(const Valuable&, const Valuable&); /// disjunctive merge algorithm deduced from square equation solutions formula, works for integers
+    static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&); /// algorithm is to be deduced from cubic equation solutions formula
+    static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&, const Valuable&); /// double merge
     explicit Valuable(const solutions_t&);
     virtual Valuable operator()(const Variable&) const;
     virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;

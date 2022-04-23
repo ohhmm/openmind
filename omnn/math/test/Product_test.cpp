@@ -158,12 +158,35 @@ BOOST_AUTO_TEST_CASE(products_summing_simplification)
         BOOST_TEST(simplify.first == true);
     }
 
-    _1 = (7_v/2)*constants::plus_minus_1;
-    _2 = 2*constants::plus_minus_1;
+    _1 = (7_v/2) * constants::plus_minus_1;
+    cout << "Distinct values of _1 are as follows:" << endl;
+    for(auto& value: _1.Distinct()){
+        cout << ' ' << value;
+    }
+    cout<< endl;
+    _2 = 2 * constants::plus_minus_1;
+    cout << "Distinct values of _2 are as follows:" << endl;
+    for(auto& value: _2.Distinct()){
+        cout << ' ' << value;
+    }
+    cout<< endl;
+    std::vector<Valuable> distinctSums;
+    for(auto& $1: _1.Distinct()){
+        for(auto& $2: _2.Distinct()){
+            auto sum = $1+$2;
+            cout << ' ' << sum;
+            distinctSums.emplace_back(sum);
+        }
+    }
+    cout<< endl;
+    
+    auto answer = Valuable::MergeOr(11_v/2, -11_v/2, -3_v/2, 3_v/2);
+    auto _ = Valuable(answer.Distinct());
+    BOOST_TEST(_ == answer);
+    
     simplify = _1.IsSummationSimplifiable(_2);
-    auto _ = (11_v/2)*constants::plus_minus_1;
     BOOST_TEST(simplify.first);
-    BOOST_TEST(simplify.second == _);
+    BOOST_TEST(simplify.second == answer);
 }
 
 BOOST_AUTO_TEST_CASE(unordered_multiset_tests)
