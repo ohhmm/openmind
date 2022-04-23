@@ -261,6 +261,17 @@ namespace math {
         return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation 
     }
 
+    Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
+        auto _1 = MergeOr(v1, v2);
+        auto _2 = MergeOr(v3, v4);
+#ifndef NDEBUG
+        if(_1.IsMultival() != YesNoMaybe::Yes || _2.IsMultival() != YesNoMaybe::Yes) {
+            LOG_AND_IMPLEMENT(v1 << 'v' << v2 << 'v' << v3 << 'v' << v4 << " - emerging difficulty: "
+                              << v1 << 'v' << v2 << '=' << _1 << ", " << v3 << 'v' << v4 << '=' << _2);
+        }
+#endif
+        return MergeOr(_1, _2);
+    }
 
     Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
     {
@@ -295,7 +306,7 @@ namespace math {
             break;
         }
         default:
-            IMPLEMENT // just do same as case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'
+            IMPLEMENT // implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'
         }
         
 #ifndef NDEBUG
