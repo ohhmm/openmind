@@ -357,6 +357,7 @@ public:
 	virtual Valuable Cos() const;
 	virtual Valuable Sin() const;
 	virtual Valuable Sqrt() const;
+    Valuable& sqrt();
 	virtual Valuable Tg() const;
     virtual void gamma(); // https://en.wikipedia.org/wiki/Gamma_function
     virtual Valuable Gamma() const;

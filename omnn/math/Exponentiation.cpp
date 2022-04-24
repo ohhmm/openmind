@@ -1014,12 +1014,30 @@ namespace math {
                     } else
                         LOG_AND_IMPLEMENT("Distinct for " << str());
                 } else {
-                    for (auto&& branch
-                            : (ebase().Sqrt() ^ (f.numerator() / (denom / 2))).Distinct())
-                    {
-                        branches.emplace(-branch);
-                        branches.emplace(std::move(branch));
-                    }
+                    auto b = ebase() ^ f.numerator();
+                    auto d = denom;
+                    do {
+                        b.sqrt();
+                        d.shr();
+                    } while(d.IsEven() == Valuable::YesNoMaybe::Yes);
+                    auto _ = b ^ (1_v / d);
+                    auto distinct = _.Distinct();
+                    if(denom==2)
+                        for (auto& branch : distinct)
+                        {
+                            branches.emplace(-branch);
+                            branches.emplace(std::move(const_cast<decltype(distinct)::reference>(branch)));
+                        }
+                    else if(denom==4)
+                        for (auto& branch : distinct)
+                        {
+                            branches.emplace(-branch * constants::i);
+                            branches.emplace(branch * constants::i);
+                            branches.emplace(-branch);
+                            branches.emplace(std::move(const_cast<decltype(distinct)::reference>(branch)));
+                        }
+                    else
+                        LOG_AND_IMPLEMENT("Implement support for " << denom << " dimmensions");
                 }
             }
         } else {
