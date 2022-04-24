@@ -239,9 +239,13 @@ namespace math {
             // a = 1;
             auto s = v1 + v2;
             // b = -s;
-			auto c = v1 * v2;
-            auto d = s.Sq() - c*4;
-            merged = (Exponentiation(d, 1_v / 2) + s) / 2;
+            if(s==0)
+                merged = std::max(v1, v2) * constants::plus_minus_1;
+            else{
+                auto c = v1 * v2;
+                auto d = s.Sq() - c*4;
+                merged = ((d ^ (1_v / 2)) + s) / 2;
+            }
         }
         return merged;
     }
@@ -302,7 +306,7 @@ namespace math {
             auto& _2 = *it++;
             auto& _3 = *it++;
             auto& _4 = *it;
-            operator=(MergeOr(MergeOr(_1, _2), MergeOr(_3, _4)));
+            operator=(MergeOr(_1, _2, _3, _4));
             break;
         }
         default:
@@ -1363,6 +1367,10 @@ std::string Spaceless(std::string s) {
             return exp->Sqrt();
         else
             IMPLEMENT
+    }
+
+    Valuable& Valuable::sqrt() {
+        return Become(Sqrt());
     }
 
 	Valuable Valuable::Tg() const {
