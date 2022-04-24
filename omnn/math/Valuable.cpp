@@ -601,9 +601,7 @@ std::string Spaceless(std::string s) {
                     << " potential reasons:\n"
                         "  text expression ordering differs from this software expression building ordering"
                         "  var host type is changed between integer-type and string-type var host"
-#ifndef NDEBUG
                         "  this software code changed expression building ordering or other changes that could be a cause for this deserialization check error message (optimization changes for example)"
-#endif
                     );
 			}
         }

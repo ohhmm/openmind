@@ -185,8 +185,7 @@ BOOST_AUTO_TEST_CASE(products_summing_simplification)
     BOOST_TEST(_ == answer);
     
     simplify = _1.IsSummationSimplifiable(_2);
-    BOOST_TEST(simplify.first);
-    BOOST_TEST(simplify.second == answer);
+    BOOST_TEST(!simplify.first);
 }
 
 BOOST_AUTO_TEST_CASE(unordered_multiset_tests)
