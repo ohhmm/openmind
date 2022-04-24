@@ -75,7 +75,6 @@ endif()
 
 if(NOT Boost_FOUND)
     set(OM_BUILD_BOOST True)
-	message("Install local build boost library to omit building it with OM")
 else()
 	message("Boost_VERSION: ${Boost_VERSION}")
 	message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
@@ -100,7 +99,7 @@ include(ExternalProject)
 find_package(Git QUIET)
 if(NOT GIT_EXECUTABLE AND MSVC)
 	find_program(GIT_EXECUTABLE git PATHS 
-		"$ENV{ProgramFiles}/Microsoft Visual Studio/*/*/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/Git/mingw32/bin/"
+		"$ENV{ProgramFiles}/Microsoft Visual Studio/*/*/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/Git/cmd/"
 		)
 	find_package(Git)
 endif()
