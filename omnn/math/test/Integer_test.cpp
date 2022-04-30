@@ -212,22 +212,29 @@ BOOST_AUTO_TEST_CASE(Integer_Factorization_test) {
     std::cout << a << std::endl;
 
     std::cout << "Primes:\n";
+    unsigned startPrime = 3;
+    auto startFactorial = boost::math::factorial<double>(startPrime);
     auto lastPrimeIdx = omnn::rt::primes();
     decltype(lastPrimeIdx) primeIdx = 0;
+    while (omnn::rt::prime(primeIdx) != startPrime)
+        ++primeIdx;
     auto prevPrime = omnn::rt::prime(lastPrimeIdx);
-    decltype(prevPrime)
-        newBound = unsigned(-1),
-        nFact = 1,
-        next = 3,
-        prev = 1;
-    for (auto i = 2; i < boost::math::max_prime; ++prev, ++i, ++next) {
+    using prime_t = decltype(prevPrime);
+    prime_t
+        prev = startPrime - 1,
+        i = startPrime,
+        next = startPrime + 1,
+        nFact = boost::numeric_cast<prime_t>(startFactorial / startPrime);
+    for (; i < boost::math::max_prime; ++prev, ++i, ++next) {
         nFact *= i;
         auto fastPrimeTest = (prev * (nFact % next));
         if (fastPrimeTest != 0) {
             auto prime = fastPrimeTest / i + 2;
             std::cout << prime << ',';
-            if (primeIdx < prevPrime)
-                BOOST_TEST(omnn::rt::prime(primeIdx++) == prime);
+            if (primeIdx <= lastPrimeIdx) {
+                BOOST_TEST(omnn::rt::prime(primeIdx) == prime);
+                ++primeIdx;
+            }
         }
     }
 
