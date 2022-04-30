@@ -3,6 +3,9 @@
 
 #include "Fraction.h"
 
+#include <ranges>
+
+
 using namespace omnn::math;
 using namespace boost::unit_test_framework;
 

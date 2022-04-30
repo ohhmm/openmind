@@ -318,6 +318,7 @@ function(apply_target_commons this_target)
 			/FS
 			/constexpr:steps1000000000
 			/source-charset:utf-8
+			"$<$<CONFIG:DEBUG>:/ZI>"
 			)
 	    target_link_directories(${this_target} PUBLIC
 			${Boost_INCLUDE_DIR}/stage/lib
