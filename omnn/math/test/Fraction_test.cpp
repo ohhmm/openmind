@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE Fraction test
+ï»¿#define BOOST_TEST_MODULE Fraction test
 #include <boost/test/unit_test.hpp>
 
 #include "Fraction.h"
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests) {
 
 	// Multivalue expression equivalent:
     _ ^= 1_v/2; // (841/64)^(1/2) = ?.. lets see possible ways to calculate (covering multivals)
-	// ±29/±8 = ±(29/8) = (1^(1/2))*(29/8) :   
+	// Â±29/Â±8 = Â±(29/8) = (1^(1/2))*(29/8) :   
 	// 
 	//  29^2  /  8^2  = 841/64
     //  29^2 / (-8)^2 = 841/64
@@ -86,20 +86,20 @@ BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests) {
 	// 
 	// NOTE: it does not equal to any of these particular values, but it equals this uncertinty, which of these two the value is
 	//       probably the most suitable is to call it the set of these two values:
-	//       (841/64)^(1/2) = ±29/±8 = ±(29/8) = set(-3.625, 3.625)
+	//       (841/64)^(1/2) = Â±29/Â±8 = Â±(29/8) = set(-3.625, 3.625)
 	//       mathematical unordered set of values
 	//       multivalue
 	//       this way there is not branch reduction and expressions are backward-compatibly equivalent
 	//   ___                                  ___
     //  |  29^2  /  8^2  = 841/64            | (29/8)^2 = 841/64              ___
     //  |  29^2 / (-8)^2 = 841/64            | (29/-8)^2 = 841/64            | 29/8 = -29/-8 = 3.625
-    //  | (-29)^2 / 8^2  = 841/64     <===>  | (-29/8)^2 = 841/64    <===> 	 | -29/8 = 29/-8 = -3.625    <===> (841/64)^(1/2) = ±29/±8 = ±(29/8) = set(-3.625, 3.625)
+    //  | (-29)^2 / 8^2  = 841/64     <===>  | (-29/8)^2 = 841/64    <===> 	 | -29/8 = 29/-8 = -3.625    <===> (841/64)^(1/2) = Â±29/Â±8 = Â±(29/8) = set(-3.625, 3.625)
     //  | (-29)^2 / (-8)^2 = 841/64          | (-29/-8)^2 = 841/64			 \___
 	//   \__                                  \__
 	//
-	//  (841/64)^(1/2) = ±(29/8)
+	//  (841/64)^(1/2) = Â±(29/8)
 	//
-	// this framework emulates ± with multiplying by 1^(1/2) because it equals ±1 and ±1*x = ±x
+	// this framework emulates Â± with multiplying by 1^(1/2) because it equals Â±1 and Â±1*x = Â±x
 	// 
     // Which makes  (841/64)^(1/2) = (29/8) * 1^(1/2)
     a = (29_v / 8) * (1_v ^ (1_v / 2));
@@ -112,12 +112,12 @@ BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests) {
 	//
 
     a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
-    // (573440 * (±29/±8) + 2115584) / 262144
+    // (573440 * (Â±29/Â±8) + 2115584) / 262144
     a.optimize();
     auto ok = a.IsMultival() == Valuable::YesNoMaybe::Yes;
     BOOST_TEST(ok);
     
-    for (int64_t i=8; i --> 1; ) {
+    for (auto i = 1; i < 8; ++i) {
         Valuable dimmensions(1<<i);
         auto multi = 1_v ^ (1_v / dimmensions);
         auto values = multi.Distinct();

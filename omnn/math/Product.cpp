@@ -145,7 +145,7 @@ namespace math {
         }
         else if (!item.IsSum() && item.FindVa())
         {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT(str() << ": AddToVarsIfVaOrVaExp: " << item);
         }
     }
     

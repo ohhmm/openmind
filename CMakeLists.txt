@@ -162,12 +162,6 @@ elseif(OPENMIND_BUILD_BOOST)
         INSTALL_COMMAND ""
         UPDATE_COMMAND ""
         )
-        if(WIN32)
-            find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
-                PATHS C:/Boost
-                COMPONENTS ${BOOST_USED_COMPONENTS}
-                )
-        endif()
     set(EXTERNAL_FETCHED_BOOST ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
     set(Boost_INCLUDE_DIR ${EXTERNAL_FETCHED_BOOST} CACHE PATH "Path" FORCE)
     build_command(BOOST_BUILD_CMD TARGET boost)
@@ -176,6 +170,12 @@ elseif(OPENMIND_BUILD_BOOST)
     execute_process(COMMAND ${BOOST_BUILD_CMD}
         WORKING_DIRECTORY ${EXTERNAL_FETCHED_BOOST}
         )
+    if(WIN32)
+        find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+            PATHS C:/Boost
+            COMPONENTS ${BOOST_USED_COMPONENTS}
+            )
+    endif()
     #find_package(Boost COMPONENTS ${BOOST_USED_COMPONENTS})
     if(NOT Boost_FOUND)
         add_custom_target(conf ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} DEPENDS boost)
@@ -308,6 +308,9 @@ function(apply_target_commons this_target)
 		BOOST_SYSTEM_NO_DEPRECATED
 		BOOST_ERROR_CODE_HEADER_ONLY
 		BOOST_COMPUTE_USE_CPP11
+		)
+	set_target_properties(${this_target} PROPERTIES
+		CXX_STANDARD 20
 		)
 	if(MSVC)
 		target_compile_definitions(${this_target} PUBLIC
