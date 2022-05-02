@@ -169,20 +169,20 @@ BOOST_AUTO_TEST_CASE(products_summing_simplification)
     for(auto& value: _2.Distinct()){
         cout << ' ' << value;
     }
-    cout<< endl;
-    std::vector<Valuable> distinctSums;
+    auto answer = Valuable::MergeOr(11_v/2, -11_v/2, -3_v/2, 3_v/2);
+    cout << endl << "Distinct sums are as follows:" << endl;
+    Valuable::solutions_t distinctSums;
     for(auto& $1: _1.Distinct()){
         for(auto& $2: _2.Distinct()){
             auto sum = $1+$2;
             cout << ' ' << sum;
-            distinctSums.emplace_back(sum);
+            distinctSums.emplace(sum);
         }
     }
     cout<< endl;
     
-    auto answer = Valuable::MergeOr(11_v/2, -11_v/2, -3_v/2, 3_v/2);
-    auto _ = Valuable(answer.Distinct());
-    BOOST_TEST(_ == answer);
+    auto answerDistinct = answer.Distinct();
+    BOOST_TEST(answerDistinct == distinctSums);
     
     simplify = _1.IsSummationSimplifiable(_2);
     BOOST_TEST(!simplify.first);

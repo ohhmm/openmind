@@ -324,6 +324,8 @@ namespace math {
             for (auto& v : distinct)
                 ss << ' ' << v;
             ss << " )";
+            std::cout << ss.str();
+            distinct = Distinct();
             LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
         }
 #endif

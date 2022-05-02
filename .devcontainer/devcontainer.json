@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.231.6/containers/docker-existing-dockerfile
 {
-	"name": "Existing Dockerfile",
+	"name": "Existing Dockerfile: platform agnostic container",
 
 	// Sets the run context to one level up instead of the .devcontainer folder.
 	"context": "..",
@@ -10,14 +10,23 @@
 	"dockerFile": "Docker-gentoo.txt",
 
 	// Set *default* container specific settings.json values on container create.
-	"settings": {},
+	"settings": {
+		"cmake.cmakePath": "/usr/bin/cmake",
+		"cmake.configureArgs": [
+			"-DOPENMIND_BUILD_TESTS=ON",
+		],
+		"[cmake-cache]": {
+		}
+	},
 	
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"llvm-vs-code-extensions.vscode-clangd",
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
-	]
+		"ms-vsliveshare.vsliveshare-pack",
+		"visualstudioexptteam.vscodeintellicode-completions",
+	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
