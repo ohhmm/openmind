@@ -1,0 +1,22 @@
+FROM gentoo/stage3:latest
+
+LABEL platform agnostic container
+
+RUN emerge --sync
+
+RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
+RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
+RUN echo "dev-libs/boost test" > /etc/portage/package.use/boost
+
+RUN emerge cmake
+RUN emerge dev-vcs/git
+
+RUN emerge =dev-libs/boost-1.79.0
+
+RUN emerge leveldb
+
+#RUN emerge llvm
+RUN emerge bash-completion
+#RUN emerge clang
+RUN emerge eix
+RUN eix-update
