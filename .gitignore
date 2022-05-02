@@ -5,8 +5,9 @@
 *.suo
 
 build*
-/.vs
-/.idea
+/.cache/
+/.vs/
+/.idea/
 /cmake-build-debug
 /Testing
 *.user

@@ -24,7 +24,7 @@ const f128 TestPrecision = 0.000001;
 BOOST_AUTO_TEST_CASE(Polyfit_test_sinus, *tolerance(TestPrecision))
 {
     const int SZ = 73;
-    const f128  PI2 = constant::pi * 2,
+    const f128  PI2 = constants::pi * 2,
                 SZf = SZ;
     
     // generate the data

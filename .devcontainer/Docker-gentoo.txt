@@ -15,8 +15,8 @@ RUN emerge =dev-libs/boost-1.79.0
 
 RUN emerge leveldb
 
-#RUN emerge llvm
+RUN emerge llvm
 RUN emerge bash-completion
-#RUN emerge clang
+RUN emerge clang
 RUN emerge eix
 RUN eix-update
