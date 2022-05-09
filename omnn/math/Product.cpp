@@ -19,6 +19,7 @@ namespace math {
     
     using namespace std;
     
+    //constexpr 
     type_index order[] = {
         // for fast optimizing
         typeid(NaN),
@@ -37,17 +38,19 @@ namespace math {
         typeid(Modulo),
     };
     
-    auto ob = std::begin(order);
-    auto oe = std::end(order);
+    constexpr auto ob = std::begin(order);
+    constexpr auto oe = std::end(order);
     
     // inequality should cover all cases
     bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
     {
         auto it1 = std::find(ob, oe, x.Type());
-        if (it1==oe) IMPLEMENT
+        if (it1 == oe)
+            LOG_AND_IMPLEMENT(x << " =?= " << y);
 
         auto it2 = std::find(ob, oe, y.Type());
-        if (it2==oe) IMPLEMENT
+        if (it2 == oe)
+            LOG_AND_IMPLEMENT(x << " =?= " << y);
 
         return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
     }

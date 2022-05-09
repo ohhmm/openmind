@@ -13,18 +13,20 @@
 	"settings": {
 		"cmake.cmakePath": "/usr/bin/cmake",
 		"cmake.configureArgs": [
+			"-DOPENMIND_BUILD_SAMPLES=OFF",
 			"-DOPENMIND_BUILD_TESTS=ON",
+			//"-DOPENMIND_MATH_USE_FOUNDATIONDB_CACHE:BOOL=ON",
 		],
-		"[cmake-cache]": {
-		}
 	},
 	
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
+		"github.vscode-pull-request-github",
 		"llvm-vs-code-extensions.vscode-clangd",
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
 		"ms-vsliveshare.vsliveshare-pack",
+		"visualstudioexptteam.vscodeintellicode",
 		"visualstudioexptteam.vscodeintellicode-completions",
 	],
 

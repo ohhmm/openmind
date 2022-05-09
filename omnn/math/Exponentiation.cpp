@@ -541,8 +541,6 @@ namespace math {
                 values.emplace(std::move(extract));
             }
             Become(Valuable(values));
-		} else if (v.IsMultival() == YesNoMaybe::Yes) {
-            IMPLEMENT
         } else if (v.IsExponentiation()) {
             auto& vexpo = v.as<Exponentiation>();
             is = vexpo.getBase() == getBase();
@@ -551,6 +549,20 @@ namespace math {
                 optimized = {};
                 optimize();
             } // TODO : else if ? (base^2 == v.base)
+            else {
+                is = vexpo.getExponentiation() == getExponentiation();
+                if (is) {
+                    auto wasBaseHash = ebase().Hash();
+                    is = ebase().MultiplyIfSimplifiable(vexpo.getBase());
+                    if (is) {
+                        Valuable::hash ^= wasBaseHash ^ ebase().Hash();
+                        optimized = {};
+                        optimize();
+                    }
+                }
+            }
+        } else if (v.IsMultival() == YesNoMaybe::Yes) {
+            LOG_AND_IMPLEMENT(str() << " Exponentiation::MultiplyIfSimplifiable " << v);
         } else if (v.IsInt()) {
             IMPLEMENT
         } else {

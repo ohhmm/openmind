@@ -475,33 +475,8 @@ public:
     Valuable& logic_or(const Valuable&); // inplace
     Valuable& logic_and(const Valuable&);
 
-//    distinctZeros
-//
-//    distinct intersect
-//
-//    _1 = (x-1)(x-2),   _2 =(x-2)(x-3)
-//
-//    distinct union of (x-1)(x-2), (x-2)(x-3)   ==  (x-1)(x-2)(x-3)
-//
-//    (x-1)(x-2)   (x-1)                         (x-1)
-//    ---------- = -----    =>  equation form :  ----- = 0    solve : x=1
-//    (x-2)(x-3)   (x-3)                         (x-3)
-//
-//    _1 / solve = intersect:
-//
-//    (x-1)(x-2) / (x-1) == (x-2)
-
-//    Valuable DistinctIntersect(const Valuable& with, const Variable& va){
-//        auto toSolve = *this / with;
-//        toSolve
-//    }
-
-    Valuable& intersect(const Valuable& with, const Variable& va){
-        return logic_and(with);
-    }
-    Valuable Intersect(const Valuable& with, const Variable& va) const {
-        return LogicAnd(with);
-    }
+    Valuable& intersect(const Valuable& with, const Variable& va);
+    Valuable Intersect(const Valuable& with, const Variable& va) const;
 
 	/// conditional operators
 	//
