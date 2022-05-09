@@ -11,29 +11,37 @@ RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
 
 RUN echo "dev-libs/boost test" > /etc/portage/package.use/boost
+RUN echo "dev-libs/icu static-libs" > /etc/portage/package.use/icu
 
-RUN emerge cmake
-RUN emerge dev-vcs/git
+RUN emerge \
+    bash-completion \
+    clang \
+    eix \
+    htop \
+    app-misc/mc \
+    kde-frameworks/extra-cmake-modules \
+    sys-process/htop \
+    dev-vcs/git \
+    -j`nproc`
 
-RUN emerge =dev-libs/boost-1.79.0
-
-RUN emerge leveldb
-
-RUN emerge llvm
-RUN emerge bash-completion
-RUN emerge clang
-
-RUN emerge eix
 RUN eix-update
 
-RUN emerge x11-libs/libX11
-RUN emerge x11-libs/libxcb
-RUN emerge dev-libs/icu
-RUN emerge sys-process/htop
-RUN emerge sys-libs/zlib
+RUN emerge -j`nproc` =dev-libs/boost-1.79.0
 
-#RUN echo "dev-lang/rust **" >> /etc/portage/package.accept_keywords/rust
-#RUN echo "virtual/rust **" >> /etc/portage/package.accept_keywords/rust
-#RUN emerge =virtual/rust-1.58.1
-#RUN echo 'USE="opengl X xft"' >> /etc/make.conf
-#RUN emerge -j`nproc` x11-misc/xscreensaver
+RUN emerge -j`nproc` leveldb
+
+RUN emerge \
+    dev-libs/icu \
+    sys-process/htop \
+    sys-libs/zlib \
+    x11-libs/libX11 \
+    x11-libs/libxcb \
+    x11-libs/libXScrnSaver \
+    -j`nproc`
+
+
+RUN echo "dev-libs/icu examples static-libs" > /etc/portage/package.use/icu
+RUN emerge \
+    dev-libs/icu \
+    -j`nproc`
+    

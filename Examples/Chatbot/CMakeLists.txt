@@ -21,7 +21,7 @@ if(NOT ICU_FOUND)
 endif()
 
 exe(
-	madler/zlib
+	madler/ZLIB
 	meta-toolkit/meta
     )
 add_dependencies(meta boost icu)

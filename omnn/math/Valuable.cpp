@@ -864,7 +864,7 @@ std::string Spaceless(std::string s) {
         if(exp)
             return exp->IsSummationSimplifiable(v);
         else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT(str() << " IsSummationSimplifiable " << v);
             auto m = *this + v;
             return { m.Complexity() < Complexity() + v.Complexity(), m };
         }
@@ -1754,6 +1754,28 @@ std::string Spaceless(std::string s) {
         return *this * v;
     }
 
+    //    distinctZeros
+    //
+    //    distinct intersect
+    //
+    //    _1 = (x-1)(x-2),   _2 =(x-2)(x-3)
+    //
+    //    distinct union of (x-1)(x-2), (x-2)(x-3)   ==  (x-1)(x-2)(x-3)
+    //
+    //    (x-1)(x-2)   (x-1)                         (x-1)
+    //    ---------- = -----    =>  equation form :  ----- = 0    solve : x=1
+    //    (x-2)(x-3)   (x-3)                         (x-3)
+    //
+    //    _1 / solve = intersect:
+    //
+    //    (x-1)(x-2) / (x-1) == (x-2)
+    Valuable& Valuable::intersect(const Valuable& with, const Variable& va) {
+        return Become(va - (logic_and(with)(va))); // logic_and(with)(va).equals(va)
+    }
+    Valuable Valuable::Intersect(const Valuable& with, const Variable& va) const {
+        return va.Equals(LogicAnd(with)(va));
+    }
+
     Valuable Valuable::Ifz(const Valuable& Then, const Valuable& Else) const
     {
         auto thisAndThen = LogicAnd(Then);
@@ -1778,9 +1800,10 @@ std::string Spaceless(std::string s) {
 
     Valuable Valuable::MustBeInt() const {
         using namespace constants;
-        return *this % 1;
-		 //or
-        //(e ^ (*this * 2 * i * pi)) - 1;
+        return
+            //one.Equals(*this % one);
+		    //or
+            (e ^ (*this * 2 * i * pi)) - 1;        // FIXME: check if all required optimizations ready to make this useful https://math.stackexchange.com/a/1598552/118612
     }
 
     std::function<bool(std::initializer_list<Valuable>)> Valuable::Functor() const {

@@ -17,8 +17,11 @@ std::ostream& Modulo::print_sign(std::ostream& out) const
 void Modulo::optimize(){
     _1.optimize();
     _2.optimize();
-    if(_1.IsInt() && _2.IsInt()) {
-        Become(std::move(_1 %= _2));
+    if (_1.IsInt() && _2.IsInt()) {
+        if (_2 == constants::one)
+            Become(std::move(_2));
+        else
+            Become(std::move(_1 %= _2));
     }
     if (Is<Modulo>()) {
         hash = _1.Hash() ^ _2.Hash();
