@@ -2253,7 +2253,37 @@ namespace
                     && is.second.as<Sum>().members.size() < members.size() + (v.IsSum() ? v.as<Sum>().members.size() : 1));
             if (!confirm) {
                 is.first = confirm;
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Please, double-check simplification result: " << str()
+                    << "  *  " << v
+                    << "  =  " << is.second);
+
+                // FIXME:
+                //std::string: C:\Users\Enam\openmind\omnn\math\Sum.cpp:2258 
+                //omnn::math::Sum::IsMultiplicationSimplifiable : 
+                //Please, double-check simplification result: 
+                //(-4*(v2^2) + -4*(v1^2) + 48*v2 + -144)  *  
+                //(-4*(v2^2) + -4*(v1^2) + 40*v2 + -100)  =  
+                //(16*(v2^4) + 16*(v1^4) + -352*(v2^3) + 32*(v2^2)*(v1^2) + -352*(v1^2)*v2 + 2496*(v2^2) + 576*(v1^2) + 400*(v2^2) + 400*(v1^2) + -10560*v2 + 14400) Implement!
+
+
+                //-4*(v2^2 + v1^2 + -12*v2 + 36)  *  
+                //-4*(v2^2 + v1^2 + -10*v2 + 25)  =  
+
+                //16 (v2^2 + v1^2 + -12*v2 + 36) (v2^2 + v1^2 + -10*v2 + 25) //
+                // =simplify=>
+                //   v3=v2^2+v1^2                       // 1store 2powers 1summmation
+                //   16(v3-12v2+36)(v3-10v2+25)         // 4multiplicaions 4summations
+
+                //characteristics:
+	               // time to evaluate
+	               // time to differentiate
+	               // string lengths
+	               // memory allocation size
+
+                //-12*v2 + 36   // 1mul 1+
+
+                //-12*(v2+
+
             }
         }
 #endif

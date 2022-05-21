@@ -29,15 +29,15 @@ namespace math {
     }
     
     void Variable::SetId(any::any id) {
-        varId = id;
         hash = varSetHost->Hash(id);
+        varId = std::move(id);
     }
 
     const ::omnn::math::any::any& Variable::GetId() const {
         return varId;
     }
     
-    Variable::Variable(VarHost::ptr varHost)
+    Variable::Variable(const VarHost::ptr varHost)
     : varSetHost(varHost)
     {
         if(!varHost)

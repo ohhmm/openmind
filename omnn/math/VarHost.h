@@ -27,6 +27,7 @@ namespace math {
     {
     public:
         using ptr = std::shared_ptr<VarHost>;
+        using cptr = std::shared_ptr<const VarHost>;
         using cref = const VarHost&;
         using hosted_storage_t = std::pair<Variable, std::string>;
         
@@ -34,32 +35,25 @@ namespace math {
 
         template<class T>
         Variable New(const T& id) {
+#ifndef NDEBUG
             auto host = dynamic_cast<TypedVarHost<T>*>(this);
-            if (host) {
-                AddNewId(sizeof(void*) >= sizeof(T)
-                         ? *(void**)(&id)
-                         : (void*)(new T(id)));
+            if (host != this) {
+                LOG_AND_IMPLEMENT("wrong id type");
+            }
+#endif
                 Variable v(sh());
                 v.SetId(id);
                 return v;
             }
-            else
-            {
-                throw "wrong id type";
-            }
-        }
         
-        Variable New()
-        {
-            Variable v(sh());
-            v.SetId(NewVarId());
-            return v;
-        }
+		Variable New();
 
     protected:
         constexpr VarHost() = default;
 
         const any::any& GetId(const Variable&) const;
+
+        Variable New(const any::any& id);
 
         virtual void AddNewId(const void* id) {
             IMPLEMENT;
@@ -215,7 +209,7 @@ namespace math {
                 const T& idT = *idTp;
                 it = hosted.find(idT);
                 if (it == hosted.end()) {
-                    it = hosted.emplace(idT, hosted_storage_t{New(idT), ""s}).first;
+                    it = hosted.emplace(idT, hosted_storage_t{New(id), ""s}).first;
                 }
             }
 

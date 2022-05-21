@@ -16,16 +16,20 @@
 #include <string_view>
 
 
-using namespace omnn::math;
-
 using namespace std::string_literals;
 
 
+namespace omnn::math {
 
-const any::any& omnn::math::VarHost::GetId(const Variable& va) const {
-	return va.GetId();
+const any::any& omnn::math::VarHost::GetId(const Variable& va) const { return va.GetId(); }
+
+Variable VarHost::New(const any::any& id) {
+    Variable v(sh());
+    v.SetId(id);
+    return v;
 }
 
+Variable VarHost::New() { return New(NewVarId()); }
 
 template<>
 any::any TypedVarHost<std::string>::NewVarId()
@@ -68,3 +72,4 @@ void VarHost::inc<>(std::string&)
 {
     IMPLEMENT
 }
+} // namespace
