@@ -41,6 +41,7 @@ public:
     Variable(std::shared_ptr<VarHost>);
     
     std::shared_ptr<VarHost> getVaHost() const override { return varSetHost; }
+    const auto& getId() const { return varId; }
 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable&) override;
