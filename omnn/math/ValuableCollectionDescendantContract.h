@@ -180,14 +180,16 @@ namespace math {
         }
 
         Valuable::YesNoMaybe IsMultival() const override {
+            Valuable::YesNoMaybe is;
             if(size()==0) {
-                IMPLEMENT
-            }
+                is = Valuable::YesNoMaybe::No;
+            } else {
             auto it = begin();
-            auto is = it->IsMultival();
+                is = it->IsMultival();
             if(size()!=1)
                 while(++it != end())
                     is = is || it->IsMultival();
+            }
             return is;
         }
         

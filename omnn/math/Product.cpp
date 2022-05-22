@@ -11,6 +11,7 @@
 #include "e.h"
 #include "i.h"
 #include "pi.h"
+#include "PrincipalSurd.h"
 #include <type_traits>
 #include <boost/multiprecision/cpp_int.hpp>
 
@@ -33,6 +34,7 @@ namespace math {
         typeid(Euler),
         typeid(Pi),
         typeid(Fraction),
+        typeid(PrincipalSurd),
         typeid(Exponentiation),
         typeid(Variable),
         typeid(Modulo),
@@ -593,12 +595,19 @@ namespace math {
     
     Valuable& Product::operator +=(const Valuable& v)
     {
-        if(v == 0_v)
+        if(v == constants::zero)
             return *this;
         if (*this == v)
             return *this *= 2;
         if(*this == -v)
             return Become(0_v);
+        if (IsMultival() == YesNoMaybe::Yes && v.IsMultival() == YesNoMaybe::Yes) {
+            solutions_t s;
+            for (auto& m : Distinct())
+                for (auto& item : v.Distinct())
+                    s.emplace(m + item);
+            return Become(Valuable(s));
+        }
         if(v.IsProduct()){
             auto& vAsP = v.as<Product>();
             Product thisHasNotCommonWithV, vHasNotInCommonWithThis;
