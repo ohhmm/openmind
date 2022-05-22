@@ -1,0 +1,4 @@
+#ECHO BUILDPLATFORM is $BUILDPLATFORM
+
+FROM --platform=$BUILDPLATFORM ohhmm/openmind AS build
+

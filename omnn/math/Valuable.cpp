@@ -13,14 +13,20 @@
 #include "Sum.h"
 
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
 #include <iterator>
+#include <ranges>
+#include <sstream>
 #include <string>
+#include <string_view>
 #include <stack>
 #include <map>
 #include <type_traits>
 
 #ifndef NDEBUG
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/split.hpp>
 #endif
 #include <boost/numeric/conversion/converter.hpp>
 
@@ -255,6 +261,8 @@ namespace math {
         Valuable merged;
         if (v1 == v2)
             merged = v1;
+        else if (v1 == -v2)
+            merged = v1 * constants::plus_minus_1;
         else {
             // a = 1;
             auto s = v1 + v2;
@@ -585,6 +593,23 @@ std::string Spaceless(std::string s) {
                 _2 = a_int(s).str();
                 same = _1 == _2;
 			}
+            if (!same) {
+#ifdef __APPLE__
+                using split_t = std::set<std::string>;
+#else
+                using split_t = std::set<std::string_view>;
+#endif
+                std::set<split_t> sumOfProducts1, sumOfProducts2;
+                // waiting for C++ ranges support:
+                //for(auto& sumMember : words | std::ranges::views::split(plusDelimeter)){
+                split_t sumItemsSubstrings;
+                boost::split(sumItemsSubstrings, _1, [](auto c){return c=='+';});
+//                for(auto& sumItemSubstring: sumItemsSubstrings){
+//                    split_t productItemsSubstrings;
+//                    boost::split(productItemsSubstrings, sumItemSubstring, [](auto c){return c=='*';});
+//                    sumOfProducts1.emplace(productItemsSubstrings);
+//                }
+            }
             if (!same) {
                 boost::replace_all(_1, "+-", "-");
                 boost::replace_all(_2, "+-", "-");
