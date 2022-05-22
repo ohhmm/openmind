@@ -43,6 +43,7 @@ namespace math {
     namespace constants {
     const Valuable& e = constant::e;
     const Valuable& i = constant::i;
+    const Valuable& zero = vo<0>();
     const Valuable& one = vo<1>();
     const Valuable& plus_minus_1 = 1_v^(1_v/2); // ±1
     const Valuable& pi = constant::pi;
@@ -310,6 +311,15 @@ namespace math {
             break;
         }
         default:
+#ifndef NDEBUG
+            std::stringstream ss;
+            ss << '(';
+            for (auto& v : s)
+                ss << ' ' << v;
+            ss << " )";
+            std::cout << ss.str();
+            LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << ss.str());
+#endif
             IMPLEMENT // implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'
         }
         
@@ -1185,6 +1195,14 @@ std::string Spaceless(std::string s) {
         return z;
     }
 
+	int Valuable::Sign() const {
+        if (exp)
+            return exp->Sign();
+        else {
+            LOG_AND_IMPLEMENT("sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt");
+        }
+	}
+
     bool Valuable::operator<(const Valuable& v) const
     {
         if(exp)
@@ -1213,6 +1231,8 @@ std::string Spaceless(std::string s) {
 
     bool Valuable::IsConstant() const { return exp && exp->IsConstant(); }
     bool Valuable::IsInt() const { return exp && exp->IsInt(); }
+    bool Valuable::IsRadical() const { return exp && exp->IsRadical(); }
+    bool Valuable::IsPrincipalSurd() const { return exp && exp->IsPrincipalSurd(); }
     bool Valuable::IsFraction() const { return exp && exp->IsFraction(); }
     bool Valuable::IsSimpleFraction() const { return exp && exp->IsSimpleFraction(); }
     bool Valuable::IsFormula() const { return exp && exp->IsFormula(); }

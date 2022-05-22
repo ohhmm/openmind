@@ -29,6 +29,10 @@ BOOST_AUTO_TEST_CASE(Exponentiation_tests)
     _1 = _1(x);
     _2 = ((-1)^(1_v/2))*2;
     BOOST_TEST(_1==_2);
+
+	_1 = constants::i ^ constants::zero;
+    _2 = constants::one;
+    BOOST_TEST(_1==_2);
 }
 
 BOOST_AUTO_TEST_CASE(Compare_test)
@@ -59,7 +63,7 @@ BOOST_AUTO_TEST_CASE(Sqrt_test)
     BOOST_TEST(c);
     BOOST_TEST(e != 5);
     // https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
-    e = a.Sqrt();
+    e = a.Sqrt(); // Check that the middle term is two times the product of the numbers being squared in the first term and third term.
     BOOST_TEST(e == 5);
 }
 

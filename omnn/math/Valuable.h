@@ -70,6 +70,7 @@ namespace math {
 namespace constants {
 extern const Valuable& e;
 extern const Valuable& i;
+extern const Valuable& zero;
 extern const Valuable& one;
 extern const Valuable& plus_minus_1; // ±1
 extern const Valuable& infinity;
@@ -322,6 +323,8 @@ public:
     virtual bool IsConstant() const;
     virtual bool IsInt() const;
     virtual bool IsFraction() const;
+    virtual bool IsRadical() const;
+    virtual bool IsPrincipalSurd() const;
     virtual bool IsSimpleFraction() const;
     virtual bool IsFormula() const;
     virtual bool IsExponentiation() const;
@@ -395,6 +398,7 @@ public:
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
     using ranges_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
     ranges_t get_zeros_zones(const Variable& v, solutions_t& some) const;
+    virtual int Sign() const;
 
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     friend std::wostream& operator<<(std::wostream& out, const Valuable& obj);
