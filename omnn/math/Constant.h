@@ -99,7 +99,7 @@ template <class Chld>
         static std::map<std::string_view, Valuable> SerializationNamesMap;
 
     public:
-        ConstNameAdder(const std::string_view& name, const Valuable& obj);
+        constexpr ConstNameAdder(const std::string_view& name, const Valuable& obj);
         static constexpr auto& GetConstantNamesMap() { return SerializationNamesMap; }
     };
     } // namespace constants
