@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
+
 set(PRODUCT_NAME OpenMind)
 project(${PRODUCT_NAME} CXX)
 enable_language(CXX)
@@ -39,6 +40,11 @@ option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.79.0 CACHE VERSION "Boost library version to use" FORCE)
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
+
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
+    message("Using Edit&Continue policy")
+    cmake_policy(SET CMP0138 NEW)
+endif()
 
 if(OPENMIND_PRIME_TABLE STREQUAL Boost)
 	add_definitions(-DOPENMIND_PRIME_TABLE_BOOST)
@@ -318,6 +324,7 @@ function(apply_target_commons this_target)
 	if(MSVC)
 		target_compile_definitions(${this_target} PUBLIC
 			MSVC_CONSTEXPR=constexpr
+			NO_MSVC_CONSTEXPR=
 			)
 		target_compile_options(${this_target} PUBLIC
 			/bigobj
@@ -334,6 +341,7 @@ function(apply_target_commons this_target)
 	else()
 		target_compile_definitions(${this_target} PUBLIC
 			MSVC_CONSTEXPR=
+			NO_MSVC_CONSTEXPR=constexpr
 			)
 	endif()
 
