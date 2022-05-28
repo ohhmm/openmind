@@ -47,14 +47,20 @@ namespace math {
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
     namespace constants {
-    const Valuable& e = constant::e;
-    const Valuable& i = constant::i;
-    const Valuable& zero = vo<0>();
-    const Valuable& one = vo<1>();
+    constexpr const Valuable& e = constant::e;
+    constexpr const Valuable& i = constant::i;
+    constexpr const Valuable& zero = vo<0>();
+    constexpr const Valuable& one = vo<1>();
+    constexpr const Valuable& two = vo<2>();
+#ifdef MSVC
+    constexpr const Valuable& half = vf<.5>();
+#else
+    const Valuable& half = 1_v / 2;
+#endif
     const Valuable& plus_minus_1 = 1_v^(1_v/2); // ±1
-    const Valuable& pi = constant::pi;
-    const Valuable& infinity = Infinity::GlobalObject;
-    const Valuable& minfinity = MInfinity::GlobalObject;
+    constexpr const Valuable& pi = constant::pi;
+    constexpr const Valuable& infinity = Infinity::GlobalObject;
+    constexpr const Valuable& minfinity = MInfinity::GlobalObject;
     const Variable& integration_result_constant = "integration_result_constant"_va;
     } // namespace constants
 
@@ -242,6 +248,8 @@ namespace math {
         Valuable merged;
         if(v1 == v2)
             merged = v1;
+        else if (v1 == -v2)
+            merged = v1 * constants::plus_minus_1;
         else {
             // a = 1;
             auto s = v1 + v2;
@@ -251,27 +259,16 @@ namespace math {
             else{
                 auto c = v1 * v2;
                 auto d = s.Sq() - c*4;
-                merged = ((d ^ (1_v / 2)) + s) / 2;
+                merged = (Exponentiation(d, constants::half) + s) / constants::two;
             }
         }
         return merged;
     }
 
+	// FIXME : generates six distiinct results instead of expected three distinct-value equivalent
 	Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
-        Valuable merged;
-        if (v1 == v2)
-            merged = v1;
-        else if (v1 == -v2)
-            merged = v1 * constants::plus_minus_1;
-        else {
-            // a = 1;
-            auto s = v1 + v2;
-            // b = -s;
-            auto c = v1 * v2;
-            auto d = s.Sq() - c * 4;
-            merged = (Exponentiation(d, 1_v / 2) + s) / 2;
-        }
-        return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation 
+        auto merged = MergeOr(v1, v2);
+        return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation https://github.com/ohhmm/openmind/issues/41
     }
 
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {

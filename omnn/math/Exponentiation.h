@@ -13,14 +13,20 @@ class Exponentiation
 	using base = DuoValDescendant<Exponentiation>;
     vars_cont_t v;
     void InitVars();
+
 protected:
     Valuable& ebase() { return base::_1; }
     Valuable& eexp() { return base::_2; }
     std::ostream& print_sign(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override;
+
 public:
+    using base::base;
+    Exponentiation(const Valuable& base, const Valuable& exponentiation);
+
     bool IsExponentiation() const override { return true; }
     bool IsVaExp() const override { return ebase().IsVa(); }
+
     YesNoMaybe IsMultival() const override;
     void Values(const std::function<bool(const Valuable&)>&) const override;
     const Valuable& getBase() const { return _1; }
@@ -61,9 +67,6 @@ public:
     bool operator <(const Valuable& v) const override;
     void optimize() override;
     
-    using base::base;
-    Exponentiation(const Valuable& base, const Valuable& exponentiation);
-
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
     bool IsComesBefore(const Valuable& v) const override;

@@ -66,6 +66,7 @@ public:
 #include <spawn.h>
 #include <signal.h>
 #include <stdio.h>
+#include <cstdlib>
 
 class RunPosixProcess: public RunProcess {
 	pid_t pid;
@@ -77,9 +78,13 @@ public:
 	}
 
 	bool Invoke() {
-		int status;
 		fflush(NULL);
-		status = posix_spawn(&pid, cmd_.c_str(), nullptr, nullptr, nullptr, nullptr);
+		auto cmd = const_cast<char * const>(cmd_.c_str());
+		char * const args[] = {
+			cmd,
+			nullptr
+		};
+		auto status = posix_spawn(&pid, cmd, nullptr, nullptr, args, nullptr);
 		if (status == 0) {
 			printf("Child id: %i\n", pid);
 			fflush(NULL);
