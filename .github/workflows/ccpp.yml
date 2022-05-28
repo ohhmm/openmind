@@ -5,7 +5,7 @@ on: [push]
 jobs:
   build:
 
-    runs-on: ../.devcontainer/Dockerfile
+    runs-on: .devcontainer/Dockerfile
     
     steps:
     - uses: actions/checkout@v1

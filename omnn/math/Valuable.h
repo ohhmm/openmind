@@ -72,6 +72,8 @@ extern const Valuable& e;
 extern const Valuable& i;
 extern const Valuable& zero;
 extern const Valuable& one;
+extern const Valuable& two;
+extern const Valuable& half;
 extern const Valuable& plus_minus_1; // ±1
 extern const Valuable& infinity;
 extern const Valuable& minfinity;
@@ -262,7 +264,7 @@ public:
     : exp(t.Move())
     { }
 
-    Valuable(Valuable&&) = default;
+    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
     Valuable();
     Valuable(double d);
 
@@ -541,6 +543,21 @@ public:
 
 template <const unsigned long long I>
 const Valuable vo<I>::val = I;
+
+
+template <const double I>
+class vf {
+    static const Valuable val;
+public:
+    constexpr operator const Valuable& () const {
+        return val;
+    }
+    static const Valuable& get() { return val; }
+};
+
+template <const double I>
+const Valuable vf<I>::val = I;
+
 
 }}
 

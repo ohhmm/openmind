@@ -22,7 +22,7 @@ public:
 	bool IsRadical() const override { return true; }
     bool IsPrincipalSurd() const override { return true; }
 
-	std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
+	std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
 
 	void optimize() override;
 };

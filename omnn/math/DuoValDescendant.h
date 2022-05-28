@@ -84,8 +84,10 @@ namespace omnn::math {
         
         using base::base;
 
-        DuoValDescendant(const Valuable& v1, const Valuable& v2)
-        : _1(v1), _2(v2)
+        template <class T1, class T2>
+        constexpr DuoValDescendant(T1&& v1, T2&& v2)
+        : _1(std::forward<T1>(v1))
+        , _2(std::forward<T2>(v2))
         {
             Valuable::hash = _1.Hash() ^ _2.Hash();
             Valuable::maxVaExp = Chld::getMaxVaExp(_1, _2);
