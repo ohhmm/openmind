@@ -500,8 +500,10 @@ macro(lib)
     file(GLOB src *.cpp *.c *.CC *.cc)
     add_library(${this_target} ${src} ${headers})
 	APPLY_TARGET_COMMONS(${this_target})
+	if(CMAKE_CXX_STANDARD)
+		set_target_properties(${this_target} PROPERTIES CXX_STANDARD ${CMAKE_CXX_STANDARD})
+	endif(CMAKE_CXX_STANDARD)
     set_target_properties(${this_target} PROPERTIES
-		CXX_STANDARD ${CMAKE_CXX_STANDARD}
 		FOLDER "libs"
 		PUBLIC_HEADER "${headers}"
 		)

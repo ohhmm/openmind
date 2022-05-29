@@ -117,12 +117,14 @@ public:
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result
     Valuable& operator^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
+
+    Valuable Sign() const override;
     bool operator <(const Valuable& v) const override;
     friend bool operator<(const Integer& _1, const Integer& _2) { return _1.arbitrary < _2.arbitrary; }
     friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
     friend bool operator<(const Integer& _1, int _2) { return _1.arbitrary < _2; }
     bool operator ==(const Valuable& v) const override;
-    // virtual convert operators
+
     explicit operator int() const override;
     explicit operator a_int() const override;
     explicit operator uint64_t() const override;

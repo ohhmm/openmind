@@ -35,14 +35,14 @@ std::ostream& PrincipalSurd::code(std::ostream& out) const {
 
 std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valuable& v) const {
     std::pair<bool, Valuable> is;
-	is.first = v.IsRadical();
+    is.first = v.IsRadical();
     if (is.first) {
         auto& surd = v.as<PrincipalSurd>();
         is.first = _1 == surd._1;
         if (is.first) {
             if (_2 == surd._2 && _2 == 2) {
                 is.second = _1;
-}
+            }
         }
     }
     return is;
@@ -53,5 +53,28 @@ void PrincipalSurd::optimize() {
         Become(Product{constants::i, {PrincipalSurd{-_1, _2}}});
         return;
     }
+
+    if(index()==constants::one){
+        Become(std::move(radicand()));
+        return;
+    }
 }
 
+Valuable& PrincipalSurd::sq() {
+    index() /= 2;
+    optimized = {};
+    optimize();
+    return *this;
+}
+
+Valuable PrincipalSurd::Sqrt() const {
+    return PrincipalSurd{_1, _2 * 2};
+}
+
+Valuable PrincipalSurd::Sign() const {
+    if(Radicand().IsInt())
+        return Radicand().Sign();
+    else{
+        LOG_AND_IMPLEMENT(*this << " . Sign()");
+    }
+}

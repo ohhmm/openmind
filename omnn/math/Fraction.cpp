@@ -390,10 +390,10 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         if(v.IsFraction()){
             auto& vf = v.as<Fraction>();
             auto& vfdn = vf.denominator();
-            if (vfdn == 2_v)
+            if (vfdn == constants::two)
                 ;
-            else if (vfdn.bit(0_v)!=1_v) {
-                IMPLEMENT
+            else if (vfdn.bit(constants::zero) != constants::one) {
+                return Become(Exponentiation(*this, v));
             }
         }
         numerator() ^= v;

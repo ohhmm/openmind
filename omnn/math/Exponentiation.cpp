@@ -529,6 +529,8 @@ namespace math {
             ++eexp();
             optimized = {};
             optimize();
+        } else if (v == constants::one) {
+            is = true;
         } else if (!FindVa() && IsMultival() == YesNoMaybe::Yes && !v.FindVa()) {
             solutions_t values;
             for (auto& value : Distinct()) {
@@ -540,7 +542,7 @@ namespace math {
 				}
                 values.emplace(std::move(extract));
             }
-            Become(Valuable(values));
+            Become(Valuable(std::move(values)));
         } else if (v.IsExponentiation()) {
             auto& vexpo = v.as<Exponentiation>();
             is = vexpo.getBase() == getBase();
@@ -575,7 +577,7 @@ namespace math {
     {
         std::pair<bool,Valuable> is, expSumSimplifiable = {};
         is.first = v == getBase()
-            && (expSumSimplifiable = vo<1>::get().IsSummationSimplifiable(eexp())).first;
+            && (expSumSimplifiable = eexp().IsSummationSimplifiable(constants::one)).first;
         if (is.first) {
             is.second = getBase() ^ expSumSimplifiable.second;
         } else if (v.IsExponentiation()) {
@@ -585,6 +587,38 @@ namespace math {
                 is.second = ebase() ^ (eexp() + vexpo.eexp());
             } // TODO : else if ? (base^2 == v.base)
         } else if (v.IsSimple()) {
+            auto& ee = getExponentiation();
+            //is = v.IsExponentiationSimplifiable(ee);  // TODO: Implement IsExponentiationSimplifiable
+            // FIXME: Until IsExponentiationSimplifiable ready:
+            if (ee.IsSimpleFraction()) {
+                is.second = v ^ ee.as<Fraction>().Reciprocal(); // v.IsExponentiationSimplifiable(ee)
+                is.first = is.second.MultiplyIfSimplifiable(getBase());
+                if(is.first){
+                    auto copy = *this;
+                    copy.updateBase(std::move(is.second));
+                    is.second = copy;
+                }
+            }
+            else if (ee == constants::minus_1)
+            {
+                is.second = v ^ constants::minus_1; // v.IsExponentiationSimplifiable(ee)
+                is.first = is.second.MultiplyIfSimplifiable(getBase());
+                if(is.first){
+                    auto copy = *this;
+                    copy.updateBase(std::move(is.second));
+                    is.second = copy;
+                }
+            }
+            else if (ee.IsInt() && (ee > constants::zero)) // TODO: ee < 0 too
+            {
+//                is.second = v ^ (ee ^ constants::minus_1); // v.IsExponentiationSimplifiable(ee)
+//                is.first = is.second.MultiplyIfSimplifiable(getBase());
+//                if(is.first){
+//                    auto copy = *this;
+//                    copy.updateBase(std::move(is.second));
+//                    is.second = copy;
+//                }
+            }
 //            if (getBase().IsVa()) {
 //            } else if (getExponentiation().IsSimpleFraction()) {
 //                auto
@@ -662,7 +696,7 @@ namespace math {
                 return true;
             });
             
-            return Become(Valuable(vals));
+            return Become(Valuable(std::move(vals)));
         }
         else if (v.IsExponentiation())
         {
@@ -1017,14 +1051,16 @@ namespace math {
 //                auto branchesSz = boost::multiprecision::msb(denom); // the largest bit
 //                branches.reserve(branchesSz);
 //                ...
-                if(!ebase().IsInt()){
-                    if (!ebase().FindVa() && ebase().IsMultival() == YesNoMaybe::Yes) {
+                auto& exponentiationBase = ebase();
+                if(!exponentiationBase.IsSimple()){
+                    if (!exponentiationBase.FindVa() && exponentiationBase.IsMultival() == YesNoMaybe::Yes) {
                         for (auto&& branch : ebase().Distinct()) {
                             auto branchDistinct = (branch ^ eexp()).Distinct();
                             branches.insert(branchDistinct.begin(), branchDistinct.end());
                         }
-                    } else
-                        LOG_AND_IMPLEMENT("Distinct for " << str());
+                    } else {
+                        LOG_AND_IMPLEMENT("Distinct for " << *this);
+                    }
                 } else {
                     auto b = ebase() ^ f.numerator();
                     auto d = denom;

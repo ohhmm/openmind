@@ -74,6 +74,7 @@ extern const Valuable& zero;
 extern const Valuable& one;
 extern const Valuable& two;
 extern const Valuable& half;
+extern const Valuable& minus_1;
 extern const Valuable& plus_minus_1; // ±1
 extern const Valuable& infinity;
 extern const Valuable& minfinity;
@@ -356,8 +357,8 @@ public:
 
     virtual a_int Complexity() const;
     virtual Valuable& sq();
-
-    Valuable Sq() const;
+    virtual Valuable Sq() const;
+    virtual Valuable Sign() const;
     virtual Valuable abs() const;
 	virtual Valuable Cos() const;
 	virtual Valuable Sin() const;
@@ -375,7 +376,7 @@ public:
     static Valuable MergeOr(const Valuable&, const Valuable&); /// disjunctive merge algorithm deduced from square equation solutions formula, works for integers
     static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&); /// algorithm is to be deduced from cubic equation solutions formula
     static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&, const Valuable&); /// double merge
-    explicit Valuable(const solutions_t&);
+    explicit Valuable(solutions_t&&);
     virtual Valuable operator()(const Variable&) const;
     virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;
     bool IsUnivariable() const;
@@ -387,8 +388,8 @@ public:
     solutions_t IntSolutions() const;
     solutions_t Solutions(const Variable& v) const;
     solutions_t IntSolutions(const Variable& v) const;
-    Valuable::solutions_t GetIntegerSolution() const;
-    virtual Valuable::solutions_t GetIntegerSolution(const Variable& va) const;
+    solutions_t GetIntegerSolution() const;
+    virtual solutions_t GetIntegerSolution(const Variable& va) const;
     bool Test(const Variable& va, const Valuable& v) const;
 
     using extrenum_t = std::pair<Valuable, // extrema: value = x for f'(x) == 0, points where function is changing direction
@@ -400,7 +401,6 @@ public:
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
     using ranges_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
     ranges_t get_zeros_zones(const Variable& v, solutions_t& some) const;
-    virtual int Sign() const;
 
     friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
     friend std::wostream& operator<<(std::wostream& out, const Valuable& obj);
@@ -531,7 +531,7 @@ const T& Valuable::as() const {
     return static_cast<const T&>(the);
 }
 
-template <const unsigned long long I>
+template <const long long I>
 class vo {
     static const Valuable val;
 public:
@@ -541,7 +541,7 @@ public:
     static const Valuable& get() { return val; }
 };
 
-template <const unsigned long long I>
+template <const long long I>
 const Valuable vo<I>::val = I;
 
 
