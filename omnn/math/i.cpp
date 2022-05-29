@@ -21,5 +21,19 @@ bool MinusOneSq::MultiplyIfSimplifiable(const Valuable& v)
     auto multiply = v.Is_i();
     if (multiply)
         Become(-1_v);
+    else{
+        auto is = v.IsMultiplicationSimplifiable(*this);
+        multiply = is.first;
+        if(multiply)
+            Become(std::move(is.second));
+    }
     return multiply;
+}
+
+Valuable MinusOneSq::Sq() const {
+    return Integer(-1);
+}
+
+Valuable& MinusOneSq::sq() {
+    return Become(Sq());
 }

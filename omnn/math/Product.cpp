@@ -606,7 +606,7 @@ namespace math {
             for (auto& m : Distinct())
                 for (auto& item : v.Distinct())
                     s.emplace(m + item);
-            return Become(Valuable(s));
+            return Become(Valuable(std::move(s)));
         }
         if(v.IsProduct()){
             auto& vAsP = v.as<Product>();
@@ -937,7 +937,7 @@ namespace math {
                         for (auto& m : it->Distinct())
                             for (auto& item : v.Distinct())
                                 s.emplace(m / item);
-                        Update(it, Valuable(s));
+                        Update(it, Valuable(std::move(s)));
                         optimize();
                         return *this;
                     } else {
@@ -1000,12 +1000,44 @@ namespace math {
         return *this;
     }
 
-	Valuable& Product::operator %=(const Valuable& v)
-	{
-		return base::operator %=(v);
-	}
+    Valuable& Product::operator %=(const Valuable& v)
+    {
+        return base::operator %=(v);
+    }
 
-	namespace {
+    Valuable Product::Sign() const {
+        Product memberSignsProduct;
+        for(auto& m: members){
+            memberSignsProduct.Add(m.Sign());
+        }
+        Valuable sign(std::move(memberSignsProduct));
+        sign.optimize();
+        return sign;
+    }
+
+    bool Product::operator<(const Valuable& v) const{
+        // Bool is; // TODO: Implement Bool type which stores either bool or Valuable that calculates the bool when it is not yet deducible
+        auto noVars = std::all_of(begin(), end(), [&](auto& m){
+            return m.FindVa() == nullptr;
+        });
+        auto isLess = noVars;
+        if(noVars){
+            auto sign = Sign();
+            auto vSign = v.Sign();
+            isLess = sign < vSign;
+            if(!isLess){
+                if (sign > vSign) {
+                } else { // same signs
+                    LOG_AND_IMPLEMENT(*this << "   <   " << v);
+                }
+            }
+        } else {
+            LOG_AND_IMPLEMENT(*this << "   <   " << v);
+        }
+        return isLess;
+    }
+
+    namespace {
         constexpr std::hash<a_int> Hasher;
         const size_t Hash1 = Hasher(1);
     }

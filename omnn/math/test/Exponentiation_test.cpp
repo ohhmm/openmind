@@ -21,9 +21,10 @@ BOOST_AUTO_TEST_CASE(Exponentiation_tests)
     _2 = 4;
     _2 *= -2_v^(1_v/2);
     BOOST_TEST(_1==_2);
-    _1 = -1_v*((-4_v)^(1_v/2))*((-16_v)^((1_v/2)));
-    _2 = 8;
+    _1 = -1_v*(-4_v^constants::half)*(-16^constants::half);
+    _2 = constants::plus_minus_1 * 8 * constants::i;
     BOOST_TEST(_1==_2);
+    auto d1 = _1.Distinct();
     
     _1 = (((x-2)^2)+((x+2)^2));
     _1 = _1(x);
@@ -33,6 +34,9 @@ BOOST_AUTO_TEST_CASE(Exponentiation_tests)
 	_1 = constants::i ^ constants::zero;
     _2 = constants::one;
     BOOST_TEST(_1==_2);
+    
+    _1 = constants::plus_minus_1;
+    _1 *= constants::half;
 }
 
 BOOST_AUTO_TEST_CASE(Compare_test)
@@ -53,6 +57,15 @@ BOOST_AUTO_TEST_CASE(Compare_test)
     _2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
     c = _1 != _2;
     BOOST_TEST(c);
+}
+
+BOOST_AUTO_TEST_CASE(Exponentiation_Simplification_tests)
+{
+    DECL_VA(x);
+    auto _1 = x*((-1*(x+100))^-1);
+    _1 *= -1;
+    auto _2 = x/(x+100);
+    BOOST_TEST(_1==_2);
 }
 
 BOOST_AUTO_TEST_CASE(Sqrt_test)

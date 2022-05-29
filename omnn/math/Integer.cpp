@@ -350,26 +350,29 @@ namespace math {
         // test : 50_v.GCE(2) == 5_v
         //        32_v.GCE(2) == 4_v
         //  which is needed to be powered into 2 to get gretest devisor that may be powered into 2 to get devisor of the initial value
-        if(e==1_v)
+        if (e == constants::one)
             return {*this,*this};
 
         auto xFactors = Facts();
         std::sort(xFactors.begin(), xFactors.end());
         while(xFactors.size() > 1) {
             auto&& xFactor = std::move(xFactors.back());
-            if(xFactor > 1_v) {
-                if(e == 2_v){
+            if(xFactor > constants::one) {
+                if(e == constants::two){
                     Valuable v = boost::multiprecision::sqrt(xFactor.ca());
                     if((v^e) == xFactor)
-                        return {v,xFactor};
-                }else{
+                        return {std::move(v),std::move(xFactor)};
+                } else if (e < constants::zero) {
+                    auto me = -e;
+                    IMPLEMENT
+                } else {
                     IMPLEMENT
 //                    auto v = boost::multiprecision::pow(xFactor, 1/e);
                 }
             }
             xFactors.pop_back();
         }
-        return {1_v,1_v};
+        return {constants::one, constants::one};
     }
 
     Valuable& Integer::operator^=(const Valuable& v)
@@ -627,6 +630,10 @@ namespace math {
         boost::archive::binary_oarchive a(s);
         a & arbitrary;
         return f;
+    }
+
+    Valuable Integer::Sign() const {
+        return arbitrary.sign();
     }
     
     bool Integer::operator <(const Valuable& v) const

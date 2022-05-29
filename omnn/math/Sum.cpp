@@ -1273,7 +1273,7 @@ namespace
 #endif
             
             if (solutions.size()) {
-                return Valuable(solutions);
+                return Valuable(std::move(solutions));
             }
         }
         }
@@ -1359,7 +1359,7 @@ namespace
             return todo(va, _);
         }
 
-        return Valuable(solutions);
+        return Valuable(std::move(solutions));
     }
     
     bool Sum::IsPowerX(const std::vector<Valuable>& coefficients){
@@ -1389,7 +1389,7 @@ namespace
 #ifndef NDEBUG
             grade = FillPolyCoeff(coefs, va);
 #endif
-            return Valuable(s);
+            return Valuable(std::move(s));
         }
 
         if(IsPowerX(coefs)){
@@ -1514,7 +1514,7 @@ namespace
                     }
                     if(checkCached)
                         return checkCached;
-                    return Valuable(s);
+                    return Valuable(std::move(s));
                 }
                 else
                 {
@@ -1542,7 +1542,7 @@ namespace
         if(checkCached)
             return checkCached;
         
-        Valuable pluralSolutionsExpression(s);
+        Valuable pluralSolutionsExpression(std::move(s));
         if (checkCached.NotInCache())
             DbSumSolutionsOptimizedCache.AsyncSet(str(), pluralSolutionsExpression.str());
         return pluralSolutionsExpression;

@@ -57,6 +57,7 @@ namespace math {
 #else
     const Valuable& half = 1_v / 2;
 #endif
+    constexpr const Valuable& minus_1 = vo<-1>();
     const Valuable& plus_minus_1 = 1_v^(1_v/2); // ±1
     constexpr const Valuable& pi = constant::pi;
     constexpr const Valuable& infinity = Infinity::GlobalObject;
@@ -255,7 +256,7 @@ namespace math {
             auto s = v1 + v2;
             // b = -s;
             if(s==0)
-                merged = std::max(v1, v2) * constants::plus_minus_1;
+                merged = (!v1.IsProduct() ? v1 : v2) * constants::plus_minus_1;
             else{
                 auto c = v1 * v2;
                 auto d = s.Sq() - c*4;
@@ -288,7 +289,7 @@ namespace math {
         return ((v1+v2)+((-1_v)^(1_v/2))*(v1-v2))/2;
     }
 
-    Valuable::Valuable(const solutions_t& s)
+    Valuable::Valuable(solutions_t&& s)
     {
         auto it = s.begin();
         switch (s.size()) {
@@ -329,19 +330,21 @@ namespace math {
         }
         
 #ifndef NDEBUG
-        auto distinct = Distinct();
-        if (distinct != s) {
-            std::stringstream ss;
-            ss << '(';
-            for (auto& v : s)
-                ss << ' ' << v;
-            ss << " ) <> (";
-            for (auto& v : distinct)
-                ss << ' ' << v;
-            ss << " )";
-            std::cout << ss.str();
-            distinct = Distinct();
-            LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+        if(s.size() > 1){
+            auto distinct = Distinct();
+            if (distinct != s) {
+                std::stringstream ss;
+                ss << '(';
+                for (auto& v : s)
+                    ss << ' ' << v;
+                ss << " ) <> (";
+                for (auto& v : distinct)
+                    ss << ' ' << v;
+                ss << " )";
+                std::cout << ss.str();
+                distinct = Distinct();
+                LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+            }
         }
 #endif
     }
@@ -1217,11 +1220,11 @@ std::string Spaceless(std::string s) {
         return z;
     }
 
-	int Valuable::Sign() const {
+	Valuable Valuable::Sign() const {
         if (exp)
             return exp->Sign();
         else {
-            LOG_AND_IMPLEMENT("sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt");
+            LOG_AND_IMPLEMENT("Implement Sign determination for " << *this << ", sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt");
         }
 	}
 

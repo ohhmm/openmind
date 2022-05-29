@@ -24,6 +24,9 @@ namespace omnn::math {
 
         std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable &v) const override;
         bool MultiplyIfSimplifiable(const Valuable& v) override;
+        
+        Valuable& sq() override;
+        Valuable Sq() const override;
     };
 
     namespace constant {
