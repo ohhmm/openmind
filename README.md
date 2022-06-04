@@ -25,7 +25,7 @@ Compilation:
 
   Other package managers:
 
-    sudo dnf install git-gui cmake-gui clang boost-devel boost-static leveldb-devel libxcb-devel libX11-devel libXScrnSaver-devel ocl-icd-devel
+    sudo dnf install -y git-gui cmake-gui clang boost-devel boost-static leveldb-devel libxcb-devel libX11-devel libXScrnSaver-devel ocl-icd-devel
 
   Windows VSCode:
 
