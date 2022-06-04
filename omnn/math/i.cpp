@@ -8,6 +8,17 @@ using namespace omnn::math;
 
 constinit std::string_view MinusOneSq::SerializationName = "i";
 
+std::pair<bool, Valuable> MinusOneSq::IsSummationSimplifiable(const Valuable& v) const {
+    std::pair<bool, Valuable> is = {v.Is_i(), {}}; 
+	if (is.first) {
+        is.second = v * 2;
+    } else if (v.IsInt() || v.IsConstant()) {
+    } else {
+        is = v.IsSummationSimplifiable(*this);
+    }
+    return is;
+}
+
 std::pair<bool, Valuable> MinusOneSq::IsMultiplicationSimplifiable(const Valuable &v) const {
     std::pair<bool, Valuable> is;
     is.first = v.Is_i();

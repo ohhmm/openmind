@@ -4,7 +4,7 @@
 #define BOOST_TEST_MODULE Stasis test
 #include <boost/test/unit_test.hpp>
 
-#include "Variable.h"
+#include "System.h"
 
 
 using namespace omnn::math;
@@ -17,6 +17,7 @@ BOOST_AUTO_TEST_CASE(Stasis
 {
     constexpr auto Sz = 5;
     constexpr auto m = (Sz*(Sz*Sz+1))/2;
+    constexpr auto mm = -m; 
     auto& x = "x"_va;
     auto& y = "y"_va;
     auto& v = "v"_va;
@@ -25,49 +26,48 @@ BOOST_AUTO_TEST_CASE(Stasis
         return x.Equals(xx).sq() + y.Equals(yy).sq() + v.Equals(vv).sq();
     };
 
-    auto world = at(0,0,1);
+    System world;
+	world << at(0, 0, 1);
 
     auto getat = [&](const Valuable& xx, const Valuable& yy) {
         /*constexpr*/static Variable t = "t"_va;
         return at(xx,yy,t)(t);
     };
 
-    auto sumd0 = 0_v, sumd1 = 0_v;
+    Sum sumd0{mm}, sumd1{mm};
     Valuable::optimizations = {};
     for (auto xx=Sz; xx--;) {
-        auto sumx=0_v, sumy=0_v;
+        Sum sumx{mm}, sumy{mm};
         for (auto yy=Sz; yy--; ) {
-            sumx += getat(xx,yy);
-            sumy += getat(xx,yy);
+            sumx.Add(getat(xx,yy));
+            sumy.Add(getat(xx,yy));
         }
-        world += sumx.Equals(m).sq();
-        world += sumy.Equals(m).sq();
-        sumd0 += getat(xx,xx);
-        sumd1 += getat(Sz-xx, Sz-xx);
+        world << sumx;
+        world << sumy;
+        sumd0.Add(getat(xx,xx));
+        sumd1.Add(getat(Sz-xx, Sz-xx));
     }
-    world += sumd0.Equals(m).sq();
-    world += sumd1.Equals(m).sq();
+    world << sumd0;
+    world << sumd1;
 
     for (auto xx=Sz; xx--;) {
+        auto copy = world;
+        copy.Eval(x, xx);
         for (auto yy=Sz; yy--; ) {
-            auto co = world;
-            co.eval({{x,xx},{y,yy}});
-            Valuable::optimizations = true;
-            co.optimize();
-            co.SetView(Valuable::View::Solving);
-            co.optimize();
-            Valuable::optimizations = {};
-            auto s = co(v);
+            auto co = copy;
+            co.Eval(y, yy);
+            auto xyValues = co.Solve(v);
+            for (auto& s : xyValues) {
             if (!s.IsInt()
 //                s.size()!=1
                 ) {
                 IMPLEMENT
             }else{
-                std::cout
-                    << s
+                    std::cout << s
 //                    << *s.begin()
                     << ' ';
             }
+        }
         }
         std::cout << std::endl;
     }
