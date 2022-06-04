@@ -216,7 +216,7 @@ IF (Boost_FOUND)
     message("Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 ENDIF()
 
-if (${OPENMIND_BUILD_TESTS})
+if (OPENMIND_BUILD_TESTS)
     enable_testing()
 	if(NOT MSVC)
 		if(NOT APPLE)
@@ -323,8 +323,10 @@ function(apply_target_commons this_target)
 		)
 	if(MSVC)
 		target_compile_definitions(${this_target} PUBLIC
+			APPLE_CONSTEXPR=
 			MSVC_CONSTEXPR=constexpr
 			NO_MSVC_CONSTEXPR=
+			MSVC
 			)
 		target_compile_options(${this_target} PUBLIC
 			/bigobj
@@ -343,6 +345,15 @@ function(apply_target_commons this_target)
 			MSVC_CONSTEXPR=
 			NO_MSVC_CONSTEXPR=constexpr
 			)
+		if(APPLE)
+			target_compile_definitions(${this_target} PUBLIC
+				APPLE_CONSTEXPR=constexpr
+				)
+		else()
+			target_compile_definitions(${this_target} PUBLIC
+				APPLE_CONSTEXPR=
+				)
+		endif()
 	endif()
 
 	if(Boost_INCLUDE_DIR)
@@ -421,7 +432,12 @@ function(test)
                 add_dependencies(${TEST_NAME} ${tg})
             endif()
         endforeach()
-	    add_test(NAME ${TEST_NAME} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
+		
+		file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
+	    add_test(NAME ${TEST_NAME}
+            COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db
+	    )
 	    if(NOT "${dep_on_targets}" STREQUAL "")
 	    	message("making ${TEST_NAME} depend on ${dep_on_targets}")
 			add_dependencies(${TEST_NAME} ${this_target} ${dep_on_targets})

@@ -82,7 +82,10 @@ bool System::Add(const Valuable& v)
 {
     auto _ = v;
     _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
+    {
+        //Valuable::OptimizeOn o;
     _.optimize();
+    }
     auto isNew = _ != 0_v &&
 #ifndef __APPLE__
         std::find(std::execution::par, std::begin(equs), std::end(equs), _) == equs.end()
@@ -93,10 +96,10 @@ bool System::Add(const Valuable& v)
 #endif
 
     if (isNew) {
-        auto vars = v.Vars();
+        auto vars = _.Vars();
         if(vars.size() == 1){
             auto& va = *vars.begin();
-            vEs[va][{}].emplace(v(va));
+            vEs[va][{}].emplace(_(va));
         } 
 
         equs.emplace(_);
