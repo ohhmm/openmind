@@ -1382,12 +1382,14 @@ namespace
         std::vector<Valuable> coefs;
         auto grade = FillPolyCoeff(coefs, va);
         if (coefs.size() != grade+1){
-            grade = FillPolyCoeff(coefs, va);
+#ifndef NDEBUG
+            // grade = FillPolyCoeff(coefs, va);
+#endif
             IMPLEMENT
         }
         if(grade==0){
 #ifndef NDEBUG
-            grade = FillPolyCoeff(coefs, va);
+            //grade = FillPolyCoeff(coefs, va);
 #endif
             return Valuable(std::move(s));
         }

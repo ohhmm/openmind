@@ -135,6 +135,9 @@ namespace math {
             auto foundSome = found != c.cend();
             auto has = foundSome && found->Same(v);
             if(foundSome && !has){
+#ifndef NDEBUG
+                //found->Same(v);
+#endif
                 LOG_AND_IMPLEMENT("Bug in comparator: " << this->str() << " has " << v);
             }
             return has;

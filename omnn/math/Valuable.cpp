@@ -1629,13 +1629,12 @@ std::string Spaceless(std::string s) {
                 }
                 _ = std::move(p);
             } else {
-                std::cout
-                    << "Some debug info: " << std::endl
-                    << "\t this = " << str() << std::endl
-                    << "\t getVaVal()  = " << getVaVal().str() << std::endl
-                    << "\t _ = " << _ << std::endl;
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Implement "<< Type().name() << "::varless() for " << *this
+                    << "\n\t getVaVal() = " << getVaVal()
+                    << "\n\t _ = " << _);
             }
+ 
+ 
         }
         return _;
     }
@@ -2314,8 +2313,8 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l)
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
 
-//constexpr
-boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
+APPLE_CONSTEXPR
+const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return v;
 }
 

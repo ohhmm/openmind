@@ -22,6 +22,7 @@ namespace omnn::math {
         bool operator==(const Valuable& v) const override
         { return v.Is_i(); }
 
+		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
         std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable &v) const override;
         bool MultiplyIfSimplifiable(const Valuable& v) override;
         
