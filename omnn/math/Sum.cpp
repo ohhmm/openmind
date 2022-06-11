@@ -1024,7 +1024,7 @@ namespace
         {
             if (cached)
                 return Become(cached);
-            s.Add(i->Sq());
+            s.Add(i->Sq());  // FIXME : s.Add(std::move(i->Sq()));
             for (auto j = i; ++j != e;)
             {
                 s.Add(*i * *j * 2);

@@ -45,3 +45,6 @@ RUN emerge \
     dev-libs/icu \
     -j`nproc`
     
+RUN emerge \
+    gdb \
+    -j`nproc`

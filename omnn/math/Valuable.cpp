@@ -28,6 +28,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
 #endif
+#include <boost/core/demangle.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 
 #include <rt/GC.h>
@@ -136,7 +137,7 @@ namespace math {
     {
     	if (exp)
     		return exp->Type();
-        IMPLEMENT
+        LOG_AND_IMPLEMENT(" Implement Type() for " << *this);
     }
 
     Valuable& Valuable::Become(Valuable&& i)
@@ -1436,7 +1437,7 @@ std::string Spaceless(std::string s) {
     Valuable Valuable::Sq() const
     {
         auto t = *this;
-        return t.sq();
+        return t.sq();  // FIXME : use std::move(t.sq());
     }
 
 	void Valuable::gamma() { // https://en.wikipedia.org/wiki/Gamma_function
@@ -1629,12 +1630,10 @@ std::string Spaceless(std::string s) {
                 }
                 _ = std::move(p);
             } else {
-                LOG_AND_IMPLEMENT("Implement "<< Type().name() << "::varless() for " << *this
+                LOG_AND_IMPLEMENT("Implement "<< boost::core::demangle(Type().name()) << "::varless() for " << *this
                     << "\n\t getVaVal() = " << getVaVal()
                     << "\n\t _ = " << _);
             }
- 
- 
         }
         return _;
     }

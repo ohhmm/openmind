@@ -37,6 +37,10 @@ BOOST_AUTO_TEST_CASE(Exponentiation_tests)
     
     _1 = constants::plus_minus_1;
     _1 *= constants::half;
+
+    _1 = x^3;
+    _2 = _1.getVaVal();
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Compare_test)

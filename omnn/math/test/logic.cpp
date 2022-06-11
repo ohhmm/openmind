@@ -11,7 +11,8 @@ BOOST_AUTO_TEST_CASE(logic_or_tests)
     auto x = "x"_va;
     auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
     auto ok = eq(x);
-    //TODO: BOOST_TEST(ok ==
+    auto set = Valuable({1_v, 2_v, 3_v});
+    BOOST_TEST(ok == set);
 }
 
 BOOST_AUTO_TEST_CASE(ifz_tests)

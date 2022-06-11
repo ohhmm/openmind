@@ -67,6 +67,7 @@ public:
     bool operator <(const Valuable& v) const override;
     void optimize() override;
     
+    Valuable varless() const override;
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
     bool IsComesBefore(const Valuable& v) const override;

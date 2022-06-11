@@ -412,7 +412,7 @@ public:
     virtual const vars_cont_t& getCommonVars() const;
     virtual Valuable InCommonWith(const Valuable& v) const;
     static const vars_cont_t& emptyCommonVars();
-    Valuable varless() const;
+    virtual Valuable varless() const;
     static Valuable VaVal(const vars_cont_t& v);
     Valuable getVaVal() const;
     virtual bool eval(const std::map<Variable, Valuable>& with);
@@ -544,7 +544,7 @@ public:
 template <const long long I>
 const Valuable vo<I>::val = I;
 
-
+#ifdef MSVC
 template <const double I>
 class vf {
     static const Valuable val;
@@ -557,7 +557,7 @@ public:
 
 template <const double I>
 const Valuable vf<I>::val = I;
-
+#endif
 
 }}
 
