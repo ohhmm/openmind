@@ -432,9 +432,9 @@ function(test)
                 add_dependencies(${TEST_NAME} ${tg})
             endif()
         endforeach()
-		
-		file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
-	    add_test(NAME ${TEST_NAME}
+
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
+        add_test(NAME ${TEST_NAME}
             COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db
 	    )

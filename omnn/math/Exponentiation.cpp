@@ -66,6 +66,12 @@ namespace math {
         return getMaxVaExp(getBase(), getExponentiation());
     }
     
+    Valuable Exponentiation::varless() const
+    {
+        //if
+        return base::varless();
+    }
+
     void Exponentiation::InitVars() {
         v.clear();
         if (ebase().IsVa())
@@ -81,6 +87,7 @@ namespace math {
         if (!optimizations)
         {
             hash = ebase().Hash() ^ eexp().Hash();
+            InitVars();
             return;
         }
 
@@ -960,6 +967,15 @@ namespace math {
 
     const Valuable::vars_cont_t& Exponentiation::getCommonVars() const
     {
+#ifndef NDEBUG
+        auto& b = ebase();
+        if (b.IsVa()) { // TODO: FindVa too
+            auto va = b.as<Variable>();
+            auto it = v.find(va);
+            if (it != v.end() || !it->second.Same(eexp()))
+                LOG_AND_IMPLEMENT(*this << " Exponentiation::getCommonVars not ready");
+        }
+#endif
         return v;
     }
     
