@@ -60,6 +60,7 @@ namespace math {
 #endif
     constexpr const Valuable& minus_1 = vo<-1>();
     const Valuable& plus_minus_1 = 1_v^(1_v/2); // ±1
+    const Valuable& zero_or_1 = Sum{Exponentiation{1_v/4, 1_v/2}, 1_v/2}; // (1±1)/2
     constexpr const Valuable& pi = constant::pi;
     constexpr const Valuable& infinity = Infinity::GlobalObject;
     constexpr const Valuable& minfinity = MInfinity::GlobalObject;
@@ -269,8 +270,12 @@ namespace math {
 
 	// FIXME : generates six distiinct results instead of expected three distinct-value equivalent
 	Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
-        auto merged = MergeOr(v1, v2);
-        return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation https://github.com/ohhmm/openmind/issues/41
+        // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
+        auto merged = MergeOr(v3-v1, v2-v1);
+        merged *= constants::zero_or_1;
+        merged += v1;
+        return merged;
+//        return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation https://github.com/ohhmm/openmind/issues/41
     }
 
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
@@ -287,7 +292,7 @@ namespace math {
 
     Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
     {
-        return ((v1+v2)+((-1_v)^(1_v/2))*(v1-v2))/2;
+        return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
     }
 
     Valuable::Valuable(solutions_t&& s)
@@ -343,7 +348,6 @@ namespace math {
                     ss << ' ' << v;
                 ss << " )";
                 std::cout << ss.str();
-                distinct = Distinct();
                 LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
             }
         }
@@ -2312,7 +2316,7 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l)
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
 
-APPLE_CONSTEXPR
+//APPLE_CONSTEXPR
 const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return v;
 }
