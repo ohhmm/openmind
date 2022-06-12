@@ -112,6 +112,13 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     auto is = _1.IsSummationSimplifiable(_2);
     BOOST_TEST(is.first);
     BOOST_TEST(is.second==-v2);
+
+    _1 =(-1_v*"percentWaterDehydrated"_v + 100)^(-1);
+    _1 *= "-1*potatoKgDehydrated"_v;
+    _2 = "((percentWaterDehydrated - 100)^(-1))*potatoKgDehydrated"_v;
+    BOOST_TEST(_1.IsProduct());
+    BOOST_TEST(_2.IsProduct());
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Product_optimization_test)

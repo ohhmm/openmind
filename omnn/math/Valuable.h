@@ -76,6 +76,7 @@ extern const Valuable& two;
 extern const Valuable& half;
 extern const Valuable& minus_1;
 extern const Valuable& plus_minus_1; // ±1
+extern const Valuable& zero_or_1;
 extern const Valuable& infinity;
 extern const Valuable& minfinity;
 extern const Valuable& pi;
@@ -544,7 +545,7 @@ public:
 template <const long long I>
 const Valuable vo<I>::val = I;
 
-#ifdef MSVC
+#ifdef MSVC || defined(__APPLE__)
 template <const double I>
 class vf {
     static const Valuable val;

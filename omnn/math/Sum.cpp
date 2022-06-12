@@ -47,27 +47,27 @@ namespace
 
         using namespace std;
         
-        type_index order[] = {
-            typeid(MInfinity),
-            typeid(Sum),
-            typeid(Product),
-            typeid(Exponentiation),
-            typeid(Variable),
-            typeid(Euler),
-            typeid(Pi),
-            typeid(MinusOneSq),
-            typeid(Integer),
-            typeid(Fraction),
-            typeid(Modulo),
-            typeid(Infinity),
-        };
-        
-        auto ob = std::begin(order);
-        auto oe = std::end(order);
-        
         // inequality should cover all cases
         auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
         {
+            static type_index order[] = {
+                typeid(MInfinity),
+                typeid(Sum),
+                typeid(Product),
+                typeid(Exponentiation),
+                typeid(Variable),
+                typeid(Euler),
+                typeid(Pi),
+                typeid(MinusOneSq),
+                typeid(Integer),
+                typeid(Fraction),
+                typeid(Modulo),
+                typeid(Infinity),
+            };
+            
+            static auto ob = std::begin(order);
+            static auto oe = std::end(order);
+            
             auto it1 = std::find(ob, oe, x.Type());
             assert(it1!=oe); // IMPLEMENT
             auto it2 = std::find(ob, oe, y.Type());
@@ -75,7 +75,7 @@ namespace
             return it1 == it2 ? *it1 > *it2 : it1 < it2;
         };
         
-        SumOrderComparator soc;
+        constexpr SumOrderComparator soc;
     }
     
     // store order operator
