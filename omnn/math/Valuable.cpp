@@ -96,7 +96,7 @@ namespace math {
         if (exp)
             return exp->Clone();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Implement Clone() for " << *this)
     }
 
     Valuable* Valuable::Move()
@@ -1316,7 +1316,7 @@ std::string Spaceless(std::string s) {
         if(exp)
             return exp->print(out);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << *this);
     }
 
     std::wostream& Valuable::print(std::wostream& out) const {
@@ -1375,7 +1375,10 @@ std::string Spaceless(std::string s) {
             exp->SetView(v);
         else {
             optimized = optimized && view == v;
+            if (!optimized) {
             view = v;
+                optimize();
+            }
         }
     }
 
@@ -1623,7 +1626,7 @@ std::string Spaceless(std::string s) {
 
     Valuable Valuable::varless() const
     {
-        auto _ = *this / getVaVal();
+        auto _ = exp ? exp->varless() : *this / getVaVal();
         if (_.FindVa()) {
             if (_.IsProduct()) {
                 Product p;

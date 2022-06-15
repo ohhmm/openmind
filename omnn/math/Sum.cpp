@@ -100,11 +100,12 @@ namespace
     auto HwC = std::thread::hardware_concurrency();
     auto Thr = ::std::min<decltype(HwC)>(HwC << 3, 128);
     
-    const Sum::iterator Sum::Add(const Valuable& item, const iterator hint)
+    template <typename T>
+    const Sum::iterator Sum::SumAddImpl(T&& item, const iterator hint)
     {
         Sum::iterator it = hint;
         if(item.IsSum()) {
-            for(auto& i : item.as<Sum>()) {
+            for(auto& i : item.template as<Sum>()) {
                 it = Add(i, it);
             }
         }
@@ -121,14 +122,14 @@ namespace
 #endif
                 it = members.find(item);
 
-            if(it==end())
-                it = base::Add(item, hint);
-            else
-                Update(it, item*2);
-
             auto itemMaxVaExp = item.getMaxVaExp();
             if(itemMaxVaExp > maxVaExp)
                 maxVaExp = itemMaxVaExp;
+
+            if(it==end())
+                it = base::Add(std::forward<T>(item), hint);
+            else
+                Update(it, std::forward<T>(item) * 2);
         }
         return it;
     }
@@ -140,6 +141,14 @@ namespace
 			s.Add(-a);
 		return s;
 	}
+
+    const Sum::iterator Sum::Add(Valuable&& item, const iterator hint) {
+        return SumAddImpl(std::move(item), hint);
+    }
+
+    const Sum::iterator Sum::Add(const Valuable& item, const iterator hint) {
+        return SumAddImpl(item, hint);
+    }
 
     Valuable Sum::GCD() const {
         auto it = members.begin();
@@ -960,17 +969,17 @@ namespace
         return Become(std::move(sum));
     }
     
-    Sum::Sum(const std::initializer_list<Valuable>& l)
+    Sum::Sum(std::initializer_list<Valuable>&& l)
     {
-        for (const auto& arg : l)
+        for (auto& arg : l)
         {
             if(arg.IsSum()) {
                 auto& a = arg.as<Sum>();
                 for(auto& m: a)
-                    this->Add(m, end());
+                    this->Add(m);
             }
             else
-                this->Add(arg, end());
+                this->Add(std::move(arg));
         }
     }
     
