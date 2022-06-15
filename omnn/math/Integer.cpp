@@ -377,6 +377,8 @@ namespace math {
 
     Valuable& Integer::operator^=(const Valuable& v)
     {
+        if(v == constants::one)
+            return *this;
         if(arbitrary == 0 || (arbitrary == 1 && v.IsInt()))
         {
             if (v == 0) {
@@ -391,6 +393,9 @@ namespace math {
         }
         if(v.IsInt())
         {
+            arbitrary = boost::multiprecision::pow(a(), v.ca());
+            hash = std::hash<base_int>()(arbitrary);
+            return *this;
             if (v != 0_v) {
                 if (v > 1) {
                     Valuable x = *this;

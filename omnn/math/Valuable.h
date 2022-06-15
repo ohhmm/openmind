@@ -285,7 +285,10 @@ public:
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized = false);
 
-    virtual ~Valuable();
+    //constexpr 
+	virtual ~Valuable()//{}
+        ;
+
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
     virtual Valuable& operator +=(int);
@@ -545,7 +548,7 @@ public:
 template <const long long I>
 const Valuable vo<I>::val = I;
 
-#ifdef MSVC || defined(__APPLE__)
+#if defined(MSVC) || defined(__APPLE__)
 template <const double I>
 class vf {
     static const Valuable val;
