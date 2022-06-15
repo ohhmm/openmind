@@ -42,8 +42,10 @@ namespace std {
 #include <boost/functional/hash.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/math/special_functions/prime.hpp>
+#include <boost/multiprecision/integer.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/detail/default_ops.hpp>
 #include <boost/multiprecision/detail/integer_ops.hpp>
 #include <boost/multiprecision/integer.hpp>
 #include <boost/multiprecision/miller_rabin.hpp>
@@ -393,9 +395,9 @@ namespace math {
         }
         if(v.IsInt())
         {
-            arbitrary = boost::multiprecision::pow(a(), v.ca());
-            hash = std::hash<base_int>()(arbitrary);
-            return *this;
+// FIXME:     arbitrary = boost::multiprecision::pow(a(), v.ca());
+//            hash = std::hash<base_int>()(arbitrary);
+//            return *this;
             if (v != 0_v) {
                 if (v > 1) {
                     Valuable x = *this;
