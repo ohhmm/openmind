@@ -603,6 +603,8 @@ macro(lib)
 
     if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
+    elseif(OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Test)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
     endif ()
 
     if (OPENMIND_BUILD_3RD_PARTY_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rdPartyTests)
@@ -704,6 +706,13 @@ macro(exe)
 			${BOOST_LINK_LIBS}
 			)
     endif()
+
+    if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
+    elseif(OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Test)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
+    endif ()
+
 endmacro()
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib
