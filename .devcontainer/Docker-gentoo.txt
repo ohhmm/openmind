@@ -44,6 +44,7 @@ RUN emerge \
     
 RUN emerge \
     gdb \
+    lldb \
     -j`nproc`
 
 RUN emerge -j`nproc` =dev-libs/boost-1.79.0
