@@ -24,6 +24,7 @@
 		"github.vscode-pull-request-github",
 		"googlecloudtools.cloudcode",
 		"llvm-vs-code-extensions.vscode-clangd",
+		"ms-toolsai.jupyter",
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
 		"ms-vsliveshare.vsliveshare-pack",

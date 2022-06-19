@@ -30,6 +30,7 @@
 #endif
 #include <boost/core/demangle.hpp>
 #include <boost/numeric/conversion/converter.hpp>
+#include <boost/stacktrace.hpp>
 
 #include <rt/GC.h>
 
@@ -59,7 +60,7 @@ namespace math {
     const Valuable& half = 1_v / 2;
 #endif
     constexpr const Valuable& minus_1 = vo<-1>();
-    const Valuable& plus_minus_1 = 1_v^(1_v/2); // ±1
+    const Valuable& plus_minus_1 = Exponentiation{1_v, 1_v / 2};          // ±1
     const Valuable& zero_or_1 = Sum{Exponentiation{1_v/4, 1_v/2}, 1_v/2}; // (1±1)/2
     constexpr const Valuable& pi = constant::pi;
     constexpr const Valuable& infinity = Infinity::GlobalObject;
@@ -138,7 +139,7 @@ namespace math {
     {
     	if (exp)
     		return exp->Type();
-        LOG_AND_IMPLEMENT(" Implement Type() for " << *this);
+        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
     }
 
     Valuable& Valuable::Become(Valuable&& i)
@@ -1315,8 +1316,9 @@ std::string Spaceless(std::string s) {
     {
         if(exp)
             return exp->print(out);
-        else
-            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << *this);
+        else {
+            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n' << boost::stacktrace::stacktrace());
+        }
     }
 
     std::wostream& Valuable::print(std::wostream& out) const {

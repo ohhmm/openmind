@@ -26,8 +26,6 @@ RUN emerge \
 
 RUN eix-update
 
-RUN emerge -j`nproc` =dev-libs/boost-1.79.0
-
 RUN emerge -j`nproc` leveldb
 
 RUN emerge \
@@ -39,7 +37,6 @@ RUN emerge \
     x11-libs/libXScrnSaver \
     -j`nproc`
 
-
 RUN echo "dev-libs/icu examples static-libs" > /etc/portage/package.use/icu
 RUN emerge \
     dev-libs/icu \
@@ -48,3 +45,6 @@ RUN emerge \
 RUN emerge \
     gdb \
     -j`nproc`
+
+RUN emerge -j`nproc` =dev-libs/boost-1.79.0
+
