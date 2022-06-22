@@ -649,40 +649,56 @@ endmacro()
 
 macro(exe)
     string(STRIP "${ARGN}" deps)
-	get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
-	project(${this_target})
-	message("\nCreating Executable: ${this_target}")
-	file(GLOB src *.cpp *.h)
-	add_executable(${this_target} ${src})
-	APPLY_TARGET_COMMONS(${this_target})
-	add_dependencies(${this_target} conf)
-	install(TARGETS ${this_target})
+    project(${this_target})
+    message("\nCreating Executable: ${this_target}")
+    file(GLOB src *.cpp *.h)
+    file(GLOB qtsrc *.qrc)
+    if(qtsrc)
+        if(NOT Qt5_FOUND)
+            find_package(Qt5 REQUIRED Qml Quick Gui)
+        endif()
+        if(Qt5_FOUND)
+            qt5_add_resources(qml_QRC ${qtsrc})
+            list(APPEND src ${qml_QRC})
+        endif()
+    endif()
+    add_executable(${this_target} ${src})
+    APPLY_TARGET_COMMONS(${this_target})
+    if(Qt5_FOUND)
+        target_link_libraries(${this_target} PUBLIC
+            Qt5::Qml
+            Qt5::Quick
+            )
+    endif()
+    add_dependencies(${this_target} conf)
+    install(TARGETS ${this_target})
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include
         ${${this_target}_INCLUDE_DIR}
-		)
-	target_link_directories(${this_target} PUBLIC
-		${CMAKE_BINARY_DIR}/lib
-		${Boost_LIBRARIES}
-		${Boost_INCLUDE_DIR}/stage/lib
-		${Boost_INCLUDE_DIR}/../../lib
-		/usr/local/lib
-		)
+        )
+    target_link_directories(${this_target} PUBLIC
+        ${CMAKE_BINARY_DIR}/lib
+        ${Boost_LIBRARIES}
+        ${Boost_INCLUDE_DIR}/stage/lib
+        ${Boost_INCLUDE_DIR}/../../lib
+        /usr/local/lib
+        )
 
-	foreach(item ${deps})
-		message("adding ${item} sublib ${LIB} into ${this_target}")
+    foreach(item ${deps})
+        message("adding ${item} sublib ${LIB} into ${this_target}")
         if(TARGET ${item})
             message("Linking target ${item}")
             target_link_libraries(${this_target} PUBLIC ${item})
-			if(${item}_LIBRARIES)
-				message("Linking ${item}_LIBRARIES ${${item}_LIBRARIES}")
-				target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
-				if(NOT "${${item}_LIBRARIES}" MATCHES ${item})
-					message(WARNING "${item}_LIBRARIES '${${item}_LIBRARIES}' has no ${item}")
-				endif()
-			endif()
+            if(${item}_LIBRARIES)
+                message("Linking ${item}_LIBRARIES ${${item}_LIBRARIES}")
+                target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
+                if(NOT "${${item}_LIBRARIES}" MATCHES ${item})
+                    message(WARNING "${item}_LIBRARIES '${${item}_LIBRARIES}' has no ${item}")
+                endif()
+            endif()
         elseif(${item}_LIBRARIES)
             message("Linking ${item}_LIBRARIES ${${item}_LIBRARIES}")
             target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
@@ -692,22 +708,24 @@ macro(exe)
         elseif(${item}_LIBRARY)
             target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARY})
         else()
-			dep(${item})
+            dep(${item})
         endif()
 
-        message("adding include ${${item}_INCLUDE_DIR} into ${this_target} for dependency ${item}")
-		if(${item}_INCLUDE_DIR)
-        	target_include_directories(${this_target} PUBLIC ${${item}_INCLUDE_DIR})
-		endif()
-		if(${item}_INCLUDE_DIRS)
-			target_include_directories(${this_target} PUBLIC ${${item}_INCLUDE_DIRS})
-		endif()
-	endforeach()
+        if(${item}_INCLUDE_DIR)
+            message("adding include ${${item}_INCLUDE_DIR} into ${this_target} for dependency ${item}")
+            if(${item}_INCLUDE_DIR)
+                target_include_directories(${this_target} PUBLIC ${${item}_INCLUDE_DIR})
+            endif()
+            if(${item}_INCLUDE_DIRS)
+                target_include_directories(${this_target} PUBLIC ${${item}_INCLUDE_DIRS})
+            endif()
+        endif()
+    endforeach()
     if(NOT MSVC)
         target_link_libraries(${this_target} PUBLIC
-			pthread
-			${BOOST_LINK_LIBS}
-			)
+                pthread
+                ${BOOST_LINK_LIBS}
+                )
     endif()
 
     if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
