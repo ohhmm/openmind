@@ -39,7 +39,7 @@ option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare 
 option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc source code file during CPU cores idle" _IS_DEBUG)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
-set(OPENMIND_REQUIRED_BOOST_VERSION 1.79.0 CACHE VERSION "Boost library version to use" FORCE)
+set(OPENMIND_REQUIRED_BOOST_VERSION 1.79.0 CACHE VERSION "Boost library version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
@@ -658,7 +658,9 @@ macro(exe)
     file(GLOB qtsrc *.qrc)
     if(qtsrc)
         if(NOT Qt5_FOUND)
+            set(CMAKE_AUTOUIC ON)
             set(CMAKE_AUTOMOC ON)
+            set(CMAKE_AUTORCC ON)
             find_package(Qt5 REQUIRED Qml Quick Gui)
         endif()
         if(Qt5_FOUND)
@@ -670,6 +672,7 @@ macro(exe)
     APPLY_TARGET_COMMONS(${this_target})
     if(Qt5_FOUND)
         target_link_libraries(${this_target} PUBLIC
+            Qt5::Core
             Qt5::Qml
             Qt5::Quick
             )
