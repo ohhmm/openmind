@@ -657,24 +657,25 @@ macro(exe)
     file(GLOB src *.cpp *.h)
     file(GLOB qtsrc *.qrc)
     if(qtsrc)
-        if(NOT Qt5_FOUND)
-            set(CMAKE_AUTOUIC ON)
-            set(CMAKE_AUTOMOC ON)
-            set(CMAKE_AUTORCC ON)
-            find_package(Qt5 REQUIRED Qml Quick Gui)
+        set(CMAKE_AUTOMOC ON)
+        set(CMAKE_AUTORCC ON)
+        set(CMAKE_AUTOUIC ON)
+        find_package(Qt6)
+        if(NOT Qt6_FOUND)
+            find_package(Qt5)
         endif()
-        if(Qt5_FOUND)
-            qt5_add_resources(qml_QRC ${qtsrc})
+        if(Qt${QT_MAJOR_VERSION}_FOUND)
+            qt_add_resources(qml_QRC ${qtsrc})
             list(APPEND src ${qml_QRC})
         endif()
     endif()
     add_executable(${this_target} ${src})
     APPLY_TARGET_COMMONS(${this_target})
-    if(Qt5_FOUND)
+    if(Qt${QT_MAJOR_VERSION}_FOUND)
         target_link_libraries(${this_target} PUBLIC
-            Qt5::Core
-            Qt5::Qml
-            Qt5::Quick
+            Qt${QT_MAJOR_VERSION}::Core
+            Qt${QT_MAJOR_VERSION}::Qml
+            Qt${QT_MAJOR_VERSION}::Quick
             )
     endif()
     add_dependencies(${this_target} conf)
