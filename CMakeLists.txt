@@ -671,15 +671,26 @@ macro(exe)
     endif()
     add_executable(${this_target} ${src})
     APPLY_TARGET_COMMONS(${this_target})
+    add_dependencies(${this_target} conf)
     if(Qt${QT_MAJOR_VERSION}_FOUND)
         target_link_libraries(${this_target} PUBLIC
             Qt${QT_MAJOR_VERSION}::Core
+            Qt${QT_MAJOR_VERSION}::Network
             Qt${QT_MAJOR_VERSION}::Qml
             Qt${QT_MAJOR_VERSION}::Quick
             )
+        if(MSVC)
+            target_include_directories(${this_target} PUBLIC
+                ${Qt${QT_MAJOR_VERSION}Core_INCLUDE_DIRS}
+                ${Qt${QT_MAJOR_VERSION}Network_INCLUDE_DIRS}
+                ${Qt${QT_MAJOR_VERSION}Qml_INCLUDE_DIRS}
+                ${Qt${QT_MAJOR_VERSION}Quick_INCLUDE_DIRS}
+                )
+        endif()
+        install(TARGETS ${this_target} BUNDLE DESTINATION .)
+    else()
+        install(TARGETS ${this_target})
     endif()
-    add_dependencies(${this_target} conf)
-    install(TARGETS ${this_target})
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include
