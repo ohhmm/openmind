@@ -61,6 +61,7 @@ protected:
 	const Sum::iterator SumAddImpl(T&& item, const iterator hint);
     
 public:
+    std::ostream& code(std::ostream& out) const override;
 	const cont& GetConstCont() const override { return members; }
     bool IsSum() const override { return true; }
 

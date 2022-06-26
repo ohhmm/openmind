@@ -62,6 +62,7 @@ public:
 //    void optimize() override;
 //    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
+    std::ostream& code(std::ostream& out) const override { return print(out); }
 
     bool IsVa() const override { return true; }
     bool is_optimized() const override { return true; }

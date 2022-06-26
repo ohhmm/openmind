@@ -26,6 +26,8 @@ namespace math {
 		std::ostream& print_sign(std::ostream& out) const override;
 
 	public:
+        std::ostream& code(std::ostream& out) const override;
+
         const Valuable& numerator() const { return _1; }
         template<class T>
         void setNumerator(T&& n)

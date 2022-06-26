@@ -143,7 +143,6 @@ protected:
 
     virtual std::ostream& print(std::ostream& out) const;
     virtual std::wostream& print(std::wostream& out) const;
-    virtual std::ostream& code(std::ostream& out) const;
 
     virtual Valuable& Become(Valuable&& i);
 
@@ -154,6 +153,7 @@ protected:
     max_exp_t maxVaExp;// = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
 public:
+    virtual std::ostream& code(std::ostream& out) const;
 
     enum View
     {
