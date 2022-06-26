@@ -500,7 +500,28 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     {
         return out << '/';
     }
-    
+
+    std::ostream& Fraction::code(std::ostream& out) const
+    {
+        if(IsSimpleFraction())
+            out << operator double();
+        else{
+            out << '(';
+            auto& n = numerator();
+            if (n.IsSimple())
+                out << n.operator double();
+            else
+                n.code(out);
+            out << '/';
+            auto& d = denominator();
+            if (d.IsSimple())
+                out << d.operator double();
+            else
+                d.code(out);
+            out << ')';
+        }
+        return out;
+    }
     const Valuable::vars_cont_t& Fraction::getCommonVars() const
     {
         vars = numerator().getCommonVars();

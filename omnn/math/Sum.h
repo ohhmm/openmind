@@ -58,6 +58,7 @@ protected:
 	std::ostream& print(std::ostream& out) const override;
     
 public:
+    std::ostream& code(std::ostream& out) const override;
 	const cont& GetConstCont() const override { return members; }
     bool IsSum() const override { return true; }
 

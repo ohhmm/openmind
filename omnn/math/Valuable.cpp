@@ -1296,7 +1296,12 @@ std::string Spaceless(std::string s) {
             IMPLEMENT
     }
 
-    std::ostream& Valuable::code(std::ostream& out) const { return exp ? exp->code(out) : print(out); }
+    std::ostream& Valuable::code(std::ostream& out) const {
+        if (exp)
+            return exp->code(out);
+        else
+            IMPLEMENT
+    }
 
     std::ostream& operator<<(std::ostream& out, const Valuable& obj)
     {
