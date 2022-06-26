@@ -24,6 +24,7 @@ namespace math {
 		Valuable& numerator() { return _1; }
         Valuable& denominator() { return _2; }
 		std::ostream& print_sign(std::ostream& out) const override;
+        std::ostream& code(std::ostream& out) const override { return out << operator double(); }
 
 	public:
         const Valuable& numerator() const { return _1; }
