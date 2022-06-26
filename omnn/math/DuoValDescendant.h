@@ -39,6 +39,8 @@ namespace omnn::math {
             out << ')';
             return out;
         }
+
+    public:
         std::ostream& code(std::ostream& out) const override
         {
             out << '(';
@@ -49,7 +51,6 @@ namespace omnn::math {
             return out;
         }
 
-    public:
         static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
             if(_1.FindVa() || _2.FindVa())
                 IMPLEMENT // in Child

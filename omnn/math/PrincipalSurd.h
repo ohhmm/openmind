@@ -14,7 +14,6 @@ protected:
     Valuable& radicand() { return base::_1; }
     Valuable& index() { return base::_2; }
 
-    std::ostream& code(std::ostream&) const override;
     std::ostream& print(std::ostream&) const override;
     std::ostream& print_sign(std::ostream&) const override;
 
@@ -35,6 +34,8 @@ public:
     Valuable Sqrt() const override;
     
     Valuable Sign() const override;
+    
+    std::ostream& code(std::ostream&) const override;
 };
 
 }

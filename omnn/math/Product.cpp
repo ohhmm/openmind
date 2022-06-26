@@ -1230,6 +1230,19 @@ namespace math {
         return branches;
     }
 
+    std::ostream& Product::code(std::ostream& out) const
+    {
+        std::stringstream s;
+        constexpr char sep[] = "*";
+        for (auto& b : members)
+            b.code(s) << sep;
+        auto str = s.str();
+        auto cstr = const_cast<char*>(str.c_str());
+        cstr[str.size() - sizeof(sep) + 1] = 0;
+        out << cstr;
+        return out;
+    }
+
 	std::ostream& Product::print(std::ostream& out) const
 	{
         std::stringstream s;
