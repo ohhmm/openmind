@@ -1007,7 +1007,21 @@ namespace
         out << cstr << ')';
 		return out;
 	}
-    
+
+    std::ostream& Sum::code(std::ostream& out) const
+    {
+        std::stringstream s;
+        s << '(';
+        constexpr char sep[] = " + ";
+        for (auto& b : members)
+            b.code(s) << sep;
+        auto str = s.str();
+        auto cstr = const_cast<char*>(str.c_str());
+        cstr[str.size() - sizeof(sep) + 1] = 0;
+        out << cstr << ')';
+        return out;
+    }
+
     Valuable Sum::Sqrt() const
     {
         LOG_AND_IMPLEMENT("square root " << str()); // TODO : try to get rid of this call instead by substituting to ^(1_v/2) which is not equivalent to sqrt by the way

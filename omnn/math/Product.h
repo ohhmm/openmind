@@ -86,9 +86,10 @@ public:
     void solve(const Variable& va, solutions_t& solutions) const override;
     Valuable::solutions_t Distinct() const override;
     
+    std::ostream& code(std::ostream& out) const override;
 protected:
-    cont& GetCont() override { return members; }
     std::ostream& print(std::ostream& out) const override;
+    cont& GetCont() override { return members; }
     Product(const vars_cont_t& v) : vars(v) { base::Add(1_v); }
     
 private:

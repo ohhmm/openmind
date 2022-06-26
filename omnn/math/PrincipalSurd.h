@@ -11,7 +11,6 @@ class PrincipalSurd /// Also known as principal root of Nth index
     using base = DuoValDescendant<PrincipalSurd>;
 
 protected:
-    std::ostream& code(std::ostream&) const override;
     std::ostream& print(std::ostream&) const override;
     std::ostream& print_sign(std::ostream&) const override;
 
@@ -25,6 +24,8 @@ public:
 	std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
 
 	void optimize() override;
+    
+    std::ostream& code(std::ostream&) const override;
 };
 
 }

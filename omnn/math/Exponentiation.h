@@ -17,8 +17,8 @@ protected:
     Valuable& ebase() { return base::_1; }
     Valuable& eexp() { return base::_2; }
     std::ostream& print_sign(std::ostream& out) const override;
-    std::ostream& code(std::ostream& out) const override;
 public:
+    std::ostream& code(std::ostream& out) const override;
     bool IsExponentiation() const override { return true; }
     bool IsVaExp() const override { return ebase().IsVa(); }
     YesNoMaybe IsMultival() const override;

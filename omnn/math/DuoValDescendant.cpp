@@ -26,6 +26,16 @@ std::ostream& PrintVal(std::ostream& out, const Valuable& v)
     return out;
 }
 
+std::ostream& PrintCodeVal(std::ostream& out, const Valuable& v)
+{
+    if(!NoNeedBraces(v))
+        v.code(out << '(') << ')';
+    else
+        v.code(out);
+
+    return out;
+}
+
 Valuable Multiply(const Valuable& _1, const Valuable& _2) {
     return Product{_1, _2};
 }
