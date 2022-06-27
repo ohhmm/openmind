@@ -680,7 +680,9 @@ macro(exe)
         endif()
     endif()
     if(Qt${QT_VERSION_MAJOR}_FOUND)
-        qt_standard_project_setup()
+        if(QT_VERSION_MAJOR EQUAL 6)
+            qt_standard_project_setup()
+        endif()
         qt_add_resources(qml_QRC ${qtsrc})
         list(APPEND src ${qml_QRC})
         qt_add_executable(${this_target} MANUAL_FINALIZATION ${src})
@@ -732,8 +734,6 @@ macro(exe)
     else()
         install(TARGETS ${this_target})
     endif()
-
-
 
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
@@ -798,11 +798,11 @@ macro(exe)
 endmacro()
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-			${CMAKE_BINARY_DIR}/lib64
-			)
+                    ${CMAKE_BINARY_DIR}/lib64
+                    )
 
 fold(
-	omnn
-	OpenMind
+    omnn
+    OpenMind
 )
 
