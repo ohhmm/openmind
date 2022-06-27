@@ -660,33 +660,35 @@ macro(exe)
         set(CMAKE_AUTOMOC ON)
         set(CMAKE_AUTORCC ON)
         set(CMAKE_AUTOUIC ON)
-        find_package(Qt6)
+        set(QT_COMPONENTS
+            Core
+            Network
+            CACHE STRINGS "Required Qt Components"
+            #FORCE
+            )
+        find_package(Qt6 COMPONENTS "${QT_COMPONENTS}")
         if(NOT Qt6_FOUND)
-            find_package(Qt5)
+            find_package(Qt5 COMPONENTS "${QT_COMPONENTS}")
         endif()
         if(Qt${QT_MAJOR_VERSION}_FOUND)
             qt_add_resources(qml_QRC ${qtsrc})
             list(APPEND src ${qml_QRC})
         endif()
+        qt_add_executable(${this_target} ${src})
+    else()
+        add_executable(${this_target} ${src})
     endif()
-    add_executable(${this_target} ${src})
     APPLY_TARGET_COMMONS(${this_target})
     add_dependencies(${this_target} conf)
     if(Qt${QT_MAJOR_VERSION}_FOUND)
-        target_link_libraries(${this_target} PUBLIC
-            Qt${QT_MAJOR_VERSION}::Core
-            Qt${QT_MAJOR_VERSION}::Network
-            Qt${QT_MAJOR_VERSION}::Qml
-            Qt${QT_MAJOR_VERSION}::Quick
-            )
-        if(MSVC)
-            target_include_directories(${this_target} PUBLIC
-                ${Qt${QT_MAJOR_VERSION}Core_INCLUDE_DIRS}
-                ${Qt${QT_MAJOR_VERSION}Network_INCLUDE_DIRS}
-                ${Qt${QT_MAJOR_VERSION}Qml_INCLUDE_DIRS}
-                ${Qt${QT_MAJOR_VERSION}Quick_INCLUDE_DIRS}
-                )
-        endif()
+	foreach(component ${QT_COMPONENTS}")
+            target_link_libraries(${this_target} PUBLIC
+                Qt${QT_MAJOR_VERSION}::${component})
+            if(MSVC)
+                target_include_directories(${this_target} PUBLIC
+                    ${Qt${QT_MAJOR_VERSION}${component}_INCLUDE_DIRS})
+            endif()
+	endforeach()
         install(TARGETS ${this_target} BUNDLE DESTINATION .)
     else()
         install(TARGETS ${this_target})
