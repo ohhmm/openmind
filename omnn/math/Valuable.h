@@ -150,6 +150,7 @@ protected:
 
 public:
     virtual std::ostream& code(std::ostream& out) const;
+    std::string OpenCL() const;
 
     enum View
     {
