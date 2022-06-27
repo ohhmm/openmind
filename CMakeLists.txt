@@ -669,19 +669,22 @@ macro(exe)
             CACHE STRING "Required Qt Components"
             #FORCE
             )
-        qt_standard_project_setup()
-        find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS "${QT_COMPONENTS}")
-        find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS "${QT_COMPONENTS}")
-        message("QT_FOUND: ${QT_FOUND}")
-        message("QT_VERSION_MAJOR: ${QT_VERSION_MAJOR}")
-        if(QT_VERSION_MAJOR)
-            message("Qt${QT_VERSION_MAJOR}_FOUND: ${Qt${QT_VERSION_MAJOR}_FOUND}")
+        if(NOT QT_FOUND)
+            find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS "${QT_COMPONENTS}")
+            find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS "${QT_COMPONENTS}")
+            message("QT_FOUND: ${QT_FOUND}")
+            message("QT_VERSION_MAJOR: ${QT_VERSION_MAJOR}")
+            if(QT_VERSION_MAJOR)
+                message("Qt${QT_VERSION_MAJOR}_FOUND: ${Qt${QT_VERSION_MAJOR}_FOUND}")
+            endif()
         endif()
     endif()
     if(Qt${QT_VERSION_MAJOR}_FOUND)
+        qt_standard_project_setup()
         qt_add_resources(qml_QRC ${qtsrc})
         list(APPEND src ${qml_QRC})
         qt_add_executable(${this_target} MANUAL_FINALIZATION ${src})
+        target_compile_definitions(${this_target} PUBLIC $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
         if(NOT qtsrc)
             if(NOT VERSION)
                 set(VERSION 0.18) #TODO: deduce from git branch name/history
@@ -697,6 +700,11 @@ macro(exe)
             target_link_libraries(${this_target} PUBLIC
                 Qt${QT_VERSION_MAJOR}::${component})
         endforeach()
+
+        if(QT_VERSION_MAJOR EQUAL 6)
+            qt_import_qml_plugins(${this_target})
+            qt_finalize_executable(${this_target})
+        endif()
     elseif(ANDROID)
         add_library(${this_target} SHARED ${src})
     else()
@@ -705,10 +713,28 @@ macro(exe)
     APPLY_TARGET_COMMONS(${this_target})
     add_dependencies(${this_target} conf)
     if(Qt${QT_VERSION_MAJOR}_FOUND)
+
+        if(APPLE)
+            if(NOT PROJECT_VERSION)
+                set_target_properties(${this_target} PROPERTIES
+                    MACOSX_BUNDLE_GUI_IDENTIFIER ${this_target}.deduction-fw.org
+                    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+                    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+                )
+            endif()
+        endif()
+        set_target_properties(${this_target} PROPERTIES
+            MACOSX_BUNDLE TRUE
+            WIN32_EXECUTABLE TRUE
+        )
         install(TARGETS ${this_target} BUNDLE DESTINATION .)
+
     else()
         install(TARGETS ${this_target})
     endif()
+
+
+
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_BINARY_DIR}/include
