@@ -625,27 +625,27 @@ macro(fold)
     else(first)
         message("Folding ${CMAKE_CURRENT_SOURCE_DIR}")
     endif(first)
-	foreach(item ${first})
-		set(item ${CMAKE_CURRENT_SOURCE_DIR}/${item})
-		IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)
-			message("${item} is dir with CMakeLists.txt")
-			get_filename_component(name ${item} NAME)
-			add_subdirectory(${item})
-			list(REMOVE_ITEM items ${item})
-		endif()
-	endforeach()
+    foreach(item ${first})
+        set(item ${CMAKE_CURRENT_SOURCE_DIR}/${item})
+        IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)
+            message("${item} is dir with CMakeLists.txt")
+            get_filename_component(name ${item} NAME)
+            add_subdirectory(${item})
+            list(REMOVE_ITEM items ${item})
+        endif()
+    endforeach()
 
-	foreach(item ${items})
-		IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)
-			message("${item} is dir with CMakeLists.txt")
+    foreach(item ${items})
+        IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)
+            message("${item} is dir with CMakeLists.txt")
             get_filename_component(name ${item} NAME)
             if(NOT "${name}" STREQUAL "OpenMind"
                 AND NOT "${name}" STREQUAL "omnn"
                 ) # already included first
-				add_subdirectory(${item})
-			endif()
-		endif()
-	endforeach()
+                add_subdirectory(${item})
+            endif()
+        endif()
+    endforeach()
 endmacro()
 
 macro(exe)
@@ -655,16 +655,18 @@ macro(exe)
     project(${this_target})
     message("\nCreating Executable: ${this_target}")
     file(GLOB src *.cpp *.h)
+    file(GLOB qmlsrc *.qml)
     file(GLOB qtsrc *.qrc)
-    if(qtsrc)
+    if(qtsrc OR qmlsrc)
         set(CMAKE_AUTOMOC ON)
         set(CMAKE_AUTORCC ON)
         set(CMAKE_AUTOUIC ON)
         set(QT_COMPONENTS
             Core
+            Gui
             Network
-            CACHE STRINGS "Required Qt Components"
-            #FORCE
+            CACHE STRING "Required Qt Components"
+            FORCE
             )
         find_package(Qt6 COMPONENTS "${QT_COMPONENTS}")
         if(NOT Qt6_FOUND)
@@ -674,14 +676,24 @@ macro(exe)
             qt_add_resources(qml_QRC ${qtsrc})
             list(APPEND src ${qml_QRC})
         endif()
-        qt_add_executable(${this_target} ${src})
+        qt_add_executable(${this_target} MANUAL_FINALIZATION ${src})
+        if(NOT qtsrc)
+            if(NOT VERSION)
+                set(VERSION 0.18) #TODO: deduce from git branch name/history
+            endif()
+            foreach(qmlfile in ${qmlsrc})
+                qt_add_qml_module(app${this_target} URI ${this_target} VERSION ${VERSION} QML_FILES ${qmlfile})
+            endforeach()
+        endif()
+    elseif(ANDROID)
+        add_library(${this_target} SHARED ${src})
     else()
         add_executable(${this_target} ${src})
     endif()
     APPLY_TARGET_COMMONS(${this_target})
     add_dependencies(${this_target} conf)
     if(Qt${QT_MAJOR_VERSION}_FOUND)
-	foreach(component ${QT_COMPONENTS}")
+        foreach(component ${QT_COMPONENTS})
             target_link_libraries(${this_target} PUBLIC
                 Qt${QT_MAJOR_VERSION}::${component})
             if(MSVC)
@@ -742,9 +754,9 @@ macro(exe)
     endforeach()
     if(NOT MSVC)
         target_link_libraries(${this_target} PUBLIC
-                pthread
-                ${BOOST_LINK_LIBS}
-                )
+            pthread
+            ${BOOST_LINK_LIBS}
+            )
     endif()
 
     if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
