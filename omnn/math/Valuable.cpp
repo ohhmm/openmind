@@ -1305,13 +1305,11 @@ std::string Spaceless(std::string s) {
 
     std::string Valuable::OpenCL() const {
         std::stringstream source;
-        source << "__kernel void f(";
+        source << "__kernel void f(__global float *Result";
         auto vars = Vars();
         for(auto& v: vars)
-            source << "__global float *_" << v << ',';
-        source
-            << "__global float *Result){"
-            << "    const uint i = get_global_id(0);";
+            source << ",__global float *_" << v;
+        source << "){const uint i = get_global_id(0);";
         for(auto& v: vars)
             source << "float " << v << "=_" << v << "[i];";
         source << "Result[i]=";
