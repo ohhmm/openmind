@@ -584,7 +584,7 @@ std::string Spaceless(std::string s) {
             Become(std::move(sum));
         }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
         auto _ = str();
         auto same = s == _
             || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
