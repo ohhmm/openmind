@@ -162,6 +162,7 @@ public:
     Valuable InCommonWith(const Valuable& v) const override;
 
     std::wstring save(const std::wstring&) const override;
+    std::ostream& code(std::ostream&) const override;
     
     static const ranges_t empty_zero_zone;
     bool Factorization(const std::function<bool(const Valuable&)>& f,

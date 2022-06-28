@@ -50,6 +50,12 @@ namespace math {
     const Valuable& infinity = Infinity::GlobalObject;
     const Valuable& minfinity = MInfinity::GlobalObject;
     const Variable& integration_result_constant = "integration_result_constant"_va;
+    
+        std::map<std::string_view, Valuable> Constants ={
+            {"e", constant::e},
+            {"i", constant::i},
+            {"pi", constant::pi},
+        };
     } // namespace constants
 
     thread_local bool Valuable::optimizations = true;
@@ -460,12 +466,13 @@ std::string Spaceless(std::string s) {
                             && s.find_first_not_of("0123456789ABCDEFabcdef", 2) == std::string::npos
                             )
                             Become(Integer(s));
-                        else
+                        else if(std::all_of(s.begin(), s.end(), [](auto c){return std::isalnum(c);}))
                             Become(Valuable(h->Host(s)));
                     }
                 }
             }
-        } else {
+        }
+        {
             Valuable sum = Sum{};
             Valuable v;
             using op_t = std::function<void(Valuable &&)>;
@@ -640,7 +647,7 @@ std::string Spaceless(std::string s) {
     Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     :Valuable(std::string_view(str), vaNames, itIsOptimized)
     {
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
 #ifndef ALLOW_CACHE_UPGRADE
       auto _ = this->str();
 //      if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
@@ -773,15 +780,14 @@ std::string Spaceless(std::string s) {
                         Become(std::move(v));
                     }
                     else {
-                        constexpr const auto& Constants = constants::ConstNameAdder::GetConstantNamesMap();
-                        auto it = Constants.find(s);
-                        if (it != Constants.end()) {
+                        auto it = constants::Constants.find(s);
+                        if (it != constants::Constants.end()) {
                             Valuable v(it->second);
                             if (itIsOptimized)
                                 v.MarkAsOptimized();
                             Become(std::move(v));
                         } else {
-                            LOG_AND_IMPLEMENT(s << ": no var/const found");
+                            Become(Valuable(s, vaNames.begin()->second.getVaHost(), itIsOptimized));
                         }
                     }
                 }
