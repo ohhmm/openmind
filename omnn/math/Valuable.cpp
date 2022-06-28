@@ -470,7 +470,7 @@ std::string Spaceless(std::string s) {
             Valuable v;
             using op_t = std::function<void(Valuable &&)>;
             op_t o_mov = [&](Valuable&& val) { v = std::move(val); };
-            op_t o_sum, o_mul, o_exp;
+            op_t o_sum, o_mul, o_div, o_exp;
             if (itIsOptimized) {
                 o_sum = [&](Valuable&& val) {
                     if (val != 0) {
@@ -488,6 +488,12 @@ std::string Spaceless(std::string s) {
                     p.Add(std::move(val));
                     v = std::move(p);
                 };
+                o_div = [&](Valuable&& val) {
+                    Fraction f{std::move(v), std::move(val)};
+                    if(itIsOptimized)
+                        f.MarkAsOptimized();
+                    v = std::move(f);
+                };
                 o_exp = [&](Valuable&& val) {
                     Exponentiation e{std::move(v), std::move(val)};
                     if(itIsOptimized)
@@ -497,6 +503,7 @@ std::string Spaceless(std::string s) {
             } else {
                 o_sum = [&](Valuable&& val) { sum += std::move(val); };
                 o_mul = [&](Valuable&& val) { v *= std::move(val); };
+                o_div = [&](Valuable&& val) { v /= std::move(val); };
                 o_exp = [&](Valuable&& val) { v ^= std::move(val); };
             }
 
@@ -559,6 +566,11 @@ std::string Spaceless(std::string s) {
                     while (s[i + 1] == ' ')
                         ++i;
                     mulByNeg = s[i + 1] == '-';
+                }
+                else if (c == '/') {
+                    o = o_mul;
+                    while (s[i + 1] == ' ')
+                        ++i;
                 }
                 else if (c == '^') {
                     o = o_exp;
