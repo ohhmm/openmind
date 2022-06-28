@@ -422,7 +422,12 @@ std::string Spaceless(std::string s) {
             {
                 auto lpart = s.substr(0, found);
                 auto rpart = s.substr(found + 1, s.length() - found);
-                Become(Valuable(lpart, h, itIsOptimized) * Valuable(rpart, h, itIsOptimized));
+                Product p;
+                if(itIsOptimized)
+                    p.MarkAsOptimized();
+                p.Add(std::move(lpart));
+                p.Add(std::move(rpart));
+                Become(std::move(p));
             }
             else
             {
@@ -475,18 +480,23 @@ std::string Spaceless(std::string s) {
                 o_sum = [&](Valuable&& val) {
                     if (val != 0) {
                         Sum s{std::move(sum), std::move(val)};
-                        s.MarkAsOptimized();
+                        if(itIsOptimized)
+                            s.MarkAsOptimized();
                         sum = std::move(s);
                     }
                 };
                 o_mul = [&](Valuable&& val) {
-                    Product p{std::move(v), std::move(val)};
-                    p.MarkAsOptimized();
+                    Product p;
+                    if(itIsOptimized)
+                        p.MarkAsOptimized();
+                    p.Add(std::move(v));
+                    p.Add(std::move(val));
                     v = std::move(p);
                 };
                 o_exp = [&](Valuable&& val) {
                     Exponentiation e{std::move(v), std::move(val)};
-                    e.MarkAsOptimized();
+                    if(itIsOptimized)
+                        e.MarkAsOptimized();
                     v = std::move(e);
                 };
             } else {
