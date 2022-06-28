@@ -16,6 +16,12 @@ namespace math {
         
     protected:
         using cont = ContT;
+
+    public:
+        using iterator = typename cont::iterator;
+        using const_reference = typename ContT::const_reference;
+
+    protected:
         virtual cont& GetCont() = 0;
         bool IsSubObject(const Valuable& o) const override {
             auto is = this == &o.get();
@@ -29,9 +35,17 @@ namespace math {
             return is;
         }
         
+        template <class ItemT>
+        const iterator AddImpl(ItemT&& item, const iterator hint) {
+            Valuable::hash ^= item.Hash();
+            auto& c = GetCont();
+            this->optimized = {};
+            auto it = hint == c.end() ? getit(c.emplace(std::forward<ItemT>(item)))
+                                      : getit(c.insert(hint, std::forward<ItemT>(item)));
+            return it;
+        }
+
     public:
-        using iterator = typename cont::iterator;
-        using const_reference = typename ContT::const_reference;
 
         using base::base;
         ValuableCollectionDescendantContract(ValuableCollectionDescendantContract&&)=default;
@@ -86,19 +100,20 @@ namespace math {
             IMPLEMENT
         }
         
+        virtual const iterator Add(Valuable&& item, const iterator hint)
+        {
+            return AddImpl(std::move(item), hint);
+        }
+
         virtual const iterator Add(const Valuable& item, const iterator hint)
         {
-            Valuable::hash ^= item.Hash();
-            auto& c = GetCont();
-            this->optimized = {};
-            auto it = hint == c.end() ? getit(c.emplace(item)) : getit(c.insert(hint, item));
-            return it;
+            return AddImpl(item, hint);
         }
 
         template <class ItemT>
         const iterator Add(ItemT&& item)
         {
-            return base::template as<Chld>().Add(std::forward<ItemT>(item), GetCont().end());
+            return AddImpl(std::forward<ItemT>(item), GetCont().end());
         }
 
         template<class T>

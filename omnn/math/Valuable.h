@@ -282,7 +282,10 @@ public:
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized = false);
 
-    virtual ~Valuable();
+    //constexpr
+	virtual ~Valuable()//{}
+        ;
+
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
     virtual Valuable& operator +=(int);
@@ -411,7 +414,7 @@ public:
     virtual const vars_cont_t& getCommonVars() const;
     virtual Valuable InCommonWith(const Valuable& v) const;
     static const vars_cont_t& emptyCommonVars();
-    Valuable varless() const;
+    virtual Valuable varless() const;
     static Valuable VaVal(const vars_cont_t& v);
     Valuable getVaVal() const;
     virtual bool eval(const std::map<Variable, Valuable>& with);
@@ -542,6 +545,21 @@ public:
 
 template <const unsigned long long I>
 const Valuable vo<I>::val = I;
+
+#if defined(MSVC) || defined(__APPLE__)
+template <const double I>
+class vf {
+    static const Valuable val;
+public:
+    constexpr operator const Valuable& () const {
+        return val;
+    }
+    static const Valuable& get() { return val; }
+};
+
+template <const double I>
+const Valuable vf<I>::val = I;
+#endif
 
 }}
 

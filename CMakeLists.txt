@@ -100,7 +100,7 @@ include(ExternalData)
 include(ExternalProject)
 
 find_package(Git QUIET)
-if(NOT GIT_EXECUTABLE AND MSVC)
+if(NOT GIT_EXECUTABLE AND WINDOWS)
 	find_program(GIT_EXECUTABLE git PATHS 
 		"$ENV{ProgramFiles}/Microsoft Visual Studio/*/*/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/Git/cmd/"
 		)
