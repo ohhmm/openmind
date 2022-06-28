@@ -1309,10 +1309,10 @@ std::string Spaceless(std::string s) {
         auto vars = Vars();
         for(auto& v: vars)
             source << ",__global float *_" << v;
-        source << "){const uint i = get_global_id(0);";
+        source << "){const uint _i = get_global_id(0);";
         for(auto& v: vars)
-            source << "float " << v << "=_" << v << "[i];";
-        source << "Result[i]=";
+            source << "float " << v << "=_" << v << "[_i];";
+        source << "Result[_i]=";
         code(source);
         source << ";}";
         return source.str();
