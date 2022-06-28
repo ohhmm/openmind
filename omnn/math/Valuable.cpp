@@ -422,12 +422,7 @@ std::string Spaceless(std::string s) {
             {
                 auto lpart = s.substr(0, found);
                 auto rpart = s.substr(found + 1, s.length() - found);
-                Product p;
-                if(itIsOptimized)
-                    p.MarkAsOptimized();
-                p.Add(std::move(Valuable(lpart, h, itIsOptimized)));
-                p.Add(std::move(Valuable(rpart, h, itIsOptimized)));
-                Become(std::move(p));
+                Become(Valuable(lpart, h, itIsOptimized) * Valuable(rpart, h, itIsOptimized));
             }
             else
             {
@@ -1318,10 +1313,15 @@ std::string Spaceless(std::string s) {
         source << "__kernel void f(__global float *Result";
         auto vars = Vars();
         for(auto& v: vars)
-            source << ",__global float *_" << v;
+            if (v.str() != "i")
+                source << ",__global float *_" << v;
         source << "){const uint _i = get_global_id(0);";
-        for(auto& v: vars)
-            source << "float " << v << "=_" << v << "[_i];";
+        for(auto& v: vars) {
+            source << "float " << v << "=_" << v;
+            if (v.str() != "i")
+                source << "[_i]";
+            source << ';';
+        }
         source << "Result[_i]=";
         code(source);
         source << ";}";
