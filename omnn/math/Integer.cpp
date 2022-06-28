@@ -675,6 +675,10 @@ namespace math {
         return out << arbitrary.str().c_str();
     }
 
+    std::ostream& Integer::code(std::ostream& out) const {
+        return print(out);
+    }
+
     Valuable Integer::calcFreeMember() const
     {
         return *this;
