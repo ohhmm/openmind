@@ -113,7 +113,7 @@ namespace math {
         template <class ItemT>
         const iterator Add(ItemT&& item)
         {
-            return Add(std::forward<ItemT>(item), GetCont().end());
+            return AddImpl(std::forward<ItemT>(item), GetCont().end());
         }
 
         template<class T>

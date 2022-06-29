@@ -59,7 +59,7 @@ protected:
     
 	template <typename T>
 	const Sum::iterator SumAddImpl(T&& item, const iterator hint);
-    
+
 public:
     std::ostream& code(std::ostream& out) const override;
 	const cont& GetConstCont() const override { return members; }
@@ -107,6 +107,7 @@ public:
     const iterator Add(const Valuable& item, const iterator hint) override;
     bool IsComesBefore(const Valuable& v) const override;
 
+    Sum(const std::initializer_list<Valuable>& l);
     Sum(std::initializer_list<Valuable>&& l);
 
     bool IsBinomial() const;

@@ -48,7 +48,7 @@ public:
     { update2(std::forward<T>(exponentiation)); }
     
     static max_exp_t getMaxVaExp(const Valuable& b, const Valuable& e);
-    max_exp_t getMaxVaExp()  const override;
+    max_exp_t getMaxVaExp() const override;
 
     // virtual operators
     Valuable& operator +=(const Valuable& v) override;

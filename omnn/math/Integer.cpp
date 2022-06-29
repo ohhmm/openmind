@@ -642,7 +642,7 @@ namespace math {
     Valuable Integer::Sign() const {
         return arbitrary.sign();
     }
-    
+
     bool Integer::operator <(const Valuable& v) const
     {
         if (v.IsInt())
@@ -682,6 +682,10 @@ namespace math {
     std::wostream& Integer::print(std::wostream& out) const
     {
         return out << arbitrary.str().c_str();
+    }
+
+    std::ostream& Integer::code(std::ostream& out) const {
+        return print(out);
     }
 
     Valuable Integer::calcFreeMember() const
