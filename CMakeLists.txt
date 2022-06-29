@@ -33,6 +33,7 @@ else()
 endif()
 
 option(OPENMIND_BUILD_TESTS "Build various TESTS" _IS_DEBUG)
+option(OPENMIND_DEBUG_CHECKS "Additional debug checks" _IS_DEBUG)
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
 option(OPENMIND_BUILD_GC "Use garbage collection. Faster but requires abundant memory." FALSE) 
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
@@ -319,6 +320,9 @@ function(apply_target_commons this_target)
 		BOOST_ERROR_CODE_HEADER_ONLY
 		BOOST_COMPUTE_USE_CPP11
 		)
+	if(NOT OPENMIND_DEBUG_CHECKS)
+		target_compile_definitions(${this_target} PUBLIC NOOMDEBUG)
+	endif()
 	set_target_properties(${this_target} PROPERTIES
 		CXX_STANDARD 20
 		)

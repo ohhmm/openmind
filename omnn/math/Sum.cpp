@@ -64,10 +64,10 @@ namespace
                 typeid(Modulo),
                 typeid(Infinity),
             };
-            
+
             static auto ob = std::begin(order);
             static auto oe = std::end(order);
-            
+
             auto it1 = std::find(ob, oe, x.Type());
             assert(it1!=oe); // IMPLEMENT
             auto it2 = std::find(ob, oe, y.Type());
@@ -968,7 +968,21 @@ namespace
         
         return Become(std::move(sum));
     }
-    
+
+    Sum::Sum(const std::initializer_list<Valuable>& l)
+    {
+        for (auto& arg : l)
+        {
+            if(arg.IsSum()) {
+                auto& a = arg.as<Sum>();
+                for(auto& m: a)
+                    this->Add(m);
+            }
+            else
+                this->Add(std::move(arg));
+        }
+    }
+
     Sum::Sum(std::initializer_list<Valuable>&& l)
     {
         for (auto& arg : l)
@@ -982,7 +996,7 @@ namespace
                 this->Add(std::move(arg));
         }
     }
-    
+
     bool Sum::IsComesBefore(const Valuable& v) const
     {
         if (v.IsSum()) {

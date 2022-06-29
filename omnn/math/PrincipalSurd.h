@@ -32,9 +32,9 @@ public:
 
     Valuable& sq() override;
     Valuable Sqrt() const override;
-    
+
     Valuable Sign() const override;
-    
+
     std::ostream& code(std::ostream&) const override;
 };
 

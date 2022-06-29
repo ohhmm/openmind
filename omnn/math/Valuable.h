@@ -154,6 +154,7 @@ protected:
 
 public:
     virtual std::ostream& code(std::ostream& out) const;
+    std::string OpenCL() const;
 
     enum View
     {
@@ -285,10 +286,9 @@ public:
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized = false);
 
-    //constexpr 
+    //constexpr
 	virtual ~Valuable()//{}
         ;
-
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
     virtual Valuable& operator +=(int);

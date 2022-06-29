@@ -978,7 +978,7 @@ namespace math {
         if (b.IsVa()) { // TODO: FindVa too
             auto va = b.as<Variable>();
             auto it = v.find(va);
-            if (it != v.end() && !it->second.Same(eexp()))
+            if (it != v.end() || !it->second.Same(eexp()))
                 LOG_AND_IMPLEMENT(*this << " Exponentiation::getCommonVars not ready");
         }
 #endif

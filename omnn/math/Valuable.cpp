@@ -30,8 +30,9 @@
 #endif
 #include <boost/core/demangle.hpp>
 #include <boost/numeric/conversion/converter.hpp>
+#ifndef __APPLE__
 #include <boost/stacktrace.hpp>
-
+#endif
 #include <rt/GC.h>
 
 
@@ -66,6 +67,12 @@ namespace math {
     constexpr const Valuable& infinity = Infinity::GlobalObject;
     constexpr const Valuable& minfinity = MInfinity::GlobalObject;
     const Variable& integration_result_constant = "integration_result_constant"_va;
+
+        std::map<std::string_view, Valuable> Constants ={
+            {"e", constant::e},
+            {"i", constant::i},
+            {"pi", constant::pi},
+        };
     } // namespace constants
 
     thread_local bool Valuable::optimizations = true;
@@ -139,7 +146,11 @@ namespace math {
     {
     	if (exp)
     		return exp->Type();
-        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
+        LOG_AND_IMPLEMENT(" Implement Type() "
+#ifndef __APPLE__
+                          << boost::stacktrace::stacktrace()
+#endif
+                          );
     }
 
     Valuable& Valuable::Become(Valuable&& i)
@@ -474,38 +485,51 @@ std::string Spaceless(std::string s) {
                             && s.find_first_not_of("0123456789ABCDEFabcdef", 2) == std::string::npos
                             )
                             Become(Integer(s));
-                        else
+                        else if(std::all_of(s.begin(), s.end(), [](auto c){return std::isalnum(c);}))
                             Become(Valuable(h->Host(s)));
                     }
                 }
             }
-        } else {
+        }
+        {
             Valuable sum = Sum{};
             Valuable v;
             using op_t = std::function<void(Valuable &&)>;
             op_t o_mov = [&](Valuable&& val) { v = std::move(val); };
-            op_t o_sum, o_mul, o_exp;
+            op_t o_sum, o_mul, o_div, o_exp;
             if (itIsOptimized) {
                 o_sum = [&](Valuable&& val) {
                     if (val != 0) {
                         Sum s{std::move(sum), std::move(val)};
-                        s.MarkAsOptimized();
+                        if(itIsOptimized)
+                            s.MarkAsOptimized();
                         sum = std::move(s);
                     }
                 };
                 o_mul = [&](Valuable&& val) {
-                    Product p{std::move(v), std::move(val)};
-                    p.MarkAsOptimized();
+                    Product p;
+                    if(itIsOptimized)
+                        p.MarkAsOptimized();
+                    p.Add(std::move(v));
+                    p.Add(std::move(val));
                     v = std::move(p);
+                };
+                o_div = [&](Valuable&& val) {
+                    Fraction f{std::move(v), std::move(val)};
+                    if(itIsOptimized)
+                        f.MarkAsOptimized();
+                    v = std::move(f);
                 };
                 o_exp = [&](Valuable&& val) {
                     Exponentiation e{std::move(v), std::move(val)};
-                    e.MarkAsOptimized();
+                    if(itIsOptimized)
+                        e.MarkAsOptimized();
                     v = std::move(e);
                 };
             } else {
                 o_sum = [&](Valuable&& val) { sum += std::move(val); };
                 o_mul = [&](Valuable&& val) { v *= std::move(val); };
+                o_div = [&](Valuable&& val) { v /= std::move(val); };
                 o_exp = [&](Valuable&& val) { v ^= std::move(val); };
             }
 
@@ -569,6 +593,11 @@ std::string Spaceless(std::string s) {
                         ++i;
                     mulByNeg = s[i + 1] == '-';
                 }
+                else if (c == '/') {
+                    o = o_mul;
+                    while (s[i + 1] == ' ')
+                        ++i;
+                }
                 else if (c == '^') {
                     o = o_exp;
                 }
@@ -588,7 +617,7 @@ std::string Spaceless(std::string s) {
             Become(std::move(sum));
         }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
         auto _ = str();
         auto same = s == _
             || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
@@ -654,7 +683,7 @@ std::string Spaceless(std::string s) {
     Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     :Valuable(std::string_view(str), vaNames, itIsOptimized)
     {
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
 #ifndef ALLOW_CACHE_UPGRADE
       auto _ = this->str();
 //      if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
@@ -787,15 +816,14 @@ std::string Spaceless(std::string s) {
                         Become(std::move(v));
                     }
                     else {
-                        constexpr const auto& Constants = constants::ConstNameAdder::GetConstantNamesMap();
-                        auto it = Constants.find(s);
-                        if (it != Constants.end()) {
+                        auto it = constants::Constants.find(s);
+                        if (it != constants::Constants.end()) {
                             Valuable v(it->second);
                             if (itIsOptimized)
                                 v.MarkAsOptimized();
                             Become(std::move(v));
                         } else {
-                            LOG_AND_IMPLEMENT(s << ": no var/const found");
+                            Become(Valuable(s, vaNames.begin()->second.getVaHost(), itIsOptimized));
                         }
                     }
                 }
@@ -1317,7 +1345,11 @@ std::string Spaceless(std::string s) {
         if(exp)
             return exp->print(out);
         else {
-            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n' << boost::stacktrace::stacktrace());
+            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n'
+#ifndef __APPLE__
+                                                                    << boost::stacktrace::stacktrace()
+#endif
+                              );
         }
     }
 
@@ -1325,7 +1357,7 @@ std::string Spaceless(std::string s) {
         if (exp)
             return exp->print(out);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << *this);
     }
 
     std::ostream& Valuable::code(std::ostream& out) const {
@@ -1333,6 +1365,26 @@ std::string Spaceless(std::string s) {
             return exp->code(out);
         else
             IMPLEMENT
+    }
+
+    std::string Valuable::OpenCL() const {
+        std::stringstream source;
+        source << "__kernel void f(__global float *Result";
+        auto vars = Vars();
+        for(auto& v: vars)
+            if (v.str() != "i")
+                source << ",__global float *_" << v;
+        source << "){const uint _i = get_global_id(0);";
+        for(auto& v: vars) {
+            source << "float " << v << "=_" << v;
+            if (v.str() != "i")
+                source << "[_i]";
+            source << ';';
+        }
+        source << "Result[_i]=";
+        code(source);
+        source << ";}";
+        return source.str();
     }
 
     std::ostream& operator<<(std::ostream& out, const Valuable& obj)
