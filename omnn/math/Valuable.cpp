@@ -146,11 +146,11 @@ namespace math {
     {
     	if (exp)
     		return exp->Type();
-        LOG_AND_IMPLEMENT(" Implement Type() "
-#ifndef __APPLE__
-                          << boost::stacktrace::stacktrace()
+#ifdef __APPLE__
+        LOG_AND_IMPLEMENT(" Implement Type() ");
+#else
+        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
 #endif
-                          );
     }
 
     Valuable& Valuable::Become(Valuable&& i)
@@ -1345,11 +1345,12 @@ std::string Spaceless(std::string s) {
         if(exp)
             return exp->print(out);
         else {
+#ifdef __APPLE__
+            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n');
+#else
             LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n'
-#ifndef __APPLE__
-                                                                    << boost::stacktrace::stacktrace()
+                                                                    << boost::stacktrace::stacktrace());
 #endif
-                              );
         }
     }
 
