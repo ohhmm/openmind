@@ -23,7 +23,6 @@
 #include <boost/algorithm/string/replace.hpp>
 #endif
 #include <boost/numeric/conversion/converter.hpp>
-#include <boost/stacktrace.hpp>
 
 #include <rt/GC.h>
 
@@ -42,22 +41,14 @@ namespace math {
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
     namespace constants {
-    constexpr const Valuable& e = constant::e;
-    constexpr const Valuable& i = constant::i;
-    constexpr const Valuable& zero = vo<0>();
-    constexpr const Valuable& one = vo<1>();
-    constexpr const Valuable& two = vo<2>();
-#ifdef MSVC
-    constexpr const Valuable& half = vf<.5>();
-#else
-    const Valuable& half = 1_v / 2;
-#endif
-    constexpr const Valuable& minus_1 = vo<-1>();
-    const Valuable& plus_minus_1 = Exponentiation{1_v, 1_v / 2};          // ±1
-    const Valuable& zero_or_1 = Sum{Exponentiation{1_v/4, 1_v/2}, 1_v/2}; // (1±1)/2
-    constexpr const Valuable& pi = constant::pi;
-    constexpr const Valuable& infinity = Infinity::GlobalObject;
-    constexpr const Valuable& minfinity = MInfinity::GlobalObject;
+    const Valuable& e = constant::e;
+    const Valuable& i = constant::i;
+    const Valuable& zero = vo<0>();
+    const Valuable& one = vo<1>();
+    const Valuable& plus_minus_1 = 1_v^(1_v/2); // ±1
+    const Valuable& pi = constant::pi;
+    const Valuable& infinity = Infinity::GlobalObject;
+    const Valuable& minfinity = MInfinity::GlobalObject;
     const Variable& integration_result_constant = "integration_result_constant"_va;
     
         std::map<std::string_view, Valuable> Constants ={
@@ -138,7 +129,7 @@ namespace math {
     {
     	if (exp)
     		return exp->Type();
-        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
+        IMPLEMENT
     }
 
     Valuable& Valuable::Become(Valuable&& i)
@@ -1317,9 +1308,8 @@ std::string Spaceless(std::string s) {
     {
         if(exp)
             return exp->print(out);
-        else {
-            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n' << boost::stacktrace::stacktrace());
-        }
+        else
+            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << *this);
     }
 
     std::wostream& Valuable::print(std::wostream& out) const {

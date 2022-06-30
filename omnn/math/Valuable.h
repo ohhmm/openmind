@@ -72,8 +72,6 @@ extern const Valuable& e;
 extern const Valuable& i;
 extern const Valuable& zero;
 extern const Valuable& one;
-extern const Valuable& two;
-extern const Valuable& half;
 extern const Valuable& plus_minus_1; // ±1
 extern const Valuable& infinity;
 extern const Valuable& minfinity;
