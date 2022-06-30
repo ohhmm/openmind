@@ -138,7 +138,7 @@ namespace math {
     {
     	if (exp)
     		return exp->Type();
-        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
+        IMPLEMENT
     }
 
     Valuable& Valuable::Become(Valuable&& i)
@@ -1317,9 +1317,8 @@ std::string Spaceless(std::string s) {
     {
         if(exp)
             return exp->print(out);
-        else {
-            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n' << boost::stacktrace::stacktrace());
-        }
+        else
+            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << *this);
     }
 
     std::wostream& Valuable::print(std::wostream& out) const {
