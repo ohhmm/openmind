@@ -54,6 +54,8 @@ elseif(OPENMIND_PRIME_TABLE STREQUAL Bundled)
 	add_definitions(-DOPENMIND_PRIME_TABLE_OM)
 endif()
 set(BOOST_USED_COMPONENTS
+	${BOOST_USED_COMPONENTS}
+	${BOOST_ADDITIONAL_COMPONENTS}
 	date_time
 	filesystem
 	iostreams
@@ -66,6 +68,9 @@ if(OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 		set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test)
 	endif()
 endif()
+list(REMOVE_DUPLICATES BOOST_USED_COMPONENTS)
+set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} CACHE STRINGS "Components")
+
 if(OPENMIND_BUILD_GC)
 	add_definitions(-DOPENMIND_BUILD_GC)
 endif()
@@ -539,7 +544,11 @@ macro(lib)
     add_dependencies(${this_target} conf)
 	message("add_library(${this_target} ${src})")
 	if(NOT MSVC)
-	    target_link_libraries(${this_target} PUBLIC ${BOOST_LINK_LIBS})
+		target_link_libraries(${this_target} PUBLIC ${BOOST_LINK_LIBS})
+		foreach (boostcomponent ${BOOST_ADDITIONAL_COMPONENTS})
+			string(TOUPPER ${boostcomponent} boostcomponent)
+			target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_LIBRARY})
+		endforeach ()
 	endif()
 	#message("target_link_libraries(${this_target} PUBLIC ${deps})")
     deps(${TEST_DEPS} ${deps})
