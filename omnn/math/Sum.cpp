@@ -628,8 +628,6 @@ namespace
 
 	Valuable& Sum::operator *=(const Valuable& v)
 	{
-        Sum sum;
-        sum.SetView(GetView());
         auto vIsInt = v.IsInt();
         if (vIsInt && v == 0)
         {
@@ -641,22 +639,24 @@ namespace
             return *this;
         }
         else {
-            if (v.IsSum()) {
-                for (auto& _1 : v.as<Sum>())
-                    for (auto& _2 : members)
-                        sum.Add(_1 * _2);
-                optimized={};
-            }
-            else
+            Sum sum;
             {
-                for (auto& a : members)
-                {
-                    sum.Add(a * v);
+                OptimizeOff oo;
+                sum.SetView(GetView());
+                if (v.IsSum()) {
+                    for (auto& _1 : v.as<Sum>())
+                        for (auto& _2 : members)
+                            sum.Add(_1 * _2);
                 }
-                if (vIsInt)
-                    sum.optimized = optimized;
                 else
-                    optimized={};
+                {
+                    for (auto& a : members)
+                    {
+                        sum.Add(a * v);
+                    }
+                    if (vIsInt)
+                        sum.optimized = optimized;
+                }
             }
             Become(std::move(sum));
         }
@@ -985,12 +985,13 @@ namespace
 
     Sum::Sum(std::initializer_list<Valuable>&& l)
     {
-        for (auto& arg : l)
+        for (auto& a : l)
         {
+            auto&& arg = std::move(const_cast<Valuable&>(a));
             if(arg.IsSum()) {
                 auto& a = arg.as<Sum>();
                 for(auto& m: a)
-                    this->Add(m);
+                    this->Add(std::move(m));
             }
             else
                 this->Add(std::move(arg));
@@ -1183,6 +1184,7 @@ namespace
         // TODO : openmp
         //#pragma omp parallel default(none) shared(grade,coefficients)
         {
+            OptimizeOff oo;
         //#pragma omp for 
         for (auto& m : members)
         {
@@ -1271,7 +1273,7 @@ namespace
         }
         }
         if(c0.size()){
-//            c0.optimized = optimized;
+            OptimizeOn oo;
             coefficients[0] = std::move(c0);
         }
 
