@@ -3,7 +3,7 @@ Find_Package(ICU)
 if(NOT ICU_FOUND)
     ExternalProject_Add(icu
         GIT_REPOSITORY https://github.com/unicode-org/icu.git
-        GIT_TAG release-70-1
+        GIT_TAG release-71-1
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env
                 CC=${CMAKE_C_COMPILER}
@@ -24,4 +24,7 @@ exe(
 	madler/ZLIB
 	meta-toolkit/meta
     )
-add_dependencies(meta boost icu)
+
+if(NOT ICU_FOUND)
+    add_dependencies(icu)
+endif()
