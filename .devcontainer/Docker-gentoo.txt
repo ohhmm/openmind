@@ -4,12 +4,11 @@ RUN emerge --sync
 
 RUN echo 'CFLAGS="-march=native -mtune=native -O3 -pipe"' > /etc/make.conf
 RUN echo 'CXXFLAGS="${CFLAGS}"' >> /etc/make.conf
-RUN echo 'USE="${USE} static-libs system system-bootstrap system-llvm"' >> /etc/make.conf
+RUN echo 'USE="${USE} -examples static-libs system system-bootstrap system-llvm"' >> /etc/make.conf
 
 RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
-
-RUN echo "dev-libs/boost test" > /etc/portage/package.use/boost
+RUN echo "dev-libs/boost icu lzma python test" > /etc/portage/package.use/boost
 
 RUN emerge \
     bash-completion \
@@ -59,5 +58,5 @@ RUN emerge --update \
     dev-cpp/benchmark \
     dev-cpp/gtest \
     -j`nproc`
-RUN ( cd /var/db/repos/gentoo/dev-libs/boost/ && cp boost-1.79.0.ebuild boost-1.78.0.ebuild )
+#RUN ( cd /var/db/repos/gentoo/dev-libs/boost/ && cp boost-1.79.0.ebuild boost-1.78.0.ebuild )
 #RUN emerge =dev-libs/boost-1.78.0 -j`nproc`
