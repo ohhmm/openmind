@@ -1,17 +1,15 @@
 FROM gentoo/stage3:latest
 
-LABEL platform agnostic container
-
 RUN emerge --sync
 
-RUN echo 'CFLAGS="-march=native -O3 -pipe"' > /etc/make.conf
+RUN echo 'CFLAGS="-march=native -mtune=native -O3 -pipe"' > /etc/make.conf
 RUN echo 'CXXFLAGS="${CFLAGS}"' >> /etc/make.conf
+RUN echo 'USE="${USE} static-libs system system-bootstrap system-llvm"' >> /etc/make.conf
 
 RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
 
 RUN echo "dev-libs/boost test" > /etc/portage/package.use/boost
-RUN echo "dev-libs/icu static-libs" > /etc/portage/package.use/icu
 
 RUN emerge \
     bash-completion \
@@ -29,7 +27,9 @@ RUN eix-update
 RUN emerge -j`nproc` leveldb
 
 RUN emerge \
+    app-arch/lz4 \
     dev-libs/icu \
+    dev-libs/openssl \
     sys-process/htop \
     sys-libs/zlib \
     x11-libs/libX11 \
@@ -47,5 +47,17 @@ RUN emerge \
     lldb \
     -j`nproc`
 
-RUN emerge -j`nproc` =dev-libs/boost-1.79.0
+RUN emerge \
+    =dev-libs/boost-1.79.0 \
+    -j`nproc`
 RUN sed -i 's/image_read_info< targa_tag >()/image_read_info()/g' /usr/include/boost/gil/extension/io/targa/tags.hpp
+
+# FoundationDB deps
+RUN echo "dev-lang/mono minimal" > /etc/portage/package.use/mono
+RUN emerge --update dev-lang/mono -j`nproc`
+RUN emerge --update \
+    dev-cpp/benchmark \
+    dev-cpp/gtest \
+    -j`nproc`
+RUN ( cd /var/db/repos/gentoo/dev-libs/boost/ && cp boost-1.79.0.ebuild boost-1.78.0.ebuild )
+#RUN emerge =dev-libs/boost-1.78.0 -j`nproc`
