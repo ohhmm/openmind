@@ -26,5 +26,5 @@ exe(
     )
 
 if(NOT ICU_FOUND)
-    add_dependencies(icu)
+    add_dependencies(meta icu)
 endif()
