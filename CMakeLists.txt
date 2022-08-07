@@ -204,10 +204,10 @@ else()
     add_custom_target(boost)
 endif()
 set(BOOST_LINK_LIBS
-    boost_thread
-    boost_serialization
-    boost_system
-    boost_filesystem
+    Boost::thread
+    Boost::serialization
+    Boost::system
+    Boost::filesystem
     )
 set(BOOST_TEST_LINK_LIBS
     ${BOOST_LINK_LIBS}
