@@ -40,7 +40,7 @@ option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare 
 option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc source code file during CPU cores idle" _IS_DEBUG)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
-set(OPENMIND_REQUIRED_BOOST_VERSION 1.79.0 CACHE VERSION "Boost library version to use")
+set(OPENMIND_REQUIRED_BOOST_VERSION 1.80.0 CACHE VERSION "Boost library version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
@@ -63,10 +63,10 @@ set(BOOST_USED_COMPONENTS
 	system
 	thread)
 if(OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
-	set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} unit_test_framework)
-	if(MSVC)
-		set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} test)
-	endif()
+        set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS}
+                unit_test_framework
+                test_exec_monitor
+                )
 endif()
 list(REMOVE_DUPLICATES BOOST_USED_COMPONENTS)
 set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} CACHE STRINGS "Components")
@@ -211,7 +211,7 @@ set(BOOST_LINK_LIBS
     )
 set(BOOST_TEST_LINK_LIBS
     ${BOOST_LINK_LIBS}
-    boost_test_exec_monitor
+    Boost::test_exec_monitor
     )
 
 IF (Boost_FOUND)
