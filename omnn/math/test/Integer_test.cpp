@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
         auto timenow = chrono::system_clock::to_time_t(chrono::system_clock::now());
         cout << ctime(&timenow) << endl;
         int_t t;
-        std::cout << measure<>::execution([&](){
+        std::cout << omnn::measure<>::execution([&](){
             t = boost::multiprecision::sqrt(a.ca());
             auto match = t != sqroot.ca();
 
