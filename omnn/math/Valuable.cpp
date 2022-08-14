@@ -1826,6 +1826,7 @@ std::string Spaceless(std::string s) {
 		return IfEq(v, 1, 0);
     }
 
+    // TODO: constexpr
     Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l)
     {
         Product a;

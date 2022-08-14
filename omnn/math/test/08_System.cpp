@@ -31,22 +31,10 @@
 #include <boost/tokenizer.hpp>
 
 
-template<typename TimeT = std::chrono::milliseconds>
-struct measure
-{
-    template<typename F, typename ...Args>
-    static typename TimeT::rep execution(F&& func, Args&&... args)
-    {
-        auto start = std::chrono::steady_clock::now();
-        std::forward<decltype(func)>(func)(std::forward<Args>(args)...);
-        auto duration = std::chrono::duration_cast<TimeT>(std::chrono::steady_clock::now() - start);
-        return duration.count();
-    }
-};
-
 using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace std;
+
 
 BOOST_AUTO_TEST_CASE(System_tests)
 {
@@ -273,7 +261,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
     }
     
 //    Valuable::optimizations = true;
-//    std::cout << measure<>::execution([&](){
+//    std::cout << omnn::measure<>::execution([&](){
 //        s.optimize();
 //    }) << std::endl;
 //    Valuable::optimizations = {};

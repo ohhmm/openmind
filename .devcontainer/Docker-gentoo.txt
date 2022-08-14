@@ -10,6 +10,8 @@ RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
 RUN echo "dev-libs/boost icu lzma python test" > /etc/portage/package.use/boost
 
+RUN echo "dev-util/cmake **" > /etc/portage/package.accept_keywords/cmake
+
 RUN emerge \
     bash-completion \
     clang \

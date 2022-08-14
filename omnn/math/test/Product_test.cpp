@@ -10,6 +10,11 @@ using namespace std;
 using namespace omnn::math;
 using namespace boost::unit_test;
 
+
+BOOST_AUTO_TEST_CASE(Product_operator_tests) {
+	auto p = std::move(Product{2, 4}); 
+}
+
 BOOST_AUTO_TEST_CASE(Product_tests)
 {
 	auto f = 1_v / 2;
