@@ -37,7 +37,7 @@ class X : public Variable{
 public:
     using base::base;
     static constexpr char Columns[] = {'a','b','c','d','e','f','g','h'};
-    static constexpr omnn::math::a_int ColNo(char c) { return c-Columns[0]; }
+    static constexpr auto ColNo(char c) { return c-Columns[0]; }
     void Rules(System& s) const {
         s << Valuable::Abet(*this, {'a','b','c','d','e','f','g','h'});
     }
@@ -80,18 +80,21 @@ public:
         Bishop=5<<1,
         Rook=6<<1,
     };
-    Field():base{
-        {Rook & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Rook & Black},
-        {Knight & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Knight & Black},
-        {Bishop & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Bishop & Black},
-        {Queen & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Queen & Black},
-        {King & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, King & Black},
-        {Bishop & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Bishop & Black},
-        {Knight & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Knight & Black},
-        {Rook & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Rook & Black},
-    }{
+//    Field():base{
+//        {Rook & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Rook & Black},
+//        {Knight & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Knight & Black},
+//        {Bishop & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Bishop & Black},
+//        {Queen & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Queen & Black},
+//        {King & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, King & Black},
+//        {Bishop & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Bishop & Black},
+//        {Knight & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Knight & Black},
+//        {Rook & White, Pawn & White, 0, 0, 0, 0, Pawn & Black, Rook & Black},
+//    }{
+//    }
+
+    virtual void Rules(System& s) const {
+        throw;
     }
-    void Rules
 };
 
 class Figure : public Variable{
@@ -121,7 +124,9 @@ public:
 
     }
 
-    Valuable Moves()
+    Valuable Moves(){
+        throw;
+    }
 };
 
 class B : public Figure{
@@ -140,7 +145,8 @@ public:
 
 BOOST_AUTO_TEST_CASE(Solve8Qpuzzle)
 {
-    omnn::chess::Q queens[8];
+    omnn::chess::Field field;
+//    omnn::chess::Q queens[8];
 
     System sys;
 
