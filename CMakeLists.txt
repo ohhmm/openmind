@@ -139,7 +139,10 @@ if (Boost_FOUND)
 elseif(OPENMIND_BUILD_BOOST)
     message("Finding boost components ${BOOST_USED_COMPONENTS}")
     foreach(_module ${BOOST_USED_COMPONENTS})
-        if(NOT _module STREQUAL "unit_test_framework")
+        if(_module STREQUAL "unit_test_framework"
+            OR _module STREQUAL "test_exec_monitor")
+		string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
+        else()
             string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
         endif()
 
@@ -203,12 +206,16 @@ else()
     add_custom_target(conf)
     add_custom_target(boost)
 endif()
+
 set(BOOST_LINK_LIBS
-    Boost::thread
     Boost::serialization
     Boost::system
     Boost::filesystem
     )
+if(Boost_VERSION VERSION_LESS 1.80.0)
+    set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
+        Boost::thread)
+endif()
 set(BOOST_TEST_LINK_LIBS
     ${BOOST_LINK_LIBS}
     Boost::test_exec_monitor
