@@ -103,7 +103,6 @@ public:
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator +=(int v) override;
     Valuable& operator *=(const Valuable& v) override;
-    Valuable& operator ^=(const Valuable& v) override;
     a_int Complexity() const override { return 1; }
     bool MultiplyIfSimplifiable(const Valuable& v) override;
     std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
@@ -116,6 +115,7 @@ public:
     omnn::math::Valuable &extracted(const omnn::math::Valuable &dn, const omnn::math::Valuable &exponentiating, const omnn::math::Valuable &x);
     
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result
+    Valuable& operator^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
 
     Valuable Sign() const override;
@@ -153,7 +153,6 @@ public:
     bool HasVa(const Variable& va) const override { return {}; }
     void CollectVa(std::set<Variable>&) const override { }
     void CollectVaNames(Valuable::va_names_t& s) const override { }
-    Valuable varless() const override { return *this; }
     
     bool eval(const std::map<Variable, Valuable>& with) override { return {}; }
     void Eval(const Variable& va, const Valuable& v) override { }

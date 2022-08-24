@@ -73,10 +73,7 @@ namespace math {
                  || v.IsSum()
                  )
             return Become(v**this);
-        else if (v != constants::one)
-            return Become(Product{*this, v});
-        else
-            return *this;
+        return Become(Product{*this, v});
     }
     
     bool Variable::MultiplyIfSimplifiable(const Valuable& v)

@@ -136,17 +136,6 @@ BOOST_AUTO_TEST_CASE(Product_optimization_test)
     _1 = -x * constants::plus_minus_1;
     _2 =  x * constants::plus_minus_1;
     BOOST_TEST(_1 == _2);
-
-    DECL_VA(y);
-    DECL_VA(v);
-    _1 = ((4 * (v ^ 2) + -4 * (y ^ 2) + -4 * (x ^ 2) + -4 * (v ^ 2) + 32 * x + -64) ^ constants::half) *
-         (constants::two ^ -1);
-    _2 = (((v ^ 2) - (y ^ 2) - (x ^ 2) - (v ^ 2) + 8 * x - 8) ^ constants::half);
-    BOOST_TEST(_1 == _2);
-
-    _1.SetView(Valuable::View::Equation);
-    _2 = (v ^ 2) - (y ^ 2) - (x ^ 2) - (v ^ 2) + 8 * x - 8;
-    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Product_multivalues_simplification)
