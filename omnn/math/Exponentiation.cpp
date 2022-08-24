@@ -3,7 +3,6 @@
 //
 #include "Exponentiation.h"
 
-#include "Valuable.h"
 #include "e.h"
 #include "i.h"
 #include "Infinity.h"
@@ -69,13 +68,8 @@ namespace math {
     
     Valuable Exponentiation::varless() const
     {
-        if(getBase().IsVa()) {
-            return constants::one;
-        } else if (FindVa()) {
-            IMPLEMENT;
-        }
-        else
-            return *this;
+        //if
+        return base::varless();
     }
 
     void Exponentiation::InitVars() {

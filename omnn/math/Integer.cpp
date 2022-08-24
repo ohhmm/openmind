@@ -379,8 +379,6 @@ namespace math {
 
     Valuable& Integer::operator^=(const Valuable& v)
     {
-        if(v == constants::one)
-            return *this;
         if(arbitrary == 0 || (arbitrary == 1 && v.IsInt()))
         {
             if (v == 0) {
