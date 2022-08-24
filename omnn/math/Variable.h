@@ -80,7 +80,6 @@ public:
     bool eval(const std::map<Variable, Valuable>& with) override;
     void Eval(const Variable& va, const Valuable& v) override;
     
-    Valuable varless() const override { return constants::one; }
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
