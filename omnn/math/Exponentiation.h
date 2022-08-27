@@ -21,8 +21,11 @@ protected:
 public:
     std::ostream& code(std::ostream& out) const override;
 
-    using base::base;
+    // DONT: overrides behaviour (calls InitVars)
+	// using base::base;
+
     Exponentiation(const Valuable& base, const Valuable& exponentiation);
+    Exponentiation(Valuable&& base, Valuable&& exponentiation);
 
     bool IsExponentiation() const override { return true; }
     bool IsVaExp() const override { return ebase().IsVa(); }
@@ -33,19 +36,35 @@ public:
     const Valuable& ebase() const { return _1; }
     template<class T>
     void setBase(T&& b)
-    { set1(::std::forward<T>(b)); }
+    {
+		set1(::std::forward<T>(b));
+        InitVars();
+        optimized = {};
+	}
     template<class T>
     void updateBase(T&& b)
-    { update1(std::forward<T>(b)); }
+    {
+		update1(std::forward<T>(b));
+        InitVars();
+        optimized = {};
+	}
 
     const Valuable& eexp() const { return _2; }
     const Valuable& getExponentiation() const { return _2; }
     template<class T>
     void setExponentiation(T&& exponentiation)
-    { set1(std::forward<T>(exponentiation)); }
+    {
+		set1(std::forward<T>(exponentiation));
+        InitVars();
+        optimized = {};
+	}
     template<class T>
     void updateExponentiation(T&& exponentiation)
-    { update2(std::forward<T>(exponentiation)); }
+    {
+		update2(std::forward<T>(exponentiation));
+        InitVars();
+        optimized = {};
+    }
     
     static max_exp_t getMaxVaExp(const Valuable& b, const Valuable& e);
     max_exp_t getMaxVaExp() const override;

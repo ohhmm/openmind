@@ -108,6 +108,106 @@ BOOST_AUTO_TEST_CASE(System_tests)
 
 }
 
+BOOST_AUTO_TEST_CASE(Sudoku_test_task) // solve sudoku through a system of equations solver
+{
+    DECL_VA(X);
+    DECL_VA(Y);
+    DECL_VA(v);
+
+    constexpr unsigned Sz = 9;
+    int data[Sz][Sz] = {
+		{0, 1, 3, 8, 0, 0, 4, 0, 5}, 
+		{0, 2, 4, 6, 0, 5, 0, 0, 0},
+		{0, 8, 7, 0, 0, 0, 9, 3, 0},
+		{4, 9, 0, 3, 0, 6, 0, 0, 0}, 
+		{0, 0, 0, 1, 0, 5, 0, 0, 0}, 
+		{0, 0, 0, 7, 0, 1, 0, 9, 3},
+		{0, 6, 9, 0, 0, 0, 7, 4, 0}, 
+		{0, 0, 0, 2, 0, 7, 6, 8, 0}, 
+		{1, 0, 2, 0, 0, 8, 3, 5, 0}
+	};
+    Variable variables[Sz][Sz];
+    Valuable expressions[Sz][Sz];
+
+    // sudoku
+    System s;
+    auto possibleValues = v.Abet({1, 2, 3, 4, 5, 6, 7, 8, 9});
+    s << possibleValues;
+
+    // known values
+    for (auto rowIdx = Sz; rowIdx--;) {
+        for (auto colIdx = Sz; colIdx--;) {
+            auto& i = data[rowIdx][colIdx];
+            if (i) {
+                expressions[colIdx][rowIdx] = i;
+            } else {
+                expressions[colIdx][rowIdx] = possibleValues;
+            }
+            s << variables[colIdx][rowIdx].Equals(expressions[colIdx][rowIdx]);
+        }
+    }
+
+    // rules
+    auto inRow = [&](auto& a, auto i, auto x, auto y) -> decltype(a[0][0])& { return a[x * 3 + y][i]; };
+    auto inCol = [&](auto& a, auto i, auto x, auto y) -> decltype(a[0][0])& { return a[i][x * 3 + y]; };
+    auto inSq = [&](auto& a, auto i, auto x, auto y) -> decltype(a[0][0])& {
+        auto sqNx = i % 3;
+        auto sqNy = (i - sqNx) / 3;
+        return a[sqNx * 3 + x][sqNy * 3 + y];
+    };
+    auto inequals = [&](auto& accessItem, auto i, auto x, auto y) {
+        auto& expression = accessItem(expressions, i, x, y);
+        auto found = expression.IsInt();
+        auto& variable = accessItem(variables, i, x, y);
+        for (int n = Sz; i--;) {
+            if (n == i)
+                continue;
+            auto& otherItemExpression = accessItem(expressions, n, x, y);
+            if (found) {
+                auto otherItemFound = otherItemExpression.IsInt();
+                if (otherItemFound)
+                    continue;
+            }
+            auto& otherItemXY = accessItem(variables, n, x, y);
+            auto diff = variable - otherItemXY;
+            auto inequality = diff.Equals(1) || diff.Equals(2) || diff.Equals(3) || diff.Equals(4) || diff.Equals(5) ||
+                              diff.Equals(6) || diff.Equals(7) || diff.Equals(8) || diff.Equals(-1) ||
+                              diff.Equals(-2) || diff.Equals(-3) || diff.Equals(-4) || diff.Equals(-5) ||
+                              diff.Equals(-6) || diff.Equals(-7) || diff.Equals(-8);
+            s << inequality;
+        }
+    };
+    for (int x = 3; x--;) {
+        for (int y = 3; y--;) {
+            for (int i = Sz; i--;) {
+                // inequalities
+                inequals(inRow, i, x, y);
+                inequals(inCol, i, x, y);
+                inequals(inSq, i, x, y);
+            }
+        }
+    }
+
+    // solve
+    for (auto rowIdx = Sz; rowIdx--;) {
+        for (auto colIdx = Sz; colIdx--;) {
+            auto& exp = expressions[rowIdx][colIdx];
+            if (!exp.IsInt()) {
+                auto& var = variables[rowIdx][colIdx];
+                auto solutions = s.Solve(var);
+                if (!solutions.size()==1) {
+                    throw;
+                }
+                auto solution = *solutions.begin();
+                exp = solution;
+            }
+            std::cout << setw(2) << exp;
+        }
+        std::cout << std::endl;
+    }
+
+}
+
 BOOST_AUTO_TEST_CASE(sq_System_test
                      , *disabled()
                      )
