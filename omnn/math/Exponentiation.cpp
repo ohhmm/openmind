@@ -25,6 +25,12 @@ namespace math {
         InitVars();
     }
 
+    Exponentiation::Exponentiation(Valuable&& b, Valuable&& exponentiation)
+        : base(std::move(b), std::move(exponentiation))
+	{
+        InitVars();
+    }
+
     max_exp_t Exponentiation::getMaxVaExp(const Valuable& b, const Valuable& e)
     {
         if (e.IsInt()) {
@@ -471,7 +477,6 @@ namespace math {
             )
         {
             updateExponentiation(eexp() + e->getExponentiation());
-            optimized={};
         }
         else if(v.IsFraction()
                 && (f = &v.as<Fraction>())->getDenominator() == ebase())
@@ -501,12 +506,10 @@ namespace math {
         else if(b == v && v.FindVa())
         {
             updateExponentiation(eexp()+1);
-            optimized={};
         }
         else if(-b == v && v.FindVa())
         {
             updateExponentiation(eexp()+1);
-            optimized = {};
             return Become(Product{-1, *this});
         }
         else if(v.IsProduct())
@@ -597,16 +600,16 @@ namespace math {
             auto& ee = getExponentiation();
             //is = v.IsExponentiationSimplifiable(ee);  // TODO: Implement IsExponentiationSimplifiable
             // FIXME: Until IsExponentiationSimplifiable ready:
-            if (ee.IsSimpleFraction()) {
-                is.second = v ^ ee.as<Fraction>().Reciprocal(); // v.IsExponentiationSimplifiable(ee)
-                is.first = is.second.MultiplyIfSimplifiable(getBase());
-                if(is.first){
-                    auto copy = *this;
-                    copy.updateBase(std::move(is.second));
-                    is.second = copy;
-                }
-            }
-            else if (ee == constants::minus_1)
+            //if (ee.IsSimpleFraction()) {
+            //    is.second = v ^ ee.as<Fraction>().Reciprocal(); // v.IsExponentiationSimplifiable(ee)
+            //    is.first = is.second.MultiplyIfSimplifiable(getBase());
+            //    if(is.first){
+            //        auto copy = *this;
+            //        copy.updateBase(std::move(is.second));
+            //        is.second = copy;
+            //    }
+            //} else 
+			if (ee == constants::minus_1)
             {
                 is.second = v ^ constants::minus_1; // v.IsExponentiationSimplifiable(ee)
                 is.first = is.second.MultiplyIfSimplifiable(getBase());
@@ -770,7 +773,6 @@ namespace math {
 
     Valuable& Exponentiation::d(const Variable& x)
     {
-        optimized={};
         bool bhx = ebase().HasVa(x);
         bool ehx = eexp().HasVa(x);
         if(ehx) {
@@ -967,15 +969,15 @@ namespace math {
 
     const Valuable::vars_cont_t& Exponentiation::getCommonVars() const
     {
-#ifndef NDEBUG
-        auto& b = ebase();
-        if (b.IsVa()) { // TODO: FindVa too
-            auto va = b.as<Variable>();
-            auto it = v.find(va);
-            if (it != v.end() || !it->second.Same(eexp()))
-                LOG_AND_IMPLEMENT(*this << " Exponentiation::getCommonVars not ready");
-        }
-#endif
+//#ifndef NDEBUG
+//        auto& b = ebase();
+//        if (b.IsVa()) { // TODO: FindVa too
+//            auto va = b.as<Variable>();
+//            auto it = v.find(va);
+//            if (it != v.end() || !it->second.Same(eexp()))
+//                LOG_AND_IMPLEMENT(*this << " Exponentiation::getCommonVars not ready");
+//        }
+//#endif
         return v;
     }
     
