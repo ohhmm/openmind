@@ -99,7 +99,7 @@ bool System::Add(const Valuable& v)
         auto vars = _.Vars();
         if(vars.size() == 1){
             auto& va = *vars.begin();
-            vEs[va][{}].emplace(_(va));
+            _.solve(va, vEs[va][{}]);
         } 
 
         equs.emplace(_);
