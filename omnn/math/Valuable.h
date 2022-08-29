@@ -548,7 +548,7 @@ public:
 template <const long long I>
 const Valuable vo<I>::val = I;
 
-#ifdef MSVC || defined(__APPLE__)
+#if defined(MSVC) || defined(__APPLE__)
 template <const double I>
 class vf {
     static const Valuable val;
