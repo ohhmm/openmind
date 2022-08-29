@@ -219,6 +219,7 @@ endif()
 set(BOOST_TEST_LINK_LIBS
     ${BOOST_LINK_LIBS}
     Boost::test_exec_monitor
+	Boost::unit_test_framework
     )
 
 IF (Boost_FOUND)
@@ -428,7 +429,6 @@ function(test)
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
 			)
-        target_link_libraries(${TEST_NAME} PUBLIC ${this_target})
 		add_dependencies(${TEST_NAME} ${this_target})
 		target_link_directories(${TEST_NAME} PUBLIC
 			/usr/local/lib
@@ -439,6 +439,7 @@ function(test)
 			${CMAKE_BINARY_DIR}/lib
 			${CMAKE_BINARY_DIR}/lib64
 			)
+        target_link_libraries(${TEST_NAME} PUBLIC ${this_target})
         foreach(ll ${libs})
             string(STRIP ${ll} thelib)
 			message("link ${thelib}")
