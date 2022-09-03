@@ -9,12 +9,10 @@ jobs:
     
     steps:
     - uses: docker://ohhmm/openmind
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: configure
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
+      run: cmake . -DCMAKE_BUILD_TYPE=Release -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
     - name: make
-      run: make
+      run: cmake --build . 
     - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+      run: ctest . -j`nproc` 

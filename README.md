@@ -4,7 +4,7 @@ Compilation:
 
   Debian/Ubuntu:
 
-    sudo apt install -y cmake g++-10 git cmake-curses-gui ninja-build cmake-qt-gui 
+    sudo apt install -y cmake  ninja-build g++-10 git cmake-curses-gui ninja-build cmake-qt-gui 
     sudo apt install -y libboost-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev
     sudo apt install -y libfdb5-dev mono-devel 
     

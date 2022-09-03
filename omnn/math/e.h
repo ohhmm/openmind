@@ -20,7 +20,14 @@ namespace omnn::math {
         bool operator==(const Valuable& v) const override
         { return v.Is_e(); }
 
-//        bool operator<(const Valuable &v) const override;
+        Valuable& sq() override;
+        Valuable Sq() const override;
+
+        //        bool operator<(const Valuable &v) const override;
+
+		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const;
+        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
+        bool MultiplyIfSimplifiable(const Valuable& v);
     };
 
     namespace constant {
