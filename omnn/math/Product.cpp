@@ -741,6 +741,8 @@ namespace math {
                is.first = !is.second.IsSum();
            }
        } else if (v.IsSimple()) {
+       } else if (v.IsSum()) {
+           is = v.IsSummationSimplifiable(*this);
        } else if (v.IsProduct()
                   || v.IsVa()
                   || v.IsFraction()

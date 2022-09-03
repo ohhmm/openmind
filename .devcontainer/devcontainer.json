@@ -18,12 +18,14 @@
 			"-DOPENMIND_REQUIRED_BOOST_VERSION=1.79.0",
 			//"-DOPENMIND_MATH_USE_FOUNDATIONDB_CACHE:BOOL=ON",
 		],
+		"cmake.generator": "Ninja"
 	},
 	
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"github.vscode-pull-request-github",
 		"googlecloudtools.cloudcode",
+		"quantum.quantum-devkit-vscode",
 		"llvm-vs-code-extensions.vscode-clangd",
 		"ms-toolsai.jupyter",
 		"ms-vscode.cpptools",
