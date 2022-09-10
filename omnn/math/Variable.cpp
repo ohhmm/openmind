@@ -317,6 +317,9 @@ namespace math {
         for (auto& item : l)
             a.Add(Equals(item));
         return Valuable(a.Move());
-	}
+    }
 
+    bool Variable::IsNormalizedPolynomial(const Variable& v) const {
+        return operator==(v);
+    }
 }}

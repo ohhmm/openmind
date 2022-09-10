@@ -969,15 +969,22 @@ namespace math {
 
     const Valuable::vars_cont_t& Exponentiation::getCommonVars() const
     {
-//#ifndef NDEBUG
-//        auto& b = ebase();
-//        if (b.IsVa()) { // TODO: FindVa too
-//            auto va = b.as<Variable>();
-//            auto it = v.find(va);
-//            if (it != v.end() || !it->second.Same(eexp()))
-//                LOG_AND_IMPLEMENT(*this << " Exponentiation::getCommonVars not ready");
-//        }
-//#endif
+#ifndef NDEBUG
+        auto& b = ebase();
+        if (b.IsVa()) { // TODO: FindVa too
+            auto& va = b.as<Variable>();
+            auto it = v.find(va);
+            if (it != v.end() && !it->second.Same(eexp())) {
+                for (auto& p : v) {
+                    std::cout << p.first << " -> " << p.second << std::endl;
+                }
+
+                //<< (v.begin()->first == b)
+                LOG_AND_IMPLEMENT(*this << " Exponentiation::getCommonVars not ready, no " << b << " in v "
+				);
+            }
+        }
+#endif
         return v;
     }
     
@@ -1110,5 +1117,9 @@ namespace math {
             branches.emplace(*this);
         }
         return branches;
+    }
+
+    bool Exponentiation::IsNormalizedPolynomial(const Variable& v) const {
+        return ebase() == v && eexp().IsInt();
     }
 }}
