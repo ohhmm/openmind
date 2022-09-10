@@ -1722,14 +1722,12 @@ namespace
                     auto& c = coefficients[0];
                     auto d = (b ^ 2) - 4_v * a * c;
                     auto a2 = a * 2;
-                    if(d>0){
+                    if (d == 0) {
+                        solutions.insert(-b / a2);
+                    } else {
                         auto dsq = d.Sqrt();
                         solutions.insert((-dsq-b)/a2);
                         solutions.insert((dsq-b)/a2);
-                    } else if (d==0) {
-                        solutions.insert(-b/a2);
-                    } else {
-                        solutions.insert(((d^(1_v/2))-b)/a2);
                     }
                     break;
                 }

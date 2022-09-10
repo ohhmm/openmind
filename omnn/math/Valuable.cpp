@@ -1103,6 +1103,13 @@ std::string Spaceless(std::string s) {
             IMPLEMENT
     }
 
+    bool Valuable::IsNormalizedPolynomial(const Variable& v) const {
+        if(exp)
+            return exp->IsNormalizedPolynomial(v);
+        else
+            IMPLEMENT
+    }
+
     Valuable::solutions_t Valuable::Solutions() const
     {
         std::set<Variable> vars;
@@ -1116,7 +1123,7 @@ std::string Spaceless(std::string s) {
     Valuable::solutions_t Valuable::Solutions(const Variable& v) const
     {
         solutions_t solutions;
-        if(this->view == View::Solving)
+        if(this->view == View::Solving || IsNormalizedPolynomial(v))
             solve(v,solutions);
         else {
             auto c = *this;

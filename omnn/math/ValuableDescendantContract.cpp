@@ -45,7 +45,7 @@ void ValuableDescendantBase::Values(const std::function<bool(const Valuable&)> &
     if (imv == YesNoMaybe::No)
         fun(*this);
     else
-        IMPLEMENT
+        LOG_AND_IMPLEMENT(*this << " Values method");
 }
 
 Valuable ValuableDescendantBase::Univariate() const {
