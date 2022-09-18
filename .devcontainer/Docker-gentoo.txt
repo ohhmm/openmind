@@ -2,32 +2,39 @@ FROM gentoo/stage3:latest
 
 RUN emerge --sync
 
-RUN echo 'CFLAGS="-march=native -mtune=native -O3 -pipe"' > /etc/make.conf
-RUN echo 'CXXFLAGS="${CFLAGS}"' >> /etc/make.conf
-RUN echo 'USE="${USE} -examples static-libs system system-bootstrap system-llvm"' >> /etc/make.conf
+RUN echo 'CFLAGS="-march=native -mtune=native -O3 -pipe"' >> /etc/portage/make.conf
+RUN echo 'CXXFLAGS="${CFLAGS}"' >> /etc/portage/make.conf
+RUN echo 'USE="${USE} -examples static-libs system system-bootstrap system-llvm"' >> /etc/portage/make.conf
 
 RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
+RUN echo "dev-util/b2 **" >> /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
 RUN echo "dev-libs/boost icu lzma python test" > /etc/portage/package.use/boost
 
 RUN echo "dev-util/cmake **" > /etc/portage/package.accept_keywords/cmake
+RUN echo "dev-libs/icu examples static-libs" > /etc/portage/package.use/icu
+RUN echo "dev-lang/mono minimal" > /etc/portage/package.use/mono
 
-RUN emerge \
+RUN emerge --update \
     bash-completion \
-    clang \
     eix \
     htop \
     app-misc/mc \
     kde-frameworks/extra-cmake-modules \
     sys-process/htop \
     dev-vcs/git \
-    -j`nproc`
+    -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN emerge --update \
+    clang \
+    lld \
+    -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN eix-update
 
-RUN emerge -j`nproc` leveldb
+RUN emerge -j`nproc` leveldb && rm -rf /var/cache/distfiles
 
-RUN emerge \
+RUN emerge --update \
     app-arch/lz4 \
     dev-libs/icu \
     dev-libs/openssl \
@@ -36,29 +43,20 @@ RUN emerge \
     x11-libs/libX11 \
     x11-libs/libxcb \
     x11-libs/libXScrnSaver \
-    -j`nproc`
+    -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN echo "dev-libs/icu examples static-libs" > /etc/portage/package.use/icu
-RUN emerge \
+RUN emerge --update \
     dev-libs/icu \
-    -j`nproc`
+    -j`nproc` && rm -rf /var/cache/distfiles
     
-RUN emerge \
+RUN emerge --update \
     gdb \
     lldb \
-    -j`nproc`
+    -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN emerge \
-    =dev-libs/boost-1.79.0 \
-    -j`nproc`
-RUN sed -i 's/image_read_info< targa_tag >()/image_read_info()/g' /usr/include/boost/gil/extension/io/targa/tags.hpp
+RUN emerge --update =dev-libs/boost-1.80.0 -j`nproc`
 
 # FoundationDB deps
-RUN echo "dev-lang/mono minimal" > /etc/portage/package.use/mono
-RUN emerge --update dev-lang/mono -j`nproc`
-RUN emerge --update \
-    dev-cpp/benchmark \
-    dev-cpp/gtest \
-    -j`nproc`
-#RUN ( cd /var/db/repos/gentoo/dev-libs/boost/ && cp boost-1.79.0.ebuild boost-1.78.0.ebuild )
-#RUN emerge =dev-libs/boost-1.78.0 -j`nproc`
+RUN emerge --update dev-cpp/benchmark dev-cpp/gtest -j`nproc` && rm -rf /var/cache/distfiles
+RUN emerge --update dev-lang/mono -j`nproc` && rm -rf /var/cache/distfiles
+

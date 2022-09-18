@@ -80,11 +80,13 @@ endif()
 
 if(MSVC)
     find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+		CONFIG
 		PATHS C:/Boost
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 else()
     find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+		CONFIG
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 endif()
@@ -134,7 +136,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 if (Boost_FOUND)
     add_custom_target(conf)
     set_target_properties(conf PROPERTIES FOLDER "util")
-	if(NOT EXISTS boost)
+	if(NOT TARGET boost)
 		add_custom_target(boost)
 		set_target_properties(boost PROPERTIES FOLDER "util")
 	endif()
@@ -202,13 +204,13 @@ elseif(OPENMIND_BUILD_BOOST)
         add_custom_target(conf ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} DEPENDS boost)
     else()
         add_custom_target(conf)
-		if(NOT EXISTS boost)
+		if(NOT TARGET boost)
 			add_custom_target(boost)
 		endif()
     endif()
 else()
     add_custom_target(conf)
-	if(NOT EXISTS boost)
+	if(NOT TARGET boost)
 		add_custom_target(boost)
 	endif()
 endif()
@@ -218,7 +220,7 @@ set(BOOST_LINK_LIBS
     Boost::system
     Boost::filesystem
     )
-if(Boost_VERSION VERSION_LESS 1.80.0)
+if(NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0)
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
         Boost::thread)
 endif()
