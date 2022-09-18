@@ -3,7 +3,7 @@ name: C/C++ CI
 on: [push]
 
 jobs:
-  build:
+  build-in-ubuntu:
 
     runs-on: ubuntu-latest
     
