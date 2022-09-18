@@ -11,9 +11,9 @@ jobs:
     - uses: actions/checkout@v3
     - name: prerequisites
       run: sudo apt install -y libboost-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
-    - name: Configure 
+    - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build

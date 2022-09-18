@@ -49,7 +49,7 @@ namespace math {
             return i;
         } else {
             auto maxVaExp = e * b.getMaxVaExp();
-            if (!optimizations) {
+            if (!optimizations && !maxVaExp.IsInt()) {
                 OptimizeOn o;
                 maxVaExp.optimize();
             }
@@ -71,6 +71,7 @@ namespace math {
                 //return maxVaExp;
             }
         }
+        IMPLEMENT
     }
 
     max_exp_t Exponentiation::getMaxVaExp() const
