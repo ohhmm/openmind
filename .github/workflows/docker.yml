@@ -11,7 +11,7 @@ jobs:
     - uses: docker://ohhmm/openmind
     - uses: actions/checkout@v3
     - name: configure
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
+      run: cmake . -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
     - name: make
       run: cmake --build . 
     - name: make check

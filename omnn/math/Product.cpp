@@ -758,9 +758,9 @@ namespace math {
                        is = thisNoCommon.IsSummationSimplifiable(vNoCommon);
                        if (is.first) {
                            is.second *= common;
-                       } else {
-                           auto behindTheBrackets = thisNoCommon + vNoCommon;
-                           is = common.IsMultiplicationSimplifiable(behindTheBrackets);
+                       //} else {
+                       //    auto behindTheBrackets = thisNoCommon + vNoCommon;
+                       //    is = common.IsMultiplicationSimplifiable(behindTheBrackets);
                        }
                    }
                }
