@@ -16,7 +16,6 @@ build*
 .project
 .settings/language.settings.xml
 .vscode/launch.json
-.vscode/settings.json
 .vscode/tasks.json
 *.solutions/*
 .settings/*
