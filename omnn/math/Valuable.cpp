@@ -468,7 +468,7 @@ std::string Spaceless(std::string s) {
                     found = s.find_first_not_of("0123456789", offs);
                     if (found == std::string::npos)
                     {
-                        Become(offs ? Integer(s.substr(offs)) : Integer(s));
+                        exp = std::make_shared<Integer>(offs ? s.substr(offs) : s);
                     }
                     else
                     {
@@ -491,6 +491,7 @@ std::string Spaceless(std::string s) {
                 }
             }
         }
+		else
         {
             Valuable sum = Sum{};
             Valuable v;

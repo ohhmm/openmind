@@ -49,7 +49,11 @@ namespace math {
             return i;
         } else {
             auto maxVaExp = e * b.getMaxVaExp();
-            if (maxVaExp.IsInt()) {
+            if (!optimizations) {
+                OptimizeOn o;
+                maxVaExp.optimize();
+            }
+			if (maxVaExp.IsInt()) {
                 return maxVaExp.ca();
             } else if (maxVaExp.IsSimpleFraction()) {
                 auto& f = maxVaExp.as<Fraction>();
@@ -61,10 +65,12 @@ namespace math {
                 if (maxVaExp.IsInt()) {
                     return maxVaExp.ca();
                 }
+            } else {
+                LOG_AND_IMPLEMENT(maxVaExp << " uncovered case for Exponentiation::getMaxVaExp")
+					
+                //return maxVaExp;
             }
         }
-
-        IMPLEMENT
     }
 
     max_exp_t Exponentiation::getMaxVaExp() const
