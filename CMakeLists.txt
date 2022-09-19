@@ -39,6 +39,7 @@ option(OPENMIND_BUILD_GC "Use garbage collection. Faster but requires abundant m
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
 option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc source code file during CPU cores idle" _IS_DEBUG)
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
+option(OPENMIND_USE_QT "Link Qt libs" OFF)
 option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.80.0 CACHE VERSION "Boost library version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
@@ -63,10 +64,10 @@ set(BOOST_USED_COMPONENTS
 	system
 	thread)
 if(OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
-        set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS}
-                unit_test_framework
-                test_exec_monitor
-                )
+    set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS}
+        unit_test_framework
+        test_exec_monitor
+        )
 endif()
 list(REMOVE_DUPLICATES BOOST_USED_COMPONENTS)
 set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} CACHE STRINGS "Components")
@@ -99,10 +100,12 @@ else()
 	message("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 	message("BOOST_USED_COMPONENTS: ${BOOST_USED_COMPONENTS}")
 	message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
-	message("Boost_FILESYSTEM_LIBRARY: ${Boost_FILESYSTEM_LIBRARY}")
-	if(OPENMIND_BUILD_TESTS)
-		message("Boost_UNIT_TEST_FRAMEWORK_LIBRARY: ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
-	endif()
+
+    foreach(_module ${BOOST_USED_COMPONENTS})
+		string(TOUPPER ${_module} _module_upcase)
+		message("Boost_${_module_upcase}_FOUND: ${Boost_${_module_upcase}_FOUND}")
+		message("Boost_${_module_upcase}_LIBRARY: ${Boost_${_module_upcase}_LIBRARY}")
+	endforeach()
 endif()
 
 option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
@@ -488,6 +491,11 @@ macro(ext name location)
 				-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 				-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
 			)
+		build_command(DEP_BUILD_CMD TARGET ${name})
+		message("Executing ${DEP_BUILD_CMD} in ${CMAKE_BINARY_DIR}")
+		execute_process(COMMAND ${DEP_BUILD_CMD}
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+		)
 		add_dependencies(conf ${name})
 		if(TARGET ${name})
 			message("${name} is new target")
@@ -686,7 +694,7 @@ macro(exe)
     file(GLOB src *.cpp *.h)
     file(GLOB qmlsrc *.qml)
     file(GLOB qtsrc *.qrc)
-    if(qtsrc OR qmlsrc)
+    if(qtsrc OR qmlsrc OR OPENMIND_USE_QT)
         set(CMAKE_AUTOMOC ON)
         set(CMAKE_AUTORCC ON)
         set(CMAKE_AUTOUIC ON)

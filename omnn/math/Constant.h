@@ -85,6 +85,7 @@ template <class Chld>
         a_int Complexity() const override { return 1; }
 
         typename base::solutions_t Distinct() const override { return { *this }; }
+        void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
         Valuable Univariate() const override { return *this; }
 
         Valuable InCommonWith(const Valuable& v) const override {
