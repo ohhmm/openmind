@@ -1509,7 +1509,8 @@ std::string Spaceless(std::string s) {
     Valuable Valuable::Sq() const
     {
         auto t = *this;
-        return t.sq();  // FIXME : use std::move(t.sq());
+        t.sq();
+        return t;
     }
 
 	void Valuable::gamma() { // https://en.wikipedia.org/wiki/Gamma_function

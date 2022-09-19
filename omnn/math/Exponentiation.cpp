@@ -104,6 +104,7 @@ namespace math {
             return;
         }
 
+        optimized = true;
         ebase().optimize();
         eexp().optimize();
 
