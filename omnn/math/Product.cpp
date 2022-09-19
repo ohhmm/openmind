@@ -443,7 +443,7 @@ namespace math {
 
     Valuable & Product::sq()
     {
-        Product p;
+        Product p({});
         for (auto m : members)
         {
             p.Add(m.Sq());

@@ -11,11 +11,11 @@ constinit std::string_view Euler::SerializationName = "e";
 using namespace constant;
 //    static const Euler e;
 
-namespace {
-auto eSq = Exponentiation{Euler(), 2};
-}
 
-Valuable Euler::Sq() const { return eSq; }
+Valuable Euler::Sq() const {
+    auto exponentiation = ptrs::make_shared<Exponentiation>(*this, 2);
+    return Valuable(exponentiation);
+}
 
 Valuable& Euler::sq() { return Become(Sq()); }
 
