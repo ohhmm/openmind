@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Constant.h"
+#include <numbers>
 
 namespace omnn::math {
 
@@ -19,15 +20,18 @@ namespace omnn::math {
         bool Is_e() const override { return true; }
         bool operator==(const Valuable& v) const override
         { return v.Is_e(); }
+        
+        constexpr operator double() const override { return std::numbers::e_v<double>; }
+        constexpr operator long double() const override { return std::numbers::e_v<long double>; }
 
         Valuable& sq() override;
         Valuable Sq() const override;
 
         //        bool operator<(const Valuable &v) const override;
 
-		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const;
-        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
-        bool MultiplyIfSimplifiable(const Valuable& v);
+		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
+        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
+        bool MultiplyIfSimplifiable(const Valuable& v) override;
     };
 
     namespace constant {
