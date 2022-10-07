@@ -4,15 +4,15 @@
 #pragma once
 #include "Exponentiation.h"
 #include <future>
+#include <iterator>
 
 namespace omnn{
 namespace math {
 
-    template <class Chld, class ContT>
-    class ValuableCollectionDescendantContract
-        : public ValuableDescendantContract<Chld>
+    template <class ChildT, class ContT>
+    class ValuableCollectionDescendantContract : public ValuableDescendantContract<ChildT>
     {
-        using base = ValuableDescendantContract<Chld>;
+        using base = ValuableDescendantContract<ChildT>;
         
     protected:
         using cont = ContT;
@@ -172,7 +172,7 @@ namespace math {
         }
         
         Valuable Each(const std::function<Valuable(const Valuable&)>& m) const {
-            Chld c;
+            ChildT c;
             for(auto& i:GetConstCont())
                 c.Add(m(i));
             return c;
@@ -196,11 +196,54 @@ namespace math {
             return is;
         }
         
+        void Values(const std::function<bool(const Valuable&)>& fun) const override {
+            auto& c = GetConstCont();
+            auto count = c.size();
+            auto nTotal = count;
+            auto sharedValuesProjection = std::vector<std::vector<Valuable>>();
+            for (auto& m : c) {
+                if (m.IsMultival() == Valuable::YesNoMaybe::Yes) {
+                    if (sharedValuesProjection.size()) {
+                        auto sharedValuesProjectionCopy = std::move(sharedValuesProjection);
+                        m.Values([&](const Valuable& value) {
+                            decltype(sharedValuesProjection) copy = sharedValuesProjectionCopy;
+                            for (auto& copyMember : copy) {
+                                copyMember.emplace_back(value);
+                            }
+                            std::move(copy.begin(), copy.end(), std::back_inserter(sharedValuesProjection));
+                            return true;
+                        });
+                    } else {
+                        m.Values([&](const Valuable& value) { 
+                            sharedValuesProjection.emplace_back().emplace_back(value.Link());
+                            return true;
+                        });
+                    }
+                } else {
+                    if (sharedValuesProjection.size()) {
+                        for (auto& projection : sharedValuesProjection) {
+                            projection.emplace_back(m.Link());
+                        }
+                    } else {
+                        sharedValuesProjection.emplace_back().emplace_back(m.Link());
+                    }
+                }
+            }
+
+            for (auto&& projection : sharedValuesProjection) {
+                ChildT value;
+                for (auto& item : projection) {
+                    value.Add(item);
+                }
+                fun(value);
+            }
+        }
+
         bool eval(const std::map<Variable, Valuable>& with) override {
             bool evaluated = {};
             auto& members = GetCont();
             Valuable::SetView(Valuable::View::Calc);
-            Chld c;
+            ChildT c;
             if (members.size() < 100) {
                 for(auto&& cm:GetCont()){
                     auto&& m = const_cast<Valuable&&>(cm);

@@ -96,6 +96,7 @@ class Valuable
 {
     using self = Valuable;
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
+
     encapsulated_instance exp = nullptr;
 
     static const a_int a_int_cz;
@@ -104,8 +105,6 @@ class Valuable
 protected:
     const encapsulated_instance& getInst() const { return exp; }
     virtual bool IsSubObject(const Valuable& o) const;
-    //Valuable Link(); // TODO : handle simulteneous values changes using copy-on-write to uncomment this
-    const Valuable Link() const;
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
@@ -243,6 +242,7 @@ public:
     explicit Valuable(Valuable* v);
     explicit Valuable(const encapsulated_instance& e);
     virtual std::type_index Type() const;
+    const Valuable Link() const; // TODO : handle simulteneous values changes 
 
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(Valuable&& v);
