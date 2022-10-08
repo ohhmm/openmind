@@ -16,6 +16,7 @@ jobs:
       run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
     - name: Build
       working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --target leveldb
       run: cmake --build ${{github.workspace}}/build
     - name: make check
       working-directory: ${{github.workspace}}/build
