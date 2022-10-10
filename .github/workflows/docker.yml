@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: docker://ohhmm/openmind
+    - uses: docker://ohhmm/openmind:latest
     - uses: actions/checkout
     - name: configure
       run: cmake . -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
