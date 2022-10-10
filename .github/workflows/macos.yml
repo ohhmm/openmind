@@ -13,7 +13,7 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build
