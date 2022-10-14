@@ -108,30 +108,12 @@ protected:
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
-    virtual size_t getTypeSize() const;
-    virtual size_t getAllocSize() const;
+    constexpr virtual size_t getTypeSize() const { return sizeof(Valuable); }
+    constexpr virtual size_t getAllocSize() const { return sz; }
     constexpr virtual void setAllocSize(size_t sz) { this->sz = sz; }
 
     template<class T>
-    static const T* cast(const Valuable& v)
-    {
-        auto e = v.exp;
-        while (e && e->exp) e = e->exp;
-        auto t = dynamic_cast<const T*>(e ? e.get() : &v);
-        return t;
-    }
-
-    template<class T>
-    static T* cast(Valuable& v)
-    {
-        auto e = v.exp;
-        while (e && e->exp) e = e->exp;
-        auto t = dynamic_cast<T*>(e ? e.get() : &v);
-        return t;
-    }
-
-    template<class T>
-    Valuable() {}
+    constexpr Valuable() {}
 
     constexpr Valuable(ValuableDescendantMarker)
     {}

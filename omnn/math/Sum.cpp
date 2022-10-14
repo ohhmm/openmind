@@ -233,8 +233,8 @@ namespace
                 return;
             }
 
-            if (isBalancing)
-                balance();
+            //if (isBalancing)
+            //    balance();
 
             for (auto it = members.begin(); it != members.end();)
             {
@@ -1767,11 +1767,19 @@ namespace
 //                    auto 
                 }
                 auto a = coefficients[grade];
+                if(!a.IsInt()) {
+#ifndef NOOMDEBUG
+                    std::cout << "first member needed optimization: " << a << std::endl;
+#endif
+                    OptimizeOn oo;
+                    a.optimize();
+                }
                 auto k = coefficients[0];
                 if(!k.IsInt()) {
-#ifndef NDEBUG
+#ifndef NOOMDEBUG
                     std::cout << "free member needed optimization: " << k << std::endl;
 #endif
+                    OptimizeOn oo;
                     k.optimize();
                 }
                 if(a.IsInt() && k.IsInt()) {

@@ -83,8 +83,8 @@ bool System::Add(const Valuable& v)
     auto _ = v;
     _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
     {
-        //Valuable::OptimizeOn o;
-    _.optimize();
+        Valuable::OptimizeOn o;
+        _.optimize();
     }
     auto isNew = _ != 0_v &&
 #ifndef __APPLE__

@@ -226,7 +226,17 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     _2 = x*-1/z+y*-2/z;
     BOOST_TEST(_1==_2);
     
-    Variable v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17;
+    DECL_VA(v7);
+    DECL_VA(v8);
+    DECL_VA(v9);
+    DECL_VA(v10);
+    DECL_VA(v11);
+    DECL_VA(v12);
+    DECL_VA(v13);
+    DECL_VA(v14);
+    DECL_VA(v15);
+    DECL_VA(v16);
+    DECL_VA(v17);
     
     _1 = -1_v*v17*v12 + -1_v*v16*v13 + 174;
     _2 = -1_v*v17*v12 + -1_v*v13*v16 + 174;
