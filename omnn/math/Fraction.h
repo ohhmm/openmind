@@ -32,11 +32,13 @@ namespace math {
         template<class T>
         void setNumerator(T&& n)
         { set1(std::forward<T>(n)); }
+        void updateNumerator(std::function<void(decltype(_1)&)>& f) { update1(f); }
 
         const Valuable& denominator() const { return _2; }
 		template<class T>
-        void setDumerator(T&& n)
+        void setDenominator(T&& n)
         { set2(std::forward<T>(n)); }
+        void updateDenominator(std::function<void(decltype(_2)&)>& f) { update2(f); }
 
         Valuable operator -() const override;
 		Valuable& operator +=(const Valuable& v) override;

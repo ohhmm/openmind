@@ -885,17 +885,24 @@ namespace math {
     Valuable& Product::operator /=(const Valuable& v)
     {
         if (v.IsProduct()) {
-            auto opts = optimizations;
-            optimizations = {};
-            for(auto& i : v.as<Product>())
-                *this /= i;
-            optimizations = opts;
+            {
+                OptimizeOff oo;
+                for (auto& i : v.as<Product>())
+                    *this /= i;
+            }
             optimize();
             return *this;
         }
-        else if (v.IsSimple()) {
+        else if (v.IsSimple() ) {
             if (v == 1_v) {
                 return *this;
+            } else if (v.IsConstant()) {
+                auto it = std::find(begin(), end(), v);
+                if (it != end()) {
+                    Delete(it);
+                    optimize();
+                    return *this;
+                }
             }
             auto first = begin();
             if (first->IsSimple()) {
