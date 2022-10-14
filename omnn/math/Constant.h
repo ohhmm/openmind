@@ -78,6 +78,13 @@ template <class Chld>
             return this->OfSameType(v);
         }
         
+        Valuable& operator/=(const Valuable& v) override {
+            if (v == *this)
+                return this->Become(1);
+            else
+                return base::operator/=(v);
+        }
+
         const Valuable::vars_cont_t& getCommonVars() const override {
             return Valuable::emptyCommonVars();
         }

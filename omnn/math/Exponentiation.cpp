@@ -702,15 +702,17 @@ namespace math {
         auto isMultival = IsMultival()==YesNoMaybe::Yes;
         auto vIsMultival = v.IsMultival()==YesNoMaybe::Yes;
         if(isMultival && vIsMultival) {
+            OptimizeOn o; // solutions sets may have equivalent values if optimizations are off
             solutions_t vals, thisValues;
             Values([&](auto& thisVal){
                 thisValues.insert(thisVal);
                 return true;
             });
             
-            v.Values([&](auto&vVal){
-                for(auto& tv:thisValues)
-                    vals.insert(tv/vVal);
+            v.Values([&](auto& vVal) {
+                for (auto& tv : thisValues) {
+                    vals.insert(tv / vVal);
+                }
                 return true;
             });
             
@@ -846,7 +848,7 @@ namespace math {
         if (fun) {
             auto cache = optimized; // TODO: multival caching (inspect all optimized and optimization transisions) auto isCached =
             
-            std::set<Valuable> vals;
+            solutions_t vals;
             {
             std::deque<Valuable> d1;
             _1.Values([&](auto& v){

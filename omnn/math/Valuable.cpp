@@ -120,16 +120,6 @@ namespace math {
         IMPLEMENT
     }
 
-    size_t Valuable::getTypeSize() const
-    {
-        return sizeof(Valuable);
-    }
-
-    size_t Valuable::getAllocSize() const
-    {
-        return sz;
-    }
-
     Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
     {
@@ -343,8 +333,9 @@ namespace math {
             ss << " )";
             std::cout << ss.str();
             LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << ss.str());
-#endif
+#else
             IMPLEMENT // implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'
+#endif
         }
         
 #ifndef NDEBUG
@@ -463,31 +454,28 @@ std::string Spaceless(std::string s) {
                     auto copy = s;
                     auto s = Trim(copy);
                     auto offs = 0;
-                    while (s[offs]==' ')
+                    while (s[offs]=='-')
                         ++offs;
                     found = s.find_first_not_of("0123456789", offs);
                     if (found == std::string::npos)
                     {
-                        exp = std::make_shared<Integer>(offs ? s.substr(offs) : s);
+                        exp = std::make_shared<Integer>(s);
                     }
-                    else
-                    {
-                        if (s[0] == 'v' && s.size() > 1 && h->IsIntegerId()
-                            && std::all_of(s.begin() + 1, s.end(),
-								[](auto ch) { return std::isdigit(ch); }
-								)
+                    else if (s[0] == 'v' && s.size() > 1 && h->IsIntegerId()
+                        && std::all_of(s.begin() + 1, s.end(),
+							[](auto ch) { return std::isdigit(ch); }
 							)
-                            Become(Valuable(h->Host(Valuable(a_int(s.substr(1))))));
-                        else if (s.length() > 2
-                            && s[0] == '0'
-                            && (s[1] == 'x' || s[1] == 'X')
-                            && std::isxdigit(s[2])
-                            && s.find_first_not_of("0123456789ABCDEFabcdef", 2) == std::string::npos
-                            )
-                            Become(Integer(s));
-                        else if(std::all_of(s.begin(), s.end(), [](auto c){return std::isalnum(c);}))
-                            Become(Valuable(h->Host(s)));
-                    }
+						)
+                        Become(Valuable(h->Host(Valuable(a_int(s.substr(1))))));
+                    else if (s.length() > 2
+                        && s[0] == '0'
+                        && (s[1] == 'x' || s[1] == 'X')
+                        && std::isxdigit(s[2])
+                        && s.find_first_not_of("0123456789ABCDEFabcdef", 2) == std::string::npos
+                        )
+                        Become(Integer(s));
+                    else if(std::all_of(s.begin(), s.end(), [](auto c){return std::isalnum(c);}))
+                        Become(Valuable(h->Host(s)));
                 }
             }
         }
@@ -887,7 +875,7 @@ std::string Spaceless(std::string s) {
             return *this;
         }
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT(*this << " *= " << v);
     }
 
     a_int Valuable::Complexity() const
@@ -1796,7 +1784,7 @@ std::string Spaceless(std::string s) {
         if (exp)
             return exp->operator double();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Implement " << *this << " to double conversion");
     }
 
     Valuable::operator long double() const

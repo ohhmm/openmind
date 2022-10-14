@@ -127,6 +127,11 @@ namespace math {
             else if (denominator() < 0) {
                 numerator() = -numerator();
                 denominator() = -denominator();
+                if (denominator().ca() == 1)
+                {
+                    Become(std::move(numerator()));
+                    return;
+                }
             }
         }
         
@@ -349,6 +354,11 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         {
             numerator() *= v;
         }
+        else if (denominator() == v && v.IsMultival() == YesNoMaybe::No)
+            return Become(std::move(numerator()));
+        // TODO: Valuable::Has
+        //else if (denominator().Has(v))
+        //    setDenominator([](auto& d) { d /= v; });
         else
         {
             return Become(v * *this);
