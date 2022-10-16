@@ -81,7 +81,9 @@ namespace math {
     
     Valuable Exponentiation::varless() const
     {
-        //if
+        if (FindVa())
+            return 1;
+        else
         return base::varless();
     }
 
