@@ -15,6 +15,12 @@
 #include "VarHost.h"
 #include "Cache.h"
 
+
+#ifdef OPENMIND_USE_OPENCL
+#include "rt/cl.h"
+#endif
+
+
 //TODO:
 //import std;
 #include <algorithm>
@@ -28,10 +34,6 @@
 #include <stack>
 #include <thread>
 #include <type_traits>
-
-#ifdef OPENMIND_USE_OPENCL
-#include <boost/compute.hpp>
-#endif
 
 
 namespace omnn::math {
@@ -2059,11 +2061,7 @@ namespace
                 auto devices = system::devices();
                 if(devices.size() == 0)
                 	return;
-                device cuwinner = system::default_device();
-                for(auto& p: system::platforms())
-                    for(auto& d: p.devices())
-                        if (d.compute_units() > cuwinner.compute_units())
-                            cuwinner = d;
+                auto& cuwinner = omnn::rt::GetComputeUnitsWinnerDevice();
                 auto wgsz = cuwinner.max_work_group_size();
                 context context(cuwinner);
                 
