@@ -836,15 +836,13 @@ namespace math {
                     Update(it, *it*v);
                     goto yes;
                 }
-                else
+                else if (vExpBase == *it)
                 {
-                    if (vExpBase == *it) {
-                        Update(it, vExpBase ^ (e.getExponentiation()+1));
-                        goto yes;
-                    }
-                    else
-                        ++it;
+                    Update(it, vExpBase ^ (e.getExponentiation() + 1));
+                    goto yes;
                 }
+                else
+                    ++it;
             }
         }
         else if (v.IsProduct())
