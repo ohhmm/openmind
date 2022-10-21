@@ -1,5 +1,7 @@
 #include "cl.h"
 
+#ifdef OPENMIND_USE_OPENCL
+
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/compute.hpp>
 #include <boost/compute/core.hpp>
@@ -37,3 +39,5 @@ auto ComputeUnitsWinner = []() -> boost::compute::device {
 namespace omnn::rt {
 const boost::compute::device& GetComputeUnitsWinnerDevice() { return ComputeUnitsWinner; }
 }
+
+#endif
