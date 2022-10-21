@@ -12,6 +12,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(OPENMIND_PRIME_TABLE_OPTIONS Boost Bundled)
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
     set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
+	set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} CACHE PATH "hint for find_package")
     set(_IS_DEBUG TRUE)
     #add_definitions(-DBOOST_ALL_DYN_LINK)
     if(MSVC)
@@ -99,6 +100,10 @@ else()
 		)
 endif()
 
+add_custom_target(prerequisites)
+set_target_properties(prerequisites PROPERTIES FOLDER "util")
+
+
 if(NOT Boost_FOUND)
     message("Building Boost ${OPENMIND_PREFERRED_BOOST_VERSION}")
     set(OM_BUILD_BOOST True)
@@ -142,8 +147,6 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 if (Boost_FOUND)
-    add_custom_target(conf)
-    set_target_properties(conf PROPERTIES FOLDER "util")
 	if(NOT TARGET boost)
 		add_custom_target(boost)
 		set_target_properties(boost PROPERTIES FOLDER "util")
@@ -182,7 +185,7 @@ elseif(OPENMIND_BUILD_BOOST)
 #			set(BOOST_BUILD_COMMAND "${BOOST_BUILD_COMMAND} install")
 		endif()
         separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND}")
-        separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install")
+        separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install --prefix='${CMAKE_BINARY_DIR}'")
     endif()
 
     message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
@@ -209,16 +212,12 @@ elseif(OPENMIND_BUILD_BOOST)
             )
     endif()
     #find_package(Boost COMPONENTS ${BOOST_USED_COMPONENTS})
-    if(NOT Boost_FOUND)
-        add_custom_target(conf ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} DEPENDS boost)
-    else()
-        add_custom_target(conf)
+    if(Boost_FOUND)
 		if(NOT TARGET boost)
 			add_custom_target(boost)
 		endif()
     endif()
 else()
-    add_custom_target(conf)
 	if(NOT TARGET boost)
 		add_custom_target(boost)
 	endif()
@@ -448,7 +447,7 @@ function(test)
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
 			)
-		add_dependencies(${TEST_NAME} conf ${this_target})
+		add_dependencies(${TEST_NAME} prerequisites ${this_target})
 		target_link_directories(${TEST_NAME} PUBLIC
 			/usr/local/lib
 			${Boost_INCLUDE_DIR}/stage/lib
@@ -498,21 +497,16 @@ macro(ext name location)
 				-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 				-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 				-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+				-DHAVE_STD_REGEX=ON
+				-DRUN_HAVE_STD_REGEX=1
 			)
-		build_command(DEP_BUILD_CMD TARGET ${name})
-		message("Executing ${DEP_BUILD_CMD} in ${CMAKE_BINARY_DIR}")
-		execute_process(COMMAND ${DEP_BUILD_CMD}
-			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		)
-		add_dependencies(conf ${name})
+		if(NOT TARGET ${name})
+			add_custom_target(${name})
+		endif()
 		if(TARGET ${name})
 			message("${name} is new target")
-			if(TARGET ${this_target})
-				add_dependencies(${this_target} ${name})
-				message("Making ${this_target} depend on the ${name}")
-			endif()
-		else()
-			message(WARNING "${name} is not a target")
+		    set_target_properties(${name} PROPERTIES FOLDER "util")
+			add_dependencies(prerequisites ${name})
 		endif()
 
 		set(${name}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include CACHE PATH "Path")
@@ -573,7 +567,7 @@ macro(lib)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
         )
-    add_dependencies(${this_target} conf)
+    add_dependencies(${this_target} prerequisites)
 	message("add_library(${this_target} ${src})")
 	if(NOT MSVC AND Boost_FOUND)
 		target_link_libraries(${this_target} PUBLIC ${BOOST_LINK_LIBS})
@@ -758,7 +752,7 @@ macro(exe)
         add_executable(${this_target} ${src})
     endif()
     APPLY_TARGET_COMMONS(${this_target})
-    add_dependencies(${this_target} conf)
+    add_dependencies(${this_target} prerequisites)
     if(Qt${QT_VERSION_MAJOR}_FOUND)
 
         if(APPLE AND PROJECT_VERSION)
@@ -849,3 +843,12 @@ fold(
     OpenMind
 )
 
+build_command(PREREQUISITES_BUILD_CMD
+	TARGET prerequisites
+	PARALLEL_LEVEL ${CMAKE_AUTOGEN_PARALLEL}
+)
+message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
+execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	COMMAND_ECHO STDOUT 
+)
