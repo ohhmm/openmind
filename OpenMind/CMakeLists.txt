@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.14)
 
 SET (this_target OpenMind)
 PROJECT(${this_target})
@@ -171,16 +171,10 @@ set_target_properties(${this_target} PROPERTIES
 
 if(UNIX)
 	find_package(X11)
-	if(X11_FOUND)
-		set(${this_target}_Incs ${X11_X11_INCLUDE_PATH} ${X11_Xscreensaver_INCLUDE_PATH}
-				CACHE INTERNAL "${this_target}: Include Directories" FORCE)
-		target_include_directories(${this_target} PUBLIC
-			${${this_target}_Incs})
-
-		set(${this_target}_Libs ${X11_X11_LIB} ${X11_Xscreensaver_LIB} pthread
-				CACHE INTERNAL "${this_target}: Libraries" FORCE)
-                target_link_libraries(${this_target} PUBLIC ${${this_target}_Libs})
-		#target_link_libraries(${this_target} lib${this_target})
+	if(X11_FOUND AND X11_Xss_FOUND)
+		target_link_libraries(${this_target} X11::Xss)
+	else()
+		message(WARNING "X11_FOUND, X11_Xss_FOUND: ${X11_FOUND}, ${X11_Xss_FOUND}")
 	endif()
 endif(UNIX)
 

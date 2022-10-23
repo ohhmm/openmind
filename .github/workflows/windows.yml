@@ -17,7 +17,7 @@ jobs:
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target prerequisites
-    - name: Reconfigure to detect newly installed boost
+    - name: Reconfigure to detect newly installed prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake .
     - name: Build
