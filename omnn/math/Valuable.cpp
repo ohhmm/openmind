@@ -867,7 +867,17 @@ std::string Spaceless(std::string s) {
 
     Valuable& Valuable::operator *=(const Valuable& v)
     {
-        if(exp) {
+        if (IsMultival() == YesNoMaybe::Yes && v.IsMultival() == YesNoMaybe::Yes)
+        {
+            solutions_t s;
+            for (auto& m : Distinct())
+                for (auto& item : v.Distinct())
+                    s.emplace(m * item);
+            return Become(Valuable(std::move(s)));
+        }
+        else 
+        if (exp)
+        {
             Valuable& o = exp->operator*=(v);
             if (o.exp) {
                 exp = o.exp;
