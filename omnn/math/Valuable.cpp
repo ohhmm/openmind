@@ -1680,7 +1680,7 @@ std::string Spaceless(std::string s) {
 
     Valuable Valuable::varless() const
     {
-        auto _ = *this / getVaVal();
+        auto _ = exp ? exp->varless() : *this / getVaVal();
         if (_.FindVa()) {
             if (_.IsProduct()) {
                 Product p;
