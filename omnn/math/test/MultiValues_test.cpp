@@ -36,6 +36,20 @@ BOOST_AUTO_TEST_CASE(MergeOr_tests)
 
 }
 
+BOOST_AUTO_TEST_CASE(Debranching_Dilemma_test)
+{
+    // Multivalue multiplication vs ^2 debranching dilemma
+    auto plus_minus_two = constants::plus_minus_1 * constants::two; // ±2
+    auto _1 = plus_minus_two; // ±2
+    _1 *= constants::plus_minus_1; // still ±2
+    BOOST_TEST(_1 == plus_minus_two);
+    // same with x
+    DECL_VA(x);
+    auto _2 = x * 2; // 2x
+    _2 *= x; // 2*(x^2)
+    _2.Eval(x, constants::plus_minus_1); // not ±2
+    BOOST_TEST(_2 == 2); // because x is the same for both branches
+}
 BOOST_AUTO_TEST_CASE(Other_signs_tests) {
     auto _1 = -1_v * (-4_v ^ constants::half) * (-16 ^ constants::half);
     auto _2 = constants::plus_minus_1 * 8 * constants::i;
