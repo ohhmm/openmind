@@ -3,7 +3,7 @@
 
 #include "Fraction.h"
 
-#include <ranges>
+//#include <ranges>   uncomment once github action image is new enough
 
 
 using namespace omnn::math;
