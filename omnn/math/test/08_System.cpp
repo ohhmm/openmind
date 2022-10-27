@@ -110,9 +110,7 @@ BOOST_AUTO_TEST_CASE(System_tests)
 
 BOOST_AUTO_TEST_CASE(Sudoku_test_task) // solve sudoku through a system of equations solver
 {
-    DECL_VA(X);
-    DECL_VA(Y);
-    DECL_VA(v);
+    Variable X, Y, v;
 
     constexpr unsigned Sz = 9;
     int data[Sz][Sz] = {

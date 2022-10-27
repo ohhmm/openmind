@@ -138,6 +138,13 @@ if(NOT GIT_EXECUTABLE AND WIN32)
 		)
 	find_package(Git)
 endif()
+if(GIT_EXECUTABLE)
+	add_custom_target(update
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+	)
+	set_target_properties(update PROPERTIES FOLDER "util")
+endif()
 
 #find_package(OpenMP)
 if (OPENMP_FOUND)
