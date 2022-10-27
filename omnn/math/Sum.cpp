@@ -15,11 +15,7 @@
 #include "VarHost.h"
 #include "Cache.h"
 
-
-#ifdef OPENMIND_USE_OPENCL
 #include "rt/cl.h"
-#endif
-
 
 //TODO:
 //import std;
@@ -2061,7 +2057,7 @@ namespace
                 auto devices = system::devices();
                 if(devices.size() == 0)
                 	return;
-                auto& cuwinner = omnn::rt::GetComputeUnitsWinnerDevice();
+                auto& cuwinner = ::omnn::rt::GetComputeUnitsWinnerDevice();
                 auto wgsz = cuwinner.max_work_group_size();
                 context context(cuwinner);
                 

@@ -41,7 +41,11 @@ option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare 
 option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc source code file during CPU cores idle" ${_IS_DEBUG})
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_QT "Link Qt libs" OFF)
-option(OPENMIND_USE_OPENCL "OpenCL GPU calculations" FALSE)
+find_package(OpenCL)
+option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
+if(OPENMIND_USE_OPENCL)
+    add_definitions(-DOPENMIND_USE_OPENCL)
+endif(OPENMIND_USE_OPENCL)
 set(OPENMIND_PREFERRED_BOOST_VERSION 1.80.0 CACHE STRING "Boost library version to use")
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.80.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
@@ -471,7 +475,7 @@ function(test)
 
         file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
         add_test(NAME ${TEST_NAME}
-            COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
+            COMMAND $<TARGET_FILE:${TEST_NAME}>
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db
 	    )
 	    if(NOT "${dep_on_targets}" STREQUAL "")
@@ -493,6 +497,7 @@ macro(ext name location)
 			INSTALL_DIR ${CMAKE_BINARY_DIR}
 			${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
 			CMAKE_ARGS
+                -DCMAKE_BUILD_TYPE=Release
 				-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 				-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 				-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
