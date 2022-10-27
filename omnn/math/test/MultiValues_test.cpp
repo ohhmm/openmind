@@ -27,6 +27,13 @@ BOOST_AUTO_TEST_CASE(MergeOr_tests)
     BOOST_TEST(d == items);
 #undef ITEMS
 
+#define ITEMS -1, 1, 0
+    o = Valuable::MergeOr(ITEMS); 
+    d = o.Distinct();
+    items = {ITEMS};
+    BOOST_TEST(d == items);
+#undef ITEMS
+
 #define ITEMS -1, 1, 2, -2
     o = Valuable::MergeOr(ITEMS); 
     d = o.Distinct();
