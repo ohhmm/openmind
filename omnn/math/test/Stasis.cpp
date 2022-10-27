@@ -18,9 +18,9 @@ BOOST_AUTO_TEST_CASE(Stasis
     constexpr auto Sz = 5;
     constexpr auto m = (Sz*(Sz*Sz+1))/2;
     constexpr auto mm = -m; 
-    auto& x = "x"_va;
-    auto& y = "y"_va;
-    auto& v = "v"_va;
+    DECL_VA(x);
+    DECL_VA(y);
+    DECL_VA(v);
 
     auto at = [&](const Valuable& xx, const Valuable& yy, const Valuable& vv) -> Valuable {
         return x.Equals(xx).sq() + y.Equals(yy).sq() + v.Equals(vv).sq();
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(Stasis
 	world << at(0, 0, 1);
 
     auto getat = [&](const Valuable& xx, const Valuable& yy) {
-        /*constexpr*/static Variable t = "t"_va;
+        /*constexpr*/ static DECL_VA(t);
         return at(xx,yy,t)(t);
     };
 
