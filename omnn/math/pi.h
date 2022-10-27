@@ -20,9 +20,9 @@ namespace omnn::math {
         bool operator==(const Valuable& v) const override
         { return v.Is_pi(); }
 
-		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const { return {}; }
-        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const { return {}; }
-        bool MultiplyIfSimplifiable(const Valuable& v) { return {}; }
+		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
+        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
+        bool MultiplyIfSimplifiable(const Valuable& v) override { return {}; }
     };
 
     namespace constant {

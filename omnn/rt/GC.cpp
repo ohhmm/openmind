@@ -49,6 +49,7 @@ void GC::Routine() {
         assert(res);
     }
 #else
+    // TODO: set thread priority bellow normal and elevate it on low memory event from OS
     //sched_param sp={};
     //sched_setscheduler(h, SCHED_IDLE, &sp);
 #endif
