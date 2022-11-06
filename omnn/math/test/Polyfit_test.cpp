@@ -76,9 +76,9 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification, *tolerance(TestPrecision))
     auto SZ = oX.size();
 
     // polynomial fitting
-    auto oCoeff = polyfit( oX, oY, SZ ),
-        oFittedY = polyval( oCoeff, oX );
-    for ( unsigned int i = 0; i < SZ; i++ )
+    auto oCoeff = polyfit(oX, oY, SZ);
+    auto oFittedY = polyval(oCoeff, oX);
+    for (auto i = 0; i < SZ; i++)
     {
         BOOST_TEST(oY[i] == oFittedY[i]);
     }
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification, *tolerance(TestPrecision))
     }};
     
     oFittedY = polyval( oCoeff, oX );
-    for ( unsigned int i = 0; i < SZ; i++ )
+    for (auto i = 0; i < SZ; i++)
     {
         BOOST_WARN_MESSAGE(oY[i] == oFittedY[i], "i");
     }
