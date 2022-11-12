@@ -498,13 +498,18 @@ macro(ext name location)
 		if(NOT OPENMIND_UPDATE_EXTERNAL_DEPS)
 			set(OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM UPDATE_COMMAND "")
 		endif()
+		if(MSVC)
+			set(build_type -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}) # overcoming runtime mismatch issue
+		else()
+			set(build_type -DCMAKE_BUILD_TYPE=Release)
+		endif()
 		ExternalProject_Add(${name}
 			GIT_REPOSITORY ${location}
 			GIT_TAG HEAD
 			INSTALL_DIR ${CMAKE_BINARY_DIR}
 			${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
 			CMAKE_ARGS
-                -DCMAKE_BUILD_TYPE=Release
+                ${build_type}
 				-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 				-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 				-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}

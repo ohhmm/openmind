@@ -172,7 +172,7 @@ set_target_properties(${this_target} PROPERTIES
 if(UNIX)
 	find_package(X11)
 	if(X11_FOUND AND X11_Xss_FOUND)
-		target_link_libraries(${this_target} X11::Xss)
+		target_link_libraries(${this_target} PUBLIC X11::Xss)
 	else()
 		message(WARNING "X11_FOUND, X11_Xss_FOUND: ${X11_FOUND}, ${X11_Xss_FOUND}")
 	endif()
