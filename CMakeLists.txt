@@ -324,6 +324,9 @@ macro(dep)
 				add_dependencies(${dep} boost)
 			endif()
 			message("Dependency ${dep} took from ${repo}")
+			if(dep MATCHES [qQ]t)
+				set(OPENMIND_USE_QT TRUE CACHE BOOL "Qt used is enabled for dependency ${dep}" FORCE)
+			endif()
 		endif()
 	elseif(dep MATCHES /)
 		dep("https://github.com/${dep}.git")
@@ -519,6 +522,7 @@ macro(ext name location)
 				-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 				-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 				-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+				-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
 				-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
 				-DHAVE_STD_REGEX=ON
 				-DRUN_HAVE_STD_REGEX=1
