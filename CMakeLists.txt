@@ -33,6 +33,11 @@ else()
     endif()
 endif()
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
+	"${CMAKE_BIN_DIR}/lib/cmake"
+	)
+
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_DEBUG_CHECKS "Additional debug checks" ${_IS_DEBUG})
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
@@ -154,8 +159,6 @@ if (OPENMP_FOUND)
 #elseif(NOT MSVC)
 #   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 endif()
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 
 if (Boost_FOUND)
 	if(NOT TARGET boost)
@@ -294,12 +297,31 @@ macro(dep)
 		endif()
 		get_filename_component(dep "${dep}" NAME_WE)
 		message("${repo} is link to repository for ${dep}")
-		find_package(${dep})
+		find_package(${dep}
+			HINTS ${CMAKE_INSTALL_PREFIX}
+			)
+		if(NOT ${dep}_FOUND AND ${dep} MATCHES -)
+			string(REPLACE "-" "" dashless ${dep})
+			string(REPLACE "-" "_" underscored ${dep})
+			string(TOUPPER ${underscored} underscored)
+			find_package(${dashless}
+				HINTS ${CMAKE_INSTALL_PREFIX}
+				)
+			if(${dep}_FOUND)
+				set(dep ${dashless})
+			elseif(${underscored}_FOUND)
+				set(dep ${underscored})
+			else()
+				message("Neither of ${dep}, ${dashless} or ${underscored} found")
+			endif()
+		endif()
 		if(${dep}_FOUND)
 			if(${dep}_INCLUDE_DIR)
+				message("${dep}_INCLUDE_DIR: ${${dep}_INCLUDE_DIR}")
 				target_include_directories(${this_target} PUBLIC ${${dep}_INCLUDE_DIR})
 			endif()
 			if(${dep}_INCLUDE_DIRS)
+				message("${dep}_INCLUDE_DIRS: ${${dep}_INCLUDE_DIRS}")
 				target_include_directories(${this_target} PUBLIC ${${dep}_INCLUDE_DIRS})
 			endif()
 			if(${dep}_LIBRARY)
@@ -308,14 +330,25 @@ macro(dep)
 				find_library(${dep}_LIBRARIES NAMES ${dep} lib${dep} ${dep}lib lib${dep}lib)
 			endif()
 			message("${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
-			if(EXISTS ${${dep}_LIBRARIES})
-				message("Found ${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
-				set(repo SYSTEM)
-			else()
-				message("Found no ${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
-				ext(${dep} ${repo})
-				if(OPENMIND_BUILD_BOOST)
-					add_dependencies(${dep} boost)
+			if(${dep}_LIBRARIES)
+				foreach(lib ${${dep}_LIBRARIES})
+					find_library(libfound ${lib})
+					if(libfound OR EXISTS "${lib}")
+						set(repo SYSTEM)
+						break()	
+					endif()
+					message("lib ${lib}")
+				endforeach()
+				message("repo ${repo}")
+				if(repo STREQUAL "SYSTEM")
+					message("Found ${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
+					target_link_libraries(${this_target} PUBLIC ${${dep}_LIBRARIES})
+				else()
+					message("Found no ${dep}_LIBRARIES: ${${dep}_LIBRARIES}")
+					ext(${dep} ${repo})
+					if(OPENMIND_BUILD_BOOST)
+						add_dependencies(${dep} boost)
+					endif()
 				endif()
 			endif()
 		else()
@@ -325,7 +358,7 @@ macro(dep)
 			endif()
 			message("Dependency ${dep} took from ${repo}")
 			if(dep MATCHES [qQ]t)
-				set(OPENMIND_USE_QT TRUE CACHE BOOL "Qt used is enabled for dependency ${dep}" FORCE)
+				set(OPENMIND_USE_QT ON CACHE BOOL "Qt used is enabled for dependency ${dep}" FORCE)
 			endif()
 		endif()
 	elseif(dep MATCHES /)
@@ -365,11 +398,14 @@ macro(deps)
 endmacro()
 
 function(apply_target_commons this_target)
+	string(TOUPPER ${this_target} this_target_up)
 	target_compile_definitions(${this_target} PUBLIC
 		HAS_BOOST
 		BOOST_SYSTEM_NO_DEPRECATED
 		BOOST_ERROR_CODE_HEADER_ONLY
 		BOOST_COMPUTE_USE_CPP11
+		-D_${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+		-D_${this_target_up}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		)
 	if(NOT OPENMIND_DEBUG_CHECKS)
 		target_compile_definitions(${this_target} PUBLIC NOOMDEBUG)
@@ -512,6 +548,7 @@ macro(ext name location)
 		else()
 			set(build_type -DCMAKE_BUILD_TYPE=Release)
 		endif()
+		string(TOUPPER ${name} _name_upcase)
 		ExternalProject_Add(${name}
 			GIT_REPOSITORY ${location}
 			GIT_TAG HEAD
@@ -519,13 +556,23 @@ macro(ext name location)
 			${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
 			CMAKE_ARGS
                 ${build_type}
+				-D${name}_BUILD_TESTS=OFF
+				-D${_name_upcase}_BUILD_TESTS=OFF
+				-D${name}_BUILD_BENCHMARKS=OFF
+				-D${_name_upcase}_BUILD_BENCHMARKS=OFF
 				-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+				-DCMAKE_AR=${CMAKE_AR}
 				-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 				-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+				-DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER}
 				-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
 				-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
 				-DHAVE_STD_REGEX=ON
 				-DRUN_HAVE_STD_REGEX=1
+				-DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}
+				-DCMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}
+				-DCMAKE_COMPILER_PREFIX=${CMAKE_COMPILER_PREFIX}
+				-DCMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH}
 			)
 		if(NOT TARGET ${name})
 			add_custom_target(${name})
@@ -585,10 +632,7 @@ macro(lib)
     set_target_properties(${this_target} PROPERTIES
 		FOLDER "libs"
 		PUBLIC_HEADER "${headers}"
-		)
-	target_compile_definitions(${this_target} PUBLIC
-		-D${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
-		)
+		)	
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -757,7 +801,8 @@ macro(exe)
             if(NOT VERSION)
                 set(VERSION 0.18) #TODO: deduce from git branch name/history
             endif()
-            foreach(qmlfile in ${qmlsrc})
+            foreach(qmlfile ${qmlsrc})
+				message("Adding QML ${qmlfile}")
                 qt_add_qml_module(app${this_target} URI ${this_target} VERSION ${VERSION} QML_FILES ${qmlfile})
             endforeach()
         endif()
