@@ -29,8 +29,8 @@ static_assert(!"Specify primes table");
 #endif
 
 namespace {
-#ifdef rt_SRC_DIR
-boost::filesystem::path PrimeListDir = rt_SRC_DIR;
+#ifdef _rt_SRC_DIR
+boost::filesystem::path PrimeListDir = _rt_SRC_DIR;
 auto PrimeListPath = PrimeListDir / PRIME_LIST_FILENAME;
 #endif
 } // namespace

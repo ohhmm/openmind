@@ -300,6 +300,21 @@ macro(dep)
 		find_package(${dep}
 			HINTS ${CMAKE_INSTALL_PREFIX}
 			)
+		if(NOT ${dep}_FOUND AND ${dep} MATCHES -)
+			string(REPLACE "-" "" dashless ${dep})
+			string(REPLACE "-" "_" underscored ${dep})
+			string(TOUPPER ${underscored} underscored)
+			find_package(${dashless}
+				HINTS ${CMAKE_INSTALL_PREFIX}
+				)
+			if(${dep}_FOUND)
+				set(dep ${dashless})
+			elseif(${underscored}_FOUND)
+				set(dep ${underscored})
+			else()
+				message("Neither of ${dep}, ${dashless} or ${underscored} found")
+			endif()
+		endif()
 		if(${dep}_FOUND)
 			if(${dep}_INCLUDE_DIR)
 				message("${dep}_INCLUDE_DIR: ${${dep}_INCLUDE_DIR}")
@@ -383,11 +398,14 @@ macro(deps)
 endmacro()
 
 function(apply_target_commons this_target)
+	string(TOUPPER ${this_target} this_target_up)
 	target_compile_definitions(${this_target} PUBLIC
 		HAS_BOOST
 		BOOST_SYSTEM_NO_DEPRECATED
 		BOOST_ERROR_CODE_HEADER_ONLY
 		BOOST_COMPUTE_USE_CPP11
+		-D_${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+		-D_${this_target_up}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		)
 	if(NOT OPENMIND_DEBUG_CHECKS)
 		target_compile_definitions(${this_target} PUBLIC NOOMDEBUG)
@@ -614,10 +632,7 @@ macro(lib)
     set_target_properties(${this_target} PROPERTIES
 		FOLDER "libs"
 		PUBLIC_HEADER "${headers}"
-		)
-	target_compile_definitions(${this_target} PUBLIC
-		-D${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
-		)
+		)	
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -786,7 +801,8 @@ macro(exe)
             if(NOT VERSION)
                 set(VERSION 0.18) #TODO: deduce from git branch name/history
             endif()
-            foreach(qmlfile in ${qmlsrc})
+            foreach(qmlfile ${qmlsrc})
+				message("Adding QML ${qmlfile}")
                 qt_add_qml_module(app${this_target} URI ${this_target} VERSION ${VERSION} QML_FILES ${qmlfile})
             endforeach()
         endif()
