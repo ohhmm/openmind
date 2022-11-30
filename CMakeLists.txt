@@ -404,6 +404,7 @@ function(apply_target_commons this_target)
 		BOOST_SYSTEM_NO_DEPRECATED
 		BOOST_ERROR_CODE_HEADER_ONLY
 		BOOST_COMPUTE_USE_CPP11
+		-DSRC_DIR="${CMAKE_SOURCE_DIR}/"
 		-D_${this_target}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		-D_${this_target_up}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		)
