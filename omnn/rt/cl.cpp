@@ -5,7 +5,6 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/compute.hpp>
 #include <boost/compute/core.hpp>
-#include <boost/lambda2.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/program_options.hpp>
 #include <boost/serialization/vector.hpp>
