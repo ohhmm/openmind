@@ -635,9 +635,22 @@ macro(ext name location)
 		if(CMAKE_FIND_ROOT_PATH)
 			set(ARGS ${ARGS} -DCMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH})
 		endif()
+
+		execute_process(
+			COMMAND ${GIT_EXECUTABLE} ls-remote ${location} tags/*
+			RESULT_VARIABLE RESULT
+			OUTPUT_VARIABLE OUTPUT)
+
+		set (DEFAULT_TAG HEAD)
+		set (${name}_TAG ${DEFAULT_TAG} CACHE STRING "Select a repo tag")
+
+		string (REGEX MATCHALL "([^/]+)[\^{}]\n" TAGS ${OUTPUT})
+		string (REGEX REPLACE "\n" ";"  TAGS ${TAGS})
+		set_property (CACHE ${name}_TAG PROPERTY STRINGS ${TAGS})
+
 		ExternalProject_Add(${name}
 			GIT_REPOSITORY ${location}
-			GIT_TAG HEAD
+			GIT_TAG ${${name}_TAG}
 			INSTALL_DIR ${CMAKE_BINARY_DIR}
 			${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
 			CMAKE_ARGS ${ARGS}
