@@ -1,1 +1,1 @@
-lib(boost)
+lib()
