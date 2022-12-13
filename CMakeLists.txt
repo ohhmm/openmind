@@ -530,10 +530,10 @@ endfunction(apply_target_commons)
 
 function(test)
     string(STRIP "${ARGN}" test_libs)
-	get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
-	get_filename_component(this_target ${this_target} NAME)
-	project(${this_target})
-	message("\nCreating Tests for ${this_target}")
+	get_filename_component(parent_target ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+	get_filename_component(parent_target ${parent_target} NAME)
+	project(${parent_target})
+	message("\nCreating Tests for ${parent_target}")
 	file(GLOB src *.cpp)
 	message("test_libs ${test_libs}")
 	set(libs ${test_libs} ${TEST_DEPS})#pthread
@@ -562,7 +562,11 @@ function(test)
 	    get_filename_component(TEST_NAME ${TEST} NAME_WE)
 	    message("test ${TEST_NAME}")
 	    add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
+
+		set(this_target ${TEST_NAME})
 		apply_target_commons(${TEST_NAME})
+		deps(${test_libs})
+
 		set_target_properties(${TEST_NAME} PROPERTIES
 			FOLDER "test"
 		)
@@ -570,7 +574,7 @@ function(test)
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
 			)
-		add_dependencies(${TEST_NAME} prerequisites ${this_target})
+		add_dependencies(${TEST_NAME} prerequisites ${parent_target})
 		target_link_directories(${TEST_NAME} PUBLIC
 			/usr/local/lib
 			${Boost_INCLUDE_DIR}/stage/lib
@@ -580,21 +584,7 @@ function(test)
 			${CMAKE_BINARY_DIR}/lib
 			${CMAKE_BINARY_DIR}/lib64
 			)
-        target_link_libraries(${TEST_NAME} PUBLIC ${this_target})
-        foreach(ll ${libs})
-            string(STRIP ${ll} thelib)
-			message("link ${thelib}")
-            target_link_libraries(${TEST_NAME} PUBLIC ${thelib})
-			if(${thelib}_INCLUDE_DIR)
-				message("include ${${thelib}_INCLUDE_DIR}")
-				target_include_directories(${TEST_NAME} PUBLIC ${${thelib}_INCLUDE_DIR})
-			endif()
-        endforeach()
-        foreach(tg ${libs})
-            if(TARGET ${tg})
-                add_dependencies(${TEST_NAME} ${tg})
-            endif()
-        endforeach()
+        target_link_libraries(${TEST_NAME} PUBLIC ${parent_target})
 
         file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
         add_test(NAME ${TEST_NAME}
@@ -603,7 +593,7 @@ function(test)
 	    )
 	    if(NOT "${dep_on_targets}" STREQUAL "")
 	    	message("making ${TEST_NAME} depend on ${dep_on_targets}")
-			add_dependencies(${TEST_NAME} ${this_target} ${dep_on_targets})
+			add_dependencies(${TEST_NAME} ${parent_target} ${dep_on_targets})
 		endif()
 	endforeach()
 endfunction()
