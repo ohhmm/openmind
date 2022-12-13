@@ -38,8 +38,9 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
 	"${CMAKE_BIN_DIR}/lib/cmake"
+	"${CMAKE_SOURCE_DIR}/cmake"
 	)
-
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/qtect.cmake)
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_DEBUG_CHECKS "Additional debug checks" ${_IS_DEBUG})
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
@@ -48,6 +49,9 @@ option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare 
 option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc source code file during CPU cores idle" ${_IS_DEBUG})
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_QT "Link Qt libs" OFF)
+if(OPENMIND_USE_QT)
+	qtect()
+endif()
 find_package(PkgConfig)
 option(OPENMIND_USE_PKG_CONFIG_DEPS "Use pkg-config dependencies" ${PKG_CONFIG_FOUND})
 if(PKG_CONFIG_FOUND)
@@ -516,6 +520,12 @@ function(apply_target_commons this_target)
     target_link_directories(${this_target} PUBLIC
 		${Boost_LIBRARY_DIRS}
 		)
+
+	get_target_property(target_type ${this_target} TYPE)
+	if (target_type STREQUAL "EXECUTABLE")
+		
+	endif ()
+		
 endfunction(apply_target_commons)
 
 function(test)
@@ -530,7 +540,9 @@ function(test)
 	if(NOT MSVC AND Boost_FOUND)
 		set(libs ${libs} ${BOOST_TEST_LINK_LIBS})
 	endif()
-
+    if(OPENMIND_USE_QT)
+		qtect()
+    endif()
 	message("libs ${libs}")
 	foreach(tg ${libs})
 		message("${tg}")
@@ -862,26 +874,7 @@ macro(exe)
 		set(OPENMIND_USE_QT ON CACHE BOOL "Qt used is enabled for dependency ${dep}" FORCE)
 	endif()
     if(OPENMIND_USE_QT)
-        set(CMAKE_AUTOMOC ON)
-        set(CMAKE_AUTORCC ON)
-        set(CMAKE_AUTOUIC ON)
-        set(QT_COMPONENTS
-            Core
-            Gui
-            Network
-            Qml
-            CACHE STRING "Required Qt Components"
-            #FORCE
-            )
-        if(NOT QT_FOUND)
-            find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS "${QT_COMPONENTS}")
-            find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS "${QT_COMPONENTS}")
-            message("QT_FOUND: ${QT_FOUND}")
-            message("QT_VERSION_MAJOR: ${QT_VERSION_MAJOR}")
-            if(QT_VERSION_MAJOR)
-                message("Qt${QT_VERSION_MAJOR}_FOUND: ${Qt${QT_VERSION_MAJOR}_FOUND}")
-            endif()
-        endif()
+		qtect()
     endif()
     if(Qt${QT_VERSION_MAJOR}_FOUND)
         if(QT_VERSION_MAJOR EQUAL 6)
