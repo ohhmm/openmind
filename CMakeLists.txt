@@ -421,6 +421,14 @@ macro(dep)
 			else()
 				add_dependencies(${this_target} ${dep})
 			endif()
+		elseif(dep MATCHES ::)
+			message("dep ${dep} target isn't ready")
+			STRING(REGEX REPLACE "::\.+" "" libname ${dep})
+			message("trying ${libname} library")
+			dep(${libname})
+			if(TARGET ${dep})
+				dep(${dep})
+			endif()
 		elseif(${dep} STREQUAL pthread)
 			message("dep ${dep} is -pthread option")
 		elseif(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../${dep})
@@ -529,9 +537,9 @@ function(apply_target_commons this_target)
 
 	get_target_property(target_type ${this_target} TYPE)
 	if (target_type STREQUAL "EXECUTABLE")
-		
+
 	endif ()
-		
+
 endfunction(apply_target_commons)
 
 function(test)
