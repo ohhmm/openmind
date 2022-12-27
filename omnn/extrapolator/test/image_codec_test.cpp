@@ -9,9 +9,12 @@
 #include <boost/gil/extension/io/targa.hpp>
 #include "Extrapolator.h"
 
+
 using namespace omnn::math;
+
 using namespace boost::unit_test;
 using namespace boost::gil;
+
 using namespace std;
 
 
@@ -35,7 +38,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     Extrapolator g(rows, cols);
     Extrapolator b(rows, cols);
 
-    auto v = view(src);
+    auto& v = view(src);
     for (auto i = rows; i--;) { // raw
         for (auto j = cols; j--;) { // column
             auto px = v(i,j);
