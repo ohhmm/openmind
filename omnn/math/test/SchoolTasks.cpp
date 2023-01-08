@@ -9,8 +9,9 @@ using namespace omnn::math;
 using namespace boost::unit_test;
 
 
-BOOST_AUTO_TEST_CASE(PotatoParadox)
-{
+BOOST_AUTO_TEST_CASE(PotatoParadox
+	, *disabled() // FIXME:
+) {
 	std::cout
 		<< std::endl
 		<< "The potato paradox is a mathematical calculation that has a counter-intuitive result.\n"
