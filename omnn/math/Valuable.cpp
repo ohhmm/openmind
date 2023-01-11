@@ -431,7 +431,8 @@ std::string Spaceless(std::string s) {
         }
         if (!st.empty())
             throw "parentneses relation missmatch";
-        if (bracketsmap.empty())
+        auto ok = bracketsmap.empty();
+        if (ok)
         {
             auto found = s.find("*");
             if (found != std::string::npos)
@@ -476,10 +477,13 @@ std::string Spaceless(std::string s) {
                         Become(Integer(s));
                     else if(std::all_of(s.begin(), s.end(), [](auto c){return std::isalnum(c);}))
                         Become(Valuable(h->Host(s)));
+                    else
+                        ok = {};
                 }
             }
         }
-		else
+		
+        if (!ok)
         {
             Valuable sum = Sum{};
             Valuable v;
