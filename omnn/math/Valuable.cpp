@@ -587,7 +587,7 @@ std::string Spaceless(std::string s) {
                     mulByNeg = s[i + 1] == '-';
                 }
                 else if (c == '/') {
-                    o = o_mul;
+                    o = o_div;
                     while (s[i + 1] == ' ')
                         ++i;
                 }
