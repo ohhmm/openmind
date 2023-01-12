@@ -246,8 +246,31 @@ System::solutions_t System::Solve(const Variable& va)
 //        }
 //    }
     
-    if(makeTotalEqu)
-        solution = sqs.Solutions(va);
+    if (makeTotalEqu) {
+        auto& solved = vEs[va][{}];
+        if (solved.size())
+            solution = solved;
+        else {
+            auto vars = sqs.Vars();
+            for (auto& v : vars) {
+                auto& solved = vEs[v][{}];
+                if (solved.size()) {
+                    if (solved.size() == 1) {
+                        if (v != va) {
+                            sqs.Eval(v, *solved.begin());
+                        } else {
+                            solution = solved;
+                            break;
+                        }
+                    } else {
+                        IMPLEMENT
+                    }
+                }
+            }
+            sqs.optimize();
+            solution = sqs.Solutions(va);
+        }
+    }
     if (solution.size()) {
         Valuable::var_set_t vars;
         for(auto& s : solution)
@@ -260,6 +283,7 @@ System::solutions_t System::Solve(const Variable& va)
         }
         
         if (!vars.size()) {
+            solving.erase(va);
             return solution;
         } else {
             solution.clear();
