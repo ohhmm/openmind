@@ -41,7 +41,12 @@ public:
         this->makeTotalEqu = makeTotalEqu;
     }
 
-    Valuable Total() const { return sqs; }
+    Valuable Total() const {
+        if (makeTotalEqu)
+            return sqs;
+        else
+            IMPLEMENT
+    }
     
 private:
     expressions equs;
