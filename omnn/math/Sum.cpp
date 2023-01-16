@@ -1037,6 +1037,15 @@ namespace
 
     Valuable Sum::Sqrt() const
     {
+        if (!optimizations) {
+            OptimizeOn o;
+            auto copy = *this;
+            copy.optimize();
+            if (!copy.IsSum()) {
+                return copy.Sqrt();
+            }
+        }
+
         LOG_AND_IMPLEMENT("square root " << str()); // TODO : try to get rid of this call instead by substituting to ^(1_v/2) which is not equivalent to sqrt by the way
                                                     // https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
         return Exponentiation(*this, 1_v/2); // TODO  :  this is wrong  because of https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
@@ -1263,7 +1272,10 @@ namespace
         }
         if(c0.size()){
             OptimizeOn oo;
-            coefficients[0] = std::move(c0);
+            if (coefficients.size())
+                coefficients[0] = std::move(c0);
+            else
+                coefficients.emplace_back(std::move(c0));
         }
 
         while (coefficients.size() && *coefficients.rbegin() == 0) {
