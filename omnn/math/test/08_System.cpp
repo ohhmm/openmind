@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
     }
     
 //    Valuable::optimizations = true;
-//    std::cout << omnn::measure<>::execution([&](){
+//    std::cout << omnn::measure::nanoseconds([&](){
 //        s.optimize();
 //    }) << std::endl;
 //    Valuable::optimizations = {};
