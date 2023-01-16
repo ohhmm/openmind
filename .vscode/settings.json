@@ -19,4 +19,7 @@
     "visualstudioexptteam.vscodeintellicode",
     "visualstudioexptteam.vscodeintellicode-completions"
   ],
+  "files.associations": {
+    "vector": "cpp"
+  },
 }
