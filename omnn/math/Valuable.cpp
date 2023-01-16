@@ -562,6 +562,7 @@ std::string Spaceless(std::string s) {
                             o_sum(std::move(v));
                             v = 0;
                             o = o_mov;
+                            mulByNeg = true;
                         } else
                             mulByNeg = false;
                     }
@@ -599,7 +600,12 @@ std::string Spaceless(std::string s) {
                 else if (std::isalpha(c)){
                     auto to = s.find_first_of(" */+-()", i+1);
                     auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
-                    o(Valuable(h->Host(id)));
+                    Valuable val(h->Host(id));
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
+                    o(std::move(val));
                     i = to - 1;
                 } else {
                     IMPLEMENT
