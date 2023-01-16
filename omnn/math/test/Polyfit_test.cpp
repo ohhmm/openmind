@@ -8,6 +8,7 @@
 //#include <boost/multiprecision/float128.hpp>
 #define BOOST_TEST_MODULE Polyfit test
 #include <boost/test/unit_test.hpp>
+
 #include "pi.h"
 #include "SymmetricDouble.h"
 #include "Polyfit.h"
@@ -23,8 +24,8 @@ const f128 TestPrecision = 0.000001;
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
     , *tolerance(TestPrecision)
-    , *disabled() // FIXME:
-) {
+    , *disabled()) { // FIXME:
+
     const int SZ = 73;
     const f128  PI2 = constants::pi * 2,
                 SZf = SZ;
@@ -266,3 +267,5 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
         BOOST_TEST(oY[i] == oFittedY[i]);
     }
 }
+
+BOOST_AUTO_TEST_CASE(Polyfit_test_empty){}
