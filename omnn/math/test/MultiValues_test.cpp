@@ -57,12 +57,14 @@ BOOST_AUTO_TEST_CASE(Debranching_Dilemma_test)
     _2.Eval(x, constants::plus_minus_1); // not ±2
     BOOST_TEST(_2 == 2); // because x is the same for both branches
 }
+
 BOOST_AUTO_TEST_CASE(Other_signs_tests) {
     auto _1 = -1_v * (-4_v ^ constants::half) * (-16 ^ constants::half);
     auto _2 = constants::plus_minus_1 * 8 * constants::i;
     BOOST_TEST(_1 == _2);
     auto d1 = _1.Distinct();
 }
+
 BOOST_AUTO_TEST_CASE(Higher_orders_tests)
 {
     auto _ = 841_v / 64; // 841/64 = 13.140625

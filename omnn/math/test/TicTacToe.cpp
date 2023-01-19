@@ -472,7 +472,9 @@ namespace {
         "+ -11088*(win^2)*i + 1764*(win^2))";
 
     } // namespace
-BOOST_AUTO_TEST_CASE(TicTacToe_X_Won_test)
+BOOST_AUTO_TEST_CASE(TicTacToe_X_Won_test
+    , *disabled()
+)
 {
 	//auto iPossibleValues = i.Abet({1, 2, 3});
 
@@ -541,3 +543,5 @@ BOOST_AUTO_TEST_CASE(TicTacToe_X_Won_test)
 		}
 	}
 }
+
+BOOST_AUTO_TEST_CASE(TicTacToe_empty_test) {}

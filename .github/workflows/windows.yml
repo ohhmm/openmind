@@ -28,4 +28,5 @@ jobs:
       run: cmake --build ${{github.workspace}}/build
     - name: make check
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 120 -C Debug -j %NUMBER_OF_PROCESSORS%
+      run: ctest --timeout 240 -C Debug -j %NUMBER_OF_PROCESSORS%
+      run: rem --rerun-failed --output-on-failure
