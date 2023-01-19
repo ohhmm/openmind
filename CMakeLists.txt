@@ -498,6 +498,8 @@ macro(deps)
 				add_dependencies(${this_target} ${tg})
 				list(APPEND this_target_libs ${tg})
 			endif()
+		elseif(tg MATCHES ::)
+			message("Skipping ${tg} which is to be installed with prerequisites yet")
 		elseif(EXISTS ${tg})
 			list(APPEND this_target_libs ${tg})
 		elseif(${tg}_LIBRARY)
@@ -541,9 +543,7 @@ macro(deps)
     else()
         message("${this_target} has no libs")
     endif()
-    if(MSVC)
-        target_compile_options(${this_target} PUBLIC /constexpr:steps1000000000>)
-    else()
+    if(NOT MSVC)
         target_link_libraries(${this_target} PUBLIC
                         pthread
                         )
@@ -581,7 +581,7 @@ function(apply_target_commons this_target)
 			/FS
 			/constexpr:steps1000000000
 			/source-charset:utf-8
-			"$<$<CONFIG:DEBUG>:/ZI>"
+			$<$<CONFIG:DEBUG>:/ZI>
 			)
 	    target_link_directories(${this_target} PUBLIC
 			${Boost_INCLUDE_DIR}/stage/lib
