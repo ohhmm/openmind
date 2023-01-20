@@ -196,9 +196,7 @@ BOOST_AUTO_TEST_CASE(Sudoku_test_task
             if (!exp.IsInt()) {
                 auto& var = variables[rowIdx][colIdx];
                 auto solutions = s.Solve(var);
-                if (!solutions.size()==1) {
-                    throw;
-                }
+                BOOST_TEST(solutions.size() == 1);
                 auto solution = *solutions.begin();
                 exp = solution;
             }
