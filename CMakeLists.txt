@@ -169,6 +169,14 @@ if(GIT_EXECUTABLE)
 		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
 	)
 	set_target_properties(update PROPERTIES FOLDER "util")
+	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR MATCHES CMAKE_SOURCE_DIR)
+		add_custom_target(update-openmind
+			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind main
+		)
+		set_target_properties(update-openmind PROPERTIES FOLDER "util")
+		add_dependencies(update update-openmind)
+	endif()
 endif()
 
 #find_package(OpenMP)
