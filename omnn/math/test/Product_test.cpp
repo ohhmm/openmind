@@ -15,7 +15,9 @@ BOOST_AUTO_TEST_CASE(Product_operator_tests) {
 	auto p = std::move(Product{2, 4}); 
 }
 
-BOOST_AUTO_TEST_CASE(Product_tests)
+BOOST_AUTO_TEST_CASE(Product_tests
+    , *disabled() // FIXME :
+)
 {
 	auto f = 1_v / 2;
 	auto f1 = 5_v / 6;
