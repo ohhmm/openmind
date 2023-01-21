@@ -434,30 +434,12 @@ std::string Spaceless(std::string s) {
         auto ok = bracketsmap.empty();
         if (ok)
         {
-            auto found = s.find("*");
-            if (found != std::string::npos)
-            {
-                auto lpart = s.substr(0, found);
-                auto rpart = s.substr(found + 1, s.length() - found);
-                Become(Valuable(lpart, h, itIsOptimized) * Valuable(rpart, h, itIsOptimized));
-            }
-            else
-            {
-                found = s.find("^");
-                if (found != std::string::npos)
-                {
-                    auto lpart = s.substr(0, found);
-                    auto rpart = s.substr(found + 1, s.length() - found);
-                    Become(Valuable(lpart, h, itIsOptimized) ^ Valuable(rpart, h, itIsOptimized));
-                }
-                else
-                {
                     auto copy = s;
                     auto s = Trim(copy);
                     auto offs = 0;
                     while (s[offs]=='-')
                         ++offs;
-                    found = s.find_first_not_of("0123456789", offs);
+            auto found = s.find_first_not_of("0123456789", offs);
                     if (found == std::string::npos)
                     {
                         exp = std::make_shared<Integer>(s);
@@ -480,8 +462,6 @@ std::string Spaceless(std::string s) {
                     else
                         ok = {};
                 }
-            }
-        }
 		
         if (!ok)
         {
@@ -544,7 +524,7 @@ std::string Spaceless(std::string s) {
                     auto next = s.find_first_not_of("0123456789", idStart);
                     auto id = s.substr(idStart, next - idStart);
                     if (id.empty()) {
-                        auto to = s.find_first_of(" */+-()", idStart);
+                        auto to = s.find_first_of(" */+-^()", idStart);
                         auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
                         o(Valuable(h->Host(id)));
                         i = to - 1;
@@ -598,7 +578,7 @@ std::string Spaceless(std::string s) {
                 else if (c == ' ') {
                 }
                 else if (std::isalpha(c)){
-                    auto to = s.find_first_of(" */+-()", i+1);
+                    auto to = s.find_first_of(" */+-^()", i+1);
                     auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
                     Valuable val(h->Host(id));
                     if (mulByNeg) {
@@ -891,7 +871,7 @@ std::string Spaceless(std::string s) {
         }
         else if (exp)
         {
-            Valuable& o = exp->operator*=(v);
+            auto& o = exp->operator*=(v);
             if (o.exp) {
                 exp = o.exp;
             }
