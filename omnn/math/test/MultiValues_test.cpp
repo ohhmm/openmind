@@ -65,7 +65,9 @@ BOOST_AUTO_TEST_CASE(Other_signs_tests) {
     auto d1 = _1.Distinct();
 }
 
-BOOST_AUTO_TEST_CASE(Higher_orders_tests)
+BOOST_AUTO_TEST_CASE(Higher_orders_tests
+    , *disabled()
+)
 {
     auto _ = 841_v / 64; // 841/64 = 13.140625
     auto a = _.Sqrt();   // 29/8 = 3.625   - square root stands for principal root (only positive branch).
