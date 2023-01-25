@@ -16,21 +16,17 @@ RUN echo "dev-libs/icu examples static-libs" > /etc/portage/package.use/icu
 RUN echo "dev-lang/mono minimal" > /etc/portage/package.use/mono
 
 RUN emerge --update \
-    bash-completion \
-    eix \
-    htop \
-    app-misc/mc \
-    kde-frameworks/extra-cmake-modules \
-    sys-process/htop \
     dev-vcs/git \
+    -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN emerge --update \
+    kde-frameworks/extra-cmake-modules \
     -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
     clang \
     lld \
     -j`nproc` && rm -rf /var/cache/distfiles
-
-RUN eix-update
 
 RUN emerge -j`nproc` leveldb && rm -rf /var/cache/distfiles
 
@@ -60,3 +56,11 @@ RUN emerge --update =dev-libs/boost-1.80.0 -j`nproc`
 RUN emerge --update dev-cpp/benchmark dev-cpp/gtest -j`nproc` && rm -rf /var/cache/distfiles
 RUN emerge --update dev-lang/mono -j`nproc` && rm -rf /var/cache/distfiles
 
+RUN emerge --update \
+    app-misc/mc \
+    bash-completion \
+    eix \
+    sys-process/htop \
+    -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN eix-update
