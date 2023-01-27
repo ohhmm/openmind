@@ -674,7 +674,7 @@ function(test)
 		if(NOT MSVC AND Boost_FOUND)
 			deps(${BOOST_TEST_LINK_LIBS})
 		endif()
-		deps(${test_libs})
+		deps(${libs})
 
 		set_target_properties(${TEST_NAME} PROPERTIES
 			FOLDER "test"
