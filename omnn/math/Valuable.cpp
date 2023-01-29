@@ -469,11 +469,22 @@ std::string Spaceless(std::string s) {
             Valuable v;
             auto mulByNeg = false;
             using op_t = std::function<void(Valuable &&)>;
-            op_t o_mov = [&](Valuable&& val) { v = std::move(val); };
+            op_t o_mov = [&](Valuable&& val) {
+				v = std::move(val);
+                if (mulByNeg) {
+                    v *= -1;
+                    mulByNeg = {};
+                }
+			};
             op_t o_sum, o_mul, o_div, o_exp;
             if (itIsOptimized) {
                 o_sum = [&](Valuable&& val) {
                     if (val != 0) {
+                        if (mulByNeg) {
+                            val *= -1;
+                            mulByNeg = {};
+                        }
+
                         Sum s{std::move(sum), std::move(val)};
                         if(itIsOptimized)
                             s.MarkAsOptimized();
@@ -493,25 +504,54 @@ std::string Spaceless(std::string s) {
                     v = std::move(p);
                 };
                 o_div = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
                     Fraction f{std::move(v), std::move(val)};
                     if(itIsOptimized)
                         f.MarkAsOptimized();
                     v = std::move(f);
                 };
                 o_exp = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
                     Exponentiation e{std::move(v), std::move(val)};
                     if(itIsOptimized)
                         e.MarkAsOptimized();
                     v = std::move(e);
                 };
             } else {
-                o_sum = [&](Valuable&& val) { sum += std::move(val); };
+                o_sum = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
+                    sum += std::move(val);
+                };
                 o_mul = [&](Valuable&& val) {
-					v *= mulByNeg ? std::move(-val) : std::move(val); 
-					mulByNeg = {};
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
+					v *= std::move(val);
 				};
-                o_div = [&](Valuable&& val) { v /= std::move(val); };
-                o_exp = [&](Valuable&& val) { v ^= std::move(val); };
+                o_div = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
+                    v /= std::move(val);
+                };
+                o_exp = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= -1;
+					mulByNeg = {};
+                    }
+                    v ^= std::move(val);
+				};
             }
 
             auto o = std::ref(o_mov);
@@ -542,22 +582,12 @@ std::string Spaceless(std::string s) {
                         id = s.substr(i, next - i);
                         o(Valuable(h->Host(id)));
                     }
-                } else if (c == '-' && !mulByNeg) {
-                    o_sum(std::move(v));
-                    v = 0;
-                    o = o_mov;
-                    mulByNeg = true;
-                } else if ((c >= '0' && c <= '9') || c == '-') {
-                    if (c == '-') {
-                        if (!mulByNeg) {
+                } else if (c == '-') {
                             o_sum(std::move(v));
                             v = 0;
                             o = o_mov;
-                            mulByNeg = true;
-                        } else
-                            mulByNeg = false;
-                    }
-
+                    mulByNeg ^= true;
+                } else if ((c >= '0' && c <= '9')) {
                     auto next = s.find_first_not_of(" 0123456789", i+1);
                     auto ss = s.substr(i, next - i);
                     Trim(ss);
