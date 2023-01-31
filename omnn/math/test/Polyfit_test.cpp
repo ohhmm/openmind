@@ -19,12 +19,14 @@ using namespace omnn::math;
 
 using f128 = Valuable;
 
-const f128 TestPrecision = 0.000001;
+auto TestPrecision = 0.000001;
 
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
     , *tolerance(TestPrecision)
-    , *disabled()) { // FIXME:
+    // , *disabled()
+    )
+{
 
     const int SZ = 73;
     const f128  PI2 = constants::pi * 2,
@@ -51,7 +53,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_classification
     , *tolerance(TestPrecision)
-    , *disabled() // FIXME:
+    // , *disabled()
 ) {
     std::vector<f128> oX = {{
         0000,
@@ -132,7 +134,9 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification
     }
 }
 
-BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double, *disabled())
+BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
+    *disabled()
+    )
 {
     std::vector<SymmetricDouble> oX = {{
         0000,
