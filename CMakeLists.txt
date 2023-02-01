@@ -23,14 +23,11 @@ if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
     endif()
 else()
     set(_IS_DEBUG FALSE)
-    if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
+	set(Boost_USE_STATIC_LIBS ON)
+	SET(BUILD_SHARED_LIBS OFF)
+	add_definitions(-DBOOST_ALL_STATIC_LINK)
+	if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
         set(OPENMIND_PRIME_TABLE Bundled CACHE STRING "Table of predefined prime numbers")
-        add_definitions(-DBOOST_ALL_STATIC_LINK)
-		set(Boost_USE_STATIC_LIBS ON)
-		SET(BUILD_SHARED_LIBS OFF)
-        if(MSVC)
-            add_compile_options($<$<CONFIG:Release>:/MT>)
-        endif()
     else()
         set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
         message(WARNING "Consider setting CMAKE_BUILD_TYPE")
@@ -172,6 +169,7 @@ if(GIT_EXECUTABLE)
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
+			COMMAND ${GIT_EXECUTABLE} fetch --all
 			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind main
 		)
 		set_target_properties(update-openmind PROPERTIES FOLDER "util")
@@ -215,7 +213,7 @@ elseif(OPENMIND_BUILD_BOOST)
       set(Boost_address_model 32)
     endif()
 
-    set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} runtime-link=static,shared ${BOOST_BUILD_PARAMS}")
+    set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} runtime-link=static,shared link=shared,shared ${BOOST_BUILD_PARAMS}")
     if(WIN32)
         set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
         separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
@@ -264,6 +262,7 @@ else()
 		add_custom_target(boost)
 	endif()
 endif()
+add_dependencies(prerequisites boost)
 
 set(BOOST_LINK_LIBS
     Boost::serialization
@@ -300,6 +299,10 @@ if (OPENMIND_BUILD_TESTS)
 		endif()
 	endif()
 endif ()
+
+macro(echo)
+	message("${ARGN}: ${${ARGN}}")
+endmacro(echo)
 
 macro(find_local_dep)
 	message("find local dep: ${ARGN}")
@@ -583,6 +586,10 @@ function(apply_target_commons this_target)
 			MSVC_CONSTEXPR=constexpr
 			NO_MSVC_CONSTEXPR=
 			MSVC
+			$<$<CONFIG:Release>:BOOST_ALL_STATIC_LINK>
+			$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_STATIC_LINK>
+			$<$<CONFIG:MinSizeRel>:BOOST_ALL_STATIC_LINK>
+			$<$<CONFIG:DEBUG>:BOOST_ALL_DYN_LINK>
 			)
 		target_compile_options(${this_target} PUBLIC
 			/bigobj
