@@ -224,7 +224,7 @@ elseif(OPENMIND_BUILD_BOOST)
       set(Boost_address_model 32)
     endif()
 
-    set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} runtime-link=static,shared link=shared,shared ${BOOST_BUILD_PARAMS}")
+    set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} runtime-link=static,shared link=static,shared ${BOOST_BUILD_PARAMS}")
     if(WIN32)
         set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
         separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
@@ -920,6 +920,7 @@ macro(fold)
             get_filename_component(name ${item} NAME)
             if(NOT "${name}" STREQUAL "OpenMind"
                 AND NOT "${name}" STREQUAL "omnn"
+				AND NOT "${name}" STREQUAL "tests"
                 ) # already included first
                 add_subdirectory(${item})
             endif()
