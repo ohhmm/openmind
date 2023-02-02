@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(PRODUCT_NAME OpenMind)
+get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
+string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
+
 enable_language(CXX)
 set (CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -9,7 +11,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-message("SRC_DIR=${CMAKE_SOURCE_DIR}/")
+message("BIN_DIR=${CMAKE_BINARY_DIR}")
+message("SRC_DIR=${CMAKE_SOURCE_DIR}")
+message("PRODUCT_NAME=${PRODUCT_NAME}")
+
+if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
+	message(WARNING "build dir matches source dir")
+endif()
 
 set(OPENMIND_PRIME_TABLE_OPTIONS Boost Bundled)
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
@@ -36,7 +44,7 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
-	"${CMAKE_BIN_DIR}/lib/cmake"
+	"${CMAKE_BINARY_DIR}/lib/cmake"
 	"${CMAKE_SOURCE_DIR}/cmake"
 	)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/qtect.cmake)
@@ -150,6 +158,8 @@ endif()
 option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
 
 include(CPack)
+set(CPACK_BUNDLE_NAME ${PRODUCT_NAME})
+
 include(ExternalData)
 include(ExternalProject)
 
@@ -728,6 +738,7 @@ macro(ext name location)
 		string(TOUPPER ${name} _name_upcase)
 		set(ARGS
 			${build_type}
+			-DBUILD_TESTS=OFF
 			-D${name}_BUILD_TESTS=OFF
 			-D${_name_upcase}_BUILD_TESTS=OFF
 			-D${name}_BUILD_BENCHMARKS=OFF
@@ -736,6 +747,7 @@ macro(ext name location)
 			-DCMAKE_AR=${CMAKE_AR}
 			-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 			-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+			-DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
 			-DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER}
 			-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
 			-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
