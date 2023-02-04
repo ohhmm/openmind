@@ -1763,7 +1763,8 @@ std::string Spaceless(std::string s) {
         if (exp)
             return exp->InCommonWith(v);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Implement " << boost::core::demangle(Type().name()) << "::InCommonWith() for " << *this
+                                           << " InCommonWith " << v);
     }
 
     Valuable Valuable::varless() const
