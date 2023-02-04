@@ -41,7 +41,7 @@ public:
         this->makeTotalEqu = makeTotalEqu;
     }
 
-    Valuable Total() const {
+    constexpr const Valuable& Total() const {
         if (makeTotalEqu)
             return sqs;
         else

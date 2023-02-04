@@ -131,11 +131,12 @@ protected:
     size_t sz = sizeof(Valuable);
     static constexpr a_int const& a_int_z = a_int_cz;
     static constexpr max_exp_t const& max_exp_z = max_exp_cz;
-    max_exp_t maxVaExp;// = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
+    max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
 public:
     virtual std::ostream& code(std::ostream& out) const;
     std::string OpenCL() const;
+    std::string OpenCLuint() const;
 
     enum View
     {
@@ -402,7 +403,7 @@ public:
     virtual Valuable varless() const;
     static Valuable VaVal(const vars_cont_t& v);
     Valuable getVaVal() const;
-    virtual bool eval(const std::map<Variable, Valuable>& with);
+    virtual bool eval(const vars_cont_t& with);
 
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;

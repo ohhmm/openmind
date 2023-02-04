@@ -325,6 +325,30 @@ namespace math {
             break;
         }
         default:
+            solutions_t pairs;
+            for (; it != s.end();) {
+                auto it2 = it;
+                ++it2;
+                auto neg = -*it;
+                bool found = {};
+                for (; it2 != s.end();) {
+                    found = it2->operator==(neg);
+                    if (found) {
+                        pairs.emplace(MergeOr(*it, neg));
+                        s.erase(it2);
+                        s.erase(it++);
+                        break;
+                    } else {
+                        ++it2;
+                    }
+                }
+                if (!found) {
+                    ++it;
+                }
+            }
+
+            Valuable mergedPairs(std::move(pairs));
+
 #ifndef NDEBUG
             std::stringstream ss;
             ss << '(';
@@ -434,34 +458,34 @@ std::string Spaceless(std::string s) {
         auto ok = bracketsmap.empty();
         if (ok)
         {
-                    auto copy = s;
-                    auto s = Trim(copy);
-                    auto offs = 0;
-                    while (s[offs]=='-')
-                        ++offs;
+            auto copy = s;
+            auto s = Trim(copy);
+            auto offs = 0;
+            while (s[offs]=='-')
+                ++offs;
             auto found = s.find_first_not_of("0123456789", offs);
-                    if (found == std::string::npos)
-                    {
-                        exp = std::make_shared<Integer>(s);
-                    }
-                    else if (s[0] == 'v' && s.size() > 1 && h->IsIntegerId()
-                        && std::all_of(s.begin() + 1, s.end(),
-							[](auto ch) { return std::isdigit(ch); }
-							)
-						)
-                        Become(Valuable(h->Host(Valuable(a_int(s.substr(1))))));
-                    else if (s.length() > 2
-                        && s[0] == '0'
-                        && (s[1] == 'x' || s[1] == 'X')
-                        && std::isxdigit(s[2])
-                        && s.find_first_not_of("0123456789ABCDEFabcdef", 2) == std::string::npos
-                        )
-                        Become(Integer(s));
-                    else if(std::all_of(s.begin(), s.end(), [](auto c){return std::isalnum(c);}))
-                        Become(Valuable(h->Host(s)));
-                    else
-                        ok = {};
-                }
+            if (found == std::string::npos)
+            {
+                exp = std::make_shared<Integer>(s);
+            }
+            else if (s[0] == 'v' && s.size() > 1 && h->IsIntegerId()
+                && std::all_of(s.begin() + 1, s.end(),
+					[](auto ch) { return std::isdigit(ch); }
+					)
+				)
+                Become(Valuable(h->Host(Valuable(a_int(s.substr(1))))));
+            else if (s.length() > 2
+                && s[0] == '0'
+                && (s[1] == 'x' || s[1] == 'X')
+                && std::isxdigit(s[2])
+                && s.find_first_not_of("0123456789ABCDEFabcdef", 2) == std::string::npos
+                )
+                Become(Integer(s));
+            else if(std::all_of(s.begin(), s.end(), [](auto c){return std::isalnum(c);}))
+                Become(Valuable(h->Host(s)));
+            else
+                ok = {};
+        }
 		
         if (!ok)
         {
@@ -548,10 +572,10 @@ std::string Spaceless(std::string s) {
                 o_exp = [&](Valuable&& val) {
                     if (mulByNeg) {
                         val *= -1;
-					mulByNeg = {};
+                        mulByNeg = {};
                     }
                     v ^= std::move(val);
-				};
+                };
             }
 
             auto o = std::ref(o_mov);
@@ -583,9 +607,9 @@ std::string Spaceless(std::string s) {
                         o(Valuable(h->Host(id)));
                     }
                 } else if (c == '-') {
-                            o_sum(std::move(v));
-                            v = 0;
-                            o = o_mov;
+                    o_sum(std::move(v));
+                    v = 0;
+                    o = o_mov;
                     mulByNeg ^= true;
                 } else if ((c >= '0' && c <= '9')) {
                     auto next = s.find_first_not_of(" 0123456789", i+1);
@@ -1406,6 +1430,26 @@ std::string Spaceless(std::string s) {
             return exp->code(out);
         else
             IMPLEMENT
+    }
+
+    std::string Valuable::OpenCLuint() const {
+        std::stringstream source;
+        source << "__kernel void f(__global uint *Result";
+        auto vars = Vars();
+        for (auto& v : vars)
+            if (v.str() != "i")
+                source << ",__global uint *_" << v;
+        source << "){const uint _i = get_global_id(0);";
+        for (auto& v : vars) {
+            source << "uint " << v << "=_" << v;
+            if (v.str() != "i")
+                source << "[_i]";
+            source << ';';
+        }
+        source << "Result[_i]=";
+        code(source);
+        source << ";}";
+        return source.str();
     }
 
     std::string Valuable::OpenCL() const {
