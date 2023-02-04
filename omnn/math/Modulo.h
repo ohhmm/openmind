@@ -28,6 +28,11 @@ public:
     }
     
     void optimize() override;
+
+	Valuable operator-() const override;
+
+	std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
+    Valuable InCommonWith(const Valuable& v) const override { return 1; }
 };
 
 } /* namespace math */

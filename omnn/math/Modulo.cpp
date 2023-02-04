@@ -27,3 +27,10 @@ void Modulo::optimize(){
         hash = _1.Hash() ^ _2.Hash();
     }
 }
+
+Valuable Modulo::operator-() const
+{
+    auto copy = *this;
+    copy.update1(-_1);
+    return copy;
+}
