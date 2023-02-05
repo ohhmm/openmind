@@ -34,6 +34,8 @@ public:
 	std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
     Valuable InCommonWith(const Valuable& v) const override { return 1; }
+
+	bool IsComesBefore(const Valuable& v) const override;
 };
 
 } /* namespace omnn::math */
