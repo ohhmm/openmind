@@ -295,7 +295,7 @@ namespace math {
             if (*this == v)
                 c = v;
         } else {
-            IMPLEMENT
+            c = v.InCommonWith(*this);
         }
         return c;
     }

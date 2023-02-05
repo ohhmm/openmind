@@ -6,8 +6,12 @@
  */
 
 #include <omnn/math/Modulo.h>
+#include <omnn/math/Variable.h>
 
 using namespace omnn::math;
+
+
+Valuable::vars_cont_t Modulo::VarsForCommoning;
 
 std::ostream& Modulo::print_sign(std::ostream& out) const
 {
@@ -17,13 +21,18 @@ std::ostream& Modulo::print_sign(std::ostream& out) const
 void Modulo::optimize(){
     _1.optimize();
     _2.optimize();
-    if (_1.IsInt() && _2.IsInt()) {
-        if (_2 == constants::one)
-            Become(std::move(_2));
-        else
-            Become(std::move(_1 %= _2));
+    if (_2.IsInt()) {
+        if (_2 == constants::zero) {
+            Become(std::move(_1));
+        }
+        else if (_1.IsInt()) {
+            if (_2 == constants::one)
+                Become(std::move(_2));
+            else
+                Become(std::move(_1 %= _2));
+        }
     }
-    if (Is<Modulo>()) {
+    if (IsModulo()) {
         hash = _1.Hash() ^ _2.Hash();
     }
 }
