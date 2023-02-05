@@ -880,8 +880,12 @@ std::string Spaceless(std::string s) {
     Valuable::~Valuable()
     {
 #ifdef OPENMIND_BUILD_GC
-        if (exp)
+        if (exp) {
+			#if 0
+            std::cout << *this << std::endl;
+			#endif
             rt::GC::DispatchDispose(std::move(exp));
+        }
 #endif
     }
 
@@ -1365,6 +1369,7 @@ std::string Spaceless(std::string s) {
     bool Valuable::IsProduct() const { return exp && exp->IsProduct(); }
     bool Valuable::IsSum() const { return exp && exp->IsSum(); }
     bool Valuable::IsInfinity() const { return exp && exp->IsInfinity(); }
+    bool Valuable::IsModulo() const { return exp && exp->IsModulo(); }
     bool Valuable::IsMInfinity() const { return exp && exp->IsMInfinity(); }
     bool Valuable::IsNaN() const { return exp && exp->IsNaN(); }
     bool Valuable::Is_e() const { return exp && exp->Is_e(); }

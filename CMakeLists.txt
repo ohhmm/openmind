@@ -597,10 +597,10 @@ function(apply_target_commons this_target)
 			MSVC_CONSTEXPR=constexpr
 			NO_MSVC_CONSTEXPR=
 			MSVC
+			$<$<CONFIG:DEBUG>:BOOST_ALL_STATIC_LINK>
 			$<$<CONFIG:Release>:BOOST_ALL_STATIC_LINK>
 			$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_STATIC_LINK>
 			$<$<CONFIG:MinSizeRel>:BOOST_ALL_STATIC_LINK>
-			$<$<CONFIG:DEBUG>:BOOST_ALL_DYN_LINK>
 			)
 		target_compile_options(${this_target} PUBLIC
 			/bigobj
@@ -609,6 +609,11 @@ function(apply_target_commons this_target)
 			/source-charset:utf-8
 			$<$<CONFIG:DEBUG>:/ZI>
 			$<$<CONFIG:Release>:/MT>
+			$<$<CONFIG:RelWithDebInfo>:/ZI>
+			)
+		target_link_options(${this_target} PUBLIC
+			$<$<CONFIG:DEBUG>:/LTCG:OFF>
+			$<$<CONFIG:RelWithDebInfo>:/LTCG:OFF>
 			)
 	    target_link_directories(${this_target} PUBLIC
 			${Boost_INCLUDE_DIR}/stage/lib

@@ -150,7 +150,11 @@ namespace math {
         }
         else if (!item.IsSum() && item.FindVa())
         {
-            LOG_AND_IMPLEMENT(str() << ": AddToVarsIfVaOrVaExp: " << item);
+            if (item.IsModulo()) {
+				// FIXME: implement this branch in meaningful way
+            } else {
+                LOG_AND_IMPLEMENT(str() << ": AddToVarsIfVaOrVaExp: " << item);
+            }
         }
     }
     
@@ -334,7 +338,8 @@ namespace math {
             {
                 if (members.size() == 1)
                 {
-                    Become(std::move(*const_cast<Valuable*>(&*it)));
+                    auto node = members.extract(it);
+                    Become(std::move(node.value()));
                     return;
                 }
 
