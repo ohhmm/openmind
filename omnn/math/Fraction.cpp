@@ -315,6 +315,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         }
     } else if (!v.IsFraction()) {
         is = v.IsSummationSimplifiable(*this);
+    } else if (!v.IsModulo()) {
     } else {
         IMPLEMENT
     }
