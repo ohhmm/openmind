@@ -23,6 +23,7 @@ void Modulo::optimize(){
     _2.optimize();
     if (_2.IsInt()) {
         if (_2 == constants::zero) {
+			IMPLEMENT
             Become(std::move(_1));
         }
         else if (_1.IsInt()) {
