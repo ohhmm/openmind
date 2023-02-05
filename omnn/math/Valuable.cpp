@@ -1332,18 +1332,18 @@ std::string Spaceless(std::string s) {
 
     bool Valuable::operator<(const Valuable& v) const
     {
-        if(exp)
+        if (exp)
             return exp->operator<(v);
         else if (!FindVa()) {
             double _1 = operator double();
             double _2 = static_cast<double>(v);
-            if(_1 == _2) {
-                IMPLEMENT
+            if (_1 == _2) {
+                LOG_AND_IMPLEMENT(*this << " looks optimizable");
             }
             return _1 < _2;
+        } else {
+            LOG_AND_IMPLEMENT(*this << " < " << v);
         }
-        else
-            IMPLEMENT
     }
 
     bool Valuable::operator==(const Valuable& v) const
