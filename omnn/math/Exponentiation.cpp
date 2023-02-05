@@ -1053,7 +1053,9 @@ namespace math {
         } else if (v.IsVa()) {
             c = v.InCommonWith(*this);
         } else if (v.IsInt() || v.IsSimpleFraction()) {
+        } else if (v.IsModulo()) {
         } else if (getExponentiation().IsVa()) {
+        } else if (getExponentiation().IsModulo()) {
         } else {
             IMPLEMENT
         }
