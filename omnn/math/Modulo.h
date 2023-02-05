@@ -9,9 +9,7 @@
 
 #include <omnn/math/DuoValDescendant.h>
 
-namespace omnn
-{
-namespace math
+namespace omnn::math
 {
 
 class Modulo : public DuoValDescendant<Modulo>
@@ -20,6 +18,8 @@ class Modulo : public DuoValDescendant<Modulo>
 
 public:
     using base::base;
+
+	bool IsModulo() const override { return true; }
 
     std::ostream& print_sign(std::ostream& out) const override;
     
@@ -32,8 +32,8 @@ public:
 	Valuable operator-() const override;
 
 	std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
+    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
     Valuable InCommonWith(const Valuable& v) const override { return 1; }
 };
 
-} /* namespace math */
-} /* namespace omnn */
+} /* namespace omnn::math */

@@ -323,6 +323,7 @@ public:
     virtual bool IsProduct() const;
     virtual bool IsSum() const;
     virtual bool IsInfinity() const;
+    virtual bool IsModulo() const;
     virtual bool IsMInfinity() const;
     virtual bool IsNaN() const;
     virtual bool Is_e() const;
