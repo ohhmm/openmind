@@ -34,3 +34,19 @@ Valuable Modulo::operator-() const
     copy.update1(-_1);
     return copy;
 }
+
+bool Modulo::IsComesBefore(const Valuable& v) const
+{
+    auto is = v.IsModulo();
+    if (is) {
+        auto& vModulo = v.as<Modulo>();
+        auto& v_1st = vModulo.get1();
+        is = _1.IsComesBefore(v_1st);
+        if (!is)
+		{
+            is = _1 == v_1st
+				&& vModulo.get2().IsComesBefore(_2);
+        }
+    }
+    return is;
+}
