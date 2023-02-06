@@ -14,17 +14,24 @@ jobs:
       - name: Check for dockerenv file
         run: (ls /.dockerenv && echo Found dockerenv) || (echo No dockerenv)
 
+      - name: Create Build Dir
+        run: cmake -E make_directory ./build
+
       - name: Configure
-        working-directory: ${{github.workspace}}/build
-        run: cmake ${{github.workspace}} -G Ninja -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
+        working-directory: ./build
+        run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
+
       - name: Install prerequisites
-        working-directory: ${{github.workspace}}/build
-        run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu`
+        working-directory: ./build
+        run: cmake --build . --target prerequisites -j `sysctl -n hw.ncpu`
+
       - name: Reconfigure to detect newly installed prerequisites
-        working-directory: ${{github.workspace}}/build
+        working-directory: ./build
         run: cmake .
 
       - name: Build
-        run: cmake --build . 
+        run: cmake --build build
+
       - name: Check
-        run: ctest . -j`nproc` 
+        working-directory: ./build
+        run: ctest . -j`nproc`
