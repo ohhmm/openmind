@@ -92,6 +92,11 @@ BOOST_AUTO_TEST_CASE(And_test)
     _ = 53818796976214_v;
     _ = _.And(32, -1);
     BOOST_TEST(_ == 2856757334_v);
+
+	//std::cout << "AND op formulas:" << std::endl;
+ //   DECL_VA(x);
+ //   for (int i = 1; i <= 8; ++i)
+ //       std::cout << "x & " << i << " = " << x.And(i, 0xff) << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(Or_test)
