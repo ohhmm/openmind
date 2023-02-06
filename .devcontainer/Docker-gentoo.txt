@@ -11,7 +11,7 @@ RUN echo "dev-util/b2 **" >> /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
 RUN echo "dev-libs/boost icu lzma python test" > /etc/portage/package.use/boost
 
-RUN echo "dev-util/cmake **" > /etc/portage/package.accept_keywords/cmake
+#RUN echo "dev-util/cmake **" > /etc/portage/package.accept_keywords/cmake
 RUN echo "dev-libs/icu examples static-libs" > /etc/portage/package.use/icu
 RUN echo "dev-lang/mono minimal" > /etc/portage/package.use/mono
 
@@ -20,11 +20,30 @@ RUN emerge --update \
     -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
-    kde-frameworks/extra-cmake-modules \
+    dev-libs/icu \
     -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
-    clang \
+    =dev-libs/boost-1.81.0-r1 \
+    -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN emerge --update \
+    -1o dev-util/cmake \
+    -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN emerge --update \
+    dev-util/cmake \
+    -j1 && rm -rf /var/cache/distfiles
+
+#RUN emerge --update   kde-frameworks/extra-cmake-modules     -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN emerge -1o --update \
+    sys-devel/clang \
+    -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN emerge --update sys-devel/clang -j1 && rm -rf /var/cache/distfiles
+
+RUN emerge --update \
     lld \
     -j`nproc` && rm -rf /var/cache/distfiles
 
@@ -50,7 +69,7 @@ RUN emerge --update \
     lldb \
     -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN emerge --update =dev-libs/boost-1.80.0 -j`nproc`
+#RUN emerge --update =dev-libs/boost-1.81.0 -j`nproc`
 
 # FoundationDB deps
 RUN emerge --update dev-cpp/benchmark dev-cpp/gtest -j`nproc` && rm -rf /var/cache/distfiles
