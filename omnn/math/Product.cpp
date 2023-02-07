@@ -20,8 +20,8 @@ namespace math {
     
     using namespace std;
     
-    //constexpr 
-    type_index order[] = {
+    // constexpr 
+    const type_index order[] = {
         // for fast optimizing
         typeid(NaN),
         typeid(MInfinity),
