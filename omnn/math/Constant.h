@@ -107,7 +107,7 @@ template <class Chld>
         static std::map<std::string_view, Valuable> SerializationNamesMap;
 
     public:
-        NO_MSVC_CONSTEXPR ConstNameAdder(const std::string_view& name, const Valuable& obj);
+        APPLE_CONSTEXPR ConstNameAdder(const std::string_view& name, const Valuable& obj);
         static constexpr auto& GetConstantNamesMap() { return SerializationNamesMap; }
     };
     } // namespace constants
