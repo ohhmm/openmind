@@ -67,9 +67,6 @@ if(PKG_CONFIG_FOUND)
 endif()
 find_package(OpenCL)
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
-if(OPENMIND_USE_OPENCL)
-    add_definitions(-DOPENMIND_USE_OPENCL)
-endif(OPENMIND_USE_OPENCL)
 if(NOT MSVC)
 	find_package(TBB)
 	option(OPENMIND_USE_TBB "Link TBB" ${TBB_FOUND})
@@ -180,8 +177,8 @@ if(GIT_EXECUTABLE)
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
-			COMMAND ${GIT_EXECUTABLE} fetch --all
 			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind main
+			COMMAND ${GIT_EXECUTABLE} fetch --all
 		)
 		set_target_properties(update-openmind PROPERTIES FOLDER "util")
 		add_dependencies(update update-openmind)
@@ -324,12 +321,24 @@ macro(find_local_dep)
 		if(NOT ${dep}_FOUND)
 			find_package(${dep})
 			if(NOT ${dep}_FOUND)
+				find_package(lib${dep})
+			endif()
+			if(NOT ${dep}_FOUND)
 				find_package(${dep}	HINTS
 					${CMAKE_INSTALL_PREFIX}
 					/opt/${dep}
 					)
 			endif()
+			if(NOT ${dep}_FOUND)
+				find_package(lib${dep}	HINTS
+					${CMAKE_INSTALL_PREFIX}
+					/opt/${dep}
+					)
+			endif()
 			message("${dep}_FOUND: ${${dep}_FOUND}")
+			if(NOT ${dep}_FOUND)
+				message("lib${dep}_FOUND: ${lib${dep}_FOUND}")
+			endif()
 		endif()
 	endforeach()
 endmacro()
@@ -431,7 +440,7 @@ macro(dep_find_package)
 			endif()
 		endif()		
 	else()
-		message("No ${dep} local installations found")
+			message("No ${dep} local installations found")
 	endif()
 endmacro()
 
@@ -585,6 +594,9 @@ function(apply_target_commons this_target)
 		-D_${dashless}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		-D_${this_target_up}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		)
+	if(OPENMIND_USE_OPENCL)
+		target_compile_definitions(${this_target} PUBLIC OPENMIND_USE_OPENCL)
+	endif()
 	if(NOT OPENMIND_DEBUG_CHECKS)
 		target_compile_definitions(${this_target} PUBLIC NOOMDEBUG)
 	endif()
