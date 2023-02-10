@@ -602,6 +602,8 @@ function(apply_target_commons this_target)
 	endif()
 	set_target_properties(${this_target} PROPERTIES
 		CXX_STANDARD 20
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+		EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin
 		)
 	if(MSVC)
 		target_compile_definitions(${this_target} PUBLIC
@@ -627,7 +629,9 @@ function(apply_target_commons this_target)
 			$<$<CONFIG:DEBUG>:/LTCG:OFF>
 			$<$<CONFIG:RelWithDebInfo>:/LTCG:OFF>
 			)
+		message("${CMAKE_BINARY_DIR}/bin")
 	    target_link_directories(${this_target} PUBLIC
+			${CMAKE_BINARY_DIR}/bin
 			${Boost_INCLUDE_DIR}/stage/lib
 			${EXTERNAL_FETCHED_BOOST}/stage/lib
 			C:/Boost/lib
@@ -718,7 +722,9 @@ function(test)
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
 			)
-		add_dependencies(${TEST_NAME} prerequisites ${parent_target})
+		add_dependencies(${TEST_NAME} ${parent_target})
+		#add_dependencies(${TEST_NAME} prerequisites)
+
 		target_link_directories(${TEST_NAME} PUBLIC
 			/usr/local/lib
 			${Boost_INCLUDE_DIR}/stage/lib
@@ -871,7 +877,7 @@ macro(lib)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
         )
-    add_dependencies(${this_target} prerequisites)
+    #add_dependencies(${this_target} prerequisites)
 	message("add_library(${this_target} ${src})")
 	if(NOT MSVC AND Boost_FOUND)
 		message("linking  BOOST_LINK_LIBS: ${BOOST_LINK_LIBS}")
@@ -996,7 +1002,7 @@ macro(exe)
 		add_executable(${this_target} ${src})
     endif()
     APPLY_TARGET_COMMONS(${this_target})
-    add_dependencies(${this_target} prerequisites)
+    #add_dependencies(${this_target} prerequisites)
     if(Qt${QT_VERSION_MAJOR}_FOUND)
 
         if(APPLE AND PROJECT_VERSION)
