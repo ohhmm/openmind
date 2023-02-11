@@ -8,6 +8,7 @@
 #include "Infinity.h"
 #include "pi.h"
 #include "Fraction.h"
+#include "Modulo.h"
 #include "Integer.h"
 #include "VarHost.h"
 #include "Sum.h"
@@ -501,6 +502,7 @@ std::string Spaceless(std::string s) {
                 }
 			};
             op_t o_sum, o_mul, o_div, o_exp;
+            op_t o_mod; 
             if (itIsOptimized) {
                 o_sum = [&](Valuable&& val) {
                     if (val != 0) {
@@ -536,6 +538,16 @@ std::string Spaceless(std::string s) {
                         f.MarkAsOptimized();
                     v = std::move(f);
                 };
+                o_mod = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
+                    Modulo m{std::move(v), std::move(val)};
+                    if (itIsOptimized)
+                        m.MarkAsOptimized();
+                    v = std::move(m);
+                };
                 o_exp = [&](Valuable&& val) {
                     if (mulByNeg) {
                         val *= -1;
@@ -567,6 +579,13 @@ std::string Spaceless(std::string s) {
                         mulByNeg = {};
                     }
                     v /= std::move(val);
+                };
+                o_mod = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
+                    v %= std::move(val);
                 };
                 o_exp = [&](Valuable&& val) {
                     if (mulByNeg) {
@@ -633,6 +652,11 @@ std::string Spaceless(std::string s) {
                 }
                 else if (c == '/') {
                     o = o_div;
+                    while (s[i + 1] == ' ')
+                        ++i;
+                }
+                else if (c == '%') {
+                    o = o_mod;
                     while (s[i + 1] == ' ')
                         ++i;
                 }
