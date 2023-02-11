@@ -746,6 +746,7 @@ namespace math {
                is.first = !is.second.IsSum();
            }
        } else if (v.IsSimple()) {
+       } else if (v.IsModulo()) {
        } else if (v.IsSum()) {
            is = v.IsSummationSimplifiable(*this);
        } else if (v.IsProduct()
@@ -1251,7 +1252,7 @@ namespace math {
         auto str = s.str();
         auto cstr = const_cast<char*>(str.c_str());
         cstr[str.size() - sizeof(sep) + 1] = 0;
-        out << cstr;
+        out << '(' << cstr << ')';
         return out;
     }
 

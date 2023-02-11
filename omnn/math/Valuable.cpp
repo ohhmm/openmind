@@ -1474,9 +1474,9 @@ std::string Spaceless(std::string s) {
                 source << "[_i]";
             source << ';';
         }
-        source << "Result[_i]=";
+        source << "Result[_i]=(uint)(";
         code(source);
-        source << ";}";
+        source << ");}";
         return source.str();
     }
 

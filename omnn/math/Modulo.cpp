@@ -18,17 +18,50 @@ std::ostream& Modulo::print_sign(std::ostream& out) const
     return out << " % ";
 }
 
-void Modulo::optimize(){
+std::ostream& Modulo::code_sign(std::ostream& out) const
+{
+	return out << '%';
+}
+
+std::ostream& omnn::math::Modulo::code(std::ostream& out) const {
+    auto _1stIsInt = _1.IsInt();
+    if (_1stIsInt)
+        out << '(';
+    else
+		out << "((uint)(";
+    PrintCodeVal(out, _1);
+    if (!_1stIsInt)
+	    out << ')';
+    code_sign(out);
+    PrintCodeVal(out, _2);
+    out << ')';
+    return out;
+}
+
+max_exp_t omnn::math::Modulo::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
+	return _1.getMaxVaExp();
+}
+
+void Modulo::optimize() {
     _1.optimize();
     _2.optimize();
-    if (_2.IsInt()) {
+    if (_1.IsModulo()) {
+        auto& m1 = _1.as<Modulo>();
+        auto& m1devisor = m1.get2();
+        if ((m1devisor.IsInt() && _2.IsInt() && m1devisor.ca() <= _2.ca())
+			|| m1devisor == _2)
+		{
+            Become(std::move(_1));
+            return;
+        }
+    } else if (_2.IsInt()) {
         if (_2 == constants::zero) {
 			IMPLEMENT
             Become(std::move(_1));
         }
         else if (_1.IsInt()) {
             if (_2 == constants::one)
-                Become(std::move(_2));
+                Become(0_v);
             else
                 Become(std::move(_1 %= _2));
         }

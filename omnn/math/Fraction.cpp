@@ -519,7 +519,9 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         else{
             out << '(';
             auto& n = numerator();
-            if (n.IsSimple())
+            if (n.IsInt())
+                out << n.ca() << '.'; 
+            else if (n.IsSimple())
                 out << n.operator double();
             else
                 n.code(out);
