@@ -11,6 +11,7 @@
 namespace omnn::math {
 
     std::ostream& PrintVal(std::ostream&, const Valuable&);
+	std::ostream& PrintCodeVal(std::ostream&, const Valuable&);
     Valuable Multiply(const Valuable&, const Valuable&);
 
     template <class Chld>
@@ -44,9 +45,9 @@ namespace omnn::math {
         std::ostream& code(std::ostream& out) const override
         {
             out << '(';
-            PrintVal(out, _1);
+            PrintCodeVal(out, _1);
             code_sign(out);
-            PrintVal(out, _2);
+            PrintCodeVal(out, _2);
             out << ')';
             return out;
         }
