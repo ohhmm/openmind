@@ -15,7 +15,7 @@ Valuable::vars_cont_t Modulo::VarsForCommoning;
 
 std::ostream& Modulo::print_sign(std::ostream& out) const
 {
-    return out << " mod ";
+    return out << " % ";
 }
 
 void Modulo::optimize(){
