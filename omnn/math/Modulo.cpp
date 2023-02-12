@@ -48,10 +48,17 @@ void Modulo::optimize() {
     if (_1.IsModulo()) {
         auto& m1 = _1.as<Modulo>();
         auto& m1devisor = m1.get2();
-        if ((m1devisor.IsInt() && _2.IsInt() && m1devisor.ca() <= _2.ca())
-			|| m1devisor == _2)
+        if (m1devisor == _2)
 		{
             Become(std::move(_1));
+            return;
+        } else if (m1devisor.IsInt() && _2.IsInt()) {
+            if (m1devisor < _2)
+				Become(std::move(_1));
+            else if (m1devisor > _2) {
+                m1.update2(std::move(_2));
+                Become(std::move(_1));
+            }
             return;
         }
     } else if (_2.IsInt()) {
