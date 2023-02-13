@@ -32,6 +32,8 @@ public:
 
 	Valuable operator-() const override;
 
+    Valuable& sq() override;
+
 	std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
     Valuable InCommonWith(const Valuable& v) const override { return 1; }

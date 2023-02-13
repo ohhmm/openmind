@@ -13,6 +13,7 @@ namespace math {
 Valuable& ValuableDescendantBase::operator^=(const Valuable& v)
 {
     return Become(Exponentiation(*this,v));
+	// FIXME: TODO: return Become(Exponentiation(std::move(*this), v));
 }
 
 Valuable& ValuableDescendantBase::operator+=(const Valuable &v)
