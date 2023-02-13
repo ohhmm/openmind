@@ -7,6 +7,7 @@
 
 #include <omnn/math/Modulo.h>
 #include <omnn/math/Variable.h>
+#include <omnn/math/Exponentiation.h>
 
 using namespace omnn::math;
 
@@ -83,6 +84,10 @@ Valuable Modulo::operator-() const
     auto copy = *this;
     copy.update1(-_1);
     return copy;
+}
+
+Valuable& omnn::math::Modulo::sq() {
+	return operator^=(2_v);
 }
 
 bool Modulo::IsComesBefore(const Valuable& v) const

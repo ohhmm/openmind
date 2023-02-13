@@ -369,12 +369,17 @@ namespace math {
 
                     if(eexp().IsInt())
                     {
-                        if (ebase().IsVa()) {
+                        auto& b = ebase();
+
+                        if (b.IsVa()
+							|| b.IsModulo()
+							)
+						{
                             break;
                         }
                         if (eexp() != 0_v) {
                             if (eexp() > 1) {
-                                Valuable x = ebase();
+                                Valuable x = b;
                                 Valuable n = eexp();
                                 if (n < 0_v)
                                 {

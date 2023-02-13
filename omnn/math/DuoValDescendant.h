@@ -143,8 +143,6 @@ namespace omnn::math {
             if(evaluated){
                 Valuable::optimized={};
                 this->optimize();
-                // or
-                //            Valuable::hash = _1.Hash() ^ _2.Hash();
             }
             return evaluated;
         }
