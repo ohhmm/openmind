@@ -770,6 +770,10 @@ macro(ext name location)
 			-D${_name_upcase}_BUILD_TESTS=OFF
 			-D${name}_BUILD_BENCHMARKS=OFF
 			-D${_name_upcase}_BUILD_BENCHMARKS=OFF
+			-D${name}_BUILD_APIDOC=OFF
+			-D${_name_upcase}_BUILD_APIDOC=OFF
+			-D${name}_BUILD_DEMOS=OFF
+			-D${_name_upcase}_BUILD_DEMOS=OFF
 			-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 			-DCMAKE_AR=${CMAKE_AR}
 			-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
