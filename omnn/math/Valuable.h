@@ -480,6 +480,7 @@ public:
     Valuable IfEq(const Valuable& v, const Valuable& Then,
                   const Valuable& Else) const; /// returns an expression which equals to @Then when this expression
                                                /// equals to @v param and @Else otherwise
+    Valuable IntModIsLessOp(const Valuable& a) const;
 
 	/// iterations
 	//

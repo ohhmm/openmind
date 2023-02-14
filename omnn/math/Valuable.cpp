@@ -85,6 +85,7 @@ namespace math {
     {
         std::cerr << str << std::endl;
         throw std::string(str) + " Implement!";
+        return {};
     }
 
     bool Valuable::IsSubObject(const Valuable& o) const {
@@ -438,6 +439,7 @@ std::string Spaceless(std::string s) {
 
     Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
 	) {
+        constexpr auto SupportedOps = " */%+-^()";
         auto l = s.length();
         using index_t = decltype(l);
         std::stack <index_t> st;
@@ -613,7 +615,7 @@ std::string Spaceless(std::string s) {
                     auto next = s.find_first_not_of("0123456789", idStart);
                     auto id = s.substr(idStart, next - idStart);
                     if (id.empty()) {
-                        auto to = s.find_first_of(" */+-^()", idStart);
+                        auto to = s.find_first_of(SupportedOps, idStart);
                         auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
                         o(Valuable(h->Host(id)));
                         i = to - 1;
@@ -666,7 +668,7 @@ std::string Spaceless(std::string s) {
                 else if (c == ' ') {
                 }
                 else if (std::isalpha(c)){
-                    auto to = s.find_first_of(" */+-^()", i+1);
+                    auto to = s.find_first_of(SupportedOps, i+1);
                     auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
                     Valuable val(h->Host(id));
                     if (mulByNeg) {
@@ -1564,7 +1566,7 @@ std::string Spaceless(std::string s) {
             return;
         }
         else if(!exp)
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Implement optimize() for " << *this);
     }
 
 	Valuable Valuable::Cos() const {
@@ -2014,6 +2016,13 @@ std::string Spaceless(std::string s) {
         auto equalsAndThen = Equals(e).LogicAnd(Then);
         return equalsAndThen.LogicOr(equalsAndThen.LogicOr(Else).LogicAnd(Else));
     }
+
+    /// equals to @v param and @Else otherwise
+
+    Valuable Valuable::IntModIsLessOp(const Valuable& a) const
+	{
+		return ((*this % a) - *this) * -1 / a;
+	}
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
