@@ -437,9 +437,11 @@ std::string Spaceless(std::string s) {
 }
 }
 
+	namespace {
+	constexpr char SupportedOps[] = " */%+-^()";
+	}
     Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
 	) {
-        constexpr auto SupportedOps = " */%+-^()";
         auto l = s.length();
         using index_t = decltype(l);
         std::stack <index_t> st;
