@@ -24,22 +24,28 @@ std::ostream& Modulo::code_sign(std::ostream& out) const
 	return out << '%';
 }
 
-std::ostream& omnn::math::Modulo::code(std::ostream& out) const {
-    auto _1stIsInt = _1.IsInt();
-    if (_1stIsInt)
+std::ostream& Modulo::code(std::ostream& out) const {
+    auto isInt = _1.IsInt();
+    if (isInt)
         out << '(';
     else
 		out << "((uint)(";
     PrintCodeVal(out, _1);
-    if (!_1stIsInt)
+    if (!isInt)
 	    out << ')';
     code_sign(out);
+    isInt = _2.IsInt();
+    if (!isInt)
+        out << "((uint)(";
     PrintCodeVal(out, _2);
-    out << ')';
+    if (isInt)
+        out << ')';
+    else
+        out << ")))";
     return out;
 }
 
-max_exp_t omnn::math::Modulo::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
+max_exp_t Modulo::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
 	return _1.getMaxVaExp();
 }
 
@@ -86,7 +92,7 @@ Valuable Modulo::operator-() const
     return copy;
 }
 
-Valuable& omnn::math::Modulo::sq() {
+Valuable& Modulo::sq() {
 	return operator^=(2_v);
 }
 
