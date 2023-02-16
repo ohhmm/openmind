@@ -26,3 +26,21 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     p.optimize();
     BOOST_TEST(7_v % 3 == p);
 }
+
+BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test)
+{
+    DECL_VA(X);
+    DECL_VA(Y);
+    auto L = X.IntModIsLessOp(Y);
+    for (auto x = 10; x-- > 1;)
+        for (auto y = 10; y-- > 1;) {
+            auto less = x < y;
+            auto l = L;
+            l.eval({{X, x}, {Y, y}});
+            auto ok = l.IsInt() && l == less;
+            if (!ok) {
+                BOOST_TEST(ok);
+                std::cout << "X=" << x << " Y=" << y << ' ' << ok << ' ' << l << std::endl;
+            }
+        }
+}

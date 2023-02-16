@@ -268,7 +268,9 @@ System::solutions_t System::Solve(const Variable& va)
                 }
             }
             sqs.optimize();
-            solution = sqs.Solutions(va);
+            if (sqs.HasVa(va))
+				solution = sqs.Solutions(va);
+            // else ?
         }
     }
     if (solution.size()) {
