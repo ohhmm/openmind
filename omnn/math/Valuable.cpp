@@ -721,7 +721,7 @@ std::string Spaceless(std::string s) {
                 boost::replace_all(_2, "+-", "-");
                 same = _1 == _2;
             }
-            if (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
+            while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
                 _1 = _1.substr(1, _1.length() - 2);
                 same = _1 == _2;
             }
@@ -812,6 +812,7 @@ std::string Spaceless(std::string s) {
                     sum.MarkAsOptimized();
                 Become(std::move(sum));
             } else if ((found = FindSkippingParentneses('-')) != std::string::npos
+					&& !s[found] =='*'
                     && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
                     && !lpart.ends_with("*/^"))
 			{
