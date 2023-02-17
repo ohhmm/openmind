@@ -113,7 +113,7 @@ if(OPENMIND_PRIME_TABLE STREQUAL Boost)
 elseif(OPENMIND_PRIME_TABLE STREQUAL Bundled)
 	add_definitions(-DOPENMIND_PRIME_TABLE_OM)
 endif()
-set(BOOST_USED_COMPONENTS
+set(_BOOST_USED_COMPONENTS
 	${BOOST_USED_COMPONENTS}
 	${BOOST_ADDITIONAL_COMPONENTS}
 	date_time
@@ -121,15 +121,16 @@ set(BOOST_USED_COMPONENTS
 	iostreams
 	serialization
 	system
-	thread)
+	thread
+	CACHE STRING "Components" FORCE)
 if(OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
-    set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS}
+    set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
         unit_test_framework
         test_exec_monitor
-        )
+		CACHE STRING "Components" FORCE)
 endif()
-list(REMOVE_DUPLICATES BOOST_USED_COMPONENTS)
-set(BOOST_USED_COMPONENTS ${BOOST_USED_COMPONENTS} CACHE STRING "Components")
+list(REMOVE_DUPLICATES _BOOST_USED_COMPONENTS)
+set(BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS} CACHE STRING "Components" FORCE)
 
 if(OPENMIND_BUILD_GC)
 	add_definitions(-DOPENMIND_BUILD_GC)
@@ -165,6 +166,7 @@ else()
 	message("Boost_VERSION: ${Boost_VERSION}")
 	message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 	message("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+	message("BOOST_ADDITIONAL_COMPONENTS: ${BOOST_ADDITIONAL_COMPONENTS}")
 	message("BOOST_USED_COMPONENTS: ${BOOST_USED_COMPONENTS}")
 	message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
 
@@ -487,6 +489,7 @@ macro(dep)
 				message("'${dep}'  MATCHES STATIC_LIBRARY|MODULE_LIBRARY|SHARED_LIBRARY")
 				target_link_libraries(${this_target} PUBLIC ${dep})
 			else()
+				message("'${dep}' target type is '${type}'")
 				add_dependencies(${this_target} ${dep})
 			endif()
 		elseif(dep MATCHES ::)
@@ -1072,19 +1075,19 @@ macro(exe)
             target_link_libraries(${this_target} PUBLIC ${item})
             if(${item}_LIBRARIES)
                 message("Linking ${item}_LIBRARIES ${${item}_LIBRARIES}")
-                target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
+                deps(${${item}_LIBRARIES})
                 if(NOT "${${item}_LIBRARIES}" MATCHES ${item})
                     message(WARNING "${item}_LIBRARIES '${${item}_LIBRARIES}' has no ${item}")
                 endif()
             endif()
         elseif(${item}_LIBRARIES)
             message("Linking ${item}_LIBRARIES ${${item}_LIBRARIES}")
-            target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARIES})
+			deps(${${item}_LIBRARIES})
             if(NOT ${${item}_LIBRARIES} MATCHES ${item})
                 message(WARNING "${item}_LIBRARIES '${${item}_LIBRARIES}' has no ${item}")
             endif()
         elseif(${item}_LIBRARY)
-            target_link_libraries(${this_target} PUBLIC ${${item}_LIBRARY})
+			dep(${${item}_LIBRARY})
         else()
             dep(${item})
         endif()
