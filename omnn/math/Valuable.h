@@ -134,10 +134,6 @@ protected:
     max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
 public:
-    virtual std::ostream& code(std::ostream& out) const;
-    std::string OpenCL() const;
-    std::string OpenCLuint() const;
-
     enum View
     {
         None,
@@ -498,6 +494,11 @@ public:
     std::string str() const;
     std::wstring wstr() const;
     virtual std::wstring save(const std::wstring&) const;
+
+	virtual std::ostream& code(std::ostream& out) const;
+    std::string OpenCL(const std::string_view& TypeName = "float") const;
+    std::string OpenCLuint() const;
+    va_names_t OpenCLparamVarNames() const;
 
     virtual bool is_optimized() const;
 
