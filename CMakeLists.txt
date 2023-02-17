@@ -328,7 +328,10 @@ if (OPENMIND_BUILD_TESTS)
 			set(TEST_DEPS ${TEST_DEPS} TBB::tbb)
 		endif()
 	endif()
-endif ()
+else()
+    add_custom_target(enable_openmind_tests
+        COMMAND ${CMAKE_COMMAND} -DOPENMIND_BUILD_TESTS=ON "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
 
 macro(echo)
 	message("${ARGN}: ${${ARGN}}")
