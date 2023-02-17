@@ -812,7 +812,7 @@ std::string Spaceless(std::string s) {
                     sum.MarkAsOptimized();
                 Become(std::move(sum));
             } else if ((found = FindSkippingParentneses('-')) != std::string::npos
-					&& !s[found] =='*'
+					&& s[found] != '*'
                     && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
                     && !lpart.ends_with("*/^"))
 			{
@@ -1466,44 +1466,42 @@ std::string Spaceless(std::string s) {
     }
 
     std::string Valuable::OpenCLuint() const {
+		using namespace std::string_view_literals;
+        return OpenCL("uint"sv);
+    }
+
+    std::string Valuable::OpenCL(const std::string_view& TypeName) const {
         std::stringstream source;
-        source << "__kernel void f(__global uint *Result";
+        source << "__kernel void f(__global " << TypeName << " * Result ";
         auto vars = Vars();
-        for (auto& v : vars)
-            if (v.str() != "i")
-                source << ",__global uint *_" << v;
-        source << "){const uint _i = get_global_id(0);";
         for (auto& v : vars) {
-            source << "uint " << v << "=_" << v;
-            if (v.str() != "i")
-                source << "[_i]";
-            source << ';';
+            auto vname = v.str();
+            if (vname != "i" && vname != "Result" && vname != "was")
+                source << ",__global " << TypeName << " * _ " << v;
         }
-        source << "Result[_i]=(uint)(";
+        source << "){const " << TypeName << " _i = get_global_id(0);";
+        for (auto& v : vars) {
+            auto vname = v.str();
+            if (vname != "Result") {
+                source << TypeName;
+                if (vname == "was")
+                    source << " was=Result";
+                else
+                    source << ' ' << vname << "=_" << vname;
+                if (vname != "i")
+                    source << "[_i]";
+                source << ';';
+            }
+        }
+        source << "Result[_i]=(" << TypeName << ")(";
         code(source);
         source << ");}";
         return source.str();
     }
 
-    std::string Valuable::OpenCL() const {
-        std::stringstream source;
-        source << "__kernel void f(__global float *Result";
-        auto vars = Vars();
-        for(auto& v: vars)
-            if (v.str() != "i")
-                source << ",__global float *_" << v;
-        source << "){const uint _i = get_global_id(0);";
-        for(auto& v: vars) {
-            source << "float " << v << "=_" << v;
-            if (v.str() != "i")
-                source << "[_i]";
-            source << ';';
-        }
-        source << "Result[_i]=";
-        code(source);
-        source << ";}";
-        return source.str();
-    }
+	Valuable::va_names_t Valuable::OpenCLparamVarNames() const {
+		return {{"i", {}}, {"n", {}}, {"Result", {}}};
+	}
 
     std::ostream& operator<<(std::ostream& out, const Valuable& obj)
     {
@@ -1558,17 +1556,19 @@ std::string Spaceless(std::string s) {
 
     void Valuable::optimize()
     {
-        if(optimizations && exp) {
-            while (exp->exp) {
-                exp = exp->exp;
+        if (exp) {
+            if (optimizations) {
+                while (exp->exp) {
+                    exp = exp->exp;
+                }
+                exp->optimize();
+                while (exp->exp) {
+                    exp = exp->exp;
+                }
+                return;
             }
-            exp->optimize();
-            while (exp->exp) {
-                exp = exp->exp;
-            }
-            return;
         }
-        else if(!exp)
+        else
             LOG_AND_IMPLEMENT("Implement optimize() for " << *this);
     }
 
