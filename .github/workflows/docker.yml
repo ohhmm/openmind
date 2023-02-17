@@ -23,7 +23,7 @@ jobs:
 
       - name: Install prerequisites
         working-directory: ./build
-        run: cmake --build . --target prerequisites -j `sysctl -n hw.ncpu`
+        run: cmake --build . --target prerequisites -j `nproc`
 
       - name: Reconfigure to detect newly installed prerequisites
         working-directory: ./build
