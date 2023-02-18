@@ -16,8 +16,7 @@
 
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace omnn{
-namespace math {
+namespace omnn::math {
 
     Exponentiation::Exponentiation(const Valuable& b, const Valuable& exponentiation)
         : base(b, exponentiation)
@@ -1140,5 +1139,17 @@ namespace math {
 
     bool Exponentiation::IsNormalizedPolynomial(const Variable& v) const {
         return ebase() == v && eexp().IsInt();
+	}
+
+    void Exponentiation::solve(const Variable& va, solutions_t& s) const {
+        if (_1 == va
+			&& !_2.FindVa()
+			&& _2 != constants::zero)
+		{
+            s.emplace(constants::zero);
+        } else {
+			IMPLEMENT
+        }
     }
-}}
+
+}
