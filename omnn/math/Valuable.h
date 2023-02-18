@@ -325,6 +325,7 @@ public:
     virtual bool Is_e() const;
     virtual bool Is_i() const;
     virtual bool Is_pi() const;
+    bool IsZero() const;
 
     virtual bool IsSimple() const;
 
