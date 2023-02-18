@@ -100,6 +100,7 @@ public:
     solutions_t Distinct() const override;
 
     bool IsNormalizedPolynomial(const Variable&) const override;
+    void solve(const Variable& va, solutions_t&) const override;
 };
 
 }

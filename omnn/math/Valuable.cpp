@@ -1404,6 +1404,8 @@ std::string Spaceless(std::string s) {
     bool Valuable::Is_i() const { return exp && exp->Is_i(); }
     bool Valuable::Is_pi() const { return exp && exp->Is_pi(); }
 
+    bool Valuable::IsZero() const { return IsInt() && ca()==0; }
+
     bool Valuable::IsSimple() const {
         if(exp)
             return exp->IsSimple();
