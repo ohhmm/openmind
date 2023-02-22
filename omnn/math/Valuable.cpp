@@ -508,29 +508,40 @@ std::string Spaceless(std::string s) {
             op_t o_sum, o_mul, o_div, o_exp;
             op_t o_mod; 
             if (itIsOptimized) {
+                sum.MarkAsOptimized();
+                v.MarkAsOptimized();
                 o_sum = [&](Valuable&& val) {
                     if (val != 0) {
                         if (mulByNeg) {
                             val *= -1;
                             mulByNeg = {};
                         }
-
-                        Sum s{std::move(sum), std::move(val)};
-                        if(itIsOptimized)
+                        if (sum.IsSum())
+                            sum.as<Sum>().Add(std::move(val));
+                        else {
+                            Sum s;
                             s.MarkAsOptimized();
-                        sum = std::move(s);
+                            s.Add(std::move(sum));
+                            s.Add(std::move(val));
+                            sum = std::move(s);
+                        }
                     }
                 };
                 o_mul = [&](Valuable&& val) {
-                    Product p{std::move(v)};
                     if (mulByNeg) {
-                        p.Add(-1);
+                        val *= -1;
                         mulByNeg = {};
                     }
-                    if(itIsOptimized)
-                        p.MarkAsOptimized();
-                    p.Add(std::move(val));
-                    v = std::move(p);
+                    if (v.IsProduct()) {
+                        v.as<Product>().Add(std::move(val));
+                    } else {
+                        Product p;
+                        if (itIsOptimized)
+                            p.MarkAsOptimized();
+                        p.Add(std::move(v));
+                        p.Add(std::move(val));
+                        v = std::move(p);
+                    }
                 };
                 o_div = [&](Valuable&& val) {
                     if (mulByNeg) {
