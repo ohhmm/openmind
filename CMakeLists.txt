@@ -793,10 +793,18 @@ macro(ext name location)
 		set(ARGS
 			${build_type}
 			-DBUILD_TESTS=OFF
+			-D${name}_TESTS=OFF
+			-D${_name_upcase}_TESTS=OFF
 			-D${name}_BUILD_TESTS=OFF
 			-D${_name_upcase}_BUILD_TESTS=OFF
 			-D${name}_BUILD_BENCHMARKS=OFF
 			-D${_name_upcase}_BUILD_BENCHMARKS=OFF
+			-D${name}_FRAMEWORK=${APPLE}
+			-D${_name_upcase}_FRAMEWORK=${APPLE}
+			-D${name}_STATIC=ON
+			-D${_name_upcase}_STATIC=ON
+			-D${name}_SHARED=${_IS_DEBUG}
+			-D${_name_upcase}_SHARED=${_IS_DEBUG}
 			-D${name}_BUILD_APIDOC=OFF
 			-D${_name_upcase}_BUILD_APIDOC=OFF
 			-D${name}_BUILD_DEMOS=OFF
@@ -812,6 +820,7 @@ macro(ext name location)
 			-DHAVE_STD_REGEX=ON
 			-DRUN_HAVE_STD_REGEX=1
 			)
+
 		if(CMAKE_SYSTEM_NAME)
 			set(ARGS ${ARGS} -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME})
 		endif()
