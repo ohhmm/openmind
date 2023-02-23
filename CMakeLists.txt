@@ -27,7 +27,8 @@ if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 message("PRODUCT_NAME=${PRODUCT_NAME}")
 message("CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-if(APPLE AND NOT CMAKE_OSX_ARCHITECTURE)
+message("CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
+if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
 	EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
 	set(CMAKE_OSX_ARCHITECTURES ${ARCHITECTURE} CACHE PATH "May be used for crosscompilation" FORCE)
 	message("CMAKE_OSX_ARCHITECTURES=${ARCHITECTURE}")
@@ -55,10 +56,7 @@ else()
 	add_definitions(-DBOOST_ALL_STATIC_LINK)
 	if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
         set(OPENMIND_PRIME_TABLE Bundled CACHE STRING "Table of predefined prime numbers")
-		find_package(WIX)
-		option(CPACK_BINARY_WIX "Build installer with WIX toolset" ${WIX_FOUND})
-		find_package(NSIS)
-		option(CPACK_BINARY_NSIS "Build installer with NSIS toolset" ${NSIS_FOUND})
+		option(OPENMIND_USE_CPACK "Build an installer" ON)
     else()
         set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
         message(WARNING "Consider setting CMAKE_BUILD_TYPE")
@@ -179,8 +177,24 @@ endif()
 
 option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
 
-include(CPack)
-set(CPACK_BUNDLE_NAME ${PRODUCT_NAME})
+if(OPENMIND_USE_CPACK)
+	include(CPack)
+	set(CPACK_BUNDLE_NAME ${PRODUCT_NAME})
+	if(APPLE)
+		option(CPACK_BINARY_BUNDLE "Build macOS bundle" ON)
+	elseif(WIN32)
+		find_package(WIX)
+		option(CPACK_BINARY_WIX "Build installer with WIX toolset" ${WIX_FOUND})
+		find_package(NSIS)
+		option(CPACK_BINARY_NSIS "Build installer with NSIS toolset" ${NSIS_FOUND})
+	endif()
+	option(CPACK_SOURCE_RPM "Sources" OFF)
+	option(CPACK_SOURCE_TBZ2 "Sources" OFF)
+	option(CPACK_SOURCE_TGZ "Sources" OFF)
+	option(CPACK_SOURCE_TXZ "Sources" OFF)
+	option(CPACK_SOURCE_TZ "Sources" OFF)
+	option(CPACK_SOURCE_ZIP "Sources" OFF)
+endif()
 
 include(ExternalData)
 include(ExternalProject)
@@ -253,11 +267,12 @@ elseif(OPENMIND_BUILD_BOOST)
     else()
         set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
 		if(APPLE)
+			set(BOOST_BUILD_APPLE_ARGS "-address-model=64 architecture=arm+x86")
 #			separate_arguments(BOOST_EXT_CONFIGURE UNIX_COMMAND "${BOOST_EXT_CONFIGURE} --prefix=/Library/Developer")
 #			set(BOOST_BUILD_COMMAND "${BOOST_BUILD_COMMAND} install")
 		endif()
         separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND}")
-        separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install --prefix='${CMAKE_BINARY_DIR}'")
+        separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
     endif()
 
     message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
@@ -346,7 +361,15 @@ macro(find_local_dep)
 		string(REPLACE " " ";" ARGN ${ARGN})
 	endif()
 	foreach(dep ${ARGN})
-		if(NOT ${dep}_FOUND)
+		set(libless "")
+		if(dep MATCHES "^[Ll][Ii][Bb]")
+			STRING(REGEX REPLACE "^[Ll][Ii][Bb]" "" libless ${dep})
+			if(NOT ${dep}_FOUND AND NOT ${libless}_FOUND)
+				find_package(${libless})
+				message("${libless}_FOUND: ${${libless}_FOUND}")
+			endif()
+		endif()
+		if(NOT ${dep}_FOUND AND NOT ${libless}_FOUND)
 			find_package(${dep})
 			if(NOT ${dep}_FOUND)
 				find_package(lib${dep})
@@ -379,6 +402,8 @@ macro(dep_find_package)
 		string(REPLACE "-" "_" underscored ${dep})
 		string(TOLOWER ${underscored} underscored_down)
 		string(TOUPPER ${underscored} underscored_up)
+		STRING(REGEX REPLACE "^LIB" "" libless_up ${underscored_up})
+		STRING(REGEX REPLACE "^lib" "" libless_down ${underscored_down})
 		if(NOT dashless STREQUAL dep)
 			find_local_dep(${dashless})
 			if(NOT ${dashless}_FOUND
@@ -393,6 +418,18 @@ macro(dep_find_package)
 						AND NOT dashless STREQUAL underscored_up
 						)
 						find_local_dep(${underscored_up})
+						if(NOT ${underscored_up}_FOUND
+							AND underscored_down MATCHES "^lib"
+							)
+							message("libless_up: ${libless_up}")
+							find_local_dep(${libless_up})
+							message("libless_up: ${libless_up}_FOUND: ${${libless_up}_FOUND}")
+							if(NOT ${libless_up}_FOUND)
+								message("libless_down: ${libless_down}")
+								find_local_dep(${libless_down})
+								message("libless_down: ${libless_down}_FOUND: ${${libless_down}_FOUND}")
+							endif()
+						endif()
 					endif()
 				endif()
 			endif()
@@ -410,9 +447,19 @@ macro(dep_find_package)
 		elseif(${underscored_down}_FOUND)
 			message("underscored_down: ${underscored_down}_FOUND: ${${underscored_down}_FOUND}")
 			set(dep ${underscored_down})
+		elseif(${libless_up}_FOUND)
+			message("libless_up: ${libless_up}_FOUND: ${${libless_up}_FOUND}")
+			set(dep ${libless_up})
+		elseif(${libless_down}_FOUND)
+			message("libless_down: ${libless_down}_FOUND: ${${libless_down}_FOUND}")
+			set(dep ${libless_down})
 		elseif(OPENMIND_USE_PKG_CONFIG_DEPS)
-			message("pkg_check_modules(${underscored_down} IMPORTED_TARGET ${underscored_down}>=1.0)")
-			pkg_check_modules(PKG IMPORTED_TARGET ${underscored_down}>=1.0)
+			message(STATUS "PKG_CONFIG_SYSROOT_DIR: $ENV{PKG_CONFIG_SYSROOT_DIR}")
+			message(STATUS "PKG_CONFIG_PATH: $ENV{PKG_CONFIG_PATH}")
+            message("pkg_check_modules(${underscored_down} IMPORTED_TARGET ${underscored_down}>=1.0)")
+            pkg_check_modules(PKG IMPORTED_TARGET ${underscored_down}>=1.0)
+			#message("pkg_search_module(${underscored_up} IMPORTED_TARGET ${underscored_down}>=1.0)")
+			#pkg_search_module(${underscored_up} REQUIRED "${underscored_down}")
 			message("PKG_FOUND: ${PKG_FOUND}")
 			if(PKG_FOUND)
 				message("PKG_CFLAGS: ${PKG_CFLAGS}")
@@ -422,6 +469,7 @@ macro(dep_find_package)
 			else()
 				message("Neither find_package nor pkg_config found ${dep}")
 			endif()
+			
 		endif()
 	endif()
 
@@ -793,25 +841,28 @@ macro(ext name location)
 		set(ARGS
 			${build_type}
 			-DBUILD_TESTS=OFF
+			-D${name}_TESTS=OFF
+			-D${_name_upcase}_TESTS=OFF
 			-D${name}_BUILD_TESTS=OFF
 			-D${_name_upcase}_BUILD_TESTS=OFF
 			-D${name}_BUILD_BENCHMARKS=OFF
 			-D${_name_upcase}_BUILD_BENCHMARKS=OFF
+			-D${name}_FRAMEWORK=${APPLE}
+			-D${_name_upcase}_FRAMEWORK=${APPLE}
+			-D${name}_STATIC=ON
+			-D${_name_upcase}_STATIC=ON
+			-D${name}_SHARED=${_IS_DEBUG}
+			-D${_name_upcase}_SHARED=${_IS_DEBUG}
 			-D${name}_BUILD_APIDOC=OFF
 			-D${_name_upcase}_BUILD_APIDOC=OFF
 			-D${name}_BUILD_DEMOS=OFF
 			-D${_name_upcase}_BUILD_DEMOS=OFF
 			-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-			-DCMAKE_AR=${CMAKE_AR}
-			-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-			-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-			-DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
-			-DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER}
-			-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
 			-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
 			-DHAVE_STD_REGEX=ON
 			-DRUN_HAVE_STD_REGEX=1
 			)
+
 		if(CMAKE_SYSTEM_NAME)
 			set(ARGS ${ARGS} -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME})
 		endif()
@@ -823,6 +874,22 @@ macro(ext name location)
 		endif()
 		if(CMAKE_FIND_ROOT_PATH)
 			set(ARGS ${ARGS} -DCMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH})
+		endif()
+		if(OPENMIND_${name}_GENERATOR)
+			set(ARGS ${ARGS} -G=${OPENMIND_${name}_GENERATOR})
+		elseif(OPENMIND_${_name_upcase}_GENERATOR)
+			set(ARGS ${ARGS} -G=${OPENMIND_${_name_upcase}_GENERATOR})
+		elseif(OPENMIND_DEPS_GENERATOR)
+			set(ARGS ${ARGS} -G=${OPENMIND_DEPS_GENERATOR})
+		elseif()
+			set(ARGS ${ARGS} -G=${CMAKE_GENERATOR}
+				-DCMAKE_AR=${CMAKE_AR}
+				-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+				-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+				-DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
+				-DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER}
+				-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
+				)
 		endif()
 
 		execute_process(
