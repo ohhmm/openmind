@@ -18,18 +18,6 @@
 
 namespace omnn::math {
 
-    Exponentiation::Exponentiation(const Valuable& b, const Valuable& exponentiation)
-        : base(b, exponentiation)
-    {
-        InitVars();
-    }
-
-    Exponentiation::Exponentiation(Valuable&& b, Valuable&& exponentiation)
-        : base(std::move(b), std::move(exponentiation))
-	{
-        InitVars();
-    }
-
     max_exp_t Exponentiation::getMaxVaExp(const Valuable& b, const Valuable& e)
     {
         if (e.IsInt()) {
