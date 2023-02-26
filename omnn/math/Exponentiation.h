@@ -24,8 +24,12 @@ public:
     // DONT: overrides behaviour (calls InitVars)
 	// using base::base;
 
-    Exponentiation(const Valuable& base, const Valuable& exponentiation);
-    Exponentiation(Valuable&& base, Valuable&& exponentiation);
+	template <class BaseT, class ExponentiationT>
+    Exponentiation(BaseT&& b, ExponentiationT&& e)
+        : base(std::forward<BaseT>(b), std::forward<ExponentiationT>(e))
+	{
+        InitVars();
+    }
 
     bool IsExponentiation() const override { return true; }
     bool IsVaExp() const override { return ebase().IsVa(); }
