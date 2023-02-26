@@ -263,7 +263,10 @@ System::solutions_t System::Solve(const Variable& va)
                             break;
                         }
                     } else {
-                        IMPLEMENT
+                        std::stringstream ss;
+                        for(auto& s : solved)
+                            ss << ' ' << s;
+                        LOG_AND_IMPLEMENT(va << " has multiple solutions: " << ss.str());
                     }
                 }
             }
