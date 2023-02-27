@@ -209,12 +209,15 @@ endif()
 if(GIT_EXECUTABLE)
 	add_custom_target(update
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash 
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin HEAD
+		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(update PROPERTIES FOLDER "util")
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
 			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind main
 			COMMAND ${GIT_EXECUTABLE} fetch --all
 		)
@@ -278,6 +281,7 @@ elseif(OPENMIND_BUILD_BOOST)
     message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
     ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
         GIT_TAG boost-${OPENMIND_REQUIRED_BOOST_VERSION}
+        GIT_SHALLOW ON
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
         BUILD_COMMAND ${BOOST_BUILD_COMMAND}
@@ -638,7 +642,9 @@ macro(deps)
 		endif()
 	endforeach()
 
-    set(${this_target}_LIBRARIES ${this_target_libs} CACHE FILEPATH "${this_target} libs to link")
+    set(${this_target}_LIBRARIES ${this_target_libs} CACHE FILEPATH "${this_target} libs to link"
+		#FORCE
+		)
     message("target_link_directories(${this_target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})")
     target_link_directories(${this_target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
     if(this_target_libs AND NOT this_target_libs STREQUAL "")
@@ -648,9 +654,10 @@ macro(deps)
         message("${this_target} has no libs")
     endif()
     if(NOT MSVC)
-        target_link_libraries(${this_target} PUBLIC
-                        pthread
-                        )
+        target_link_libraries(${this_target} PUBLIC pthread)
+		if(NOT APPLE)
+	        target_link_libraries(${this_target} PUBLIC ${CMAKE_DL_LIBS})
+		endif()
     endif()
 
 endmacro()
@@ -695,6 +702,7 @@ function(apply_target_commons this_target)
 		target_compile_options(${this_target} PUBLIC
 			/bigobj
 			/FS
+			/MP
 			/constexpr:steps1000000000
 			/source-charset:utf-8
 			$<$<CONFIG:DEBUG>:/ZI>
@@ -873,12 +881,12 @@ macro(ext name location)
 		if(CMAKE_FIND_ROOT_PATH)
 			set(ARGS ${ARGS} -DCMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH})
 		endif()
-		if(OPENMIND_${name}_GENERATOR)
-			set(ARGS ${ARGS} -G=${OPENMIND_${name}_GENERATOR})
-		elseif(OPENMIND_${_name_upcase}_GENERATOR)
-			set(ARGS ${ARGS} -G=${OPENMIND_${_name_upcase}_GENERATOR})
-		elseif(OPENMIND_DEPS_GENERATOR)
-			set(ARGS ${ARGS} -G=${OPENMIND_DEPS_GENERATOR})
+		if(OPENMIND_CMAKE_GENERATOR_FOR_${name})
+			set(ARGS ${ARGS} -G=${OPENMIND_CMAKE_GENERATOR_FOR_${name}})
+		elseif(OPENMIND_CMAKE_GENERATOR_FOR_${_name_upcase})
+			set(ARGS ${ARGS} -G=${OPENMIND_CMAKE_GENERATOR_FOR_${_name_upcase}})
+		elseif(OPENMIND_CMAKE_GENERATOR_FOR_DEPS)
+			set(ARGS ${ARGS} -G=${OPENMIND_CMAKE_GENERATOR_FOR_DEPS})
 		elseif()
 			set(ARGS ${ARGS} -G=${CMAKE_GENERATOR}
 				-DCMAKE_AR=${CMAKE_AR}
@@ -904,6 +912,7 @@ macro(ext name location)
 
 		ExternalProject_Add(${name}
 			GIT_REPOSITORY ${location}
+			GIT_SHALLOW ON
 			GIT_TAG ${${name}_TAG}
 			INSTALL_DIR ${CMAKE_BINARY_DIR}
 			${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
@@ -1195,12 +1204,15 @@ fold(
     OpenMind
 )
 
-build_command(PREREQUISITES_BUILD_CMD
-	TARGET prerequisites
-	PARALLEL_LEVEL ${CMAKE_AUTOGEN_PARALLEL}
-)
-message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
-execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-	COMMAND_ECHO STDOUT 
-)
+cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL _openmind_hook_end_of_configure())
+function(_openmind_hook_end_of_configure)
+	build_command(PREREQUISITES_BUILD_CMD
+		TARGET prerequisites
+		PARALLEL_LEVEL ${CMAKE_AUTOGEN_PARALLEL}
+	)
+	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
+	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+		COMMAND_ECHO STDOUT 
+	)
+endfunction()
