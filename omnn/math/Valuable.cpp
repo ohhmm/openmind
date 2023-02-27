@@ -62,8 +62,8 @@ namespace math {
     const Valuable& half = 1_v / 2;
 #endif
     constexpr const Valuable& minus_1 = vo<-1>();
-    const Valuable& plus_minus_1 = Exponentiation{1_v, 1_v / 2};          // ±1
-    const Valuable& zero_or_1 = Sum{Exponentiation{1_v/4, 1_v/2}, 1_v/2}; // (1±1)/2
+    const Valuable& plus_minus_1 = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
+    const Valuable& zero_or_1 = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
     constexpr const Valuable& pi = constant::pi;
     constexpr const Valuable& infinity = Infinity::GlobalObject;
     constexpr const Valuable& minfinity = MInfinity::GlobalObject;
@@ -644,14 +644,23 @@ std::string Spaceless(std::string s) {
                     v = 0;
                     o = o_mov;
                     mulByNeg ^= true;
-                } else if ((c >= '0' && c <= '9')) {
-                    auto next = s.find_first_not_of(" 0123456789", i+1);
+                } else if ((c >= '0' && c <= '9') || c =='.') {
+                    auto next = s.find_first_not_of(" 0123456789.", i+1);
                     auto ss = s.substr(i, next - i);
                     Trim(ss);
-                    Valuable integer = ss.find(' ') == std::string::npos
+                    auto hasSpace = ss.find(' ') == std::string::npos;
+                    auto hasDot = ss.find('.') == std::string::npos;
+                    if (hasDot) {
+                        Valuable fraction = hasSpace
+							? Fraction(ss)
+							: Fraction(Spaceless(std::string(ss)));
+                        o(std::move(fraction));
+                    } else {
+                        Valuable integer = hasSpace
 						? Integer(ss)
 						: Integer(Spaceless(std::string(ss)));
                     o(std::move(integer));
+                    }
                     i = next - 1;
                 }
                 else if (c == '+') {
