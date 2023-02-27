@@ -1206,10 +1206,11 @@ fold(
 
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL _openmind_hook_end_of_configure())
 function(_openmind_hook_end_of_configure)
-	build_command(PREREQUISITES_BUILD_CMD
-		TARGET prerequisites
-		PARALLEL_LEVEL ${CMAKE_AUTOGEN_PARALLEL}
-	)
+	if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21)
+		build_command(PREREQUISITES_BUILD_CMD TARGET prerequisites PARALLEL_LEVEL ${CMAKE_AUTOGEN_PARALLEL})
+	else()
+		build_command(PREREQUISITES_BUILD_CMD TARGET prerequisites)
+	endif()
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
