@@ -1097,6 +1097,8 @@ namespace math {
                      || (sz1 == 2 && c1.begin()->Same(1_v) )))
         {
             same = c1.rbegin()->operator==(v);
+        } else if (members.empty()) {
+            same = v == 1;
         }
         return same;
     }
