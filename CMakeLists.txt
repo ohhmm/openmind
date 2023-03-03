@@ -179,7 +179,7 @@ option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
 
 if(OPENMIND_USE_CPACK)
 	include(CPack)
-	set(CPACK_BUNDLE_NAME ${PRODUCT_NAME})
+	set(CPACK_BUNDLE_NAME ${PRODUCT_NAME} CACHE STRING "Binaries bundle name")
 	if(APPLE)
 		option(CPACK_BINARY_BUNDLE "Build macOS bundle" ON)
 	elseif(WIN32)
