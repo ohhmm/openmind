@@ -79,6 +79,7 @@ public:
 
     bool eval(const std::map<Variable, Valuable>& with) override;
     void Eval(const Variable& va, const Valuable& v) override;
+    void solve(const Variable& va, solutions_t& solutions) const override;
     
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;

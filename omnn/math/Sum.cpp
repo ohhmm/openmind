@@ -1045,8 +1045,25 @@ namespace
                 return copy.Sqrt();
             }
         }
-
-        LOG_AND_IMPLEMENT("square root " << str()); // TODO : try to get rid of this call instead by substituting to ^(1_v/2) which is not equivalent to sqrt by the way
+        auto vars = Vars();
+        if (vars.size() == 1)
+		{
+            const auto& va = *FindVa();
+            if (IsNormalizedPolynomial(va)) {
+                std::vector<Valuable> coefficients;
+                auto grade = FillPolyCoeff(coefficients, va);
+                if (grade == 2) {
+                    solutions_t solutions;
+                    solve(va, solutions, coefficients, grade);
+                    if (solutions.size() == 1) {
+                        return va - solutions.begin()->get();
+                    } else {
+                        LOG_AND_IMPLEMENT("square root of polynomial " << get());
+                    }
+                }
+            }
+        }
+        LOG_AND_IMPLEMENT("square root " << get()); // TODO : try to get rid of this call instead by substituting to ^(1_v/2) which is not equivalent to sqrt by the way
                                                     // https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
         return Exponentiation(*this, 1_v/2); // TODO  :  this is wrong  because of https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
     }
@@ -1825,7 +1842,7 @@ namespace
                         return;
                     }
                 } else {
-                    LOG_AND_IMPLEMENT("Solving " << str() << std::endl
+                    LOG_AND_IMPLEMENT("Solving " << va << " in " << *this << std::endl
                         << "free member: " << k << std::endl
                         << "first member coefficient: " << a << std::endl
                         << "IsPowerX: " << IsPowerX(coefficients) << std::endl);
