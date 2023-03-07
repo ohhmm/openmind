@@ -260,6 +260,12 @@ namespace math {
         }
     }
     
+    void Variable::solve(const Variable& va, solutions_t& solutions) const
+	{
+		if (operator==(va))
+			solutions.emplace(constants::zero);
+    }
+    
     const Valuable::vars_cont_t& Variable::getCommonVars() const
     {
         vars[*this] = 1_v;
