@@ -43,11 +43,11 @@ namespace
     CACHE(DbSumSolutionsARootCache);
     CACHE(DbSumSqCache);
 
-        using namespace std;
         
         // inequality should cover all cases
         auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
         {
+			using namespace std;
             static type_index order[] = {
                 typeid(MInfinity),
                 typeid(Sum),
@@ -70,7 +70,7 @@ namespace
             assert(it1!=oe); // IMPLEMENT
             auto it2 = std::find(ob, oe, y.Type());
             assert(it2!=oe); // IMPLEMENT
-            return it1 == it2 ? *it1 > *it2 : it1 < it2;
+            return it1 == it2 ? x > y : it1 < it2;
         };
         
         constexpr SumOrderComparator soc;
