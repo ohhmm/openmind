@@ -648,17 +648,17 @@ std::string Spaceless(std::string s) {
                     auto next = s.find_first_not_of(" 0123456789.", i+1);
                     auto ss = s.substr(i, next - i);
                     Trim(ss);
-                    auto hasSpace = ss.find(' ') == std::string::npos;
-                    auto hasDot = ss.find('.') == std::string::npos;
+                    auto hasSpace = ss.find(' ') != std::string::npos;
+                    auto hasDot = ss.find('.') != std::string::npos;
                     if (hasDot) {
                         Valuable fraction = hasSpace
-							? Fraction(ss)
-							: Fraction(Spaceless(std::string(ss)));
+							? Fraction(Spaceless(std::string(ss)))
+							: Fraction(ss);
                         o(std::move(fraction));
                     } else {
                         Valuable integer = hasSpace
-						? Integer(ss)
-						: Integer(Spaceless(std::string(ss)));
+							? Integer(Spaceless(std::string(ss)))
+							: Integer(ss);
                     o(std::move(integer));
                     }
                     i = next - 1;
