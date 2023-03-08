@@ -349,6 +349,9 @@ if (OPENMIND_BUILD_TESTS)
 			set(TEST_DEPS ${TEST_DEPS} TBB::tbb)
 		endif()
 	endif()
+	add_custom_target(disable_openmind_tests
+		COMMAND ${CMAKE_COMMAND} -DOPENMIND_BUILD_TESTS=OFF "${CMAKE_CURRENT_SOURCE_DIR}")
+	set_target_properties(disable_openmind_tests PROPERTIES FOLDER "util")
 else()
     add_custom_target(enable_openmind_tests
         COMMAND ${CMAKE_COMMAND} -DOPENMIND_BUILD_TESTS=ON "${CMAKE_CURRENT_SOURCE_DIR}")

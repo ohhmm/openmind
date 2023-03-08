@@ -4,7 +4,9 @@ RUN emerge --sync
 
 RUN echo 'CFLAGS="-march=native -mtune=native -O3 -pipe"' >> /etc/portage/make.conf
 RUN echo 'CXXFLAGS="${CFLAGS}"' >> /etc/portage/make.conf
-RUN echo 'USE="${USE} -examples static-libs system system-bootstrap system-llvm"' >> /etc/portage/make.conf
+RUN echo 'USE="${USE} -examples"' >> /etc/portage/make.conf
+RUN echo 'USE="${USE} lto static-libs"' >> /etc/portage/make.conf
+RUN echo 'USE="${USE} system system-bootstrap system-llvm"' >> /etc/portage/make.conf
 
 RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/b2 **" >> /etc/portage/package.accept_keywords/boost
@@ -35,13 +37,9 @@ RUN emerge --update \
     dev-util/cmake \
     -j1 && rm -rf /var/cache/distfiles
 
-#RUN emerge --update   kde-frameworks/extra-cmake-modules     -j`nproc` && rm -rf /var/cache/distfiles
+RUN emerge --update   kde-frameworks/extra-cmake-modules     -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN emerge -1o --update \
-    sys-devel/clang \
-    -j`nproc` && rm -rf /var/cache/distfiles
-
-RUN emerge --update sys-devel/clang -j1 && rm -rf /var/cache/distfiles
+RUN (emerge --update sys-devel/clang -j`nproc` || emerge --update sys-devel/clang -j1) && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
     lld \
@@ -81,5 +79,11 @@ RUN emerge --update \
     eix \
     sys-process/htop \
     -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN echo 'ACCEPT_LICENSE="*"' >> /etc/make.conf
+RUN echo "dev-util/intel-ocl-sdk **" > /etc/portage/package.accept_keywords/intel-ocl-sdk
+RUN emerge --update \
+    dev-util/intel-ocl-sdk \
+    -j`nproc` && rm -rf /var/cache/distfiles 
 
 RUN eix-update
