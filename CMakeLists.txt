@@ -850,6 +850,39 @@ function(test)
 	endforeach()
 endfunction()
 
+function(ext_configure_args name args)
+
+	string(REPLACE "-" "_" name ${name})
+
+	set(${args} ${${args}}
+
+		-D${name}_TESTS=OFF
+		-D${name}_BUILD_TESTS=OFF
+		-D${name}_BUILD_BENCHMARKS=OFF
+		-D${name}_FRAMEWORK=${APPLE}
+		-D${name}_STATIC=ON
+		-D${name}_SHARED=${_IS_DEBUG}
+		-D${name}_BUILD_APIDOC=OFF
+		-D${name}_BUILD_DEMOS=OFF
+
+		PARENT_SCOPE)
+
+	if(${name}_C_STANDARD)
+		set(${args} ${${args}}
+			-DCMAKE_C_STANDARD=${${name}_C_STANDARD}
+			-DCMAKE_C_STANDARD_REQUIRED=ON
+			PARENT_SCOPE)
+	endif()
+
+	if(${name}_CXX_STANDARD)
+		set(${args} ${${args}}
+			-DCMAKE_CXX_STANDARD=${${name}_CXX_STANDARD}
+			-DCMAKE_CXX_STANDARD_REQUIRED=ON
+			PARENT_SCOPE)
+	endif()
+
+endfunction()
+
 macro(ext name location)
 	message("External ${name} ${location}")
 	if(NOT TARGET ${name})
@@ -857,35 +890,30 @@ macro(ext name location)
 			set(OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM UPDATE_COMMAND "")
 		endif()
 		if(MSVC)
-			set(build_type -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}) # overcoming runtime mismatch issue
+			set(build_type -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}) # overcoming runtime mismatch linking issue
 		else()
 			set(build_type -DCMAKE_BUILD_TYPE=Release)
 		endif()
-		string(TOUPPER ${name} _name_upcase)
+
 		set(ARGS
 			${build_type}
 			-DBUILD_TESTS=OFF
-			-D${name}_TESTS=OFF
-			-D${_name_upcase}_TESTS=OFF
-			-D${name}_BUILD_TESTS=OFF
-			-D${_name_upcase}_BUILD_TESTS=OFF
-			-D${name}_BUILD_BENCHMARKS=OFF
-			-D${_name_upcase}_BUILD_BENCHMARKS=OFF
-			-D${name}_FRAMEWORK=${APPLE}
-			-D${_name_upcase}_FRAMEWORK=${APPLE}
-			-D${name}_STATIC=ON
-			-D${_name_upcase}_STATIC=ON
-			-D${name}_SHARED=${_IS_DEBUG}
-			-D${_name_upcase}_SHARED=${_IS_DEBUG}
-			-D${name}_BUILD_APIDOC=OFF
-			-D${_name_upcase}_BUILD_APIDOC=OFF
-			-D${name}_BUILD_DEMOS=OFF
-			-D${_name_upcase}_BUILD_DEMOS=OFF
 			-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 			-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
 			-DHAVE_STD_REGEX=ON
 			-DRUN_HAVE_STD_REGEX=1
 			)
+
+		ext_configure_args(${name} ARGS)
+		string(TOUPPER ${name} _name_upcase)
+		if(NOT name STREQUAL _name_upcase)
+			ext_configure_args(${_name_upcase} ARGS)
+		endif()
+
+		STRING(REGEX REPLACE "^[Ll][Ii][Bb]" "" libless ${_name_upcase})
+		if(NOT libless STREQUAL _name_upcase)
+			ext_configure_args(${libless} ARGS)
+		endif()
 
 		if(CMAKE_SYSTEM_NAME)
 			set(ARGS ${ARGS} -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME})
