@@ -21,7 +21,7 @@ jobs:
         working-directory: ./build
         run: cmake .. -G Ninja \
           -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=`which clang++` -DCMAKE_C_COMPILER=`which clang` \
           -DOPENMIND_BUILD_SAMPLES=OFF \
           -DOPENMIND_BUILD_TESTS=ON
 

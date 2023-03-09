@@ -1,5 +1,8 @@
 
 set(DEPENDENCIES boost)
+if(Boost_FOUND)
+    set(DEPENDENCIES ${DEPENDENCIES} Boost::filesystem)
+endif()
 
 if(OPENMIND_USE_OPENCL)
 	set(DEPENDENCIES ${DEPENDENCIES} OpenCL)
