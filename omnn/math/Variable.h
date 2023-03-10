@@ -94,4 +94,4 @@ public:
 }}
 
 // Named variable with the same name text
-#define DECL_VA(x) auto& x = #x##_va;
+#define DECL_VA(x) const ::omnn::math::Variable& x = #x##_va;
