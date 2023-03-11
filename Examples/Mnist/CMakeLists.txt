@@ -1,2 +1,2 @@
-add_subdirectory(TrainedUnit)
+fold()
 exe(TrainedUnit rt)

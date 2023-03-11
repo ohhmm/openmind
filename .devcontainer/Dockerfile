@@ -86,4 +86,9 @@ RUN emerge --update \
     dev-util/intel-ocl-sdk \
     -j`nproc` && rm -rf /var/cache/distfiles 
 
+RUN emerge --update \
+    dev-util/vulkan-headers
+    media-libs/vulkan-loader
+    -j`nproc` && rm -rf /var/cache/distfiles 
+
 RUN eix-update

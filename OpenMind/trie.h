@@ -26,7 +26,7 @@
 #include <memory>
 #include <algorithm>
 #include <string>
-
+#include <wchar.h>
 #include <boost/mpl/accumulate.hpp>
 #include <boost/mpl/at.hpp>
 #include <boost/mpl/for_each.hpp>
