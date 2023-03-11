@@ -7,7 +7,7 @@
   "context": "..",
 
   // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-  //"dockerFile": "Dockerfile",
+  // "dockerFile": "Dockerfile",
   "image":  "ohhmm/openmind",
 
   // Set *default* container specific settings.json values on container create.
@@ -19,7 +19,10 @@
       "-DOPENMIND_REQUIRED_BOOST_VERSION=1.79.0",
       //"-DOPENMIND_MATH_USE_FOUNDATIONDB_CACHE:BOOL=ON",
     ],
-    "cmake.generator": "Ninja"
+    "cmake.configureSettings": {
+      "CMAKE_BUILD_PARALLEL_LEVEL": "${nproc}",
+    },
+    "cmake.generator": "Ninja",
   },
 
   // Add the IDs of extensions you want installed when the container is created.

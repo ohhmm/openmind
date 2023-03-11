@@ -372,25 +372,33 @@ macro(find_local_dep)
 		if(dep MATCHES "^[Ll][Ii][Bb]")
 			STRING(REGEX REPLACE "^[Ll][Ii][Bb]" "" libless ${dep})
 			if(NOT ${dep}_FOUND AND NOT ${libless}_FOUND)
-				find_package(${libless})
+				find_package(${libless}
+					HINTS "${CMAKE_BINARY_DIR}"
+					)
 				message("${libless}_FOUND: ${${libless}_FOUND}")
 			endif()
 		endif()
 		if(NOT ${dep}_FOUND AND NOT ${libless}_FOUND)
-			find_package(${dep})
+			find_package(${dep}
+				HINTS "${CMAKE_BINARY_DIR}"
+				)
 			if(NOT ${dep}_FOUND)
-				find_package(lib${dep})
+				find_package(lib${dep}
+					HINTS "${CMAKE_BINARY_DIR}"
+					)
 			endif()
 			if(NOT ${dep}_FOUND)
 				find_package(${dep}	HINTS
-					${CMAKE_INSTALL_PREFIX}
+					"${CMAKE_INSTALL_PREFIX}"
 					/opt/${dep}
+					"${CMAKE_BINARY_DIR}"
 					)
 			endif()
 			if(NOT ${dep}_FOUND)
 				find_package(lib${dep}	HINTS
-					${CMAKE_INSTALL_PREFIX}
+					"${CMAKE_INSTALL_PREFIX}"
 					/opt/${dep}
+					"${CMAKE_BINARY_DIR}"
 					)
 			endif()
 			message("${dep}_FOUND: ${${dep}_FOUND}")
@@ -574,7 +582,10 @@ macro(dep)
 			if(NOT TARGET ${dep})
 				STRING(REGEX REPLACE "\.+::" "" componentname ${dep})
 				message("searching for ${componentname} component in ${libname} library")
-				find_package(${libname} COMPONENTS ${componentname})
+				find_package(${libname}
+					COMPONENTS ${componentname}
+					HINTS ${CMAKE_BINARY_DIR}
+					)
 			endif()
 			if(TARGET ${dep})
 				dep(${dep})
@@ -604,6 +615,9 @@ macro(dep)
 			set(CHECK_IF_NEXT_ITEM_IS_MATCHING_TARGET ${dep})
 			continue()
 		elseif(dep MATCHES /)
+			if(dep MATCHES .git$)
+				string(REGEX REPLACE ".git$" "" dep "${dep}")
+			endif()
 			dep("https://github.com/${dep}.git")
 			get_filename_component(dep "${dep}" NAME_WE)
 			set(CHECK_IF_NEXT_ITEM_IS_MATCHING_TARGET ${dep})
