@@ -1,53 +1,54 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.231.6/containers/docker-existing-dockerfile
 {
-	"name": "Existing Dockerfile: platform agnostic container",
+  "name": "Existing Dockerfile: platform agnostic container",
 
-	// Sets the run context to one level up instead of the .devcontainer folder.
-	"context": "..",
+  // Sets the run context to one level up instead of the .devcontainer folder.
+  "context": "..",
 
-	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-	"dockerFile": "Dockerfile",
+  // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
+  //"dockerFile": "Dockerfile",
+  "image":  "ohhmm/openmind",
 
-	// Set *default* container specific settings.json values on container create.
-	"settings": {
-		"cmake.cmakePath": "/usr/bin/cmake",
-		"cmake.configureArgs": [
-			"-DOPENMIND_BUILD_SAMPLES=OFF",
-			"-DOPENMIND_BUILD_TESTS=ON",
-			"-DOPENMIND_REQUIRED_BOOST_VERSION=1.79.0",
-			//"-DOPENMIND_MATH_USE_FOUNDATIONDB_CACHE:BOOL=ON",
-		],
-		"cmake.generator": "Ninja"
-	},
-	
-	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": [
-		"github.vscode-pull-request-github",
-		"googlecloudtools.cloudcode",
-		"quantum.quantum-devkit-vscode",
-		"llvm-vs-code-extensions.vscode-clangd",
-		"ms-toolsai.jupyter",
-		"ms-vscode.cpptools",
-		"ms-vscode.cmake-tools",
-		"ms-vsliveshare.vsliveshare-pack",
-		"redhat.vscode-yaml",
-		"visualstudioexptteam.vscodeintellicode",
-		"visualstudioexptteam.vscodeintellicode-completions",
-	],
+  // Set *default* container specific settings.json values on container create.
+  "settings": {
+    "cmake.cmakePath": "/usr/bin/cmake",
+    "cmake.configureArgs": [
+      "-DOPENMIND_BUILD_SAMPLES=OFF",
+      "-DOPENMIND_BUILD_TESTS=ON",
+      "-DOPENMIND_REQUIRED_BOOST_VERSION=1.79.0",
+      //"-DOPENMIND_MATH_USE_FOUNDATIONDB_CACHE:BOOL=ON",
+    ],
+    "cmake.generator": "Ninja"
+  },
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
+    "github.vscode-pull-request-github",
+    "googlecloudtools.cloudcode",
+    "quantum.quantum-devkit-vscode",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "ms-toolsai.jupyter",
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools",
+    "ms-vsliveshare.vsliveshare-pack",
+    "redhat.vscode-yaml",
+    "visualstudioexptteam.vscodeintellicode",
+    "visualstudioexptteam.vscodeintellicode-completions",
+  ],
 
-	// Uncomment the next line to run commands after the container is created - for example installing curl.
-	// "postCreateCommand": "apt-get update && apt-get install -y curl",
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
 
-	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
-	// "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
+  // Uncomment the next line to run commands after the container is created - for example installing curl.
+  // "postCreateCommand": "apt-get update && apt-get install -y curl",
 
-	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
-	// "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+  // Uncomment when using a ptrace-based debugger like C++, Go, and Rust
+  // "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
 
-	// Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
-	// "remoteUser": "vscode"
+  // Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
+  // "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+
+  // Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
+  // "remoteUser": "vscode"
 }
