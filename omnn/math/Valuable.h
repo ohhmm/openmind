@@ -477,7 +477,61 @@ public:
     Valuable IfEq(const Valuable& v, const Valuable& Then,
                   const Valuable& Else) const; /// returns an expression which equals to @Then when this expression
                                                /// equals to @v param and @Else otherwise
-    Valuable IntModIsLessOp(const Valuable& a) const;
+    
+	/// <summary>
+	/// bool is 0 or 1
+	/// </summary>
+	/// <returns>0->1 or 1->0</returns>
+    Valuable BoolNot() const;
+    /// <summary>
+    /// 0 or 1
+    /// </summary>
+    /// <returns>0->0, otherwise 1</returns>
+    Valuable BoolIntModNotZero() const;
+
+    /// <summary>
+    /// IntMod prefix tells that this method is only applicable for variables known to be integer with modulo operation
+    /// applicable
+    /// x%(x-1) is 1 for x>2, is 0 for 2
+    /// </summary>
+    /// <returns>For x meant to be integers, returns an expression that is equal to 0 when x is positive</returns>
+    Valuable IntMod_IsPositive() const;
+
+	/// <summary>
+	/// (this < 0) - the int is negative
+	/// </summary>
+	/// <returns>bool</returns>
+	Valuable IntMod_Negative() const;
+
+    /// <summary>
+    /// Getting sign of the assumed integer
+    /// </summary>
+    /// <param name="a"></param>
+    /// <returns>-1, 0, 1</returns>
+    Valuable IntMod_Sign() const;
+
+	/// <summary>
+	/// Converts the operator to boolean
+	/// </summary>
+	/// <returns>An expression that evaluates to 1 or 0 value</returns>
+	Valuable ToBool() const;
+
+    /// <summary>
+    /// (x-1)%x is -1 for negative numbers only
+	/// (x-1)%x is undefined for zero
+	/// (x-1)%x is x-1 for positive integers
+    /// </summary>
+    /// <returns></returns>
+    Valuable IntMod_IsNegativeOrZero() const { return Equals(0) || ((*this - 1) % *this).Equals(-1); }
+
+    /// <summary>
+    /// Operator 'less' then value to which a param expression is to be evaluated
+	/// IntMod prefix tells that this method is only applicable for variables known to be integer
+	/// Modulo operation may be used
+    /// </summary>
+    /// <param name="than">the param to compare that the object is less then the param</param>
+    /// <returns>An expression that equals zero only when the object is less then param</returns>
+    Valuable IntMod_Less(const Valuable& than) const;
 
 	/// iterations
 	//
