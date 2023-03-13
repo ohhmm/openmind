@@ -755,6 +755,22 @@ std::string Spaceless(std::string s) {
                         ++m2[c];
                 same = m1 == m2;
             }
+
+            while (!same && _1.front() == '(' && _1.back() == ')') {
+                auto _1len = _1.length();
+                auto _2len = _2.length();
+                auto diff = _1len - _2len;
+                auto dhalf = diff >> 1;
+				if (diff > 0
+					&& !(diff & 1)
+					&& _1.substr(dhalf, _1len-diff) == _2)
+				{
+                    _1 = _1.substr(1, _1.length() - 2);
+                    same = _1 == _2;
+                } else {
+                    break;
+				}
+            }
             if (!same) {
                 LOG_AND_IMPLEMENT("Deserialization check: "
                     << _ << " != " << s << std::endl
@@ -2042,11 +2058,44 @@ std::string Spaceless(std::string s) {
         return equalsAndThen.LogicOr(equalsAndThen.LogicOr(Else).LogicAnd(Else));
     }
 
-    /// equals to @v param and @Else otherwise
-
-    Valuable Valuable::IntModIsLessOp(const Valuable& a) const
+    Valuable Valuable::BoolNot() const
 	{
-		return ((*this % a) - *this) * -1 / a;
+		return constants::one - *this;
+	}
+
+	Valuable Valuable::BoolIntModNotZero() const
+	{
+        auto sign = IntMod_Sign();
+        return std::move(sign.sq());
+	}
+
+    Valuable Valuable::IntMod_Negative() const
+	{
+		// 1 - (*this % (*this - 1)) * ((*this - 1) % *this);
+        return (*this * constants::minus_1).IntMod_IsPositive();
+	}
+
+    Valuable Valuable::IntMod_Sign() const
+	{
+        // ((*this % a) - *this) * -1 / a;
+        return IntMod_IsPositive().ToBool() - IntMod_Negative().ToBool();
+	}
+
+    Valuable Valuable::IntMod_IsPositive() const
+	{
+        return Equals(constants::one)
+			|| Equals(constants::two)
+			|| (*this % (*this + constants::minus_1)).Equals(constants::one);
+    }
+
+    Valuable Valuable::ToBool() const
+	{
+		return Ifz(constants::one, constants::zero);
+	}
+
+    Valuable Valuable::IntMod_Less(const Valuable& than) const
+	{
+		return (than - *this).IntMod_IsPositive();
 	}
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
@@ -2059,7 +2108,7 @@ std::string Spaceless(std::string s) {
         return
             //one.Equals(*this % one);
 		    //or
-            (e ^ (*this * 2 * i * pi)) - 1;        // FIXME: check if all required optimizations ready to make this useful https://math.stackexchange.com/a/1598552/118612
+            (e ^ (*this * 2 * i * pi)) - 1;   // FIXME: check if all required optimizations ready to make this to be useful https://math.stackexchange.com/a/1598552/118612
     }
 
     std::function<bool(std::initializer_list<Valuable>)> Valuable::Functor() const {

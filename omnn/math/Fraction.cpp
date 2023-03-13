@@ -313,9 +313,13 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         if (is.first) {
             LOG_AND_IMPLEMENT("Optimize summation of " << *this << " with " << v);
         }
+    } else if (v.IsModulo()) {
+    } else if (v.IsInt()) {
+        is = (getDenominator() * v).IsSummationSimplifiable(getNumerator());
+        if (is.first)
+            is.second /= getDenominator();
     } else if (!v.IsFraction()) {
         is = v.IsSummationSimplifiable(*this);
-    } else if (!v.IsModulo()) {
     } else {
         IMPLEMENT
     }

@@ -1795,7 +1795,7 @@ namespace
                 }
                 auto a = coefficients[grade];
                 if(!a.IsInt()) {
-#ifndef NOOMDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
                     std::cout << "first member needed optimization: " << a << std::endl;
 #endif
                     OptimizeOn oo;
@@ -1803,7 +1803,7 @@ namespace
                 }
                 auto k = coefficients[0];
                 if(!k.IsInt()) {
-#ifndef NOOMDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
                     std::cout << "free member needed optimization: " << k << std::endl;
 #endif
                     OptimizeOn oo;
@@ -2307,7 +2307,7 @@ namespace
         is.second = sum;
         is.second.optimize();
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
 		if (is.first) {
             auto confirm = is.second.Complexity() < Complexity() + v.Complexity()
 				|| (is.second.IsSum()

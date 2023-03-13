@@ -70,7 +70,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 	)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/qtect.cmake)
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
-option(OPENMIND_DEBUG_CHECKS "Additional debug checks" ${_IS_DEBUG})
+option(OPENMIND_DEBUG_CHECKS "Additional debug checks (NOOMDEBUG define)" ${_IS_DEBUG})
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
 option(OPENMIND_BUILD_GC "Use garbage collection. Faster but requires abundant memory." ${MSVC})
 option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare to openmind by performance" FALSE)
@@ -1122,13 +1122,8 @@ macro(fold)
         IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)
             message("${item} is dir with CMakeLists.txt")
             get_filename_component(name ${item} NAME)
-            if(NOT "${name}" STREQUAL "OpenMind"
-                AND NOT "${name}" STREQUAL "omnn"
-				AND NOT "${name}" STREQUAL "tests"
-                ) # already included first
                 add_subdirectory(${item})
             endif()
-        endif()
     endforeach()
 endmacro()
 
