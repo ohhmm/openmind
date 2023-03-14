@@ -80,13 +80,17 @@ option(OPENMIND_USE_QT "Link Qt libs" OFF)
 if(OPENMIND_USE_QT)
 	qtect()
 endif()
+
 find_package(PkgConfig)
 option(OPENMIND_USE_PKG_CONFIG_DEPS "Use pkg-config dependencies" ${PKG_CONFIG_FOUND})
 if(PKG_CONFIG_FOUND)
 	message("pkg-config may be used to detect some of dependencies")
 endif()
+
+find_package(IntelDPCPP)
 find_package(OpenCL)
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
+
 if(NOT MSVC)
 	find_package(TBB)
 	option(OPENMIND_USE_TBB "Link TBB" ${TBB_FOUND})
@@ -227,14 +231,14 @@ if(GIT_EXECUTABLE)
 	endif()
 endif()
 
-#find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+find_package(OpenMP)
+#if (OPENMP_FOUND)
+#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 #elseif(NOT MSVC)
 #   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-endif()
+#endif()
 
 if (Boost_FOUND)
 	if(NOT TARGET boost)
@@ -258,12 +262,12 @@ elseif(OPENMIND_BUILD_BOOST)
     message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
 
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(Boost_address_model 64)
+      set(address_model 64)
     else()
-      set(Boost_address_model 32)
+      set(address_model 32)
     endif()
 
-    set(BOOST_BUILD_COMMAND "b2 address-model=${Boost_address_model} runtime-link=static,shared link=static,shared ${BOOST_BUILD_PARAMS}")
+    set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared ${BOOST_BUILD_PARAMS}")
     if(WIN32)
         set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
         separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
@@ -363,6 +367,37 @@ macro(echo)
 	message("${ARGN}: ${${ARGN}}")
 endmacro(echo)
 
+macro(find_pkg)
+	set(hint_paths
+		"${CMAKE_BINARY_DIR}"
+		"${CMAKE_INSTALL_PREFIX}"
+		)
+	foreach(dep ${ARGN})
+		if(${dep}_FOUND)
+			break()
+		endif()
+		set(hints ${hint_paths})
+		if(WIN32)
+			if(EXISTS "C:/${dep}")
+				set(hints ${hint_paths} "C:/${dep}")
+			endif()
+			if(EXISTS "C:/${dep}${address_model}")
+				set(hints ${hint_paths} "C:/${dep}${address_model}")
+			endif()
+			if(EXISTS "$ENV{ProgramFiles}/${dep}")
+				set(hints ${hint_paths} "$ENV{ProgramFiles}/${dep}")
+			endif()
+		else()
+			if(EXISTS /opt/${dep})
+				set(hints ${hint_paths} "/opt/${dep}")
+			endif()
+		endif()
+		find_package(${dep}
+			HINTS ${hints}
+			)
+	endforeach()
+endmacro()
+
 macro(find_local_dep)
 	message("find local dep: ${ARGN}")
 	if(${ARGN} MATCHES " ")
@@ -373,35 +408,16 @@ macro(find_local_dep)
 		if(dep MATCHES "^[Ll][Ii][Bb]")
 			STRING(REGEX REPLACE "^[Ll][Ii][Bb]" "" libless ${dep})
 			if(NOT ${dep}_FOUND AND NOT ${libless}_FOUND)
-				find_package(${libless}
-					HINTS "${CMAKE_BINARY_DIR}"
-					)
+				set(hints ${hint_paths})
+				if(WIN32)
+					set(hints ${hint_paths} "C:/${libless}")
+				endif()
+				find_pkg(${libless})
 				message("${libless}_FOUND: ${${libless}_FOUND}")
 			endif()
 		endif()
 		if(NOT ${dep}_FOUND AND NOT ${libless}_FOUND)
-			find_package(${dep}
-				HINTS "${CMAKE_BINARY_DIR}"
-				)
-			if(NOT ${dep}_FOUND)
-				find_package(lib${dep}
-					HINTS "${CMAKE_BINARY_DIR}"
-					)
-			endif()
-			if(NOT ${dep}_FOUND)
-				find_package(${dep}	HINTS
-					"${CMAKE_INSTALL_PREFIX}"
-					/opt/${dep}
-					"${CMAKE_BINARY_DIR}"
-					)
-			endif()
-			if(NOT ${dep}_FOUND)
-				find_package(lib${dep}	HINTS
-					"${CMAKE_INSTALL_PREFIX}"
-					/opt/${dep}
-					"${CMAKE_BINARY_DIR}"
-					)
-			endif()
+			find_pkg(${dep} lib${dep})
 			message("${dep}_FOUND: ${${dep}_FOUND}")
 			if(NOT ${dep}_FOUND)
 				message("lib${dep}_FOUND: ${lib${dep}_FOUND}")
@@ -583,10 +599,10 @@ macro(dep)
 			if(NOT TARGET ${dep})
 				STRING(REGEX REPLACE "\.+::" "" componentname ${dep})
 				message("searching for ${componentname} component in ${libname} library")
-				find_package(${libname}
-					COMPONENTS ${componentname}
-					HINTS ${CMAKE_BINARY_DIR}
-					)
+				find_pkg(${libname})
+				if(${libname}_FOUND)
+					find_package(${libname} COMPONENTS ${componentname})
+				endif()
 			endif()
 			if(TARGET ${dep})
 				dep(${dep})
