@@ -58,7 +58,7 @@ public:
     friend System& operator<<(System& s, const VaField& vaField){
         for (auto column : X::Columns) {
             auto& col = vaField[X::ColNo(column)];
-            for (int varIdx = vaField.size(); varIdx-->0; ) {
+            for (auto varIdx = vaField.size(); varIdx-->0; ) {
                 auto& va = vaField[varIdx];
 
             }

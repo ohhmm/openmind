@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test) {
         ;
 
     auto dModBy2 = d % 2;
-    auto L = X.IntModLess(Y);
+    auto L = X.IntMod_Less(Y);
     // dModBy2;
     std::cout << "X<Y = " << L << std::endl;
     for (auto x = 10; x-- > 1;) {
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test) {
             //std::cout << "(x % (x - 1)) * ((x - 1) % x) = " << (x % (x - 1)) * ((x - 1) % x) << std::endl;
 
             //std::cout << "x isn't 0 = " << Valuable(x).BoolIntModNotZero() << std::endl;
-            //std::cout << "x < 0 = " << Valuable(x).IntModLessThanZero() << std::endl;
+            //std::cout << "x < 0 = " << Valuable(x).IntMod_Negative() << std::endl;
             //std::cout << "x sign = " << Valuable(x).IntModSign() << std::endl;
             //std::cout << "x < y = " << Valuable(x).IntModLess(y) << std::endl;
 
