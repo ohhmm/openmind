@@ -21,7 +21,7 @@ namespace math {
     using namespace std;
     
     // constexpr 
-    const type_index order[] = {
+    static const std::type_index order[] = {
         // for fast optimizing
         typeid(NaN),
         typeid(MInfinity),
@@ -40,12 +40,11 @@ namespace math {
         typeid(Modulo),
     };
     
-    constexpr auto ob = std::begin(order);
-    constexpr auto oe = std::end(order);
-    
-    // inequality should cover all cases
     bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
     {
+        static const auto ob = std::cbegin(order);
+        static const auto oe = std::cend(order);
+
         auto it1 = std::find(ob, oe, x.Type());
         if (it1 == oe)
             LOG_AND_IMPLEMENT(x << " =?= " << y);
@@ -573,6 +572,9 @@ namespace math {
             auto i1 = members.begin();
             auto i2 = p->members.begin();
             for (; i1 != members.end(); ++i1, ++i2) {
+                static const auto ob = std::cbegin(order);
+                static const auto oe = std::cend(order);
+
                 auto it1 = std::find(ob, oe, i1->Type());
                 assert(it1!=oe); // IMPLEMENT, add to order table
                 auto it2 = std::find(ob, oe, i2->Type());
