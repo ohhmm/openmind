@@ -1,6 +1,6 @@
 
 set(DEPENDENCIES boost)
-if(Boost_FOUND)
+if(Boost_FOUND AND NOT MSVC)
     set(DEPENDENCIES ${DEPENDENCIES} Boost::filesystem)
 endif()
 

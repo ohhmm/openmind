@@ -17,6 +17,19 @@ RUN echo "dev-libs/boost icu lzma python test" > /etc/portage/package.use/boost
 RUN echo "dev-libs/icu examples static-libs" > /etc/portage/package.use/icu
 RUN echo "dev-lang/mono minimal" > /etc/portage/package.use/mono
 
+RUN echo "sys-devel/llvm **" > /etc/portage/package.accept_keywords/llvm
+RUN echo "sys-devel/llvm-toolchain-symlinks **" >> /etc/portage/package.accept_keywords/llvm
+RUN echo "sys-devel/llvmgold **" >> /etc/portage/package.accept_keywords/llvm
+
+RUN echo "sys-devel/clang **" > /etc/portage/package.accept_keywords/clang
+RUN echo "sys-devel/clang-common **" >> /etc/portage/package.accept_keywords/clang
+RUN echo "sys-devel/clang-runtime **" >> /etc/portage/package.accept_keywords/clang
+RUN echo "sys-devel/clang-toolchain-symlinks **" >> /etc/portage/package.accept_keywords/clang
+RUN echo "sys-libs/compiler-rt **" >> /etc/portage/package.accept_keywords/clang
+RUN echo "sys-libs/compiler-rt-sanitizers **" >> /etc/portage/package.accept_keywords/clang
+RUN echo "sys-libs/libomp **" >> /etc/portage/package.accept_keywords/clang
+
+
 RUN emerge --update \
     dev-vcs/git \
     -j`nproc` && rm -rf /var/cache/distfiles
@@ -39,7 +52,7 @@ RUN emerge --update \
 
 RUN emerge --update   kde-frameworks/extra-cmake-modules     -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN (emerge --update sys-devel/clang -j`nproc` || emerge --update sys-devel/clang -j1) && rm -rf /var/cache/distfiles
+RUN (emerge --update sys-devel/clang:17 -j`nproc` || emerge --update sys-devel/clang:17 -j1) && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
     lld \
@@ -87,8 +100,8 @@ RUN emerge --update \
     -j`nproc` && rm -rf /var/cache/distfiles 
 
 RUN emerge --update \
-    dev-util/vulkan-headers
-    media-libs/vulkan-loader
+    dev-util/vulkan-headers \
+    media-libs/vulkan-loader \
     -j`nproc` && rm -rf /var/cache/distfiles 
 
 RUN eix-update
