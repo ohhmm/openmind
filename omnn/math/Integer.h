@@ -124,6 +124,9 @@ public:
     friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
     friend bool operator<(const Integer& _1, int _2) { return _1.arbitrary < _2; }
     bool operator ==(const Valuable& v) const override;
+    bool operator ==(const Integer& v) const;
+    bool operator ==(const a_int& v) const;
+    bool operator ==(const int& v) const;
 
     explicit operator int() const override;
     explicit operator a_int() const override;
