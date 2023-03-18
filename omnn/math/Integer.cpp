@@ -660,10 +660,25 @@ namespace math {
             return base::operator <(v);
     }
 
+    bool Integer::operator ==(const int& i) const
+    {
+        return arbitrary == i;
+    }
+
+    bool Integer::operator ==(const a_int& v) const
+    {
+        return arbitrary == v;
+    }
+
+    bool Integer::operator ==(const Integer& v) const
+    {
+        return Hash() == v.Hash() && operator ==(v.ca());
+    }
+
     bool Integer::operator ==(const Valuable& v) const
     {
         if (v.IsInt())
-            return Hash() == v.Hash() && arbitrary == v.ca();
+            return operator ==(v.as<Integer>());
         else if(v.FindVa())
             return false;
         else
