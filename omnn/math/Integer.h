@@ -68,6 +68,7 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
     
+    explicit
     constexpr
     Integer(const std::string& s)
         : arbitrary(s)
@@ -75,6 +76,7 @@ public:
         hash = std::hash<base_int>()(arbitrary);
     }
 
+    explicit
     constexpr
     Integer(const std::string_view& s)
 		: arbitrary(s)

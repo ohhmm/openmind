@@ -40,6 +40,7 @@ namespace omnn {
 namespace math {
 class Valuable;
 class Variable;
+class Exponentiation;
 class Sum;
 size_t hash_value(const omnn::math::Valuable& v);
 size_t hash_value(const omnn::math::Sum& v);

@@ -14,6 +14,7 @@
 #include "Sum.h"
 
 #include <algorithm>
+#include <boost/multiprecision/cpp_int.hpp>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -59,11 +60,14 @@ namespace math {
 #ifdef MSVC
     constexpr const Valuable& half = vf<.5>();
 #else
-    const Valuable& half = 1_v / 2;
+    const Valuable& half = static_cast<const Valuable&>(vo<1>()) / static_cast<const Valuable&>(vo<2>());
 #endif
     constexpr const Valuable& minus_1 = vo<-1>();
-    const Valuable& plus_minus_1 = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-    const Valuable& zero_or_1 = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
+
+    const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
+    const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
+    const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
+    const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
     constexpr const Valuable& pi = constant::pi;
     constexpr const Valuable& infinity = Infinity::GlobalObject;
     constexpr const Valuable& minfinity = MInfinity::GlobalObject;
@@ -431,7 +435,7 @@ auto OmitOuterBrackets(std::string_view& s){
     return bracketsmap;
 }
 
-std::string Spaceless(std::string s) {
+std::string Solid(std::string s) {
     s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
     return s;
 }
@@ -649,16 +653,19 @@ std::string Spaceless(std::string s) {
                     auto ss = s.substr(i, next - i);
                     Trim(ss);
                     auto hasSpace = ss.find(' ') != std::string::npos;
-                    auto hasDot = ss.find('.') != std::string::npos;
-                    if (hasDot) {
-                        Valuable fraction = hasSpace
-							? Fraction(Spaceless(std::string(ss)))
-							: Fraction(ss);
-                        o(std::move(fraction));
+                    if (ss.find('.') != std::string::npos) {
+                        std::string s;
+                        if(hasSpace){
+                            s = ss;
+                            s = Solid(s);
+                            ss = s;
+                        }
+                        boost::multiprecision::cpp_dec_float_100 fp(ss);
+                        o(Fraction(fp));
                     } else {
                         Valuable integer = hasSpace
-							? Integer(Spaceless(std::string(ss)))
-							: Integer(ss);
+                            ? Integer(Solid(std::string(ss)))
+                            : Integer(ss);
                     o(std::move(integer));
                     }
                     i = next - 1;
@@ -713,7 +720,7 @@ std::string Spaceless(std::string s) {
         auto same = s == _
             || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
         if (!same) {
-            auto _1 = Spaceless(str()), _2 = Spaceless(std::string(s));
+            auto _1 = Solid(str()), _2 = Solid(std::string(s));
             same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
             if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
                 _2 = a_int(s).str();
@@ -911,7 +918,7 @@ std::string Spaceless(std::string s) {
                     Trim(s);
                     auto integer = s.find(' ') == std::string::npos
 						? Integer(s)
-						: Integer(Spaceless(std::string(s)));
+						: Integer(Solid(std::string(s)));
                     Become(std::move(integer));
                 }
                 else

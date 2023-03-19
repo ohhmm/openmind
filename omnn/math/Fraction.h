@@ -81,6 +81,7 @@ namespace math {
 		{
 		}
 
+        explicit
 		Fraction(const Integer&);
 		Fraction(boost::rational<a_int>&&);
         Fraction(a_rational&&);
