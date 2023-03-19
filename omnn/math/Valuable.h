@@ -27,11 +27,11 @@
 #define LINE_NUMBER_STR NUM2STR(__LINE__)
 
 #define IMPLEMENT {                                                                                                    \
-        implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                                   \
+        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                                   \
         throw;                                                                                                         \
     }
 #define LOG_AND_IMPLEMENT(Param) { \
-    implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
+    ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
         throw;                                                                                                          \
     }
 
