@@ -90,6 +90,7 @@ namespace math {
         std::ostream& print(std::ostream& out, const any::any& v) const { return out << GetName(v); }
 
         virtual const Variable& Host(const any::any& id) = 0;
+        virtual Integer Stored() const = 0;
     };
     
     /**
@@ -218,6 +219,10 @@ namespace math {
 
         const Variable& Host(const any::any& id) override {
             return HostedStorage(id).first;
+        }
+
+        Integer Stored() const override {
+            return hosted.size();
         }
     };
 
