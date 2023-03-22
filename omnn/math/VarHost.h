@@ -222,7 +222,7 @@ namespace math {
         }
 
         Integer Stored() const override {
-            return hosted.size();
+            return a_int(hosted.size());
         }
     };
 
