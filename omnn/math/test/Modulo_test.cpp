@@ -35,17 +35,13 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
 BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test) {
     DECL_VA(X);
     DECL_VA(Y);
-    DECL_VA(XisLessThanY);
     auto d = Y - X;
     auto isZero = d / -d + 1;
 
-    auto isLessEquation = (XisLessThanY.Equals(0) && (X - Y)) //  X == Y
-                                                              //|| (XisLessThanY.Equals(1) && ())
-        ;
 
-    auto dModBy2 = d % 2;
-    auto L = X.IntMod_Less(Y);
-    // dModBy2;
+    auto L = X.IntMod_Less(Y)
+				//.ToBool()
+				;
     std::cout << "X<Y = " << L << std::endl;
     for (auto x = 10; x-- > 1;) {
         for (auto y = 10; y-- > 1;) {
@@ -53,45 +49,22 @@ BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test) {
             auto l = L;
             {
                 Valuable::OptimizeOff oo;
-                std::cout << '\n'
-                          << x << '<' << y << " = "
-                          << " 1 - ((" << x << " % " << y << ") - " << x << ") / -" << y << std::endl;
+                std::cout << '\n' << x << '<' << y << " = ";
                 l.eval({{X, x}, {Y, y}});
-                std::cout << x << '<' << y << " = " << l;
+                std::cout << " expression that must be equal to zero when true: " << l << std::endl;
             }
-            //l.optimize();
-            //std::cout << " = " << l << std::endl;
-            //std::cout << "(x-y) = " << x - y << std::endl;
+            l.optimize();
+            auto b = l.IsInt() && l.ca() == 0
+					//.ToBool()
+					;
+            std::cout << std::endl << "Is " << x << '<' << y << " : " << l << std::endl;
+            std::cout << std::endl << x << '<' << y << " = " << b << std::endl;
+            
 
-			auto po = Y.IntMod_IsPositive();
-            po.Eval(Y, y-5);
-            po.optimize();
-            std::cout << '\n' << y - 5 << " is positive: " << po << " - bool: ";
-            po = po.ToBool();
-            po.optimize();
-            std::cout << po << std::endl;
 
-            //if (x - y)
-            //    std::cout << "(y-x)/(x-y) = " << (y - x) / (x - y) << std::endl;
-            //std::cout << "(y-x) = " << y - x << std::endl;
-            //if (y - x)
-            //    std::cout << "(y-x)/(x-y) = " << (x - y) / (y - x) << std::endl;
-
-            //std::cout << "(x-y)%2 = " << (x - y) % 2 << std::endl;
-            //std::cout << "(y-x)%2 = " << (y - x) % 2 << std::endl;
-
-            //std::cout << "(x % (x - 1)) = " << (x % (x - 1)) << std::endl;
-            //std::cout << "((x - 1) % x) = " << ((x - 1) % x) << std::endl;
-            //std::cout << "(x % (x - 1)) * ((x - 1) % x) = " << (x % (x - 1)) * ((x - 1) % x) << std::endl;
-
-            //std::cout << "x isn't 0 = " << Valuable(x).BoolIntModNotZero() << std::endl;
-            //std::cout << "x < 0 = " << Valuable(x).IntMod_Negative() << std::endl;
-            //std::cout << "x sign = " << Valuable(x).IntModSign() << std::endl;
-            //std::cout << "x < y = " << Valuable(x).IntModLess(y) << std::endl;
-
-            auto ok = l.IsInt() && l == less;
+            auto ok = l.IsInt() && b == less;
             if (!ok) {
-                std::cout << "X=" << x << " Y=" << y << ' ' << ok << ' ' << l << std::endl;
+                std::cout << "X=" << x << " Y=" << y << ' ' << ok << " bool: " << b << std::endl;
                 BOOST_TEST(ok);
             }
         }

@@ -398,7 +398,7 @@ namespace
                     ++it;
             }
             
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
 //            if (w!=*this) {
 //                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
 //            }
@@ -415,7 +415,7 @@ namespace
 
     void Sum::balance()
     {
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
         std::cout << "Balancing " << *this << std::endl;
 #endif
         if(IsSum())
@@ -826,7 +826,7 @@ namespace
             {
                 if (size() < i.size())
                 {
-                    s = Fraction(*this, v);
+                    s = Modulo(*this, v);
                 }
                 else if (HasSameVars(v))
                 {
@@ -2314,9 +2314,8 @@ namespace
                     && is.second.as<Sum>().members.size() < members.size() + (v.IsSum() ? v.as<Sum>().members.size() : 1));
             if (!confirm) {
                 is.first = confirm;
-                LOG_AND_IMPLEMENT("Please, double-check simplification result: " << str()
-                    << "  *  " << v
-                    << "  =  " << is.second);
+                std::cout << "Consider checking simplification result: "
+                    << *this << "  *  " << v << "  =  " << is.second;
 
                 // FIXME:
                 //std::string: C:\Users\Enam\openmind\omnn\math\Sum.cpp:2258 
