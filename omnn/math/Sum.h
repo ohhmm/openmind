@@ -106,8 +106,7 @@ public:
     const iterator Add(const Valuable& item, const iterator hint) override;
     bool IsComesBefore(const Valuable& v) const override;
 
-    Sum(const std::initializer_list<Valuable>& l);
-    Sum(std::initializer_list<Valuable>&& l);
+    Sum(std::initializer_list<Valuable> l);
 
     bool IsBinomial() const;
     bool IsNormalizedPolynomial(const Variable&) const override;

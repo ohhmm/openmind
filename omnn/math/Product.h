@@ -44,7 +44,7 @@ public:
     Product();
     Product(Product&&)=default;
     Product(const Product&)=default;
-    Product(const std::initializer_list<Valuable>& l);
+    Product(std::initializer_list<Valuable> l);
     
 	const cont& GetConstCont() const override { return members; }
     iterator Had(iterator it) override;
