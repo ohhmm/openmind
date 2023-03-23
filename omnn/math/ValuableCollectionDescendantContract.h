@@ -41,30 +41,16 @@ namespace math {
 
         virtual const cont& GetConstCont() const = 0;
         
-        auto begin()
-        {
-            return GetCont().begin();
-        }
-
-        auto end()
-        {
-            return GetCont().end();
-        }
-
-        auto begin() const
-        {
-            return GetConstCont().begin();
-        }
-
-        auto end() const
-        {
-            return GetConstCont().end();
-        }
-
-        auto rbegin() const
-        {
-            return GetConstCont().rbegin();
-        }
+        auto begin() { return GetCont().begin(); }
+        auto end() { return GetCont().end(); }
+        auto begin() const { return GetConstCont().begin(); }
+        auto end() const { return GetConstCont().end(); }
+		auto cbegin() const { return GetConstCont().cbegin(); }
+        auto cend() const { return GetConstCont().cend(); }
+        auto rbegin() { return GetCont().rbegin(); }
+        auto rend() { return GetCont().rend(); }
+        auto crbegin() const { return GetConstCont().crbegin(); }
+        auto crend() const { return GetConstCont().crend(); }
 
         size_t size() const
         {
