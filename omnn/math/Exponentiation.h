@@ -97,6 +97,8 @@ public:
     Valuable calcFreeMember() const override;
 
     Valuable& sq() override;
+    Valuable Sqrt() const override;
+    Valuable& sqrt() override;
 
     Valuable operator()(const Variable&) const override;
     Valuable operator()(const Variable& v, const Valuable& augmentation) const override;

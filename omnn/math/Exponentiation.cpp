@@ -971,6 +971,18 @@ namespace omnn::math {
         return *this;
     }
 
+    Valuable Exponentiation::Sqrt() const {
+        auto copy = *this;
+        return std::move(copy.sqrt());
+    }
+
+    Valuable& Exponentiation::sqrt() {
+		hash ^= _2.Hash();
+        _2 /= 2;
+        hash ^= _2.Hash();
+        return *this;
+    }
+
     const Valuable::vars_cont_t& Exponentiation::getCommonVars() const
     {
 #ifndef NDEBUG
