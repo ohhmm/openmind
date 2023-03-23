@@ -1049,8 +1049,9 @@ namespace
             }
         } else if (getMaxVaExp() == 2 && size() == 3) {
             if (is_optimized()) {
-                auto a = cbegin()->Sqrt();
-                auto b = crbegin()->Sqrt();
+                auto it = cbegin();
+                auto a = it++->Sqrt();
+                auto b = it->Sqrt();
                 auto sum = a + b;
                 if (operator==(sum.Sq())){
                     return sum;

@@ -33,6 +33,10 @@ public:
 
     bool IsExponentiation() const override { return true; }
     bool IsVaExp() const override { return ebase().IsVa(); }
+    bool IsSimple() const override {
+		return !FindVa() && eexp().IsInt();
+	}
+
 
     YesNoMaybe IsMultival() const override;
     void Values(const std::function<bool(const Valuable&)>&) const override;
