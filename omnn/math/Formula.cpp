@@ -104,7 +104,7 @@ namespace math {
             if(is)
             {
                 // check right gauge
-                auto it =p.rbegin();
+                auto it =p.crbegin();
                 if (*it==1)
                     ++it;
                 auto& l = *it;

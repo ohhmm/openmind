@@ -1047,7 +1047,26 @@ namespace
                     }
                 }
             }
-        }
+        } else if (getMaxVaExp() == 2 && size() == 3) {
+            if (is_optimized()) {
+                auto a = cbegin()->Sqrt();
+                auto b = crbegin()->Sqrt();
+                auto sum = a + b;
+                if (operator==(sum.Sq())){
+                    return sum;
+                } else {
+                    auto diff = a - b;
+                    if (operator==(diff.Sq())) {
+                        return diff;
+                    }
+                }
+            } else {
+                OptimizeOn o;
+                auto copy = *this;
+                copy.optimize();
+                return copy.Sqrt();
+            }
+		}
         LOG_AND_IMPLEMENT("square root " << get()); // TODO : try to get rid of this call instead by substituting to ^(1_v/2) which is not equivalent to sqrt by the way
                                                     // https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
         return Exponentiation(*this, 1_v/2); // TODO  :  this is wrong  because of https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787

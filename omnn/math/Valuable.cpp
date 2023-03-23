@@ -2102,7 +2102,13 @@ std::string Solid(std::string s) {
 
     Valuable Valuable::IntMod_Less(const Valuable& than) const
 	{
-		return (than - *this).IntMod_IsPositive();
+		return (than - *this).IntMod_IsPositive(); // evaluated to (-1*(Y^2)-1*(X^2)+(Y^2)*((-1*X+Y)%(-1*X+Y-1))+(X^2)*((-1*X+Y)%(-1*X+Y-1))-2*Y*X*((-1*X+Y)%(-1*X+Y-1))+2*Y*X+3*X*((-1*X+Y)%(-1*X+Y-1))-3*Y*((-1*X+Y)%(-1*X+Y-1))+3*Y-3*X+2*((-1*X+Y)%(-1*X+Y-1))-2)
+			// https://www.wolframalpha.com/input?i=%28-1*%28Y%5E2%29-1*%28X%5E2%29%2B%28Y%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B%28X%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2*Y*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B2*Y*X%2B3*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-3*Y*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B3*Y-3*X%2B2*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2%29
+			// (X - Y + 1) (X - Y + 2) ((Y - X) mod (-X + Y - 1) - 1)
+			//
+			// ChatGPT simplified to:
+			// X^2 - Y^2 - X + Y + 1
+			// which seem less valid but lets check
 	}
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
