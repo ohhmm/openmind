@@ -1642,7 +1642,10 @@ std::string Solid(std::string s) {
     }
 
     Valuable& Valuable::sqrt() {
-        return Become(Sqrt());
+        if (exp)
+            return exp->sqrt();
+        else
+            return Become(Sqrt());
     }
 
 	Valuable Valuable::Tg() const {

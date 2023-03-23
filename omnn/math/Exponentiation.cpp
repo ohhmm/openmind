@@ -972,14 +972,17 @@ namespace omnn::math {
     }
 
     Valuable Exponentiation::Sqrt() const {
-        auto copy = *this;
-        return std::move(copy.sqrt());
+        Valuable copy = *this;
+        copy.sqrt();
+        return std::move(copy);
     }
 
     Valuable& Exponentiation::sqrt() {
 		hash ^= _2.Hash();
         _2 /= 2;
         hash ^= _2.Hash();
+        optimized = {};
+        optimize();
         return *this;
     }
 

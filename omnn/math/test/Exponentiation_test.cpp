@@ -92,6 +92,7 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test
     auto a = 4*(x^2)-12*x*y+9*(y^2);
     auto e = a.Sqrt();
     BOOST_TEST(e == 2*x-3*y);
+    BOOST_TEST(e == 3 * y - 2 * x);
 }
 
 BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
