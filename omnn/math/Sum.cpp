@@ -958,7 +958,7 @@ namespace
         return Become(std::move(sum));
     }
 
-    Sum::Sum(const std::initializer_list<Valuable>& l)
+    Sum::Sum(std::initializer_list<Valuable> l)
     {
         for (const auto& arg : l)
         {
@@ -969,21 +969,6 @@ namespace
             }
             else
                 this->Add(arg, end());
-        }
-    }
-
-    Sum::Sum(std::initializer_list<Valuable>&& l)
-    {
-        for (auto& a : l)
-        {
-            auto&& arg = std::move(const_cast<Valuable&>(a));
-            if(arg.IsSum()) {
-                auto& a = arg.as<Sum>();
-                for(auto& m: a)
-                    this->Add(std::move(m));
-            }
-            else
-                this->Add(std::move(arg));
         }
     }
 
