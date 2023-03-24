@@ -884,15 +884,18 @@ namespace omnn::math {
 
     std::ostream& Exponentiation::code(std::ostream& out) const
     {
-        if(!getExponentiation().IsInt())
-            IMPLEMENT;
-
-        out << "(1";
-        for (auto i=getExponentiation(); i-->0;) {
-            out << '*' << getBase();
-        }
-        out << ')';
-        
+        if (getExponentiation().IsInt()) {
+            out << "(1";
+            for (auto i = getExponentiation(); i-- > 0;) {
+                out << '*';
+                getBase().code(out);
+            }
+            out << ')';
+        } else {
+            out << "pow(";
+            getBase().code(out) << ',';
+            getExponentiation().code(out) << ')';
+        }       
         return out;
     }
     
