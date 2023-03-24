@@ -76,6 +76,31 @@ Cache::Cached Cache::AsyncFetch(const Valuable &v, bool itIsOptimized) {
   return std::move(task);
 }
 
+Cache::CheckCacheResult Cache::GetOneUsingVarHost(std::string&& key, VarHost::ptr host, bool itIsOptimized) {
+  CheckCacheResult cachedValue;
+#ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
+  std::string value;
+  cachedValue.first = db->Get(leveldb::ReadOptions(), key, &value).ok();
+  if (cachedValue.first) {
+    cachedValue.second = Valuable(value, host, itIsOptimized);
+#ifndef NDEBUG
+//    std::cout << "fetched from cache " << key << " => " << cachedValue.second << std::endl;
+#endif
+    assert(cachedValue.second.is_optimized() == itIsOptimized);
+#ifdef ALLOW_CACHE_UPGRADE
+    auto gotValStr = cachedValue.second.str();
+    if (gotValStr != value) {
+#ifndef NDEBUG
+      std::cout << "upgrading cached value for key " << key << ": " << value << " => " << gotValStr << std::endl;
+#endif
+      AsyncSet(std::string(key), std::move(gotValStr));
+    }
+#endif
+  }
+#endif
+  return cachedValue;
+}
+
 Cache::CheckCacheResult Cache::GetOne(std::string&& key,
                                       Valuable::va_names_t&& vaNames,
                                       bool itIsOptimized) {
