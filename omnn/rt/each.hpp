@@ -1,4 +1,10 @@
 #pragma once
+#if __has_include(<execution>)
+#include <execution>
+#elif __has_include(<experimental/execution>)
+#include <experimental/execution>
+#endif
+
 #include "tasq.h"
 
 template <class T, class F>
