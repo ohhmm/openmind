@@ -4,11 +4,6 @@
 #include "System.h"
 #include "Valuable.h"
 #include <algorithm>
-#if __has_include(<execution>)
-#include <execution>
-#elif __has_include(<experimental/execution>)
-#include <experimental/execution>
-#endif
 #include <future>
 #include <numeric>
 
@@ -89,6 +84,13 @@ bool System::Add(const Valuable& v)
     return isNew;
 }
 
+Valuable::var_set_t System::Vars() const {
+    Valuable::var_set_t _;
+    for (auto& e : equs)
+        e.CollectVa(_);
+    return _;
+}
+
 Valuable::var_set_t System::CollectVa(const Variable& va) const
 {
     Valuable::var_set_t _;
@@ -147,15 +149,14 @@ bool System::Eval(const Variable& va, const Valuable& v)
 bool System::Fetch(const Variable& va)
 {
     bool modified = {};
-    bool fetched = {};
-    
-    if (fetching.find(va) == fetching.end()) {
-        fetching.insert(va);
-    }
-    else {
+
+	if (fetching.find(va) != fetching.end())
         return modified;
-    }
-    
+
+    bool fetched = {};
+
+	fetching.insert(va);
+
     Valuable::var_set_t vars;
     bool again;
     do {
@@ -192,10 +193,9 @@ bool System::Fetch(const Variable& va)
                  modified = fetched || modified;
                  return fetched;
              });
-        
-        fetching.erase(va);
     }
     
+    fetching.erase(va);
     return modified;
 }
 
@@ -336,6 +336,7 @@ System::solutions_t System::Solve(const Variable& va)
                 if (otherVars.empty()) {
                     auto& solved = vEs[va][{}];
                     if (solved.size()) {
+                        solving.erase(va);
                         return solved;
                     }
                 }

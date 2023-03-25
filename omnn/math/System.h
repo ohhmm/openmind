@@ -6,6 +6,8 @@
 #include "Valuable.h"
 #include "Variable.h"
 
+#include <map>
+
 namespace omnn{
 namespace math {
 
@@ -28,18 +30,21 @@ public:
     System& operator<<(const Valuable& v);
     bool Add(const Variable&, const Valuable& v);
     bool Add(const Valuable& v);
+    Valuable::var_set_t Vars() const;
     Valuable::var_set_t CollectVa(const Variable& v) const;
     bool Eval(const Variable&, const Valuable& v);
     bool Fetch(const Variable&);
     solutions_t Solve(const Variable& v);
     
-    bool Validate() {
+    //constexpr 
+	virtual bool Validate() const {
         return true;
     }
     
     void MakeTotalEqu(bool makeTotalEqu) {
         this->makeTotalEqu = makeTotalEqu;
     }
+    constexpr auto MakeTotalEqu() const { return makeTotalEqu; }
 
     constexpr const Valuable& Total() const {
         if (makeTotalEqu)
@@ -47,7 +52,12 @@ public:
         else
             IMPLEMENT
     }
-    
+
+	constexpr const auto& Expressions() const { return equs; }
+
+    auto& Yarns(const Variable& v) { return vEs[v]; }
+    const auto& Known(const Variable& v) { return Yarns(v)[{}]; }
+
 private:
     expressions equs;
     v_es_t vEs;
