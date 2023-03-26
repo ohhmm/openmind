@@ -184,6 +184,66 @@ public:
 
     solutions_t Distinct() const final { return { *this }; }
     Valuable Univariate() const final { return *this; }
+
+    /// <summary>
+    /// 0 or 1
+    /// </summary>
+    /// <returns>0->0, otherwise 1</returns>
+    Valuable BoolIntModNotZero() const override { return ca() == 0 ? 0 : 1; }
+
+    /// <summary>
+    /// IntMod prefix tells that this method is only applicable for variables known to be integer with modulo operation
+    /// applicable
+    /// x%(x-1) is 1 for x>2, is 0 for 2
+    /// </summary>
+    /// <returns>For x meant to be integers, returns an expression that is equal to 0 when x is positive</returns>
+    Valuable IntMod_IsPositive() const override { return ca() > 0 ? 0 : 1; }
+
+    /// <summary>
+    /// (this < 0) - the int is negative
+    /// </summary>
+    /// <returns>bool</returns>
+    Valuable IntMod_Negative() const override { return ca() < 0 ? 0 : 1; }
+
+    /// <summary>
+    /// Getting sign of the assumed integer
+    /// </summary>
+    /// <param name="a"></param>
+    /// <returns>-1, 0, 1</returns>
+    Valuable IntMod_Sign() const override { return ca() < 0 ? -1 : (ca() > 0 ? 1 : 0); }
+
+    /// <summary>
+    /// Converts the operator to boolean
+    /// </summary>
+    /// <returns>An expression that evaluates to 1 or 0 value</returns>
+    Valuable ToBool() const override { return ca() == 0 ? 1 : 0; }
+
+    /// <summary>
+    /// (x-1)%x is -1 for negative numbers only
+    /// (x-1)%x is undefined for zero
+    /// (x-1)%x is x-1 for positive integers
+    /// </summary>
+    /// <returns></returns>
+    Valuable IntMod_IsNegativeOrZero() const override { return ca() <= 0 ? 0 : 1; }
+
+    /// <summary>
+    /// Operator 'less' then value to which a param expression is to be evaluated
+    /// IntMod prefix tells that this method is only applicable for variables known to be integer
+    /// Modulo operation may be used
+    /// </summary>
+    /// <param name="than">the param to compare that the object is less then the param</param>
+    /// <returns>An expression that equals zero only when the object is less then param</returns>
+    Valuable IntMod_Less(const Valuable& than) const override {
+        if (than.IsInt())
+            return ca() < than.ca() ? 0 : 1;
+        else if (than.IsSimpleFraction())
+            return than > *this ? 1 : 0;
+        else
+			return base::IntMod_Less(than);
+	}
+
+    Valuable MustBeInt() const override { return 0; }
+
 private:
 	base_int arbitrary = 0;
 };

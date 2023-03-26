@@ -70,7 +70,9 @@ void Modulo::optimize() {
         }
     } else if (_2.IsInt()) {
         if (_2 == constants::zero) {
-			IMPLEMENT
+			// FIXME: upstream math theory for the remainder of division by zero (x mod 0)
+			// TODO : keeping this makes IntMod ops work 
+			//IMPLEMENT
             Become(std::move(_1));
         }
         else if (_1.IsInt()) {
