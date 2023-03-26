@@ -39,30 +39,31 @@ BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test) {
     auto isZero = d / -d + 1;
 
 
-    auto L = X.IntMod_Less(Y)
-				//.ToBool()
+    auto IntLessOperator = X.IntMod_Less(Y)//.ToBool()
+        //(X - Y + 1)*(X - Y + 2)*((Y - X) %(-X + Y - 1) - 1)
 				;
-    std::cout << "X<Y = " << L << std::endl;
+    std::cout << "X<Y = " << IntLessOperator << std::endl;
     for (auto x = 10; x-- > 1;) {
         for (auto y = 10; y-- > 1;) {
-            auto less = x < y;
-            auto l = L;
+            auto isLess = x < y;
+            auto lessOperatorInstantiation = IntLessOperator;
             {
                 Valuable::OptimizeOff oo;
                 std::cout << '\n' << x << '<' << y << " = ";
-                l.eval({{X, x}, {Y, y}});
-                std::cout << " expression that must be equal to zero when true: " << l << std::endl;
+                lessOperatorInstantiation.eval({{X, x}, {Y, y}});
+                std::cout << " expression that must be equal to zero when true: " << lessOperatorInstantiation << std::endl;
             }
-            l.optimize();
-            auto b = l.IsInt() && l.ca() == 0
-					//.ToBool()
-					;
-            std::cout << std::endl << "Is " << x << '<' << y << " : " << l << std::endl;
+            lessOperatorInstantiation.optimize();
+            std::cout << std::endl << "Is " << x << '<' << y << " : " << lessOperatorInstantiation << std::endl;
+
+			auto boolLessOp = lessOperatorInstantiation.ToBool();
+            BOOST_TEST(boolLessOp.IsInt());
+            BOOST_TEST(lessOperatorInstantiation.IsInt());
+            auto b = lessOperatorInstantiation.IsInt() && lessOperatorInstantiation.ca() == 0;
             std::cout << std::endl << x << '<' << y << " = " << b << std::endl;
-            
+            BOOST_TEST(boolLessOp == b);
 
-
-            auto ok = l.IsInt() && b == less;
+            auto ok = lessOperatorInstantiation.IsInt() && b == isLess;
             if (!ok) {
                 std::cout << "X=" << x << " Y=" << y << ' ' << ok << " bool: " << b << std::endl;
                 BOOST_TEST(ok);

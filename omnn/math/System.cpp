@@ -188,11 +188,11 @@ bool System::Fetch(const Variable& va)
     if (!fetched) {
         vars.erase(va);
         each(vars,
-             [&](auto& v){
-                 auto fetched = Fetch(v);
-                 modified = fetched || modified;
-                 return fetched;
-             });
+			[&](auto& v){
+				auto fetchModified = Fetch(v);
+				modified = fetchModified || modified;
+				return fetchModified;
+			});
     }
     
     fetching.erase(va);
