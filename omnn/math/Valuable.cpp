@@ -2075,37 +2075,57 @@ std::string Solid(std::string s) {
 
 	Valuable Valuable::BoolIntModNotZero() const
 	{
-        auto sign = IntMod_Sign();
-        return std::move(sign.sq());
+        if (exp)
+            return exp->BoolIntModNotZero();
+        else
+            return IntMod_Sign().sq();
 	}
 
     Valuable Valuable::IntMod_Negative() const
 	{
-		// 1 - (*this % (*this - 1)) * ((*this - 1) % *this);
-        return (*this * constants::minus_1).IntMod_IsPositive();
+        if (exp)
+            return exp->IntMod_Negative();
+        else
+            // 1 - (*this % (*this - 1)) * ((*this - 1) % *this);
+			return (*this * constants::minus_1).IntMod_IsPositive();
 	}
 
     Valuable Valuable::IntMod_Sign() const
 	{
-        // ((*this % a) - *this) * -1 / a;
-        return IntMod_IsPositive().ToBool() - IntMod_Negative().ToBool();
+        if (exp)
+            return exp->IntMod_Sign();
+        else
+            // ((*this % a) - *this) * -1 / a;
+			return IntMod_IsPositive().ToBool() - IntMod_Negative().ToBool();
 	}
 
     Valuable Valuable::IntMod_IsPositive() const
 	{
-        return Equals(constants::one)
-			|| Equals(constants::two)
-			|| (*this % (*this + constants::minus_1)).Equals(constants::one);
+        if (exp)
+            return exp->IntMod_IsPositive();
+        else {
+			return Equals(constants::one)
+				|| Equals(constants::two)
+				|| (*this % (*this + constants::minus_1)).Equals(constants::one);
+		}
     }
 
     Valuable Valuable::ToBool() const
 	{
-		return Ifz(constants::one, constants::zero);
+        if (exp)
+            return exp->ToBool();
+        else {
+            static const Variable b;
+            return Ifz(b.Equals(constants::one), b)(b);
+        }
 	}
 
     Valuable Valuable::IntMod_Less(const Valuable& than) const
 	{
-		return (than - *this).IntMod_IsPositive(); // evaluated to (-1*(Y^2)-1*(X^2)+(Y^2)*((-1*X+Y)%(-1*X+Y-1))+(X^2)*((-1*X+Y)%(-1*X+Y-1))-2*Y*X*((-1*X+Y)%(-1*X+Y-1))+2*Y*X+3*X*((-1*X+Y)%(-1*X+Y-1))-3*Y*((-1*X+Y)%(-1*X+Y-1))+3*Y-3*X+2*((-1*X+Y)%(-1*X+Y-1))-2)
+        if (exp)
+            return exp->IntMod_Less(than);
+        else
+			return (than - *this).IntMod_IsPositive(); // evaluated to (-1*(Y^2)-1*(X^2)+(Y^2)*((-1*X+Y)%(-1*X+Y-1))+(X^2)*((-1*X+Y)%(-1*X+Y-1))-2*Y*X*((-1*X+Y)%(-1*X+Y-1))+2*Y*X+3*X*((-1*X+Y)%(-1*X+Y-1))-3*Y*((-1*X+Y)%(-1*X+Y-1))+3*Y-3*X+2*((-1*X+Y)%(-1*X+Y-1))-2)
 			// https://www.wolframalpha.com/input?i=%28-1*%28Y%5E2%29-1*%28X%5E2%29%2B%28Y%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B%28X%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2*Y*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B2*Y*X%2B3*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-3*Y*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B3*Y-3*X%2B2*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2%29
 			// (X - Y + 1) (X - Y + 2) ((Y - X) mod (-X + Y - 1) - 1)
 			//
@@ -2120,11 +2140,15 @@ std::string Solid(std::string s) {
     }
 
     Valuable Valuable::MustBeInt() const {
-        using namespace constants;
-        return
-            //one.Equals(*this % one);
-		    //or
-            (e ^ (*this * 2 * i * pi)) - 1;   // FIXME: check if all required optimizations ready to make this to be useful https://math.stackexchange.com/a/1598552/118612
+        if (exp)
+            return exp->MustBeInt();
+        else {
+			using namespace constants;
+			return
+				//one.Equals(*this % one);
+				//or
+				(e ^ (*this * 2 * i * pi)) - 1;   // FIXME: check if all required optimizations ready to make this to be useful https://math.stackexchange.com/a/1598552/118612
+		}
     }
 
     std::function<bool(std::initializer_list<Valuable>)> Valuable::Functor() const {

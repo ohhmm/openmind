@@ -1107,7 +1107,12 @@ namespace omnn::math {
                             auto branchDistinct = (branch ^ eexp()).Distinct();
                             branches.insert(branchDistinct.begin(), branchDistinct.end());
                         }
-                    } else {
+                    } else if(denom == constants::two) {
+                        auto branch = exponentiationBase.Sqrt() * f.numerator();
+                        branches.emplace(-branch);
+                        branches.emplace(std::move(branch));
+                    }
+                    else {
                         LOG_AND_IMPLEMENT("Distinct for " << *this);
                     }
                 } else {

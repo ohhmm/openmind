@@ -1047,7 +1047,7 @@ namespace
                     }
                 }
             }
-        } else if (getMaxVaExp() == 2 && size() == 3) {
+        } else if (getMaxVaExp() == 2 && (size() == 3 || size() == 2)) {
             if (is_optimized()) {
                 auto it = cbegin();
                 auto a = it++->Sqrt();
