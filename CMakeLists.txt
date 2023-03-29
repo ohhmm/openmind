@@ -209,11 +209,13 @@ endif()
 if(GIT_EXECUTABLE)
 	add_custom_target(update
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash 
-		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin HEAD
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
-	set_target_properties(update PROPERTIES FOLDER "util")
+	set_target_properties(update PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util")
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
@@ -221,7 +223,10 @@ if(GIT_EXECUTABLE)
 			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind main
 			COMMAND ${GIT_EXECUTABLE} fetch --all
 		)
-		set_target_properties(update-openmind PROPERTIES FOLDER "util")
+		set_target_properties(update-openmind PROPERTIES
+			EXCLUDE_FROM_ALL 1
+			EXCLUDE_FROM_DEFAULT_BUILD 1
+			FOLDER "util")
 		add_dependencies(update update-openmind)
 	endif()
 endif()
