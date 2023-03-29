@@ -12,9 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Check for dockerenv file
-        run: (ls /.dockerenv && echo Found dockerenv) || (echo No dockerenv)
-        run: which clang++
-        run: clang++ -v
+        run: (ls /.dockerenv && echo Found dockerenv && which clang++) || (echo No dockerenv)
 
       - name: Create Build Dir
         run: cmake -E make_directory ./build
@@ -25,7 +23,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Debug \
           -DCMAKE_CXX_COMPILER=/usr/lib/llvm/17/bin/clang++ -DCMAKE_C_COMPILER=/usr/lib/llvm/17/bin/clang \
           -DOPENMIND_BUILD_SAMPLES=OFF \
-          -DOPENMIND_BUILD_TESTS=ON
+          -DOPENMIND_BUILD_TESTS=ON \
 
       - name: Install prerequisites
         working-directory: ./build
