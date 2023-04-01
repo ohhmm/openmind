@@ -296,16 +296,11 @@ namespace math {
         {
             if (it->IsSum())
             {
-                auto sum = std::move(const_cast<Valuable&&>(*it));
-                sum.optimize();
-                Delete(it);
-//                auto was = optimizations;
-//                optimizations = false;
-                for (auto& it : members)
+                auto sum = std::move(members.extract(it).value());
+                for (auto& m : members)
                 {
-                    sum *= it;
+                    sum *= m;
                 }
-//                optimizations = was;
                 Become(std::move(sum));
                 return;
             }
@@ -896,6 +891,7 @@ namespace math {
                 OptimizeOff oo;
                 for (auto& i : v.as<Product>())
                     *this /= i;
+                optimized = {};
             }
             optimize();
             return *this;
