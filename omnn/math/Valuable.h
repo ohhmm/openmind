@@ -135,13 +135,14 @@ protected:
     max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
 public:
-    enum View
+    enum class View
     {
         None,
         Calc,
         Condensed,
         Equation,
         Flat,
+		Fraction,
         Solving,
     };
 

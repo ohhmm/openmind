@@ -252,7 +252,7 @@ namespace
                 }
             }
             
-            if (view == Equation) {
+            if (view == View::Equation) {
                 auto& coVa = getCommonVars();
                 if (coVa.size()) {
                     *this /= VaVal(coVa);
@@ -656,7 +656,7 @@ namespace
 	{
         Valuable s = 0_v;
         auto view = GetView();
-        SetView(None);
+        SetView(View::None);
 		if (v.IsSum())
 		{
             auto& i = v.as<Sum>();
@@ -1394,7 +1394,7 @@ namespace
                     else
                     {
                         auto solving = as<Sum>();
-                        solving.SetView(Solving);
+                        solving.SetView(View::Solving);
                         OptimizeOn on;
                         solving.optimize();
                         LOG_AND_IMPLEMENT("Solving: " << stodo << " = " << _);

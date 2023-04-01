@@ -426,7 +426,7 @@ namespace omnn::math {
                     break;
                 }
                 default:
-                	LOG_AND_IMPLEMENT(str() << " mode is " << view);
+                	LOG_AND_IMPLEMENT(*this << " mode is " << static_cast<int>(view));
             }
         }
 
