@@ -27,10 +27,23 @@ macro(find_pkg)
 		find_package(${dep}
 			HINTS ${hints}
 			)
+
+		if(NOT ${dep}_FOUND)
+			find_library(${dep}_LIBRARIES
+				NAMES ${dep}.framework ${dep} lib${dep} ${dep}lib lib${dep}lib
+				HINTS ${hints}
+				)
+			if(${dep}_LIBRARIES AND EXISTS ${${dep}_LIBRARIES})
+				message("${dep}_LIBRARIES: ${${dep}_LIBRARIES} with HINTS ${hints}")
+				set(${dep}_FOUND ON)
+			endif()
+		endif()
+
 		message("${dep}_FOUND:${${dep}_FOUND} with HINTS ${hints}")
 		if(${dep}_FOUND)
 			break()
 		endif()
+
 	endforeach()
 endmacro()
 
