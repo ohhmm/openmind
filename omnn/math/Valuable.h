@@ -16,10 +16,8 @@
 #include <typeindex>
 #include <unordered_set>
 
-//#include <boost/shared_ptr.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/stringize.hpp>
+#include <boost/preprocessor.hpp>
 #include <boost/rational.hpp>
 
 #define _NUM2STR(x) #x
@@ -136,6 +134,7 @@ protected:
 
 public:
     enum class View
+		: uint8_t
     {
         None,
         Calc,
@@ -145,6 +144,10 @@ public:
 		Fraction,
         Solving,
     };
+
+	friend std::ostream& operator<<(std::ostream& os, View v) {
+		return os << static_cast<uint8_t>(v);
+	}
 
     enum class YesNoMaybe : uint8_t {
         Yes = 0b1, Maybe = 0b10, No = 0b100
