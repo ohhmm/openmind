@@ -1022,7 +1022,7 @@ namespace
 
     Valuable Sum::Sqrt() const
     {
-        if (!optimizations) {
+        if (!optimizations || !is_optimized()) {
             OptimizeOn o;
             auto copy = *this;
             copy.optimize();
@@ -1048,24 +1048,17 @@ namespace
                 }
             }
         } else if (getMaxVaExp() == 2 && (size() == 3 || size() == 2)) {
-            if (is_optimized()) {
-                auto it = cbegin();
-                auto a = it++->Sqrt();
-                auto b = it->Sqrt();
-                auto sum = a + b;
-                if (operator==(sum.Sq())){
-                    return sum;
-                } else {
-                    auto diff = a - b;
-                    if (operator==(diff.Sq())) {
-                        return diff;
-                    }
-                }
+            auto it = cbegin();
+            auto a = it++->Sqrt();
+            auto b = it->Sqrt();
+            auto sum = a + b;
+            if (operator==(sum.Sq())){
+                return sum;
             } else {
-                OptimizeOn o;
-                auto copy = *this;
-                copy.optimize();
-                return copy.Sqrt();
+                auto diff = a - b;
+                if (operator==(diff.Sq())) {
+                    return diff;
+                }
             }
 		}
         LOG_AND_IMPLEMENT("square root " << get()); // TODO : try to get rid of this call instead by substituting to ^(1_v/2) which is not equivalent to sqrt by the way
