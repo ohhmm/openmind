@@ -45,6 +45,11 @@ Valuable MinusOneSq::Sq() const {
     return Integer(-1);
 }
 
+Valuable MinusOneSq::Sign() const {
+	// TODO: "prove" that the i is not the value that should be returned here... 
+	return constants::one; // in dinstinction between sign as dirrection and dimmension towards the dirrection, decided that the complex plane is a dimmension while +1 is its dirrection towards "increasing" raltively to zero
+}
+
 Valuable& MinusOneSq::sq() {
     return Become(Sq());
 }
