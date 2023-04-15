@@ -28,6 +28,8 @@ namespace omnn::math {
         
         Valuable& sq() override;
         Valuable Sq() const override;
+
+		Valuable Sign() const override;
     };
 
     namespace constant {

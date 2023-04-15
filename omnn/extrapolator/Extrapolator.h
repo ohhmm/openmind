@@ -2,15 +2,11 @@
 // Created by Сергей Кривонос on 10.08.17.
 //
 #pragma once
-#include "Valuable.h"
 #include <algorithm>
 #include <initializer_list>
 #include <limits>
 #include <limits.h>
 #include <type_traits>
-
-//#include "Equation.h"
-//#include "Expression.h"
 
 #include <omnn/math/FormulaOfVaWithSingleIntegerRoot.h>
 

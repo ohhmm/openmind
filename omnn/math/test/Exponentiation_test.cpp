@@ -88,10 +88,11 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test
                      ,*disabled()
                      )
 {
-    Variable x,y;
-    auto a = 4*(x^2)-12*x*y+9*(y^2);
+    DECL_VA(x);
+    DECL_VA(y);
+    auto a = 4 * (x ^ 2) - 12 * x * y + 9 * (y ^ 2);
     auto e = a.Sqrt();
-    BOOST_TEST(e == 2*x-3*y);
+    BOOST_TEST(e == 2 * x - 3 * y);
     BOOST_TEST(e == 3 * y - 2 * x);
 }
 
