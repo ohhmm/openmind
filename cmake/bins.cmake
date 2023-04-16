@@ -3,12 +3,28 @@ include(fold)
 include(qtect)
 
 if(WIN32)
-	set(platform windows)
+	set(platform windows CACHE STRING "")
 elseif(APPLE)
-	set(platform apple)
+	set(platform apple CACHE STRING "")
 else()
-	set(platform posix)
+	set(platform posix CACHE STRING "")
 endif()
+
+macro(get_target_name)
+    get_filename_component(${ARGN} ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+	block()
+		set(dir ${CMAKE_CURRENT_SOURCE_DIR})
+		while(${ARGN} STREQUAL platform)
+			get_filename_component(dir ${dir} DIRECTORY)
+			get_filename_component(${ARGN} ${dir} NAME)
+		endwhile()
+	endblock()
+	unset(${ARGN}_n)
+	while(TARGET ${${ARGN}}${${ARGN}_n})
+		math(EXPR ${ARGN}_n "${${ARGN}_n} + 1")
+	endwhile()
+	set(${ARGN} ${${ARGN}}${${ARGN}_n})
+endmacro(get_target_name)
 
 macro(glob_source_files)
 	file(GLOB headers *.h *.hpp *.inc *.hxx)
@@ -28,6 +44,11 @@ macro(glob_source_files)
 
 		file(GLOB platform_specific_qtsrc ${platform}/*.qrc)
 		list(APPEND qtsrc ${platform_specific_qtsrc})
+	else()
+		unset(platform_specific_headers)
+		unset(platform_specific_src)
+		unset(platform_specific_qmlsrc)
+		unset(platform_specific_qtsrc)
 	endif()
 endmacro(glob_source_files)
 
@@ -78,6 +99,10 @@ function(apply_target_commons this_target)
 			$<$<CONFIG:Release>:/MT>
 			$<$<CONFIG:RelWithDebInfo>:/ZI>
 			)
+		#target_compile_options(${this_target} PUBLIC REMOVE
+		#	$<$<CONFIG:DEBUG>:/Zi>
+		#	$<$<CONFIG:RelWithDebInfo>:/Zi>
+		#)
 		target_link_options(${this_target} PUBLIC
 			$<$<CONFIG:DEBUG>:/LTCG:OFF>
 			$<$<CONFIG:RelWithDebInfo>:/LTCG:OFF>
@@ -203,7 +228,7 @@ endfunction()
 
 macro(lib)
     string(STRIP "${ARGN}" deps)
-    get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    get_target_name(this_target)
     set(${this_target}_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE FILEPATH "${this_target} include path")
     project(${this_target})
     message("\nCreating Library: ${this_target}")
@@ -267,12 +292,7 @@ endmacro()
 macro(exe)
     string(STRIP "${ARGN}" deps)
 
-    get_filename_component(this_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-	unset(this_target_n)
-	while(TARGET ${this_target}${this_target_n})
-		math(EXPR this_target_n "${this_target_n} + 1")
-	endwhile()
-	set(this_target ${this_target}${this_target_n})
+    get_target_name(this_target)
 
     project(${this_target})
     message("\nCreating Executable: ${this_target}")
