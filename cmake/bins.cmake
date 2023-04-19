@@ -130,6 +130,7 @@ function(apply_target_commons this_target)
 		endif()
 	endif()
 
+	target_include_directories(${this_target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 	if(Boost_INCLUDE_DIR)
 		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
 	endif()
