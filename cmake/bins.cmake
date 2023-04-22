@@ -109,7 +109,6 @@ function(apply_target_commons this_target)
 			)
 		message("${CMAKE_BINARY_DIR}/bin")
 	    target_link_directories(${this_target} PUBLIC
-			${CMAKE_BINARY_DIR}/bin
 			${Boost_INCLUDE_DIR}/stage/lib
 			${EXTERNAL_FETCHED_BOOST}/stage/lib
 			C:/Boost/lib
@@ -143,6 +142,7 @@ function(apply_target_commons this_target)
 
     target_link_directories(${this_target} PUBLIC
 		${Boost_LIBRARY_DIRS}
+		${CMAKE_BINARY_DIR}/bin
 		)
 
 	get_target_property(target_type ${this_target} TYPE)
