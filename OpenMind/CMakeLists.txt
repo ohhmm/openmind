@@ -1,34 +1,19 @@
 cmake_minimum_required(VERSION 3.14)
 
-SET (this_target OpenMind)
+include(bins)
+include(pch)
+
+get_target_name(this_target)
 PROJECT(${this_target})
 
+IF (NOT Boost_FOUND)
+	FIND_PACKAGE(Boost)
+ENDIF()
 
-## section: Macro
-MACRO(ADD_MSVC_PRECOMPILED_HEADER PrecompiledHeader PrecompiledSource SourcesVar)
-  IF(MSVC)
-    GET_FILENAME_COMPONENT(PrecompiledBasename ${PrecompiledHeader} NAME_WE)
-    SET(PrecompiledBinary "${CMAKE_CURRENT_BINARY_DIR}/${PrecompiledBasename}.pch")
-    SET(Sources ${${SourcesVar}})
-
-    SET_SOURCE_FILES_PROPERTIES(${PrecompiledSource}
-                                PROPERTIES COMPILE_FLAGS "/Yc\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\""
-                                           OBJECT_OUTPUTS "${PrecompiledBinary}")
-    SET_SOURCE_FILES_PROPERTIES(${Sources}
-                                PROPERTIES COMPILE_FLAGS "/Yu\"${PrecompiledBinary}\" /FI\"${PrecompiledBinary}\" /Fp\"${PrecompiledBinary}\""
-                                           OBJECT_DEPENDS "${PrecompiledBinary}")  
-    # Add precompiled header to SourcesVar
-    LIST(APPEND ${SourcesVar} ${PrecompiledSource})
-  ENDIF(MSVC)
-ENDMACRO(ADD_MSVC_PRECOMPILED_HEADER)
-
-#FIND_PACKAGE(Boost)
 IF (Boost_FOUND)
     ADD_DEFINITIONS( "-DHAS_BOOST" )
     SET(Boost_USE_STATIC_LIBS ON)
 ENDIF()
-
-add_definitions(-DUNICODE -D_UNICODE)
 
 file(GLOB ${this_target}_SOURCE_FILES *.cpp)
 
@@ -143,21 +128,9 @@ SET_SOURCE_FILES_PROPERTIES(${this_target}_HEADER_FILES
 LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 
 #add_definitions( -DBOOST_ALL_DYN_LINK )
-
-## section: add definitions
-#   add prefix -D. example> -DSHP
-#  - DO NOT add  the following definitions(already defined in ${OSP_DEFINITIONS}:
-#   -DSHP, -DWIN32, -D_WINDOWS, -D_DEBUG, -D_USRDLL, -D_CRT_SECURE_NO_DEPRECATE
 IF(NOT MSVC)
 	ADD_DEFINITIONS(-pthread)
 ENDIF(NOT MSVC)
-#    -DWIN32
-#	-D_DEBUG
-#	-D_WINDOWS
-#    )
-
-## section: add target
-
 
 add_library(${this_target} ${${this_target}_SOURCE_FILES})
 file(GLOB headers *.h *.hpp *.inc)
@@ -168,16 +141,14 @@ set_target_properties(${this_target} PROPERTIES
 	PUBLIC_HEADER "${headers}"
 	)
 
-
 if(UNIX)
-	find_package(X11)
-	if(X11_FOUND AND X11_Xss_FOUND)
-		target_link_libraries(${this_target} PUBLIC X11::Xss)
-	else()
-		message(WARNING "X11_FOUND, X11_Xss_FOUND: ${X11_FOUND}, ${X11_Xss_FOUND}")
-	endif()
+	dep(X11::Xss)
 endif(UNIX)
 
+target_compile_definitions(${this_target} PUBLIC
+	UNICODE
+	_UNICODE
+	)
 
 target_include_directories(${this_target} PUBLIC
     ${CMAKE_SOURCE_DIR}
@@ -189,8 +160,6 @@ endif()
 if(Boost_INCLUDE_DIRS)
 	target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
 endif()
-
-target_link_directories(${this_target} PUBLIC ${CMAKE_BINARY_DIR}/lib)
 
 target_link_libraries(${this_target} PUBLIC math)
 

@@ -70,6 +70,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 	"${CMAKE_SOURCE_DIR}/cmake"
 	)
 include(bins)
+
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_DEBUG_CHECKS "Additional debug checks (NOOMDEBUG define)" ${_IS_DEBUG})
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
@@ -78,9 +79,6 @@ option(OPENMIND_BUILD_3RD_PARTY_TESTS "Build various 3rd party TESTS to compare 
 option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc source code file during CPU cores idle" ${_IS_DEBUG})
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_QT "Link Qt libs" OFF)
-if(OPENMIND_USE_QT)
-	qtect()
-endif()
 
 find_package(PkgConfig)
 option(OPENMIND_USE_PKG_CONFIG_DEPS "Use pkg-config dependencies" ${PKG_CONFIG_FOUND})
