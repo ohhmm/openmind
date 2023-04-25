@@ -53,7 +53,6 @@ macro(glob_source_files)
 
 		file(GLOB platform_specific_pch ${platform}/pch.h ${platform}/stdafx.h)
 		file(GLOB platform_specific_pcs ${platform}/pch.cpp ${platform}/stdafx.cpp)
-
 	else()
 		unset(platform_specific_src)
 		unset(platform_specific_resources)
@@ -62,6 +61,36 @@ macro(glob_source_files)
 		unset(platform_specific_pcs)
 		unset(platform_specific_pch)
 		unset(platform_specific_headers)
+	endif()
+
+	if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src
+		AND NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt
+	)
+		file(GLOB src_dir_headers src/*.h src/*.hpp src/*.inc src/*.hxx)
+		list(APPEND headers ${src_dir_headers})
+
+		file(GLOB src_dir_src src/*.cpp src/*.c src/*.CC src/*.cc)
+		list(APPEND src ${src_dir_src})
+
+		file(GLOB src_dir_qmlsrc src/*.qml)
+		list(APPEND qmlsrc ${src_dir_qmlsrc})
+
+		file(GLOB src_dir_qtsrc src/*.qrc)
+		list(APPEND qtsrc ${src_dir_qtsrc})
+
+		file(GLOB src_dir_resources src/*.rc)
+		list(APPEND resources ${src_dir_resources})
+
+		file(GLOB src_dir_pch src/pch.h src/stdafx.h)
+		file(GLOB src_dir_pcs src/pch.cpp src/stdafx.cpp)
+	else()
+		unset(src_dir_src)
+		unset(src_dir_resources)
+		unset(src_dir_qtsrc)
+		unset(src_dir_qmlsrc)
+		unset(src_dir_pcs)
+		unset(src_dir_pch)
+		unset(src_dir_headers)
 	endif()
 endmacro(glob_source_files)
 
