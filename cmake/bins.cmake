@@ -28,7 +28,8 @@ endmacro(get_target_name)
 
 macro(glob_source_files)
 	file(GLOB headers *.h *.hpp *.inc *.hxx)
-    file(GLOB src *.cpp *.c *.CC *.cc)
+    file(GLOB pch pch.h stdafx.h)
+    file(GLOB pcs pch.cpp stdafx.cpp)
     file(GLOB qmlsrc *.qml)
     file(GLOB qtsrc *.qrc)
     file(GLOB resources *.rc)
@@ -46,11 +47,21 @@ macro(glob_source_files)
 
 		file(GLOB platform_specific_qtsrc ${platform}/*.qrc)
 		list(APPEND qtsrc ${platform_specific_qtsrc})
+
+		file(GLOB platform_specific_resources ${platform}/*.rc)
+		list(APPEND resources ${platform_specific_resources})
+
+		file(GLOB platform_specific_pch ${platform}/pch.h ${platform}/stdafx.h)
+		file(GLOB platform_specific_pcs ${platform}/pch.cpp ${platform}/stdafx.cpp)
+
 	else()
-		unset(platform_specific_headers)
 		unset(platform_specific_src)
-		unset(platform_specific_qmlsrc)
+		unset(platform_specific_resources)
 		unset(platform_specific_qtsrc)
+		unset(platform_specific_qmlsrc)
+		unset(platform_specific_pcs)
+		unset(platform_specific_pch)
+		unset(platform_specific_headers)
 	endif()
 endmacro(glob_source_files)
 
