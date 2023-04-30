@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
 include(bins)
-include(pch)
 
 get_target_name(this_target)
 PROJECT(${this_target})
@@ -17,40 +16,34 @@ ENDIF()
 
 file(GLOB ${this_target}_SOURCE_FILES *.cpp)
 
-if(MSVC)
-	list(APPEND ${this_target}_SOURCE_FILES RunProcess.cpp)
-endif(MSVC)
-
-## section: header files
-# Add your header files here(one file per line), please SORT in alphabetical order for future maintenance!
 SET(${this_target}_HEADER_FILES
-    Mind.h
     ArithmeticFacility.h
-	stdafx.h
-	targetver.h
+	ConsoleGeneratorProxy.h
 	Facility.h
 	FunctorFacility.h
-	ReachGoal.h
-	RunProcess.h
-	Goal.h
-	Solver.h
-	WaitForComputerIdle.h
 	GeneralGoalGenerator.h
+	GeneratorProxy.h
+	Goal.h
 	GoalGenerator.h
 	GoalGeneratorBase.h
 	IdleTimeGoalGenerator.h
-	SingletonGoalGenerator.h
-	ConsoleGeneratorProxy.h
-	GeneratorProxy.h
+    Mind.h
 	Named.h
+	ReachGoal.h
+	RunProcess.h
+	SingletonGoalGenerator.h
+	Solver.h
+	stdafx.h
+	targetver.h
 	trie.h
+	WaitForComputerIdle.h
     )
 
 SOURCE_GROUP("Header Files" FILES 
-	Mind.h
-	Resource.h
-	stdafx.h
 	targetver.h
+	stdafx.h
+	Resource.h
+	Mind.h
 	)
 SOURCE_GROUP("Util\\GeneralClasses" FILES 
 	Named.cpp
@@ -60,22 +53,22 @@ SOURCE_GROUP("Util\\Sync" FILES
 	
 	)
 SOURCE_GROUP("Generic" FILES 
-	trie.cpp
-	trie.h
 	Context.cpp
 	Context.h
+	trie.cpp
+	trie.h
 	)
 SOURCE_GROUP("Util" FILES 
 	
 	)
 SOURCE_GROUP("Util\\HelperFunctors" FILES 
-	RiseEventFn.cpp
 	RiseEventFn.h
+	RiseEventFn.cpp
 	)
 SOURCE_GROUP("Goals\\GoalGenerators\\GeneratorProxy" FILES 
 	ConsoleGeneratorProxy.cpp
-	GeneratorProxy.cpp
 	ConsoleGeneratorProxy.h
+	GeneratorProxy.cpp
 	GeneratorProxy.h
 	)
 SOURCE_GROUP("Source Files" FILES 
@@ -84,33 +77,33 @@ SOURCE_GROUP("Source Files" FILES
 	stdafx.cpp
 	)
 SOURCE_GROUP("Solvers" FILES 
-	Solver.cpp
 	Solver.h
+	Solver.cpp
 	)
 SOURCE_GROUP("Goals" FILES 
 	Goal.cpp
-	WaitForComputerIdle.cpp
 	Goal.h
+	WaitForComputerIdle.cpp
 	WaitForComputerIdle.h
 	)
 SOURCE_GROUP("Facilities" FILES
-	Facility.cpp
-	FunctorFacility.cpp
-	ReachGoal.cpp
-	RunProcess.cpp
 	ArithmeticFacility.cpp
 	ArithmeticFacility.h
+	Facility.cpp
 	Facility.h
+	FunctorFacility.cpp
 	FunctorFacility.h
+	ReachGoal.cpp
 	ReachGoal.h
+	RunProcess.cpp
 	RunProcess.h
 	)
 SOURCE_GROUP("Goals\\GoalGenerators" FILES 
-	GoalGenerator.cpp
-	IdleTimeGoalGenerator.cpp
 	GeneralGoalGenerator.h
+	GoalGenerator.cpp
 	GoalGenerator.h
 	GoalGeneratorBase.h
+	IdleTimeGoalGenerator.cpp
 	IdleTimeGoalGenerator.h
 	SingletonGoalGenerator.h
 	)
