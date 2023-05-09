@@ -383,6 +383,9 @@ public:
     virtual solutions_t GetIntegerSolution(const Variable& va) const;
     bool Test(const Variable& va, const Valuable& v) const;
 
+    virtual Valuable SumOfRoots() const;
+    virtual Valuable ProductOfRoots() const;
+
     using extrenum_t = std::pair<Valuable, // extrema: value = x for f'(x) == 0, points where function is changing direction
                             std::pair<  Valuable,// from direction = g''(x), g(x)=f(-x), has previous direction sign
                                         Valuable // to direction = f''(x), has new direction sign

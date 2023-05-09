@@ -1331,6 +1331,20 @@ std::string Solid(std::string s) {
         return t==0;
     }
 
+    Valuable Valuable::SumOfRoots() const {
+        if (exp) {
+            return exp->SumOfRoots();
+        } else
+            IMPLEMENT
+    }
+
+    Valuable Valuable::ProductOfRoots() const {
+        if (exp) {
+            return exp->ProductOfRoots();
+        } else
+            IMPLEMENT
+    }
+
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
     using ranges_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
 
