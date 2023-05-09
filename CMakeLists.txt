@@ -104,7 +104,7 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.82.0 CACHE STRING "Boost library version to use")
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 

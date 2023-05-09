@@ -16,17 +16,17 @@ jobs:
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
-      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe"
+      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe"
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build --target prerequisites
+      run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
     - name: Reconfigure to detect newly installed prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake .
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --config Release
     - name: make check
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 240 -C Debug -j %NUMBER_OF_PROCESSORS%
+      run: ctest --timeout 240 -C Release -j %NUMBER_OF_PROCESSORS% 
             #   --rerun-failed --output-on-failure
