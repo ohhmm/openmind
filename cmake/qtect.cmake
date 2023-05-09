@@ -1,3 +1,4 @@
+include(find_local_package)
 
 macro(qtect)
     set(CMAKE_AUTOMOC ON)
@@ -11,6 +12,13 @@ macro(qtect)
         CACHE STRING "Required Qt Components"
         )
     if(NOT QT_FOUND)
+        dep_find_package(Qt)
+        if(NOT Qt_FOUND)
+            dep_find_package(Qt6)
+            if(NOT Qt6_FOUND)
+                dep_find_package(Qt5)
+            endif()
+        endif()
         find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS "${QT_COMPONENTS}")
         find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS "${QT_COMPONENTS}")
         message("QT_FOUND: ${QT_FOUND}")
