@@ -150,12 +150,18 @@ endif()
 set(OPENMIND_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
 
-find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
 	CONFIG
 	HINTS C:/Boost
 	COMPONENTS ${BOOST_USED_COMPONENTS}
 	)
-
+if(NOT Boost_FOUND)
+	find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+		CONFIG
+		HINTS C:/Boost
+		COMPONENTS ${BOOST_USED_COMPONENTS}
+		)
+endif()
 add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
 
