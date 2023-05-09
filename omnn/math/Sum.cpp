@@ -2220,6 +2220,45 @@ namespace
         }
     }
     
+    Valuable Sum::SumOfRoots() const
+    {   // See Viet's basic formulas: https://en.m.wikipedia.org/wiki/Vieta%27s_formulas#Basic_formulas
+        auto vars = Vars();
+        if (vars.size() != 1) {
+                IMPLEMENT
+        }
+        auto& va = *vars.cbegin();
+        std::vector<Valuable> coefficients;
+        auto grade = FillPolyCoeff(coefficients, va);
+        if (coefficients.size() < 2) {
+                IMPLEMENT
+        }
+        auto it = coefficients.begin();
+        auto& lastCoeff = *it;
+        auto& preLastCoeff = *++it;
+        auto sumOfRoots = -(preLastCoeff / lastCoeff);
+        return sumOfRoots;
+    }
+
+    Valuable Sum::ProductOfRoots() const
+    {
+        // See Viet's basic formulas: https://en.m.wikipedia.org/wiki/Vieta%27s_formulas#Basic_formulas
+        auto vars = Vars();
+        if (vars.size() != 1) {
+                IMPLEMENT
+        }
+        auto& va = *vars.cbegin();
+        std::vector<Valuable> coefficients;
+        auto grade = FillPolyCoeff(coefficients, va);
+        if (coefficients.size() < 2) {
+                IMPLEMENT
+        }
+        auto prod = coefficients[0] / *coefficients.rbegin();
+        if (grade % 2) {
+            prod *= -1;
+        }
+        return prod;
+    }
+
     /** fast linear equation formula deduction */
 	Formula Sum::FormulaOfVa(const Variable& v) const
 	{
