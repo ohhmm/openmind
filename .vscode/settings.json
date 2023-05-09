@@ -2,10 +2,13 @@
   "cmake.configureArgs": [
     "-DOPENMIND_BUILD_SAMPLES=OFF",
     "-DOPENMIND_BUILD_TESTS=ON",
-    "-DOPENMIND_REQUIRED_BOOST_VERSION=1.80.0"
+    "-DOPENMIND_REQUIRED_BOOST_VERSION=1.82.0"
     //"-DOPENMIND_MATH_USE_FOUNDATIONDB_CACHE:BOOL=ON",
   ],
-  "cmake.generator": "Ninja",
+  "cmake.configureSettings": {
+    "CMAKE_BUILD_PARALLEL_LEVEL": "${nproc}",
+  },
+  "cmake.generator": "Ninja Multi-Config",
   "extensions": [
     "github.vscode-pull-request-github",
     "googlecloudtools.cloudcode",
