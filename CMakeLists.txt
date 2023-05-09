@@ -63,6 +63,12 @@ else()
     endif()
 endif()
 
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(address_model 64)
+else()
+	set(address_model 32)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
@@ -258,12 +264,6 @@ elseif(OPENMIND_BUILD_BOOST)
     endforeach()
     string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
     message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
-
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(address_model 64)
-    else()
-      set(address_model 32)
-    endif()
 
     set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared ${BOOST_BUILD_PARAMS}")
     if(WIN32)
