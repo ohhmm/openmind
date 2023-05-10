@@ -1,5 +1,19 @@
 # openmind
 
+The OpenMind project is an infrastructure framework which mission is to allow new AGI-related core system with requirements as follows:
+
+1. accumulation of knowledge in universal distributed form
+1. any universal simplified language or math form of communication context
+1. deduces answers
+1. allow input of new information
+1. checks input for absence of contradictions
+1. checks input for acceptability by absence of contradictions with existing 100%-certainty knowledge in its knowledge base
+1. allow requests of known information
+1. allow requests for deductions
+1. knows complete context of self as 100% predictability model
+1. can make modified self copy within required inherited constraints (morphing)
+1. impossible modification or deletion of existing knowledge or constraints 
+
 Compilation:
 
   Debian/Ubuntu:
@@ -55,6 +69,8 @@ Plans:
     lobby of dynamic class generation to C++ standard
     Introduce Neural network support as part of current Facilities framework
     context based neural network serialization and swapping
+  
+
   
 Please Donate to help reach this plans:
 
