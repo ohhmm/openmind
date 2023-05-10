@@ -39,7 +39,7 @@ macro(glob_add_dir_source_files)
         )
 
 		file(GLOB ${varnameprefix}headers ${ARGN}/*.h ${ARGN}/*.hpp ${ARGN}/*.inc ${ARGN}/*.hxx)
-		file(GLOB ${varnameprefix}src ${ARGN}/*.cpp ${ARGN}/*.c ${ARGN}/*.CC ${ARGN}/*.cc)
+		file(GLOB ${varnameprefix}src ${ARGN}/*.cpp ${ARGN}/*.c ${ARGN}/*.CC ${ARGN}/*.cc ${ARGN}/*.m ${ARGN}/*.mm)
 		file(GLOB ${varnameprefix}qmlsrc ${ARGN}/*.qml)
 		file(GLOB ${varnameprefix}qtsrc ${ARGN}/*.qrc)
 		file(GLOB ${varnameprefix}resources ${ARGN}/*.rc)
@@ -374,7 +374,10 @@ macro(exe)
 	if(MSVC)
 		#TODO message("CMAKE_EXE_LINKER_FLAGS: ${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:Windows")
 	endif()
+
     APPLY_TARGET_COMMONS(${this_target})
+	SET_TARGET_PROPERTIES(${this_target} PROPERTIES LINKER_LANGUAGE CXX)
+
     #add_dependencies(${this_target} prerequisites)
     if(Qt${QT_VERSION_MAJOR}_FOUND)
 
