@@ -10,6 +10,7 @@
   },
   "cmake.generator": "Ninja Multi-Config",
   "extensions": [
+    "codeium.codeium",
     "github.vscode-pull-request-github",
     "googlecloudtools.cloudcode",
     "quantum.quantum-devkit-vscode",

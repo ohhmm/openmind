@@ -1,12 +1,13 @@
 #pragma once
 
 #include <OpenMind/Goal.h>
+#include <omnn/math/Valuable.h>
 
 class SolveProportion :
 	public Goal
 {
 public:
-	typedef long double		result_t;
+    typedef omnn::math::Valuable result_t;
 	typedef std::wstring	string_t;
 	SolveProportion(std::wstring a, std::wstring b, std::wstring c, std::wstring d);
 
@@ -17,10 +18,8 @@ public:
 	void GetResult(void* res)	{ res = &_result; }
 	void* GetResult();
 
-	string_t	SerializedResult();
+	string_t SerializedResult();
 	string_t Name() { return _name; }
-
-	~SolveProportion(void);
 
 private:
 	result_t _result;
