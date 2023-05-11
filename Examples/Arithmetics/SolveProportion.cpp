@@ -23,10 +23,6 @@ SolveProportion::SolveProportion(std::wstring a, std::wstring b, std::wstring c,
 	Init(Prepare(a), Prepare(b), Prepare(c), Prepare(d));
 }
 
-SolveProportion::~SolveProportion(void)
-{
-}
-
 bool SolveProportion::Init(string_t& a, string_t b, string_t c, string_t d)
 {
 	bool initialized = a == L"x";
