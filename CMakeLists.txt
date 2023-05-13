@@ -178,6 +178,7 @@ else()
 	message("BOOST_ADDITIONAL_COMPONENTS: ${BOOST_ADDITIONAL_COMPONENTS}")
 	message("BOOST_USED_COMPONENTS: ${BOOST_USED_COMPONENTS}")
 	message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
+	message("Boost_USE_STATIC_LIBS: ${Boost_USE_STATIC_LIBS}")
 
     foreach(_module ${BOOST_USED_COMPONENTS})
 		string(TOUPPER ${_module} _module_upcase)

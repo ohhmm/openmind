@@ -237,7 +237,7 @@ function(test)
 		add_dependencies(${TEST_NAME} ${parent_target})
 		#add_dependencies(${TEST_NAME} prerequisites)
 
-		target_link_directories(${TEST_NAME} PUBLIC
+		foreach(dir 
 			/usr/local/lib
 			${Boost_INCLUDE_DIR}/stage/lib
 			${Boost_INCLUDE_DIR}/../../lib
@@ -246,6 +246,13 @@ function(test)
 			${CMAKE_BINARY_DIR}/lib
 			${CMAKE_BINARY_DIR}/lib64
 			)
+
+			if(EXISTS ${dir})
+				target_link_directories(${TEST_NAME} PUBLIC ${dir})
+			endif()
+
+		endforeach()
+
         target_link_libraries(${TEST_NAME} PUBLIC ${parent_target})
 
         file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
