@@ -44,10 +44,7 @@ macro(find_pkg)
 				set(hints ${hint_paths} "/opt/${dep}")
 			endif()
 		endif()
-		find_package(${dep}
-			HINTS ${hints}
-			PATHS ${hints}
-			)
+		find_package(${dep} HINTS ${hints})
 
 		if(NOT ${dep}_FOUND)
 			find_library(${dep}_LIBRARIES
