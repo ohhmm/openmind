@@ -39,7 +39,7 @@ RUN emerge --update \
     -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
-    =dev-libs/boost-1.81.0-r1 \
+    =dev-libs/boost-1.82.0-r1 \
     -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
