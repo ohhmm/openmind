@@ -21,6 +21,13 @@ using namespace std;
 using namespace omnn::math;
 using namespace boost::unit_test;
 
+/**
+ * Tests for the BaseInt class.
+ *
+ * @test Test initialization to zero.
+ * @test Test pre-increment and pre-decrement.
+ * @test Test initialization from string.
+ */
 BOOST_AUTO_TEST_CASE(BaseInt_tests)
 {
     Integer::base_int i = 0;
