@@ -148,6 +148,11 @@ namespace
         return gcd;
     }
 
+    bool Sum::operator==(const Sum& v) const {
+        return members == v.members
+                || (members.size() == 1 && members.begin()->operator==(v))
+                || (members.empty() && v == 0_v);
+    }
     bool Sum::operator ==(const Valuable &v) const
     {
         return (Valuable::hash == v.Hash()
