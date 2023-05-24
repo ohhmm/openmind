@@ -102,6 +102,7 @@ public:
     Sum(const Sum&) = default;
     Sum& operator=(Sum&&) = default;
     Sum& operator=(const Sum&) = default;
+    bool operator==(const Sum& v) const;
 
     iterator Had(iterator it) override;
     using base::Add;
