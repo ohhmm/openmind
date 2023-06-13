@@ -22,7 +22,7 @@
     "cmake.configureSettings": {
       "CMAKE_BUILD_PARALLEL_LEVEL": "${nproc}",
     },
-    "cmake.generator": "Ninja",
+    "cmake.generator": "Ninja Multi-Config",
   },
 
   // Add the IDs of extensions you want installed when the container is created.

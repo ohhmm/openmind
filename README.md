@@ -70,6 +70,11 @@ Plans:
     Introduce Neural network support as part of current Facilities framework
     context based neural network serialization and swapping
   
+Q&A:
+
+  Plese, feel free to ask questions on this StackOverflow team: 
+
+    https://stackoverflowteams.com/c/skrypt/questions
 
   
 Please Donate to help reach this plans:
