@@ -10,11 +10,14 @@ function(ext_configure_args name args)
 		-D${name}_TESTS=OFF
 		-D${name}_BUILD_TESTS=OFF
 		-D${name}_BUILD_BENCHMARKS=OFF
+		-D${name}_BUILD_GMOCK=OFF
 		-D${name}_FRAMEWORK=${APPLE}
 		-D${name}_STATIC=ON
 		-D${name}_SHARED=${_IS_DEBUG}
 		-D${name}_BUILD_APIDOC=OFF
 		-D${name}_BUILD_DEMOS=OFF
+
+		-DCMAKE_CXX_FLAGS=-D_CRT_SECURE_NO_WARNINGS
 
 		PARENT_SCOPE)
 
