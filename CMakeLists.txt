@@ -93,9 +93,14 @@ if(PKG_CONFIG_FOUND)
 	message("pkg-config may be used to detect some of dependencies")
 endif()
 
-find_package(IntelDPCPP)
-if(IntelDPCPP_FOUND)
-    set(CMAKE_CXX_COMPILER dpcpp)
+find_program(INTEL_COMPILER_PATH icpx)
+if(INTEL_COMPILER_PATH)
+	message("INTEL_COMPILER_PATH: ${INTEL_COMPILER_PATH}")
+	set(CMAKE_CXX_COMPILER ${INTEL_COMPILER_PATH} CACHE STRING "Intel compiler path" FORCE)
+	find_package(IntelDPCPP)
+	if(IntelDPCPP_FOUND)
+		message("IntelDPCPP_FOUND: ${IntelDPCPP_FOUND}")
+	endif()
 endif()
 
 find_package(CUDAToolkit)
@@ -132,6 +137,7 @@ set(_BOOST_USED_COMPONENTS
 	date_time
 	filesystem
 	iostreams
+	locale
 	serialization
 	system
 	thread
