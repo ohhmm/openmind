@@ -94,6 +94,10 @@ if(PKG_CONFIG_FOUND)
 endif()
 
 find_package(IntelDPCPP)
+if(IntelDPCPP_FOUND)
+    set(CMAKE_CXX_COMPILER dpcpp)
+endif()
+
 find_package(CUDAToolkit)
 find_package(OpenCL)
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
