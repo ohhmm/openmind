@@ -150,12 +150,12 @@ bool System::Fetch(const Variable& va)
 {
     bool modified = {};
 
-	if (fetching.find(va) != fetching.end())
+    InProgress FetchingInProgress(fetching, va);
+    if (FetchingInProgress)
         return modified;
 
     bool fetched = {};
 
-	fetching.insert(va);
 
     Valuable::var_set_t vars;
     bool again;
@@ -194,21 +194,16 @@ bool System::Fetch(const Variable& va)
 				return fetchModified;
 			});
     }
-    
-    fetching.erase(va);
+
     return modified;
 }
 
 System::solutions_t System::Solve(const Variable& va)
 {
     solutions_t solution;
-    
-    if (solving.find(va) == solving.end()) {
-        solving.insert(va);
-    }
-    else {
+    InProgress SolvingInProgress(solving, va);
+    if (SolvingInProgress)
         return solution;
-    }
 
 //    auto it = vEs.find(va);
 //    if(it!=vEs.end()){
@@ -216,7 +211,6 @@ System::solutions_t System::Solve(const Variable& va)
 //        if (sit!=it->second.end()) {
 //            solution = sit->second;
 //            if (solution.size()) {
-//                solving.erase(va);
 //                return solution;
 //            }
 //        }
@@ -264,7 +258,6 @@ System::solutions_t System::Solve(const Variable& va)
         }
         
         if (!vars.size()) {
-            solving.erase(va);
             return solution;
         } else {
             solution.clear();
@@ -336,7 +329,6 @@ System::solutions_t System::Solve(const Variable& va)
                 if (otherVars.empty()) {
                     auto& solved = vEs[va][{}];
                     if (solved.size()) {
-                        solving.erase(va);
                         return solved;
                     }
                 }
@@ -429,6 +421,5 @@ System::solutions_t System::Solve(const Variable& va)
         throw "Contradiction!";
     }
     
-    solving.erase(va);
     return solution;
 }

@@ -15,6 +15,28 @@ class System // TODO: resolve current problem, it mixes-up conjunction with disj
 {
     std::set<Variable> solving;
     std::set<Variable> fetching;
+    class InProgress {
+        bool wasInProgress = {};
+        Variable v;
+        std::set<Variable>& varsInProgress;
+
+    public:
+        InProgress(std::set<Variable>& solvingVarsSet, const Variable& v)
+            : varsInProgress(solvingVarsSet)
+        {
+            this->v = v;
+            auto insertion = varsInProgress.insert(v);
+            auto inserted = insertion.second;
+            wasInProgress = !inserted;
+        }
+
+        operator bool() const { return wasInProgress; }
+
+        ~InProgress() {
+            if (wasInProgress)
+                varsInProgress.erase(v);
+        }
+    };
     
     struct VaData
     {
