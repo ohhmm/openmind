@@ -542,6 +542,8 @@ public:
     /// <returns>An expression that equals zero only when the object is less then param</returns>
     virtual Valuable IntMod_Less(const Valuable& than) const;
 
+	virtual Valuable Less(const Valuable& than) const;
+
 	/// iterations
 	//
     Valuable For(const Valuable& initialValue, const Valuable& lambda) const; // TODO : iterations operator
