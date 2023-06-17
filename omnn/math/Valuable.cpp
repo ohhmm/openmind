@@ -707,7 +707,7 @@ std::string Solid(std::string s) {
                     o(std::move(val));
                     i = to - 1;
                 } else {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Unexpected char " << c << " in " << s << " position " << i);
                 }
             }
 
@@ -2155,6 +2155,18 @@ std::string Solid(std::string s) {
 			// X^2 - Y^2 - X + Y + 1
 			// which seem less valid but lets check
 	}
+
+    Valuable Valuable::Less(const Valuable& than) const
+    {
+        auto less = *this;
+        less -= than;
+        less.sq();
+        ++less;
+        less /= less;
+        less.equals(constants::one);
+        LOG_AND_IMPLEMENT("FIXME: " << less << " is always zero")
+        return less; // FIXME: less is always zero
+    }
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
