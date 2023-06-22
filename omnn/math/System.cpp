@@ -3,9 +3,12 @@
 //
 #include "System.h"
 #include "Valuable.h"
+
 #include <algorithm>
 #include <future>
+#include <iostream>
 #include <numeric>
+#include <set>
 
 #include <rt/each.hpp>
 
@@ -14,18 +17,8 @@ using namespace omnn;
 using namespace math;
 
 
-bool is_subset(const std::set<std::string>& subs, const std::set<std::string>& set)
-{
-    auto it = subs.begin();
-    auto se = set.end();
-    for(auto& m : subs)
-    {
-        it = std::find(it, se, m);
-        if (it == se) {
-            return false;
-        }
-    }
-    return true;
+bool is_subset(const auto& smaller_set, const auto& larger_set) {
+    return std::includes(larger_set.begin(), larger_set.end(), smaller_set.begin(), smaller_set.end());
 }
 
 System& System::operator()(const Variable& v)

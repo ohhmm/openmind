@@ -12,6 +12,7 @@
 #include <boost/tokenizer.hpp>
 
 using namespace omnn::math;
+using namespace omnn::rt;
 
 namespace {
 

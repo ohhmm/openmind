@@ -149,6 +149,15 @@ BOOST_AUTO_TEST_CASE(Product_multivalues_simplification)
     BOOST_TEST(_1 == _2);
 }
 
+BOOST_AUTO_TEST_CASE(Product_Multival_Exponentiation_Sign_Simplification)
+{
+    DECL_VA(x);
+    DECL_VA(y);
+    auto _1 = -1 * ((-4 * (y ^ 2) + -4 * (x ^ 2) + 32 * x + 16 * y + -80) ^ constants::half);
+    auto _2 = (-4 * (y ^ 2) + -4 * (x ^ 2) + 32 * x + 16 * y + -80) ^ constants::half;
+    BOOST_TEST(_1 == _2);
+}
+
 BOOST_AUTO_TEST_CASE(test_no_hang, *timeout(2))
 {
     Variable v2, v3;
