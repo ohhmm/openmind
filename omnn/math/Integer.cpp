@@ -16,7 +16,6 @@
 #include <rt/tasq.h>
 
 #include <algorithm>
-#include <codecvt>
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -39,6 +38,7 @@ namespace std {
 #ifdef OPENMIND_USE_OPENCL
 #include <boost/compute.hpp>
 #endif
+#include <boost/filesystem.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/math/special_functions/prime.hpp>
@@ -50,6 +50,8 @@ namespace std {
 #include <boost/multiprecision/integer.hpp>
 #include <boost/multiprecision/miller_rabin.hpp>
 
+
+using namespace omnn::rt;
 
 using boost::multiprecision::cpp_int;
 
@@ -626,12 +628,14 @@ namespace math {
 
     std::wstring Integer::save(const std::wstring& f) const
     {
-        using namespace std;
-        using convert_typeX = codecvt_utf8<wchar_t>;
-        std::wstring_convert<convert_typeX, wchar_t> c;
-        std::ofstream s(c.to_bytes(f));
-        boost::archive::binary_oarchive a(s);
-        a & arbitrary;
+        if (!f.empty()) {
+            boost::filesystem::path p(f);
+            std::ofstream s(p.string(), std::ios::binary);
+            boost::archive::binary_oarchive a(s);
+            a & arbitrary;
+        } else {
+            LOG_AND_IMPLEMENT("Attempt to save " << *this << " to empty path file");
+        }
         return f;
     }
 

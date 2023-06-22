@@ -63,10 +63,15 @@ public:
         return true;
     }
     
+    [[deprecated("Please, switch to MakesTotalEqu instead.")]]
     void MakeTotalEqu(bool makeTotalEqu) {
         this->makeTotalEqu = makeTotalEqu;
     }
+    [[deprecated("Please, switch to MakesTotalEqu instead.")]]
     constexpr auto MakeTotalEqu() const { return makeTotalEqu; }
+
+    void MakesTotalEqu(bool makeTotalEqu) { this->makeTotalEqu = makeTotalEqu; }
+    constexpr auto MakesTotalEqu() const { return makeTotalEqu; }
 
     constexpr const Valuable& Total() const {
         if (makeTotalEqu)
