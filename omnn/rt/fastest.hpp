@@ -7,6 +7,8 @@
 #include <type_traits>
 #include <vector>
 
+namespace omnn::rt {
+
 template <typename ResultType>
 class TheFastestResult {
 public:
@@ -65,3 +67,5 @@ private:
         });
     }
 };
+
+} // namespace omnn::rt

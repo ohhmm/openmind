@@ -1761,6 +1761,7 @@ namespace
                     }
                     break;
                 }
+                [[fallthrough]];
             }
             default: {
                 // RATIONAL ROOT TEST
