@@ -149,6 +149,14 @@ BOOST_AUTO_TEST_CASE(Product_multivalues_simplification)
     _1 /= _2;
     _2 = 1 * (1_v ^ (1_v / 2));
     BOOST_TEST(_1 == _2);
+
+    _1 = -3;
+    _1 /= 2;
+    _1 *= constants::plus_minus_1;
+    BOOST_TEST(_1.IsProduct());
+    auto& p = _1.as<Product>();
+    BOOST_TEST(p.size() == 2);
+    BOOST_TEST(*p.begin() > constants::zero);
 }
 
 BOOST_AUTO_TEST_CASE(Product_Multival_Exponentiation_Sign_Simplification)
