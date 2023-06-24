@@ -111,7 +111,7 @@ function(apply_target_commons this_target)
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin
 		)
-	if(MSVC)
+	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		target_compile_definitions(${this_target} PUBLIC
 			APPLE_CONSTEXPR=
 			MSVC_CONSTEXPR=constexpr

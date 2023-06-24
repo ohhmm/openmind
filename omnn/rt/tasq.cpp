@@ -5,6 +5,8 @@
 constexpr size_t MaxThreadsForCacheStoring = 1024;
 
 
+using namespace omnn::rt;
+
 
 void StoringTasksQueue::CleanupReadyTasks() {
     std::lock_guard lg(DequeMutEx);
