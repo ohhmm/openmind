@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test, *disabled())
         //        {1,1,1,1}
     }};
     
-    ublas::vector<double> augment(e_verticals.size1());
+    ublas::vector<Extrapolator::value_type> augment(e_verticals.size1());
     augment[0] = 2;
     augment[1] = 1;
     //    augment[2] = -1;
@@ -122,7 +122,9 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         // a=0:N, b=0:M, c=-(ax+by)/z     // if x=0 and y=0 then c becames 0 but it wasnt;
         // lets make c a va
         Valuable eq = 1_v;
-        Variable x,y,z;
+        DECL_VA(x);
+        DECL_VA(y);
+        DECL_VA(z);
         for (auto i=vm.size1(); i--;) {
             auto e1 = x - vm(i,0);
             auto e2 = y - vm(i,1);

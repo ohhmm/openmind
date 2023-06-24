@@ -2,6 +2,9 @@
 #include <boost/test/unit_test.hpp>
 #include "fastest.hpp"
 
+
+using namespace omnn::rt;
+
 BOOST_AUTO_TEST_CASE(GetTheFastestResult_test) {
     TheFastestResult<int> wrapper(
         [] {
@@ -16,4 +19,5 @@ BOOST_AUTO_TEST_CASE(GetTheFastestResult_test) {
     std::future<int> result_future = wrapper;
     int result = result_future.get();
     std::cout << "Result: " << result << std::endl;
+    BOOST_TEST(result == 7);
 }

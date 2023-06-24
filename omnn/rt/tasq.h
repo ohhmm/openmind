@@ -7,6 +7,8 @@
 #include <utility>
 
 
+namespace omnn::rt {
+
 using StoringTask = std::future<bool>;
 class StoringTasksQueue
     : public std::deque<StoringTask>
@@ -34,3 +36,5 @@ public:
         }
     }
 };
+
+} // namespace omnn::rt
