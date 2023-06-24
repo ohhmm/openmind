@@ -246,6 +246,20 @@ namespace math {
             return;
         optimized = true;
 
+        auto isPlusMinus = YesNoMaybe::Maybe;
+        auto IsPlusMinus = [&] {
+            if (isPlusMinus == YesNoMaybe::Maybe) {
+                if (Has(constants::plus_minus_1))
+                    isPlusMinus = YesNoMaybe::Yes;
+            }
+            return isPlusMinus == YesNoMaybe::Yes;
+        };
+        auto TryBePositive = [&](auto& it) {
+            if (*it < 0 && IsPlusMinus()) {
+                Update(it, -*it);
+            }
+        };
+
         // zero
         auto it = GetFirstOccurence<Integer>();
         if (it != end()) {
@@ -254,9 +268,7 @@ namespace math {
                 return;
             }
 
-			if (*it < 0 && Has(constants::plus_minus_1)) {
-                Update(it, -*it);
-            }
+			TryBePositive(it);
 
         // one
             if (it->Same(1) && size() > 1) {
@@ -270,22 +282,22 @@ namespace math {
         do {
             updated = {};
             for (auto it = GetFirstOccurence<Fraction>(); it != end(); ++it) {
-                if (it->IsFraction() && it->FindVa()) {
-                    auto& f = it->as<Fraction>();
-                    auto& dn = f.getDenominator();
-                    auto defract = dn.FindVa() ? (dn ^ (-1_v)) : 1_v / dn;
-                    auto& n = f.getNumerator();
-                    if(n==1_v)
-                    {
-                        Delete(it);
+                if (it->IsFraction()) {
+                    TryBePositive(it);
+                    if (it->FindVa()) {
+                        auto& f = it->as<Fraction>();
+                        auto& dn = f.getDenominator();
+                        auto defract = dn.FindVa() ? (dn ^ (-1_v)) : 1_v / dn;
+                        auto& n = f.getNumerator();
+                        if (n == 1_v) {
+                            Delete(it);
+                        } else {
+                            Update(it, n);
+                            OptimizeOff o;
+                            operator*=(defract);
+                        }
+                        updated = true;
                     }
-                    else
-                    {
-                        Update(it, n);
-                        OptimizeOff o;
-                        operator*=(defract);
-                    }
-                    updated = true;
                 }
             }
         } while (updated);
