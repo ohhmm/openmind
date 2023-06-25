@@ -190,18 +190,27 @@ BOOST_AUTO_TEST_CASE(products_summing_simplification)
     if(!sum.IsSum()){
         BOOST_TEST(simplify.first == true);
     }
+}
 
-    _1 = (7_v/2) * constants::plus_minus_1;
+BOOST_AUTO_TEST_CASE(Merge_four_test_no_hang, *timeout(2)) {
+    Valuable::MergeOr(11_v / 2, -11_v / 2, -3_v / 2, 3_v / 2);
+}
+
+BOOST_AUTO_TEST_CASE(multivalue_products_summing_simplification_tests
+    , *depends_on("Merge_four_test_no_hang")
+) {
+    auto _1 = (7_v/2) * constants::plus_minus_1;
     cout << "Distinct values of _1 are as follows:" << endl;
     for(auto& value: _1.Distinct()){
         cout << ' ' << value;
     }
     cout<< endl;
-    _2 = 2 * constants::plus_minus_1;
+    auto _2 = 2 * constants::plus_minus_1;
     cout << "Distinct values of _2 are as follows:" << endl;
     for(auto& value: _2.Distinct()){
         cout << ' ' << value;
     }
+
     auto answer = Valuable::MergeOr(11_v/2, -11_v/2, -3_v/2, 3_v/2);
     cout << endl << "Distinct sums are as follows:" << endl;
     Valuable::solutions_t distinctSums;
@@ -217,8 +226,9 @@ BOOST_AUTO_TEST_CASE(products_summing_simplification)
     auto answerDistinct = answer.Distinct();
     BOOST_TEST(answerDistinct == distinctSums);
     
-    simplify = _1.IsSummationSimplifiable(_2);
+    auto simplify = _1.IsSummationSimplifiable(_2);
     BOOST_TEST(!simplify.first);
+
 }
 
 BOOST_AUTO_TEST_CASE(unordered_multiset_tests)

@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(ExtrapolatorSolve_test)
     
 }
 
-BOOST_AUTO_TEST_CASE(Extrapolator_test, *disabled())
+BOOST_AUTO_TEST_CASE(Extrapolator_test)
 {
     // lets define math vars:
     // TODO : link to youtube video with description of the sample for deep learning
