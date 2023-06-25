@@ -84,16 +84,24 @@ BOOST_AUTO_TEST_CASE(Sqrt_test)
     BOOST_TEST(e == 5);
 }
 
-BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test
-                     ,*disabled()
-                     )
+BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test)
 {
     DECL_VA(x);
     DECL_VA(y);
     auto a = 4 * (x ^ 2) - 12 * x * y + 9 * (y ^ 2);
-    auto e = a.Sqrt();
-    BOOST_TEST(e == 2 * x - 3 * y);
-    BOOST_TEST(e == 3 * y - 2 * x);
+    auto e = a.Sqrt(); // As the Sqrt is principal root, it is The positive square root of a number
+                    // so the Sqrt gives positive for positive value
+                    // answer must depend on x,y values
+
+    auto _1 = e;
+    _1.eval({{x, 0}, {y, 1}}); // x=0, y=1
+    BOOST_TEST(_1 != -3);   // 2x-3y = -3
+    BOOST_TEST(_1 == 3);    // 3y-2x = 3
+
+    auto _2 = e;
+    _2.eval({{x, 1}, {y, 0}}); // x=1, y=0
+    BOOST_TEST(_2 == 2); // 2 * x - 3 * y  == 2
+    BOOST_TEST(_2 != -2); // 3 * y - 2 * x  == -2
 }
 
 BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
