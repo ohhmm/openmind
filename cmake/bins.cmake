@@ -330,6 +330,14 @@ macro(lib)
 
 endmacro()
 
+
+macro(dll)
+	set(USE_SHARED SHARED)
+	lib(${ARGN})
+	unset(USE_SHARED)
+endmacro()
+
+
 macro(exe)
     string(STRIP "${ARGN}" deps)
 
