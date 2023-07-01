@@ -85,19 +85,6 @@ macro(glob_source_files)
     SET_SOURCE_FILES_PROPERTIES(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
 endmacro(glob_source_files)
 
-
-macro(check_dep_file)
-	if(Python_EXECUTABLE AND EXISTS requirements.txt)
-		add_custom_target(Install${this_target}Dependencies
-			COMMAND ${Python3_EXECUTABLE} -m pip install -r requirements.txt
-			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-			COMMENT "Installing Python dependencies from ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
-			SOURCES requirements.txt
-			DEPENDS requirements.txt
-		)
-	endif()
-endmacro(check_dep_file)
-
 function(apply_target_commons this_target)
 	string(REPLACE "-" "" dashless ${this_target})
 	string(TOUPPER ${dashless} this_target_up)
@@ -286,8 +273,9 @@ macro(lib)
     set(${this_target}_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE FILEPATH "${this_target} include path")
     project(${this_target})
     message("\nCreating Library: ${this_target}")
+	check_dep_file()
 	glob_source_files()
-    add_library(${this_target} ${src} ${headers})
+    add_library(${this_target} ${USE_SHARED} ${src} ${headers})
 	APPLY_TARGET_COMMONS(${this_target})
 	if(CMAKE_CXX_STANDARD)
 		set_target_properties(${this_target} PROPERTIES CXX_STANDARD ${CMAKE_CXX_STANDARD})
