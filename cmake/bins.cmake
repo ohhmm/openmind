@@ -85,6 +85,19 @@ macro(glob_source_files)
     SET_SOURCE_FILES_PROPERTIES(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
 endmacro(glob_source_files)
 
+
+macro(check_dep_file)
+	if(Python_EXECUTABLE AND EXISTS requirements.txt)
+		add_custom_target(Install${this_target}Dependencies
+			COMMAND ${Python3_EXECUTABLE} -m pip install -r requirements.txt
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			COMMENT "Installing Python dependencies from ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
+			SOURCES requirements.txt
+			DEPENDS requirements.txt
+		)
+	endif()
+endmacro(check_dep_file)
+
 function(apply_target_commons this_target)
 	string(REPLACE "-" "" dashless ${this_target})
 	string(TOUPPER ${dashless} this_target_up)
