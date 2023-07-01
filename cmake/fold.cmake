@@ -1,4 +1,23 @@
 
+macro(check_dep_file)
+	if(NOT Python_FOUND)
+		find_package(Python)
+	endif()
+	if(Python_EXECUTABLE AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt)
+		add_custom_target(Install_${this_target}_Dependencies
+			COMMAND ${Python_EXECUTABLE} -m pip install --user -r requirements.txt
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			COMMENT "Installing Python dependencies from ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
+			SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt
+			DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt
+		)
+		set_target_properties(Install_${this_target}_Dependencies PROPERTIES
+			FOLDER "util"
+		)
+		add_dependencies(prerequisites Install_${this_target}_Dependencies)
+	endif()
+endmacro(check_dep_file)
+
 macro(platform_specific_iteration) # FIXME: CMake hasn't support for the continue() out of macro
 	message("IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${ARGN}")
     IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${ARGN}
@@ -54,4 +73,6 @@ macro(fold)
 			endif()
 		endif()
     endforeach()
+
+	check_dep_file()
 endmacro()
