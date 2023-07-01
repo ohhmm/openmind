@@ -360,6 +360,17 @@ IF (Boost_FOUND)
     message("Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 ENDIF()
 
+
+# Find Python
+if(NOT Python_FOUND)
+    find_package(Python)
+endif()
+if(Python_FOUND)
+    message(STATUS "Python found: ${Python_EXECUTABLE}")
+    message(STATUS "Python version: ${Python_VERSION}")
+endif()
+
+
 if (OPENMIND_BUILD_TESTS)
     enable_testing()
 	if(NOT MSVC)
