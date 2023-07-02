@@ -109,8 +109,9 @@ function(apply_target_commons this_target)
 	set_target_properties(${this_target} PROPERTIES
 		CXX_STANDARD 20
 		CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE
-		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin
+		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		)
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		target_compile_definitions(${this_target} PUBLIC
@@ -335,6 +336,7 @@ endmacro()
 
 macro(dll)
 	set(USE_SHARED SHARED)
+	unset(CMAKE_SHARED_LIBRARY_PREFIX)
 	lib(${ARGN})
 	unset(USE_SHARED)
 endmacro()

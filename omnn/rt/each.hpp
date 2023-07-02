@@ -10,7 +10,7 @@
 template <class T, class F>
 void peach(T&& c, F&& f) {
 #ifdef __APPLE__
-    StoringTasksQueue().AddTasks(std::forward<T>(c), std::forward<F>(f));
+    omnn::rt::StoringTasksQueue().AddTasks(std::forward<T>(c), std::forward<F>(f));
 #else
     auto b = std::begin(c), e = std::end(c);
     std::for_each(
