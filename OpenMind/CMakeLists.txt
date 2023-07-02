@@ -5,15 +5,6 @@ include(bins)
 get_target_name(this_target)
 PROJECT(${this_target})
 
-IF (NOT Boost_FOUND)
-	FIND_PACKAGE(Boost)
-ENDIF()
-
-IF (Boost_FOUND)
-    ADD_DEFINITIONS( "-DHAS_BOOST" )
-    SET(Boost_USE_STATIC_LIBS ON)
-ENDIF()
-
 file(GLOB ${this_target}_SOURCE_FILES *.cpp)
 
 SET(${this_target}_HEADER_FILES
@@ -120,7 +111,6 @@ SET_SOURCE_FILES_PROPERTIES(${this_target}_HEADER_FILES
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 
-#add_definitions( -DBOOST_ALL_DYN_LINK )
 IF(NOT MSVC)
 	ADD_DEFINITIONS(-pthread)
 ENDIF(NOT MSVC)
@@ -147,12 +137,6 @@ target_include_directories(${this_target} PUBLIC
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_BINARY_DIR}/include
     )
-if(Boost_INCLUDE_DIR)
-	target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
-endif()
-if(Boost_INCLUDE_DIRS)
-	target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
-endif()
 
 target_link_libraries(${this_target} PUBLIC math)
 
