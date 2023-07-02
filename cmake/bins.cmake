@@ -108,6 +108,7 @@ function(apply_target_commons this_target)
 	endif()
 	set_target_properties(${this_target} PROPERTIES
 		CXX_STANDARD 20
+		CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin
 		)
