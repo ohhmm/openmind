@@ -1622,15 +1622,15 @@ namespace
         }
 
         auto& sum = _.as<Sum>();
-        std::vector<Valuable> coefficients;
-        auto g = sum.FillPolyCoeff(coefficients,va);
-        if (g<3)
         {
-            sum.solve(va, solutions, coefficients, g);
-            
-            if(solutions.size())
-            {
-                return solutions;
+            std::vector<Valuable> coefficients;
+            auto g = sum.FillPolyCoeff(coefficients, va);
+            if (g < 3) {
+                sum.solve(va, solutions, coefficients, g);
+
+                if (solutions.size()) {
+                    return solutions;
+                }
             }
         }
 
@@ -2052,26 +2052,40 @@ namespace
                 auto& c = coefficients[2];
                 auto& d = coefficients[1];
                 auto& e = coefficients[0];
-                auto sa = a*a;
-                auto sb = b*b;
-                auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
-                auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).Sqrt();
-                auto qp2 = (p2/2)^(1_v/3);
-                p1.optimize();
-                p2.optimize();
-                qp2.optimize();
-                auto p3 = (c*c-3*b*d+12*a*e)/(3*a*qp2)+qp2/(3*a);
-                auto p4 = (sb/(4*sa)-(2*c)/(3*a)+p3).Sqrt();
-                auto p5 = sb/(2*sa)-(4*c)/(4*a)-p3;
-                auto p6 = (-sb*b/(sa*a)+4*b*c/sa-8*d/a)/(4*p4);
-                auto xp1 = b/(-4*a);
-                auto xp2 = p4/2;
-                auto xp3_1 = (p5-p6).Sqrt()/2;
-                auto xp3_2 = (p5+p6).Sqrt()/2;
-                solutions.emplace(xp1-xp2-xp3_1);
-                solutions.emplace(xp1-xp2+xp3_1);
-                solutions.emplace(xp1+xp2-xp3_2);
-                solutions.emplace(xp1+xp2+xp3_2);
+
+                // Detect biquadratic equation
+                if (b == d && b == constants::zero) {
+                    auto squareSolutions = solutions;
+                    solve(va, squareSolutions, {e, c, a}, 2);
+                    for (auto& s : squareSolutions) {
+                        auto solution = s ^ constants::half;
+                        auto sqrtSquareSolutions = solution.Distinct();
+                        solutions.insert(
+                            std::make_move_iterator(sqrtSquareSolutions.begin()),
+                            std::make_move_iterator(sqrtSquareSolutions.end()));
+                    }
+                } else {
+                    auto sa = a * a;
+                    auto sb = b * b;
+                    auto p1 = 2 * c * c * c - 9 * b * c * d + 27 * a * d * d + 27 * b * b * e - 72 * a * c * e;
+                    auto p2 = p1 + (4 * ((c * c - 3 * b * d + 12 * a * e) ^ 3) + (p1 ^ 2)).Sqrt();
+                    auto qp2 = (p2 / 2) ^ (1_v / 3);
+                    p1.optimize();
+                    p2.optimize();
+                    qp2.optimize();
+                    auto p3 = (c * c - 3 * b * d + 12 * a * e) / (3 * a * qp2) + qp2 / (3 * a);
+                    auto p4 = (sb / (4 * sa) - (2 * c) / (3 * a) + p3).Sqrt();
+                    auto p5 = sb / (2 * sa) - (4 * c) / (4 * a) - p3;
+                    auto p6 = (-sb * b / (sa * a) + 4 * b * c / sa - 8 * d / a) / (4 * p4);
+                    auto xp1 = b / (-4 * a);
+                    auto xp2 = p4 / 2;
+                    auto xp3_1 = (p5 - p6).Sqrt() / 2;
+                    auto xp3_2 = (p5 + p6).Sqrt() / 2;
+                    solutions.emplace(xp1 - xp2 - xp3_1);
+                    solutions.emplace(xp1 - xp2 + xp3_1);
+                    solutions.emplace(xp1 + xp2 - xp3_2);
+                    solutions.emplace(xp1 + xp2 + xp3_2);
+                }
                 break;
             }
             default: {
@@ -2224,6 +2238,14 @@ namespace
 #endif
             }
         }
+
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        for (auto& s : solutions) {
+            if (!Test(va, s)) {
+                LOG_AND_IMPLEMENT(s << " is not a root of " << *this);
+            }
+        }
+#endif
     }
     
     Valuable Sum::SumOfRoots() const
