@@ -387,6 +387,10 @@ BOOST_AUTO_TEST_CASE(Solve_bsquare_test_no_hang
     DECL_VA(x);
     auto _ = (x^4) + 868*(x^2) + 188356;
     auto solutions = _.Solutions();
+    for (auto& s : solutions) {
+        auto is_a_root = _.Test(x, s);
+        BOOST_TEST(is_a_root);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(Radical_Solution_tests
