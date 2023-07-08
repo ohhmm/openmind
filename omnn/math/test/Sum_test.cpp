@@ -380,6 +380,15 @@ BOOST_AUTO_TEST_CASE(Solution_tests)
     BOOST_TEST(sol == sol_t({1,2,3,-4}));    
 }
 
+BOOST_AUTO_TEST_CASE(Solve_bsquare_test_no_hang
+                     ,*timeout(2)
+                     )
+{
+    DECL_VA(x);
+    auto _ = (x^4) + 868*(x^2) + 188356;
+    auto solutions = _.Solutions();
+}
+
 BOOST_AUTO_TEST_CASE(Radical_Solution_tests
                      , *disabled() // TODO: implement proper radicals support
                      )
