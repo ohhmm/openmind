@@ -1788,6 +1788,12 @@ std::string Solid(std::string s) {
             IMPLEMENT
     }
 
+    Valuable Valuable::Eval(const vars_cont_t& with) const {
+        auto evaluate = *this;
+        evaluate.eval(with);
+        return evaluate;
+    }
+
     void Valuable::Eval(const Variable& va, const Valuable& v)
     {
         if (exp) {
