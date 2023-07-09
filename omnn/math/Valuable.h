@@ -410,6 +410,7 @@ public:
     static Valuable VaVal(const vars_cont_t& v);
     Valuable getVaVal() const;
     virtual bool eval(const vars_cont_t& with);
+    Valuable Eval(const vars_cont_t& with) const;
 
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;
