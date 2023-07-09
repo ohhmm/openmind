@@ -36,6 +36,9 @@ public:
     Valuable Sign() const override;
 
     std::ostream& code(std::ostream&) const override;
+
+    explicit operator double() const override;
+    explicit operator long double() const override;
 };
 
 }
