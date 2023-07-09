@@ -279,11 +279,8 @@ namespace math {
 	// FIXME : generates six distiinct results instead of expected three distinct-value equivalent
 	Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
         // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
-        auto merged = MergeOr(v3-v1, v2-v1);
-        merged *= constants::zero_or_1;
-        merged += v1;
-        return merged;
-//        return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation https://github.com/ohhmm/openmind/issues/41
+        return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
+        //  return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation https://github.com/ohhmm/openmind/issues/41
     }
 
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
@@ -306,6 +303,13 @@ namespace math {
     Valuable::Valuable(solutions_t&& s)
     {
         auto it = s.begin();
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+		std::cout << " Merging [ ";
+        for(auto& item: s){
+            std::cout << item << ' ';
+        }
+        std::cout << ']' << std::endl;
+#endif
         switch (s.size()) {
         case 0: IMPLEMENT; break;
         case 1: operator=(*it); break;
@@ -355,7 +359,7 @@ namespace math {
 
             Valuable mergedPairs(std::move(pairs));
 
-#ifndef NDEBUG
+#ifndef NDEBUG && !defined(NOOMDEBUG)
             std::stringstream ss;
             ss << '(';
             for (auto& v : s)
@@ -368,7 +372,7 @@ namespace math {
 #endif
         }
         
-#ifndef NDEBUG
+#ifndef NDEBUG && !defined(NOOMDEBUG)
         if(s.size() > 1){
             auto distinct = Distinct();
             if (distinct != s) {
@@ -1726,7 +1730,7 @@ std::string Solid(std::string s) {
         if (exp) {
             return exp->FindVa();
         }
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("Implement FindVa for " << *this);
     }
 
     bool Valuable::HasVa(const Variable& x) const
