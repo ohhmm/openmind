@@ -78,3 +78,13 @@ Valuable PrincipalSurd::Sign() const {
         LOG_AND_IMPLEMENT(*this << " . Sign()");
     }
 }
+
+PrincipalSurd::operator double() const {
+    auto d = static_cast<double>(_1);
+    return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<double>(_2));
+}
+
+PrincipalSurd::operator long double() const {
+    auto d = static_cast<long double>(_1);
+    return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<long double>(_2));
+}

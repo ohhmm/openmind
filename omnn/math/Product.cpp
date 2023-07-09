@@ -465,7 +465,9 @@ namespace math {
     
     Valuable Product::abs() const
     {
-        return Each([](auto& m){ return m.abs(); });
+        auto val = Each([](auto& m) { return m.abs(); });
+        val.optimize();
+        return val;
     }
 
     const Product::vars_cont_t& Product::getCommonVars() const
