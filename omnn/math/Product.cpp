@@ -463,6 +463,11 @@ namespace math {
         return Become(std::move(p));
     }
     
+    Valuable Product::abs() const
+    {
+        return Each([](auto& m){ return m.abs(); });
+    }
+
     const Product::vars_cont_t& Product::getCommonVars() const
     {
         return vars;
