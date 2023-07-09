@@ -77,6 +77,7 @@ public:
     void optimize() override;
     Valuable Sqrt() const override;
     Valuable& sq() override;
+    Valuable abs() const override;
 
     bool IsProduct() const override { return true; }
     std::pair<Valuable, Valuable> SplitSimplePart() const;

@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(Product_optimization_test)
 
 BOOST_AUTO_TEST_CASE(Product_abs_test)
 {
-    auto _1 = -430_v;
+    auto _1 = 430_v;
     auto _2 = -_1;
 
     _1.sqrt();
