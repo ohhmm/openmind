@@ -53,3 +53,7 @@ Valuable MinusOneSq::Sign() const {
 Valuable& MinusOneSq::sq() {
     return Become(Sq());
 }
+
+Valuable MinusOneSq::abs() const {
+    return constants::one;
+}

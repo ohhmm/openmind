@@ -30,6 +30,7 @@ namespace omnn::math {
         Valuable Sq() const override;
 
 		Valuable Sign() const override;
+        Valuable abs() const override;
     };
 
     namespace constant {
