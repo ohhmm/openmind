@@ -142,6 +142,20 @@ BOOST_AUTO_TEST_CASE(Product_optimization_test)
     BOOST_TEST(_1 == _2);
 }
 
+BOOST_AUTO_TEST_CASE(Product_abs_test)
+{
+    auto _1 = -430_v;
+    auto _2 = -_1;
+
+    _1.sqrt();
+    _2.sqrt();
+    BOOST_TEST(_1 != _2);
+    
+    _1 = _1.abs();
+    _2 = _2.abs();
+    BOOST_TEST(_1 == _2);
+}
+
 BOOST_AUTO_TEST_CASE(Product_multivalues_simplification)
 {
     auto _1 = -8 * (1_v^(1_v/2));
