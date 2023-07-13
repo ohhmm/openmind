@@ -88,3 +88,7 @@ PrincipalSurd::operator long double() const {
     auto d = static_cast<long double>(_1);
     return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<long double>(_2));
 }
+
+max_exp_t PrincipalSurd::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
+    return _1.getMaxVaExp() / _2.ca();
+}

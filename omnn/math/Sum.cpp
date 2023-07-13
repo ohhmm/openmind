@@ -10,6 +10,7 @@
 #include "Integer.h"
 #include "Modulo.h"
 #include "Product.h"
+#include "PrincipalSurd.h"
 #include "pi.h"
 #include "System.h"
 #include "VarHost.h"
@@ -1025,6 +1026,7 @@ namespace
         return out;
     }
 
+    // FIXME: It is wrong to deside on sum square root sign before evaluating variables due to their sign ambiguity
     Valuable Sum::Sqrt() const
     {
         if (!optimizations || !is_optimized()) {
@@ -1066,9 +1068,8 @@ namespace
                 }
             }
 		}
-        LOG_AND_IMPLEMENT("square root " << get()); // TODO : try to get rid of this call instead by substituting to ^(1_v/2) which is not equivalent to sqrt by the way
-                                                    // https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
-        return Exponentiation(*this, 1_v/2); // TODO  :  this is wrong  because of https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
+
+        return PrincipalSurd(*this, 2);
     }
 
     Valuable& Sum::sq()
