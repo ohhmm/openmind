@@ -12,6 +12,7 @@
 #include "Integer.h"
 #include "VarHost.h"
 #include "Sum.h"
+#include "PrincipalSurd.h"
 
 #include <algorithm>
 #include <boost/multiprecision/cpp_int.hpp>
@@ -276,11 +277,9 @@ namespace math {
         return merged;
     }
 
-	// FIXME : generates six distiinct results instead of expected three distinct-value equivalent
 	Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
         // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
         return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
-        //  return MergeOr(merged, v3); // FIXME : 3-way emerge needs working implementation https://github.com/ohhmm/openmind/issues/41
     }
 
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
@@ -1656,7 +1655,7 @@ std::string Solid(std::string s) {
         if(exp)
             return exp->Sqrt();
         else
-            IMPLEMENT
+            return PrincipalSurd(*this, 2);
     }
 
     Valuable& Valuable::sqrt() {
