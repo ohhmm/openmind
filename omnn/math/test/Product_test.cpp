@@ -15,9 +15,7 @@ BOOST_AUTO_TEST_CASE(Product_operator_tests) {
 	auto p = std::move(Product{2, 4}); 
 }
 
-BOOST_AUTO_TEST_CASE(Product_tests
-    , *disabled() // FIXME :
-)
+BOOST_AUTO_TEST_CASE(Product_tests)
 {
 	auto f = 1_v / 2;
 	auto f1 = 5_v / 6;
@@ -113,13 +111,6 @@ BOOST_AUTO_TEST_CASE(Product_tests
     auto has = Product{_}.Has(m1px);
     BOOST_TEST(has == false);
 
-	_ = ((-1 * v1 + 100) ^ (-1)) * v2;
-    _1 = _ * -100;
-    _2 = _ * v1;
-    auto is = _1.IsSummationSimplifiable(_2);
-    BOOST_TEST(is.first);
-    BOOST_TEST(is.second==-v2);
-
     DECL_VA(PercentWaterDehydrated);
     DECL_VA(PotatoKgDehydrated);
     _1 = (-1_v * PercentWaterDehydrated + 100) ^ (-1);
@@ -140,6 +131,14 @@ BOOST_AUTO_TEST_CASE(Product_optimization_test)
     _1 = -x * constants::plus_minus_1;
     _2 =  x * constants::plus_minus_1;
     BOOST_TEST(_1 == _2);
+
+    DECL_VA(z);
+	auto _ = ((-1 * z + 100) ^ (-1)) * x;
+    _1 = _ * -100;
+    _2 = _ * z;
+    auto is = _1.IsSummationSimplifiable(_2);
+    BOOST_TEST(is.first);
+    BOOST_TEST(is.second==-x);
 }
 
 BOOST_AUTO_TEST_CASE(Product_abs_test)
