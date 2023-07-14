@@ -49,9 +49,29 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
 }
 
 void PrincipalSurd::optimize() {
-    if (_1.IsInt() && _1.ca() < 0) {
-        Become(Product{constants::i, {PrincipalSurd{-_1, _2}}});
-        return;
+    if (_1.IsInt()) {
+        auto& rdcnd = _1.ca();
+        if (rdcnd < 0) {
+            Become(Product{constants::i, {PrincipalSurd{-_1, _2}}});
+            return;
+        } else if (rdcnd == 0) {
+            Become(0);
+            return;
+        } else if (Index().IsInt()) {
+            auto& idx = Index().ca(); 
+            if (idx == 0) {
+                IMPLEMENT
+            }
+            while (_2.bit() == constants::zero) {
+                auto newRadicand = _1.Sqrt();
+                if (newRadicand.IsPrincipalSurd())
+                    break;
+                else {
+                    update1(newRadicand);
+                    update2(_2.shr());
+                }
+            }
+        }
     }
 
     if(index()==constants::one){

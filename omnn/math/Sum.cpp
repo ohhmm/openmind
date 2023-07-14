@@ -1062,10 +1062,10 @@ namespace
             if (operator==(sum.Sq())){
                 return sum;
             } else {
-                auto diff = a - b;
-                if (operator==(diff.Sq())) {
-                    return diff;
-                }
+                //auto diff = a - b;
+                //if (operator==(diff.Sq())) {
+                //    return diff;
+                //}
             }
 		}
 
