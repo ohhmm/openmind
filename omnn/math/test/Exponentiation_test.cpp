@@ -93,15 +93,31 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test)
                     // so the Sqrt gives positive for positive value
                     // answer must depend on x,y values
 
-    auto _1 = e;
+    auto _1 = a;
     _1.eval({{x, 0}, {y, 1}}); // x=0, y=1
-    BOOST_TEST(_1 != -3);   // 2x-3y = -3
-    BOOST_TEST(_1 == 3);    // 3y-2x = 3
+    _1.optimize();
 
     auto _2 = e;
+    _2.eval({{x, 0}, {y, 1}}); // x=0, y=1
+    _2.optimize();
+
+    BOOST_TEST(_2 != -3);   // 2x-3y = -3
+    BOOST_TEST(_2 == 3);    // 3y-2x = 3
+    BOOST_TEST(_1 == _2.Sq());
+    BOOST_TEST(_1.Sqrt() == _2);
+
+    _1 = a;
+    _1.eval({{x, 1}, {y, 0}}); // x=1, y=0
+    _1.optimize();
+
+    _2 = e;
     _2.eval({{x, 1}, {y, 0}}); // x=1, y=0
+    _2.optimize();
+
     BOOST_TEST(_2 == 2); // 2 * x - 3 * y  == 2
     BOOST_TEST(_2 != -2); // 3 * y - 2 * x  == -2
+    BOOST_TEST(_1 == _2.Sq());
+    BOOST_TEST(_1.Sqrt() == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
