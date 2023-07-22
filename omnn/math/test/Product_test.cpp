@@ -140,7 +140,8 @@ BOOST_AUTO_TEST_CASE(Product_optimization_test)
     BOOST_TEST(is.first);
     BOOST_TEST(is.second==-x);
 
-    _1 = 2_v.Sqrt();
+    _1 = 2;
+    _1.sqrt();
     _2 = Fraction{constants::minus_1, _1} * _1;
     _2.optimize();
     BOOST_TEST(constants::minus_1 == _2);

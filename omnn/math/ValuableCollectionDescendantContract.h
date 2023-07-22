@@ -121,7 +121,7 @@ namespace math {
             return std::any_of(
                 cc.begin(), cc.end(),
                 [](auto& m) {
-                    return m.Is<T>();
+                    return m.template Is<T>();
                 });
         }
         

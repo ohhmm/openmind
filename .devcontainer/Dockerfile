@@ -11,16 +11,17 @@ RUN echo 'USE="${USE} system system-bootstrap system-llvm"' >> /etc/portage/make
 RUN echo "dev-libs/boost **" > /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/b2 **" >> /etc/portage/package.accept_keywords/boost
 RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
-RUN echo "dev-libs/boost icu lzma python test" > /etc/portage/package.use/boost
+RUN echo "dev-libs/boost icu lzma python test tools" > /etc/portage/package.use/boost
 
 #RUN echo "dev-util/cmake **" > /etc/portage/package.accept_keywords/cmake
-RUN echo "dev-libs/icu examples static-libs" > /etc/portage/package.use/icu
+#RUN echo "dev-libs/icu " > /etc/portage/package.use/icu
+RUN echo "dev-libs/icu **" > /etc/portage/package.accept_keywords/icu
 RUN echo "dev-lang/mono minimal" > /etc/portage/package.use/mono
 
 RUN echo "sys-devel/llvm **" > /etc/portage/package.accept_keywords/llvm
 RUN echo "sys-devel/llvm-toolchain-symlinks **" >> /etc/portage/package.accept_keywords/llvm
 RUN echo "sys-devel/llvmgold **" >> /etc/portage/package.accept_keywords/llvm
-
+RUN echo "dev-util/lldb **" > /etc/portage/package.accept_keywords/lldb
 RUN echo "sys-devel/clang **" > /etc/portage/package.accept_keywords/clang
 RUN echo "sys-devel/clang-common **" >> /etc/portage/package.accept_keywords/clang
 RUN echo "sys-devel/clang-runtime **" >> /etc/portage/package.accept_keywords/clang
@@ -35,14 +36,6 @@ RUN emerge --update \
     -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
-    dev-libs/icu \
-    -j`nproc` && rm -rf /var/cache/distfiles
-
-RUN emerge --update \
-    =dev-libs/boost-1.82.0-r1 \
-    -j`nproc` && rm -rf /var/cache/distfiles
-
-RUN emerge --update \
     -1o dev-util/cmake \
     -j`nproc` && rm -rf /var/cache/distfiles
 
@@ -52,17 +45,12 @@ RUN emerge --update \
 
 RUN emerge --update   kde-frameworks/extra-cmake-modules     -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN (emerge --update sys-devel/clang:17 -j`nproc` || emerge --update sys-devel/clang:17 -j1) && rm -rf /var/cache/distfiles
-
-RUN emerge --update \
-    lld \
-    -j`nproc` && rm -rf /var/cache/distfiles
+RUN emerge --update =dev-libs/boost-1.82.0-r1 -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge -j`nproc` leveldb && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
     app-arch/lz4 \
-    dev-libs/icu \
     dev-libs/openssl \
     sys-process/htop \
     sys-libs/zlib \
@@ -72,12 +60,13 @@ RUN emerge --update \
     -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
-    dev-libs/icu \
-    -j`nproc` && rm -rf /var/cache/distfiles
-    
-RUN emerge --update \
     gdb \
-    lldb \
+    -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN (emerge --update sys-devel/clang:17 -j`nproc` || MAKEOPTS=-j1 emerge --update sys-devel/clang:17 -j1) && rm -rf /var/cache/distfiles
+
+RUN emerge --update \
+    lld \
     -j`nproc` && rm -rf /var/cache/distfiles
 
 #RUN emerge --update =dev-libs/boost-1.81.0 -j`nproc`
@@ -105,3 +94,5 @@ RUN emerge --update \
     -j`nproc` && rm -rf /var/cache/distfiles 
 
 RUN eix-update
+
+# RUN emerge --update dev-util/lldb:17 -j`nproc` && rm -rf /var/cache/distfiles
