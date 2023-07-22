@@ -336,7 +336,7 @@ public:
 
     virtual YesNoMaybe IsEven() const;
     virtual YesNoMaybe IsMultival() const;
-    virtual void Values(const std::function<bool(const Valuable&)>&) const; /// split multival to distinct values and return thouse using visitor pattern
+    virtual void Values(const std::function<bool(const Valuable&)>&) const; /// split multival to distinct values and return those using visitor pattern
 
     virtual bool is(const std::type_index&) const;
 

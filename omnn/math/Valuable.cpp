@@ -358,7 +358,7 @@ namespace math {
 
             Valuable mergedPairs(std::move(pairs));
 
-#ifndef NDEBUG && !defined(NOOMDEBUG)
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
             std::stringstream ss;
             ss << '(';
             for (auto& v : s)
@@ -371,7 +371,7 @@ namespace math {
 #endif
         }
         
-#ifndef NDEBUG && !defined(NOOMDEBUG)
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(s.size() > 1){
             auto distinct = Distinct();
             if (distinct != s) {

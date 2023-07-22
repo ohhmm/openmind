@@ -3,6 +3,7 @@
 //
 #pragma once
 #include "Exponentiation.h"
+#include <algorithm>
 #include <future>
 #include <iterator>
 
@@ -108,9 +109,20 @@ namespace math {
         bool HasValueType(const std::type_info& type) const
         {
             for(const auto& a : GetConstCont())
-                if(typeid(a) == type)
+                if(typeid(a.get()) == type)
                     return true;
             return false;
+        }
+        
+        template<class T>
+        bool HasValueType() const
+        {
+            auto& cc = GetConstCont();
+            return std::any_of(
+                cc.begin(), cc.end(),
+                [](auto& m) {
+                    return m.Is<T>();
+                });
         }
         
         bool Has(const Valuable& v) const

@@ -5,6 +5,7 @@
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
+#include "i.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -134,6 +135,13 @@ namespace math {
                 }
             }
         }
+
+        if (denominator().Is_i()) {
+            numerator() *= constants::minus_1; 
+            numerator() *= denominator();
+            Become(std::move(numerator()));
+            return;
+        }
         
         if (numerator().IsExponentiation()) {
             auto& e = numerator().as<Exponentiation>();
@@ -205,22 +213,25 @@ namespace math {
                 denominator() /= numerator();
                 numerator() = 1_v;
                 goto reoptimize_the_fraction;
-            }
-            else if (numerator().IsInt() || numerator().IsSimpleFraction()) {
-                for (auto& m : dn)
-                {
-                    if (m.IsVa()) {
-                        numerator() *= m ^ -1;
-                    }
-                    else if (m.IsExponentiation()) {
-                        auto& e = m.as<Exponentiation>();
-                        numerator() *= e.getBase() ^ -e.getExponentiation();
-                    }
-                    else
-                        numerator() /= m;
+            } else {
+                if (dn.HasValueType<MinusOneSurd>()) {
+                    numerator() *= constants::minus_1;
+                    numerator() *= constants::i;
+                    denominator() /= constants::i;
                 }
-                Become(std::move(numerator()));
-                return;
+                if (numerator().IsInt() || numerator().IsSimpleFraction()) {
+                    for (auto& m : dn) {
+                        if (m.IsVa()) {
+                            numerator() *= m ^ -1;
+                        } else if (m.IsExponentiation()) {
+                            auto& e = m.as<Exponentiation>();
+                            numerator() *= e.getBase() ^ -e.getExponentiation();
+                        } else
+                            numerator() /= m;
+                    }
+                    Become(std::move(numerator()));
+                    return;
+                }
             }
         }
         else if (denominator().FindVa() && !denominator().IsSum())

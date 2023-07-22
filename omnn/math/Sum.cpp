@@ -57,7 +57,7 @@ namespace
                 typeid(Variable),
                 typeid(Euler),
                 typeid(Pi),
-                typeid(MinusOneSq),
+                typeid(MinusOneSurd),
                 typeid(Integer),
                 typeid(Fraction),
                 typeid(Modulo),

@@ -7,9 +7,9 @@
 
 namespace omnn::math {
 
-    class MinusOneSq : public Constant<MinusOneSq>
+    class MinusOneSurd : public Constant<MinusOneSurd>
     {
-        using base = Constant<MinusOneSq>;
+        using base = Constant<MinusOneSurd>;
 
     public:
         using base::base;
@@ -17,10 +17,13 @@ namespace omnn::math {
         static constinit std::string_view SerializationName;
 
         bool Is_i() const override { return true; }
-        YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+        bool IsSimple() const override { return {}; }
+        YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }        
 
         bool operator==(const Valuable& v) const override
         { return v.Is_i(); }
+
+        Valuable& operator^=(const Valuable&) override;
 
 		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
         std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable &v) const override;
@@ -28,13 +31,13 @@ namespace omnn::math {
         
         Valuable& sq() override;
         Valuable Sq() const override;
-
+        Valuable Sqrt() const override;
 		Valuable Sign() const override;
         Valuable abs() const override;
     };
 
     namespace constant {
-        static const MinusOneSq i;
+        static const MinusOneSurd i;
     }
 
 
