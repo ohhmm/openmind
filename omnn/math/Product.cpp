@@ -30,7 +30,7 @@ namespace math {
         typeid(Product),
         // general order
         typeid(Integer),
-        typeid(MinusOneSq),
+        typeid(MinusOneSurd),
         typeid(Euler),
         typeid(Pi),
         typeid(Fraction),
@@ -255,7 +255,7 @@ namespace math {
             return isPlusMinus == YesNoMaybe::Yes;
         };
         auto TryBePositive = [&](auto& it) {
-            if (*it < 0 && IsPlusMinus()) {
+            if (it->IsSimple() && *it < 0 && IsPlusMinus()) {
                 Update(it, -*it);
             }
         };
@@ -795,6 +795,13 @@ namespace math {
 //
 //               IMPLEMENT
 //           }
+       } else if (v.Is_i()) {
+           auto it = GetFirstOccurence<MinusOneSurd>();
+           is.first = it != end();
+           if (is.first) {
+               auto remainder = *this / v;
+               is = remainder.IsSummationSimplifiable(constants::one);
+           }
        } else {
 //           std::cout << v <<std::endl;
            LOG_AND_IMPLEMENT("Unknown case (need to implement) in Product::IsSummationSimplifiable for " << *this << " and " << v);

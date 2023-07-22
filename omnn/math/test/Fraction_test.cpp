@@ -60,3 +60,9 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     eq = _ == (1_v^(1_v/2));
     BOOST_TEST(eq);
 }
+
+BOOST_AUTO_TEST_CASE(IrrationalFraction_tests) {
+    Valuable f = Fraction{constants::one, constants::i};
+    f.optimize();
+    BOOST_TEST(f == -constants::i);
+}

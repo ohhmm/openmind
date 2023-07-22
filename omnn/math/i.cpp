@@ -3,12 +3,24 @@
 //
 
 #include "i.h"
+#include "PrincipalSurd.h"
+#include "Sum.h"
+
 
 using namespace omnn::math;
 
-constinit std::string_view MinusOneSq::SerializationName = "i";
+constinit std::string_view MinusOneSurd::SerializationName = "i";
 
-std::pair<bool, Valuable> MinusOneSq::IsSummationSimplifiable(const Valuable& v) const {
+Valuable& MinusOneSurd::operator^=(const Valuable& v) {
+    if (v == constants::minus_1) {
+        Become(Product{*this, v});
+    } else {
+        Become(Exponentiation{*this, v});
+    }
+    return *this;
+}
+
+std::pair<bool, Valuable> MinusOneSurd::IsSummationSimplifiable(const Valuable& v) const {
     std::pair<bool, Valuable> is = {v.Is_i(), {}}; 
 	if (is.first) {
         is.second = v * 2;
@@ -19,7 +31,7 @@ std::pair<bool, Valuable> MinusOneSq::IsSummationSimplifiable(const Valuable& v)
     return is;
 }
 
-std::pair<bool, Valuable> MinusOneSq::IsMultiplicationSimplifiable(const Valuable &v) const {
+std::pair<bool, Valuable> MinusOneSurd::IsMultiplicationSimplifiable(const Valuable &v) const {
     std::pair<bool, Valuable> is;
     is.first = v.Is_i();
     if (is.first)
@@ -27,7 +39,7 @@ std::pair<bool, Valuable> MinusOneSq::IsMultiplicationSimplifiable(const Valuabl
     return is;
 }
 
-bool MinusOneSq::MultiplyIfSimplifiable(const Valuable& v)
+bool MinusOneSurd::MultiplyIfSimplifiable(const Valuable& v)
 {
     auto multiply = v.Is_i();
     if (multiply)
@@ -41,19 +53,23 @@ bool MinusOneSq::MultiplyIfSimplifiable(const Valuable& v)
     return multiply;
 }
 
-Valuable MinusOneSq::Sq() const {
-    return Integer(-1);
-}
+Valuable MinusOneSurd::Sq() const {
+    return Integer(-1); }
 
-Valuable MinusOneSq::Sign() const {
+namespace {
+Valuable sqrt_i = Fraction{Sum{1, MinusOneSurd()}, PrincipalSurd(2)};
+}
+Valuable MinusOneSurd::Sqrt() const { return sqrt_i; }
+
+Valuable MinusOneSurd::Sign() const {
 	// TODO: "prove" that the i is not the value that should be returned here... 
-	return constants::one; // in dinstinction between sign as dirrection and dimmension towards the dirrection, decided that the complex plane is a dimmension while +1 is its dirrection towards "increasing" raltively to zero
+	return constants::one; // in distinction between sign as direction and dimension towards the direction, decided that the complex plane is a dimension while +1 is its direction towards "increasing" relatively to zero
 }
 
-Valuable& MinusOneSq::sq() {
+Valuable& MinusOneSurd::sq() {
     return Become(Sq());
 }
 
-Valuable MinusOneSq::abs() const {
+Valuable MinusOneSurd::abs() const {
     return constants::one;
 }

@@ -139,6 +139,11 @@ BOOST_AUTO_TEST_CASE(Product_optimization_test)
     auto is = _1.IsSummationSimplifiable(_2);
     BOOST_TEST(is.first);
     BOOST_TEST(is.second==-x);
+
+    _1 = 2_v.Sqrt();
+    _2 = Fraction{constants::minus_1, _1} * _1;
+    _2.optimize();
+    BOOST_TEST(constants::minus_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Product_abs_test)
