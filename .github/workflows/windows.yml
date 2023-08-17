@@ -23,10 +23,17 @@ jobs:
     - name: Reconfigure to detect newly installed prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake .
-    - name: Build
+    - name: Build Debug
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --config Debug
+    - name: Build Release
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --config Release
-    - name: make check
+    - name: make check Debug
+      working-directory: ${{github.workspace}}/build
+      run: ctest --timeout 240 -C Debug -j %NUMBER_OF_PROCESSORS% 
+            #   --rerun-failed --output-on-failure
+    - name: make check Release
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 240 -C Release -j %NUMBER_OF_PROCESSORS% 
             #   --rerun-failed --output-on-failure
