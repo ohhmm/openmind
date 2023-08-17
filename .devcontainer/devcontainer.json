@@ -28,6 +28,7 @@
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
     "codeium.codeium",
+    "github.copilot",
     "github.vscode-github-actions",
     "github.vscode-pull-request-github",
     "googlecloudtools.cloudcode",

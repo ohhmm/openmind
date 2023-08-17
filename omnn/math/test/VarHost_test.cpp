@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
         BOOST_TEST(v1==v2);
         auto host2 = VarHost::make<std::string>();
         v1 = host2->New(s);
-        BOOST_CHECK_THROW(v1!=v2, const char*);
+        BOOST_CHECK_THROW((void)(v1!=v2), const char*);
         v1 = host->New(std::string("t"));
         BOOST_TEST(v1!=v2);
     }

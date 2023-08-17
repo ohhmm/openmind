@@ -14,6 +14,9 @@ RUN echo "dev-util/boost-build **" >> /etc/portage/package.accept_keywords/boost
 RUN echo "dev-libs/boost icu lzma python test tools" > /etc/portage/package.use/boost
 
 #RUN echo "dev-util/cmake **" > /etc/portage/package.accept_keywords/cmake
+
+RUN echo "sys-devel/gcc **" > /etc/portage/package.accept_keywords/gcc
+
 #RUN echo "dev-libs/icu " > /etc/portage/package.use/icu
 RUN echo "dev-libs/icu **" > /etc/portage/package.accept_keywords/icu
 RUN echo "dev-lang/mono minimal" > /etc/portage/package.use/mono
@@ -30,20 +33,26 @@ RUN echo "sys-libs/compiler-rt **" >> /etc/portage/package.accept_keywords/clang
 RUN echo "sys-libs/compiler-rt-sanitizers **" >> /etc/portage/package.accept_keywords/clang
 RUN echo "sys-libs/libomp **" >> /etc/portage/package.accept_keywords/clang
 
+RUN echo 'ACCEPT_LICENSE="*"' >> /etc/make.conf
+RUN echo "dev-util/intel-ocl-sdk **" > /etc/portage/package.accept_keywords/intel-ocl-sdk
 
-RUN emerge --update \
-    dev-vcs/git \
-    -j`nproc` && rm -rf /var/cache/distfiles
+RUN echo "dev-lang/julia **" > /etc/portage/package.accept_keywords/julia
+RUN echo "sci-mathematics/dsfmt **" >> /etc/portage/package.accept_keywords/julia
+RUN echo "sci-libs/openlibm **" >> /etc/portage/package.accept_keywords/julia
+RUN echo "net-misc/curl ssh" > /etc/portage/package.use/julia
+RUN echo "sci-libs/fftw threads" >> /etc/portage/package.use/julia
 
 RUN emerge --update \
     -1o dev-util/cmake \
     -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN emerge --update \
-    dev-util/cmake \
-    -j1 && rm -rf /var/cache/distfiles
+RUN emerge --update dev-vcs/git -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN emerge --update   kde-frameworks/extra-cmake-modules     -j`nproc` && rm -rf /var/cache/distfiles
+RUN emerge --update -1o dev-util/cmake -j`nproc` && rm -rf /var/cache/distfiles
+
+RUN emerge --update dev-util/cmake -j1 && rm -rf /var/cache/distfiles
+
+RUN emerge --update kde-frameworks/extra-cmake-modules -j`nproc` && rm -rf /var/cache/distfiles
 
 RUN emerge --update =dev-libs/boost-1.82.0-r1 -j`nproc` && rm -rf /var/cache/distfiles
 
@@ -63,7 +72,7 @@ RUN emerge --update \
     gdb \
     -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN (emerge --update sys-devel/clang:17 -j`nproc` || MAKEOPTS=-j1 emerge --update sys-devel/clang:17 -j1) && rm -rf /var/cache/distfiles
+RUN (emerge --update sys-devel/clang:18 -j`nproc` || MAKEOPTS=-j1 emerge --update sys-devel/clang:18 -j1) && rm -rf /var/cache/distfiles
 
 RUN emerge --update \
     lld \
@@ -82,8 +91,6 @@ RUN emerge --update \
     sys-process/htop \
     -j`nproc` && rm -rf /var/cache/distfiles
 
-RUN echo 'ACCEPT_LICENSE="*"' >> /etc/make.conf
-RUN echo "dev-util/intel-ocl-sdk **" > /etc/portage/package.accept_keywords/intel-ocl-sdk
 RUN emerge --update \
     dev-util/intel-ocl-sdk \
     -j`nproc` && rm -rf /var/cache/distfiles 

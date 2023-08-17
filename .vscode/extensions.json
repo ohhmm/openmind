@@ -1,6 +1,7 @@
 {
   "recommendations": [
   "codeium.codeium",
+  "github.copilot",
   "github.vscode-pull-request-github",
   "googlecloudtools.cloudcode",
   "quantum.quantum-devkit-vscode",

@@ -1841,6 +1841,14 @@ std::string Solid(std::string s) {
         return vars.size() == 1;
     }
 
+    Valuable::vars_cont_t Valuable::getVaExps() const
+    {
+        if (exp)
+            return exp->getVaExps();
+        else
+            IMPLEMENT
+    }
+
     max_exp_t Valuable::getMaxVaExp() const
     {
         return exp ? exp->getMaxVaExp() : maxVaExp;
