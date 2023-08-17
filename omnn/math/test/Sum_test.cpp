@@ -341,6 +341,8 @@ BOOST_AUTO_TEST_CASE(Become_tests)
     BOOST_TEST(isValuableType);
     auto isInnerSum = typeid(pub->get())==typeid(Sum);
     BOOST_TEST(isInnerSum);
+    isInnerSum = s.Type()==typeid(Sum);
+    BOOST_TEST(isInnerSum);
 }
 
 BOOST_AUTO_TEST_CASE(Solution_tests)
