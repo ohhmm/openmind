@@ -89,6 +89,8 @@ public:
     bool IsNormalizedPolynomial(const Variable&) const override;
 
     Valuable Abet(std::initializer_list<Valuable>) const;
+
+    vars_cont_t GetVaExps() const override;
 };
 
 }}

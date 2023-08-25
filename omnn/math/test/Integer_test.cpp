@@ -302,7 +302,10 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
         a *= a;
 
         auto timenow = chrono::system_clock::to_time_t(chrono::system_clock::now());
-        cout << ctime(&timenow) << endl;
+        char timenowbuff[255];
+        auto success = ctime_s(timenowbuff, sizeof timenowbuff, &timenow);
+        BOOST_TEST(success == 0);
+        cout << &timenowbuff[0] << endl;
         int_t t;
         std::cout << omnn::measure::nanoseconds([&](){
             t = boost::multiprecision::sqrt(a.ca());

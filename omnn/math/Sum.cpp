@@ -2416,5 +2416,20 @@ namespace
 		return is;
     }
 
+	Valuable::vars_cont_t Sum::GetVaExps() const {
+        vars_cont_t vaExps;
+        for (auto& m : members) {
+            auto mVaExps = m.GetVaExps();
+            for (auto& mve : mVaExps) {
+                auto it = vaExps.find(mve.first);
+                if (it == vaExps.end()) {
+                    vaExps.emplace(mve);
+                } else if (mve.second > it->second) {
+                    it->second = mve.second;
+                }
+            }            
+        }
+        return vaExps;
+	}
 
 }
