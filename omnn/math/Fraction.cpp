@@ -560,6 +560,15 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         return vars;
     }
     
+    Valuable::vars_cont_t Fraction::GetVaExps() const
+    {
+        auto vars = numerator().GetVaExps();
+        for (auto& r : denominator().GetVaExps()) {
+            vars[r.first] -= r.second;
+        }
+        return vars;
+    }
+
     Valuable Fraction::InCommonWith(const Valuable& v) const
     {
         auto c = 1_v;
