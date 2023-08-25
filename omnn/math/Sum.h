@@ -120,6 +120,7 @@ public:
     bool MultiplyIfSimplifiable(const Valuable& v) override;
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
+	vars_cont_t GetVaExps() const override;
 };
 
 

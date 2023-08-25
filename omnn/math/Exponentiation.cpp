@@ -1010,6 +1010,16 @@ namespace omnn::math {
         return v;
     }
     
+    Valuable::vars_cont_t Exponentiation::GetVaExps() const
+    {
+        auto vaExps = getBase().GetVaExps();
+        auto& e = getExponentiation();
+        for (auto& ve : vaExps) {
+            ve.second *= e;
+        }
+        return vaExps;
+    }
+    
     Valuable Exponentiation::InCommonWith(const Valuable& v) const
     {
         auto c = 1_v;
@@ -1074,7 +1084,7 @@ namespace omnn::math {
     
     Valuable Exponentiation::operator()(const Variable& va) const
     {
-        return operator()(va, 0_v);
+        return operator()(va, constants::zero);
     }
 
     Valuable Exponentiation::operator()(const Variable& v, const Valuable& augmentation) const

@@ -89,6 +89,8 @@ public:
     Valuable::solutions_t Distinct() const override;
     
     std::ostream& code(std::ostream& out) const override;
+	vars_cont_t GetVaExps() const override;
+
 protected:
     std::ostream& print(std::ostream& out) const override;
     cont& GetCont() override { return members; }

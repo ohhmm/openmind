@@ -41,6 +41,7 @@ public:
     explicit operator double() const override;
     explicit operator long double() const override;
 
+    vars_cont_t GetVaExps() const override;
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
 };
 

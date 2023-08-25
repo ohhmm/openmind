@@ -114,8 +114,8 @@ public:
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override;
     Valuable& operator ++() override;
-    omnn::math::Valuable &extracted(const omnn::math::Valuable &dn, const omnn::math::Valuable &exponentiating, const omnn::math::Valuable &x);
     
+    vars_cont_t GetVaExps() const override { return {}; }
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result
     Valuable& operator^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;

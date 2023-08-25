@@ -1201,7 +1201,7 @@ std::string Solid(std::string s) {
             return exp->operator()(va);
         }
         else
-            IMPLEMENT
+            return operator()(va, constants::zero);
     }
 
     Valuable Valuable::operator()(const Variable& v, const Valuable& augmentation) const
@@ -1841,10 +1841,10 @@ std::string Solid(std::string s) {
         return vars.size() == 1;
     }
 
-    Valuable::vars_cont_t Valuable::getVaExps() const
+    Valuable::vars_cont_t Valuable::GetVaExps() const
     {
         if (exp)
-            return exp->getVaExps();
+            return exp->GetVaExps();
         else
             IMPLEMENT
     }
