@@ -7,6 +7,7 @@
 #include "Integer.h"
 #include "Fraction.h"
 
+#include <ctime>
 #include <iostream>
 
 #include <boost/math/special_functions/prime.hpp>
@@ -301,11 +302,8 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
         auto sqroot=a;
         a *= a;
 
-        auto timenow = chrono::system_clock::to_time_t(chrono::system_clock::now());
-        char timenowbuff[255];
-        auto success = ctime_s(timenowbuff, sizeof timenowbuff, &timenow);
-        BOOST_TEST(success == 0);
-        cout << &timenowbuff[0] << endl;
+        std::time_t result = std::time(nullptr);
+        std::cout << std::ctime(&result);
         int_t t;
         std::cout << omnn::measure::nanoseconds([&](){
             t = boost::multiprecision::sqrt(a.ca());

@@ -75,6 +75,7 @@ public:
     Valuable& d(const Variable& x) override;
     Valuable GCD() const;
     bool operator ==(const Valuable& v) const override;
+    bool operator<(const Valuable&) const override;
     
     void optimize() override;
     void balance();
