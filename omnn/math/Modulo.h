@@ -40,6 +40,7 @@ public:
     const vars_cont_t& getCommonVars() const override { return VarsForCommoning; }
 
 	bool IsComesBefore(const Valuable& v) const override;
+	omnn::math::Valuable::vars_cont_t GetVaExps() const override;
 };
 
 } /* namespace omnn::math */
