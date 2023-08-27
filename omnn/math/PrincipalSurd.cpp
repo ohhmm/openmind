@@ -124,13 +124,29 @@ max_exp_t PrincipalSurd::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
 }
 
 bool PrincipalSurd::operator <(const Valuable& other) const {
+
+    Valuable power;
     if(other.IsPrincipalSurd()) {
         auto& ps = other.as<PrincipalSurd>();
         if(_2 == ps._2) {
             return _1 < ps._1;
         } else if (_1 == ps._1) {
             return ps._2 < _2;
+        } else if (_2.IsInt() && ps._2.IsInt()) {
+            power = std::max(_2, ps._2);
+        } else {
+            power = _2 * ps._2;
         }
+    } else {
+        power = _2;
     }
-    LOG_AND_IMPLEMENT(*this << " < " << other);
+
+    return (*this ^ power) < (other ^ power);
+}
+
+Valuable& PrincipalSurd::operator^=(const Valuable& e) {
+    if (_2 == e)
+        return _1;
+    else
+        return base::operator^=(e);
 }

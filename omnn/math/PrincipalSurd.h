@@ -44,6 +44,7 @@ public:
     vars_cont_t GetVaExps() const override;
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
 	bool operator <(const Valuable&) const override;
+    Valuable& operator^=(const Valuable&) override;
 };
 
 }
