@@ -10,7 +10,6 @@ PrincipalSurd::PrincipalSurd(const Valuable& radicand, const Valuable& index)
 
 }
 
-
 std::ostream& PrincipalSurd::print_sign(std::ostream &out) const
 {
     out << 'r';
@@ -107,6 +106,17 @@ PrincipalSurd::operator double() const {
 PrincipalSurd::operator long double() const {
     auto d = static_cast<long double>(_1);
     return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<long double>(_2));
+}
+
+Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
+    auto vaExps = _1.GetVaExps();
+    if(_2.IsInt() && _2 > constants::one) {
+        for(auto& ve : vaExps)
+            ve.second /= _2;
+    } else {
+        IMPLEMENT
+    }
+    return vaExps;
 }
 
 max_exp_t PrincipalSurd::getMaxVaExp(const Valuable& _1, const Valuable& _2) {

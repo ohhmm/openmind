@@ -113,3 +113,11 @@ bool Modulo::IsComesBefore(const Valuable& v) const
     }
     return is;
 }
+
+Valuable::vars_cont_t Modulo::GetVaExps() const {
+    auto vars = _1.GetVaExps();
+    for (auto& r : _2.GetVaExps()) {
+        vars[r.first] -= r.second;
+    }
+    return vars;
+}

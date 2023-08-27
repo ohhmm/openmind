@@ -89,6 +89,8 @@ template <class Chld>
             return Valuable::emptyCommonVars();
         }
         
+        Valuable::vars_cont_t GetVaExps() const override { return {}; }
+
         a_int Complexity() const override { return 1; }
 
         typename base::solutions_t Distinct() const override { return { *this }; }
@@ -100,6 +102,7 @@ template <class Chld>
 				: (v.IsSimple() ? 1_v
 				: v.InCommonWith(*this));
         }
+
     };
 
 	namespace constants {
