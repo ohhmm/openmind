@@ -37,7 +37,7 @@ public:
 		return !FindVa() && eexp().IsInt();
 	}
 
-
+    bool IsMultiSign() const;
     YesNoMaybe IsMultival() const override;
     void Values(const std::function<bool(const Valuable&)>&) const override;
     const Valuable& getBase() const { return _1; }
