@@ -127,35 +127,14 @@ namespace math {
 
     void Product::AddToVarsIfVaOrVaExp(const Valuable &item)
     {
-        if(item.IsVa())
+        for (auto& kv :
+            //item.getCommonVars()
+            item.GetVaExps()
+            )
         {
-            AddToVars(item.as<Variable>(), 1_v);
+            AddToVars(kv.first, kv.second);
         }
-        else if (item.IsExponentiation())
-        {
-            auto& e = item.as<Exponentiation>();
-            auto& base = e.getBase();
-            if (base.IsVa())
-            {
-                AddToVars(base.as<Variable>(), e.getExponentiation());
             }
-            else
-            {
-                auto itemMaxVaExp = item.getMaxVaExp();
-                if (itemMaxVaExp > maxVaExp) {
-                    maxVaExp = itemMaxVaExp;
-                }
-            }
-        }
-        else if (!item.IsSum() && item.FindVa())
-        {
-            if (item.IsModulo()) {
-				// FIXME: implement this branch in meaningful way
-            } else {
-                LOG_AND_IMPLEMENT(str() << ": AddToVarsIfVaOrVaExp: " << item);
-            }
-        }
-    }
     
     Product::iterator Product::Had(iterator it)
     {
@@ -1124,6 +1103,29 @@ namespace math {
             same = c1.rbegin()->operator==(v);
         } else if (members.empty()) {
             same = v == 1;
+        } else if (v.IsExponentiation() && Has(v)) {
+            auto n = members.size();
+            same = n == 1;
+            if (!same) {
+                auto& e = v.as<Exponentiation>();
+                same = e.IsMultiSign() && n == 2 && Has(constants::minus_1);
+                if (!same && Has(constants::i)) {
+                    auto& ee = e.getExponentiation();
+                    if (ee.IsFraction()) {
+                        auto& eef = ee.as<Fraction>();
+                        auto& eefdn = eef.getDenominator();
+                        same = eefdn >= 4 || eefdn <= -4;
+                    } else {
+                        LOG_AND_IMPLEMENT("Examine new multisign form: " << *this << " == " << e);
+                    }
+                }
+            }
+        } else if (v.IsProduct()
+            && IsMultival() == YesNoMaybe::Yes
+            && v.IsMultival() == YesNoMaybe::Yes)
+        {
+            // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
+            //LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
         }
         return same;
     }
@@ -1296,4 +1298,15 @@ namespace math {
         return out;
 	}
     
+    Valuable::vars_cont_t Product::GetVaExps() const {
+        vars_cont_t vaExps;
+        for (auto& m : members) {
+            auto mVaExps = m.GetVaExps();
+            for (auto& mve : mVaExps) {
+                vaExps[mve.first] += mve.second;
+            }            
+        }
+        return vaExps;
+    }
+
 }}
