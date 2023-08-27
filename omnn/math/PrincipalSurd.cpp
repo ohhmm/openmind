@@ -122,3 +122,15 @@ Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
 max_exp_t PrincipalSurd::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
     return _1.getMaxVaExp() / _2.ca();
 }
+
+bool PrincipalSurd::operator <(const Valuable& other) const {
+    if(other.IsPrincipalSurd()) {
+        auto& ps = other.as<PrincipalSurd>();
+        if(_2 == ps._2) {
+            return _1 < ps._1;
+        } else if (_1 == ps._1) {
+            return ps._2 < _2;
+        }
+    }
+    LOG_AND_IMPLEMENT(*this << " < " << other);
+}
