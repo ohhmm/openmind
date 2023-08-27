@@ -766,6 +766,8 @@ namespace omnn::math {
             eq = eexp().IsInt()
                  && eexp() < 0
                  && ebase() == (v.as<Fraction>().getDenominator() ^ (-eexp()));
+        } else if (v.IsProduct()) {
+            eq = v.as<Product>().operator==(*this);
         }
         return eq;
     }
@@ -829,6 +831,10 @@ namespace omnn::math {
         return out << "^";
     }
 
+    bool Exponentiation::IsMultiSign() const {
+        return _2.IsFraction()
+            && _2.as<Fraction>().getDenominator().IsEven() == YesNoMaybe::Yes;
+    }
     Valuable::YesNoMaybe Exponentiation::IsMultival() const
     {
         auto is = _1.IsMultival() || _2.IsMultival();
