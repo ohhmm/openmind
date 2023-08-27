@@ -1430,8 +1430,13 @@ std::string Solid(std::string s) {
             }
             return _1 < _2;
         } else {
+            auto diff = *this - v;
+            if (!diff.FindVa()) {
+                return diff < constants::zero;
+            } else {
             LOG_AND_IMPLEMENT(*this << " < " << v);
         }
+    }
     }
 
     bool Valuable::operator==(const Valuable& v) const
