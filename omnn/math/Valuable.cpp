@@ -1434,7 +1434,7 @@ std::string Solid(std::string s) {
             if (!diff.FindVa()) {
                 return diff < constants::zero;
             } else {
-            LOG_AND_IMPLEMENT(*this << " < " << v);
+                LOG_AND_IMPLEMENT(diff << " < 0");
         }
     }
     }
@@ -1789,7 +1789,7 @@ std::string Solid(std::string s) {
         return vars;
     }
 
-    bool Valuable::eval(const std::map<Variable, Valuable>& with){
+    bool Valuable::eval(const vars_cont_t& with) {
         if (exp)
             return exp->eval(with);
         else

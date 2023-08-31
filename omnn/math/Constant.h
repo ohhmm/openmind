@@ -50,6 +50,9 @@ template <class Chld>
         void CollectVaNames(Valuable::va_names_t& s) const override
         { }
         
+        bool eval(const Valuable::vars_cont_t&) override {
+            return {};
+        }
         void Eval(const Variable& va, const Valuable& v) override
         { }
         

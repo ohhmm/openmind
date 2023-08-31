@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE Sum test
 #include <boost/test/unit_test.hpp>
 #include "Sum.h"
+#include "Infinity.h"
 #include "Variable.h"
 
 
@@ -492,4 +493,29 @@ BOOST_AUTO_TEST_CASE(_1_2_3_) {
     }
     BOOST_TEST(solutions == solutionsEtalon);
     std::cout << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(VirtualIterationTest) {
+    DECL_VA(n);
+    DECL_VA(i);
+
+//    auto sum = (i.MustBeInt() && i.Less(1000) && constants::zero.Less(i)).SumOfRoots();
+    auto e = i ^ n;
+    for (auto i = 1000; i-->0 ;)
+    {
+        
+    }
+    
+    // Define a Valuable object representing the integrand t^(z-1)e^(-t)
+    DECL_VA(t);
+    DECL_VA(z);
+    Valuable integrand = t ^ (z - 1) * constants::e ^ -t;
+
+    // Evaluate the indefinite integral at the limits 0 and +infinity
+    Valuable definiteIntegral = integrand.Integral(t, constants::zero, constants::infinity);
+
+    // Output the result
+    std::cout << "The definite integral of t^(z-1)e^(-t) from 0 to +infinity is: " << definiteIntegral << std::endl;
+    auto forSix = definiteIntegral.Eval({{z, 6_v}});
+    std::cout << 6 << " : " << forSix << std::endl;
 }
