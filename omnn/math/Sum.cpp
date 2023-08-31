@@ -2431,9 +2431,4 @@ namespace
         }
         return vaExps;
 	}
-
-    bool Sum::operator<(const Valuable& v) const {
-        return *this - v < constants::zero;
-    }
-
 }

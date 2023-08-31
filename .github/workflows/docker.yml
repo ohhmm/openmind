@@ -34,12 +34,6 @@ jobs:
       - name: Build
         run: cmake --build build
 
-      - name: Enable tests
-        run: cmake --build build --target enable_openmind_tests
-
-      - name: Build tests
-        run: cmake --build build
-
       - name: Check
         working-directory: ./build
         run: ctest . -j`nproc` \

@@ -26,12 +26,13 @@ namespace omnn::math {
             auto i = b.getMaxVaExp();
             if (i) {
                 auto _ = e;
-                const Variable* v;
-                while ((v = _.FindVa())) {
-                    _.Eval(*v, 0);
+                _.eval(e.GetVaExps());
+                OptimizeOn(), _.optimize();
+                if (_.IsInt())
+                    i *= static_cast<a_int>(_);
+                else {
+                    i *= static_cast<double>(_);
                 }
-                _.optimize();
-                i *= static_cast<a_int>(_);
             }
             return i;
         } else {
