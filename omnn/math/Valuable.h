@@ -293,11 +293,9 @@ public:
         const Variable& C = constants::integration_result_constant;
     };
     void integral(); // expects to be single-variable
-    virtual void integral(const Variable& x, const Variable& C);
-    void integral(const Variable& x) { integral(x, constants::integration_result_constant); }
-    virtual void integral(const Variable& x, const Valuable& from,
-                              const Valuable& to,
-                              const Variable& C);
+    virtual Valuable& integral(const Variable& x, const Variable& C);
+    Valuable& integral(const Variable& x) { return integral(x, constants::integration_result_constant); }
+    Valuable& integral(const Variable& x, const Valuable& from, const Valuable& to, const Variable& C);
     Valuable Integral(const Variable& x, const Variable& C = constants::integration_result_constant) const;
     Valuable Integral(const Variable& x,
 		const Valuable& from = constants::minfinity,

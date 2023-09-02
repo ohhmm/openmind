@@ -89,7 +89,7 @@ public:
     bool operator ==(const Valuable&) const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
-    void integral(const Variable& x, const Variable& C) override;
+    Valuable& integral(const Variable& x, const Variable& C) override;
     
     bool operator <(const Valuable& v) const override;
     void optimize() override;
