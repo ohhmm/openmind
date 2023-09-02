@@ -36,5 +36,5 @@ jobs:
 
       - name: Check
         working-directory: ./build
-        run: ctest . -j`nproc` Product_test.*\|Sum_test.*\|MultiValues_test.*\|Exponentiation_test.*\|image_codec_test.*\|test_extrapolator.*\|sh_test.*\|ts.*\|Polyfit_test.*
+        run: ctest . -j`nproc` Product_test\|Sum_test\|MultiValues_test\|Exponentiation_test\|image_codec_test\|test_extrapolator\|sh_test\|ts\|Polyfit_test
 

@@ -800,17 +800,26 @@ namespace omnn::math {
         return *this;
     }
     
-    void Exponentiation::integral(const Variable& x, const Variable& C)
+    Valuable& Exponentiation::integral(const Variable& x, const Variable& C)
     {
-        if ((eexp().IsInt() || eexp().IsSimpleFraction()) && ebase()==x) {
-            ++eexp();
-            operator/=(eexp());
-            operator+=(C);
+        if (ebase()==x) {
+            auto& ee = eexp();
+            if ((ee.IsInt() || ee.IsSimpleFraction())) {
+                updateExponentiation(ee + 1);
+                operator/=(eexp());
+                operator+=(C);
+            } else if (ee.IsSum()) {
+                Product p;
+                for (auto& m : ee.as<Sum>()) {
+                    p.Add(x ^ m);
+                }
+                Become(std::move(p.integral(x, C)));
+            }
         } else {
             IMPLEMENT
         }
         
-        optimize();
+        return *this;
     }
 
     bool Exponentiation::operator <(const Valuable& v) const
