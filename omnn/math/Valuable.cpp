@@ -1158,11 +1158,9 @@ std::string Solid(std::string s) {
         return t;
     }
 
-	void Valuable::integral(const Variable& x, const Valuable& from, const Valuable& to, const Variable& C) {
-        if (exp) {
-            exp->integral(x, from, to, C);
-        } else
-            IMPLEMENT
+	Valuable& Valuable::integral(const Variable& x, const Valuable& from, const Valuable& to, const Variable& C) {
+        integral(x, C);
+        return Become(Eval({{x, to}}) - Eval({{x, from}}));
     }
 
     Valuable Valuable::Integral(const Variable& x,
@@ -1177,10 +1175,10 @@ std::string Solid(std::string s) {
         return t;
     }
 
-	void Valuable::integral(const Variable& x, const Variable& C)
+	Valuable& Valuable::integral(const Variable& x, const Variable& C)
     {
         if(exp) {
-            exp->integral(x, C);
+            return exp->integral(x, C);
         }
         else
             IMPLEMENT
@@ -1435,8 +1433,8 @@ std::string Solid(std::string s) {
                 return diff < constants::zero;
             } else {
                 LOG_AND_IMPLEMENT(diff << " < 0");
+            }
         }
-    }
     }
 
     bool Valuable::operator==(const Valuable& v) const
