@@ -45,10 +45,14 @@ bool System::Add(const Variable& va, const Valuable& v)
 bool System::Add(const Valuable& v)
 {
     auto _ = v;
-    _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
-    {
-        Valuable::OptimizeOn o;
-        _.optimize();
+    if (_.GetView() != Valuable::View::Equation || !Valuable::optimizations) {
+        _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
+        try {
+            Valuable::OptimizeOn o;
+            _.optimize();
+        } catch (...) {
+            _ = v;
+        }
     }
     auto isNew = _ != 0_v &&
 #ifndef __APPLE__

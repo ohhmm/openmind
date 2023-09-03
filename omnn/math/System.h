@@ -15,14 +15,16 @@ class System // TODO: resolve current problem, it mixes-up conjunction with disj
 {
     std::set<Variable> solving;
     std::set<Variable> fetching;
+    std::set<Variable> fetched;
+
     class InProgress {
         bool wasInProgress = {};
         Variable v;
         std::set<Variable>& varsInProgress;
 
     public:
-        InProgress(std::set<Variable>& solvingVarsSet, const Variable& v)
-            : varsInProgress(solvingVarsSet)
+        InProgress(std::set<Variable>& varset, const Variable& v)
+            : varsInProgress(varset)
         {
             this->v = v;
             auto insertion = varsInProgress.insert(v);
@@ -37,11 +39,7 @@ class System // TODO: resolve current problem, it mixes-up conjunction with disj
                 varsInProgress.erase(v);
         }
     };
-    
-    struct VaData
-    {
-        
-    };
+
 public:
     using solutions_t = Valuable::solutions_t;
     using es_t = std::map<std::set<Variable>,solutions_t>;
@@ -58,7 +56,7 @@ public:
     bool Fetch(const Variable&);
     solutions_t Solve(const Variable& v);
     
-    //constexpr 
+    constexpr 
 	virtual bool Validate() const {
         return true;
     }
