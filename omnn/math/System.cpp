@@ -142,13 +142,15 @@ bool System::Eval(const Variable& va, const Valuable& v)
 bool System::Fetch(const Variable& va)
 {
     bool modified = {};
+    InProgress AlreadyFetchedBefore(fetched, va);
+    if (AlreadyFetchedBefore)
+        return modified;
 
     InProgress FetchingInProgress(fetching, va);
     if (FetchingInProgress)
         return modified;
 
     bool fetched = {};
-
 
     Valuable::var_set_t vars;
     bool again;
@@ -188,6 +190,9 @@ bool System::Fetch(const Variable& va)
 			});
     }
 
+    if (modified) {
+        this->fetched.insert(va);
+    }
     return modified;
 }
 

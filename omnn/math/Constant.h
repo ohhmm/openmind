@@ -55,7 +55,7 @@ template <class Chld>
         }
         void Eval(const Variable& va, const Valuable& v) override
         { }
-        
+
         Valuable& operator *=(const Valuable& v) override {
             if(v.IsProduct())
                 return this->Become(v**this);
@@ -102,7 +102,7 @@ template <class Chld>
 
         Valuable InCommonWith(const Valuable& v) const override {
             return v.IsConstant() && this->OfSameType(v) ? v
-				: (v.IsSimple() ? 1_v
+				: ((v.IsSimple() || v.IsVa()) ? 1_v
 				: v.InCommonWith(*this));
         }
 

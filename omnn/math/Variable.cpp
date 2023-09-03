@@ -280,7 +280,7 @@ namespace math {
     Valuable Variable::InCommonWith(const Valuable& v) const
     {
         auto c = 1_v;
-        if(v.IsSimple())
+        if(v.IsSimple() || v.IsConstant())
             ;
         else if (v.IsProduct()
                  || v.IsFraction()
