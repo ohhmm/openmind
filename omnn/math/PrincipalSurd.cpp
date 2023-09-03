@@ -37,12 +37,17 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
     is.first = v.IsRadical();
     if (is.first) {
         auto& surd = v.as<PrincipalSurd>();
-        is.first = _1 == surd._1;
+        is.first = _2 == surd._2;
         if (is.first) {
-            if (_2 == surd._2 && _2 == 2) {
-                is.second = _1;
+            if (_1 == surd._1) {
+                if (_2 == constants::two)
+                    is.second = _1;
+                else
+                    is.second = PrincipalSurd{_1, _2 / 2};
+            } else {
+                is.second = PrincipalSurd{_1 * surd._1, _2};
             }
-        }
+        } 
     }
     return is;
 }
@@ -149,4 +154,38 @@ Valuable& PrincipalSurd::operator^=(const Valuable& e) {
         return _1;
     else
         return base::operator^=(e);
+}
+
+bool PrincipalSurd::IsComesBefore(const Valuable& v) const {
+    if(v.IsPrincipalSurd()) {
+        auto& ps = v.as<PrincipalSurd>();
+        if (_2 == ps._2) {
+            return _1.IsComesBefore(ps._1);
+        } else {
+            return _2 < ps._2;
+        }
+    } else {
+        return base::IsComesBefore(v);
+    }
+}
+
+Valuable PrincipalSurd::InCommonWith(const Valuable& v) const {
+    if(v.IsPrincipalSurd()) {
+        auto& ps = v.as<PrincipalSurd>();
+        if (_2 == ps._2) {
+            auto ic = _1.InCommonWith(ps._1);
+            if(ic.IsInt()) {
+                if(ic == 1)
+                    return 1;
+                else
+                    return PrincipalSurd{ic, _2};
+            } else {
+                return PrincipalSurd{ic, _2};
+            }
+        } else {
+            IMPLEMENT
+        }
+    } else {
+        return base::InCommonWith(v);
+    }
 }
