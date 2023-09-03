@@ -203,6 +203,17 @@ namespace omnn::math {
         a_int Complexity() const override {
             return _1.Complexity() + _2.Complexity();
         }
+
+        
+        Valuable::solutions_t Distinct() const override {
+            Valuable::solutions_t branches;
+            for (auto&& f : _1.Distinct()) {
+                for (auto&& s : _2.Distinct()) {
+                    branches.emplace(Chld{f, s});
+                }
+            }
+            return branches;
+        }
     };
 }
 
