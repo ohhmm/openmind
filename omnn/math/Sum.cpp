@@ -564,17 +564,45 @@ namespace
     Valuable Sum::InCommonWith(const Valuable& v) const
     {
         if(v.IsSum())
-            IMPLEMENT;
-        auto c = v;
-        auto b = GetConstCont().begin();
-        auto e = GetConstCont().end();
-        if(b != e)
         {
-            auto it = b;
-            while(c != 1_v && ++it != e)
-                c = it->InCommonWith(c);
+            auto& s = v.as<Sum>();
+            auto vars = Vars();
+            if (vars.size() == 1 && vars == s.Vars()) {
+                auto& v = vars.begin()->as<Variable>();
+                auto solutions = Solutions(v);
+                auto vSolutions = s.Solutions(v);
+
+                // get common solutions
+                decltype(solutions) commonSolutions;
+                std::set_intersection(solutions.begin(), solutions.end(),
+                    vSolutions.begin(), vSolutions.end(),
+                    std::inserter(commonSolutions, commonSolutions.begin()));
+
+                if (commonSolutions.size() > 0) {
+                    Product p;
+                    for (auto& solution : commonSolutions) {
+                        p.Add(v - solution);
+                    }
+                    return p;
+                }
+                else {
+                    IMPLEMENT
+                }
+            }else{
+                IMPLEMENT
+            }
+        }else{
+            auto c = v;
+            auto b = GetConstCont().begin();
+            auto e = GetConstCont().end();
+            if(b != e)
+            {
+                auto it = b;
+                while(c != 1_v && ++it != e)
+                    c = it->InCommonWith(c);
+            }
+            return c;
         }
-        return c;
     }
     
     Valuable& Sum::operator +=(const Valuable& v)
