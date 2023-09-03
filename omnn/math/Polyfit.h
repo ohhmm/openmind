@@ -51,7 +51,7 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     // copy y matrix
     for ( size_t i = 0; i < nCount; i++ )
     {
-        oYMatrix(i, 0) = oY[i];
+        new (&oYMatrix(i, 0)) T(oY[i]);
     }
     
     // create the X matrix
@@ -60,7 +60,7 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
         T nVal = 1.0f;
         for (size_t nCol = 0; nCol < nDegree; nCol++)
         {
-            oXMatrix(nRow, nCol) = nVal;
+            new (&oXMatrix(nRow, nCol)) T(nVal);
             nVal *= oX[nRow];
         }
     }
@@ -116,7 +116,7 @@ auto polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
             // power up the X
             nXT *= nX;
         }
-        oY[i] = nY;
+        oY[i] = std::move(nY);
     }
     
     return oY;
