@@ -134,7 +134,7 @@ namespace math {
         {
             AddToVars(kv.first, kv.second);
         }
-            }
+    }
     
     Product::iterator Product::Had(iterator it)
     {
@@ -424,7 +424,7 @@ namespace math {
         if(members.size()==0)
             Become(1_v);
         else if (members.size()==1)
-            Become(std::move(const_cast<Valuable&&>(*members.begin())));
+            Become(std::move(members.extract(members.begin()).value()));
     }
 
     Valuable Product::Sqrt() const
@@ -444,7 +444,7 @@ namespace math {
     
     Valuable Product::abs() const
     {
-        auto val = Each([](auto& m) { return m.abs(); });
+        auto val = Each([](auto& m) { return std::abs(m); });
         val.optimize();
         return val;
     }
