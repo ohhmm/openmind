@@ -1189,4 +1189,8 @@ namespace omnn::math {
         }
     }
 
+    Valuable Exponentiation::Sign() const {
+        return ebase().Sign() ^ eexp();
+    }
+
 }
