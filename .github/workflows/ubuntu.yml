@@ -10,18 +10,21 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: OS prerequisites
-      run: sudo apt update && sudo apt upgrade -y && sudo apt install -y libboost-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
+      run: sudo add-apt-repository ppa:mhier/libboost-latest && sudo apt update && sudo apt upgrade -y && sudo apt install -y libboost1.81-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_REQUIRED_BOOST_VERSION="1.74.0" -G Ninja
-    - name: Install prerequisites
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`
-    # - name: Build
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G Ninja
+    # - name: Install prerequisites
     #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build ${{github.workspace}}/build -j `nproc`
+    #   run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`
+    # - name: ReConfigure to detect fetched prerequisites
+    #   working-directory: ${{github.workspace}}/build
+    #   run: cmake ${{github.workspace}}
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build -j `nproc`
     # - name: Check
     #   working-directory: ${{github.workspace}}/build
     #   run: ctest --timeout 120 -C Debug -j `nproc`

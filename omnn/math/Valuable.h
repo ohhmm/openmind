@@ -73,6 +73,7 @@ extern const Valuable& zero;
 extern const Valuable& one;
 extern const Valuable& two;
 extern const Valuable& half;
+extern const Valuable& quarter;
 extern const Valuable& minus_1;
 extern const Valuable& plus_minus_1; // ±1
 extern const Valuable& zero_or_1;
