@@ -677,4 +677,15 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         return Fraction(denominator(), numerator());
     }
 
+    Valuable Fraction::Sign() const {
+        OptimizeOn oo;
+        return numerator().Sign() * denominator().Sign();
+    }
+
+    Valuable Fraction::abs() const {
+        return Sign() == constants::one
+            ? Valuable(Clone())
+            : std::abs(numerator()) / std::abs(denominator());
+    }
+
 }}

@@ -156,8 +156,8 @@ BOOST_AUTO_TEST_CASE(Product_abs_test)
     _2.sqrt();
     BOOST_TEST(_1 != _2);
     
-    _1 = _1.abs();
-    _2 = _2.abs();
+    _1 = std::abs(_1);
+    _2 = std::abs(_2);
     BOOST_TEST(_1 == _2);
 }
 

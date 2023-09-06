@@ -283,7 +283,7 @@ elseif(OPENMIND_BUILD_BOOST)
     string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
     message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
 
-    set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared ${BOOST_BUILD_PARAMS}")
+    set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared --disable-icu ${BOOST_BUILD_PARAMS}")
     if(WIN32)
     	if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "MinGW")
         	separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat gcc")
@@ -309,7 +309,7 @@ elseif(OPENMIND_BUILD_BOOST)
         GIT_TAG boost-${OPENMIND_REQUIRED_BOOST_VERSION}
         GIT_SHALLOW ON
         BUILD_IN_SOURCE 1
-        CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE}
+        CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE} --without-icu
         BUILD_COMMAND ${BOOST_BUILD_COMMAND}
         INSTALL_COMMAND ${BOOST_INSTALL_COMMAND}
         UPDATE_COMMAND ""

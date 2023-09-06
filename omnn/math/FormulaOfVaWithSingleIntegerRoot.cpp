@@ -116,7 +116,7 @@ namespace math {
 //                        return  test(newton);
 //                    }
                     
-                    if(!haveMin || _.abs() < closestY.abs()) {
+                    if(!haveMin || std::abs(_) < std::abs(closestY)) {
                         closest = i;
                         closestY = _;
                         haveMin = true;
@@ -156,7 +156,7 @@ namespace math {
                 auto y = fx(i);
                 if (y == 0) {
                     return i;
-                } else if (y.abs() < closestY.abs()) {
+                } else if (std::abs(y) < std::abs(closestY)) {
                     closest = i;
                     closestY = y;
                 }

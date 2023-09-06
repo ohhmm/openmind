@@ -3,6 +3,7 @@
   "codeium.codeium",
   "github.copilot",
   "github.vscode-pull-request-github",
+  "goast-ai.goast",
   "googlecloudtools.cloudcode",
   "quantum.quantum-devkit-vscode",
   "llvm-vs-code-extensions.vscode-clangd",

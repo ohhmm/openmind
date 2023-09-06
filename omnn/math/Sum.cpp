@@ -60,6 +60,7 @@ namespace
                 typeid(MinusOneSurd),
                 typeid(Integer),
                 typeid(Fraction),
+                typeid(PrincipalSurd),
                 typeid(Modulo),
                 typeid(Infinity),
             };
@@ -538,14 +539,13 @@ namespace
                     if(found != _.end())
                     {
                         auto mm = std::minmax(i->second, found->second,
-                                              [](auto& _1, auto& _2){return _1.abs() < _2.abs();});
+                                              [](auto& _1, auto& _2) { return std::abs(_1) < std::abs(_2); });
                         if ((i->second < 0) == (found->second < 0)) {
                             i->second = mm.first;
                         }
                         else
                         {
-                            auto sign = mm.second / mm.second.abs();
-                            i->second = sign * (mm.second.abs() - mm.first.abs());
+                            i->second = mm.second.Sign() * (std::abs(mm.second) - std::abs(mm.first));
                         }
                         ++i;
                     }
@@ -1707,7 +1707,7 @@ namespace
                                             d_.Eval(va, i);
                                             d_.optimize();
                                             std::cout << "trying " << i << " got " << _ << " f'(" << i << ")=" << d_ << std::endl;
-                                            if(!haveMin || _.abs() < min.abs()) {
+                                            if(!haveMin || std::abs(_) < std::abs(min)) {
                                                 closest = i;
                                                 min = _;
                                                 haveMin = true;

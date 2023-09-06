@@ -60,8 +60,16 @@ BOOST_AUTO_TEST_CASE(Debranching_Dilemma_test)
 
 BOOST_AUTO_TEST_CASE(Other_signs_tests) {
     auto _1 = -1_v * (-4_v ^ constants::half) * (-16 ^ constants::half);
-    auto _2 = constants::plus_minus_1 * 8 * constants::i;
+    auto _2 = constants::plus_minus_1 * 8;
     BOOST_TEST(_1 == _2);
+    BOOST_TEST(_2.Sign() == constants::plus_minus_1);
+
+    _1 = -1_v * (-4_v ^ constants::half) * (-16 ^ constants::quarter);
+    _2 = constants::one ^ constants::quarter;
+    BOOST_TEST(_1.Sign() == _2);
+
+    _2 = constants::plus_minus_1 * 4 * constants::i;
+
     auto d1 = _1.Distinct();
 }
 

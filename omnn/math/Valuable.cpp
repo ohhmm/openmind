@@ -60,8 +60,11 @@ namespace math {
     constexpr const Valuable& two = vo<2>();
 #ifdef MSVC
     constexpr const Valuable& half = vf<.5>();
+    constexpr const Valuable& quarter = vf<.25>();
 #else
     const Valuable& half = static_cast<const Valuable&>(vo<1>()) / static_cast<const Valuable&>(vo<2>());
+    const Fraction Quarter {static_cast<const Valuable&>(vo<1>()), static_cast<const Valuable&>(vo<4>()) };
+    constexpr const Valuable& quarter = Quarter;
 #endif
     constexpr const Valuable& minus_1 = vo<-1>();
 
@@ -1046,7 +1049,9 @@ std::string Solid(std::string s) {
 
     std::pair<bool,Valuable> Valuable::IsMultiplicationSimplifiable(const Valuable& v) const
     {
-        if(exp)
+        if (!optimizations)
+            return {};
+        else if (exp)
             return exp->IsMultiplicationSimplifiable(v);
         else {
             LOG_AND_IMPLEMENT(str() << "  *  " << v);
@@ -1065,7 +1070,9 @@ std::string Solid(std::string s) {
 
     std::pair<bool,Valuable> Valuable::IsSummationSimplifiable(const Valuable& v) const
     {
-        if(exp)
+        if (!optimizations)
+            return {};
+        else if(exp)
             return exp->IsSummationSimplifiable(v);
         else {
             LOG_AND_IMPLEMENT(str() << " IsSummationSimplifiable " << v);
@@ -1351,7 +1358,7 @@ std::string Solid(std::string s) {
 
     ranges_t Valuable::get_zeros_zones(const Variable& v, solutions_t& some) const
     {
-        auto fm = calcFreeMember().abs();
+        auto fm = std::abs(calcFreeMember());
         ranges_t z {{-fm, fm},{}};
 
         auto f = *this;

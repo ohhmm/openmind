@@ -107,6 +107,8 @@ namespace math {
         
         Fraction Reciprocal() const;
         Valuable& sq() override;
-	};
+        Valuable Sign() const override;
+        Valuable abs() const override;
+    };
 
 }}
