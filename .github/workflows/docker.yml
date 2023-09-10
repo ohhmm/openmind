@@ -23,18 +23,18 @@ jobs:
           -DCMAKE_CXX_COMPILER=/usr/lib/llvm/18/bin/clang-18 -DCMAKE_C_COMPILER=/usr/lib/llvm/18/bin/clang-18 \
           -DOPENMIND_BUILD_SAMPLES=OFF
 
-      - name: Install prerequisites
-        working-directory: ./build
-        run: cmake --build . --target prerequisites -j `nproc`
+      # - name: Install prerequisites
+      #   working-directory: ./build
+      #   run: cmake --build . --target prerequisites -j `nproc`
 
-      - name: Reconfigure to detect newly installed prerequisites
-        working-directory: ./build
-        run: cmake .
+      # - name: Reconfigure to detect newly installed prerequisites
+      #   working-directory: ./build
+      #   run: cmake .
 
       - name: Build
         run: cmake --build build
 
       - name: Check
         working-directory: ./build
-        run: ctest . -j`nproc` -E Product_test\|Sum_test\|MultiValues_test\|Exponentiation_test\|image_codec_test\|test_extrapolator\|sh_test\|ts\|Polyfit_test
+        run: ctest . -j`nproc` -E Product_test\|Sum_test\|MultiValues_test\|Exponentiation_test\|image_codec_test\|test_extrapolator\|ts\|Polyfit_test
 

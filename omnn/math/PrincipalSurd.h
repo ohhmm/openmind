@@ -27,6 +27,7 @@ public:
     constexpr const Valuable& Index() const { return _2; }
     constexpr const Valuable& Radicand() const { return _1; }
 
+    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
 
     void optimize() override;

@@ -132,7 +132,7 @@ namespace math {
             auto found = std::find(c.begin(), c.end(), v); // using simple equality finder std::find instead
             auto foundSome = found != c.cend();
             auto has = foundSome && found->Same(v);
-#ifndef NOOMDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
             if(foundSome && !has){
                 LOG_AND_IMPLEMENT("Bug in comparator or object type differs: " << this->str() << " has " << v);
             }

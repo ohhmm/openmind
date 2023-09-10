@@ -141,7 +141,7 @@ namespace
 		return s;
 	}
 
-    Valuable Sum::GCD() const {
+    Valuable Sum::GCDofMembers() const {
         auto it = members.begin();
         auto gcd = it->varless();
         for (; it != members.end(); ++it) {
@@ -505,7 +505,7 @@ namespace
 
                     if(IsSum())
                     {
-                        auto gcd = GCD();
+                        auto gcd = GCDofMembers();
                         if(gcd != 1_v){
                             operator/=(gcd);
                         }
@@ -589,7 +589,7 @@ namespace
                     IMPLEMENT
                 }
             }else{
-                IMPLEMENT
+                return GCD(v);
             }
         }else{
             auto c = v;
@@ -627,11 +627,15 @@ namespace
                 {
                     auto s = *it + v;
                     if (!s.IsSum()) {
-#ifndef NDEBUG
-                        std::cout << *it << " + " << v << " = " << s << "\t\tIMPLEMENT: must be covered by IsSummationSimpifiable call" << std::endl;
-                        s = *it + v;
-                        simplified = it->IsSummationSimplifiable(v);
-                        // TODO: fix all these cases: LOG_AND_IMPLEMENT(*it << " + " << v << " = " << s << "\t\tmust be covered by IsSummationSimpifiable call");
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+                        if (optimizations) {
+                            std::cout << *it << " + " << v << " = " << s
+                                      << "\t\tIMPLEMENT: must be covered by IsSummationSimpifiable call" << std::endl;
+                            s = *it + v;
+                            simplified = it->IsSummationSimplifiable(v);
+                            // TODO: fix all these cases: LOG_AND_IMPLEMENT(*it << " + " << v << " = " << s << "\t\tmust
+                            // be covered by IsSummationSimpifiable call");
+                        }
 #endif
                         Update(it, s);
                         optimize();
@@ -752,13 +756,13 @@ namespace
                                 IMPLEMENT;
                             }
                             auto vars = it->Vars();
-                            auto coVa = it->getCommonVars();
-                            auto maxVa = std::max_element(coVa.begin(), coVa.end(),
-                                                          [](auto&_1,auto&_2){return _1.second < _2.second;});
                             auto it2 = b;
                             while(it2 != e && it2->Vars() != vars)
                                 ++it2;
                             if (it2 == e) {
+                                auto coVa = it->getCommonVars();
+                                auto maxVa = std::max_element(coVa.begin(), coVa.end(),
+                                                              [](auto&_1,auto&_2){return _1.second < _2.second;});
                                 
                                 for (it2 = b; it2 != e; ++it2)
                                 {
@@ -882,43 +886,42 @@ namespace
                                 IMPLEMENT;
                             }
                             auto vars = it->Vars();
-                            auto coVa = it->getCommonVars();
-                            auto maxVa = std::max_element(coVa.begin(), coVa.end(),
-                                                          [](auto&_1,auto&_2){return _1.second < _2.second;});
                             auto it2 = b;
                             while(it2 != e && it2->Vars() != vars)
                                 ++it2;
                             if (it2 == e) {
-                                
-                                for (it2 = b; it2 != e; ++it2)
-                                {
-                                    bool found = {};
-                                    for(auto& v : it2->Vars())
-                                    {
-                                        found = v == maxVa->first;
-                                        if (found) {
-                                            auto coVa2 = it2->getCommonVars();
-                                            auto coVa2vIt = coVa2.find(v);
-                                            if (coVa2vIt == coVa2.end()) {
-                                                IMPLEMENT
+                                auto coVa = it->getCommonVars();
+                                if (coVa.size()) {
+                                    auto maxVa = std::max_element(coVa.begin(), coVa.end(), [](auto& _1, auto& _2) {
+                                        return _1.second < _2.second;
+                                    });
+
+                                    for (it2 = b; it2 != e; ++it2) {
+                                        bool found = {};
+                                        for (auto& v : it2->Vars()) {
+                                            found = v == maxVa->first;
+                                            if (found) {
+                                                auto coVa2 = it2->getCommonVars();
+                                                auto coVa2vIt = coVa2.find(v);
+                                                if (coVa2vIt == coVa2.end()) {
+                                                    IMPLEMENT
+                                                }
+                                                auto coVa1vIt = coVa.find(v);
+                                                if (coVa1vIt == coVa.end()) {
+                                                    IMPLEMENT
+                                                }
+                                                found = coVa1vIt->second >= coVa2vIt->second;
                                             }
-                                            auto coVa1vIt = coVa.find(v);
-                                            if (coVa1vIt == coVa.end()) {
-                                                IMPLEMENT
+
+                                            if (!found) {
+                                                break;
                                             }
-                                            found = coVa1vIt->second >= coVa2vIt->second;
-                                            
                                         }
-                                        
-                                        if (!found) {
+
+                                        if (found)
                                             break;
-                                        }
                                     }
-                                    
-                                    if(found)
-                                        break;
                                 }
-                                
                                 if (it2 == e) {
                                     IMPLEMENT;
                                 }
@@ -2459,4 +2462,55 @@ namespace
         }
         return vaExps;
 	}
+
+    Valuable Sum::Sign() const {
+        auto sign = constants::zero;
+        if (size()) {
+            if (FindVa()) {
+                IMPLEMENT
+            }
+            OptimizeOn oo;
+            std::map<Valuable, Valuable> directions;
+            for (auto& m : members) {
+                auto s = m.Sign();
+                auto it = directions.find(s);
+                if (it == directions.end()) {
+                    auto ms = -s;
+                    it = directions.find(ms);
+                    if (it == directions.end()) {
+                        directions.emplace(std::move(s), m);
+                    } else {
+                        it->second += m;
+                        auto compensatedSign = it->second.Sign();
+                        if (compensatedSign != ms) {
+                            if (compensatedSign == s) {
+                                directions.emplace(std::move(s),
+                                    std::move(directions.extract(it).mapped()));
+                            } else {
+                                IMPLEMENT
+                            }
+                        }
+                    }
+                } else {
+                    it->second += m;
+                }
+            }
+
+            auto it = directions.begin();
+            sign = it->first;
+            if (directions.size() >= 1) {
+                auto e = directions.end();
+                while (++it != e) {
+                    auto s = it->first;
+                    if (-s == sign) {
+                        IMPLEMENT
+                    } else {
+                        sign = (sign + s).Sign();
+                    }
+                }
+            }
+        }
+        return sign;
+    }
+
 }

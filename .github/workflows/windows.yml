@@ -6,7 +6,7 @@ jobs:
   build-on-windows:
 
     runs-on: windows-latest
-    
+
     steps:
     - uses: actions/checkout@v3
     - uses: ilammy/msvc-dev-cmd@v1
@@ -16,24 +16,24 @@ jobs:
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
-      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe"
+      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
     - name: Reconfigure to detect newly installed prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake .
-    # - name: Build Debug
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build ${{github.workspace}}/build --config Debug
-    # - name: Build Release
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build ${{github.workspace}}/build --config Release
-    # - name: make check Debug
-    #   working-directory: ${{github.workspace}}/build
-    #   run: ctest --timeout 240 -C Debug -j %NUMBER_OF_PROCESSORS% 
-    #         #   --rerun-failed --output-on-failure
-    # - name: make check Release
-    #   working-directory: ${{github.workspace}}/build
-    #   run: ctest --timeout 240 -C Release -j %NUMBER_OF_PROCESSORS% 
-    #         #   --rerun-failed --output-on-failure
+    - name: Build Debug
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --config Debug
+    - name: Build Release
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --config Release
+    - name: make check Debug
+      working-directory: ${{github.workspace}}/build
+      run: ctest --timeout 240 -C Debug -j %NUMBER_OF_PROCESSORS%  -E "Product_test|Sum_test|MultiValues_test|Exponentiation_test|image_codec_test|test_extrapolator|ts|Polyfit_test"
+            #   --rerun-failed --output-on-failure
+    - name: make check Release
+      working-directory: ${{github.workspace}}/build
+      run: ctest --timeout 240 -C Release -j %NUMBER_OF_PROCESSORS%  -E "Product_test|Sum_test|MultiValues_test|Exponentiation_test|image_codec_test|test_extrapolator|ts|Polyfit_test"
+            #   --rerun-failed --output-on-failure
