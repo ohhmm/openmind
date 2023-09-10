@@ -316,8 +316,6 @@ BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
     };
     Variable value[Sz][Sz];
     
-    Valuable::optimizations = {};
-    
     auto at = [&](const Valuable& xx, const Valuable& yy, const Valuable& vv){
         return x.Equals(xx).sq() + y.Equals(yy).sq() + v.Equals(vv).sq();
     };
@@ -378,12 +376,8 @@ BOOST_AUTO_TEST_CASE(Sudoku_simplest_test
             auto& i = data[rowIdx][colIdx];
             if(i == 0){
                 auto co = s;
-                auto wasopt = Valuable::optimizations;
-                Valuable::optimizations = true;
-                co.eval({{x, colIdx},{y, rowIdx}});
+                Valuable::OptimizeOn(), co.eval({{x, colIdx},{y, rowIdx}});
                 std::cout << co.str() << std::endl;
-                co.optimize();
-                Valuable::optimizations = wasopt;
                 auto is = co.IntSolutions(v);
                 if(is.size()==1 && is.begin()->IsInt()){
                     i = static_cast<int>(*is.begin());

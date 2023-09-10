@@ -579,6 +579,12 @@ namespace math {
         return (v.IsInt() && v!=0_v && *this!=0_v) ? boost::gcd(v.ca(),ca()) : 1_v;
     }
 
+    Valuable Integer::GCD(const Valuable& v) const {
+        return v.IsInt()
+            ? boost::gcd(v.ca(), ca())
+            : v.GCD(*this);
+    }
+
     // sqrt using boost
     Valuable Integer::Sqrt() const
     {
@@ -1083,5 +1089,12 @@ namespace math {
 //#pragma omp for
         return false;
     }
-}}
+
+    Valuable::solutions_t Integer::GetIntegerSolution(const Variable &va) const
+    {
+        return {};
+    }
+
+}
+}
 

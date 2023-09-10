@@ -114,15 +114,6 @@ namespace math {
         std::type_index Type() const override {
         	return typeid(Chld);
         }
-
-//         static const Chld* cast(const Valuable& v){
-//             return Valuable::cast<Chld>(v);
-//         }
-// 
-//         static Chld* cast(Valuable& v){
-//             return Valuable::cast<Chld>(v);
-//         }
-        
     };
 }
 }

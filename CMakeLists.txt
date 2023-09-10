@@ -230,6 +230,16 @@ if(NOT GIT_EXECUTABLE AND WIN32)
 	find_package(Git)
 endif()
 if(GIT_EXECUTABLE)
+
+	add_custom_target(git-gui
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} gui
+	)
+	set_target_properties(git-gui PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util")
+
 	add_custom_target(update
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash
@@ -239,6 +249,7 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util")
+
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
@@ -251,6 +262,7 @@ if(GIT_EXECUTABLE)
 			EXCLUDE_FROM_DEFAULT_BUILD 1
 			FOLDER "util")
 		add_dependencies(update update-openmind)
+
 	endif()
 endif()
 
@@ -296,9 +308,7 @@ elseif(OPENMIND_BUILD_BOOST)
     else()
         set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
 		if(APPLE)
-			set(BOOST_BUILD_APPLE_ARGS "-address-model=64 architecture=arm+x86")
-#			separate_arguments(BOOST_EXT_CONFIGURE UNIX_COMMAND "${BOOST_EXT_CONFIGURE} --prefix=/Library/Developer")
-#			set(BOOST_BUILD_COMMAND "${BOOST_BUILD_COMMAND} install")
+			set(BOOST_BUILD_APPLE_ARGS "-address-model=64 architecture=arm+x86 -s NO_LZMA=1 -s NO_ZSTD=1")
 		endif()
         separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND}")
         separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
@@ -306,7 +316,7 @@ elseif(OPENMIND_BUILD_BOOST)
 
     message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
     ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
-        GIT_TAG boost-${OPENMIND_REQUIRED_BOOST_VERSION}
+        GIT_TAG boost-${OPENMIND_PREFERRED_BOOST_VERSION}
         GIT_SHALLOW ON
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE} --without-icu
