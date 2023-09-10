@@ -11,18 +11,22 @@ jobs:
     - uses: actions/checkout@v3
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
+    - name: Install Boost
+      uses: MarkusJx/install-boost@v2.4.4
+      with:
+        boost_version: '1.83.0'
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_REQUIRED_BOOST_VERSION="1.83.0"
-    # - name: Install prerequisites
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu`
-    # - name: Reconfigure to detect newly installed prerequisites
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake .
-    # - name: Build
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu`
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DBoost_DIR=${{github.workspace}}/boost/boost
+    - name: Install prerequisites
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu`
+    - name: Reconfigure to detect newly installed prerequisites
+      working-directory: ${{github.workspace}}/build
+      run: cmake .
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu`
     # - name: Check
     #   working-directory: ${{github.workspace}}/build
-    #   run: ctest --timeout 120 -C Debug -j `sysctl -n hw.ncpu`
+    #   run: ctest --timeout 120 -C Debug -j `sysctl -n hw.ncpu` -E Product_test\|Sum_test\|MultiValues_test\|Exponentiation_test\|image_codec_test\|test_extrapolator\|ts\|Polyfit_test

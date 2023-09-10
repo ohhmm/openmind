@@ -287,6 +287,10 @@ public:
     virtual Valuable& operator--();
     virtual Valuable& operator++();
     virtual Valuable& operator^=(const Valuable&);
+
+    // returns the greatest common divisor (GCD) with the given object
+    virtual Valuable GCD(const Valuable& v) const;
+
     virtual Valuable& d(const Variable& x);
     struct IntegrationParams {
         const Valuable& from = constants::minfinity;

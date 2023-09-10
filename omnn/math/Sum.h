@@ -73,7 +73,8 @@ public:
     Valuable& operator %=(const Valuable& v) override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
-    Valuable GCD() const;
+    Valuable GCDofMembers() const;
+
     bool operator ==(const Valuable& v) const override;
     
     void optimize() override;
@@ -121,6 +122,7 @@ public:
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
 	vars_cont_t GetVaExps() const override;
+    Valuable Sign() const override;
 };
 
 

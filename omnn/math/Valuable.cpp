@@ -1145,6 +1145,22 @@ std::string Solid(std::string s) {
             IMPLEMENT
     }
 
+    Valuable Valuable::GCD(const Valuable& v) const {
+        Valuable a(Clone());
+        Valuable b = v;
+
+        while (b != 0) {
+            Valuable temp = b;
+            b = a % b;
+            if (b.IsModulo()) {
+                b = std::move(b.as<Modulo>().get1());
+            }
+            a = temp;
+        }
+
+        return a;
+    }
+
     Valuable& Valuable::d(const Variable& x)
     {
         if(exp) {

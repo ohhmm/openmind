@@ -32,6 +32,15 @@ std::ostream& PrincipalSurd::code(std::ostream& out) const {
     return out;
 }
 
+std::pair<bool, Valuable> PrincipalSurd::IsSummationSimplifiable(const Valuable& v) const {
+    std::pair<bool, Valuable> is;
+    is.first = operator==(v);
+    if (is.first) {
+        is.second = v * 2;
+    }
+    return is;
+}
+
 std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valuable& v) const {
     std::pair<bool, Valuable> is;
     is.first = v.IsRadical();
@@ -189,6 +198,8 @@ Valuable PrincipalSurd::InCommonWith(const Valuable& v) const {
         return _2.IsEven() == YesNoMaybe::Yes && _1.Sign() != constants::one
             ? v
             : constants::one;
+    } else if (v.IsProduct()) {
+        return v.InCommonWith(*this);
     } else {
         return base::InCommonWith(v);
     }
