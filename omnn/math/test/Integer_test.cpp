@@ -318,10 +318,13 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
     }
 
     auto _ = 4_v;
+    auto _2 = (_ / 2).Sqrt();
+    auto _1 = _ / _2;
+    BOOST_TEST(_1 == _2*2);
     _ ^= 1_v/2;
     BOOST_TEST(_.Sq()==4_v);
     BOOST_TEST(_==2*((1)^(1_v/2)));
-    auto _1 = _;
+    _1 = _;
     _ *= _1;
     BOOST_TEST(_==4_v);
 }

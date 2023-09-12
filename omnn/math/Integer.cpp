@@ -213,6 +213,8 @@ namespace math {
             } else {
                 Become(Fraction(*this, v));
             }
+        } else if (v.IsSimple()) {
+            Become(Fraction(*this, v));
         }
         else
             *this *= v^-1;

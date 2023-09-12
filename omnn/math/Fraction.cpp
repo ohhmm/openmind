@@ -8,6 +8,7 @@
 #include "i.h"
 
 #include <boost/lexical_cast.hpp>
+#include <PrincipalSurd.h>
 
 
 namespace omnn{
@@ -198,6 +199,14 @@ namespace math {
                     denominator() /= Integer(d);
                     optimize();
                     return;
+                }
+            } else if (denom.IsSimple()) {
+                if (denom.IsPrincipalSurd()) {
+                    auto& ps = denom.as<PrincipalSurd>();
+                    auto& e = ps.Index();
+                    numerator() *= ps ^ (e - 1);
+                    setDenominator(std::move(ps.Radicand()));
+                    goto reoptimize_the_fraction;
                 }
             }
         }
