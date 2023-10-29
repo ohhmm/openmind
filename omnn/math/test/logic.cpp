@@ -9,33 +9,33 @@ using namespace boost::unit_test;
 BOOST_AUTO_TEST_CASE(logic_or_tests
     , *disabled() // FIXME:
 ) {
-    auto x = "x"_va;
+    DECL_VA(x);
     auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
     auto ok = eq(x);
     auto set = Valuable({1_v, 2_v, 3_v});
     BOOST_TEST(ok == set);
 }
 
-BOOST_AUTO_TEST_CASE(ifz_tests)
-{
+BOOST_AUTO_TEST_CASE(ifz_tests) {
     // two different bits
     // if a=0 then b=1 else b=0
     // if a=1 then b=0 else b=1
-    Variable a,b;
+    DECL_VA(a);
+    DECL_VA(b);
     auto e = a.Equals(1).Ifz(b.Equals(0), b.Equals(1));
     {
         auto ee = e;
         ee.Eval(a, 0);
         ee.Eval(b, 1);
         ee.optimize();
-        BOOST_TEST(ee==0);
+        BOOST_TEST(ee == 0);
     }
     {
         auto ee = e;
         ee.Eval(a, 1);
         ee.Eval(b, 0);
         ee.optimize();
-        BOOST_TEST(ee==0);
+        BOOST_TEST(ee == 0);
     }
 }
 
@@ -43,8 +43,8 @@ BOOST_AUTO_TEST_CASE(not_tests
     ,*disabled() //TODO:
 )
 {
-    auto x = "x"_va;
-    auto x_eq_1 = x-1;
+    DECL_VA(x);
+    auto x_eq_1 = x - 1;
     auto x_ne_1 = !x_eq_1; //!x; // must mean all except this equation
     std::cout << x_ne_1 << std::endl;
     auto eval_x_eq_1 = x_eq_1;
@@ -56,13 +56,20 @@ BOOST_AUTO_TEST_CASE(not_tests
     eval_x_ne_1.Eval(x, 7);
     ok = eval_x_ne_1 != 0_v;
     BOOST_TEST(ok);
+
+    auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
+    auto neq = x_ne_1;
+    auto intersection = eq && neq;
+    auto _2or3 = x.Equals(2) || x.Equals(3);
+    ok = intersection == _2or3;
+    BOOST_TEST(ok);
 }
 
 BOOST_AUTO_TEST_CASE(test_logic_intersection
     , *disabled() // FIXME:
 ) {
-    Variable x;
-    auto _1 = x.Abet({1,2,3,3});
+    DECL_VA(x);
+    auto _1 = x.Abet({1, 2, 3, 3});
     auto _2 = x.Abet({2,3,3});
     auto _ = _1.Intersect(_2, x);
 
@@ -79,7 +86,7 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_with_exception
     ,*disabled() //TODO:
 )
 {
-    Variable x;
+    DECL_VA(x);
     auto _1 = x.Abet({1,2,3,3});
     auto _2 = x.Abet({2,3,3});
     auto _ = _1.Intersect(_2, x).logic_and(x.NotEquals(3));
@@ -102,8 +109,8 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_simplifying
                       ,*disabled()
                      )
 {
-    Variable x;
-    auto _1 = x.Abet({1,2});
+    DECL_VA(x);
+    auto _1 = x.Abet({1, 2});
     auto _2 = x.Abet({2,3});
     auto i = _1.Intersect(_2, x);
     auto solutions = i.IntSolutions(x);
