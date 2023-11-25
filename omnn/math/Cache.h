@@ -13,6 +13,8 @@ class DB;
 
 #include <boost/filesystem.hpp>
 
+#include <storage/CacheBase.h>
+
 #include "VarHost.h"
 #include "Variable.h"
 
@@ -22,6 +24,7 @@ namespace omnn::math {
 namespace fs = boost::filesystem;
 
     class Cache
+    // TODO : public storage::CacheBase
     {
     public:
         using path_str_t = fs::path;
