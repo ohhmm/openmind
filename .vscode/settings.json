@@ -8,7 +8,7 @@
   // "cmake.configureSettings": {
   //   "CMAKE_BUILD_PARALLEL_LEVEL": "${nproc}",
   // },
-  "cmake.generator": "Ninja",
+  "cmake.generator": "Ninja Multi-Config",
   "extensions": [
     "codeium.codeium",
     "github.copilot",
