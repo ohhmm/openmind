@@ -659,15 +659,18 @@ std::string Solid(std::string s) {
                     auto ss = s.substr(i, next - i);
                     Trim(ss);
                     auto hasSpace = ss.find(' ') != std::string::npos;
-                    if (ss.find('.') != std::string::npos) {
+                    auto dot = ss.find('.');
+                    if (dot != std::string::npos) {
                         std::string s;
                         if(hasSpace){
                             s = ss;
                             s = Solid(s);
                             ss = s;
                         }
-                        boost::multiprecision::cpp_dec_float_100 fp(ss);
-                        o(Fraction(fp));
+                        auto beforedot = ss.substr(0, dot);
+                        auto afterdot = ss.substr(dot + 1);
+                        auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ Integer(afterdot.length()));
+                        o(std::move(f));
                     } else {
                         Valuable integer = hasSpace
                             ? Integer(Solid(std::string(ss)))
