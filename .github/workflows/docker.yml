@@ -20,7 +20,7 @@ jobs:
       - name: Configure
         working-directory: ./build
         run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_CXX_COMPILER=/usr/lib/llvm/18/bin/clang-18 -DCMAKE_C_COMPILER=/usr/lib/llvm/18/bin/clang-18 \
+          -DCMAKE_CXX_COMPILER=/usr/lib/llvm/17/bin/clang-17 -DCMAKE_C_COMPILER=/usr/lib/llvm/17/bin/clang-17 \
           -DOPENMIND_BUILD_SAMPLES=OFF
 
       # - name: Install prerequisites
