@@ -2,8 +2,7 @@ FROM gentoo/stage3:latest
 
 ARG LLVM_MAJOR_VERSION=17
 ARG LLVM_FULL_VERSION=$LLVM_MAJOR_VERSION.0.6
-#ARG BOOST_VERSION=1.82.0-r1
-ARG BOOST_VERSION=1.83.0-r2
+ARG BOOST_VERSION=1.84.0
 
 RUN emerge --sync
 
@@ -90,11 +89,12 @@ RUN emerge --update -j`nproc` \
 	dev-python/myst-parser \
 	&& rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
 
-RUN emerge sys-devel/llvm:$LLVM_MAJOR_VERSION -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
+RUN emerge =sys-devel/llvmgold-$LLVM_MAJOR_VERSION -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
 RUN emerge --update =sys-libs/libomp-$LLVM_FULL_VERSION -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
-RUN emerge --update =dev-libs/boost-$BOOST_VERSION -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
 RUN emerge --update =sys-devel/clang-common-$LLVM_FULL_VERSION-r1 -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
 RUN emerge --update =sys-devel/lld-$LLVM_FULL_VERSION  -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
+
+RUN emerge --update =dev-libs/boost-$BOOST_VERSION -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
 
 # FoundationDB deps
 RUN emerge --update dev-cpp/benchmark dev-cpp/gtest -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
@@ -109,11 +109,11 @@ RUN emerge --update \
     media-libs/vulkan-loader \
     -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
 
-RUN emerge --update gdb -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
-RUN emerge --update =dev-util/lldb-$LLVM_FULL_VERSION -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
-
 # RUN emerge --update =dev-lang/julia-1.8.3-r4 -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
 #RUN emerge --update =dev-lang/julia-1.8.5-r1 -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
+
+RUN emerge --update gdb -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
+RUN emerge --update =dev-util/lldb-$LLVM_FULL_VERSION -j`nproc` && rm -rf /var/cache/distfiles/* && rm -rf /var/tmp/portage/*
 
 RUN emerge --update \
     app-misc/mc \
