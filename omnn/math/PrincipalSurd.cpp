@@ -198,9 +198,14 @@ Valuable PrincipalSurd::InCommonWith(const Valuable& v) const {
         return _2.IsEven() == YesNoMaybe::Yes && _1.Sign() != constants::one
             ? v
             : constants::one;
-    } else if (v.IsProduct()) {
-        return v.InCommonWith(*this);
+    } else if (v.IsVa() && !HasVa(v.as<Variable>())){
+        return constants::one;
     } else {
-        return base::InCommonWith(v);
+        auto commonUnderRoot = _1.InCommonWith(v ^ _2);
+        if(commonUnderRoot == constants::one) {
+            return commonUnderRoot;
+        } else {
+            return PrincipalSurd{commonUnderRoot, _2};
+        }
     }
 }
