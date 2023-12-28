@@ -743,7 +743,7 @@ namespace math {
            }
        } else if (v.IsSimple()) {
        } else if (v.IsModulo()) {
-       } else if (v.IsSum()) {
+       } else if (v.IsSum() || v.IsPrincipalSurd()) {
            is = v.IsSummationSimplifiable(*this);
        } else if (v.IsProduct()
                   || v.IsVa()
