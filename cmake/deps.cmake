@@ -5,35 +5,42 @@ function(ext_configure_args name args)
 
 	string(REPLACE "-" "_" name ${name})
 
-	set(${args} ${${args}}
-
+	set(add_args
 		-D${name}_TESTS=OFF
-		-D${name}_BUILD_TESTS=OFF
+		-D${name}_BUILD_TESTS:BOOL=OFF
 		-D${name}_BUILD_BENCHMARKS=OFF
 		-D${name}_BUILD_GMOCK=OFF
 		-D${name}_FRAMEWORK=${APPLE}
 		-D${name}_STATIC=ON
-		-D${name}_SHARED=${_IS_DEBUG}
 		-D${name}_BUILD_APIDOC=OFF
 		-D${name}_BUILD_DEMOS=OFF
+		-D${name}_BUILD_EXAMPLES=OFF
 
+		-DBENCHMARK_ENABLE_GTEST_TESTS:BOOL=ON
 		-DCMAKE_CXX_FLAGS=-D_CRT_SECURE_NO_WARNINGS
-
-		PARENT_SCOPE)
+		)
 
 	if(${name}_C_STANDARD)
-		set(${args} ${${args}}
+		set(add_args ${add_args}
 			-DCMAKE_C_STANDARD=${${name}_C_STANDARD}
 			-DCMAKE_C_STANDARD_REQUIRED=ON
-			PARENT_SCOPE)
+			)
+	endif()
+
+	if(_IS_DEBUG)
+		set(add_args ${add_args}
+			-D${name}_SHARED=ON
+			)
 	endif()
 
 	if(${name}_CXX_STANDARD)
-		set(${args} ${${args}}
+		set(add_args ${add_args}
 			-DCMAKE_CXX_STANDARD=${${name}_CXX_STANDARD}
 			-DCMAKE_CXX_STANDARD_REQUIRED=ON
-			PARENT_SCOPE)
+			)
 	endif()
+
+	set(${args} ${${args}} ${add_args} PARENT_SCOPE)
 
 endfunction()
 
@@ -113,7 +120,14 @@ macro(ext name location)
 		string (REGEX MATCHALL "([^/]+)[\^{}]\n" TAGS "${OUTPUT}")
 		string (REGEX REPLACE "\n" ";"  TAGS "${TAGS}")
 		set_property (CACHE ${name}_TAG PROPERTY STRINGS "${TAGS}")
-
+		message ("ExternalProject_Add(${name}
+		GIT_REPOSITORY ${location}
+		GIT_SHALLOW ON
+		GIT_TAG ${${name}_TAG}
+		INSTALL_DIR ${CMAKE_BINARY_DIR}
+		${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
+		CMAKE_ARGS ${ARGS}
+		)")
 		ExternalProject_Add(${name}
 			GIT_REPOSITORY ${location}
 			GIT_SHALLOW ON
