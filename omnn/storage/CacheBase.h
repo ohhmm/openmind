@@ -5,7 +5,7 @@
 
 #include <boost/filesystem.hpp>
 
-namespace omnn::math::storage {
+namespace omnn::rt::storage {
 
     namespace fs = boost::filesystem;
 

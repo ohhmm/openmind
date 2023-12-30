@@ -2,7 +2,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "SySHA.h"
-#include "Variable.h"
 
 #include <future>
 #include <thread>
