@@ -141,6 +141,7 @@ function(apply_target_commons this_target)
 		target_link_options(${this_target} PUBLIC
 			$<$<CONFIG:DEBUG>:/LTCG:OFF>
 			$<$<CONFIG:RelWithDebInfo>:/LTCG:OFF>
+			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-wunicode>
 			)
 		message("${CMAKE_BINARY_DIR}/bin")
 	    target_link_directories(${this_target} PUBLIC
@@ -235,6 +236,9 @@ function(test)
 		target_compile_definitions(${TEST_NAME} PUBLIC
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
+			)
+		target_link_options(${TEST_NAME} PUBLIC
+			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>,$<PLATFORM_ID:Windows>>:-mconsole>
 			)
 		add_dependencies(${TEST_NAME} ${parent_target})
 		#add_dependencies(${TEST_NAME} prerequisites)

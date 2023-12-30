@@ -1,13 +1,13 @@
 #pragma once
-
 #include "CacheBase.h"
 
 namespace leveldb {
 class DB;
 }
 
-namespace omnn::math::storage {
+namespace omnn::rt::storage {
 
+#ifdef 	OPENMIND_STORAGE_LEVELDB
 class LevelDbCache
     : public CacheBase
 {
@@ -20,6 +20,6 @@ public:
     bool Clear(const std::string_view& key) override;
     ~LevelDbCache() override;
 };
+#endif // OPENMIND_STORAGE_LEVELDB
 
 }
-

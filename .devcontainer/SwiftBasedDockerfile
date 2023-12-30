@@ -1,0 +1,12 @@
+FROM swift
+
+RUN apt update
+RUN apt upgrade -y
+
+RUN apt install -y software-properties-common
+RUN add-apt-repository ppa:mhier/libboost-latest
+RUN apt install -y libboost1.81-all-dev
+RUN apt install -y cmake
+RUN apt install -y libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
+RUN apt install -y clangd
+RUN apt install -y mono-tools-devel mono-mcs libgtest-dev libbenchmark-dev libfmt-dev libjemalloc-dev

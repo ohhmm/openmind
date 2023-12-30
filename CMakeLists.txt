@@ -238,6 +238,7 @@ if(GIT_EXECUTABLE)
 
 	add_custom_target(git-gui
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} gc
 		COMMAND ${GIT_EXECUTABLE} gui
 	)
 	set_target_properties(git-gui PROPERTIES

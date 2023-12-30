@@ -15,8 +15,10 @@ endfunction()
 
 macro(find_pkg)
 	set(hint_paths
-		"${CMAKE_BINARY_DIR}"
-		"${CMAKE_INSTALL_PREFIX}"
+		${CMAKE_BINARY_DIR}
+		${CMAKE_BINARY_DIR}/lib
+		${CMAKE_BINARY_DIR}/lib64
+		${CMAKE_INSTALL_PREFIX}
 		)
 	foreach(dep ${ARGN})
 		if(NOT ${dep}_FOUND)
@@ -36,23 +38,26 @@ macro(find_pkg)
 		if(${dep}_FOUND)
 			break()
 		endif()
-		set(hints ${hint_paths})
+		set(hints ${hint_paths}
+			${CMAKE_BINARY_DIR}/lib/${dep}
+			${CMAKE_BINARY_DIR}/lib64/${dep}
+			)
 		if(WIN32)
 			get_local_drives(drives)
 			foreach(drive ${drives})
 				if(EXISTS "${drive}/${dep}")
-					set(hints ${hint_paths} "${drive}/${dep}")
+					set(hints ${hints} "${drive}/${dep}")
 				endif()
 				if(EXISTS "${drive}/${dep}${address_model}")
-					set(hints ${hint_paths} "${drive}/${dep}${address_model}")
+					set(hints ${hints} "${drive}/${dep}${address_model}")
 				endif()
 				if(EXISTS "$ENV{ProgramFiles}/${dep}")
-					set(hints ${hint_paths} "$ENV{ProgramFiles}/${dep}")
+					set(hints ${hints} "$ENV{ProgramFiles}/${dep}")
 				endif()
 			endforeach()
 		else()
 			if(EXISTS /opt/${dep})
-				set(hints ${hint_paths} "/opt/${dep}")
+				set(hints ${hints} "/opt/${dep}")
 			endif()
 		endif()
 		find_package(${dep} HINTS ${hints})

@@ -1,11 +1,11 @@
 #include "LevelDbCache.h"
-
+#ifdef 	OPENMIND_STORAGE_LEVELDB
 #include <leveldb/db.h>
 
 #include <stdexcept>
 #include <string>
 
-using namespace omnn::math::storage; 
+using namespace omnn::rt::storage; 
 
 
 LevelDbCache::LevelDbCache(const std::string_view &path)
@@ -42,3 +42,4 @@ bool LevelDbCache::Clear(const std::string_view &key) {
 LevelDbCache::~LevelDbCache() {
 	delete _db;
 }
+#endif
