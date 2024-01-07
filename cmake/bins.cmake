@@ -98,7 +98,10 @@ function(apply_target_commons this_target)
 		-D_${this_target_up}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 	)
 	if(OPENMIND_USE_OPENCL)
-		target_compile_definitions(${this_target} PUBLIC OPENMIND_USE_OPENCL)
+		target_compile_definitions(${this_target} PUBLIC
+			OPENMIND_USE_OPENCL
+			OPENMIND_MATH_USE_OPENCL
+			)
 		if(OPENMIND_DEBUG_CHECKS)
 			target_compile_definitions(${this_target} PUBLIC BOOST_COMPUTE_DEBUG_KERNEL_COMPILATION)
 		endif()
