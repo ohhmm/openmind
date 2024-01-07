@@ -8,7 +8,12 @@ function(ext_configure_args name args)
 	set(add_args
 		-D${name}_TESTS=OFF
 		-D${name}_BUILD_TESTS:BOOL=OFF
+		-D${name}_BENCHMARK=OFF
+		-D${name}_BENCHMARKS=OFF
+		-D${name}_BENCHMARKING=OFF
+		-D${name}_BUILD_BENCHMARK=OFF
 		-D${name}_BUILD_BENCHMARKS=OFF
+		-D${name}_BUILD_BENCHMARKING=OFF
 		-D${name}_BUILD_GMOCK=OFF
 		-D${name}_FRAMEWORK=${APPLE}
 		-D${name}_STATIC=ON
@@ -16,7 +21,7 @@ function(ext_configure_args name args)
 		-D${name}_BUILD_DEMOS=OFF
 		-D${name}_BUILD_EXAMPLES=OFF
 
-		-DBENCHMARK_ENABLE_GTEST_TESTS:BOOL=ON
+		-DBENCHMARK_ENABLE_GTEST_TESTS:BOOL=OFF
 		-DCMAKE_CXX_FLAGS=-D_CRT_SECURE_NO_WARNINGS
 		)
 
