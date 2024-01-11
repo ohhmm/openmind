@@ -669,7 +669,7 @@ std::string Solid(std::string s) {
                         }
                         auto beforedot = ss.substr(0, dot);
                         auto afterdot = ss.substr(dot + 1);
-                        auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ Integer(afterdot.length()));
+                        auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
                         o(std::move(f));
                     } else {
                         Valuable integer = hasSpace

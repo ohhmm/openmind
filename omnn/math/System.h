@@ -35,7 +35,7 @@ class System // TODO: resolve current problem, it mixes-up conjunction with disj
         operator bool() const { return wasInProgress; }
 
         ~InProgress() {
-            if (wasInProgress)
+            if (!wasInProgress)
                 varsInProgress.erase(v);
         }
     };
