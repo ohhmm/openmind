@@ -1149,18 +1149,22 @@ std::string Solid(std::string s) {
     }
 
     Valuable Valuable::GCD(const Valuable& v) const {
-        Valuable a(Clone());
-        Valuable b = v;
-
-        while (b != 0) {
-            Valuable temp = b;
-            b = a % b;
-            if (b.IsModulo()) {
-                b = std::move(b.as<Modulo>().get1());
+        auto thisMoreComplex = Complexity() > v.Complexity();
+        Valuable a = thisMoreComplex ? *this : v.GCD(*this);
+        if (thisMoreComplex) {
+            Valuable b = v;
+            while (b != 0) {
+                Valuable temp = b;
+                b = a % b;
+                if (b.IsModulo()) {
+                    b = std::move(b.as<Modulo>().get1());
+                    if (b == temp) {
+                        IMPLEMENT
+                    }
+                }
+                a = temp;
             }
-            a = temp;
         }
-
         return a;
     }
 
@@ -1897,6 +1901,14 @@ std::string Solid(std::string s) {
             return exp->getCommonVars();
         else
             IMPLEMENT
+    }
+
+    Valuable::vars_cont_t Valuable::calcCommonVars() const
+    {
+        if (exp)
+            return exp->calcCommonVars();
+        else
+            return {};
     }
 
     Valuable Valuable::InCommonWith(const Valuable& v) const

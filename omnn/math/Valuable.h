@@ -408,6 +408,7 @@ public:
     using vars_cont_t = std::map<Variable, Valuable>;
     virtual vars_cont_t GetVaExps() const;
     virtual const vars_cont_t& getCommonVars() const;
+    virtual vars_cont_t calcCommonVars() const;
     virtual Valuable InCommonWith(const Valuable& v) const;
     static const vars_cont_t& emptyCommonVars();
     virtual Valuable varless() const;
