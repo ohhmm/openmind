@@ -19,13 +19,23 @@ auto ComputeUnitsWinner = []() -> boost::compute::device {
         auto cuwinner = boost::compute::system::default_device();
         for (auto& p : boost::compute::system::platforms()) {
             for (auto& d : p.devices()) {
-                std::cout << d.name() << ':' << d.compute_units() << std::endl;
-                if (d.compute_units() > cuwinner.compute_units())
+                auto cu = d.compute_units();
+                auto widm = d.max_work_item_dimensions();
+                std::cout << std::endl << d.name() << ':' << std::endl;
+                std::cout << "\tversion: " << d.version() << std::endl;
+                std::cout << "\tcompute_units: " << cu << std::endl;
+                std::cout << "\tmax_work_item_dimensions: " << widm << std::endl;
+                std::cout << "\taddress_bits: " << d.address_bits() << std::endl;
+                std::cout << "\tclock_frequency: " << d.clock_frequency() << std::endl;
+                std::cout << "\tmax_work_group_size: " << d.max_work_group_size() << std::endl;
+                //<< cu << "cu x " << widm << " = " << cu * widm
+                if (cu > cuwinner.compute_units())
                     cuwinner = d;
             }
         }
 
-        std::cout << "max_work_group_size: " << cuwinner.max_work_group_size() << std::endl;
+        std::cout << std::endl << "Selected " << cuwinner.name() << std::endl;
+        std::cout << "\tmax_work_group_size: " << cuwinner.max_work_group_size() << std::endl << std::endl;
         return cuwinner;
     }
 }();
