@@ -145,7 +145,28 @@ namespace
         auto it = members.begin();
         auto gcd = it->varless();
         for (; it != members.end(); ++it) {
-            gcd = boost::gcd(gcd, it->varless());
+            bool processed = false;
+            if (it->IsPrincipalSurd()) {
+                auto& surd = it->as<PrincipalSurd>();
+                auto& subexpr = surd.Radicand();
+                if (subexpr.IsSum()) {
+                    auto subgcd = subexpr.as<Sum>().GCDofMembers();
+                    Valuable copy = surd;
+                    copy.as<PrincipalSurd>().setRadicand(std::move(subgcd));
+                    copy.optimize();
+                    processed = !copy.FindVa();
+                    if (processed) {
+                        if (copy.IsInt())
+                            gcd = boost::gcd(gcd, copy);
+                        else
+                            gcd = copy.GCD(gcd);
+                    }
+                }
+            }
+            if(!processed)
+            {
+                gcd = boost::gcd(gcd, it->varless());
+            }
         }
         return gcd;
     }
