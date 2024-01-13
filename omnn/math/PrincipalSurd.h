@@ -9,6 +9,7 @@ class PrincipalSurd /// Also known as principal root of Nth index
         : public DuoValDescendant<PrincipalSurd>
 {
     using base = DuoValDescendant<PrincipalSurd>;
+    mutable vars_cont_t commonVars;
 
 protected:
     Valuable& radicand() { return base::_1; }
@@ -26,6 +27,10 @@ public:
     constexpr const Valuable& Degree() const { return _2; }
     constexpr const Valuable& Index() const { return _2; }
     constexpr const Valuable& Radicand() const { return _1; }
+    template <class T>
+    void setRadicand(T&& p) {
+        set1(std::forward<T>(p));
+    }
 
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
@@ -48,6 +53,7 @@ public:
     Valuable& operator^=(const Valuable&) override;
 	bool IsComesBefore(const Valuable&) const override;
 	Valuable InCommonWith(const Valuable&) const override;
+    const Valuable::vars_cont_t& getCommonVars() const override;
 };
 
 }

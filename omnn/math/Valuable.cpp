@@ -1149,8 +1149,9 @@ std::string Solid(std::string s) {
     }
 
     Valuable Valuable::GCD(const Valuable& v) const {
-        auto thisMoreComplex = Complexity() > v.Complexity();
-        Valuable a = thisMoreComplex ? *this : v.GCD(*this);
+        auto isEqual = operator==(v);
+        auto thisMoreComplex = !isEqual && Complexity() >= v.Complexity();
+        Valuable a = isEqual || thisMoreComplex ? *this : v.GCD(*this);
         if (thisMoreComplex) {
             Valuable b = v;
             while (b != 0) {
