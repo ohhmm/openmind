@@ -209,3 +209,14 @@ Valuable PrincipalSurd::InCommonWith(const Valuable& v) const {
         }
     }
 }
+
+const Valuable::vars_cont_t& PrincipalSurd::getCommonVars() const {
+    commonVars = {}; // TODO: this method should not modify commonVars. Methods that affect it should. https://github.com/ohhmm/openmind/issues/112
+    for (auto& [var, exp] : _1.getCommonVars()) {
+        auto e = exp / _2;
+        if (e.IsInt()) {
+            commonVars.insert({var, e});
+        }
+    }
+    return commonVars;
+}
