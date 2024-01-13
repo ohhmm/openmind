@@ -6,6 +6,7 @@
 #include <any>
 #include <memory>
 //#include <boost/any.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
 #include "ValuableDescendantContract.h"
 
 namespace omnn{
@@ -97,3 +98,5 @@ public:
 
 // Named variable with the same name text
 #define DECL_VA(x) const ::omnn::math::Variable& x = #x##_va;
+#define DECL_VA_MACRO(r, data, x) DECL_VA(x)
+#define DECL_VARS(...) BOOST_PP_SEQ_FOR_EACH(DECL_VA_MACRO, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
