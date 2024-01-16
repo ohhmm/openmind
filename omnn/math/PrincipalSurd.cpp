@@ -62,6 +62,9 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
 }
 
 void PrincipalSurd::optimize() {
+    if (!optimizations || optimized)
+        return;
+
     if (_1.IsInt()) {
         auto& rdcnd = _1.ca();
         if (rdcnd < 0) {
@@ -91,6 +94,8 @@ void PrincipalSurd::optimize() {
         Become(std::move(radicand()));
         return;
     }
+
+    optimized = IsPrincipalSurd();
 }
 
 Valuable& PrincipalSurd::sq() {

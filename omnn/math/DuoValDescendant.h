@@ -63,17 +63,20 @@ namespace omnn::math {
         void set1(T&& p) {
             _1 = std::forward<T>(p);
             Valuable::hash = _1.Hash() ^ _2.Hash();
+            Valuable::optimized = {};
         }
         template<class T>
         void update1(T&& p) {
             Valuable::hash ^= _1.Hash();
             _1 = std::forward<T>(p);
             Valuable::hash ^= _1.Hash();
+            Valuable::optimized = {};
         }
         void update1(std::function<void(decltype(_1)&)>& f) {
             Valuable::hash ^= _1.Hash();
             f(_1);
             Valuable::hash ^= _1.Hash();
+            Valuable::optimized = {};
         }
         
         const Valuable& get2() const { return _2; }
@@ -81,17 +84,20 @@ namespace omnn::math {
         void set2(T&& p) {
             _2 = std::forward<T>(p);
             Valuable::hash = _1.Hash() ^ _2.Hash();
+            Valuable::optimized = {};
         }
         template<class T>
         void update2(T&& p) {
             Valuable::hash ^= _2.Hash();
             _2 = std::forward<T>(p);
             Valuable::hash ^= _2.Hash();
+            Valuable::optimized = {};
         }
         void update2(std::function<void(decltype(_2)&)>& f) {
             Valuable::hash ^= _2.Hash();
             f(_2);
             Valuable::hash ^= _2.Hash();
+            Valuable::optimized = {};
         }
         
         using base::base;

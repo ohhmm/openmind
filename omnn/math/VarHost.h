@@ -164,6 +164,7 @@ namespace math {
         }
 
         bool Has(const any::any& id) const override {
+            IMPLEMENT
             return varIds.find(any::any_cast<T>(id)) != varIds.end();
         }
         

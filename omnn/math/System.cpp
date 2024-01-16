@@ -71,8 +71,10 @@ bool System::Add(const Valuable& v)
         } 
 
         equs.emplace(_);
-        if (makeTotalEqu)
+        if (makeTotalEqu) {
+            Valuable::OptimizeOn o;
             sqs += _.Sq();
+        }
         if (doEarlyFetch)
             for (auto& va : _.Vars())
                 for (auto& s : _.Solutions(va))

@@ -293,17 +293,7 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     _2 = x*-1/z+y*-2/z;
     BOOST_TEST(_1==_2);
     
-    DECL_VA(v7);
-    DECL_VA(v8);
-    DECL_VA(v9);
-    DECL_VA(v10);
-    DECL_VA(v11);
-    DECL_VA(v12);
-    DECL_VA(v13);
-    DECL_VA(v14);
-    DECL_VA(v15);
-    DECL_VA(v16);
-    DECL_VA(v17);
+    DECL_VARS(v7,v8,v9,v10,v11,v12,v13,v14,v15,v16,v17);
     
     _1 = -1_v*v17*v12 + -1_v*v16*v13 + 174;
     _2 = -1_v*v17*v12 + -1_v*v13*v16 + 174;
@@ -589,6 +579,8 @@ BOOST_AUTO_TEST_CASE(VirtualIterationTest) {
 BOOST_AUTO_TEST_CASE(GCDTest) {
     DECL_VARS(a, b, c, d);
     auto _1 = -4 * (a ^ 2) + -4 * (b ^ 2) + -4 * (c ^ 2) + -8 * b * c + 280 * b + 280 * c + 40 * a + -5000;
+    auto varless1 = _1.varless();
+    BOOST_TEST(varless1 == 4_v);
     auto _2 = -4 * (a ^ 2) + -4 * (d ^ 2) + 280 * d + 40 * a + -5000;
     auto varless2 = _2.varless();
     BOOST_TEST(varless2 == 4_v);

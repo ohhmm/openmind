@@ -21,6 +21,8 @@ public:
     using base::base;
 
 	bool IsModulo() const override { return true; }
+    auto& getDividend() const { return get1(); }
+    auto& getDevisor() const { return get2(); }
 
     std::ostream& print_sign(std::ostream& out) const override;
     std::ostream& code_sign(std::ostream& out) const override;
