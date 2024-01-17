@@ -99,10 +99,20 @@ namespace math {
 
     void Fraction::optimize()
     {
-//        if (!optimizations) {
-//            hash = numerator().Hash() ^ denominator().Hash();
-//            return;
-//        }
+        if (!optimizations) {
+            hash = numerator().Hash() ^ denominator().Hash();
+            return;
+        }
+        if (optimized) {
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            auto h = numerator().Hash() ^ denominator().Hash();
+            if (h != hash){
+                LOG_AND_IMPLEMENT("Fix hash updating for " << *this);
+            }
+#endif
+            return;
+        }
+
     reoptimize_the_fraction:
         numerator().optimize();
         denominator().optimize();
@@ -137,6 +147,14 @@ namespace math {
             }
         }
 
+        if (denominator() == numerator()
+            && IsMultival() == YesNoMaybe::No
+        ) {
+            // TODO : mark var constraints deduced from denominator!=0
+            Become(1);
+            return;
+        }
+
         if (denominator().Is_i()) {
             numerator() *= constants::minus_1; 
             numerator() *= denominator();
@@ -149,7 +167,7 @@ namespace math {
             auto& exp = e.getExponentiation();
             if (exp.IsInt() && exp < 0) {
                 denominator() *= e.getBase() ^ (-exp);
-                numerator() = 1;
+                numerator() = constants::one;
             } else if (exp.IsFraction()) {
                 auto& f = exp.as<Fraction>();
                 auto in = e.getBase() / (denominator() ^ f.Reciprocal());
@@ -269,6 +287,9 @@ namespace math {
                 hash = numerator().Hash() ^ denominator().Hash();
             else if (!denominator().IsSum())
                 Become(numerator() * (denominator() ^ constants::minus_1));
+            else {
+                hash = numerator().Hash() ^ denominator().Hash();
+            }
         }
     }
 
@@ -356,6 +377,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
                 numerator() = numerator() * f.denominator() + f.numerator() * denominator();
                 denominator() *= f.denominator();
             }
+            optimized = {};
         }
         else if(v.IsInt() && IsSimple()) {
             setNumerator(numerator() + denominator() * v.as<Integer>());
@@ -374,10 +396,12 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
             auto& f = v.as<Fraction>();
             numerator() *= f.numerator();
             denominator() *= f.denominator();
+            optimized = {};
         }
         else if (v.IsInt())
         {
             numerator() *= v;
+            optimized = {};
         }
         else if (denominator() == v && v.IsMultival() == YesNoMaybe::No)
             return Become(std::move(numerator()));
@@ -400,6 +424,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
             auto& f = v.as<Fraction>();
             numerator() *= f.denominator();
             denominator() *= f.numerator();
+            optimized = {};
         }
         else if (v.IsProduct())
         {
@@ -409,6 +434,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         else
         {
             denominator() *= v;
+            optimized = {};
         }
         optimize();
         return *this;
@@ -436,54 +462,6 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         optimized = {};
         optimize();
         return *this;
-//        if(v.IsInt())
-//        {
-//            auto i = v.ca();
-//            if (i != 0_v) {
-//                if (i > 1_v) {
-//                    auto a = *this;
-//                    for (auto n = i; n > 1_v; --n) {
-//                        *this *= a;
-//                    }
-//                    optimize();
-//                    return *this;
-//                }
-//            }
-//            else { // zero
-//                if (numerator() == 0_v)
-//                    throw "NaN"; // feel free to handle this properly
-//                else
-//                    return Become(1_v);
-//            }
-//        }
-//        else if(IsSimple())
-//        {
-//            auto f = Fraction::cast(v);
-//            if (f->IsSimple())
-//            {
-//                auto n = f->numerator();
-//                auto dn = f->denominator();
-//
-//                if (n != 1_v)
-//                    *this ^= n;
-//                Valuable nroot;
-//                Valuable left =0, right = *this;
-//
-//                for (;;)
-//                {
-//                    nroot = left +(right - left) / 2_v;
-//                    auto result = nroot ^ dn;
-//                    if (result == *this)
-//                        return Become(std::move(nroot));
-//                    else if (*this < result)
-//                        right = nroot;
-//                    else
-//                        left = nroot;
-//                }
-//            }
-//        }
-//
-//        return Become(Exponentiation(*this, v));
     }
     
     Valuable& Fraction::d(const Variable& x)
@@ -492,6 +470,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
             Become(0_v);
         } else {
             IMPLEMENT
+            optimized = {};
         }
         return *this;
     }
@@ -527,6 +506,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     Valuable& Fraction::sq(){
         numerator().sq();
         denominator().sq();
+        optimized = {};
         optimize();
         return *this;
     }
