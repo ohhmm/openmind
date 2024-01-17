@@ -7,6 +7,7 @@ if(NOT GIT_EXECUTABLE AND WIN32)
 	find_package(Git)
 endif()
 if(GIT_EXECUTABLE)
+	message("GIT_EXECUTABLE: ${GIT_EXECUTABLE}")
 
 	add_custom_target(git-gui
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

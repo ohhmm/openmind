@@ -474,13 +474,11 @@ macro(exe)
         endif()
     endforeach()
     if(NOT MSVC)
-        target_link_libraries(${this_target} PUBLIC
+        deps(
             pthread
             ${BOOST_LINK_LIBS}
+			tbb
             )
-		if(NOT WIN32 AND OPENMIND_USE_TBB)
-			target_link_libraries(${this_target} PUBLIC TBB::tbb)
-		endif()
     endif()
 
     if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
