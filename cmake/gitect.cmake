@@ -21,27 +21,19 @@ if(GIT_EXECUTABLE)
 
 	add_custom_target(rebase-main
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind main
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
 	)
 	set_target_properties(rebase-main PROPERTIES
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util")
 
-	add_custom_target(push-develop
+	add_custom_target(rebase-main-interactive
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push https://github.com/ohhmm/openmind develop
+		COMMAND ${GIT_EXECUTABLE} fetch --all
+		COMMAND ${GIT_EXECUTABLE} rebase -i --autostash origin/main
 	)
-	set_target_properties(push-develop PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util")
-
-	add_custom_target(force-push-develop
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push https://github.com/ohhmm/openmind develop -f
-	)
-	set_target_properties(force-push-develop PROPERTIES
+	set_target_properties(rebase-main-interactive PROPERTIES
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util")
@@ -59,8 +51,9 @@ if(GIT_EXECUTABLE)
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
-			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
-			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind main
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin HEAD
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind HEAD
 			COMMAND ${GIT_EXECUTABLE} fetch --all
 		)
 		set_target_properties(update-openmind PROPERTIES
@@ -68,6 +61,26 @@ if(GIT_EXECUTABLE)
 			EXCLUDE_FROM_DEFAULT_BUILD 1
 			FOLDER "util")
 		add_dependencies(update update-openmind)
+
+		add_custom_target(push-openmind-develop
+			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
+			COMMAND ${GIT_EXECUTABLE} push origin develop
+			COMMAND ${GIT_EXECUTABLE} fetch --all
+		)
+		set_target_properties(push-openmind-develop PROPERTIES
+			EXCLUDE_FROM_ALL 1
+			EXCLUDE_FROM_DEFAULT_BUILD 1
+			FOLDER "util")
+
+		add_custom_target(force-push-openmind-develop
+			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
+			COMMAND ${GIT_EXECUTABLE} push origin develop -f
+			COMMAND ${GIT_EXECUTABLE} fetch --all
+		)
+		set_target_properties(force-push-openmind-develop PROPERTIES
+			EXCLUDE_FROM_ALL 1
+			EXCLUDE_FROM_DEFAULT_BUILD 1
+			FOLDER "util")
 
 	endif()
 endif()
