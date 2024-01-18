@@ -98,6 +98,16 @@ namespace math {
                     break;
             return i;
         }
+
+        template <class T>
+        auto GetFirstOccurence() {
+            auto& c = GetCont();
+            auto i = c.begin();
+            for (auto e = c.end(); i != e; ++i)
+                if (i->template Is<T>())
+                    break;
+            return i;
+        }
         
         a_int Complexity() const override {
             a_int c = 0;
@@ -299,12 +309,19 @@ namespace math {
             Valuable::optimized = {};
         }
 
-        virtual void Delete(iterator& it)
-        {
+        virtual void Delete(iterator& it) {
             Valuable::hash ^= it->Hash();
             auto& c = GetCont();
             c.erase(it++);
-            Valuable::optimized = {};
+            Valuable::optimized &= c.size() > 1;
+        }
+
+        virtual Valuable Extract(const iterator it)
+        {
+            Valuable::hash ^= it->Hash();
+            auto& c = GetCont();
+            Valuable::optimized &= c.size() > 2;
+            return std::move(c.extract(it).value());
         }
     };
 }}
