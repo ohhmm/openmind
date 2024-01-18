@@ -245,7 +245,7 @@ namespace math {
         }
         else if (denominator().FindVa() && !denominator().IsSum())
         {
-            Become(Product{ std::move(numerator()), Exponentiation( std::move(denominator()), -1)});
+            Become(Product{ std::move(numerator()), Exponentiation( std::move(denominator()), constants::minus_1)});
             return;
         }
         else // no products
@@ -268,7 +268,7 @@ namespace math {
             if(IsSimple())
                 hash = numerator().Hash() ^ denominator().Hash();
             else if (!denominator().IsSum())
-                Become(numerator()*(denominator()^-1));
+                Become(numerator() * (denominator() ^ constants::minus_1));
         }
     }
 

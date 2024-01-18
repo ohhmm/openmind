@@ -819,8 +819,15 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         o(Valuable(h->Host(Valuable(a_int(id)))));
                         i = next - 1;
                     } else {
-                        id = s.substr(i, next - i);
+                        next = s.find_first_of(SupportedOps, idStart);
+                        if (next == std::string::npos) {
+                            id = s.substr(i);
+                            next = i + id.size();
+                        } else {
+                            id = s.substr(i, next - i);
+                        }
                         o(Valuable(h->Host(id)));
+                        i = next - 1;
                     }
                 } else if (c == '-') {
                     o_sum(std::move(v));
@@ -880,7 +887,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
                 else if (std::isalpha(c)){
                     auto to = s.find_first_of(SupportedOps, i+1);
-                    auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
+                    auto id = s.substr(i);
+                    if (to != std::string::npos) {
+                        id = s.substr(i, to - i);
+                    }
                     Valuable val(h->Host(id));
                     if (mulByNeg) {
                         val *= -1;
@@ -2421,15 +2431,15 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             auto a = *this;
             auto b = v;
             for (Valuable i; i < n;) {
-                auto ab = a.bit(0);
-                auto bb = b.bit(0);
+                auto ab = a.bit(constants::zero);
+                auto bb = b.bit(constants::zero);
                 auto mul = ab * bb;
-                s += mul * (2_v ^ i);
+                s += mul.shl(i);
                 if (++i < n) {
                     a -= ab;
-                    a /= 2;
+                    a /= constants::two;
                     b -= bb;
-                    b /= 2;
+                    b /= constants::two;
                 }
             }
         }
@@ -2447,16 +2457,16 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             auto a = *this;
             auto b = v;
             for (Valuable i; i < n;) {
-                auto ab = a.bit(0);
-                auto bb = b.bit(0);
+                auto ab = a.bit(constants::zero);
+                auto bb = b.bit(constants::zero);
                 auto mul = ab * bb;
                 auto sum = ab + bb;
-                s += (sum - mul) * (2_v ^ i);
+                s += (sum - mul).shl(i);
                 if (++i < n) {
                     a -= ab;
-                    a /= 2;
+                    a /= constants::two;
                     b -= bb;
-                    b /= 2;
+                    b /= constants::two;
                 }
             }
         }
@@ -2472,10 +2482,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         {
             OptimizeOff oo;
             for (auto i = n; i--;) {
-                s *= 2;
+                s *= constants::two;
                 auto _1 = bit(i);
                 auto _2 = v.bit(i);
-                s += (_1 + _2).bit(0);
+                s += (_1 + _2).bit(constants::zero);
             }
         }
         if (bit_operation_optimizations) {
@@ -2490,9 +2500,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         {
             OptimizeOff oo;
             for (auto i = n; i--;) {
-                s *= 2;
-                auto _1 = 1 - bit(i);
-                s += (_1).bit(0);
+                s *= constants::two;
+                auto _1 = constants::one - bit(i);
+                s += (_1).bit(constants::zero);
             }
         }
         if (bit_operation_optimizations) {
@@ -2501,20 +2511,21 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return s;
     }
 
-    Valuable& Valuable::shl(const Valuable& n)
-    {
-        return *this *= 2_v^n;
+    Valuable& Valuable::shl(const Valuable& n) {
+        return exp && n.IsInt()
+            ? exp->shl(n)
+            : *this *= constants::two ^ n;
     }
 
     Valuable& Valuable::shr(const Valuable& n)
     {
         if(!n.IsInt()){
             IMPLEMENT
-        }
-
-        if (n>1)
-            return shr(n-1).shr();
-        else if (n!=0)
+        } else if (exp)
+            return exp->shr(n);
+        else if (n > constants::one)
+            return shr(n + constants::minus_1).shr();
+        else if (n != constants::zero)
             return shr();
         else
             return *this;
@@ -2522,12 +2533,16 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::shr()
     {
-        return operator+=(-bit(0)).operator/=(2);
+        return exp
+            ? exp->shr()
+            : operator+=(-bit(constants::zero)).operator/=(constants::two);
     }
 
     Valuable Valuable::Shl(const Valuable& n) const
     {
-        return *this * (2_v^n);
+        return exp && n.IsInt()
+            ? exp->Shl(n)
+            : *this * (constants::two ^ n);
     }
 
     Valuable Valuable::Shr(const Valuable& n) const
@@ -2536,13 +2551,17 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return v.shr(n);
     }
 
-    Valuable Valuable::Shr() const
-    {
-        return (*this-bit(0))/2;
+    Valuable Valuable::Shr() const {
+
+        return exp
+            ? exp->Shr()
+            : (*this - bit(constants::zero)) / constants::two;
     }
 
     Valuable Valuable::Cyclic(const Valuable& total, const Valuable& shiftLeft) const
     {
+        if (exp)
+            return exp->Cyclic(total, shiftLeft);
         auto s = 0_v;
         {
             OptimizeOff oo;
@@ -2550,10 +2569,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 auto shi = i + shiftLeft;
                 if (shi >= total)
                     shi -= total;
-                else if (shi < 0)
+                else if (shi < constants::zero)
                     shi += total;
-                auto _1 = bit(i);
-                s += bit(i) * (2 ^ (shi));
+                s += bit(i).shl(shi);
             }
         }
         if (bit_operation_optimizations) {

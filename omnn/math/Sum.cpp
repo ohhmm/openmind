@@ -89,7 +89,6 @@ namespace
 
     Sum::iterator Sum::Had(iterator it)
     {
-        //return it;
         auto item = *it;
         std::cout << item.str();
         it = std::find(members.begin(), members.end(), item);
@@ -102,8 +101,24 @@ namespace
     
     const Sum::iterator Sum::Add(const Valuable& item, const iterator hint)
     {
-        Sum::iterator it = hint;
-        if(item.IsSum()) {
+        auto it = hint;
+        if (item.IsInt()) {
+            it = GetFirstOccurence<Integer>();
+            auto e = end();
+            if (it == e) 
+                it = GetFirstOccurence<Fraction>();
+            if (it != e && it->IsSimple()) {
+                auto i = Extract(it);
+                OptimizeOn oo;
+                i += item;
+                if (i != constants::zero)
+                    it = Add(i);
+                else
+                    it = e;
+                return it;
+            }
+        }
+        if (item.IsSum()) {
             for(auto& i : item.as<Sum>()) {
                 it = Add(i, it);
             }
