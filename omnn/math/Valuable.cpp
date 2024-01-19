@@ -15,6 +15,7 @@
 #include "PrincipalSurd.h"
 
 #include <algorithm>
+#include <functional>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <iomanip>
 #include <iostream>
@@ -425,6 +426,39 @@ std::string_view& Trim(std::string_view& s) {
     return s;
 }
 
+auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) {
+    std::multiset<std::string_view> tokens;
+    std::stack<char> braceStack;
+    size_t start = 0;
+
+    for (size_t i = 0; i < str.size(); ++i) {
+        char c = str[i];
+
+        // Push opening braces onto the stack
+        if (c == '(' || c == '{' || c == '[') {
+            braceStack.push(c);
+        }
+        // Pop matching opening braces from the stack
+        else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
+                 (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
+                 (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
+            braceStack.pop();
+        }
+        // Tokenize at delimiter if not within braces
+        else if (c == delimiter && braceStack.empty()) {
+            tokens.emplace(str.data() + start, i - start);
+            start = i + 1;
+        }
+    }
+
+    // Add the last token after the final delimiter if it's not at the end of the string
+    if (start < str.size()) {
+        tokens.emplace(str.data() + start, str.size() - start);
+    }
+
+    return tokens;
+}
+
 auto OmitOuterBrackets(std::string_view& s){
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
@@ -736,23 +770,6 @@ std::string Solid(std::string s) {
                 same = _1 == _2;
 			}
             if (!same) {
-#ifdef __APPLE__
-                using split_t = std::set<std::string>;
-#else
-                using split_t = std::set<std::string_view>;
-#endif
-                std::set<split_t> sumOfProducts1, sumOfProducts2;
-                // waiting for C++ ranges support:
-                //for(auto& sumMember : words | std::ranges::views::split(plusDelimeter)){
-                split_t sumItemsSubstrings;
-                boost::split(sumItemsSubstrings, _1, [](auto c){return c=='+';});
-//                for(auto& sumItemSubstring: sumItemsSubstrings){
-//                    split_t productItemsSubstrings;
-//                    boost::split(productItemsSubstrings, sumItemSubstring, [](auto c){return c=='*';});
-//                    sumOfProducts1.emplace(productItemsSubstrings);
-//                }
-            }
-            if (!same) {
                 boost::replace_all(_1, "+-", "-");
                 boost::replace_all(_2, "+-", "-");
                 same = _1 == _2;
@@ -786,6 +803,21 @@ std::string Solid(std::string s) {
                 } else {
                     break;
 				}
+            }
+            if (!same) {
+                auto str2set = [](auto& str) {
+                    auto sumItemsSubstrings = TokenizeStringViewToMultisetKeepBraces(str, '+');
+                    using str_set_t = decltype(sumItemsSubstrings);
+                    using set_of_str_sets_t = std::multiset<str_set_t>;
+                    set_of_str_sets_t sets;
+                    for (auto& s : sumItemsSubstrings) {
+                        sets.insert(TokenizeStringViewToMultisetKeepBraces(s, '*'));
+                    }
+                    return sets;
+                };
+                auto svSet1 = str2set(_1);
+                auto svSet2 = str2set(_2);
+                same = svSet1 == svSet2;
             }
             if (!same) {
                 LOG_AND_IMPLEMENT("Deserialization check: "
