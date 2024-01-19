@@ -232,6 +232,7 @@ public:
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(Valuable&& v);
 
+    bool SerializedStrEqual(const std::string_view& s) const;
 
     Valuable(const Valuable& v);
 
