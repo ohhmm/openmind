@@ -14,9 +14,10 @@
 #include "Sum.h"
 #include "PrincipalSurd.h"
 
+#include <rt/GC.h>
+
 #include <algorithm>
 #include <functional>
-#include <boost/multiprecision/cpp_int.hpp>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -28,17 +29,14 @@
 #include <map>
 #include <type_traits>
 
-#ifndef NDEBUG
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
-#endif
 #include <boost/core/demangle.hpp>
 #include <boost/numeric/conversion/converter.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 #ifndef __APPLE__
 #include <boost/stacktrace.hpp>
 #endif
-#include <rt/GC.h>
-
 
 #ifdef max
 #undef max
@@ -479,6 +477,74 @@ std::string Solid(std::string s) {
     s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
     return s;
 }
+} // namespace
+
+bool Valuable::SerializedStrEqual(const std::string_view& s) const {
+    auto _ = str();
+    auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
+    if (!same) {
+        auto _1 = Solid(_), _2 = Solid(std::string(s));
+        same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
+        if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
+            _2 = a_int(s).str();
+            same = _1 == _2;
+        }
+        if (!same) {
+            boost::replace_all(_1, "+-", "-");
+            boost::replace_all(_2, "+-", "-");
+            same = _1 == _2;
+        }
+        while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
+            _1 = _1.substr(1, _1.length() - 2);
+            same = _1 == _2;
+        }
+        if (!same) {
+            std::map<char, a_int> m1, m2;
+            for (char c : _1)
+                if (c != '+')
+                        ++m1[c];
+            for (char c : _2)
+                if (c != '+')
+                        ++m2[c];
+            same = m1 == m2;
+        }
+
+        while (!same && _1.front() == '(' && _1.back() == ')') {
+            auto _1len = _1.length();
+            auto _2len = _2.length();
+            auto diff = _1len - _2len;
+            auto dhalf = diff >> 1;
+            if (diff > 0 && !(diff & 1) && _1.substr(dhalf, _1len - diff) == _2) {
+                _1 = _1.substr(1, _1.length() - 2);
+                same = _1 == _2;
+            } else {
+                break;
+            }
+        }
+        if (!same) {
+            auto str2set = [](auto& str) {
+                auto sumItemsSubstrings = TokenizeStringViewToMultisetKeepBraces(str, '+');
+                using str_set_t = decltype(sumItemsSubstrings);
+                using set_of_str_sets_t = std::multiset<str_set_t>;
+                set_of_str_sets_t sets;
+                for (auto& s : sumItemsSubstrings) {
+                    sets.insert(TokenizeStringViewToMultisetKeepBraces(s, '*'));
+                }
+                return sets;
+            };
+            auto svSet1 = str2set(_1);
+            auto svSet2 = str2set(_2);
+            same = svSet1 == svSet2;
+        }
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if (!same) {
+            std::cout << "SerializedStrEqual: " << _ << " != " << s << std::endl
+                      << _1 << "\n !=\n"
+                      << _2 << std::endl;
+        }
+#endif // !NDEBUG
+    }
+    return same;
 }
 
 	namespace {
@@ -759,78 +825,14 @@ std::string Solid(std::string s) {
         }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        auto _ = str();
-        auto same = s == _
-            || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
-        if (!same) {
-            auto _1 = Solid(str()), _2 = Solid(std::string(s));
-            same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
-            if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
-                _2 = a_int(s).str();
-                same = _1 == _2;
-			}
-            if (!same) {
-                boost::replace_all(_1, "+-", "-");
-                boost::replace_all(_2, "+-", "-");
-                same = _1 == _2;
-            }
-            while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
-                _1 = _1.substr(1, _1.length() - 2);
-                same = _1 == _2;
-            }
-            if (!same) {
-                std::map<char, a_int> m1, m2;
-                for (char c : _1)
-                    if (c != '+')
-                        ++m1[c];
-                for (char c : _2)
-                    if (c != '+')
-                        ++m2[c];
-                same = m1 == m2;
-            }
-
-            while (!same && _1.front() == '(' && _1.back() == ')') {
-                auto _1len = _1.length();
-                auto _2len = _2.length();
-                auto diff = _1len - _2len;
-                auto dhalf = diff >> 1;
-				if (diff > 0
-					&& !(diff & 1)
-					&& _1.substr(dhalf, _1len-diff) == _2)
-				{
-                    _1 = _1.substr(1, _1.length() - 2);
-                    same = _1 == _2;
-                } else {
-                    break;
-				}
-            }
-            if (!same) {
-                auto str2set = [](auto& str) {
-                    auto sumItemsSubstrings = TokenizeStringViewToMultisetKeepBraces(str, '+');
-                    using str_set_t = decltype(sumItemsSubstrings);
-                    using set_of_str_sets_t = std::multiset<str_set_t>;
-                    set_of_str_sets_t sets;
-                    for (auto& s : sumItemsSubstrings) {
-                        sets.insert(TokenizeStringViewToMultisetKeepBraces(s, '*'));
-                    }
-                    return sets;
-                };
-                auto svSet1 = str2set(_1);
-                auto svSet2 = str2set(_2);
-                same = svSet1 == svSet2;
-            }
-            if (!same) {
-                LOG_AND_IMPLEMENT("Deserialization check: "
-                    << _ << " != " << s << std::endl
-                    << std::endl
-                    << _1 << "\n !=\n"
-                    << _2 << std::endl
-                    << " potential reasons:\n"
-                        "  text expression ordering differs from this software expression building ordering"
-                        "  var host type is changed between integer-type and string-type var host"
-                        "  this software code changed expression building ordering or other changes that could be a cause for this deserialization check error message (optimization changes for example)"
-                    );
-			}
+        if (!SerializedStrEqual(s)) {
+            LOG_AND_IMPLEMENT(
+                "Deserialization check failed. "
+                " potential reasons:\n"
+                "  text expression ordering differs from this software expression building ordering"
+                "  var host type is changed between integer-type and string-type var host"
+                "  this software code changed expression building ordering or other changes that could be a cause "
+                "for this deserialization check error message (optimization changes for example)");
         }
 #endif // !NDEBUG
     }
