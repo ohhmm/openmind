@@ -171,6 +171,15 @@ namespace
         return gcd;
     }
 
+    Valuable Sum::GCD(const Valuable& v) const {
+        if (v.IsInt())
+            return v.GCD(GCDofMembers()); 
+        auto gcd = base::GCD(v);
+        if (gcd == constants::one)
+            gcd = v.GCD(GCDofMembers());
+        return gcd;
+    }
+
     bool Sum::operator==(const Sum& v) const {
         return members == v.members
                 || (members.size() == 1 && members.begin()->operator==(v))
@@ -625,7 +634,11 @@ namespace
             return c;
         }
     }
-    
+
+    Valuable Sum::varless() const {
+        return GCDofMembers().varless();
+    }
+
     Valuable& Sum::operator +=(const Valuable& v)
     {
         if (v.IsInt() && v == 0) {

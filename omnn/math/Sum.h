@@ -74,6 +74,7 @@ public:
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable GCDofMembers() const;
+    Valuable GCD(const Valuable& v) const override;
 
     bool operator ==(const Valuable& v) const override;
     
@@ -81,6 +82,7 @@ public:
     void balance();
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
+    Valuable varless() const override;
     Valuable Sqrt() const override;
     Valuable& sq() override;
     Valuable calcFreeMember() const override;
