@@ -28,6 +28,7 @@
 #include <stack>
 #include <map>
 #include <type_traits>
+#include <unordered_set>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -418,46 +419,13 @@ auto BracketsMap(const std::string_view& s){
     return bracketsmap;
 }
 
-std::string_view& Trim(std::string_view& s) {
+constexpr std::string_view& Trim(std::string_view& s) {
     s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
     s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
     return s;
 }
 
-auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) {
-    std::multiset<std::string_view> tokens;
-    std::stack<char> braceStack;
-    size_t start = 0;
-
-    for (size_t i = 0; i < str.size(); ++i) {
-        char c = str[i];
-
-        // Push opening braces onto the stack
-        if (c == '(' || c == '{' || c == '[') {
-            braceStack.push(c);
-        }
-        // Pop matching opening braces from the stack
-        else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
-                 (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
-                 (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
-            braceStack.pop();
-        }
-        // Tokenize at delimiter if not within braces
-        else if (c == delimiter && braceStack.empty()) {
-            tokens.emplace(str.data() + start, i - start);
-            start = i + 1;
-        }
-    }
-
-    // Add the last token after the final delimiter if it's not at the end of the string
-    if (start < str.size()) {
-        tokens.emplace(str.data() + start, str.size() - start);
-    }
-
-    return tokens;
-}
-
-auto OmitOuterBrackets(std::string_view& s){
+auto OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do{
@@ -477,7 +445,113 @@ std::string Solid(std::string s) {
     s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
     return s;
 }
+
 } // namespace
+
+struct HashStrOmitOuterBrackets
+    : public std::hash<std::string_view>
+{
+    [[nodiscard]] size_t operator()(const std::string_view& s) const {
+        auto str = s;
+        OmitOuterBrackets(str);
+        return std::hash<std::string_view>::operator()(str);
+    }
+};
+
+class StateProxyComparator
+{
+public:
+    using tokens_collection_t =
+        ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
+
+private:
+    const Valuable* val;
+    static thread_local const Valuable* state;
+
+
+    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str,
+                                                                               char delimiter) {
+        tokens_collection_t tokens;
+        ::std::stack<char> braceStack;
+        size_t start = 0;
+
+        for (size_t i = 0; i < str.size(); ++i) {
+            char c = str[i];
+
+            // Push opening braces onto the stack
+            if (c == '(' || c == '{' || c == '[') {
+                braceStack.push(c);
+            }
+            // Pop matching opening braces from the stack
+            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
+                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
+                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
+                braceStack.pop();
+            }
+            // Tokenize at delimiter if not within braces
+            else if (c == delimiter && braceStack.empty()) {
+                tokens.emplace(str.data() + start, i - start);
+                start = i + 1;
+            }
+        }
+
+        // Add the last token after the final delimiter if it's not at the end of the string
+        if (start < str.size()) {
+            tokens.emplace(str.data() + start, str.size() - start);
+        }
+
+        return tokens;
+    }
+
+public:
+    StateProxyComparator() { val = state; }
+
+    StateProxyComparator(const Valuable* v) {
+        val = state;
+        state = v;
+    }
+
+    StateProxyComparator(const Valuable& v) {
+        val = state;
+        state = &v;
+    }
+
+    ~StateProxyComparator() { state = val; }
+
+    [[nodiscard]] bool operator()(const std::string_view& str1, const std::string_view& str2) const {
+        auto s = val->str();
+        if (s != str1) {
+            if (s == str2) {
+                return val->SerializedStrEqual(str1);
+            } else {
+                auto s1 = str1;
+                OmitOuterBrackets(s1);
+                auto s2 = str2;
+                OmitOuterBrackets(s2);
+                return s1 == s2;
+            }
+        } else
+            return val->SerializedStrEqual(str2);
+    }
+
+    auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
+        return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
+    }
+};
+thread_local const Valuable* StateProxyComparator::state = {};
+
+struct hash_tokens_collection_t {
+    static constexpr ::omnn::math::HashStrOmitOuterBrackets hasher = {};
+    static size_t reduce(size_t s, std::string_view str) {
+        auto strhash = hasher(str);
+        return s ^ strhash;
+    }
+    size_t operator()(const ::omnn::math::StateProxyComparator::tokens_collection_t& c) const {
+        size_t hash = 0;
+        hash = std::accumulate(c.begin(), c.end(), hash, &hash_tokens_collection_t::reduce);
+        return hash;
+    }
+};
 
 bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
@@ -522,13 +596,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             }
         }
         if (!same) {
-            auto str2set = [](auto& str) {
-                auto sumItemsSubstrings = TokenizeStringViewToMultisetKeepBraces(str, '+');
-                using str_set_t = decltype(sumItemsSubstrings);
-                using set_of_str_sets_t = std::multiset<str_set_t>;
-                set_of_str_sets_t sets;
+            auto str2set = [this](auto& str) {
+                StateProxyComparator strCmpPassthrough(this);
+                auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(str, '+');
+                std::unordered_multiset<decltype(sumItemsSubstrings), hash_tokens_collection_t> sets;
                 for (auto& s : sumItemsSubstrings) {
-                    sets.insert(TokenizeStringViewToMultisetKeepBraces(s, '*'));
+                    sets.insert(strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(s, '*'));
                 }
                 return sets;
             };
@@ -2658,6 +2731,7 @@ namespace std
     {
         return v.Sqrt();
     }
+
 }
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)
