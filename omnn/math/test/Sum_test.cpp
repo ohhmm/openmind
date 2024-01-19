@@ -524,7 +524,9 @@ BOOST_AUTO_TEST_CASE(GCDTest) {
     DECL_VARS(a, b, c, d);
     auto _1 = -4 * (a ^ 2) + -4 * (b ^ 2) + -4 * (c ^ 2) + -8 * b * c + 280 * b + 280 * c + 40 * a + -5000;
     auto _2 = -4 * (a ^ 2) + -4 * (d ^ 2) + 280 * d + 40 * a + -5000;
-    auto gcd = -4 * (a + 25) * (a) * (b + c) * (b + c + 5);
+    auto varless2 = _2.varless();
+    BOOST_TEST(varless2 == 4_v);
+    auto gcd = 4;
     auto _ = _1.GCD(_2);
     BOOST_TEST(_ == gcd);
     _ = _2.GCD(_1);
