@@ -1193,14 +1193,21 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 b = a % b;
                 if (b.IsModulo()) {
                     b = std::move(b.as<Modulo>().get1());
-                    if (b == temp) {
-                        IMPLEMENT
+                    if (b == a) {
+                        a = IsSum() ? as<Sum>().GCDofMembers() : constants::one;
+                        if (a != constants::one && v.IsSum())
+                            a.gcd(v.as<Sum>().GCDofMembers());
+                        break;
                     }
                 }
                 a = temp;
             }
         }
         return a;
+    }
+
+    Valuable& Valuable::gcd(const Valuable& v) {
+        return Become(GCD(v));
     }
 
     Valuable& Valuable::d(const Variable& x)
@@ -1964,6 +1971,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 for(auto&& m: _.as<Product>()){
                     if (!m.FindVa()) {
                         p.Add(std::move(m));
+                    } else {
+                        IMPLEMENT
                     }
                 }
                 _ = std::move(p);
