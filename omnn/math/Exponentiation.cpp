@@ -37,7 +37,7 @@ namespace omnn::math {
             return i;
         } else {
             auto maxVaExp = e * b.getMaxVaExp();
-            if (!optimizations && !maxVaExp.IsInt()) {
+            if (!maxVaExp.IsInt()) {
                 OptimizeOn o;
                 maxVaExp.optimize();
             }
@@ -46,17 +46,8 @@ namespace omnn::math {
             } else if (maxVaExp.IsSimpleFraction()) {
                 auto& f = maxVaExp.as<Fraction>();
                 return {f.getNumerator().ca(), f.getDenominator().ca()};
-            } else if(!optimizations) {
-                optimizations = true;
-                maxVaExp.optimize();
-                optimizations = {};
-                if (maxVaExp.IsInt()) {
-                    return maxVaExp.ca();
-                }
             } else {
                 LOG_AND_IMPLEMENT(maxVaExp << " uncovered case for Exponentiation::getMaxVaExp")
-					
-                //return maxVaExp;
             }
         }
         IMPLEMENT
