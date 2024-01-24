@@ -285,32 +285,49 @@ namespace omnn::math {
             bool evaluated = {};
             auto& members = GetCont();
             Valuable::SetView(Valuable::View::Calc);
-            ChildT c;
+            cont evaluatedMembers;
+            auto e = members.end();
             if (members.size() < 100) {
-                while (size()) {
-                    auto item = Extract();
-                    evaluated = item.eval(with) || evaluated;
-                    c.Add(std::move(item));
+                for (iterator it = members.begin(); it != e; ) {
+                    auto& v = const_cast<Valuable&>(*it);
+                    if (v.eval(with)) {
+                        evaluated = true;
+                        evaluatedMembers.emplace(Extract(it++));
+                    } else
+                        ++it;
                 }
             } else {
-                std::deque<std::future<bool>> jobs;
-                for(auto& m : members) {
-                    jobs.push_back(std::async(std::launch::async, [&]() {
-                        return const_cast<Valuable&>(m).eval(with);
-                    }));
-                }
-                for(auto&& m : members) {
-                    auto& f = jobs.front();
-                    evaluated = f.get() || evaluated;
-                    c.Add(std::move(const_cast<Valuable&&>(m)));
-                    jobs.pop_front();
+                rt::StoringTasksQueue<iterator> jobs({});
+                int ec = 0;
+                jobs.AddIteratorTasks(members, [&](auto it) {
+                    auto& v = const_cast<Valuable&>(*it);
+                    if (v.eval(with))
+                        ++ec;
+                    else
+                        it = e;
+                    return it;
+                    });
+                evaluated = ec != 0 || evaluated;
+                for (auto i = evaluatedMembers.size(); i-->0 ;)
+                {
+                    auto it = jobs.PeekNextResult();
+                    if (it != e) {
+                        evaluatedMembers.emplace(Extract(it));
+                    }
                 }
             }
-            Valuable::Become(std::move(c));
-            if( evaluated && Complexity() <=8 ){
-                Valuable::OptimizeOn on;
-                this->optimize();
+            if (evaluated) {
+                for (auto i = evaluatedMembers.size(); i-->0 ;)
+                {
+                    this->Add(std::move(evaluatedMembers.extract(evaluatedMembers.begin()).value()));
+                }
+                Valuable::optimized = {};
+                if( Complexity() <=8 ){
+                    Valuable::OptimizeOn on;
+                    this->optimize();
+                }
             }
+
             return evaluated;
         }
 
