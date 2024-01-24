@@ -98,8 +98,13 @@ namespace
 
     auto HwC = std::thread::hardware_concurrency();
     auto Thr = ::std::min<decltype(HwC)>(HwC << 3, 128);
-    
-    const Sum::iterator Sum::Add(const Valuable& item, const iterator hint)
+
+    const Sum::iterator Sum::Add(const Valuable& item, const iterator hint) {
+        auto copy = item;
+        return this->Add(std::move(copy), hint);
+    }
+
+    const Sum::iterator Sum::Add(Valuable&& item, const iterator hint)
     {
         iterator it = hint;
         if (item.IsInt()) {
@@ -149,9 +154,9 @@ namespace
 
             auto itemMaxVaExp = item.getMaxVaExp();
             if(it==end())
-                it = base::Add(item, hint);
+                it = base::Add(std::move(item), hint);
             else
-                Update(it, item*2);
+                Update(it, std::move(item.shl()));
 
             if(itemMaxVaExp > maxVaExp)
                 maxVaExp = itemMaxVaExp;
