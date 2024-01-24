@@ -35,6 +35,7 @@ class Product
 
 protected:
     void AddToVars(const Variable &item, const Valuable & exponentiation);
+    void AddToVarsIfVaOrVaExp(const Valuable::vars_cont_t&);
     void AddToVarsIfVaOrVaExp(const Valuable &item);
 
 public:
@@ -49,6 +50,7 @@ public:
 	const cont& GetConstCont() const override { return members; }
     iterator Had(iterator it) override;
     using base::Add;
+    const iterator Add(Valuable&& item, const iterator hint) override;
     const iterator Add(const Valuable& item, const iterator hint) override;
     void Delete(typename cont::iterator& it) override;
 

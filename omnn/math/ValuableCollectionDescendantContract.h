@@ -44,16 +44,16 @@ namespace math {
 
         virtual const cont& GetConstCont() const = 0;
         
-        auto begin() { return GetCont().begin(); }
-        auto end() { return GetCont().end(); }
-        auto begin() const { return GetConstCont().begin(); }
-        auto end() const { return GetConstCont().end(); }
-		auto cbegin() const { return GetConstCont().cbegin(); }
-        auto cend() const { return GetConstCont().cend(); }
-        auto rbegin() { return GetCont().rbegin(); }
-        auto rend() { return GetCont().rend(); }
-        auto crbegin() const { return GetConstCont().crbegin(); }
-        auto crend() const { return GetConstCont().crend(); }
+        constexpr auto begin() { return GetCont().begin(); }
+        constexpr auto end() { return GetCont().end(); }
+        constexpr auto begin() const { return GetConstCont().begin(); }
+        constexpr auto end() const { return GetConstCont().end(); }
+        constexpr auto cbegin() const { return GetConstCont().cbegin(); }
+        constexpr auto cend() const { return GetConstCont().cend(); }
+        constexpr auto rbegin() { return GetCont().rbegin(); }
+        constexpr auto rend() { return GetCont().rend(); }
+        constexpr auto crbegin() const { return GetConstCont().crbegin(); }
+        constexpr auto crend() const { return GetConstCont().crend(); }
 
         size_t size() const
         {
@@ -84,10 +84,21 @@ namespace math {
             return it;
         }
 
+        virtual const iterator Add(Valuable&& item, const iterator hint)
+        {
+            Valuable::hash ^= item.Hash();
+            auto& c = GetCont();
+            this->optimized = {};
+            auto it = hint == c.end()
+                ? getit(c.emplace(std::move(item)))
+                : getit(c.insert(hint, std::move(item)));
+            return it;
+        }
+
         template <class ItemT>
         const iterator Add(ItemT&& item)
         {
-            return Add(std::forward<ItemT>(item), GetCont().end());
+            return this->Add(std::forward<ItemT>(item), GetCont().end());
         }
 
         template<class T>
@@ -308,10 +319,20 @@ namespace math {
 //                this->optimize();
         }
 
+        virtual void Update(iterator& it, Valuable&& v)
+        {
+            Valuable moved;
+            moved = std::move(v);
+            this->Delete(it); // original v may be [sub]object of *it
+            it = this->Add(std::move(moved), it);
+            Valuable::optimized = {};
+        }
+
         virtual void Update(iterator& it, const Valuable& v)
         {
-            Delete(it);
-            it=Add(v, it);
+            auto copy = v;
+            this->Delete(it);
+            it = this->Add(std::move(copy), it);
             Valuable::optimized = {};
         }
 
@@ -328,6 +349,16 @@ namespace math {
             auto& c = GetCont();
             Valuable::optimized &= c.size() > 2;
             return std::move(c.extract(it).value());
+        }
+
+        Valuable Extract()
+        {
+            return Extract(begin());
+        }
+
+        virtual void Update(iterator& it) {
+            auto e = this->Extract(it++);
+            it = Add(e, it);
         }
     };
 }}

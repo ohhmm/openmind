@@ -109,6 +109,7 @@ public:
 
     iterator Had(iterator it) override;
     using base::Add;
+    const iterator Add(Valuable&& item, const iterator hint) override;
     const iterator Add(const Valuable& item, const iterator hint) override;
     bool IsComesBefore(const Valuable& v) const override;
 

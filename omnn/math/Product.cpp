@@ -139,6 +139,12 @@ namespace math {
         }
     }
 
+    void Product::AddToVarsIfVaOrVaExp(const Valuable::vars_cont_t& info)
+    {
+        for (auto& kv : info)
+            AddToVars(kv.first, kv.second);
+    }
+
     void Product::AddToVarsIfVaOrVaExp(const Valuable &item)
     {
         for (auto& kv :
@@ -158,26 +164,31 @@ namespace math {
         return it;
     }
     
-    const Product::iterator Product::Add(const Valuable& item, const iterator hint)
+    const Product::iterator Product::Add(const Valuable& item, const iterator hint) {
+        auto copy = item;
+        return Add(std::move(copy), hint);
+    }
+
+    const Product::iterator Product::Add(Valuable&& item, const iterator hint)
     {
         iterator it;
         
         if (members.size() == 1 && !item.IsSimple()) {
             it = begin();
-            if (it->Same(1_v)) {
+            if (it->Same(constants::one)) {
                 Delete(it);
             }
         }
         
         if (item.IsInt()) {
-            if (item == 1_v)
+            if (item == constants::one)
                 it = begin();
             else if ((it = GetFirstOccurence<Integer>()) != end()
                 || ((it = GetFirstOccurence<Fraction>()) != end() && it->IsSimpleFraction())
             ) {
                 Update(it, *it * item);
             } else {
-                it = base::Add(item, hint);
+                it = base::Add(std::move(item), hint);
             }
         } else if (item.IsSimpleFraction()) {
             if ((it = GetFirstOccurence<Fraction>()) != end()
@@ -185,12 +196,14 @@ namespace math {
             ) {
                 Update(it, item * *it);
             } else {
-                it = base::Add(item, hint);
+                it = base::Add(std::move(item), hint);
             }
         } else if (item.IsProduct()) {
             it = hint;
-            for (auto& i : item.as<Product>()) {
-                it = Add(i, it);
+            auto& p = item.as<Product>();
+            for (auto i = p.size(); i-->0 ;)
+            {
+                it = Add(std::move(p.Extract()), it);
             }
         } else if (item.IsFraction() && item.FindVa()) {
             auto& f = item.as<Fraction>();
@@ -203,10 +216,11 @@ namespace math {
         {
             it = std::find(members.begin(), members.end(), item);
             if(it==end()) {
-                it = base::Add(item, hint);
-                AddToVarsIfVaOrVaExp(item);
+                auto info = item.GetVaExps();
+                it = base::Add(std::move(item), hint);
+                AddToVarsIfVaOrVaExp(info);
             } else
-                Update(it, item.Sq());
+                Update(it, std::move(item.sq()));
         }
         return it;
     }
@@ -302,6 +316,7 @@ namespace math {
             if (it->IsSum())
             {
                 auto sum = std::move(members.extract(it).value());
+                sum.optimize();
                 for (auto& m : members)
                 {
                     sum *= m;
