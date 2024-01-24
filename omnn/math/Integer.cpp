@@ -237,14 +237,14 @@ namespace math {
 
     Valuable& Integer::operator --()
     {
-        arbitrary--;
+        --arbitrary;
         hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
 
     Valuable& Integer::operator ++()
     {
-        arbitrary++;
+        ++arbitrary;
         hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
@@ -292,18 +292,20 @@ namespace math {
     
     Valuable& Integer::shl(const Valuable& n)
     {
-        if (n.IsInt())
+        if (n.IsInt()) {
             arbitrary = arbitrary << static_cast<int>(n);
-        else
+            hash = std::hash<base_int>()(arbitrary);
+        } else
             base::shl(n);
         return *this;
     }
 
     Valuable& Integer::shr(const Valuable& n)
     {
-        if (n.IsInt())
+        if (n.IsInt()) {
             arbitrary = arbitrary >> static_cast<int>(n);
-        else
+            hash = std::hash<base_int>()(arbitrary);
+        } else
             base::shl(n);
         return *this;
     }
@@ -472,6 +474,7 @@ namespace math {
                 auto _sq = _ * _;
                 if (_sq == boost::multiprecision::abs(arbitrary)){
                     arbitrary = _;
+                    hash = std::hash<base_int>()(arbitrary);
     //                Become(isNeg ? -operator-().Sqrt() : Sqrt());
                     dn /= 2;
                     ++signs;
@@ -568,6 +571,7 @@ namespace math {
     Valuable& Integer::d(const Variable& x)
     {
         arbitrary = 0;
+        hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
     
