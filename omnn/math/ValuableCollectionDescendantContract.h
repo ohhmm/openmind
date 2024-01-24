@@ -289,6 +289,10 @@ namespace math {
                 }
             }
             Valuable::Become(std::move(c));
+            if( evaluated && Complexity() <=8 ){
+                Valuable::OptimizeOn on;
+                this->optimize();
+            }
             return evaluated;
         }
         
