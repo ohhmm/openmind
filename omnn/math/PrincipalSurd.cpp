@@ -70,21 +70,28 @@ void PrincipalSurd::optimize() {
         if (rdcnd < 0) {
             Become(Product{constants::i, {PrincipalSurd{-_1, _2}}});
             return;
-        } else if (rdcnd == 0) {
-            Become(0);
+        } else if (_1 == constants::zero) {
+            Become(std::move(_1));
             return;
-        } else if (Index().IsInt()) {
-            auto& idx = Index().ca(); 
-            if (idx == 0) {
-                IMPLEMENT
-            }
-            while (_2.bit() == constants::zero) {
-                auto newRadicand = _1.Sqrt();
-                if (newRadicand.IsPrincipalSurd())
-                    break;
-                else {
-                    update1(newRadicand);
-                    update2(_2.shr());
+        } else {
+            auto& index = Index();
+            if (index.IsInt()) {
+                if (index == constants::one) {
+                    Become(std::move(_1));
+                    return;
+                }
+                auto& idx = Index().ca();
+                if (idx == 0) {
+                    IMPLEMENT
+                }
+                while (_2.bit() == constants::zero) {
+                    auto newRadicand = _1.Sqrt();
+                    if (newRadicand.IsPrincipalSurd())
+                        break;
+                    else {
+                        update1(newRadicand);
+                        update2(_2.shr());
+                    }
                 }
             }
         }
