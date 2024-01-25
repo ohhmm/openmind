@@ -94,6 +94,14 @@ namespace math {
     void Product::AddToVars(const Variable & va, const Valuable & exponentiation)
     {
         if (!exponentiation.IsInt()) {
+            if (!optimizations) {
+                OptimizeOn oo;
+                auto copy = exponentiation;
+                copy.optimize();
+                AddToVars(va, copy);
+                return;
+            }
+
             std::cerr << va.str() << '^' << exponentiation.str() << std::endl;
             IMPLEMENT // estimate in to be greater for those which you want to see first in sum sequence
         }
