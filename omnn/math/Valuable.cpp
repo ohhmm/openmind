@@ -2004,7 +2004,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->GetVaExps();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Implement " << boost::core::demangle(Type().name()) << "::GetVaExps() for " << *this);
     }
 
     max_exp_t Valuable::getMaxVaExp() const
@@ -2509,6 +2509,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             s.optimize();
         }
         return s;
+    }
+
+    Valuable& Valuable::shl() {
+        return exp
+            ? exp->shl()
+            : *this *= constants::two;
     }
 
     Valuable& Valuable::shl(const Valuable& n) {
