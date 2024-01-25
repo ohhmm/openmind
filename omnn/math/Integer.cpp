@@ -290,6 +290,13 @@ namespace math {
             IMPLEMENT;
     }
     
+    Valuable& Integer::shl()
+    {
+        arbitrary = arbitrary << 1;
+        hash = std::hash<base_int>()(arbitrary);
+        return *this;
+    }
+    
     Valuable& Integer::shl(const Valuable& n)
     {
         if (n.IsInt()) {
