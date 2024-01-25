@@ -145,6 +145,7 @@ public:
     Valuable And(const Valuable& n, const Valuable& v) const override;
     Valuable Xor(const Valuable& n, const Valuable& v) const override;
     Valuable Not(const Valuable& n) const override;
+    Valuable& shl() override;
     Valuable& shl(const Valuable& n) override;
     Valuable& shr(const Valuable& n) override;
     Valuable& shr() override { return shr(1); }
