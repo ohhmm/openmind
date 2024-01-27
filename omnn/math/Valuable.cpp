@@ -935,7 +935,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 #endif
     }
 
-    Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized){
+    Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized) {
+#ifndef NOOMDEBUG
+      if (s.empty()) {
+        IMPLEMENT
+      }
+#endif // NOOMDEBUG
+
 		auto optimizationsWas = Valuable::optimizations;
 		Valuable::optimizations = !itIsOptimized && optimizationsWas;
 
@@ -981,7 +987,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     sum.MarkAsOptimized();
                 Become(std::move(sum));
             } else if ((found = FindSkippingParentneses('-')) != std::string::npos
-					&& s[found] != '*'
+					&& (found == 0 || s[found-1] != '*')
                     && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
                     && !lpart.ends_with("*/^"))
 			{
