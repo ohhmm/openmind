@@ -31,7 +31,7 @@ class Product
     using base::cont;
     friend class Variable;
     cont members;
-    Integer vaExpsSum;
+    max_exp_t vaExpsSum;
 
 protected:
     void AddToVars(const Variable &item, const Valuable & exponentiation);
