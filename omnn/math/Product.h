@@ -57,7 +57,7 @@ public:
     
     Valuable getCommVal(const Product& with) const;
     Valuable InCommonWith(const Valuable& v) const override;
-    int findMaxVaExp();
+    max_exp_t findMaxVaExp();
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;
 
