@@ -101,9 +101,8 @@ namespace math {
                 AddToVars(va, copy);
                 return;
             }
-
-            std::cerr << va.str() << '^' << exponentiation.str() << std::endl;
-            IMPLEMENT // estimate in to be greater for those which you want to see first in sum sequence
+            LOG_AND_IMPLEMENT("estimate in to be greater for those which you want to see first in sum sequence:"
+                              << va.str() << " ^ " << exponentiation.str());
         }
         if(exponentiation==0)
             return;
