@@ -269,6 +269,11 @@ namespace math {
         return boost::numeric_cast<long double>(arbitrary);
     }
     
+    Integer::operator a_rational() const
+    {
+        return boost::numeric_cast<a_rational>(arbitrary);
+    }
+    
     Integer::operator unsigned char() const
     {
         return boost::numeric_cast<unsigned char>(arbitrary);
