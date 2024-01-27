@@ -73,7 +73,7 @@ namespace math {
         }
     }
     
-    int Product::findMaxVaExp()
+    max_exp_t Product::findMaxVaExp()
     {
         vaExpsSum = 0;
         for (auto& i:vars) {
@@ -92,7 +92,7 @@ namespace math {
             return x.second < y.second;
         });
         if (it != vars.end()) {
-            return static_cast<int>(it->second.as<Integer>());
+            return static_cast<max_exp_t>(it->second);
         }
         return 0;
     }
@@ -120,9 +120,6 @@ namespace math {
         }
         
         auto& e = vars[va];
-        if (!e.IsInt()) {
-            IMPLEMENT
-        }
         auto wasMax = maxVaExp == static_cast<decltype(maxVaExp)>(e);
         e += exponentiation;
       
