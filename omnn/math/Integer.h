@@ -135,6 +135,7 @@ public:
     explicit operator uint64_t() const override;
     explicit operator double() const override;
     explicit operator long double() const override;
+    explicit operator a_rational() const override;
     explicit operator uint32_t() const override;
     explicit operator unsigned char() const override;
     a_int& a() override;

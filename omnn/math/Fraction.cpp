@@ -519,6 +519,11 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         return static_cast<double>(numerator()) / static_cast<double>(denominator());
     }
     
+    Fraction::operator a_rational() const
+    {
+        return static_cast<a_rational>(numerator()) / static_cast<a_rational>(denominator());
+    }
+    
     Valuable& Fraction::sq(){
         numerator().sq();
         denominator().sq();

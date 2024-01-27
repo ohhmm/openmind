@@ -2173,6 +2173,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
+    Valuable::operator a_rational() const
+    {
+        if (exp)
+            return exp->operator a_rational();
+        else
+            IMPLEMENT
+    }
+
     Valuable::operator uint32_t() const
     {
         if (exp)

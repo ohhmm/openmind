@@ -447,6 +447,7 @@ public:
     virtual explicit operator uint64_t() const;
     virtual explicit operator double() const;
     virtual explicit operator long double() const;
+    virtual explicit operator a_rational() const;
     virtual explicit operator uint32_t() const;
     virtual explicit operator unsigned char() const;
     virtual a_int& a();
