@@ -77,10 +77,16 @@ namespace math {
     {
         vaExpsSum = 0;
         for (auto& i:vars) {
-            if (!i.second.IsInt()) {
+            auto& e = i.second;
+            if (e.IsInt()) {
+                vaExpsSum += e.as<Integer>().ca();
+            } else if (e.IsSimpleFraction()) {
+                auto& f = e.as<Fraction>();
+				vaExpsSum += f.getNumerator().ca() / f.getDenominator().ca();
+            }
+            else {
                 IMPLEMENT;
             }
-            vaExpsSum += i.second;
         }
         auto it = std::max_element(vars.begin(), vars.end(), [](auto& x, auto& y){
             return x.second < y.second;
@@ -93,7 +99,15 @@ namespace math {
 
     void Product::AddToVars(const Variable & va, const Valuable & exponentiation)
     {
-        if (!exponentiation.IsInt()) {
+        if (exponentiation == constants::zero)
+            return;
+
+        if (exponentiation.IsInt()) {
+            vaExpsSum += exponentiation.as<Integer>().ca();
+        } else if (exponentiation.IsSimpleFraction()) {
+            auto& f = exponentiation.as<Fraction>();
+            vaExpsSum += f.getNumerator().ca() / f.getDenominator().ca();
+        } else {
             if (!optimizations) {
                 OptimizeOn oo;
                 auto copy = exponentiation;
@@ -104,11 +118,6 @@ namespace math {
             LOG_AND_IMPLEMENT("estimate in to be greater for those which you want to see first in sum sequence:"
                               << va.str() << " ^ " << exponentiation.str());
         }
-        if(exponentiation==0)
-            return;
-
-        auto& eai = exponentiation.as<Integer>();
-        vaExpsSum += eai;
         
         auto& e = vars[va];
         if (!e.IsInt()) {
@@ -127,7 +136,7 @@ namespace math {
         }
         
         if (!isMax && wasMax) {
-            assert(eai < 0);
+            assert(exponentiation < 0);
             maxVaExp = findMaxVaExp();
         }
     }
@@ -558,7 +567,7 @@ namespace math {
                 IMPLEMENT
             }
 
-            if (vaExpsSum.ca() != p->vaExpsSum.ca())
+            if (vaExpsSum != p->vaExpsSum)
             {
                 return vaExpsSum > p->vaExpsSum;
             }
