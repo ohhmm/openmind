@@ -123,10 +123,10 @@ namespace math {
         if (!e.IsInt()) {
             IMPLEMENT
         }
-        auto wasMax = maxVaExp == max_exp_t(e.ca(), 1);
+        auto wasMax = maxVaExp == static_cast<decltype(maxVaExp)>(e);
         e += exponentiation;
       
-        auto isMax = maxVaExp < e.ca();
+        auto isMax = maxVaExp < static_cast<decltype(maxVaExp)>(e);
         if (isMax) {
             maxVaExp = e.ca();
         }

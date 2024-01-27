@@ -99,6 +99,7 @@ namespace math {
 
         explicit operator unsigned char() const override;
         explicit operator a_int() const override;
+        explicit operator a_rational() const override;
         operator boost::multiprecision::cpp_dec_float_100() const;
         Valuable operator()(const Variable&, const Valuable& augmentation) const override;
         static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
