@@ -53,8 +53,8 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
         {-1,1,
             -1,1},
         
-        //        {-1,-1,-1,-1},
-        //        {1,1,1,1}
+                {-1,-1,-1,-1},
+                {1,1,1,1}
     }};
     
     ublas::vector<Extrapolator::value_type> augment(e_verticals.size1());
@@ -66,17 +66,17 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
     
     auto r = e_verticals.Solve(augment);
     std::cout << r[0] << ' ' << r[1] << ' ' << r[2] << ' ' << r[3] << std::endl;
-    auto val = r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1;
-    std::cout << "(r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1) is " << val << std::endl;
+    auto val0 = r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1;
+    std::cout << "(r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1) is " << val0 << std::endl;
     BOOST_TEST(r[0] * 1 + r[1] * -1 + r[2] * 1 + r[3] * -1 == 1.);
-    val = r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1;
-    std::cout << "(r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1) is " << val << std::endl;
+    auto val1 = r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1;
+    std::cout << "(r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1) is " << val1 << std::endl;
     BOOST_TEST(r[0] * -1 + r[1] * 1 + r[2] * -1 + r[3] * 1 == 2);
-    val = r[0] * -1 + r[1] * -1 + r[2] * -1 + r[3] * -1;
-    std::cout << "(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1) is " << val << std::endl;
+    auto val2 = r[0] * -1 + r[1] * -1 + r[2] * -1 + r[3] * -1;
+    std::cout << "(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1) is " << val2 << std::endl;
     BOOST_TEST(r[0] * -1 + r[1] * -1 + r[2] * -1 + r[3] * -1 == -1);
-    val = r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1;
-    std::cout << "(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1) is " << val << std::endl;
+    auto val3 = r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1;
+    std::cout << "(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1) is " << val3 << std::endl;
     BOOST_TEST(r[0] * 1 + r[1] * 1 + r[2] * 1 + r[3] * 1 == -2);
     
     Extrapolator e {{
