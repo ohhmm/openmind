@@ -46,7 +46,7 @@ class StoringTasksQueue : public std::deque < std::future<ResultT>> {
     bool CleanUp;
 
 protected:
-    void CleanupReadyTasks() {
+    bool CleanupReadyTasks() {
         if (CleanUp) {
             bool overburdened = {};
             do {
@@ -58,12 +58,13 @@ protected:
                         ) {
                         this->pop_front();
                     }
-                    overburdened = this->size() >= MaxThreadsForCacheStoring;
                 }
+                overburdened = this->size() >= MaxThreadsForCacheStoring;
                 if (overburdened)
                     std::this_thread::yield();
-            } while (this->size() >= MaxThreadsForCacheStoring);
+            } while (overburdened);
         }
+        return this->size() == 0;
     }
 
 public:
