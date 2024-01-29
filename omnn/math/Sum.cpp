@@ -101,24 +101,35 @@ namespace
     
     const Sum::iterator Sum::Add(const Valuable& item, const iterator hint)
     {
-        auto it = hint;
+        iterator it = hint;
         if (item.IsInt()) {
             it = GetFirstOccurence<Integer>();
             auto e = end();
             if (it == e) 
                 it = GetFirstOccurence<Fraction>();
             if (it != e && it->IsSimple()) {
-                auto i = Extract(it);
+                auto i = Extract(it++);
                 OptimizeOn oo;
                 i += item;
                 if (i != constants::zero)
-                    it = Add(i);
+                    it = Add(std::move(i), it);
                 else
                     it = e;
-                return it;
             }
-        }
-        if (item.IsSum()) {
+            else
+                it = base::Add(std::move(item), hint);
+        } else if (item.IsSimpleFraction()
+            && (it = GetFirstOccurence<Fraction>()) != end()
+            && it->IsSimple())
+        {
+            auto i = Extract(it++);
+            OptimizeOn oo;
+            i += item;
+            if (i != constants::zero)
+                it = Add(std::move(i), it);
+            else
+                it = end();
+        } else if (item.IsSum()) {
             for(auto& i : item.as<Sum>()) {
                 it = Add(i, it);
             }

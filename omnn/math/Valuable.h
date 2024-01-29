@@ -576,7 +576,7 @@ public:
     std::string OpenCLuint() const;
     va_names_t OpenCLparamVarNames() const;
 
-    virtual bool is_optimized() const;
+    [[nodiscard]] virtual bool is_optimized() const;
 
 protected:
     View view = View::Flat;
