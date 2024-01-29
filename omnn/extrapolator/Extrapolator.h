@@ -17,8 +17,9 @@
 namespace omnn::math {
 
     namespace ublas = boost::numeric::ublas;
-
-    using extrapolator_base_matrix = boost::numeric::ublas::matrix<Valuable>;
+    //using extrapolator_value_type = a_rational;
+    using extrapolator_value_type = Valuable;
+    using extrapolator_base_matrix = boost::numeric::ublas::matrix<extrapolator_value_type>;
     
 
 class Extrapolator
