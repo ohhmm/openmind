@@ -2146,7 +2146,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->ca();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Implement " << boost::core::demangle(Type().name()) << "::ca() for " << *this);
     }
 
     Valuable::operator uint64_t() const
