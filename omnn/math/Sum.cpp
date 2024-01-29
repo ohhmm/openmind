@@ -147,12 +147,12 @@ namespace
 #endif
                 it = members.find(item);
 
+            auto itemMaxVaExp = item.getMaxVaExp();
             if(it==end())
                 it = base::Add(item, hint);
             else
                 Update(it, item*2);
 
-            auto itemMaxVaExp = item.getMaxVaExp();
             if(itemMaxVaExp > maxVaExp)
                 maxVaExp = itemMaxVaExp;
         }
