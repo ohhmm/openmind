@@ -120,12 +120,13 @@ namespace math {
         }
         
         auto& e = vars[va];
-        auto wasMax = maxVaExp == static_cast<decltype(maxVaExp)>(e);
+        auto re = static_cast<a_rational>(e);
+        auto wasMax = maxVaExp == re;
         e += exponentiation;
-      
-        auto isMax = maxVaExp < static_cast<decltype(maxVaExp)>(e);
+        re = static_cast<a_rational>(e);
+        auto isMax = maxVaExp < re;
         if (isMax) {
-            maxVaExp = e.ca();
+            maxVaExp = re;
         }
         
         if (e == 0) {
