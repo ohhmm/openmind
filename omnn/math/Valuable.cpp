@@ -2370,6 +2370,26 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return less; // FIXME: less is always zero
     }
 
+    Valuable Valuable::Min(const Valuable& second) const {
+        // Initial Source left for reference:
+        // Variable x;
+        // auto quadratic = Equals(x) || x.Equals(second);
+        // auto a = constants::one;
+        // auto b = -(second + *this);
+        // auto c = second * *this;
+        // auto discriminant = b.Sq() - a * c * 4;
+        // auto sqrt = discriminant.Sqrt();
+        // auto xmin = (-b - sqrt) / (a * 2);
+        // return xmin;
+
+        // actual optimized code:
+        auto mb = second + *this;
+        auto c = second * *this;
+        auto discriminant = mb.Sq() + c * -4;
+        auto xmin = (mb - discriminant.sqrt()) / constants::two;
+        return xmin;
+    }
+
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
         IMPLEMENT
