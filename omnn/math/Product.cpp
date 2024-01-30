@@ -237,7 +237,7 @@ namespace math {
     {
         if (!optimizations || optimized)
             return;
-        optimized = true;
+        MarkAsOptimized();
 
         auto isPlusMinus = YesNoMaybe::Maybe;
         auto IsPlusMinus = [&] {
@@ -1044,6 +1044,16 @@ namespace math {
         Valuable sign(std::move(memberSignsProduct));
         sign.optimize();
         return sign;
+    }
+
+    Valuable Product::ToBool() const {
+        if (size() == 1) {
+			return begin()->ToBool();
+		} else if (is_optimized() && !FindVa()) {
+            return constants::zero;
+        } else {
+            return base::ToBool();
+        }
     }
 
     bool Product::operator<(const Valuable& v) const{
