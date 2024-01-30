@@ -16,6 +16,57 @@ BOOST_AUTO_TEST_CASE(logic_or_tests
     BOOST_TEST(ok == set);
 }
 
+BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test
+    , *disabled() // FIXME:
+) {
+    DECL_VARS(X, Y);
+    auto Minimum = X.Min(Y);
+    auto LE = X.LessOrEqual(Y);
+    std::cout << "X<=Y : " << LE << std::endl;
+    for (auto x = 10; x-- > 1;) {
+        for (auto y = 10; y-- > 1;) {
+            auto isLessEq = x <= y;
+            auto minOfTwo = std::min(x, y);
+            auto minimum = Minimum;
+            auto lessOrEqualOperatorInstantiation = LE;
+            Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
+            minimum.eval(evalMap);
+            BOOST_TEST(minimum == minOfTwo);
+            std::cout << '\n' << x << "<=" << y << " = ";
+            lessOrEqualOperatorInstantiation.eval(evalMap);
+            std::cout << " expression that must be equal to zero when true: " << lessOrEqualOperatorInstantiation
+                      << std::endl;
+
+            lessOrEqualOperatorInstantiation.optimize();
+            std::cout << std::endl << "Is " << x << "<=" << y << " : " << lessOrEqualOperatorInstantiation << std::endl;
+            bool b = {};
+            auto boolLessOp = lessOrEqualOperatorInstantiation.ToBool();
+            BOOST_TEST(boolLessOp == isLessEq);
+            if (boolLessOp == true) {
+                BOOST_TEST(boolLessOp.IsInt());
+                BOOST_TEST(lessOrEqualOperatorInstantiation.IsInt());
+                b = lessOrEqualOperatorInstantiation.IsInt() && lessOrEqualOperatorInstantiation.ca() == 0;
+                std::cout << std::endl << x << "<=" << y << " : " << b << std::endl;
+            } else if (boolLessOp == false) {
+                BOOST_TEST(boolLessOp.IsInt());
+                b = lessOrEqualOperatorInstantiation == 0;
+                std::cout << std::endl
+                          << x << "<=" << y << " : " << b << ' ' << lessOrEqualOperatorInstantiation << " != 0" << std::endl;
+            } else {
+            	std::cout << std::endl << x << "<=" << y << " : " << boolLessOp << std::endl;
+                BOOST_TEST(!"boolLessOp must have boolean value");
+            }
+            BOOST_TEST(boolLessOp == b);
+
+            auto ok = b == isLessEq;
+            if (!ok) {
+                std::cout << "X=" << x << " Y=" << y << ' ' << ok << " bool: " << b << std::endl;
+                BOOST_TEST(ok);
+            }
+        }
+    }
+}
+
 BOOST_AUTO_TEST_CASE(ifz_tests) {
     // two different bits
     // if a=0 then b=1 else b=0

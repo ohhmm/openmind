@@ -274,7 +274,7 @@ namespace math {
 
     bool Fraction::MultiplyIfSimplifiable(const Valuable& v)
     {
-        auto is = IsSimpleFraction() && v.IsSimple();
+        auto is = IsSimpleFraction() && v.IsSimple() && !v.IsRadical();
         if(is){
             *this *= v;
         } else if (!v.IsFraction()) {

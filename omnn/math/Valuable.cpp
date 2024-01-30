@@ -936,7 +936,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized) {
-#ifndef NOOMDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
       if (s.empty()) {
         IMPLEMENT
       }
@@ -2331,8 +2331,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->ToBool();
         else {
-            static const Variable b;
-            return Ifz(b.Equals(constants::one), b)(b);
+            return Ifz(constants::one, constants::zero);
         }
 	}
 
@@ -2360,34 +2359,84 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::Less(const Valuable& than) const
     {
-        auto less = *this;
-        less -= than;
-        less.sq();
-        ++less;
-        less /= less;
-        less.equals(constants::one);
-        LOG_AND_IMPLEMENT("FIXME: " << less << " is always zero")
-        return less; // FIXME: less is always zero
+        auto alreadyKnownToBeEqual = operator==(than)
+                                && IsMultival() == YesNoMaybe::No
+                                && than.IsMultival() == YesNoMaybe::No;
+        return alreadyKnownToBeEqual
+            ? constants::one // any non-zero value works here
+            : Equals(than).Ifz(
+                    constants::one, // thouse are equal: return 'false'
+                    LessOrEqual(than)); // else, since a!=b, a<=b is applicable
+    }
+
+    Valuable Valuable::LessOrEqual(const Valuable& than) const
+    {
+        return Min(than) - *this;
     }
 
     Valuable Valuable::Min(const Valuable& second) const {
         // Initial Source left for reference:
         // Variable x;
         // auto quadratic = Equals(x) || x.Equals(second);
-        // auto a = constants::one;
-        // auto b = -(second + *this);
-        // auto c = second * *this;
-        // auto discriminant = b.Sq() - a * c * 4;
-        // auto sqrt = discriminant.Sqrt();
-        // auto xmin = (-b - sqrt) / (a * 2);
-        // return xmin;
+        auto a = constants::one;
+        auto b = -(second + *this);
+        auto c = second * *this;
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        auto v = FindVa();
+        if (!v) {
+            v = second.FindVa();
+        }
+        static DECL_VA(X);
+        auto host = v ? v->getVaHost() : X.getVaHost();
+        auto x = v ? host->Host(host->NewVarId()) : X;
+
+        auto quadratic = Equals(x) || x.Equals(second);
+        auto& sum = quadratic.as<Sum>();
+        std::vector<Valuable> coefficients;
+        auto grade = sum.FillPolyCoeff(coefficients, x);
+        if (grade != 2)
+            IMPLEMENT
+        if (coefficients.size() != 3)
+            IMPLEMENT
+        auto ok = a == coefficients[2] && b == coefficients[1] && c == coefficients[0];
+        if (!ok) {
+            ok = a == -coefficients[2] && b == -coefficients[0] && c == -coefficients[1];
+            if (!ok) {
+                if (a != -coefficients[2]) {
+                    LOG_AND_IMPLEMENT("Check comparator: " << a << "!=" << -coefficients[2]);
+                }
+                if (b != -coefficients[1]) {
+                    LOG_AND_IMPLEMENT("Check comparator: " << b << "!=" << -coefficients[1]);
+                }
+                if (c != -coefficients[0]) {
+                    LOG_AND_IMPLEMENT("Check comparator: " << c << "!=" << -coefficients[0]);
+                }
+            }
+        }
+        if (!ok) {
+            LOG_AND_IMPLEMENT(a << "!=" << coefficients[2] << ", " << b << "!=" << coefficients[1] << ", or " << c
+                                << "!=" << coefficients[0] << " for " << quadratic << " = 0");
+
+        }
+#endif
+        auto discriminant = b.Sq() - a * c * 4;
+        auto sqrt = discriminant.Sqrt();
+        auto xmin = (-b - sqrt) / (a * 2);
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if (IsSimple() && second.IsSimple()) {
+            if (std::min(*this, second) != xmin)
+                IMPLEMENT
+        }
+#endif
+
+        return xmin;
 
         // actual optimized code:
-        auto mb = second + *this;
-        auto c = second * *this;
-        auto discriminant = mb.Sq() + c * -4;
-        auto xmin = (mb - discriminant.sqrt()) / constants::two;
-        return xmin;
+        // auto mb = second + *this;
+        // auto c = second * *this;
+        // auto discriminant = mb.Sq() + c * -4;
+        // auto xmin = (mb - discriminant.sqrt()) / constants::two;
+        // return xmin;
     }
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const

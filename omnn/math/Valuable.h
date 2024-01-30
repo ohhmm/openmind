@@ -553,6 +553,7 @@ public:
     virtual Valuable IntMod_Less(const Valuable& than) const;
 
 	virtual Valuable Less(const Valuable& than) const;
+	virtual Valuable LessOrEqual(const Valuable& than) const;
 
     /// <summary>
     /// Returns minimum between the object and the param asuming that both are real
