@@ -96,6 +96,7 @@ public:
     bool IsSimple() const override { return true; }
     //bool IsConstant() const override { return true; }   The Integer object may be applied an arithmetic operation and this object value changed. Only Constant class objects should return IsConstant true.
     bool is_optimized() const override { return true; }
+    void optimize() override { MarkAsOptimized(); }
     YesNoMaybe IsEven() const override;
     YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }

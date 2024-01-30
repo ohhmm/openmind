@@ -71,7 +71,7 @@ public:
     bool operator ==(const Valuable& v) const override;
     bool operator<(const Valuable& v) const override;
     Valuable Sign() const override;
-
+    Valuable ToBool() const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     void optimize() override;
