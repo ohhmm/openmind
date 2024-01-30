@@ -85,7 +85,7 @@ namespace omnn::math {
             return;
         }
 
-        optimized = true;
+        MarkAsOptimized();
         ebase().optimize();
         eexp().optimize();
 
@@ -356,48 +356,48 @@ namespace omnn::math {
 						{
                             break;
                         }
-                        if (eexp() != 0_v) {
-                            if (eexp() > 1) {
+                        if (eexp() != constants::zero) {
+                            if (eexp() > constants::one) {
                                 Valuable x = b;
                                 Valuable n = eexp();
-                                if (n < 0_v)
+                                if (n < constants::zero)
                                 {
-                                    x = 1_v / x;
+                                    x = constants::one / x;
                                     n = -n;
                                 }
-                                if (n == 0_v)
+                                if (n == constants::zero)
                                 {
                                     Become(1_v);
                                     return;
                                 }
-                                auto y = 1_v;
-                                while(n > 1)
+                                auto y = constants::one;
+                                while (n > constants::one)
                                 {
                                     bool isInt = n.IsInt();
                                     if (!isInt)
                                         IMPLEMENT
-                                    if (isInt && n.bit(0) == 0_v)
+                                    if (isInt && n.bit() == constants::zero)
                                     {
                                         x.sq();
-                                        n /= 2;
+                                        n /= constants::two;
                                     }
                                     else
                                     {
                                         y *= x;
                                         x.sq();
                                         --n;
-                                        n /= 2;
+                                        n /= constants::two;
                                     }
                                 }
                                 x *= y;
                                 Become(std::move(x));
-                            } else if (eexp()!=-1){
+                            } else if (eexp() != constants::minus_1) {
                                 // negative
-                                Become(1_v/(ebase()^(-eexp())));
+                                Become(constants::one / (ebase() ^ (-eexp())));
                             }
                         }
                         else { // zero
-                            if (ebase() == 0_v)
+                            if (ebase() == constants::zero)
                             {
                                 IMPLEMENT
                                 throw "NaN"; // feel free to handle this properly
@@ -435,7 +435,7 @@ namespace omnn::math {
 
         if (IsExponentiation()) {
             hash = ebase().Hash() ^ eexp().Hash();
-            optimized = true;
+            MarkAsOptimized();
             InitVars();
         }
     }

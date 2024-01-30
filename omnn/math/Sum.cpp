@@ -245,7 +245,8 @@ namespace
 	}
     void Sum::optimize()
     {
-        if (optimized || !optimizations) return;
+        if (is_optimized() || !optimizations)
+            return;
 
         if (isOptimizing)
             return;
@@ -255,7 +256,7 @@ namespace
             return;
 
         Optimizing o(*this);
-        optimized = true;
+        MarkAsOptimized();
 
         auto s = str();
         auto doCheck = s.length() > 10;
@@ -283,9 +284,7 @@ namespace
                 return;
             }
             if (members.size() == 1) {
-                Valuable m;
-                {m = *members.begin();}
-                Become(std::move(m));
+                Become(Extract(members.begin()));
                 return;
             }
 
