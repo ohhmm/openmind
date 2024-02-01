@@ -62,7 +62,7 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
 }
 
 void PrincipalSurd::optimize() {
-    if (!optimizations || optimized)
+    if (!optimizations || is_optimized())
         return;
 
     if (_1.IsInt()) {
@@ -70,7 +70,7 @@ void PrincipalSurd::optimize() {
         if (rdcnd < 0) {
             Become(Product{constants::i, {PrincipalSurd{-_1, _2}}});
             return;
-        } else if (_1 == constants::zero) {
+        } else if (_1 == constants::zero || _2 == constants::one) {
             Become(std::move(_1));
             return;
         } else {
@@ -102,7 +102,9 @@ void PrincipalSurd::optimize() {
         return;
     }
 
-    optimized = IsPrincipalSurd();
+    if (IsPrincipalSurd()) {
+        MarkAsOptimized();
+    }
 }
 
 Valuable& PrincipalSurd::sq() {
@@ -139,6 +141,8 @@ Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
     if(_2.IsInt() && _2 > constants::one) {
         for(auto& ve : vaExps)
             ve.second /= _2;
+    } else if (!FindVa()) {
+        vaExps.clear();
     } else {
         IMPLEMENT
     }
