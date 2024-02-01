@@ -427,7 +427,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
             auto& vfdn = vf.denominator();
             if (vfdn == constants::two)
                 ;
-            else if (vfdn.bit(constants::zero) != constants::one) {
+            else if (vfdn.bit() != constants::one) {
                 return Become(Exponentiation(*this, v));
             }
         }
