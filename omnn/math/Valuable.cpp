@@ -1049,7 +1049,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                auto exp = itIsOptimized ? Valuable(Exponentiation{l, r}) : l ^ r;
+                Exponentiation exp{l, r};
                 if (itIsOptimized)
                     exp.MarkAsOptimized();
                 Become(std::move(exp));
@@ -2420,10 +2420,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::LessOrEqual(const Valuable& than) const
     {
-        return Min(than) - *this;
+        return Minimum(than) - *this;
     }
 
-    Valuable Valuable::Min(const Valuable& second) const {
+    Valuable Valuable::Minimum(const Valuable& second) const {
         // Initial Source left for reference:
         // Variable x;
         // auto quadratic = Equals(x) || x.Equals(second);

@@ -1,5 +1,5 @@
 #pragma once
-#include <deque>
+#include <queue>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -40,7 +40,7 @@ private:
 
 using StoringTask = std::future<bool>;
 template <typename ResultT = bool>
-class StoringTasksQueue : public std::deque < std::future<ResultT>> {
+class StoringTasksQueue : public std::queue<std::future<ResultT>> {
     std::mutex DequeMutEx;
     static constexpr size_t MaxThreadsForCacheStoring = 1024;
     bool CleanUp;
@@ -56,7 +56,7 @@ protected:
                         && this->front().valid()
                         && this->front().wait_for(std::chrono::seconds(0)) == std::future_status::ready
                         ) {
-                        this->pop_front();
+                        this->pop();
                     }
                 }
                 overburdened = this->size() >= MaxThreadsForCacheStoring;
@@ -77,7 +77,7 @@ public:
         this->CleanupReadyTasks();
         auto task = std::async(std::launch::async, std::bind(std::forward<FnT>(f), std::forward<ParamsT>(params)...));
         std::lock_guard lg(DequeMutEx);
-        this->emplace_back(std::move(task));
+        this->emplace(std::move(task));
     }
 
     template<typename C, class FnT, class ...ParamsT>
@@ -93,6 +93,17 @@ public:
         for (auto i = cont.begin(); i!=e; ++i)
             AddTask(std::forward<FnT>(f), *i, std::forward<ParamsT>(params)...);
     }
+
+    auto PopCurrentTask() {
+        std::lock_guard lg(DequeMutEx);
+        auto future = std::move(this->front());
+        this->pop();
+        return future;
+    }
+
+    auto PeekNextResult() {
+        return PopCurrentTask().get();
+	}
 };
 
 } // namespace omnn::rt

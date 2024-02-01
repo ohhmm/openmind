@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE(logic_or_tests
 
 BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
     DECL_VARS(X, Y);
-    auto Minimum = X.Min(Y);
+    auto Minimum = X.Minimum(Y);
     std::cout << "Minimum(X,Y) : " << Minimum << std::endl;
     auto LE = X.LessOrEqual(Y);
     std::cout << "X<=Y : " << LE << std::endl;
@@ -26,10 +26,12 @@ BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
         for (auto y = 10; y-- > 1;) {
             auto isLessEq = x <= y;
             auto minOfTwo = std::min(x, y);
+            std::cout << " min(" << x << ',' << y << ") = " << minOfTwo << std::endl;
             auto minimum = Minimum;
             auto lessOrEqualOperatorInstantiation = LE;
             Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
             minimum.eval(evalMap);
+            std::cout << " Minimum(" << x << ',' << y << ") = " << minimum << std::endl;
             BOOST_TEST(minimum == minOfTwo);
             std::cout << '\n' << x << "<=" << y << " = ";
             lessOrEqualOperatorInstantiation.eval(evalMap);
