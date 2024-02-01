@@ -51,7 +51,7 @@ if(GIT_EXECUTABLE)
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
-			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash || ${GIT_EXECUTABLE} pull --rebase --autostash origin HEAD
 			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin HEAD
 			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind HEAD
 			COMMAND ${GIT_EXECUTABLE} fetch --all
