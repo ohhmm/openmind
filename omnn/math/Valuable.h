@@ -560,7 +560,7 @@ public:
     /// <summary>
     /// Returns minimum between the object and the param asuming that both are real
     /// </summary>
-    Valuable Min(const Valuable& second) const;
+    Valuable Minimum(const Valuable& second) const;
 
 	/// iterations
 	//
