@@ -16,9 +16,7 @@ BOOST_AUTO_TEST_CASE(logic_or_tests
     BOOST_TEST(ok == set);
 }
 
-BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test
-    , *disabled() // FIXME:
-) {
+BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
     DECL_VARS(X, Y);
     auto Minimum = X.Min(Y);
     auto LE = X.LessOrEqual(Y);

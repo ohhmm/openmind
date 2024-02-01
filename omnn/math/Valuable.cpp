@@ -15,6 +15,7 @@
 #include "PrincipalSurd.h"
 
 #include <rt/GC.h>
+#include <rt/tasq.h>
 
 #include <algorithm>
 #include <functional>
@@ -38,6 +39,8 @@
 #ifndef __APPLE__
 #include <boost/stacktrace.hpp>
 #endif
+
+using namespace std::string_view_literals;
 
 #ifdef max
 #undef max
@@ -890,6 +893,18 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     auto id = s.substr(i);
                     if (to != std::string::npos) {
                         id = s.substr(i, to - i);
+                        if (s[to] == '(') { // functions
+                            if (to == 0) {
+                                IMPLEMENT
+                            }
+                            auto cb = bracketsmap[to];
+                            if (id == "sqrt"sv) {
+                                auto next = to + 1;
+                                o(PrincipalSurd{Valuable(s.substr(next, cb - next), h, itIsOptimized)});
+                            }
+							i = cb;
+                            continue;
+                        }
                     }
                     Valuable val(h->Host(id));
                     if (mulByNeg) {
@@ -1695,7 +1710,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     std::string Valuable::OpenCLuint() const {
-		using namespace std::string_view_literals;
         return OpenCL("uint"sv);
     }
 
@@ -2400,7 +2414,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
         auto ok = a == coefficients[2] && b == coefficients[1] && c == coefficients[0];
         if (!ok) {
-            ok = a == -coefficients[2] && b == -coefficients[0] && c == -coefficients[1];
+            ok = a == -coefficients[2] && b == -coefficients[1] && c == -coefficients[0];
             if (!ok) {
                 if (a != -coefficients[2]) {
                     LOG_AND_IMPLEMENT("Check comparator: " << a << "!=" << -coefficients[2]);
@@ -2517,8 +2531,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             auto a = *this;
             auto b = v;
             for (Valuable i; i < n;) {
-                auto ab = a.bit(constants::zero);
-                auto bb = b.bit(constants::zero);
+                auto ab = a.bit();
+                auto bb = b.bit();
                 auto mul = ab * bb;
                 s += mul.shl(i);
                 if (++i < n) {
@@ -2543,8 +2557,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             auto a = *this;
             auto b = v;
             for (Valuable i; i < n;) {
-                auto ab = a.bit(constants::zero);
-                auto bb = b.bit(constants::zero);
+                auto ab = a.bit();
+                auto bb = b.bit();
                 auto mul = ab * bb;
                 auto sum = ab + bb;
                 s += (sum - mul).shl(i);
@@ -2571,7 +2585,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 s *= constants::two;
                 auto _1 = bit(i);
                 auto _2 = v.bit(i);
-                s += (_1 + _2).bit(constants::zero);
+                s += (_1 + _2).bit();
             }
         }
         if (bit_operation_optimizations) {
@@ -2588,7 +2602,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             for (auto i = n; i--;) {
                 s *= constants::two;
                 auto _1 = constants::one - bit(i);
-                s += (_1).bit(constants::zero);
+                s += (_1).bit();
             }
         }
         if (bit_operation_optimizations) {
