@@ -7,6 +7,8 @@
 #include <future>
 #include <iterator>
 
+#include <omnn/rt/tasq.h>
+
 namespace omnn{
 namespace math {
 
@@ -187,6 +189,10 @@ namespace math {
 
         bool IsSimple() const override {
             return std::all_of(begin(), end(), [](auto& m){return m.IsSimple();});
+        }
+
+        bool IsNormalizedPolynomial(const Variable& v) const override {
+            return std::all_of(begin(), end(), [&](auto& m) { return m.IsNormalizedPolynomial(v); });
         }
 
         Valuable::YesNoMaybe IsMultival() const override {

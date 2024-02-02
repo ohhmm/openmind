@@ -155,6 +155,8 @@ namespace
 
             if(itemMaxVaExp > maxVaExp)
                 maxVaExp = itemMaxVaExp;
+
+            // FIXME: handle lowering of maxVaExp
         }
         return it;
     }
@@ -1212,49 +1214,11 @@ namespace
 	}
 
     bool Sum::IsNormalizedPolynomial(const Variable& v) const {
-        a_int maxExp = 0;
-        auto is = true;
-        for (auto& m : members)
-        {
-            if(m.IsInt() || m.IsVa()){
-                continue;
-            } else if(m.IsExponentiation()) {
-                auto& e = m.as<Exponentiation>();
-                is = is && e.ebase().IsVa()
-                        && e.eexp().IsInt()
-                        && e.eexp().ca() > 0
-                        ;
-            } else if(m.IsProduct()) {
-                for(auto& m: m.as<Product>()){
-                    if(m.IsInt() || m.IsVa()){
-                        continue;
-                    } else if(m.IsExponentiation()) {
-                        auto& e = m.as<Exponentiation>();
-                        auto& b = e.ebase();
-                        auto& ee = e.eexp();
-                        auto ebaseIsVa = b.IsVa();
-                        is = ebaseIsVa && ee.IsInt();
-                        if(is){
-                            auto& iexp = ee.ca();
-                            is = iexp > 0;
-                            if (is && b == v && iexp > maxExp) {
-                                maxExp = iexp;
-                            }
-                        }
-                    } else {
-                        is = {};
-                    }
-                }
-            } else {
-                is = {};
-            }
-            if(!is)
-                break;
+        auto is = base::IsNormalizedPolynomial(v);
+        if (is) {
+            auto grade = GetVaExps()[v];
+            is = grade.IsInt() && grade < 5;
         }
-
-        if(is && maxExp >= 5)
-            is = Vars().size() == 1;
-
         return is;
     }
 

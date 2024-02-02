@@ -98,6 +98,7 @@ public:
     bool is_optimized() const override { return true; }
     void optimize() override { MarkAsOptimized(); }
     YesNoMaybe IsEven() const override;
+    bool IsNormalizedPolynomial(const Variable&) const override { return true; }
     YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
     

@@ -34,6 +34,7 @@ public:
 
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
+    bool IsNormalizedPolynomial(const Variable&) const override { return IsSimple(); }
 
     void optimize() override;
 

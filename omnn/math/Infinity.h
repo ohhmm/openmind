@@ -18,6 +18,9 @@ public:
     static /*constinit*/ std::string_view SerializationName;
 
     bool IsInfinity() const override { return true; }
+
+    bool IsSimple() const override { return {}; }
+
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator *=(const Valuable& v) override;
@@ -41,6 +44,9 @@ public:
     static /*constinit*/ std::string_view SerializationName;
 
     bool IsMInfinity() const override { return true; }
+
+    bool IsSimple() const override { return {}; }
+
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator *=(const Valuable& v) override;
@@ -64,6 +70,9 @@ public:
     static /*constinit*/ std::string_view SerializationName;
 
     bool IsNaN() const override { return true; }
+
+    bool IsSimple() const override { return {}; }
+
     Valuable operator-() const override { return *this; }
     Valuable& operator+=(const Valuable& v) override { return *this; }
     Valuable& operator*=(const Valuable& v) override { return *this; }
