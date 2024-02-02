@@ -1167,7 +1167,9 @@ namespace omnn::math {
     }
 
     bool Exponentiation::IsNormalizedPolynomial(const Variable& v) const {
-        return ebase() == v && eexp().IsInt();
+        return IsVaExp()
+            && eexp().IsInt()
+            && eexp() > constants::zero;
 	}
 
     void Exponentiation::solve(const Variable& va, solutions_t& s) const {

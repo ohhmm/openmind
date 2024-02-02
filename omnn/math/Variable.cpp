@@ -326,7 +326,7 @@ namespace math {
     }
 
     bool Variable::IsNormalizedPolynomial(const Variable& v) const {
-        return operator==(v);
+        return true;
     }
 
     Valuable::vars_cont_t Variable::GetVaExps() const {
