@@ -1361,10 +1361,23 @@ namespace
         }
 
         if (grade > 2) {
+            auto lcm = constants::one;
             OptimizeOn oo;
             for (auto& c : coefficients) {
                 c.optimize();
+                if (c.IsFraction()) {
+                    auto& f = c.as<Fraction>();
+                    auto& dn = f.getDenominator();
+                    if (dn != constants::one) {
+                        lcm.lcm(dn);
+                    }
+                }
             }
+            if (lcm != constants::one) {
+                for (auto& c : coefficients) {
+					c *= lcm;
+				}
+			}
         }
 
         return grade;
@@ -1872,6 +1885,10 @@ namespace
         								<< "need to normalize coefficient: " << c << std::endl);
                         }
                     }
+				}
+
+                if (lcm != constants::one) {
+                    LOG_AND_IMPLEMENT("Coefficients meant to be balanced before solving");
 				}
 
                 if(GetView() != View::Solving && GetView() != View::Equation) {
