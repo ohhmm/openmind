@@ -292,6 +292,7 @@ public:
     // returns the greatest common divisor (GCD) with the given object
     virtual Valuable GCD(const Valuable& v) const;
     Valuable& gcd(const Valuable& v);
+    Valuable& lcm(const Valuable& v);
 
     virtual Valuable& d(const Variable& x);
     struct IntegrationParams {
@@ -379,7 +380,7 @@ public:
     virtual void solve(const Variable& va, solutions_t&) const;
     virtual solutions_t Distinct() const;
     virtual Valuable Univariate() const;
-    virtual bool IsNormalizedPolynomial(const Variable&) const;
+    virtual bool IsPolynomial(const Variable&) const;
     solutions_t Solutions() const;
     solutions_t IntSolutions() const;
     solutions_t Solutions(const Variable& v) const;

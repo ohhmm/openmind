@@ -66,6 +66,9 @@ namespace math {
 		bool IsFraction() const override { return true; }
 		bool IsSimpleFraction() const override { return IsSimple(); }
         YesNoMaybe IsMultival() const override { return _1.IsMultival() || _2.IsMultival(); }
+        bool IsPolynomial(const Variable& x) const override {
+            return _1.IsPolynomial(x) && _2.IsSimple();
+        }
 
 		using base::base;
 

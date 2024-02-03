@@ -87,7 +87,7 @@ public:
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
     solutions_t Distinct() const override;
 
-    bool IsNormalizedPolynomial(const Variable&) const override;
+    bool IsPolynomial(const Variable&) const override;
 
     Valuable Abet(std::initializer_list<Valuable>) const;
 

@@ -191,8 +191,8 @@ namespace math {
             return std::all_of(begin(), end(), [](auto& m){return m.IsSimple();});
         }
 
-        bool IsNormalizedPolynomial(const Variable& v) const override {
-            return std::all_of(begin(), end(), [&](auto& m) { return m.IsNormalizedPolynomial(v); });
+        bool IsPolynomial(const Variable& v) const override {
+            return std::all_of(begin(), end(), [&](auto& m) { return m.IsPolynomial(v); });
         }
 
         Valuable::YesNoMaybe IsMultival() const override {

@@ -1133,7 +1133,7 @@ namespace
         if (vars.size() == 1)
 		{
             const auto& va = *FindVa();
-            if (IsNormalizedPolynomial(va)) {
+            if (IsPolynomial(va)) {
                 std::vector<Valuable> coefficients;
                 auto grade = FillPolyCoeff(coefficients, va);
                 if (grade == 2) {
@@ -1213,11 +1213,12 @@ namespace
 			&& members.rbegin()->FindVa() == nullptr;
 	}
 
-    bool Sum::IsNormalizedPolynomial(const Variable& v) const {
-        auto is = base::IsNormalizedPolynomial(v);
+    bool Sum::IsPolynomial(const Variable& v) const {
+        auto is = base::IsPolynomial(v);
         if (is) {
-            auto grade = GetVaExps()[v];
-            is = grade.IsInt() && grade < 5;
+            auto exps = GetVaExps();
+            auto grade = exps[v];
+            is = grade.IsInt() && (grade < 5 || exps.size() == 1);
         }
         return is;
     }
@@ -1234,11 +1235,11 @@ namespace
                 grade = univariate.as<Sum>().FillPolyCoeff(coefficients, v);
                 return grade;
             }
-        } else if(!IsNormalizedPolynomial(v)){
+        } else if(!IsPolynomial(v)){
             auto copy = *this;
             copy.SetView(View::Solving);
             copy.optimize(); // for Solving ^
-            if(copy.IsNormalizedPolynomial(v)){
+            if(copy.IsPolynomial(v)){
                 grade = copy.FillPolyCoeff(coefficients, v);
                 return grade;
             } else {
@@ -1357,6 +1358,13 @@ namespace
             coefficients.pop_back();
             if (grade)
                 --grade;
+        }
+
+        if (grade > 2) {
+            OptimizeOn oo;
+            for (auto& c : coefficients) {
+                c.optimize();
+            }
         }
 
         return grade;
@@ -1848,6 +1856,23 @@ namespace
                     return;
                 }
 
+                auto isNormalizedPolynomial = true;
+                auto lcm = constants::one;
+				for(auto& c : coefficients) {
+                    if (!c.IsInt()) {
+                        isNormalizedPolynomial = false;
+                        if (c.IsFraction()) {
+                            auto& f = c.as<Fraction>();
+                            auto& dn = f.getDenominator();
+                            if (dn != constants::one) {
+                                lcm.lcm(dn);
+                            }
+                        } else {
+                            LOG_AND_IMPLEMENT("Solving " << va << " in " << *this << std::endl
+        								<< "need to normalize coefficient: " << c << std::endl);
+                        }
+                    }
+				}
 
                 if(GetView() != View::Solving && GetView() != View::Equation) {
 //                    auto 
