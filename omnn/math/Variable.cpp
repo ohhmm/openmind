@@ -325,7 +325,7 @@ namespace math {
         return Valuable(a.Move());
     }
 
-    bool Variable::IsNormalizedPolynomial(const Variable& v) const {
+    bool Variable::IsPolynomial(const Variable& v) const {
         return true;
     }
 

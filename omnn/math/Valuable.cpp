@@ -1317,6 +1317,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return Become(GCD(v));
     }
 
+    Valuable& Valuable::lcm(const Valuable& v) {
+        IMPLEMENT
+    }
+
     Valuable& Valuable::d(const Variable& x)
     {
         if(exp) {
@@ -1415,9 +1419,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    bool Valuable::IsNormalizedPolynomial(const Variable& v) const {
+    bool Valuable::IsPolynomial(const Variable& v) const {
         if(exp)
-            return exp->IsNormalizedPolynomial(v);
+            return exp->IsPolynomial(v);
         else
             IMPLEMENT
     }
@@ -1435,7 +1439,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable::solutions_t Valuable::Solutions(const Variable& v) const
     {
         solutions_t solutions;
-        if(this->view == View::Solving || IsNormalizedPolynomial(v))
+        if(this->view == View::Solving || IsPolynomial(v))
             solve(v,solutions);
         else {
             auto c = *this;
