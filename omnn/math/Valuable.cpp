@@ -950,7 +950,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 #endif
     }
 
-    Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized) {
+    Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized)
+    {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
       if (s.empty()) {
         IMPLEMENT
@@ -1084,6 +1085,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                             if (itIsOptimized)
                                 v.MarkAsOptimized();
                             Become(std::move(v));
+                        } else if (vaNames.empty()) {
+                            Valuable varless(s, nullptr, itIsOptimized);
+                            Become(std::move(varless));
                         } else {
                             Become(Valuable(s, vaNames.begin()->second.getVaHost(), itIsOptimized));
                         }
