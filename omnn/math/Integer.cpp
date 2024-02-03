@@ -607,6 +607,21 @@ namespace math {
             : v.GCD(*this);
     }
 
+    Valuable Integer::LCM(const Valuable& v) const {
+        return v.IsInt() ? boost::lcm(v.ca(), ca()) : v.LCM(*this);
+    }
+
+    Valuable& Integer::lcm(const Valuable& v) {
+        if (v.IsInt()) {
+            arbitrary = boost::lcm(v.ca(), ca());
+            hash = std::hash<base_int>()(arbitrary);
+        } else {
+            Become(v.LCM(*this));
+        }
+        return *this;
+    }
+
+
     // sqrt using boost
     Valuable Integer::Sqrt() const
     {
