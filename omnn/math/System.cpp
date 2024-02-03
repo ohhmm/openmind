@@ -167,7 +167,7 @@ bool System::Fetch(const Variable& va)
         for (auto& e : equs) {
             e.CollectVa(vars);
             if (e.HasVa(va)) {
-                if (!e.IsSum() || e.as<Sum>().IsNormalizedPolynomial(va)) {
+                if (!e.IsSum() || e.as<Sum>().IsPolynomial(va)) {
                     auto _ = e(va);
                     modified = Add(va, _) || modified;
                     if (_.Vars().size() == 0) {
