@@ -291,8 +291,9 @@ public:
 
     // returns the greatest common divisor (GCD) with the given object
     virtual Valuable GCD(const Valuable& v) const;
-    Valuable& gcd(const Valuable& v);
-    Valuable& lcm(const Valuable& v);
+    virtual Valuable& gcd(const Valuable& v);
+    virtual Valuable LCM(const Valuable& v) const;
+    virtual Valuable& lcm(const Valuable& v);
 
     virtual Valuable& d(const Variable& x);
     struct IntegrationParams {

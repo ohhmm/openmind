@@ -171,6 +171,8 @@ public:
     bool IsComesBefore(const Valuable& v) const override;
     Valuable InCommonWith(const Valuable& v) const override;
     Valuable GCD(const Valuable& v) const override;
+    Valuable LCM(const Valuable& v) const override;
+    Valuable& lcm(const Valuable& v) override;
 
     std::wstring save(const std::wstring&) const override;
     std::ostream& code(std::ostream&) const override;
