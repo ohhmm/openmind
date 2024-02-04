@@ -323,6 +323,7 @@ public:
     virtual bool IsFraction() const;
     virtual bool IsRadical() const;
     virtual bool IsPrincipalSurd() const;
+    virtual bool IsSurd() const;
     virtual bool IsSimpleFraction() const;
     virtual bool IsFormula() const;
     virtual bool IsExponentiation() const;

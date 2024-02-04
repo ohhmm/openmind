@@ -693,6 +693,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 			};
             op_t o_sum, o_mul, o_div, o_exp;
             op_t o_mod; 
+            op_t o_pSurd; 
             if (itIsOptimized) {
                 sum.MarkAsOptimized();
                 v.MarkAsOptimized();
@@ -749,6 +750,16 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         m.MarkAsOptimized();
                     v = std::move(m);
                 };
+                o_pSurd = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
+                    PrincipalSurd ps{std::move(v), std::move(val)};
+                    if (itIsOptimized)
+                        ps.MarkAsOptimized();
+                    v = std::move(ps);
+                };
                 o_exp = [&](Valuable&& val) {
                     if (mulByNeg) {
                         val *= -1;
@@ -787,6 +798,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         mulByNeg = {};
                     }
                     v %= std::move(val);
+                };
+                o_pSurd = [&](Valuable&& val) {
+                    if (mulByNeg) {
+                        val *= constants::minus_1;
+                        mulByNeg = {};
+                    }
+                    v = PrincipalSurd{std::move(val), std::move(v)};
                 };
                 o_exp = [&](Valuable&& val) {
                     if (mulByNeg) {
@@ -843,6 +861,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     Trim(ss);
                     auto hasSpace = ss.find(' ') != std::string::npos;
                     auto dot = ss.find('.');
+                    i = next - 1;
                     if (dot != std::string::npos) {
                         std::string s;
                         if(hasSpace){
@@ -858,9 +877,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         Valuable integer = hasSpace
                             ? Integer(Solid(std::string(ss)))
                             : Integer(ss);
-                    o(std::move(integer));
+                        if (i < s.length() && s[i] == 'r') {
+                            o = o_pSurd;
+                        } else {
+                            o(std::move(integer));
+                        }
                     }
-                    i = next - 1;
                 }
                 else if (c == '+') {
                     o_sum(std::move(v));
@@ -1665,6 +1687,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     bool Valuable::IsInt() const { return exp && exp->IsInt(); }
     bool Valuable::IsRadical() const { return exp && exp->IsRadical(); }
     bool Valuable::IsPrincipalSurd() const { return exp && exp->IsPrincipalSurd(); }
+    bool Valuable::IsSurd() const { return exp && exp->IsSurd(); }
     bool Valuable::IsFraction() const { return exp && exp->IsFraction(); }
     bool Valuable::IsSimpleFraction() const { return exp && exp->IsSimpleFraction(); }
     bool Valuable::IsFormula() const { return exp && exp->IsFormula(); }

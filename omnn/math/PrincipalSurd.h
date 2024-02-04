@@ -20,10 +20,16 @@ protected:
 
 public:
     using base::base;
-    PrincipalSurd(const Valuable& radicand, const Valuable& index = 2);
 
-    bool IsRadical() const override { return true; }
+    template <class T1>
+    constexpr PrincipalSurd(T1&& radicand)
+        : base(std::forward<T1>(radicand), constants::two)
+    {
+    }
+
     bool IsPrincipalSurd() const override { return true; }
+    bool IsRadical() const override { return true; }
+    bool IsSurd() const override { return is_optimized(); }
     constexpr const Valuable& Degree() const { return _2; }
     constexpr const Valuable& Index() const { return _2; }
     constexpr const Valuable& Radicand() const { return _1; }
