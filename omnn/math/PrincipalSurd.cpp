@@ -4,12 +4,6 @@
 using namespace omnn::math;
 
 
-PrincipalSurd::PrincipalSurd(const Valuable& radicand, const Valuable& index)
-    : base(radicand, index)
-{
-
-}
-
 std::ostream& PrincipalSurd::print_sign(std::ostream &out) const
 {
     out << 'r';
