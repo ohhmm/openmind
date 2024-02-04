@@ -12,6 +12,9 @@ namespace math {
     {
     public:
         using Valuable::Valuable;
+
+        bool IsSurd() const override { return {}; }
+
         Valuable& operator^=(const Valuable& v) override;
         Valuable& operator+=(const Valuable &v) override;
         Valuable& operator*=(const Valuable &v) override;
