@@ -113,11 +113,7 @@ Valuable PrincipalSurd::Sqrt() const {
 }
 
 Valuable PrincipalSurd::Sign() const {
-    if(Radicand().IsInt())
-        return Radicand().Sign();
-    else{
-        LOG_AND_IMPLEMENT(*this << " . Sign()");
-    }
+    return constants::one; // See https://github.com/ohhmm/openmind/blob/011305e988292473919a523736cf6e913dbb55ef/omnn/math/i.cpp#L66
 }
 
 PrincipalSurd::operator double() const {
