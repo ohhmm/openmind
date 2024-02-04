@@ -1049,7 +1049,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 auto r = Valuable(rpart, vaNames, itIsOptimized);
                 if (itIsOptimized)
                     r.MarkAsOptimized();
-                Exponentiation exp{l, r};
+                auto exp = itIsOptimized ? Valuable(Exponentiation{l, r}) : l ^ r;
                 if (itIsOptimized)
                     exp.MarkAsOptimized();
                 Become(std::move(exp));

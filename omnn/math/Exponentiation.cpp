@@ -689,6 +689,8 @@ namespace omnn::math {
         auto isMultival = IsMultival()==YesNoMaybe::Yes;
         auto vIsMultival = v.IsMultival()==YesNoMaybe::Yes;
         if(isMultival && vIsMultival) {
+            if (operator==(v))
+                return *this;
             OptimizeOn o; // solutions sets may have equivalent values if optimizations are off
             solutions_t vals, thisValues;
             Values([&](auto& thisVal){
@@ -1142,7 +1144,7 @@ namespace omnn::math {
                     } while(d.IsEven() == Valuable::YesNoMaybe::Yes);
                     auto _ = b ^ (1_v / d);
                     auto distinct = _.Distinct();
-                    if(denom==2)
+                    if(denom==constants::two)
                         for (auto& branch : distinct)
                         {
                             branches.emplace(-branch);
@@ -1157,7 +1159,29 @@ namespace omnn::math {
                             branches.emplace(std::move(const_cast<decltype(distinct)::reference>(branch)));
                         }
                     else
-                        LOG_AND_IMPLEMENT("Implement support for " << denom << " dimmensions");
+                    {
+                        auto Branch = [](auto&& collection) {
+                            solutions_t branches;
+                            auto e = collection.end();
+                            for (auto it = collection.begin(); it != e;) {
+                                auto item = std::move(collection.extract(it++).value());
+                                item.sqrt();
+								branches.emplace(-item);
+                                branches.emplace(std::move(item));
+							}
+							return branches;
+                        };
+
+                        branches = std::move(distinct);
+                        for(auto d = denom; d.IsEven() == Valuable::YesNoMaybe::Yes; d.shr()) {
+							auto newBranches = Branch(branches);
+							branches = std::move(newBranches);
+						}
+
+                        if (d != constants::one) {
+							LOG_AND_IMPLEMENT("Distinct for " << *this);
+						}
+                    }
                 }
             }
         } else {
