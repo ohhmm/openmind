@@ -106,7 +106,13 @@ BOOST_AUTO_TEST_CASE(System_tests
         auto _ = s.Solve(x);
         BOOST_TEST(_.size()==1);
     }
+}
 
+BOOST_AUTO_TEST_CASE(Balancing_system_no_hang_test
+    , *timeout(2) * disabled()
+) {
+    DECL_VARS(x,y,z);
+    System() << (constants::minus_1 / 4)*((-16*(y^2)+160*y-8*x-200) ^ constants::half) + z -35;
 }
 
 BOOST_AUTO_TEST_CASE(Sudoku_test_task
