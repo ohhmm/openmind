@@ -99,7 +99,7 @@ namespace math {
 
     void Fraction::optimize()
     {
-        if (!optimizations) {
+        if (!optimizations && !IsSimple()) {
             hash = numerator().Hash() ^ denominator().Hash();
             return;
         }
