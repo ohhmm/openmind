@@ -22,7 +22,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
-//#include <ranges>   uncomment once github action image is new enough
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -362,16 +362,18 @@ namespace math {
                 }
             }
 
-            Valuable mergedPairs(std::move(pairs));
-
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            if (pairs.size()) {
+                Valuable mergedPairs(std::move(pairs));
+            }
+
             std::stringstream ss;
             ss << '(';
             for (auto& v : s)
                 ss << ' ' << v;
             ss << " )";
             std::cout << ss.str();
-            LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << ss.str());
+            LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << s.size() << " items " << ss.str());
 #else
             IMPLEMENT // implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'
 #endif
