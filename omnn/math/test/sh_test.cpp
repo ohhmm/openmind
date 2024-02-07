@@ -43,7 +43,11 @@ BOOST_AUTO_TEST_CASE(bit_test)
                     b.eval({{x, i}});
                 }
                 BOOST_TEST(b.IsInt());
-                BOOST_TEST(b==!!etalon);
+                auto ok = b==!!etalon;
+                if(!ok){
+                    std::cout << b << " != " << etalon << " (" << !!etalon << ')' << std::endl;
+                }
+                BOOST_TEST(ok);
                 
                 // and test
                 auto an = x.And(NBits, n);
