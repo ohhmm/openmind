@@ -23,18 +23,10 @@ namespace omnn::math {
         if (e.IsInt()) {
             return b.getMaxVaExp() * e.ca();
         } else if (e.FindVa()) {
-            auto i = b.getMaxVaExp();
-            if (i) {
-                auto _ = e;
-                _.eval(e.GetVaExps());
-                OptimizeOn(), _.optimize();
-                if (_.IsInt())
-                    i *= static_cast<a_int>(_);
-                else {
-                    i *= static_cast<double>(_);
-                }
-            }
-            return i;
+            auto _ = e * b.getMaxVaExp();
+            _.eval(e.GetVaExps());
+            OptimizeOn(), _.optimize();
+            return static_cast<decltype(maxVaExp)>(_);
         } else {
             auto maxVaExp = e * b.getMaxVaExp();
             if (!maxVaExp.IsInt()) {
