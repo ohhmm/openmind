@@ -33,37 +33,9 @@ public:
     MSVC_CONSTEXPR Integer& operator=(const Integer&) = default;
     MSVC_CONSTEXPR Integer& operator=(Integer&&) = default;
 
-    template<class IntT>
-    static MSVC_CONSTEXPR Integer From(typename std::enable_if<std::is_integral<IntT>::value>::type i = 0)
-    {
-        return Integer(boost::multiprecision::cpp_int(i));
-    }
-
-    constexpr
-    Integer(int i = 0)
-        : arbitrary(i)
-    {
-        hash = std::hash<base_int>()(arbitrary);
-    }
-
-    template<class IntT>
-    constexpr
-    Integer(typename std::enable_if<std::is_integral<IntT>::value>::type i)
-    : arbitrary(i)
-    {
-        hash = std::hash<base_int>()(arbitrary);
-    }
-
-    constexpr
-    Integer(const base_int& i)
-        : arbitrary(i)
-    {
-        hash = std::hash<base_int>()(arbitrary);
-    }
-    
-    constexpr
-    Integer(base_int&& i)
-    : arbitrary(std::move(i))
+    template<typename IntT>
+    constexpr Integer(IntT&& i = 0)
+    : arbitrary(std::forward<IntT>(i))
     {
         hash = std::hash<base_int>()(arbitrary);
     }

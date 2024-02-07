@@ -691,7 +691,7 @@ namespace math {
         if (v.IsInt())
             return arbitrary < v.ca();
         else if (v.IsFraction())
-            return !(v < *this) && *this!=v;
+            return !(v.operator<(*this) || operator==(v));
         else if(v.IsMInfinity())
             return {};
         else if(v.IsInfinity())

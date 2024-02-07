@@ -39,6 +39,7 @@ namespace math {
 class Valuable;
 class Variable;
 class Exponentiation;
+class Fraction;
 class Sum;
 size_t hash_value(const omnn::math::Valuable& v);
 size_t hash_value(const omnn::math::Sum& v);
@@ -84,7 +85,10 @@ extern const Variable& integration_result_constant;
 }
 
     using a_int = boost::multiprecision::cpp_int;
+
     using a_rational = boost::multiprecision::cpp_rational;
+    //using a_rational = boost::rational<a_int>;
+
     using max_exp_t = a_rational;
     namespace ptrs = ::std;
 
@@ -108,6 +112,7 @@ protected:
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
+    static constexpr size_t DefaultAllocSize = 768;
     constexpr virtual size_t getTypeSize() const { return sizeof(Valuable); }
     constexpr virtual size_t getAllocSize() const { return sz; }
     constexpr virtual void setAllocSize(size_t sz) { this->sz = sz; }
@@ -264,7 +269,6 @@ public:
 
     Valuable(const a_int&);
     Valuable(a_int&&);
-    Valuable(boost::rational<a_int>&&);
     Valuable(a_rational&&);
     Valuable(const a_rational&);
 
