@@ -174,6 +174,45 @@ namespace
 		return s;
 	}
 
+    Valuable Sum::LCMofMemberFractionDenominators() const {
+        auto lcm = constants::one;
+        for (auto& m : members) {
+            if (m.IsFraction()) {
+                auto& f = m.as<Fraction>();
+                auto& dn = f.getDenominator();
+                if (dn != constants::one) {
+                    lcm.lcm(dn);
+                }
+            } else if (m.IsExponentiation()) {
+                auto& e = m.as<Exponentiation>();
+                auto& ee = e.getExponentiation();
+                if (ee == constants::minus_1) {
+                    lcm.lcm(e.getBase());
+                }
+            } else if (m.IsProduct()) {
+                auto& p = m.as<Product>();
+                for (auto& m : p) {
+                    if (m.IsFraction()) {
+						auto& f = m.as<Fraction>();
+						auto& dn = f.getDenominator();
+                        if (dn != constants::one) {
+							lcm.lcm(dn);
+						}
+                    }
+                    else if (m.IsExponentiation()) {
+						auto& e = m.as<Exponentiation>();
+						auto& ee = e.getExponentiation();
+                        if (ee == constants::minus_1) {
+							lcm.lcm(e.getBase());
+						}
+					}
+				}
+			
+            }
+        }
+        return lcm;
+    }
+
     Valuable Sum::GCDofMembers() const {
         auto it = members.begin();
         auto gcd = it->varless();
@@ -2468,14 +2507,15 @@ namespace
                 is.first = mIs.first;
                 sum.Add(mIs.second);
             } else {
-                sum.Add(v * m);
+                OptimizeOff oo;
+                sum.Add(Product{v, m});
             }
 		}
-        is.second = sum;
-        is.second.optimize();
+		if (is.first) {
+            is.second = sum;
+            is.second.optimize();
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-		if (is.first) {
             auto confirm = is.second.Complexity() < Complexity() + v.Complexity()
 				|| (is.second.IsSum()
                     && is.second.as<Sum>().members.size() < members.size() + (v.IsSum() ? v.as<Sum>().members.size() : 1));
@@ -2512,8 +2552,9 @@ namespace
                 //-12*(v2+
 
             }
-        }
 #endif
+        }
+
 		return is;
     }
 
