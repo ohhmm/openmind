@@ -216,7 +216,7 @@ namespace math {
                     reoptimize_the_fraction = true;
                     continue;
                 } else if (dn.Has(-numerator())) {
-                    denominator() /= numerator();
+                    denominator() /= -numerator();
                     numerator() = constants::minus_1;
                     reoptimize_the_fraction = true;
                     continue;

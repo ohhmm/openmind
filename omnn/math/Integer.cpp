@@ -385,7 +385,7 @@ namespace math {
                         return {std::move(v),std::move(xFactor)};
                 } else if (e < constants::zero) {
                     auto me = -e;
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT(arbitrary << " GreatestCommonExp " << e);
                 } else {
                     IMPLEMENT
 //                    auto v = boost::multiprecision::pow(xFactor, 1/e);
