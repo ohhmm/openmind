@@ -140,6 +140,15 @@ protected:
     max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
 public:
+
+    /// <summary>
+    /// Depends on optimizing goals, the view may set different.
+    // time to evaluate
+	// time to differentiate
+	// string lengths
+	// memory allocation size
+    // at the moment, well supported are Equation and Flat views
+    /// </summary>
     enum class View
 		: uint8_t
     {

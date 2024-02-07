@@ -100,7 +100,7 @@ public:
 protected:
     std::ostream& print(std::ostream& out) const override;
     cont& GetCont() override { return members; }
-    Product(const vars_cont_t& v) : vars(v) { base::Add(1_v); }
+    Product(const vars_cont_t& v) : vars(v) { base::Add(constants::one); }
     
 private:
     vars_cont_t vars;
