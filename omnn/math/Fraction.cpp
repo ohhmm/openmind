@@ -18,21 +18,6 @@ namespace math {
 	{
 	}
 
-	Fraction::Fraction(boost::rational<a_int>&& r)
-	: base(r.numerator(), r.denominator())
-	{
-	}
-
-    Fraction::Fraction(a_rational&& r)
-    : base(::boost::multiprecision::numerator(r), boost::multiprecision::denominator(r))
-    {
-    }
-
-    Fraction::Fraction(const a_rational& r)
-    : base(::boost::multiprecision::numerator(r), boost::multiprecision::denominator(r))
-    {
-    }
-
     Fraction::Fraction(const boost::multiprecision::cpp_dec_float_100& f)
     {
         auto s = boost::lexical_cast<std::string>(f);
@@ -389,14 +374,19 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         return *this;
     }
 
+    Valuable& Fraction::operator*=(const Fraction& f) {
+        numerator() *= f.numerator();
+        denominator() *= f.denominator();
+        optimized = {};
+        optimize();
+        return *this;
+    }
+
     Valuable& Fraction::operator *=(const Valuable& v)
     {
         if (v.IsFraction())
         {
-            auto& f = v.as<Fraction>();
-            numerator() *= f.numerator();
-            denominator() *= f.denominator();
-            optimized = {};
+            return operator*=(v.as<Fraction>());
         }
         else if (v.IsInt())
         {

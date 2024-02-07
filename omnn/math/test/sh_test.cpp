@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(bit_test)
                 if(b!=!!etalon){
                     std::cout << i << '&' << n << '=' << etalon << " ;  " << j << " bit of " << i << " is " << b << std::endl;
                     b.optimizations=true;   
-                    b.is_optimized();
+                    BOOST_TEST(b.is_optimized());
                     b.optimize();
                     b = bit;
                     b.eval({{x, i}});

@@ -190,9 +190,8 @@ namespace math {
             auto newSize = i.getTypeSize();
 
             if (newSize <= sizeWas) {
-                constexpr decltype(newSize) BufSz = 768;
-                assert(BufSz >= newSize && "Increase BufSz");
-                char buf[BufSz];
+                assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
+                char buf[DefaultAllocSize];
                 i.New(buf, std::move(i));
                 Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
                 this->~Valuable();
@@ -244,18 +243,18 @@ namespace math {
     Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
     Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
-    Valuable::Valuable(a_int&& i) : exp(new Integer(std::move(i))) {}
+    Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
 
-    Valuable::Valuable(boost::rational<a_int>&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
-
     Valuable::Valuable(const a_rational& r)
-        : exp(new Fraction{::boost::multiprecision::numerator(r), boost::multiprecision::denominator(r)})
+    : exp(std::move(std::make_shared<Fraction>(r)))
     {
         exp->optimize();
     }
 
-    Valuable::Valuable(a_rational&& r) : exp(new Fraction(std::move(r))) { exp->optimize(); }
+    Valuable::Valuable(a_rational&& r)
+    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
+    { exp->optimize(); }
 
 //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, 1_v/2)-b)/(a*2));
 //    auto aMergeOrF = MergeOrF(a);

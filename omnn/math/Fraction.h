@@ -43,6 +43,7 @@ namespace math {
         Valuable operator -() const override;
 		Valuable& operator +=(const Valuable& v) override;
 		Valuable& operator *=(const Valuable& v) override;
+        Valuable& operator *=(const Fraction& v);
         bool MultiplyIfSimplifiable(const Valuable& v) override;
         std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
         bool SumIfSimplifiable(const Valuable& v) override;
@@ -72,25 +73,34 @@ namespace math {
 
 		using base::base;
 
-		Fraction() : base(0, 1) {}
-
-		Fraction(int n) : base(n, 1) {}
-        
         Fraction(double d)
         : Fraction(boost::multiprecision::cpp_dec_float_100(d))
         { }
         
 		Fraction(const Valuable& n)
-		: base(n, 1_v)
+		: base(n, constants::one)
 		{
 		}
 
         explicit
-		Fraction(const Integer&);
-		Fraction(boost::rational<a_int>&&);
-        Fraction(a_rational&&);
-        Fraction(const a_rational&);
+        Fraction(const Integer&);
         Fraction(const boost::multiprecision::cpp_dec_float_100&);
+
+        Fraction(const boost::multiprecision::cpp_rational& r)
+        : base(::boost::multiprecision::numerator(r), boost::multiprecision::denominator(r))
+        {}
+
+        Fraction(const boost::rational<a_int>& r)
+        : base(r.numerator(), r.denominator())
+        {}
+
+        Fraction()
+        : Fraction(constants::zero)
+        {}
+
+        Fraction(int n)
+        : Fraction(a_rational(n, 1))
+        {}
 
 		Fraction(Fraction&&) = default;
 		Fraction(const Fraction&)=default;
