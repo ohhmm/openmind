@@ -109,6 +109,50 @@ namespace omnn::math {
             }
         }
 
+        if (ebase().IsSum())
+        {
+            if (eexp() == constants::minus_1) {
+                auto& s = ebase().as<Sum>();
+				auto lcm = s.LCMofMemberFractionDenominators();
+                if (lcm != constants::one) {
+                    ebase() *= lcm;
+				    Become(*this * lcm);
+                    return;
+                }
+            }
+			//auto& s = ebase().as<Sum>();
+			//auto sz = s.size();
+			//auto v = 1_v;
+   //         for (auto it = s.begin(), e = s.end();
+   //             it != e; )
+   //         {
+   //             if (it->IsInt()) {
+			//		v *= *it^eexp();
+			//		s.Delete(it);
+			//	}
+			//	else
+			//		++it;
+			//}
+   //         if (sz != s.size()) {
+			//	Become(*this * v);
+			//	return;
+			//}
+		}
+
+  //      if (ebase().IsExponentiation() && eexp().IsExponentiation())
+  //      {
+		//	auto& e = ebase().as<Exponentiation>();
+		//	auto& ee = eexp().as<Exponentiation>();
+  //          if (e.getBase() == ee.getBase())
+  //          {
+		//		eexp() *= ee.getExponentiation();
+		//		ebase() = e.getBase();
+		//		optimized = {};
+		//		optimize();
+		//		return;
+		//	}
+		//}
+
         // todo : check it, comment this and try System test
 //        if (ebase().IsSum() && eexp().IsFraction())
 //        {

@@ -245,6 +245,14 @@ namespace math {
                     return;
                 }
             }
+        } else if (denominator().IsSum()) {
+            auto& s = denominator().as<Sum>();
+            auto lcm = s.LCMofMemberFractionDenominators();
+            if (lcm != constants::one) {
+                numerator() *= lcm;
+                denominator() *= lcm;
+                goto reoptimize_the_fraction;
+            }
         }
         else if (denominator().FindVa() && !denominator().IsSum())
         {
