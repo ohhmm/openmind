@@ -74,6 +74,7 @@ public:
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable GCDofMembers() const;
+    Valuable LCMofMemberFractionDenominators() const;
     Valuable GCD(const Valuable& v) const override;
 
     bool operator ==(const Valuable& v) const override;

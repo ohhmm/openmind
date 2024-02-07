@@ -292,7 +292,7 @@ namespace math {
             return static_cast<int>(bit_test(arbitrary, N));
         }
         else
-            IMPLEMENT;
+            LOG_AND_IMPLEMENT(n << "th bit of " << *this);
     }
     
     Valuable& Integer::shl()
