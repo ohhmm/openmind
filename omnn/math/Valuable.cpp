@@ -362,11 +362,9 @@ namespace math {
                 }
             }
 
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            if (pairs.size()) {
                 Valuable mergedPairs(std::move(pairs));
-            }
 
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
             std::stringstream ss;
             ss << '(';
             for (auto& v : s)
@@ -2433,14 +2431,16 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::Less(const Valuable& than) const
     {
-        auto alreadyKnownToBeEqual = operator==(than)
-                                && IsMultival() == YesNoMaybe::No
-                                && than.IsMultival() == YesNoMaybe::No;
-        return alreadyKnownToBeEqual
-            ? constants::one // any non-zero value works here
-            : Equals(than).Ifz(
-                    constants::one, // thouse are equal: return 'false'
+        if (exp)
+            return exp->Less(than);
+        else {
+            auto alreadyKnownToBeEqual = operator==(than);
+            return alreadyKnownToBeEqual
+                ? constants::one                       // any non-zero value works here
+                : Equals(than).Ifz(
+                    Equals(than + constants::one), // thouse are equal: return 'false'
                     LessOrEqual(than)); // else, since a!=b, a<=b is applicable
+        }
     }
 
     Valuable Valuable::LessOrEqual(const Valuable& than) const
