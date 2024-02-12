@@ -50,23 +50,25 @@ BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
             lessOrEqualOperatorInstantiation.optimize();
             std::cout << std::endl << "Is " << x << "<=" << y << " : " << lessOrEqualOperatorInstantiation << std::endl;
             bool b = {};
-            auto boolLessOp = lessOrEqualOperatorInstantiation.ToBool();
-            BOOST_TEST(boolLessOp == isLessEq);
-            if (boolLessOp == true) {
-                BOOST_TEST(boolLessOp.IsInt());
+            auto boolLessOrEqualOp = lessOrEqualOperatorInstantiation.ToBool();
+            BOOST_TEST(boolLessOrEqualOp == isLessEq);
+            boolLessOrEqualOp.eval(evalMap);
+            BOOST_TEST(boolLessOrEqualOp == isLessEq);
+            if (boolLessOrEqualOp == true) {
+                BOOST_TEST(boolLessOrEqualOp.IsInt());
                 BOOST_TEST(lessOrEqualOperatorInstantiation.IsInt());
                 b = lessOrEqualOperatorInstantiation.IsInt() && lessOrEqualOperatorInstantiation.ca() == 0;
                 std::cout << std::endl << x << "<=" << y << " : " << b << std::endl;
-            } else if (boolLessOp == false) {
-                BOOST_TEST(boolLessOp.IsInt());
+            } else if (boolLessOrEqualOp == false) {
+                BOOST_TEST(boolLessOrEqualOp.IsInt());
                 b = lessOrEqualOperatorInstantiation == 0;
                 std::cout << std::endl
                           << x << "<=" << y << " : " << b << ' ' << lessOrEqualOperatorInstantiation << " != 0" << std::endl;
             } else {
-            	std::cout << std::endl << x << "<=" << y << " : " << boolLessOp << std::endl;
+            	std::cout << std::endl << x << "<=" << y << " : " << boolLessOrEqualOp << std::endl;
                 BOOST_TEST(!"boolLessOp must have boolean value");
             }
-            BOOST_TEST(boolLessOp == b);
+            BOOST_TEST(boolLessOrEqualOp == b);
 
             auto ok = b == isLessEq;
             if (!ok) {
@@ -109,29 +111,29 @@ BOOST_AUTO_TEST_CASE(Less_operator_test
     std::cout << "X<Y : " << Less << std::endl;
     for (auto x = 10; x--> -10;) {
         for (auto y = 10; y--> -10;) {
-            auto isLessEq = x < y;
-            auto lessOrEqualOperatorInstantiation = Less;
+            auto xIsLess = x < y;
+            auto lessOperatorInstantiation = Less;
             Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
             std::cout << '\n' << x << "<" << y << " = ";
-            lessOrEqualOperatorInstantiation.eval(evalMap);
-            std::cout << " expression that must be equal to zero when true: " << lessOrEqualOperatorInstantiation
+            lessOperatorInstantiation.eval(evalMap);
+            std::cout << " expression that must be equal to zero when true: " << lessOperatorInstantiation
                       << std::endl;
 
-            lessOrEqualOperatorInstantiation.optimize();
-            std::cout << std::endl << "Is " << x << "<" << y << " : " << lessOrEqualOperatorInstantiation << std::endl;
+            lessOperatorInstantiation.optimize();
+            std::cout << std::endl << "Is " << x << "<" << y << " : " << lessOperatorInstantiation << std::endl;
             bool b = {};
-            auto boolLessOp = lessOrEqualOperatorInstantiation.ToBool();
-            BOOST_TEST(boolLessOp == isLessEq);
+            auto boolLessOp = lessOperatorInstantiation.ToBool();
+            BOOST_TEST(boolLessOp == xIsLess);
             if (boolLessOp == true) {
                 BOOST_TEST(boolLessOp.IsInt());
-                BOOST_TEST(lessOrEqualOperatorInstantiation.IsInt());
-                b = lessOrEqualOperatorInstantiation.IsInt() && lessOrEqualOperatorInstantiation.ca() == 0;
+                BOOST_TEST(lessOperatorInstantiation.IsInt());
+                b = lessOperatorInstantiation.IsInt() && lessOperatorInstantiation.ca() == 0;
                 std::cout << std::endl << x << "<" << y << " : " << b << std::endl;
             } else if (boolLessOp == false) {
                 BOOST_TEST(boolLessOp.IsInt());
-                b = lessOrEqualOperatorInstantiation == 0;
+                b = lessOperatorInstantiation == 0;
                 std::cout << std::endl
-                          << x << "<" << y << " : " << b << ' ' << lessOrEqualOperatorInstantiation << " != 0"
+                          << x << "<" << y << " : " << b << ' ' << lessOperatorInstantiation << " != 0"
                           << std::endl;
             } else {
                 std::cout << std::endl << x << "<" << y << " : " << boolLessOp << std::endl;
@@ -139,7 +141,7 @@ BOOST_AUTO_TEST_CASE(Less_operator_test
             }
             BOOST_TEST(boolLessOp == b);
 
-            auto ok = b == isLessEq;
+            auto ok = b == xIsLess;
             if (!ok) {
                 std::cout << "X=" << x << " Y=" << y << ' ' << ok << " bool: " << b << std::endl;
                 BOOST_TEST(ok);
