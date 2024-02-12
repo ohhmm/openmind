@@ -555,7 +555,18 @@ public:
     /// <returns>An expression that equals zero only when the object is less then param</returns>
     virtual Valuable IntMod_Less(const Valuable& than) const;
 
+    /// <summary>
+    /// Operator 'less' then value to which a param expression is to be evaluated
+    /// </summary>
+    /// <param name="than">the param to compare that the object is less then the param</param>
+    /// <returns>An expression that equals zero only when the object is less then param</returns>
 	virtual Valuable Less(const Valuable& than) const;
+
+    /// <summary>
+    /// Operator 'less or eaual' then value to which a param expression is to be evaluated
+    /// </summary>
+    /// <param name="than">the param to compare the object with</param>
+    /// <returns>An expression that equals zero only when the object is less or equal to param</returns>
 	virtual Valuable LessOrEqual(const Valuable& than) const;
 
     /// <summary>
