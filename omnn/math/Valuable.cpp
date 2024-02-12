@@ -877,7 +877,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         Valuable integer = hasSpace
                             ? Integer(Solid(std::string(ss)))
                             : Integer(ss);
-                        if (i < s.length() && s[i] == 'r') {
+                        if (i < s.length() && s[next] == 'r') {
                             o = o_pSurd;
                         } else {
                             o(std::move(integer));
