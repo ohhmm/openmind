@@ -128,9 +128,10 @@ PrincipalSurd::operator long double() const {
 
 Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
     auto vaExps = _1.GetVaExps();
-    if(_2.IsInt() && _2 > constants::one) {
-        for(auto& ve : vaExps)
-            ve.second /= _2;
+    if(_2.IsInt() && _2 > constants::zero) {
+        if (_2 != constants::one)
+            for (auto& ve : vaExps)
+                ve.second /= _2;
     } else if (!FindVa()) {
         vaExps.clear();
     } else {
