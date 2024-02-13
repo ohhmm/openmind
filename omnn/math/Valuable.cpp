@@ -362,9 +362,9 @@ namespace math {
                 }
             }
 
-                Valuable mergedPairs(std::move(pairs));
-
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            Valuable mergedPairs(std::move(pairs));
+
             std::stringstream ss;
             ss << '(';
             for (auto& v : s)
@@ -1837,7 +1837,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->abs();
         else
-            IMPLEMENT
+            return Sq().sqrt();
     }
 
     Valuable::View Valuable::GetView() const
@@ -2181,12 +2181,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         // if current expression equals to zero then it is
         // we need to know why not
         Variable whyNot(getVaHost()); // whyNot==1 when this!=0
-
-        auto is = LogicAnd(whyNot); // THIS==0 AND WHYNOT==0
-        auto isNot = whyNot.Equals(1); // WHYNOT==1
-        auto orNot = is.LogicOr(isNot).logic_and(isNot); // ((THIS==0 AND WHYNOT==0) OR (WHYNOT==1)) AND (WHYNOT==1)
-        //std::cout << "orNot = " << orNot << std::endl;
-        return orNot (whyNot); // try to express out the WHYNOT va and leave only f(x)==0
+        auto is = LogicAnd(whyNot);                      // THIS==0 AND WHYNOT==0
+        auto isNot = whyNot.Equals(constants::one);      // WHYNOT==1
+        auto orNot = (is || isNot) && isNot;             // ((THIS==0 AND WHYNOT==0) OR (WHYNOT==1)) AND (WHYNOT==1)
+        // std::cout << "orNot = " << orNot << std::endl;
+        return orNot(whyNot); // try to express out the WHYNOT va and leave only f(x)==0
     }
 
     Valuable::operator int() const
@@ -2448,69 +2447,72 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return Minimum(than) - *this;
     }
 
+    Valuable Valuable::GreaterOrEqual(const Valuable& than) const
+    {
+        return than.LessOrEqual(*this);
+    }
+
     Valuable Valuable::Minimum(const Valuable& second) const {
-        // Initial Source left for reference:
-        // Variable x;
-        // auto quadratic = Equals(x) || x.Equals(second);
-        auto a = constants::one;
-        auto b = -(second + *this);
-        auto c = second * *this;
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        auto v = FindVa();
-        if (!v) {
-            v = second.FindVa();
-        }
-        static DECL_VA(X);
-        auto host = v ? v->getVaHost() : X.getVaHost();
-        auto x = v ? host->Host(host->NewVarId()) : X;
+//        // Initial Source left for reference (deduced from quadratic discriminant):
+//        auto a = constants::one;
+//        auto b = -(second + *this);
+//        auto c = second * *this;
+//#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+//        auto v = FindVa();
+//        if (!v) {
+//            v = second.FindVa();
+//        }
+//        static DECL_VA(X);
+//        auto host = v ? v->getVaHost() : X.getVaHost();
+//        auto x = v ? host->Host(host->NewVarId()) : X;
+//
+//        auto quadratic = Equals(x) || x.Equals(second);
+//        auto& sum = quadratic.as<Sum>();
+//        std::vector<Valuable> coefficients;
+//        auto grade = sum.FillPolyCoeff(coefficients, x);
+//        if (grade != 2)
+//            IMPLEMENT
+//        if (coefficients.size() != 3)
+//            IMPLEMENT
+//        auto ok = a == coefficients[2] && b == coefficients[1] && c == coefficients[0];
+//        if (!ok) {
+//            ok = a == -coefficients[2] && b == -coefficients[1] && c == -coefficients[0];
+//            if (!ok) {
+//                if (a != -coefficients[2]) {
+//                    LOG_AND_IMPLEMENT("Check comparator: " << a << "!=" << -coefficients[2]);
+//                }
+//                if (b != -coefficients[1]) {
+//                    LOG_AND_IMPLEMENT("Check comparator: " << b << "!=" << -coefficients[1]);
+//                }
+//                if (c != -coefficients[0]) {
+//                    LOG_AND_IMPLEMENT("Check comparator: " << c << "!=" << -coefficients[0]);
+//                }
+//            }
+//        }
+//        if (!ok) {
+//            LOG_AND_IMPLEMENT(a << "!=" << coefficients[2] << ", " << b << "!=" << coefficients[1] << ", or " << c
+//                                << "!=" << coefficients[0] << " for " << quadratic << " = 0");
+//
+//        }
+//#endif
+//        auto discriminant = b.Sq() - a * c * 4;
+//        auto sqrt = discriminant.Sqrt();
+//        auto xmin = (-b - sqrt) / (a * 2);
+//#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+//        if (IsSimple() && second.IsSimple()) {
+//            if (std::min(*this, second) != xmin)
+//                IMPLEMENT
+//        }
+//#endif
+//
+//        return xmin;
 
-        auto quadratic = Equals(x) || x.Equals(second);
-        auto& sum = quadratic.as<Sum>();
-        std::vector<Valuable> coefficients;
-        auto grade = sum.FillPolyCoeff(coefficients, x);
-        if (grade != 2)
-            IMPLEMENT
-        if (coefficients.size() != 3)
-            IMPLEMENT
-        auto ok = a == coefficients[2] && b == coefficients[1] && c == coefficients[0];
-        if (!ok) {
-            ok = a == -coefficients[2] && b == -coefficients[1] && c == -coefficients[0];
-            if (!ok) {
-                if (a != -coefficients[2]) {
-                    LOG_AND_IMPLEMENT("Check comparator: " << a << "!=" << -coefficients[2]);
-                }
-                if (b != -coefficients[1]) {
-                    LOG_AND_IMPLEMENT("Check comparator: " << b << "!=" << -coefficients[1]);
-                }
-                if (c != -coefficients[0]) {
-                    LOG_AND_IMPLEMENT("Check comparator: " << c << "!=" << -coefficients[0]);
-                }
-            }
-        }
-        if (!ok) {
-            LOG_AND_IMPLEMENT(a << "!=" << coefficients[2] << ", " << b << "!=" << coefficients[1] << ", or " << c
-                                << "!=" << coefficients[0] << " for " << quadratic << " = 0");
 
-        }
-#endif
-        auto discriminant = b.Sq() - a * c * 4;
-        auto sqrt = discriminant.Sqrt();
-        auto xmin = (-b - sqrt) / (a * 2);
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if (IsSimple() && second.IsSimple()) {
-            if (std::min(*this, second) != xmin)
-                IMPLEMENT
-        }
-#endif
-
-        return xmin;
-
-        // actual optimized code:
-        // auto mb = second + *this;
-        // auto c = second * *this;
-        // auto discriminant = mb.Sq() + c * -4;
-        // auto xmin = (mb - discriminant.sqrt()) / constants::two;
-        // return xmin;
+        // simplified to formula:
+        // (Y + X -sqrt(Y^2 + X^2 -2YX))/2
+        // expressed through Abs: 
+        // (Y + X -sqrt((Y-X)^2))/2 = (X+Y-|X-Y|)/2
+        return ((second + *this) - (second - *this).abs()) / constants::two;
     }
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
