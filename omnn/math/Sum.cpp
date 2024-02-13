@@ -177,7 +177,7 @@ namespace
     Valuable Sum::GCDofMembers() const {
         auto it = members.begin();
         auto gcd = it->varless();
-        for (; it != members.end(); ++it) {
+        for (; gcd != constants::one && it != members.end(); ++it) {
             bool processed = false;
             if (it->IsPrincipalSurd()) {
                 auto& surd = it->as<PrincipalSurd>();
