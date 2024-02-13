@@ -568,6 +568,7 @@ public:
     /// <param name="than">the param to compare the object with</param>
     /// <returns>An expression that equals zero only when the object is less or equal to param</returns>
 	virtual Valuable LessOrEqual(const Valuable& than) const;
+	virtual Valuable GreaterOrEqual(const Valuable& than) const;
 
     /// <summary>
     /// Returns minimum between the object and the param asuming that both are real

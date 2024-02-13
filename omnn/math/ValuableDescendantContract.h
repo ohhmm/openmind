@@ -27,11 +27,7 @@ namespace math {
         Valuable& operator ++() override { optimized={}; return *this+=1_v; }
 
         Valuable& sq() override { return *this *= *this; }
-        
-        Valuable abs() const override
-        {
-            return *this < 0_v ? -*this : Valuable(*this);
-        }
+
         void optimize() override { }
         //void expand() override { }
         Valuable Sqrt() const override { IMPLEMENT }
