@@ -488,7 +488,10 @@ public:
     Valuable& logic_or(const Valuable&); // inplace
     Valuable& logic_and(const Valuable&);
 
+    Valuable Intersect(const Valuable& with) const;
+    Valuable operator&(const Valuable& v) const { return Intersect(v); }
     Valuable& intersect(const Valuable& with, const Variable& va);
+    Valuable& operator&=(const Valuable& v) { return gcd(v); }
     Valuable Intersect(const Valuable& with, const Variable& va) const;
 
 	/// conditional operators

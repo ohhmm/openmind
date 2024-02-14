@@ -2337,6 +2337,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable Valuable::Intersect(const Valuable& with, const Variable& va) const {
         return va.Equals(LogicAnd(with)(va));
     }
+    Valuable Valuable::Intersect(const Valuable& with) const {
+        return GCD(with);
+    }
 
     Valuable Valuable::Ifz(const Valuable& Then, const Valuable& Else) const
     {
