@@ -235,7 +235,9 @@ BOOST_AUTO_TEST_CASE(sq_System_test
 BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 {
     // https://github.com/ohhmm/openmind/issues/8
-    // In a farm there are 100 animals consisting of cows,goats,and buffalos.each goat gives 250g of milk,each Buffalo gives 6kg of milk and if each cow gives 4kg of milk.if in total 100 animals produce 40 kg of milk how many animals of each type are present?
+    // In a farm there are 100 animals consisting of cows,goats,and buffalos.
+    // each goat gives 250g of milk,each Buffalo gives 6kg of milk and if each cow gives 4kg of milk.
+    // if in total 100 animals produce 40 kg of milk how many animals of each type are present?
     // https://www.quora.com/Can-this-math-problem-be-solved
     System s;
     Variable c,g,b;
@@ -244,10 +246,18 @@ BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
     
     // c,g,b are integers, see https://math.stackexchange.com/a/1598552/118612
     // TODO : try (x mod 1) or cos(2*PI*x) instead
-    s << c.MustBeInt() << g.MustBeInt() << b.MustBeInt();
+//    s << c.MustBeInt() << g.MustBeInt() << b.MustBeInt();
+    s << c.GreaterOrEqual(0);
+    s << g.GreaterOrEqual(0);
+    s << b.GreaterOrEqual(0);
 
     auto _ = s.Solve(c);
-//    auto cc = s.SolveSingleInteger(c);
+    BOOST_TEST(_.size() > 0);
+    _ = s.Solve(g);
+    BOOST_TEST(_.size() > 0);
+    _ = s.Solve(b);
+    BOOST_TEST(_.size() > 0);
+    //    auto cc = s.SolveSingleInteger(c);
 //    auto gc = s.SolveSingleInteger(g);
 //    auto bc = s.SolveSingleInteger(b);
 //    BOOST_TEST(values);
