@@ -58,7 +58,6 @@ public:
     bool operator<(const Valuable&) const override;
     bool operator==(const Valuable&) const override;
     bool operator==(const Variable&) const;
-    Valuable abs() const override { throw "Implement Abs Valuable Descendant to use it here"; }
     Valuable calcFreeMember() const override { return 0_v; }
 //    void optimize() override;
 //    Valuable sqrt() const override;
