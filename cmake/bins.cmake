@@ -119,6 +119,7 @@ function(apply_target_commons this_target)
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		target_compile_definitions(${this_target} PUBLIC
 			APPLE_CONSTEXPR=
+			NO_APPLE_CONSTEXPR=constexpr
 			MSVC_CONSTEXPR=constexpr
 			NO_MSVC_CONSTEXPR=
 			MSVC
@@ -160,10 +161,12 @@ function(apply_target_commons this_target)
 		if(APPLE)
 			target_compile_definitions(${this_target} PUBLIC
 				APPLE_CONSTEXPR=constexpr
+				NO_APPLE_CONSTEXPR=
 				)
 		else()
 			target_compile_definitions(${this_target} PUBLIC
 				APPLE_CONSTEXPR=
+				NO_APPLE_CONSTEXPR=constexpr
 				)
 		endif()
 	endif()

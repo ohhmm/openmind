@@ -42,7 +42,11 @@ public:
     
     using base::base;
 
-    Product();
+    Product()
+    : members{constants::one}
+    {
+        hash = constants::one.Hash();
+    }
     Product(Product&&)=default;
     Product(const Product&)=default;
     Product(const std::initializer_list<Valuable> l);
