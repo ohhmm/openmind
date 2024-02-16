@@ -68,16 +68,25 @@ namespace math {
 #ifndef BOOST_TEST_MODULE
     protected:
 #endif
-        Valuable* Clone() const override
+
+        NO_APPLE_CONSTEXPR auto CPtr() const noexcept {
+            return reinterpret_cast<const Chld*>(this);
+        }
+
+        NO_APPLE_CONSTEXPR auto Ptr() noexcept {
+            return reinterpret_cast<Chld*>(this);
+        }
+
+        NO_APPLE_CONSTEXPR Valuable* Clone() const override
         {
-            return static_cast<Valuable*>(new Chld(*static_cast<const Chld*>(this)));
+            return new Chld(*CPtr());
         }
     
-        size_t getTypeSize() const override { return sizeof(Chld); }
+        NO_APPLE_CONSTEXPR size_t getTypeSize() const override { return sizeof(Chld); }
         
         Valuable* Move() override
         {
-            return static_cast<Valuable*>(new Chld(std::move(*static_cast<Chld*>(this))));
+            return static_cast<Valuable*>(new Chld(std::move(*Ptr())));
         }
 
         void New(void* addr, Valuable&& v) override {

@@ -55,12 +55,7 @@ namespace math {
 
         return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
     }
-    
-    Product::Product() : members{1}
-    {
-        hash = members.begin()->Hash();
-    }
-    
+
     Product::Product(const std::initializer_list<Valuable> l)
     {
         for (const auto& arg : l)

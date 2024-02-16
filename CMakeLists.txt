@@ -5,7 +5,7 @@ string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
 
 enable_language(CXX)
-set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -149,6 +149,7 @@ set(_BOOST_USED_COMPONENTS
 	thread
 	CACHE STRING "Components" FORCE)
 if(OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
+    enable_testing()
     set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
         unit_test_framework
         test_exec_monitor
@@ -245,7 +246,7 @@ elseif(OPENMIND_BUILD_BOOST)
     foreach(_module ${BOOST_USED_COMPONENTS})
         if(_module STREQUAL "unit_test_framework"
             OR _module STREQUAL "test_exec_monitor")
-		string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
+            string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
         else()
             string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
         endif()
@@ -351,7 +352,6 @@ endif()
 
 
 if (OPENMIND_BUILD_TESTS)
-    enable_testing()
 	if(NOT MSVC)
 		if(NOT APPLE)
     		set(TEST_DEPS "pthread")
