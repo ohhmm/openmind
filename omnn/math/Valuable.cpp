@@ -1356,21 +1356,17 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             if (o.exp) {
                 exp = o.exp;
             }
-            return *this;
-        }
-		//else
-		//	IMPLEMENT
-        if (operator==(constants::zero))
-            return *this;
-        else if (v == constants::zero)
-			return *this;
-        else if (operator==(v)) {
+        } else if (operator==(constants::zero) || v == constants::zero) {
+        } else if (operator==(v)) {
             Become(0);
-            return *this;
         } else {
             auto gcd = GCD(v);
-            return operator*=(v).abs().operator/=(gcd);
+            operator*=(v);
+            sq();
+            sqrt();
+            operator/=(gcd);
         }
+        return *this;
     }
 
     Valuable& Valuable::d(const Variable& x)
