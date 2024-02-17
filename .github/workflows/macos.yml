@@ -11,13 +11,11 @@ jobs:
     - uses: actions/checkout@v3
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
-    - name: Install Boost
-      uses: MarkusJx/install-boost@v2.4.4
-      with:
-        boost_version: '1.83.0'
+    - name: Pre-Install Boost, LevelDB
+      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && brew install boost-python3 leveldb
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DBoost_DIR=${{github.workspace}}/boost/boost
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Debug -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23"
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu`
