@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
         BOOST_TEST(tt==a);
     }
     
-    BOOST_CHECK_THROW(a!=v, const char*);
+    BOOST_CHECK_THROW((void)(a!=v), const char*);
     
     {
         std::string s = "any str";
