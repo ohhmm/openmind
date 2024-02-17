@@ -54,7 +54,7 @@ bool System::Add(const Valuable& v)
             _ = v;
         }
     }
-    auto isNew = _ != 0_v &&
+    auto isNew = _ != constants::zero &&
 #ifndef __APPLE__
         std::find(std::execution::par, std::begin(equs), std::end(equs), _) == equs.end()
         && std::find(std::execution::par, std::begin(equs), std::end(equs), -_) == equs.end();

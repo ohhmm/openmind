@@ -61,7 +61,7 @@ namespace math {
         hash = members.begin()->Hash();
     }
     
-    Product::Product(std::initializer_list<Valuable> l)
+    Product::Product(const std::initializer_list<Valuable> l)
     {
         for (const auto& arg : l)
         {
