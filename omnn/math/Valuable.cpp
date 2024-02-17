@@ -133,6 +133,13 @@ namespace math {
         IMPLEMENT
     }
 
+    Valuable::encapsulated_instance Valuable::SharedFromThis() {
+        if (exp)
+            return exp;
+        else
+            IMPLEMENT;
+    }
+
     Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
     {

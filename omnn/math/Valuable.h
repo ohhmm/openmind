@@ -99,15 +99,16 @@ class Valuable
         : public OpenOps<Valuable>
 {
     using self = Valuable;
-    using encapsulated_instance = ptrs::shared_ptr<Valuable>;
 
-    encapsulated_instance exp = nullptr;
 
     static const a_int a_int_cz;
     static const max_exp_t max_exp_cz;
 
 protected:
+    using encapsulated_instance = ptrs::shared_ptr<Valuable>;
+    encapsulated_instance exp = nullptr;
     const encapsulated_instance& getInst() const { return exp; }
+
     virtual bool IsSubObject(const Valuable& o) const;
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
@@ -171,6 +172,8 @@ public:
         assert(the.Is<T>());
         return static_cast<T&>(the);
     }
+
+    virtual encapsulated_instance SharedFromThis();
 
     //    friend constexpr operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
     friend constexpr bool operator!(YesNoMaybe _) { return _ == YesNoMaybe::No; }

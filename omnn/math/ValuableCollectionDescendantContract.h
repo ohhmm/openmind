@@ -44,16 +44,16 @@ namespace math {
 
         virtual const cont& GetConstCont() const = 0;
         
-        constexpr auto begin() { return GetCont().begin(); }
-        constexpr auto end() { return GetCont().end(); }
-        constexpr auto begin() const { return GetConstCont().begin(); }
-        constexpr auto end() const { return GetConstCont().end(); }
-        constexpr auto cbegin() const { return GetConstCont().cbegin(); }
-        constexpr auto cend() const { return GetConstCont().cend(); }
-        constexpr auto rbegin() { return GetCont().rbegin(); }
-        constexpr auto rend() { return GetCont().rend(); }
-        constexpr auto crbegin() const { return GetConstCont().crbegin(); }
-        constexpr auto crend() const { return GetConstCont().crend(); }
+        constexpr auto begin() noexcept { return GetCont().begin(); }
+        constexpr auto end() noexcept { return GetCont().end(); }
+        constexpr auto begin() const noexcept { return GetConstCont().begin(); }
+        constexpr auto end() const noexcept { return GetConstCont().end(); }
+        constexpr auto cbegin() const noexcept { return GetConstCont().cbegin(); }
+        constexpr auto cend() const noexcept { return GetConstCont().cend(); }
+        constexpr auto rbegin() noexcept { return GetCont().rbegin(); }
+        constexpr auto rend() noexcept { return GetCont().rend(); }
+        constexpr auto crbegin() const noexcept { return GetConstCont().crbegin(); }
+        constexpr auto crend() const noexcept { return GetConstCont().crend(); }
 
         size_t size() const
         {
@@ -89,6 +89,9 @@ namespace math {
             Valuable::hash ^= item.Hash();
             auto& c = GetCont();
             this->optimized = {};
+            if (&item.get() == &item) {
+                item.SharedFromThis();
+            }
             auto it = hint == c.end()
                 ? getit(c.emplace(std::move(item)))
                 : getit(c.insert(hint, std::move(item)));
@@ -98,7 +101,7 @@ namespace math {
         template <class ItemT>
         const iterator Add(ItemT&& item)
         {
-            return this->Add(std::forward<ItemT>(item), GetCont().end());
+            return this->Add(std::forward<ItemT>(item), end());
         }
 
         template<class T>

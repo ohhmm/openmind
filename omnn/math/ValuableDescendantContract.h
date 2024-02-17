@@ -116,6 +116,12 @@ namespace math {
         std::type_index Type() const override {
         	return typeid(Chld);
         }
+
+        Valuable::encapsulated_instance SharedFromThis() override {
+            auto ptr = std::make_shared<Chld>(std::move(as<Chld>()));
+            exp = std::static_pointer_cast<Valuable>(ptr);
+            return exp;
+        }
     };
 }
 }

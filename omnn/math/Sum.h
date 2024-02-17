@@ -54,7 +54,7 @@ class Sum
     };
 
 protected:
-	cont& GetCont() override { return members; }
+	constexpr cont& GetCont() override { return members; }
 	std::ostream& print(std::ostream& out) const override;
     
 	template <typename T>
