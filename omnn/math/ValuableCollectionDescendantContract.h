@@ -346,16 +346,23 @@ namespace math {
         virtual void Delete(iterator& it) {
             Valuable::hash ^= it->Hash();
             auto& c = GetCont();
+            auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             c.erase(it++);
             Valuable::optimized &= c.size() > 1;
+            if (findNewMaxVaExp)
+                Valuable::maxVaExp = base::Ptr()->findMaxVaExp(); // TODO: consider heap structure
         }
 
         virtual Valuable Extract(const iterator it)
         {
             Valuable::hash ^= it->Hash();
+            auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             auto& c = GetCont();
             Valuable::optimized &= c.size() > 2;
-            return std::move(c.extract(it).value());
+            auto extracted = std::move(c.extract(it).value());
+            if (findNewMaxVaExp)
+                Valuable::maxVaExp = base::Ptr()->findMaxVaExp();
+            return extracted;
         }
 
         Valuable Extract()

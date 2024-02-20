@@ -83,6 +83,7 @@ public:
     void balance();
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
+    max_exp_t findMaxVaExp();
     Valuable varless() const override;
     Valuable Sqrt() const override;
     Valuable& sq() override;
