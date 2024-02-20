@@ -709,6 +709,16 @@ namespace
         }
     }
 
+    max_exp_t Sum::findMaxVaExp() {
+        max_exp_t maxVaExp = 0;
+		for (auto& m : members) {
+			auto mMaxVaExp = m.getMaxVaExp();
+			if (mMaxVaExp > maxVaExp)
+				maxVaExp = mMaxVaExp;
+		}
+		return maxVaExp;
+	}
+
     Valuable Sum::varless() const {
         return GCDofMembers().varless();
     }
