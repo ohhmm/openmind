@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE TS test
 #include <boost/test/unit_test.hpp>
+#include <array>
 #include "Sum.h"
 #include "Variable.h"
 #include "System.h"
@@ -23,26 +24,28 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
     //    System s;
     //    s.MakeTotalEqu(true);
     // y=f(x), where x is code of sequence
-    Variable time, price;
-    int points[] = {10, 1, 30, 5};
-    auto sz = std::size(points);
-    auto encodeBits = bits_in_use(sz);
-    int mask = (1 << encodeBits) - 1;
+    DECL_VARS(time, price);
+    auto points = std::vector({10, 1, 30, 5});
+    auto n = std::size(points);
+    auto lastItemIdx = n;
+    --lastItemIdx;
+    auto encodeBits = bits_in_use(n);
+    auto mask = (1 << encodeBits) - 1;
 
-    auto sys = 0_v;
+    auto sys = constants::zero;
 
     // points math data
-    Variable x;
-    auto ExtractMove = [&](int i) {
+    DECL_VA(x);
+    auto ExtractMove = [&](auto&& i) {
         auto targetId = x.And((i + 1) * encodeBits, mask << (i * encodeBits)).shr(i * encodeBits);
         return targetId;
     };
     // last move back to start
-    auto statement = ExtractMove(sz - 1).Equals(0);
+    auto statement = ExtractMove(lastItemIdx).Equals(constants::zero);
     //    s << statement;
     sys += statement.sq();
     // moves uniqueness
-    for (int i = 1; i < sz; ++i) {
+    for (auto i = 1; i < n; ++i) {
         statement = ExtractMove(i).NotEquals(
             ExtractMove(i - 1)); // FIXME: NotEquals behaviour changed. It was 0 for a!=b and 1 for a==b.  then it
                                  // became  /=(a-b) like if a=b then its a division by zero which must exclude branches,
@@ -52,11 +55,11 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
     }
     // generate function of getting point value by its index
     auto ValueByIdx = [&](Valuable i) {
-        Variable id;
+        DECL_VA(id);
         static auto MathDataForm = [&]() {
-            auto data = 1_v;
-            Variable val;
-            for (int i = 0; i < sz; ++i) {
+            auto data = constants::one;
+            DECL_VA(val);
+            for (int i = 0; i < n; ++i) {
                 data.logic_or(id.Equals(i).logic_and(val.Equals(points[i])));
             }
             return data(val);
@@ -77,8 +80,8 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
         return diff ^ 2;
     };
     auto SumSqLens = [&]() {
-        auto sum = 0_v;
-        for (int i = 1; i < sz; ++i)
+        auto sum = constants::zero;
+        for (auto i = 1; i < n; ++i)
             sum += MoveLenSq(i);
         return sum;
     };
