@@ -12,6 +12,10 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
+    - name: Install Conan
+      run: conan -v || pip install conan
+    - name: Install latest Boost with Conan
+      run: conan install boost
     - name: Configure
       working-directory: ${{github.workspace}}/build
       env:
