@@ -13,9 +13,7 @@ jobs:
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Install Conan
-      run: conan -v || pip install conan
-    - name: Install latest Boost with Conan
-      run: conan install boost
+      run: pip install conan
     - name: Configure
       working-directory: ${{github.workspace}}/build
       env:
