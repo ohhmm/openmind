@@ -16,6 +16,32 @@ macro(check_dep_file)
 		)
 		add_dependencies(prerequisites Install_${this_target}_Dependencies)
 	endif()
+	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt)
+		find_program(CONAN_EXECUTABLE NAMES conan)
+		if(NOT CONAN_EXECUTABLE)
+			if(EXISTS ${Python_EXECUTABLE})
+				EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install conan)
+				find_program(CONAN_EXECUTABLE NAMES conan)
+			endif()
+		endif()
+		if(CONAN_EXECUTABLE)
+			add_custom_target(Install_${this_target}_Conan
+				COMMAND ${CONAN_EXECUTABLE} install ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt
+				WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+				COMMENT "Installing Conan dependencies from ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt"
+				SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt
+				DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt
+			)
+			set_target_properties(Install_${this_target}_Conan PROPERTIES
+				FOLDER "util"
+			)
+			if(TARGET Install_${this_target}_Dependencies)
+				add_dependencies(Install_${this_target}_Dependencies Install_${this_target}_Conan)
+			else()	
+				add_dependencies(prerequisites Install_${this_target}_Conan)
+			endif()
+		endif()
+	endif()
 endmacro(check_dep_file)
 
 macro(platform_specific_iteration) # FIXME: CMake hasn't support for the continue() out of macro
