@@ -82,6 +82,26 @@ BOOST_AUTO_TEST_CASE(Sqrt_test)
     // https://math.stackexchange.com/questions/41784/convert-any-number-to-positive-how/41787#comment5776496_41787
     e = a.Sqrt(); // Check that the middle term is two times the product of the numbers being squared in the first term and third term.
     BOOST_TEST(e == 5);
+
+    auto _1 = constants::i;
+    _1 = _1.abs();
+    auto _2 = constants::one;
+    BOOST_TEST(_1 == _2);
+
+    _1 = constants::i;
+    _2 = _1;
+    _1.sq().sqrt();
+    BOOST_TEST(_1 == _2);
+}
+
+BOOST_AUTO_TEST_CASE(Abs_test
+    , *disabled()
+) {
+    auto _1 = constants::i;
+    _1.sqrt();
+    _1 = _1.sqrt().abs(); // abs(sqrt(-i))
+    auto _2 = constants::one;
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test)
