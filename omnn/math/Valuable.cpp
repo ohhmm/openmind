@@ -159,6 +159,14 @@ namespace omnn::math {
 #endif
     }
 
+    void Valuable::DispatchDispose(encapsulated_instance&& e) {
+#ifdef OPENMIND_BUILD_GC
+        if (e) {
+            rt::GC::DispatchDispose(std::move(e));
+        }
+#endif
+    }
+
     Valuable& Valuable::Become(Valuable&& i)
     {
         if (Same(i))
@@ -173,7 +181,7 @@ namespace omnn::math {
                 e = e->exp;
             }
 
-            if(exp)
+            if (exp || Is<Valuable>())
             {
                 exp = e;
                 if (Hash() != h) {
@@ -184,8 +192,6 @@ namespace omnn::math {
             {
                 Become(std::move(*e));
             }
-
-            e.reset();
         }
         else
         {
@@ -1286,14 +1292,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable::~Valuable()
     {
-#ifdef OPENMIND_BUILD_GC
-        if (exp) {
-			#if 0
-            std::cout << *this << std::endl;
-			#endif
-            rt::GC::DispatchDispose(std::move(exp));
-        }
-#endif
+        DispatchDispose(std::move(exp));
     }
 
     Valuable Valuable::operator -() const
@@ -1896,9 +1895,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    bool Valuable::is(const std::type_index&) const
-    {
-        IMPLEMENT//ed in contract
+    bool Valuable::is(const std::type_index& ti) const {
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if(exp)
+            IMPLEMENT
+#endif
+        return ti == std::type_index(typeid(Valuable));
     }
 
     std::ostream& Valuable::print(std::ostream& out) const
