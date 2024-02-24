@@ -193,7 +193,9 @@ public:
     template<class T>
     T& as() {
         auto& the = get();
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
         assert(the.Is<T>());
+#endif
         return static_cast<T&>(the);
     }
 
@@ -310,6 +312,7 @@ public:
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string_view&, std::shared_ptr<VarHost> host = {}, bool itIsOptimized = {});
 
+    static void DispatchDispose(encapsulated_instance&&);
     //constexpr
 	virtual ~Valuable()//{}
         ;
@@ -394,7 +397,7 @@ public:
 
     template<class T>
     bool Is() const {
-        return exp ? exp->Is<T>() : is(typeid(T));
+        return get().is(typeid(T));
     }
 
     virtual a_int Complexity() const;
@@ -729,9 +732,11 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(Valuable)
 template<class T>
 const T& Valuable::as() const {
     auto& the = get();
-    if(!the.Is<T>()){
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+    if (!the.Is<T>()) {
         IMPLEMENT
     }
+#endif
     return static_cast<const T&>(the);
 }
 
