@@ -342,6 +342,22 @@ namespace
                 return;
             }
 
+            // Remove inner sums first, to eliminate recursive optimization loop
+            for (auto it = members.begin(); it != members.end();) {
+                if (it->IsSum()) {
+                    for (auto& m : it->as<Sum>()) {
+                        Add(std::move(m));
+                    }
+                    Delete(it);
+                    continue;
+                }
+                else if (it->IsZero()) {
+					Delete(it);
+					continue;
+				} else
+					++it;
+            }
+
             //if (isBalancing)
             //    balance();
 

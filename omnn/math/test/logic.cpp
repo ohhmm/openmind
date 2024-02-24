@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_CASE(logic_or_tests
     , *disabled() // FIXME:
 ) {
     DECL_VA(x);
-    auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
+    auto eq = x.Equals(1) || x.Equals(2) || x.Equals(3);
     auto ok = eq(x);
     auto set = Valuable({1_v, 2_v, 3_v});
     BOOST_TEST(ok == set);
