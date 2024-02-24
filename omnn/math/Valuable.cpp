@@ -1650,7 +1650,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->Sign();
         else {
-            LOG_AND_IMPLEMENT("Implement Sign determination for " << *this << ", sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt");
+            return GreaterOrEqual(constants::zero).ToBool() - LessOrEqual(constants::zero).ToBool();
+            // sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt")
         }
 	}
 
