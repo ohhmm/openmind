@@ -1,3 +1,9 @@
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(address_model 64 CACHE STRING "address_model" FORCE)
+else()
+	set(address_model 32 CACHE STRING "address_model" FORCE)
+endif()
+
 function(get_local_drives LOCAL_DRIVES)
 	if(WIN32)
 		execute_process(
