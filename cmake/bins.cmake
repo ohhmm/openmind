@@ -128,6 +128,11 @@ function(apply_target_commons this_target)
 			$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_STATIC_LINK>
 			$<$<CONFIG:MinSizeRel>:BOOST_ALL_STATIC_LINK>
 			)
+		if(OPENMIND_USE_CONAN)
+			target_compile_definitions(${this_target} PUBLIC
+				BOOST_ALL_NO_LIB
+				)
+		endif()
 		target_compile_options(${this_target} PUBLIC
 			/bigobj
 			/FS
@@ -203,8 +208,10 @@ function(test)
 	glob_source_files()
 	message("test_libs ${test_libs}")
 	set(libs ${test_libs} ${TEST_DEPS})#pthread
-	if(NOT MSVC AND Boost_FOUND)
-		set(libs ${libs} ${BOOST_TEST_LINK_LIBS})
+	if(Boost_FOUND)
+		if(NOT MSVC OR OPENMIND_USE_CONAN)
+			set(libs ${libs} ${BOOST_TEST_LINK_LIBS})
+		endif()
 	endif()
     if(OPENMIND_USE_QT)
 		qtect()
@@ -214,7 +221,7 @@ function(test)
 		message("${tg}")
 		if(TARGET ${tg})
 			get_target_property(type ${tg} TYPE)
-			message("tg type ${type}")
+			message("${tg} target type is ${type}")
 			if(${type} STREQUAL UTILITY)
 				set(dep_on_targets ${dep_on_targets} ${tg})
 				list(REMOVE_ITEM libs ${tg})
@@ -231,25 +238,8 @@ function(test)
 
 		set(this_target ${TEST_NAME})
 		apply_target_commons(${TEST_NAME})
-		if(NOT MSVC AND Boost_FOUND)
-			deps(${BOOST_TEST_LINK_LIBS})
-		endif()
-		deps(${libs})
 
-		set_target_properties(${TEST_NAME} PROPERTIES
-			FOLDER "test"
-		)
-		target_compile_definitions(${TEST_NAME} PUBLIC
-			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
-			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
-			)
-		target_link_options(${TEST_NAME} PUBLIC
-			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>,$<PLATFORM_ID:Windows>>:-mconsole>
-			)
-		add_dependencies(${TEST_NAME} ${parent_target})
-		#add_dependencies(${TEST_NAME} prerequisites)
-
-		foreach(dir 
+		foreach(dir
 			/usr/local/lib
 			${Boost_INCLUDE_DIR}/stage/lib
 			${Boost_INCLUDE_DIR}/../../lib
@@ -264,6 +254,29 @@ function(test)
 			endif()
 
 		endforeach()
+
+		if(Boost_FOUND)
+			message("Boost_FOUND: ${Boost_FOUND}")
+			if(NOT MSVC OR OPENMIND_USE_CONAN)
+				message("NOT MSVC OR OPENMIND_USE_CONAN, using deps ${BOOST_TEST_LINK_LIBS}")
+				deps(${BOOST_TEST_LINK_LIBS})
+			endif()
+		endif()
+		message("using deps ${libs}")
+		deps(${libs})
+
+		set_target_properties(${TEST_NAME} PROPERTIES
+			FOLDER "test"
+		)
+		target_compile_definitions(${TEST_NAME} PUBLIC
+			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
+			)
+		target_link_options(${TEST_NAME} PUBLIC
+			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>,$<PLATFORM_ID:Windows>>:-mconsole>
+			)
+		add_dependencies(${TEST_NAME} ${parent_target})
+		#add_dependencies(${TEST_NAME} prerequisites)
 
         target_link_libraries(${TEST_NAME} PUBLIC ${parent_target})
 
@@ -303,22 +316,29 @@ macro(lib)
         )
     #add_dependencies(${this_target} prerequisites)
 	message("add_library(${this_target} ${src})")
-	if(NOT MSVC AND Boost_FOUND)
-		foreach (boostlibtarget ${BOOST_LINK_LIBS})
-			if(TARGET ${boostlibtarget})
-				message("linking boostlibtarget: ${boostlibtarget}")
-				target_link_libraries(${this_target} PUBLIC ${boostlibtarget})
-			else()
-				message("skipping linking ${boostlibtarget}, the target not found")
-			endif()
-		endforeach()
-		foreach (boostcomponent ${BOOST_ADDITIONAL_COMPONENTS})
-			string(TOUPPER ${boostcomponent} boostcomponent)
-			message("include ${boostcomponent}: ${Boost_${boostcomponent}_INCLUDE_DIR}")
-			target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_INCLUDE_DIR})
-			message("linking ${boostcomponent}: ${Boost_${boostcomponent}_LIBRARY}")
-			target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_LIBRARY})
-		endforeach()
+	if(Boost_FOUND)
+		if(NOT MSVC OR OPENMIND_USE_CONAN)
+			foreach (boostlibtarget ${BOOST_LINK_LIBS})
+				if(TARGET ${boostlibtarget})
+					message("linking boostlibtarget: ${boostlibtarget}")
+					target_link_libraries(${this_target} PUBLIC ${boostlibtarget})
+				else()
+					message("skipping linking ${boostlibtarget}, the target not found")
+				endif()
+			endforeach()
+			foreach (boostcomponent ${BOOST_ADDITIONAL_COMPONENTS})
+				if(TARGET Boost::${boostcomponent})
+					message("linking boostlibtarget: Boost::${boostcomponent}")
+					target_link_libraries(${this_target} PUBLIC Boost::${boostcomponent})
+				else()
+					string(TOUPPER ${boostcomponent} boostcomponent)
+					message("include ${boostcomponent}: ${Boost_${boostcomponent}_INCLUDE_DIR}")
+					target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_INCLUDE_DIR})
+					message("linking ${boostcomponent}: ${Boost_${boostcomponent}_LIBRARY}")
+					target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_LIBRARY})
+				endif()
+			endforeach()
+		endif()
 	endif()
 	#message("target_link_libraries(${this_target} PUBLIC ${deps})")
     deps(${TEST_DEPS} ${deps})
@@ -479,9 +499,11 @@ macro(exe)
     if(NOT MSVC)
         deps(
             pthread
-            ${BOOST_LINK_LIBS}
+			${BOOST_LINK_LIBS}
 			tbb
             )
+	elseif(OPENMIND_USE_CONAN)
+		deps(${BOOST_LINK_LIBS})
     endif()
 
     if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)

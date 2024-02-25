@@ -67,19 +67,22 @@ endif()
 
 set(OPENMIND_PRIME_TABLE_OPTIONS Boost Bundled)
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set(address_model 64)
-else()
-	set(address_model 32)
-endif()
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
 	"${CMAKE_BINARY_DIR}/lib/cmake"
 	"${CMAKE_SOURCE_DIR}/cmake"
 	)
+if(OPENMIND_USE_CONAN)
+	set(CMAKE_MODULE_PATH
+		"${CMAKE_CURRENT_SOURCE_DIR}"
+		"${CMAKE_CURRENT_BINARY_DIR}"
+		${CMAKE_MODULE_PATH}
+		)
+	set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_MODULE_PATH})
+endif()
 include(bins)
+message("address_model: ${address_model}")
 
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
 option(OPENMIND_DEBUG_CHECKS "Additional debug checks (NOOMDEBUG define)" ${_IS_DEBUG})
@@ -166,6 +169,23 @@ endif()
 set(OPENMIND_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
 
+if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	option(OPENMIND_USE_CONAN "Use conan dependencies" ON)
+	if(OPENMIND_USE_CONAN)
+		message("Using conanbuildinfo.cmake")
+		include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+		conan_basic_setup()
+	endif()
+elseif(OPENMIND_USE_CONAN)
+	if(EXISTS ${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
+		message("conanbuildinfo.cmake created in source directory")
+		include(${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
+		conan_basic_setup()
+	else()
+		message("conanbuildinfo.cmake not found. Try building Install__Conan target.")
+	endif()
+endif()
+
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
 	CONFIG
 	HINTS C:/Boost
@@ -182,7 +202,7 @@ add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
 
 
-if(NOT Boost_FOUND)
+if(NOT Boost_FOUND AND NOT OPENMIND_USE_CONAN)
     message("Building Boost ${OPENMIND_PREFERRED_BOOST_VERSION}")
     set(OM_BUILD_BOOST True)
 else()
@@ -216,7 +236,7 @@ find_package(OpenMP)
 #   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 #endif()
 
-if (Boost_FOUND)
+if (Boost_FOUND OR OPENMIND_USE_CONAN)
 	if(NOT TARGET boost)
 		add_custom_target(boost)
 	endif()
