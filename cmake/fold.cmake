@@ -17,17 +17,54 @@ macro(check_dep_file)
 		add_dependencies(prerequisites Install_${this_target}_Dependencies)
 	endif()
 	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt)
-		find_program(CONAN_EXECUTABLE NAMES conan)
+		message("Conan deps: ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt")
+		option(OPENMIND_USE_CONAN "Use conan dependencies" ON)
+		message("Use conan dependencies")
+		if(NOT EXISTS CONAN_EXECUTABLE)
+			unset(CONAN_EXECUTABLE CACHE)
+		endif()
+		if(NOT CONAN_EXECUTABLE)
+			find_program(CONAN_EXECUTABLE
+				NAMES conan
+				HINTS
+					$ENV{USERPROFILE}$ENV{HOME}/.local/bin
+					)
+		endif()
 		if(NOT CONAN_EXECUTABLE)
 			if(EXISTS ${Python_EXECUTABLE})
-				EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install conan)
-				find_program(CONAN_EXECUTABLE NAMES conan)
+				EXECUTE_PROCESS(
+					COMMAND ${Python_EXECUTABLE} -m pip install conan
+					OUTPUT_VARIABLE pipConanOutput
+					OUTPUT_STRIP_TRAILING_WHITESPACE
+					COMMAND_ECHO STDOUT
+					)
+						
+				string(REGEX MATCH "WARNING\: The script conan is installed in '(.+)' which is not on PATH\." warnBinPath "${pipConanOutput}")
+				if(EXISTS warnBinPath)
+					message("Conan executable is not in PATH: ${warnBinPath}")
+				else()
+					message("pip output: ${pipConanOutput}")
+					unset(warnBinPath)
+				endif()
+				find_program(CONAN_EXECUTABLE 
+					NAMES conan
+					HINTS
+						$ENV{USERPROFILE}$ENV{HOME}/.local/bin
+						${warnBinPath}
+					)
+				if(CONAN_EXECUTABLE AND EXISTS warnBinPath)
+					EXECUTE_PROCESS(
+						COMMAND ${CONAN_EXECUTABLE} profile detect
+						COMMAND_ECHO STDOUT
+						)
+				endif()
 			endif()
 		endif()
 		if(CONAN_EXECUTABLE)
+			message("Using ${CONAN_EXECUTABLE} to create util/Install_${this_target}_Conan dependency target for prerequisites target")
 			add_custom_target(Install_${this_target}_Conan
-				COMMAND ${CONAN_EXECUTABLE} install ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt
 				WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+				COMMAND ${CONAN_EXECUTABLE} install ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt -b=${CMAKE_CURRENT_BINARY_DIR} --build=missing -g CMakeDeps
 				COMMENT "Installing Conan dependencies from ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt"
 				SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt
 				DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt
@@ -37,10 +74,17 @@ macro(check_dep_file)
 			)
 			if(TARGET Install_${this_target}_Dependencies)
 				add_dependencies(Install_${this_target}_Dependencies Install_${this_target}_Conan)
-			else()	
+			else()
 				add_dependencies(prerequisites Install_${this_target}_Conan)
 			endif()
-		endif()
+			set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+				"${CMAKE_CURRENT_SOURCE_DIR}"
+				"${CMAKE_CURRENT_BINARY_DIR}"
+				)
+			set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_MODULE_PATH})
+		else(CONAN_EXECUTABLE)
+			message("CONAN_EXECUTABLE not found")
+		endif(CONAN_EXECUTABLE)
 	endif()
 endmacro(check_dep_file)
 
