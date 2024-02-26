@@ -26,8 +26,9 @@ macro(check_dep_file)
 		if(NOT CONAN_EXECUTABLE)
 			find_program(CONAN_EXECUTABLE
 				NAMES conan
-				HINTS
+				PATHS
 					$ENV{USERPROFILE}$ENV{HOME}/.local/bin
+					"$ENV{APPDATA}/Python/*/Scripts"
 					)
 		endif()
 		if(NOT CONAN_EXECUTABLE)
@@ -35,24 +36,28 @@ macro(check_dep_file)
 				EXECUTE_PROCESS(
 					COMMAND ${Python_EXECUTABLE} -m pip install conan
 					OUTPUT_VARIABLE pipConanOutput
+					ERROR_VARIABLE pipConanError
 					OUTPUT_STRIP_TRAILING_WHITESPACE
 					COMMAND_ECHO STDOUT
 					)
 						
-				string(REGEX MATCH "WARNING\: The script conan is installed in '(.+)' which is not on PATH\." warnBinPath "${pipConanOutput}")
-				if(EXISTS warnBinPath)
-					message("Conan executable is not in PATH: ${warnBinPath}")
+				string(REGEX MATCH "WARNING\: The script.+ installed in '(.+)' which is not on PATH\." warnBinPath "${pipConanError}")
+				if(warnBinPath)
+					message("${warnBinPath}")
+					string(REPLACE "'" ";" tokenized_string ${warnBinPath})
+					list(GET tokenized_string 1 warnBinPath)
 				else()
 					message("pip output: ${pipConanOutput}")
 					unset(warnBinPath)
 				endif()
 				find_program(CONAN_EXECUTABLE 
 					NAMES conan
-					HINTS
+					PATHS
 						$ENV{USERPROFILE}$ENV{HOME}/.local/bin
+						"$ENV{APPDATA}/Python/*/Scripts"
 						${warnBinPath}
 					)
-				if(CONAN_EXECUTABLE AND EXISTS warnBinPath)
+				if(CONAN_EXECUTABLE AND warnBinPath)
 					EXECUTE_PROCESS(
 						COMMAND ${CONAN_EXECUTABLE} profile detect
 						COMMAND_ECHO STDOUT
