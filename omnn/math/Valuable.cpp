@@ -647,6 +647,22 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             {
                 bracketsmap.emplace(st.top(), c);
                 st.pop();
+            } else if(s[c] == '=') {
+                Valuable
+                    l(s.substr(0,c), h, itIsOptimized),
+                    r(s.substr(++c), h, itIsOptimized);
+                if(c) {
+                    auto prev = s[c-1];
+                    if (prev == '<')
+                        Become(l.LessOrEqual(r));
+                    else if(prev == '>')
+                        Become(r.LessOrEqual(l));
+                } else {
+                    l.equals(std::move(r));
+                }
+                Become(std::move(l));
+                SetView(View::Equation);
+                return;
             }
             c++;
         }
@@ -2272,7 +2288,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable Valuable::Equals(const Valuable& v) const {
-        return *this - v;
+        auto copy = *this;
+        return copy.equals(v);
     }
 
     Valuable Valuable::NotEquals(const Valuable& v) const {

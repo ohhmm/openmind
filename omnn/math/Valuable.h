@@ -131,7 +131,7 @@ protected:
     virtual std::ostream& print(std::ostream& out) const;
     virtual std::wostream& print(std::wostream& out) const;
 
-    virtual Valuable& Become(Valuable&& i);
+    Valuable& Become(Valuable&& i);
 
     size_t hash = 0;
     size_t sz = sizeof(Valuable);
@@ -492,7 +492,10 @@ public:
     // logic
     static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
     template <class Fwd>
-    Valuable& equals(Fwd&& v) { return operator -=(std::forward<Fwd>(v)); }
+    constexpr Valuable& equals(Fwd&& v) {
+//        SetView(View::Equation);  // FIXME: see ifz test
+        return operator -=(std::forward<Fwd>(v));
+    }
     Valuable Equals(const Valuable& v) const;
     Valuable NotEquals(const Valuable& v) const;
 //    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
