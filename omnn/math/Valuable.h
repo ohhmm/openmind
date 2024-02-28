@@ -555,10 +555,11 @@ public:
     virtual Valuable IntMod_Sign() const;
 
 	/// <summary>
-	/// Converts the operator to boolean
+	/// Converts the operator to boolean (delta function)
 	/// </summary>
 	/// <returns>An expression that evaluates to 1 or 0 value</returns>
 	virtual Valuable ToBool() const;
+    Valuable IfzToBool() const;
 
     /// <summary>
     /// (x-1)%x is -1 for negative numbers only
