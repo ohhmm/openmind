@@ -220,13 +220,14 @@ namespace
 
     Valuable Sum::GCDofMembers() const {
         auto b = members.begin();
+        auto e = members.end();
         auto it = b;
-        auto gcd = it == members.end() // empty sum
+        auto gcd = it == e // empty sum
             ? constants::zero
             : size() == 1 // single element
             ? *it
             : b->GCD(*++it);
-        for (; gcd != constants::one && it != members.end(); ++it) {
+        for (; gcd != constants::one && it != e; ++it) {
             bool processed = false;
             if (it->IsPrincipalSurd()) {
                 auto& surd = it->as<PrincipalSurd>();
@@ -419,8 +420,8 @@ namespace
                             if (ps != p.end()) {
                                 auto& idx = ps->as<PrincipalSurd>().Index();
                                 auto p = Extract(it);
-                                p.operator^=(idx);
                                 operator^=(idx);
+                                p.operator^=(idx);
                                 operator-=(p);
                             }
                             else {
