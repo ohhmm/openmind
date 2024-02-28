@@ -317,7 +317,6 @@ namespace
         }
 
         Optimizing o(*this);
-        MarkAsOptimized();
 
         auto s = str();
         auto doCheck = s.length() > 10;
@@ -409,6 +408,7 @@ namespace
                             auto& surd = ps.as<PrincipalSurd>();
                             operator^=(surd.Index());
                             operator-=(surd.Radicand());
+                            return;
                         } else {
                             break;
                         }
@@ -423,6 +423,7 @@ namespace
                                 operator^=(idx);
                                 p.operator^=(idx);
                                 operator-=(p);
+                                return;
                             }
                             else {
                                 ++it;

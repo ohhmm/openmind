@@ -48,8 +48,10 @@ class Sum
         }
 
         ~Optimizing() {
-            if (sum.IsSum())
+            if (sum.IsSum()) {
+                sum.MarkAsOptimized();
                 sum.isOptimizing = opts;
+            }
         }
     };
 
