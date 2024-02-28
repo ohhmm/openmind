@@ -59,6 +59,11 @@ void PrincipalSurd::optimize() {
     if (!optimizations || is_optimized())
         return;
 
+    if (index() == constants::one || IsEquation()) {
+        Become(std::move(radicand()));
+        return;
+    }
+
     if (_1.IsInt()) {
         auto& rdcnd = _1.ca();
         if (rdcnd < 0) {
@@ -91,7 +96,7 @@ void PrincipalSurd::optimize() {
         }
     }
 
-    if(index()==constants::one){
+    if(index()==constants::one || IsEquation()){
         Become(std::move(radicand()));
         return;
     }
