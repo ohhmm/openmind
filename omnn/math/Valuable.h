@@ -536,7 +536,8 @@ public:
     Valuable Intersect(const Valuable& with) const;
     Valuable operator&(const Valuable& v) const { return Intersect(v); }
     Valuable& intersect(const Valuable& with, const Variable& va);
-    Valuable& operator&=(const Valuable& v) { return gcd(v); }
+    Valuable& operator&=(const Valuable& v) { return intersect(v); }
+    Valuable& intersect(const Valuable& with);
     Valuable Intersect(const Valuable& with, const Variable& va) const;
 
     Valuable Union(const Valuable& with) const;
