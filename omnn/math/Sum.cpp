@@ -96,6 +96,12 @@ namespace
         return it;
     }
 
+    bool Sum::VarSurdFactor(const Valuable& v) {
+        return (v.IsProduct() && v.as<Product>().HasSurdFactor())
+            || (v.IsSum() && v.as<Sum>().HasSurdFactor())
+            || (v.IsPrincipalSurd() && v.FindVa() != nullptr);
+    }
+
     auto HwC = std::thread::hardware_concurrency();
     auto Thr = ::std::min<decltype(HwC)>(HwC << 3, 128);
 
@@ -380,6 +386,54 @@ namespace
             }
             
             if (IsEquation()) {
+                auto e = members.end();
+                for (auto it = members.begin(); it != e;) {
+                    auto SurdIsReducable = [&](auto& m) {
+                        auto is = size() <= 2;
+                        if (!is) {
+                            auto next = it;
+                            ++next;
+                            is = std::none_of(next, e, [this](auto& m) { return VarSurdFactor(m); });
+						}
+                        return is;
+					};
+                    if (it->IsPrincipalSurd()) {
+                        if (SurdIsReducable(it)) {
+                            auto ps = Extract(it);
+                            auto& surd = ps.as<PrincipalSurd>();
+                            operator^=(surd.Index());
+                            operator-=(surd.Radicand());
+                        } else {
+                            break;
+                        }
+                    }
+                    else if(it->IsProduct()) {
+                        if (SurdIsReducable(it)) {
+                            auto& p = it->as<Product>();
+                            auto ps = p.GetFirstOccurence<PrincipalSurd>();
+                            if (ps != p.end()) {
+                                auto& idx = ps->as<PrincipalSurd>().Index();
+                                auto p = Extract(it);
+                                p.operator^=(idx);
+                                operator^=(idx);
+                                operator-=(p);
+                            }
+                            else {
+                                ++it;
+							}
+                        } else {
+							break;
+						}
+                    }
+                    else
+                        ++it;
+
+                    if (checkCache) {
+                        Become(checkCache);
+                        return;
+                    }
+                }
+
                 auto& coVa = getCommonVars();
                 if (coVa.size()) {
                     *this /= VaVal(coVa);
@@ -531,6 +585,12 @@ namespace
 //            }
 #endif
         } while (w != *this);
+
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if (size() == 1) {
+            LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << s << " to " << *this);
+        }
+#endif
 
         if (isBalancing)
             balance();

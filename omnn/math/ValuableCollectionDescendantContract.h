@@ -75,6 +75,14 @@ namespace math {
             IMPLEMENT
         }
         
+        bool VarSurdFactor(const iterator it) const {
+            return VarSurdFactor(*it);
+        }
+
+        bool HasSurdFactor() const {
+            return std::any_of(begin(), end(), ChildT::VarSurdFactor);
+		}
+        
         virtual const iterator Add(const Valuable& item, const iterator hint)
         {
             Valuable::hash ^= item.Hash();

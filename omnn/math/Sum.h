@@ -110,6 +110,8 @@ public:
     bool operator==(const Sum& v) const;
 
     iterator Had(iterator it) override;
+    static bool VarSurdFactor(const Valuable&);
+
     using base::Add;
     const iterator Add(Valuable&& item, const iterator hint) override;
     const iterator Add(const Valuable& item, const iterator hint) override;
