@@ -1855,7 +1855,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->abs();
         else
-            return Sq().sqrt();
+            return Sq().Sqrt();
     }
 
     Valuable::View Valuable::GetView() const
@@ -1868,6 +1868,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             exp->SetView(v);
         else {
+            if (view == View::Solving
+                && v == View::Equation
+            ) {
+                std::swap(view, v);
+            }
             optimized = optimized && view == v;
             view = v;
         }
