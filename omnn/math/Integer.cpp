@@ -973,9 +973,8 @@ namespace math {
             std::set<decltype(arbitrary)> primeFactors, nonPrimeFactors;
             auto maxPrimeIdx = omnn::rt::primes();
             auto& primeUpmost = omnn::rt::prime(maxPrimeIdx);
+            primeIdx = omnn::rt::greatest_prime_idx(from);
             auto prime = omnn::rt::prime(primeIdx);
-            while (prime < from)
-                prime = omnn::rt::prime(++primeIdx);
             if (prime != from) { // from is not a prime number
                 for (auto i = from; i < prime; ++i) { // slow scan till first prime
                     if (absolute % i == 0) {

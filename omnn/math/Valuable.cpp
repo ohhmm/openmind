@@ -558,7 +558,7 @@ struct HashStrOmitOuterBrackets
 struct HashStrIgnoringAnyParentheses
 {
     [[nodiscard]] size_t operator()(const std::string_view& str) const {
-        size_t hash = 0; 
+        size_t hash = 0;
         for (auto ch : str) {
             if (ch != '(' && ch != ')')
                 hash ^= ch;
@@ -729,9 +729,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 std::cout << "SerializedStrEqual detected deserialization issue: " << _ << " != " << s << std::endl
                           << _1 << "\n !=\n"
                           << _2 << std::endl;
-                ::omnn::rt::OptimizationLoopDetect<Valuable> antilooper(*this);                                                        
-                if (antilooper.isLoopDetected()) {                                                                                 
-                    std::cout << "Loop of optimizing detected in " << *this << std::endl;                                          
+                ::omnn::rt::OptimizationLoopDetect<Valuable> antilooper(*this);
+                if (antilooper.isLoopDetected()) {
+                    std::cout << "Loop of optimizing detected in " << *this << std::endl;
                 } else {
                     Valuable v(s, getVaHost(), true);
                     same = operator==(v);
