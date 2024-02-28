@@ -318,7 +318,7 @@ namespace math {
     Valuable::solutions_t Variable::Distinct() const {
     	return {*this}; }
 
-    Valuable Variable::Abet(std::initializer_list<Valuable> l) const {
+    Valuable Variable::Abet(const std::initializer_list<Valuable> l) const {
         Product a;
         for (auto& item : l)
             a.Add(Equals(item));
