@@ -110,7 +110,7 @@ function(apply_target_commons this_target)
 		target_compile_definitions(${this_target} PUBLIC NOOMDEBUG)
 	endif()
 	set_target_properties(${this_target} PROPERTIES
-		CXX_STANDARD 20
+		CXX_STANDARD 23
 		CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE
 		EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

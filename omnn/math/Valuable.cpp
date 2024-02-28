@@ -648,19 +648,18 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 bracketsmap.emplace(st.top(), c);
                 st.pop();
             } else if(s[c] == '=') {
-                Valuable
-                    l(s.substr(0,c), h, itIsOptimized),
-                    r(s.substr(++c), h, itIsOptimized);
-                if(c) {
-                    auto prev = s[c-1];
-                    if (prev == '<')
-                        Become(l.LessOrEqual(r));
-                    else if(prev == '>')
-                        Become(r.LessOrEqual(l));
+                Valuable r(s.substr(c+1), h, itIsOptimized);
+                if (c && s[c-1] == '<') {
+                    Valuable l(s.substr(0, c - 1), h, itIsOptimized);
+                    Become(l.LessOrEqual(r));
+                } else if (c && s[c - 1] == '>') {
+                    Valuable l(s.substr(0, c - 1), h, itIsOptimized);
+                    Become(r.LessOrEqual(l));
                 } else {
+                    Valuable l(s.substr(0, c), h, itIsOptimized);
                     l.equals(std::move(r));
+                    Become(std::move(l));
                 }
-                Become(std::move(l));
                 SetView(View::Equation);
                 return;
             }
