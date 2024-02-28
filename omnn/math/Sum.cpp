@@ -309,7 +309,7 @@ namespace
 
         auto s = str();
         auto doCheck = s.length() > 10;
-        auto isBalancing = view == View::Equation || view == View::Solving;
+        auto isBalancing = IsEquation();
         auto& db = isBalancing ? DbSumBalancingCache : DbSumOptimizationCache;
         auto checkCache = doCheck ? db.AsyncFetch(*this, true) : Cache::Cached();
 
@@ -366,7 +366,7 @@ namespace
                 // optimize member
                 auto copy = *it;
                 copy.optimize();
-                if (copy == 0)
+                if (copy == constants::zero)
                     Delete(it);
                 else if (!it->Same(copy))
                     Update(it, copy);
@@ -379,7 +379,7 @@ namespace
                 }
             }
             
-            if (view == View::Equation) {
+            if (IsEquation()) {
                 auto& coVa = getCommonVars();
                 if (coVa.size()) {
                     *this /= VaVal(coVa);
@@ -1203,7 +1203,7 @@ namespace
             }
         }
 
-        if (GetView() == View::Equation) {
+        if (IsEquation()) {
             auto vars = Vars();
             if (vars.size() == 1) {
                 const auto& va = *FindVa();
