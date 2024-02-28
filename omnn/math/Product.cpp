@@ -279,6 +279,15 @@ namespace math {
             
         }
 
+        if (GetView() == View::Equation) {
+            for (auto it = members.begin(); it != members.end();) {
+                if (!it->FindVa()) {
+                    Delete(it);
+                } else
+                    ++it;
+            }
+        }
+
         // fractionless
         bool updated;
         do {

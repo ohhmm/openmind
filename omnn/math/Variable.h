@@ -88,7 +88,7 @@ public:
 
     bool IsPolynomial(const Variable&) const override;
 
-    Valuable Abet(std::initializer_list<Valuable>) const;
+    Valuable Abet(const std::initializer_list<Valuable>) const;
 
     vars_cont_t GetVaExps() const override;
 };
