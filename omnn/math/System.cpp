@@ -45,7 +45,7 @@ bool System::Add(const Variable& va, const Valuable& v)
 bool System::Add(const Valuable& v)
 {
     auto _ = v;
-    if (_.GetView() != Valuable::View::Equation || !Valuable::optimizations) {
+    if (!_.IsEquation() || !Valuable::optimizations) {
         _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
         try {
             Valuable::OptimizeOn o;

@@ -152,18 +152,25 @@ public:
     enum class View
 		: uint8_t
     {
-        None,
-        Calc,
-        Condensed,
-        Equation,
-        Flat,
-		Fraction,
-        Solving,
+        None = 0,
+        Calc = 1,
+        Condensed = 2,
+        Equation = 4,
+        Flat = 8,
+		Fraction = 16,
+        Solving = 36, // Equation | 32
     };
 
 	friend std::ostream& operator<<(std::ostream& os, View v) {
 		return os << static_cast<uint8_t>(v);
 	}
+
+    friend constexpr View operator&(View a, View b) {
+        return View(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
+    }
+    friend constexpr View operator|(View a, View b) {
+        return View(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+    }
 
     enum class YesNoMaybe : uint8_t {
         Yes = 0b1, Maybe = 0b10, No = 0b100
@@ -332,6 +339,9 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
     void SetView(View v);
+    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
+        return (GetView() & View::Equation) != View::None;
+    }
 
     // identify
     virtual bool IsConstant() const;

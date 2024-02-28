@@ -279,7 +279,7 @@ namespace math {
             
         }
 
-        if (GetView() == View::Equation) {
+        if (IsEquation()) {
             for (auto it = members.begin(); it != members.end();) {
                 if (!it->FindVa()) {
                     Delete(it);
