@@ -159,6 +159,11 @@ namespace math {
         return it;
     }
     
+    bool Product::VarSurdFactor(const Valuable& v)
+    {
+        return Sum::VarSurdFactor(v);
+	}
+
     const Product::iterator Product::Add(const Valuable& item, const iterator hint) {
         auto copy = item;
         return Add(std::move(copy), hint);
