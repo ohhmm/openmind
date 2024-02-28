@@ -2428,6 +2428,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
 	}
 
+    Valuable Valuable::IfzToBool() const {
+        return Ifz(constants::one, constants::zero);
+    }
+
     Valuable Valuable::IntMod_Less(const Valuable& than) const
 	{
         if (exp)

@@ -1202,37 +1202,39 @@ namespace
                 return copy.Sqrt();
             }
         }
-        auto vars = Vars();
-        if (vars.size() == 1)
-		{
-            const auto& va = *FindVa();
-            if (IsPolynomial(va)) {
-                std::vector<Valuable> coefficients;
-                auto grade = FillPolyCoeff(coefficients, va);
-                if (grade == 2) {
-                    solutions_t solutions;
-                    solve(va, solutions, coefficients, grade);
-                    if (solutions.size() == 1) {
-                        return va - solutions.begin()->get();
-                    } else {
-                        LOG_AND_IMPLEMENT("square root of polynomial " << get());
+
+        if (GetView() == View::Equation) {
+            auto vars = Vars();
+            if (vars.size() == 1) {
+                const auto& va = *FindVa();
+                if (IsPolynomial(va)) {
+                    std::vector<Valuable> coefficients;
+                    auto grade = FillPolyCoeff(coefficients, va);
+                    if (grade == 2) {
+                        solutions_t solutions;
+                        solve(va, solutions, coefficients, grade);
+                        if (solutions.size() == 1) {
+                            return va - solutions.begin()->get();
+                        } else {
+                            LOG_AND_IMPLEMENT("square root of polynomial " << get());
+                        }
                     }
                 }
+            } else if (getMaxVaExp() == 2 && (size() == 3 || size() == 2)) {
+                auto it = cbegin();
+                auto a = it++->Sqrt();
+                auto b = it->Sqrt();
+                auto sum = a + b;
+                if (operator==(sum.Sq())) {
+                    return sum;
+                } else {
+                    // auto diff = a - b;
+                    // if (operator==(diff.Sq())) {
+                    //     return diff;
+                    // }
+                }
             }
-        } else if (getMaxVaExp() == 2 && (size() == 3 || size() == 2)) {
-            auto it = cbegin();
-            auto a = it++->Sqrt();
-            auto b = it->Sqrt();
-            auto sum = a + b;
-            if (operator==(sum.Sq())){
-                return sum;
-            } else {
-                //auto diff = a - b;
-                //if (operator==(diff.Sq())) {
-                //    return diff;
-                //}
-            }
-		}
+        }
 
         return PrincipalSurd(*this, 2);
     }
