@@ -1356,8 +1356,9 @@ namespace
 	}
 
     bool Sum::IsPolynomial(const Variable& v) const {
-        auto is = base::IsPolynomial(v);
-        if (is) {
+        auto isSum = !exp;
+        auto is = isSum ? base::IsPolynomial(v) : exp->IsPolynomial(v);
+        if (isSum && is) {
             auto exps = GetVaExps();
             auto grade = exps[v];
             is = grade.IsInt() && (grade < 5 || exps.size() == 1);
@@ -1380,9 +1381,9 @@ namespace
         } else if(!IsPolynomial(v)){
             auto copy = *this;
             copy.SetView(View::Solving);
-            copy.optimize(); // for Solving ^
-            if(copy.IsPolynomial(v)){
-                grade = copy.FillPolyCoeff(coefficients, v);
+            copy.optimize(); // for Solving ^, object may morph, IsSum check and as<Sum> call required
+            if (copy.IsPolynomial(v)) {
+                grade = copy.as<Sum>().FillPolyCoeff(coefficients, v);
                 return grade;
             } else {
                 LOG_AND_IMPLEMENT("Need normalized polynomial of f(" << v << ") to get its coefficients: " << str());
