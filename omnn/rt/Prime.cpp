@@ -1,4 +1,6 @@
 #include "Prime.h"
+
+#include <algorithm>
 #include <cassert>
 #include <thread>
 #include <utility>
@@ -23,10 +25,15 @@ static const boost::multiprecision::cpp_int Primes[] = {
 #include "Primes.inc"
 };
 static const size_t PrimeItems = sizeof(Primes) / sizeof(Primes[0]);
-#elif defined(OPENMIND_PRIME_TABLE_BOOST)
-static constexpr size_t PrimeItems = boost::math::max_prime + 1;
 #else
-static_assert(!"Specify primes table");
+static const auto Primes = [](){
+    constexpr auto size = boost::math::max_prime + 1;
+    std::array<boost::multiprecision::cpp_int, size> numbers;
+    for (uint32_t idx = size; idx-->0 ;)
+        numbers[idx] = boost::math::prime(idx);
+    return numbers;
+}();
+static const size_t PrimeItems = Primes.size();
 #endif
 
 namespace {
@@ -34,6 +41,8 @@ namespace {
 boost::filesystem::path PrimeListDir = _rt_SRC_DIR;
 auto PrimeListPath = PrimeListDir / PRIME_LIST_FILENAME;
 #endif
+const auto PrimesBeginIterator = std::begin(Primes);
+const auto PrimesEndIterator = std::end(Primes);
 } // namespace
 
 namespace omnn::rt {
@@ -109,11 +118,7 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
     return true;
 }
 
-const boost::multiprecision::cpp_int
-#ifndef OPENMIND_PRIME_TABLE_BOOST
-&
-#endif
- prime(size_t idx) {
+const boost::multiprecision::cpp_int& prime(size_t idx) {
 #ifndef NDEBUG
     auto haveThePrime = idx < PrimeItems;
     if (!haveThePrime) {
@@ -124,13 +129,7 @@ const boost::multiprecision::cpp_int
         assert(haveThePrime);
     }
 #endif
-#ifdef OPENMIND_PRIME_TABLE_OM
     return Primes[idx];
-#elif defined(OPENMIND_PRIME_TABLE_BOOST)
-    return boost::math::prime(boost::numeric_cast<uint32_t>(idx));
-#else
-    static_assert(!"Specify primes table");
-#endif // OPENMIND_PRIME_TABLE_BOOST
 }
 
 size_t primes() {
@@ -141,6 +140,20 @@ size_t primes() {
 #else
     static_assert(!"Specify primes table");
 #endif // OPENMIND_PRIME_TABLE_BOOST
+}
+
+prime_idx_t greatest_prime_idx(const number_t& bound) {
+    auto lowerBoundIterator = std::lower_bound(PrimesBeginIterator, PrimesEndIterator, bound);
+    if (*lowerBoundIterator != bound && lowerBoundIterator != PrimesBeginIterator)
+    {
+        ++lowerBoundIterator;
+    }
+    size_t idx = lowerBoundIterator - PrimesBeginIterator;
+    return idx;
+}
+
+const boost::multiprecision::cpp_int& get_greatest_prime(const boost::multiprecision::cpp_int& bound) {
+    return prime(greatest_prime_idx(bound));
 }
 
 auto GetNextToCheckForPrimeToMine() {
