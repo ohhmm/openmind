@@ -12,7 +12,7 @@ jobs:
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Pre-Install Boost, LevelDB
-      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && brew install boost-python3 leveldb
+      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && ( brew install boost-python3 leveldb || brew install boost-python3 leveldb )
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
