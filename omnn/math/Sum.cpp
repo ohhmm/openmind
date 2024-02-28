@@ -219,8 +219,13 @@ namespace
     }
 
     Valuable Sum::GCDofMembers() const {
-        auto it = members.begin();
-        auto gcd = it->varless();
+        auto b = members.begin();
+        auto it = b;
+        auto gcd = it == members.end() // empty sum
+            ? constants::zero
+            : size() == 1 // single element
+            ? *it
+            : b->GCD(*++it);
         for (; gcd != constants::one && it != members.end(); ++it) {
             bool processed = false;
             if (it->IsPrincipalSurd()) {
