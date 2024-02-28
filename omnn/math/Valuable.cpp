@@ -2481,12 +2481,21 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::LogicAnd(const Valuable& v) const
     {
-        return Sq()+v.Sq();
+        if (Vars() == v.Vars()) {
+            return GCD(v);
+        } else {
+            return Sq() + v.Sq(); // equal to zero if both are equal to zero only
+        }
     }
 
     Valuable& Valuable::logic_and(const Valuable& v)
     {
-        return sq()+=v.Sq();
+        if (Vars() == v.Vars()) {
+            gcd(v);
+        } else {
+            sq() += v.Sq(); // equal to zero if both are equal to zero only
+        }
+        return *this;
     }
 
     Valuable& Valuable::logic_or(const Valuable& v)
@@ -2518,7 +2527,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return Become(va - (logic_and(with)(va))); // logic_and(with)(va).equals(va)
     }
     Valuable Valuable::Intersect(const Valuable& with, const Variable& va) const {
-        return va.Equals(LogicAnd(with)(va));
+        auto intersection = Intersect(with);
+        if(!intersection.HasVa(va))
+            intersection = va.Equals(GCD(with)(va));
+        return intersection;
+    }
+    Valuable& Valuable::intersect(const Valuable& with) {
+        return gcd(with);
     }
     Valuable Valuable::Intersect(const Valuable& with) const {
         return GCD(with);
