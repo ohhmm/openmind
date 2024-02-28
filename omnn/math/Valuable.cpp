@@ -2424,7 +2424,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->ToBool();
         else {
-            return Ifz(constants::one, constants::zero);
+            return constants::one - Sign().abs(); // https://math.stackexchange.com/a/2063238/118612
         }
 	}
 
