@@ -77,7 +77,11 @@ namespace omnn::math {
             return;
         }
 
-        MarkAsOptimized();
+        if (IsEquation()) {
+            Become(std::move(ebase()));
+            return;
+        }
+
         ebase().optimize();
         eexp().optimize();
 
@@ -312,8 +316,8 @@ namespace omnn::math {
             }
         }
 
-        bool ebz = ebase() == 0_v;
-        bool exz = eexp() == 0_v;
+        bool ebz = ebase().IsZero();
+        bool exz = eexp().IsZero();
         if(exz)
         {
             if (ebase().IsInfinity() || ebase().IsMInfinity()) {
@@ -325,7 +329,7 @@ namespace omnn::math {
             Become(1_v);
             return;
         }
-        else if(eexp() == 1_v)
+        else if(eexp() == constants::one)
         {
             Become(std::move(ebase()));
             return;
@@ -466,6 +470,11 @@ namespace omnn::math {
                 eexp() *= eeexp;
                 // todo : copy if it shared
                 ebase() = std::move(const_cast<Valuable&>((e.getBase())));
+            }
+
+            if (eexp() == constants::one || IsEquation()) {
+                Become(std::move(ebase()));
+                return;
             }
         }
 

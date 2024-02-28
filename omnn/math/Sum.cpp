@@ -626,7 +626,7 @@ namespace
                     if(IsSum())
                     {
                         auto gcd = GCDofMembers();
-                        if(gcd != 1_v){
+                        if(gcd != constants::one){
                             operator/=(gcd);
                         }
 
