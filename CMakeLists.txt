@@ -94,12 +94,6 @@ option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc sou
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_QT "Link Qt libs" OFF)
 
-find_package(PkgConfig)
-option(OPENMIND_USE_PKG_CONFIG_DEPS "Use pkg-config dependencies" ${PKG_CONFIG_FOUND})
-if(PKG_CONFIG_FOUND)
-	message("pkg-config may be used to detect some of dependencies")
-endif()
-
 find_program(INTEL_COMPILER_PATH icpx)
 if(INTEL_COMPILER_PATH)
 	message("INTEL_COMPILER_PATH: ${INTEL_COMPILER_PATH}")
