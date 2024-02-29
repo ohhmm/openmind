@@ -28,8 +28,24 @@ auto ComputeUnitsWinner = []() -> boost::compute::device {
                 std::cout << "\taddress_bits: " << d.address_bits() << std::endl;
                 std::cout << "\tclock_frequency: " << d.clock_frequency() << std::endl;
                 std::cout << "\tmax_work_group_size: " << d.max_work_group_size() << std::endl;
+                std::cout << "\textensions:";
+                bool glSharing = false;
+                for (auto& s : d.extensions()) {
+                    std::cout << ' ' << s;
+#ifdef OPENMIND_USE_OPENGL
+                    if (s == "cl_khr_gl_sharing") {
+                        std::cout << " (OpenGL sharing)";
+                        glSharing = true;
+                    }
+#endif // OPENMIND_USE_OPENGL
+                }
+				std::cout << std::endl;
                 //<< cu << "cu x " << widm << " = " << cu * widm
-                if (cu > cuwinner.compute_units())
+                if (cu > cuwinner.compute_units()
+#ifdef OPENMIND_USE_OPENGL
+					&& glSharing
+#endif
+                )
                     cuwinner = d;
             }
         }
