@@ -105,6 +105,11 @@ function(apply_target_commons this_target)
 		if(OPENMIND_DEBUG_CHECKS)
 			target_compile_definitions(${this_target} PUBLIC BOOST_COMPUTE_DEBUG_KERNEL_COMPILATION)
 		endif()
+		if(OPENMIND_USE_OPENGL)
+			target_compile_definitions(${this_target} PUBLIC
+				OPENMIND_USE_OPENGL
+				)
+	endif()
 	endif()
 	if(NOT OPENMIND_DEBUG_CHECKS)
 		target_compile_definitions(${this_target} PUBLIC NOOMDEBUG)
