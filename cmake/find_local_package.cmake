@@ -1,7 +1,18 @@
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(address_model 64 CACHE STRING "address_model" FORCE)
 else()
 	set(address_model 32 CACHE STRING "address_model" FORCE)
+endif()
+
+if(NOT PKG_CONFIG_FOUND)
+	find_package(PkgConfig)
+	option(OPENMIND_USE_PKG_CONFIG_DEPS "Use pkg-config dependencies"
+		# ${PKG_CONFIG_FOUND}) # bug in pkg_check_modules macro: no REQUIRED keyword still leads to fatal error if package not found
+		OFF)
+	if(PKG_CONFIG_FOUND)
+		message("pkg-config may be used to detect some of dependencies")
+	endif()
 endif()
 
 function(get_local_drives LOCAL_DRIVES)
@@ -41,6 +52,14 @@ macro(find_pkg)
 				endif()
 			endif()
 		endif()
+		if(NOT ${dep}_FOUND AND OPENMIND_USE_PKG_CONFIG_DEPS)
+			pkg_get_variable(PKG_${dep}_LIBRARY_DIR ${dep} libdir)
+			if(EXISTS PKG_${dep}_LIBRARY_DIR)
+				set(hints ${hint_paths} ${PKG_${dep}_LIBRARY_DIR})
+				pkg_get_variable(${dep}_INCLUDE_DIR ${dep} includedir)
+			endif()
+		endif()
+
 		if(${dep}_FOUND)
 			break()
 		endif()
