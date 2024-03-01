@@ -188,8 +188,11 @@ namespace math {
         } else if (v.IsProduct()) {
         } else {
             is = v.IsSummationSimplifiable(*this);
-            if (is.first && is.second.Complexity() > v.Complexity())
-                LOG_AND_IMPLEMENT("Simplification complexidy exceeds source complexity: " << v << "   +   " << str() << "   =   " << is.second);
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            if (is.first && is.second.Complexity() > v.Complexity()){
+                LOG_AND_IMPLEMENT("Simplification complexity exceeds source complexity: " << v << "   +   " << str() << "   =   " << is.second);
+            }
+#endif
         }
         return is;
     }
