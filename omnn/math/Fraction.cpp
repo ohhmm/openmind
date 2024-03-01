@@ -98,185 +98,187 @@ namespace math {
             return;
         }
 
-    reoptimize_the_fraction:
-        numerator().optimize();
-        denominator().optimize();
-        
-        while(denominator().IsFraction())
-        {
-            auto& fdn = denominator().as<Fraction>();
-            numerator() *= fdn.denominator();
-            denominator() = std::move(fdn.numerator());
-        }
+        bool reoptimize_the_fraction;
+        do {
+            reoptimize_the_fraction = false;
+            numerator().optimize();
+            denominator().optimize();
 
-//        if (numerator().IsSum()) {
-//            Become(numerator()/denominator());
-//            return;
-//        }
-        
-        if (denominator().IsInt())
-        {
-            if (denominator().ca() == 1)
-            {
-                Become(std::move(numerator()));
-                return;
+            while (denominator().IsFraction()) {
+                auto& fdn = denominator().as<Fraction>();
+                numerator() *= fdn.denominator();
+                denominator() = std::move(fdn.numerator());
             }
-            else if (denominator() < 0) {
-                numerator() = -numerator();
-                denominator() = -denominator();
-                if (denominator().ca() == 1)
-                {
+
+            //        if (numerator().IsSum()) {
+            //            Become(numerator()/denominator());
+            //            return;
+            //        }
+
+            if (denominator().IsInt()) {
+                if (denominator().ca() == 1) {
                     Become(std::move(numerator()));
-                    return;
-                }
-            }
-        }
-
-        if (denominator() == numerator()
-            && IsMultival() == YesNoMaybe::No
-        ) {
-            // TODO : mark var constraints deduced from denominator!=0
-            Become(1);
-            return;
-        }
-
-        if (denominator().Is_i()) {
-            numerator() *= constants::minus_1; 
-            numerator() *= denominator();
-            Become(std::move(numerator()));
-            return;
-        }
-        
-        if (numerator().IsExponentiation()) {
-            auto& e = numerator().as<Exponentiation>();
-            auto& exp = e.getExponentiation();
-            if (exp.IsInt() && exp < 0) {
-                denominator() *= e.getBase() ^ (-exp);
-                numerator() = constants::one;
-            } else if (exp.IsFraction()) {
-                auto& f = exp.as<Fraction>();
-                auto in = e.getBase() / (denominator() ^ f.Reciprocal());
-                if (in.IsInt())
-                {
-                    e.setBase(std::move(in));
-                    Become(std::move(e));
-                    return;
-                }
-            }
-        }
-
-        // integers
-        if (numerator().IsInt())
-        {
-            auto& n = numerator().ca();
-            auto& denom = denominator();
-            auto dni = denom.IsInt();
-            if (n == 0)
-            {
-                if (dni && denom == 0_v)
-                    throw "NaN";
-                Become(std::move(numerator()));
-                return;
-            }
-            if (dni)
-            {
-                auto& dn = denominator().ca();
-                if (n < 0 && dn < 0) {
+                    break;
+                } else if (denominator() < 0) {
                     numerator() = -numerator();
                     denominator() = -denominator();
-                    goto reoptimize_the_fraction;
-                }
-                if (dn == 1)
-                {
-                    Become(std::move(numerator()));
-                    return;
-                }
-                if (dn == -1)
-                {
-                    Become(-numerator());
-                    return;
-                }
-                auto d = boost::gcd(n, dn);
-                if (d != 1) {
-                    numerator() /= Integer(d);
-                    denominator() /= Integer(d);
-                    optimize();
-                    return;
-                }
-            } else if (denom.IsSimple()) {
-                if (denom.IsPrincipalSurd()) {
-                    auto& ps = denom.as<PrincipalSurd>();
-                    auto& e = ps.Index();
-                    numerator() *= ps ^ (e - 1);
-                    setDenominator(std::move(ps.Radicand()));
-                    goto reoptimize_the_fraction;
-                }
-            }
-        }
-        else if (numerator().IsProduct())
-		{
-            Become(numerator() / denominator());
-            return;
-        }
-        else if (denominator().IsProduct())
-        {
-            auto& dn = denominator().as<Product>();
-            if (dn.Has(numerator())) {
-                denominator() /= numerator();
-                numerator() = 1_v;
-                goto reoptimize_the_fraction;
-            } else {
-                if (dn.HasValueType<MinusOneSurd>()) {
-                    numerator() *= constants::minus_1;
-                    numerator() *= constants::i;
-                    denominator() /= constants::i;
-                }
-                if (numerator().IsInt() || numerator().IsSimpleFraction()) {
-                    for (auto& m : dn) {
-                        if (m.IsVa()) {
-                            numerator() *= m ^ -1;
-                        } else if (m.IsExponentiation()) {
-                            auto& e = m.as<Exponentiation>();
-                            numerator() *= e.getBase() ^ -e.getExponentiation();
-                        } else
-                            numerator() /= m;
+                    if (denominator().ca() == 1) {
+                        Become(std::move(numerator()));
+                        break;
                     }
-                    Become(std::move(numerator()));
-                    return;
                 }
             }
-        } else if (denominator().IsSum()) {
-            auto& s = denominator().as<Sum>();
-            auto lcm = s.LCMofMemberFractionDenominators();
-            if (lcm != constants::one) {
-                numerator() *= lcm;
-                denominator() *= lcm;
-                goto reoptimize_the_fraction;
+
+            if (denominator() == numerator() && IsMultival() == YesNoMaybe::No) {
+                // TODO : mark var constraints deduced from denominator!=0
+                Become(1);
+                break;
             }
-        }
-        else if (denominator().FindVa() && !denominator().IsSum())
-        {
-            Become(Product{ std::move(numerator()), Exponentiation( std::move(denominator()), constants::minus_1)});
-            return;
-        }
-        else // no products
-        {
-			// TODO :
-			// IMPLEMENT // uncomment to cover scenarios
 
+            if (denominator().Is_i()) {
+                numerator() *= constants::minus_1;
+                numerator() *= denominator();
+                Become(std::move(numerator()));
+                break;
+            }
 
-            // sum
-//                auto s = Sum::cast(numerator());
-//                if (s) {
-//                    auto sum(std::move(*s));
-//                    sum /= denominator();
-//                    Become(std::move(sum));
-//                    return;
-//                }
-        }
-        
+            if (numerator().IsExponentiation()) {
+                auto& e = numerator().as<Exponentiation>();
+                auto& exp = e.getExponentiation();
+                if (exp.IsInt() && exp < 0) {
+                    denominator() *= e.getBase() ^ (-exp);
+                    numerator() = constants::one;
+                } else if (exp.IsFraction()) {
+                    auto& f = exp.as<Fraction>();
+                    auto in = e.getBase() / (denominator() ^ f.Reciprocal());
+                    if (in.IsInt()) {
+                        e.setBase(std::move(in));
+                        Become(std::move(e));
+                        break;
+                    }
+                }
+            }
+
+            // Integers
+            if (numerator().IsInt()) {
+                auto& n = numerator().ca();
+                auto& denom = denominator();
+                auto dni = denom.IsInt();
+                if (n == 0) {
+                    if (dni && denom == 0_v)
+                        throw "NaN";
+                    Become(std::move(numerator()));
+                    break;
+                }
+                if (dni) {
+                    auto& dn = denominator().ca();
+                    if (n < 0 && dn < 0) {
+                        numerator() = -numerator();
+                        denominator() = -denominator();
+                        reoptimize_the_fraction = true;
+                        continue;
+                    }
+                    if (dn == 1) {
+                        Become(std::move(numerator()));
+                        break;
+                    }
+                    if (dn == -1) {
+                        Become(-numerator());
+                        break;
+                    }
+                    auto d = boost::gcd(n, dn);
+                    if (d != 1) {
+                        numerator() /= Integer(d);
+                        denominator() /= Integer(d);
+                        reoptimize_the_fraction = true;
+                        continue;
+                    }
+                } else if (denom.IsSimple()) {
+                    if (denom.IsPrincipalSurd()) {
+                        auto& ps = denom.as<PrincipalSurd>();
+                        auto& e = ps.Index();
+                        numerator() *= ps ^ (e - 1);
+                        setDenominator(std::move(ps.Radicand()));
+                        reoptimize_the_fraction = true;
+                        continue;
+                    }
+                }
+            } else if (numerator().IsProduct()) {
+                Become(numerator() / denominator());
+                break;
+            }
+
+            if (denominator().IsProduct()) {
+                auto& dn = denominator().as<Product>();
+                if (dn.Has(numerator())) {
+                    denominator() /= numerator();
+                    numerator() = constants::one;
+                    reoptimize_the_fraction = true;
+                    continue;
+                } else if (dn.Has(-numerator())) {
+                    denominator() /= numerator();
+                    numerator() = constants::minus_1;
+                    reoptimize_the_fraction = true;
+                    continue;
+                } else {
+                    if (dn.HasValueType<MinusOneSurd>()) {
+                        numerator() *= constants::minus_1;
+                        numerator() *= constants::i;
+                        denominator() /= constants::i;
+                    }
+                    if (numerator().IsInt() || numerator().IsSimpleFraction()) {
+                        for (auto& m : dn) {
+                            if (m.IsVa()) {
+                                numerator() *= m ^ -1;
+                            } else if (m.IsExponentiation()) {
+                                auto& e = m.as<Exponentiation>();
+                                numerator() *= e.getBase() ^ -e.getExponentiation();
+                            } else
+                                numerator() /= m;
+                        }
+                        Become(std::move(numerator()));
+                        break;
+                    }
+                }
+            } else if (denominator().IsSum()) {
+                auto& s = denominator().as<Sum>();
+                auto lcm = s.LCMofMemberFractionDenominators();
+                if (lcm != constants::one) {
+                    numerator() *= lcm;
+                    denominator() *= lcm;
+                    reoptimize_the_fraction = true;
+                    continue;
+                } else if (denominator().IsSum()) {
+                    auto& s = denominator().as<Sum>();
+                    auto lcm = s.LCMofMemberFractionDenominators();
+                    if (lcm != constants::one) {
+                        numerator() *= lcm;
+                        denominator() *= lcm;
+                        reoptimize_the_fraction = true;
+                        continue;
+                    }
+                }
+            } else if (denominator().FindVa() && !denominator().IsSum()) {
+                Become(Product{std::move(numerator()), Exponentiation(std::move(denominator()), constants::minus_1)});
+                break;
+            } else // no products
+            {
+                // TODO :
+                // IMPLEMENT // uncomment to cover scenarios
+
+                // sum
+                //                auto s = Sum::cast(numerator());
+                //                if (s) {
+                //                    auto sum(std::move(*s));
+                //                    sum /= denominator();
+                //                    Become(std::move(sum));
+                //                    return;
+                //                }
+            }
+        } while (reoptimize_the_fraction);
+
         if (IsFraction()) {
-            if(IsSimple())
+            if (IsSimple())
                 hash = numerator().Hash() ^ denominator().Hash();
             else if (!denominator().IsSum())
                 Become(numerator() * (denominator() ^ constants::minus_1));
