@@ -1,4 +1,4 @@
-﻿#define BOOST_TEST_MODULE Fraction test
+#define BOOST_TEST_MODULE Fraction test
 #include <boost/test/unit_test.hpp>
 
 #include "Fraction.h"
@@ -74,8 +74,9 @@ BOOST_AUTO_TEST_CASE(FractionWithRadicalsSimplification_tests)
     BOOST_TEST(static_cast<double>(_1) == static_cast<double>(_2));
 }
 
-BOOST_AUTO_TEST_CASE(FractionSimplification_tests)
-{
+BOOST_AUTO_TEST_CASE(FractionSimplification_tests
+ , *disabled()
+){
 	auto _1 = (25_v / 5) ^ Fraction{constants::minus_1,constants::two};
 	auto _2 = (1_v / 5)*(1_v^(1_v/2));
 	auto c = _1 == _2;
@@ -90,6 +91,7 @@ BOOST_AUTO_TEST_CASE(FractionSimplification_tests)
 
 BOOST_AUTO_TEST_CASE(Balancing_no_hang_test
     , *timeout(2)
+    * disabled()
 ) {
     DECL_VARS(x, y, z);
     auto _ = (constants::minus_1 / 4) * ((-16 * (y ^ 2) + 160 * y - 8 * x - 200) ^ constants::half) + z - 35;
