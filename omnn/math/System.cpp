@@ -427,3 +427,11 @@ System::solutions_t System::Solve(const Variable& va)
     
     return solution;
 }
+
+Valuable System::CalculateTotalExpression() const {
+    Sum total;
+    for (auto& e : equs) {
+		total.Add(e.Sq());
+	}
+    return total;
+}
