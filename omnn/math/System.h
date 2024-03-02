@@ -78,6 +78,8 @@ public:
             IMPLEMENT
     }
 
+    Valuable CalculateTotalExpression() const;
+
 	constexpr const auto& Expressions() const { return equs; }
     auto IsEmpty() const { return equs.empty(); }
 
