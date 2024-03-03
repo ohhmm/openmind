@@ -292,14 +292,17 @@ using namespace omnn::math;
                         Become(std::move(ebase()));
                         return;
                     } else if (n != constants::one) {
-                        hash ^= f.Hash();
-                        f.update1(1_v);
-                        hash ^= f.Hash();
-					}
+                        // Allow further optimization for base-1 fractions
+                        optimized = {};
+                        return;
+                    }
                 } else if (!!eexp().IsMultival()) {
                 } else if (!(eexp().IsInfinity() || eexp().IsMInfinity())) {
-                    Become(std::move(ebase()));
-                    return;
+                    // Don't early return for base-1 cases to allow Product transformations
+                    if (!eexp().IsSimpleFraction()) {
+                        Become(std::move(ebase()));
+                        return;
+                    }
                 } else
                     IMPLEMENT;
             } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0 && eexp() != 1) {
