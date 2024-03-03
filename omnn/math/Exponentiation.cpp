@@ -663,12 +663,18 @@ namespace omnn::math {
             //} else 
 			if (ee == constants::minus_1)
             {
-                is.second = v ^ constants::minus_1; // v.IsExponentiationSimplifiable(ee)
-                is.first = is.second.MultiplyIfSimplifiable(getBase());
+                auto gcd = ebase().GCD(v);
+                is.first = gcd != constants::one;
                 if(is.first){
-                    auto copy = *this;
-                    copy.updateBase(std::move(is.second));
-                    is.second = copy;
+                    is.second = (v/gcd)/(ebase()/gcd);
+                } else {
+                    is.second = v ^ constants::minus_1; // v.IsExponentiationSimplifiable(ee)
+                    is.first = is.second.MultiplyIfSimplifiable(getBase());
+                    if (is.first) {
+                        auto copy = *this;
+                        copy.updateBase(std::move(is.second));
+                        is.second = copy;
+                    }
                 }
             }
             else if (ee.IsInt() && (ee > constants::zero)) // TODO: ee < 0 too
