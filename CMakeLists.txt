@@ -84,7 +84,12 @@ endif()
 include(bins)
 message("address_model: ${address_model}")
 
-option(OPENMIND_BUILD_TESTS "Build various TESTS" ${_IS_DEBUG})
+if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
+	set(initTestsEnabled ON)
+else()
+	set(initTestsEnabled OFF)
+endif()
+option(OPENMIND_BUILD_TESTS "Build various TESTS" ${initTestsEnabled})
 option(OPENMIND_DEBUG_CHECKS "Additional debug checks (NOOMDEBUG define)" ${_IS_DEBUG})
 option(OPENMIND_DEPEND_ON_PREREQUISITES "Better consider installing prerequisites by building the target 'prerequisites' upon initial setup. This way its not checked each build." OFF)
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
@@ -147,7 +152,8 @@ set(_BOOST_USED_COMPONENTS
 	system
 	thread
 	CACHE STRING "Components" FORCE)
-if(OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
+
+if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
     enable_testing()
     set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
         unit_test_framework
