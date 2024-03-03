@@ -229,8 +229,8 @@ BOOST_AUTO_TEST_CASE(Integer_exptests)
     a^=3_v/2;
 
     a = 5;
-    // Fixme: a ^= -.5;
-    // Fixme: BOOST_TEST(a == constants::plus_minus_1 / PrincipalSurd{5});
+    a ^= -.5;
+    BOOST_TEST(a == constants::plus_minus_1 / PrincipalSurd{5});
 }
 
 BOOST_AUTO_TEST_CASE(Integer_tests)
