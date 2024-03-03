@@ -479,12 +479,22 @@ namespace math {
         }
         return Become(std::move(p));
     }
-    
+
     Valuable Product::abs() const
     {
         auto val = Each([](auto& m) { return std::abs(m); });
         val.optimize();
         return val;
+    }
+
+    Valuable& Product::reciprocal() {
+        Product p({});
+        for (auto i = size(); i-->0 ;)
+        {
+            auto m = Extract();
+            p.Add(std::move(m.reciprocal()));
+        }
+        return Become(std::move(p));
     }
 
     const Product::vars_cont_t& Product::getCommonVars() const
