@@ -281,7 +281,7 @@ namespace omnn::math {
                         return;
                     }
                     auto& dn = f.getDenominator();
-                    if (dn.bit(0)) {
+                    if (dn.bit()) {
                         Become(std::move(ebase()));
                         return;
                     } else if (n != 1_v) {
@@ -848,7 +848,7 @@ namespace omnn::math {
                 operator/=(eexp());
                 operator+=(C);
             } else if (ee.IsSum()) {
-                Product p;
+                Product p({});
                 for (auto& m : ee.as<Sum>()) {
                     p.Add(x ^ m);
                 }
@@ -1019,6 +1019,13 @@ namespace omnn::math {
         } else
             IMPLEMENT;
         return c;
+    }
+
+    Valuable& Exponentiation::reciprocal() {
+        Valuable::hash ^= eexp().Hash();
+        eexp() = -eexp();
+        Valuable::hash ^= eexp().Hash();
+        return *this;
     }
 
     Valuable & Exponentiation::sq()

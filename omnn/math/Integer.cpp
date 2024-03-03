@@ -764,13 +764,21 @@ namespace math {
         return f;
     }
 
-	void Integer::factorial() {
+    Valuable& Integer::factorial() {
         if (arbitrary == 0)
             arbitrary = 1;
         else for (auto i = arbitrary; i-- > 1;)
             arbitrary *= i;
         hash = std::hash<base_int>()(arbitrary);
-	}
+        return *this;
+    }
+
+    Valuable& Integer::reciprocal() {
+        if(!operator==(constants::one)) {
+            Become(Fraction{constants::one, std::move(*this)});
+        }
+        return *this;
+    }
 
     bool Integer::IsPrime() const
     {

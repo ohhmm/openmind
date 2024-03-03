@@ -102,6 +102,7 @@ public:
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;
 
+    Valuable& reciprocal() override;
     Valuable& sq() override;
     Valuable Sqrt() const override;
     Valuable& sqrt() override;

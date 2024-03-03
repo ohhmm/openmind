@@ -766,7 +766,7 @@ namespace
                     std::inserter(commonSolutions, commonSolutions.begin()));
 
                 if (commonSolutions.size() > 0) {
-                    Product p;
+                    Product p({});
                     for (auto& solution : commonSolutions) {
                         p.Add(v - solution);
                     }
