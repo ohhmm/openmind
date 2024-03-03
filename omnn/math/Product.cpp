@@ -149,14 +149,14 @@ using namespace omnn::math;
     const Product::iterator Product::Add(Valuable&& item, const iterator hint)
     {
         iterator it;
-        
+
         if (members.size() == 1 && !item.IsSimple()) {
             it = begin();
             if (it->Same(constants::one)) {
                 Delete(it);
             }
         }
-        
+
         if (item.IsInt()) {
             if (item == constants::one)
                 it = begin();
@@ -165,6 +165,18 @@ using namespace omnn::math;
             ) {
                 Update(it, *it * item);
             } else {
+                // Check for base-1 exponentiation to transform n*(1^x) to (1/n)*(1^x)
+                auto expIt = std::find_if(begin(), end(), [](const Valuable& v) {
+                    return v.IsExponentiation() && v.as<Exponentiation>().ebase() == constants::one;
+                });
+
+                if (expIt != end()) {
+                    // Transform n*(1^x) to (1/n)*(1^x)
+                    Valuable reciprocal = Fraction(1, item);
+                    Update(expIt, *expIt * reciprocal);
+                    return expIt;
+                }
+
                 it = base::Add(std::move(item), hint);
             }
         } else if (item.IsSimpleFraction()) {
