@@ -5,10 +5,12 @@
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
+#include "PrincipalSurd.h"
 #include "i.h"
 
+#include <utility>
+
 #include <boost/lexical_cast.hpp>
-#include <PrincipalSurd.h>
 
 
 namespace omnn{
@@ -666,9 +668,14 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         return (augmentation * denominator() - numerator())(v);
     }
     
-    omnn::math::Fraction Fraction::Reciprocal() const
+    Valuable Fraction::Reciprocal() const
     {
         return Fraction(denominator(), numerator());
+    }
+
+    Valuable& Fraction::reciprocal() {
+        std::swap(_1, _2);
+        return *this;
     }
 
     Valuable Fraction::Sign() const {

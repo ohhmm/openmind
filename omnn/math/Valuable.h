@@ -391,9 +391,12 @@ public:
 	virtual Valuable Tg() const;
     virtual void gamma(); // https://en.wikipedia.org/wiki/Gamma_function
     virtual Valuable Gamma() const;
-    virtual void factorial();
+    virtual Valuable& factorial();
     virtual Valuable Factorial() const;
     virtual Valuable calcFreeMember() const;
+
+    virtual Valuable& reciprocal();
+    virtual Valuable Reciprocal() const;
 
     using solutions_t = std::unordered_set<Valuable>;
     static Valuable MergeAnd(const Valuable&, const Valuable&); /// conjunctive merge of two values

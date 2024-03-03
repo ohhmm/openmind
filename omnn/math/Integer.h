@@ -161,7 +161,8 @@ public:
     bool SimpleFactorization(const std::function<bool(const Valuable&)>& f, const Valuable& max,
                        const ranges_t& zz = empty_zero_zone) const;
     std::set<Valuable> SimpleFactsSet() const;
-    void factorial() override;
+    Valuable& factorial() override;
+    Valuable& reciprocal() override;
 
     solutions_t Distinct() const final { return { *this }; }
     Valuable Univariate() const final { return *this; }
