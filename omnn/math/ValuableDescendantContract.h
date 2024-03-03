@@ -77,12 +77,12 @@ namespace math {
             return reinterpret_cast<Chld*>(this);
         }
 
-        NO_APPLE_CONSTEXPR Valuable* Clone() const override
+        NO_CLANG_CONSTEXPR Valuable* Clone() const override
         {
             return new Chld(*CPtr());
         }
     
-        NO_APPLE_CONSTEXPR size_t getTypeSize() const override { return sizeof(Chld); }
+        NO_CLANG_CONSTEXPR size_t getTypeSize() const override { return sizeof(Chld); }
         
         Valuable* Move() override
         {
