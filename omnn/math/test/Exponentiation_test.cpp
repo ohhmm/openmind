@@ -145,9 +145,7 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test) {
 BOOST_AUTO_TEST_CASE(Polynomial_Exp_test
     , *boost::unit_test::disabled()
 ) {
-    auto v = "v"_va;
-    auto a = "a"_va;
-    auto b = "b"_va;
+    DECL_VARS(a, b, v);
     
     auto _ = (4_v*(v^2) + 2048)^(1_v/2);
     _.SetView(Valuable::View::Solving);

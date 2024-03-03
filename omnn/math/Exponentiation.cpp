@@ -267,8 +267,8 @@ namespace omnn::math {
                     else if (eexp().IsZero()) {
                         Become(1);
                         return;
-					}
-				}
+                    }
+                }
 
                 if (eexp().IsInt()) {
                     Become(std::move(ebase()));
@@ -308,11 +308,11 @@ namespace omnn::math {
             } else if (eexp().IsFraction()) {
                 auto& f = eexp().as<Fraction>();
                 auto& n = f.getNumerator();
-                if (n != 1) {
+                if (n > constants::one) {
                     // TODO: auto is = ebase().IsExponentiationSimplifiable(n);
                     auto newBase = ebase() ^ n;
                     if(!newBase.IsExponentiation()){
-                        Become(newBase ^ (1_v / f.getDenominator()));
+                        Become(newBase ^ f.getDenominator().Reciprocal());
                         return;
                     }
                 }
