@@ -267,8 +267,8 @@ namespace omnn::math {
                     else if (eexp().IsZero()) {
                         Become(1);
                         return;
-					}
-				}
+                    }
+                }
 
                 if (eexp().IsInt()) {
                     Become(std::move(ebase()));
@@ -288,14 +288,17 @@ namespace omnn::math {
                         Become(std::move(ebase()));
                         return;
                     } else if (n != constants::one) {
-                        hash ^= f.Hash();
-                        f.update1(1_v);
-                        hash ^= f.Hash();
-					}
+                        // Allow further optimization for base-1 fractions
+                        optimized = {};
+                        return;
+                    }
                 } else if (!!eexp().IsMultival()) {
                 } else if (!(eexp().IsInfinity() || eexp().IsMInfinity())) {
-                    Become(std::move(ebase()));
-                    return;
+                    // Don't early return for base-1 cases to allow Product transformations
+                    if (!eexp().IsSimpleFraction()) {
+                        Become(std::move(ebase()));
+                        return;
+                    }
                 } else
                     IMPLEMENT;
             } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0 && eexp() != 1) {
@@ -308,11 +311,11 @@ namespace omnn::math {
             } else if (eexp().IsFraction()) {
                 auto& f = eexp().as<Fraction>();
                 auto& n = f.getNumerator();
-                if (n != 1) {
+                if (n > constants::one) {
                     // TODO: auto is = ebase().IsExponentiationSimplifiable(n);
                     auto newBase = ebase() ^ n;
                     if(!newBase.IsExponentiation()){
-                        Become(newBase ^ (1_v / f.getDenominator()));
+                        Become(newBase ^ f.getDenominator().Reciprocal());
                         return;
                     }
                 }

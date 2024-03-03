@@ -50,13 +50,13 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     
     BOOST_TEST((Fraction{1,-2}).operator<(0));
 
-    _ = 1_v^(1_v/2);
-    auto eq = _ == (1_v^(1_v/2));
+    _ = constants::plus_minus_1;
+    auto eq = _ == constants::plus_minus_1;
     BOOST_TEST(eq);
     BOOST_TEST((_.IsMultival() == Valuable::YesNoMaybe::Yes));
-    _ /= 1_v^(1_v/2);
+    _ /= constants::plus_minus_1;
     BOOST_TEST((_.IsMultival() == Valuable::YesNoMaybe::Yes));
-    eq = _ == (1_v^(1_v/2));
+    eq = _ == constants::plus_minus_1;
     BOOST_TEST(eq);
 
     auto _1 = Valuable(0.000144);
@@ -78,13 +78,14 @@ BOOST_AUTO_TEST_CASE(FractionWithRadicalsSimplification_tests)
     BOOST_TEST(static_cast<double>(_1) == static_cast<double>(_2));
 }
 
-BOOST_AUTO_TEST_CASE(FractionSimplification_tests
- , *disabled()
-){
-	auto _1 = (25_v / 5) ^ Fraction{constants::minus_1,constants::two};
-	auto _2 = (1_v / 5)*(1_v^(1_v/2));
+BOOST_AUTO_TEST_CASE(FractionSimplification_tests){
+
+	auto _1 = 25_v ^ Fraction{constants::minus_1,constants::two};
+    auto _2 = constants::plus_minus_1 / 5;
 	BOOST_TEST(_1 == _2);
-	
+    _2 = (1_v / 5)*(1_v^(1_v/2));
+    BOOST_TEST(_1 == _2);
+
 	DECL_VA(x);
 	_1 =(-1_v)^x;
 	_2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
