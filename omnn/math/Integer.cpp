@@ -532,17 +532,18 @@ namespace math {
             auto isNeg = operator<(constants::zero);
             auto signs = 0; //dimmensions
             while(dn.IsEven() == YesNoMaybe::Yes) {
-                auto minus = arbitrary < 0;
-                auto _ = boost::multiprecision::sqrt(minus ? -arbitrary : arbitrary);
-                auto _sq = _ * _;
-                if (_sq == boost::multiprecision::abs(arbitrary)){
+                auto minus = arbitrary < constants::zero.ca();
+                auto _ = minus
+                    ? boost::multiprecision::sqrt(-arbitrary)
+                    : boost::multiprecision::sqrt(arbitrary);
+                auto sqroot_squared_back = _*_;
+                if (minus ? sqroot_squared_back == -arbitrary : sqroot_squared_back == arbitrary) {
                     arbitrary = _;
                     hash = std::hash<base_int>()(arbitrary);
     //                Become(isNeg ? -operator-().Sqrt() : Sqrt());
                     dn /= 2;
                     ++signs;
                 } else {
-//                    IMPLEMENT
                     if(n!=constants::one)
                         IMPLEMENT;
                     auto gce = GreatestCommonExp(dn);
