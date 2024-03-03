@@ -209,7 +209,6 @@ BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
     auto _2 = (v ^ 2) + 512;
     BOOST_TEST(_1 == _2);
 
-
     auto t=4_v;
     auto c=2048_v;
     auto _2ab=2_v*a*b;
