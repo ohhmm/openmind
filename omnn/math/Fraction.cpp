@@ -13,6 +13,9 @@
 #include <utility>
 
 #include <boost/lexical_cast.hpp>
+#if !defined(__APPLE__) && !defined(NDEBUG)
+#include <boost/stacktrace.hpp>
+#endif
 
 
 namespace omnn{
@@ -709,7 +712,11 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     Fraction::operator a_int() const
     {
         if (!IsSimple()) {
-            IMPLEMENT
+#if defined(__APPLE__) || defined(NDEBUG)
+            LOG_AND_IMPLEMENT("Converting " << *this << " to integer value");
+#else
+            LOG_AND_IMPLEMENT("Converting " << *this << " to integer value:\n" << boost::stacktrace::stacktrace());
+#endif
         }
         return static_cast<a_int>(numerator())/static_cast<a_int>(denominator());
     }

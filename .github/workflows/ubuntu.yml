@@ -24,6 +24,12 @@ jobs:
     #   run: cmake ${{github.workspace}}
     - name: Build
       working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build -j `nproc` --config Debug
+    - name: Check
+      working-directory: ${{github.workspace}}/build
+      run: ctest . -j`nproc` -C Debug -E "MultiValues_test|image_codec_test|ts|Polyfit_test" --rerun-failed --output-on-failure
+    - name: Build
+      working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build -j `nproc` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
