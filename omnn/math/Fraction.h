@@ -118,8 +118,9 @@ namespace math {
         static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
             return _1.getMaxVaExp();
         }
-        
-        Fraction Reciprocal() const;
+
+        Valuable& reciprocal() override;
+        Valuable Reciprocal() const override;
         Valuable& sq() override;
         Valuable Sign() const override;
         Valuable abs() const override;

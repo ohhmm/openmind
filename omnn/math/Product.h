@@ -85,6 +85,7 @@ public:
     Valuable Sqrt() const override;
     Valuable& sq() override;
     Valuable abs() const override;
+    Valuable& reciprocal() override;
 
     bool IsProduct() const override { return true; }
     std::pair<Valuable, Valuable> SplitSimplePart() const;

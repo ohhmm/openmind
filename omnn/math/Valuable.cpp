@@ -743,7 +743,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     if (v.IsProduct()) {
                         v.as<Product>().Add(std::move(val));
                     } else {
-                        Product p;
+                        Product p({});
                         if (itIsOptimized)
                             p.MarkAsOptimized();
                         p.Add(std::move(v));
@@ -1968,12 +1968,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
-	void Valuable::factorial() {
+	Valuable& Valuable::factorial() {
         if (exp)
             exp->factorial();
         else {
             operator++().gamma();
         }
+        return *this;
     }
     
 	Valuable Valuable::Factorial() const {
@@ -1982,6 +1983,25 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         else {
             auto f = *this;
             f.factorial();
+            return f;
+        }
+	}
+
+
+	Valuable& Valuable::reciprocal() {
+        if (exp)
+            return exp->reciprocal();
+        else {
+            return Become(Exponentiation{std::move(*this), constants::minus_1});
+        }
+    }
+
+	Valuable Valuable::Reciprocal() const {
+        if (exp)
+            return exp->Reciprocal();
+        else {
+            auto f = *this;
+            f.reciprocal();
             return f;
         }
 	}
@@ -2154,7 +2174,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         auto _ = exp ? exp->varless() : *this / getVaVal();
         if (_.FindVa()) {
             if (_.IsProduct()) {
-                Product p;
+                Product p({});
                 for(auto&& m: _.as<Product>()){
                     if (!m.FindVa()) {
                         p.Add(std::move(m));
