@@ -602,7 +602,7 @@ using namespace omnn::math;
         } else if (integer.IsZero()) {
             Become(0);
             is = true;
-        } 
+        }
 
         return is;
     }
