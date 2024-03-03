@@ -74,9 +74,9 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     auto eq = _ == constants::plus_minus_1;
     BOOST_TEST(eq);
     BOOST_TEST((_.IsMultival() == YesNoMaybe::Yes));
-    _ /= 1_v^(1_v/2);
+    _ /= constants::plus_minus_1;
     BOOST_TEST((_.IsMultival() == YesNoMaybe::Yes));
-    eq = _ == (1_v^(1_v/2));
+    eq = _ == constants::plus_minus_1;
     BOOST_TEST(eq);
 
     auto _1 = Valuable(0.000144);
