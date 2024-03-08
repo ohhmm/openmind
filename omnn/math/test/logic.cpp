@@ -79,6 +79,39 @@ BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(Delta_function_test
+	, *disabled() // FIXME:
+) { // https://en.wikipedia.org/wiki/Dirac_delta_function
+    DECL_VARS(X, Y);
+    auto LE = X.LessOrEqual(Y);
+    auto deltaFunction_bool = LE.ToBool();
+    std::cout << "X<=Y : " << LE << std::endl;
+    for (auto x = 10; x-- > -10;) {
+        for (auto y = 10; y-- > -10;) {
+            auto isLessEq = x <= y;
+            auto lessOrEqualOperatorInstantiation = deltaFunction_bool;
+            Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
+            bool b = {};
+            auto boolLessOrEqualOp = deltaFunction_bool;
+            boolLessOrEqualOp.eval(evalMap);
+            BOOST_TEST(boolLessOrEqualOp == isLessEq);
+            if (boolLessOrEqualOp == true) {
+            } else if (boolLessOrEqualOp == false) {
+            } else {
+                std::cout << std::endl << x << "<=" << y << " : " << boolLessOrEqualOp << std::endl;
+                BOOST_TEST(!"boolLessOp must have boolean value");
+            }
+            BOOST_TEST(boolLessOrEqualOp == b);
+
+            auto ok = b == isLessEq;
+            if (!ok) {
+                std::cout << "X=" << x << " Y=" << y << ' ' << ok << " bool: " << b << std::endl;
+                BOOST_TEST(ok);
+            }
+        }
+    }
+}
+
 BOOST_AUTO_TEST_CASE(ifz_tests) {
     // two different bits
     // if a=0 then b=1 else b=0
