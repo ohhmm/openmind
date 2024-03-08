@@ -41,7 +41,7 @@ private:
 using StoringTask = std::future<bool>;
 template <typename ResultT = bool>
 class StoringTasksQueue : public std::queue<std::future<ResultT>> {
-    std::mutex DequeMutEx;
+    std::mutex queueMutEx;
     static constexpr size_t MaxThreadsForCacheStoring = 1024;
     bool CleanUp;
 
@@ -51,7 +51,7 @@ protected:
             bool overburdened = {};
             do {
                 {
-                    std::lock_guard lg(DequeMutEx);
+                    std::lock_guard lg(queueMutEx);
                     while (this->size()
                         && this->front().valid()
                         && this->front().wait_for(std::chrono::seconds(0)) == std::future_status::ready
@@ -76,7 +76,7 @@ public:
     void AddTask(FnT&& f, ParamsT&&... params) {
         this->CleanupReadyTasks();
         auto task = std::async(std::launch::async, std::bind(std::forward<FnT>(f), std::forward<ParamsT>(params)...));
-        std::lock_guard lg(DequeMutEx);
+        std::lock_guard lg(queueMutEx);
         this->emplace(std::move(task));
     }
 
@@ -95,7 +95,7 @@ public:
     }
 
     auto PopCurrentTask() {
-        std::lock_guard lg(DequeMutEx);
+        std::lock_guard lg(queueMutEx);
         auto future = std::move(this->front());
         this->pop();
         return future;

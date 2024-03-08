@@ -2640,7 +2640,7 @@ namespace
         auto sign = constants::zero;
         if (size()) {
             if (FindVa()) {
-                IMPLEMENT
+                return base::Sign();
             }
             OptimizeOn oo;
             std::map<Valuable, Valuable> directions;
