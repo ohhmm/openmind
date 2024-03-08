@@ -83,8 +83,8 @@ public:
 	constexpr const auto& Expressions() const { return equs; }
     auto IsEmpty() const { return equs.empty(); }
 
-    auto& Yarns(const Variable& v) { return vEs[v]; }
-    const auto& Known(const Variable& v) { return Yarns(v)[{}]; }
+    es_t& Yarns(const Variable& v) { return vEs[v]; }
+    const solutions_t& Known(const Variable& v) { return Yarns(v)[{}]; }
 
 private:
     expressions equs;
