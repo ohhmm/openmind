@@ -1671,6 +1671,8 @@ namespace
             //grade = FillPolyCoeff(coefs, va);
 #endif
             return Valuable(std::move(s));
+        } else if (grade == 1) {
+            return coefs[0] / -coefs[1];
         }
 
         if(IsPowerX(coefs)){
