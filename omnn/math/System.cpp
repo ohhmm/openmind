@@ -219,37 +219,36 @@ System::solutions_t System::Solve(const Variable& va)
 //            }
 //        }
 //    }
-    
-    if (makeTotalEqu) {
-        auto& solved = vEs[va][{}];
-        if (solved.size())
-            solution = solved;
-        else {
-            auto vars = sqs.Vars();
-            for (auto& v : vars) {
-                auto& solved = vEs[v][{}];
-                if (solved.size()) {
-                    if (solved.size() == 1) {
-                        if (v != va) {
-                            sqs.Eval(v, *solved.begin());
-                        } else {
-                            solution = solved;
-                            break;
-                        }
+
+    auto& solved = Known(va);
+    if (solved.size())
+        solution = solved;
+    else if (makeTotalEqu) {
+        auto vars = sqs.Vars();
+        for (auto& v : vars) {
+            auto& solved = vEs[v][{}];
+            if (solved.size()) {
+                if (solved.size() == 1) {
+                    if (v != va) {
+                        sqs.Eval(v, *solved.begin());
                     } else {
-                        std::stringstream ss;
-                        for(auto& s : solved)
-                            ss << ' ' << s;
-                        LOG_AND_IMPLEMENT(va << " has multiple solutions: " << ss.str());
+                        solution = solved;
+                        break;
                     }
+                } else {
+                    std::stringstream ss;
+                    for(auto& s : solved)
+                        ss << ' ' << s;
+                    LOG_AND_IMPLEMENT(va << " has multiple solutions: " << ss.str());
                 }
             }
-            sqs.optimize();
-            if (sqs.HasVa(va))
-				solution = sqs.Solutions(va);
-            // else ?
         }
+        sqs.optimize();
+        if (sqs.HasVa(va))
+			solution = sqs.Solutions(va);
+        // else ?
     }
+    
     if (solution.size()) {
         Valuable::var_set_t vars;
         for(auto& s : solution)
