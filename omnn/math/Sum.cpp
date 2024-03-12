@@ -227,28 +227,29 @@ namespace
             : size() == 1 // single element
             ? *it
             : b->GCD(*++it);
-        for (; gcd != constants::one && it != e; ++it) {
-            bool processed = false;
-            if (it->IsPrincipalSurd()) {
-                auto& surd = it->as<PrincipalSurd>();
-                auto& subexpr = surd.Radicand();
-                if (subexpr.IsSum()) {
-                    auto subgcd = subexpr.as<Sum>().GCDofMembers();
-                    Valuable copy = surd;
-                    copy.as<PrincipalSurd>().setRadicand(std::move(subgcd));
-                    copy.optimize();
-                    processed = !copy.FindVa();
-                    if (processed) {
-                        if (copy.IsInt())
-                            gcd = boost::gcd(gcd, copy);
-                        else
-                            gcd = copy.GCD(gcd);
+        if (size() > 1) {
+            for (; gcd != constants::one && it != e; ++it) {
+                bool processed = false;
+                if (it->IsPrincipalSurd()) {
+                    auto& surd = it->as<PrincipalSurd>();
+                    auto& subexpr = surd.Radicand();
+                    if (subexpr.IsSum()) {
+                        auto subgcd = subexpr.as<Sum>().GCDofMembers();
+                        Valuable copy = surd;
+                        copy.as<PrincipalSurd>().setRadicand(std::move(subgcd));
+                        copy.optimize();
+                        processed = !copy.FindVa();
+                        if (processed) {
+                            if (copy.IsInt())
+                                gcd = boost::gcd(gcd, copy);
+                            else
+                                gcd = copy.GCD(gcd);
+                        }
                     }
                 }
-            }
-            if(!processed)
-            {
-                gcd = boost::gcd(gcd, it->varless());
+                if (!processed) {
+                    gcd = boost::gcd(gcd, it->varless());
+                }
             }
         }
         return gcd;
