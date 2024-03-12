@@ -106,6 +106,16 @@ namespace math {
             numerator().optimize();
             denominator().optimize();
 
+            if (!FindVa() // TODO: variables reduction from denominator should log non-zero expression for post-check
+                && numerator() == denominator()
+                && !denominator().IsZero()
+                && IsMultival() == YesNoMaybe::No
+                )
+            {
+				Become(1);
+				break;
+			}
+
             while (denominator().IsFraction()) {
                 auto& fdn = denominator().as<Fraction>();
                 numerator() *= fdn.denominator();
