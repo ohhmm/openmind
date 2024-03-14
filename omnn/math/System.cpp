@@ -220,13 +220,14 @@ System::solutions_t System::Solve(const Variable& va)
 //        }
 //    }
 
-    auto& solved = Known(va);
-    if (solved.size())
-        solution = solved;
-    else if (makeTotalEqu) {
+    if (makeTotalEqu) {
+        auto& solved = Known(va);
+        if (solved.size())
+            return solved;
+
         auto vars = sqs.Vars();
         for (auto& v : vars) {
-            auto& solved = vEs[v][{}];
+            auto& solved = Known(v);
             if (solved.size()) {
                 if (solved.size() == 1) {
                     if (v != va) {
@@ -340,7 +341,8 @@ System::solutions_t System::Solve(const Variable& va)
                     auto& vaFuncs = vEs[v];
                     auto toSolve = vaFuncs.size();
                     if (!toSolve) {
-                        if(Solve(v).size()) {
+                        auto numKnownSolutions = Known(v).size();
+                        if (Solve(v).size() - numKnownSolutions > 0) {
                             modified = true;
                         }
                         continue;
@@ -356,10 +358,11 @@ System::solutions_t System::Solve(const Variable& va)
                         {
                             if (f.first.size() == nParams)
                             {
+                                auto numKnownSolutions = Known(v).size();
                                 auto s = Solve(v);
-                                auto cnt = s.size();
+                                auto cnt = s.size() - numKnownSolutions;
                                 --toSolve;
-                                if(cnt)
+                                if(cnt > 0)
                                 {
                                     modified = true;
                                 }
