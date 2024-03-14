@@ -1368,7 +1368,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp) {
             return exp->LCM(v);
         } else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT(*this << " LCM " << v);
         }
     }
 
