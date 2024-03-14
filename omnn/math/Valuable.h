@@ -315,6 +315,8 @@ public:
     // returns the greatest common divisor (GCD) with the given object
     virtual Valuable GCD(const Valuable& v) const;
     virtual Valuable& gcd(const Valuable& v);
+
+    // returns the least common multiple (LCM) with the given object
     virtual Valuable LCM(const Valuable& v) const;
     virtual Valuable& lcm(const Valuable& v);
 
