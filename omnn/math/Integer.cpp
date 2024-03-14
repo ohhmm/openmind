@@ -618,6 +618,10 @@ namespace math {
         if (v.IsInt()) {
             arbitrary = boost::lcm(v.ca(), ca());
             hash = std::hash<base_int>()(arbitrary);
+        } else if (operator==(constants::one)) {
+            Become(Valuable(v));
+        } else if (operator==(constants::zero)) {
+            Become(0);
         } else {
             Become(v.LCM(*this));
         }
