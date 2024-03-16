@@ -109,7 +109,7 @@ function(apply_target_commons this_target)
 			target_compile_definitions(${this_target} PUBLIC
 				OPENMIND_USE_OPENGL
 				)
-	endif()
+		endif()
 	endif()
 	if(NOT OPENMIND_DEBUG_CHECKS)
 		target_compile_definitions(${this_target} PUBLIC NOOMDEBUG)
@@ -121,6 +121,12 @@ function(apply_target_commons this_target)
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		)
+	target_compile_options(${this_target} PUBLIC
+		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-fcoroutines>
+	)
+	target_compile_features(${this_target} PUBLIC
+		cxx_std_23
+	)
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		target_compile_definitions(${this_target} PUBLIC
 			APPLE_CONSTEXPR=
