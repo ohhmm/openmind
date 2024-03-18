@@ -42,28 +42,42 @@ bool System::Add(const Variable& va, const Valuable& v)
         && Add(va.Equals(v));
 }
 
-bool System::Add(const Valuable& v)
+bool System::Has(const Valuable& e) const
 {
-    auto _ = v;
-    if (!_.IsEquation() || !Valuable::optimizations) {
-        _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
+    if (!e.IsEquation() || !Valuable::optimizations) {
+        auto copy = e;
+        copy.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
         try {
             Valuable::OptimizeOn o;
-            _.optimize();
+            copy.optimize();
+            return Has(copy);
         } catch (...) {
-            _ = v;
         }
     }
-    auto isNew = _ != constants::zero &&
+    return e.IsZero() ||
 #ifndef __APPLE__
-        std::find(std::execution::par, std::begin(equs), std::end(equs), _) == equs.end()
-        && std::find(std::execution::par, std::begin(equs), std::end(equs), -_) == equs.end();
+           std::find(std::execution::par, std::begin(equs), std::end(equs), e) != equs.end() ||
+           std::find(std::execution::par, std::begin(equs), std::end(equs), -e) != equs.end();
 #else
-        std::find(std::begin(equs), std::end(equs), _) == equs.end()
-        && std::find(std::begin(equs), std::end(equs), -_) == equs.end();
+           std::find(std::begin(equs), std::end(equs), e) != equs.end() ||
+           std::find(std::begin(equs), std::end(equs), -e) != equs.end();
 #endif
+}
 
+bool System::Add(const Valuable& v)
+{
+    auto isNew = !Has(v);
     if (isNew) {
+        auto _ = v;
+        if (!_.IsEquation() || !Valuable::optimizations) {
+            _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
+            try {
+                Valuable::OptimizeOn o;
+                _.optimize();
+            } catch (...) {
+                _ = v;
+            }
+        }
         auto vars = _.Vars();
         if(vars.size() == 1){
             auto& va = *vars.begin();

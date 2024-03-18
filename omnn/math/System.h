@@ -54,6 +54,7 @@ public:
     Valuable::var_set_t CollectVa(const Variable& v) const;
     bool Eval(const Variable&, const Valuable& v);
     bool Fetch(const Variable&);
+    bool Has(const Valuable&) const;
     solutions_t Solve(const Variable& v);
     
     constexpr 
