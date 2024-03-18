@@ -623,6 +623,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             std::cout << "SerializedStrEqual: " << _ << " != " << s << std::endl
                       << _1 << "\n !=\n"
                       << _2 << std::endl;
+            Valuable v(s, getVaHost(), is_optimized());
+            same = operator==(v);
+            if(same) {
+				std::cout << " operator==(" << s << ") == true" << std::endl;
+			}
         }
 #endif // !NDEBUG
     }
