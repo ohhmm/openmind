@@ -30,7 +30,7 @@ Valuable& Infinity::operator *=(const Valuable& v)
         }
     } else if (v.IsMInfinity()) {
         IMPLEMENT;
-    } else if (v < 0_v)
+    } else if (v < constants::zero)
         Become(MInfinity());
         
     return *this;
@@ -40,9 +40,9 @@ Valuable& Infinity::operator /=(const Valuable& v)
 {
     if (v.IsInfinity() || v.IsMInfinity())
         IMPLEMENT
-    else if (v < 0_v)
+    else if (v < constants::zero)
         Become(MInfinity());
-    else if (v == 0_v)
+    else if (v.IsZero())
         IMPLEMENT;
     return *this;
 }
@@ -59,11 +59,11 @@ bool Infinity::operator <(const Valuable& v) const
 
 Valuable& Infinity::operator^=(const Valuable& v)
 {
-    if (v == 0_v)
+    if (v.IsZero())
         IMPLEMENT
     else if (!v.IsInt())
         IMPLEMENT
-    else if (v < 0_v)
+    else if (v < constants::zero)
         IMPLEMENT
     return *this;
 }
@@ -92,9 +92,9 @@ Valuable& MInfinity::operator *=(const Valuable& v)
 {
     if (v.IsInfinity())
         IMPLEMENT
-    else if (v < 0_v)
+    else if (v < constants::zero)
         Become(Infinity());
-    else if (v == 0_v)
+    else if (v.IsZero())
         IMPLEMENT
     return *this;
 }
@@ -103,9 +103,9 @@ Valuable& MInfinity::operator /=(const Valuable& v)
 {
     if (v.IsInfinity() || v.IsMInfinity())
         IMPLEMENT
-    else if (v < 0_v)
+    else if (v < constants::zero)
         Become(MInfinity());
-    else if (v == 0_v)
+    else if (v.IsZero())
         IMPLEMENT
     return *this;
 }
@@ -124,11 +124,11 @@ bool MInfinity::operator <(const Valuable& v) const
 
 Valuable& MInfinity::operator^=(const Valuable& v)
 {
-    if (v == 0_v)
+    if (v.IsZero())
         IMPLEMENT
     else if (!v.IsInt())
         IMPLEMENT
-    else if (v < 0_v)
+    else if (v < constants::zero)
         IMPLEMENT
     return *this;
 }

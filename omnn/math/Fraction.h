@@ -66,6 +66,7 @@ namespace math {
 		bool IsComesBefore(const Valuable& v) const override;
 		bool IsFraction() const override { return true; }
 		bool IsSimpleFraction() const override { return IsSimple(); }
+        bool IsZero() const override { return _1.IsZero() && !_2.IsZero() && !_2.IsInfinity(); }
         YesNoMaybe IsMultival() const override { return _1.IsMultival() || _2.IsMultival(); }
         bool IsPolynomial(const Variable& x) const override {
             return _1.IsPolynomial(x) && _2.IsSimple();

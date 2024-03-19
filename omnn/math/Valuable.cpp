@@ -1383,7 +1383,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             if (o.exp) {
                 exp = o.exp;
             }
-        } else if (operator==(constants::zero) || v == constants::zero) {
+        } else if (IsZero() || v.IsZero()) {
         } else if (operator==(v)) {
             Become(0);
         } else {
@@ -1727,7 +1727,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     bool Valuable::Is_i() const { return exp && exp->Is_i(); }
     bool Valuable::Is_pi() const { return exp && exp->Is_pi(); }
 
-    bool Valuable::IsZero() const { return IsInt() && ca()==0; }
+    bool Valuable::IsZero() const { return exp && exp->IsZero(); }
 
     bool Valuable::IsSimple() const {
         if(exp)
@@ -2221,7 +2221,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable::operator bool() const
     {
-        return *this != 0_v;
+        return !IsZero();
     }
 
     Valuable Valuable::operator!() const
@@ -2643,7 +2643,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 	}
     Valuable Valuable::And(const Valuable& n, const Valuable& v) const
     {
-        auto s = 0_v;
+        auto s = constants::zero;
         {
             OptimizeOff oo;
             auto a = *this;
@@ -2669,7 +2669,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::Or(const Valuable& n, const Valuable& v) const
     {
-        auto s = 0_v;
+        auto s = constants::zero;
         {
             OptimizeOff oo;
             auto a = *this;
@@ -2696,7 +2696,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::Xor(const Valuable& n, const Valuable& v) const
     {
-        auto s = 0_v;
+        auto s = constants::zero;
         {
             OptimizeOff oo;
             for (auto i = n; i--;) {
@@ -2714,7 +2714,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::Not(const Valuable& n) const
     {
-        auto s = 0_v;
+        auto s = constants::zero;
         {
             OptimizeOff oo;
             for (auto i = n; i--;) {
@@ -2786,7 +2786,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         if (exp)
             return exp->Cyclic(total, shiftLeft);
-        auto s = 0_v;
+        auto s = constants::zero;
         {
             OptimizeOff oo;
             for (auto i = total; i--;) {
