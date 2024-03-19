@@ -415,16 +415,16 @@ namespace math {
 // FIXME:     arbitrary = boost::multiprecision::pow(a(), v.ca());
 //            hash = std::hash<base_int>()(arbitrary);
 //            return *this;
-            if (v != 0_v) {
+            if (!v.IsZero()) {
                 if (v > 1) {
                     Valuable x = *this;
                     Valuable n = v;
-                    if (n < 0_v)
+                    if (n < constants::zero)
                     {
                         x = 1_v / x;
                         n = -n;
                     }
-                    if (n == 0_v)
+                    if (n.IsZero())
                     {
                         arbitrary = 1;
                         hash = std::hash<base_int>()(arbitrary);
@@ -481,7 +481,7 @@ namespace math {
                 n = std::cref(constants::one);
             }
 
-            auto isNeg = operator<(0_v);
+            auto isNeg = operator<(constants::zero);
             auto signs = 0; //dimmensions
             while(dn.IsEven() == YesNoMaybe::Yes) {
                 auto minus = arbitrary < 0;
@@ -511,7 +511,7 @@ namespace math {
                 auto even = dn.IsEven();
                 if(even == YesNoMaybe::Yes){
                     Valuable x = *this;
-                    if(x<0_v){
+                    if(x<constants::zero){
                         Valuable exp;
                         if (!numeratorIsOne) {
                             *this ^= n;
@@ -789,7 +789,7 @@ namespace math {
         auto is = //boost::multiprecision::miller_rabin_test(boost::numeric_cast<uint64_t>(ca()), 3) &&
             !Factorization(
             [&](auto& v) {
-                auto isPrimeFactor = v == 0_v || v == 1_v || v == *this;
+                auto isPrimeFactor = v.IsZero() || v == constants::one || v == *this;
                 auto stop = !isPrimeFactor;
                 return stop;
             },

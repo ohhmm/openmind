@@ -264,19 +264,25 @@ namespace
         return gcd;
     }
 
+    bool Sum::IsZero() const {
+        auto n = members.size();
+        return n == 0
+			|| (n == 1 && members.begin()->IsZero());
+    }
+
     bool Sum::operator==(const Sum& v) const {
         return members == v.members
                 || (members.size() == 1 && members.begin()->operator==(v))
-                || (members.empty() && v == 0_v);
+                || (IsZero() && v.IsZero());
     }
     bool Sum::operator ==(const Valuable &v) const
     {
         return (Valuable::hash == v.Hash()
                 && v.IsSum()
-                && members == v.as<Sum>().GetConstCont()
+                && operator==(v.as<Sum>())
                 )
                 || (members.size() == 1 && members.begin()->operator==(v))
-                || (members.empty() && v == 0_v);
+                || (IsZero() && v.IsZero());
     }
     
 	namespace {
@@ -378,7 +384,7 @@ namespace
                 // optimize member
                 auto copy = *it;
                 copy.optimize();
-                if (copy == constants::zero)
+                if (copy.IsZero())
                     Delete(it);
                 else if (!it->Same(copy))
                     Update(it, copy);
@@ -525,7 +531,7 @@ namespace
                     }
                     else if(it2->Same(mc))
                     {
-                        c = 0_v;
+                        c = constants::zero;
                         Delete(it2);
                         up();
                     }
@@ -894,7 +900,7 @@ namespace
 
 	Valuable& Sum::operator /=(const Valuable& v)
 	{
-        Valuable s = 0_v;
+        Valuable s = constants::zero;
         auto view = GetView();
         SetView(View::None);
 		if (v.IsSum())
@@ -946,7 +952,7 @@ namespace
                     size_t offs = 0;
                     std::deque<Valuable> hist {*this};
                     auto icnt = size() * 2;
-                    while(*this != 0_v && icnt--)
+                    while (!IsZero() && icnt--)
                     {
                         if(IsSum())
                         {
@@ -1027,7 +1033,7 @@ namespace
                             return *this;
                         }
                     }
-                    if (*this != 0_v) {
+                    if (!IsZero()) {
                         s = Fraction(*this, v);
                     }
                 }
@@ -1050,7 +1056,7 @@ namespace
 
     Valuable& Sum::operator %=(const Valuable& v)
     {
-        Valuable s = 0_v;
+        Valuable s = constants::zero;
         if (v.IsSum())
         {
             auto& i = v.as<Sum>();
@@ -1076,7 +1082,7 @@ namespace
                     std::deque<Valuable> hist {*this};
                     
                     auto icnt = size() * 2;
-                    while(*this != 0_v && icnt--)
+                    while (!IsZero() && icnt--)
                     {
                         if(IsSum())
                         {
@@ -1152,7 +1158,7 @@ namespace
                             return Become(Modulo(*this, v));
                         }
                     }
-                    if (*this != 0_v) {
+                    if (!IsZero()) {
                         s = Modulo(*this, v);
                     }
                 }
@@ -1182,7 +1188,7 @@ namespace
 
     Valuable& Sum::d(const Variable& x)
     {
-        Valuable sum = 0_v;
+        Valuable sum = constants::zero;
         auto add = [&](const Valuable& m)
         {
             if (sum.IsSum()) {
@@ -1329,7 +1335,7 @@ namespace
 
     Valuable Sum::calcFreeMember() const
     {
-        Valuable _ = 0_v;
+        Valuable _ = constants::zero;
         for(auto& m : *this) {
             _ += m.calcFreeMember();
         }
@@ -1337,7 +1343,7 @@ namespace
     }
 
     Valuable::solutions_t Sum::Distinct() const {
-        solutions_t branches = { 0_v };
+        solutions_t branches = { constants::zero };
         for (auto& m : members) {
             solutions_t newBranches;
             for (auto&& branch : m.Distinct()) {
@@ -1558,7 +1564,7 @@ namespace
         }
         }
         Valuable _ = augmentation;
-        Valuable todo = 0_v;
+        Valuable todo = constants::zero;
         for(auto& m : *this)
         {
             if (m.HasVa(va)) {
@@ -1583,7 +1589,7 @@ namespace
                     _ *= it->first ^ -it->second;
                     return _(va, todo);
                 }
-                else if (todo != 0_v)
+                else if (todo != constants::zero)
                 {
                     Valuable solution = Fraction(_, todo);
                     if (it->second != 1_v) {
@@ -1620,7 +1626,7 @@ namespace
                 }
                 else
                 {
-                    solutions.insert(0_v);
+                    solutions.insert(constants::zero);
                     for(auto& m : stodo)
                     {IMPLEMENT
                         solutions_t incoming(std::move(solutions));
@@ -1738,7 +1744,7 @@ namespace
                 return added;
             };
 
-            if(coefs[0]==0_v) // no free coef -> zero root
+            if(coefs[0].IsZero()) // no free coef -> zero root
             {
                 if(testSolutions(solutions_t{0}))
                 {
@@ -1807,8 +1813,8 @@ namespace
             }
             
             // TODO : IMPLEMENT, the next here needs debugging
-            Valuable augmentation = 0_v;
-            Valuable _ = 0_v;
+            Valuable augmentation = constants::zero;
+            Valuable _ = constants::zero;
             for(auto& m : *this)
             {
                 if (m.HasVa(va)) {
@@ -1888,7 +1894,7 @@ namespace
                                         _.Eval(va, i);
                                         _.optimize();
                                         
-                                        auto found = _ == 0_v;
+                                        auto found = _.IsZero();
                                         if (found) {
                                             std::cout << "found " << i << std::endl;
                                             singleIntegerRoot = i;
@@ -2297,7 +2303,7 @@ namespace
                 auto& e = coefficients[0];
 
                 // Detect biquadratic equation
-                if (b == d && b == constants::zero) {
+                if (b == d && b.IsZero()) {
                     auto squareSolutions = solutions;
                     solve(va, squareSolutions, {e, c, a}, 2);
                     for (auto& s : squareSolutions) {
@@ -2380,7 +2386,7 @@ namespace
                         Valuable copy = *this;
                         copy.Eval(va, i);
                         copy.optimize();
-                        if (copy == 0_v) {
+                        if (copy.IsZero()) {
                             addSolution(i);
                         }
                     }

@@ -66,6 +66,7 @@ public:
     std::ostream& code(std::ostream& out) const override;
 	const cont& GetConstCont() const override { return members; }
     bool IsSum() const override { return true; }
+    bool IsZero() const override;
 
 	// virtual operators
 	Valuable operator -() const override;

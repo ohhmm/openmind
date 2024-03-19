@@ -218,7 +218,7 @@ namespace omnn::math {
             }
         }
 
-        if (ebase().IsFraction() && eexp().IsInt() && eexp() < 0_v) {
+        if (ebase().IsFraction() && eexp().IsInt() && eexp() < constants::zero) {
             eexp() = -eexp();
             ebase() = ebase().as<Fraction>().Reciprocal();
         }
@@ -266,11 +266,23 @@ namespace omnn::math {
                     }
                 }
             }
-            if (ebase()==1) {
+            if (ebase() == constants::one) {
+
+                if (eexp().IsSimple())
+                {
+                    if (eexp() < constants::zero) {
+                        setExponentiation(-eexp());
+                    }
+                    else if (eexp().IsZero()) {
+                        Become(1);
+                        return;
+					}
+				}
+
                 if (eexp().IsInt()) {
                     Become(std::move(ebase()));
                     return;
-                } else if (eexp().IsSimpleFraction() && eexp() > 0_v) {
+                } else if (eexp().IsSimpleFraction() && eexp() > constants::zero) {
                     auto& f = eexp().as<Fraction>();
                     auto& n = f.getNumerator();
                     if (n.IsEven() == YesNoMaybe::Yes) {
@@ -405,7 +417,7 @@ namespace omnn::math {
                                     x = constants::one / x;
                                     n = -n;
                                 }
-                                if (n == constants::zero)
+                                if (n.IsZero())
                                 {
                                     Become(1_v);
                                     return;
@@ -416,7 +428,7 @@ namespace omnn::math {
                                     bool isInt = n.IsInt();
                                     if (!isInt)
                                         IMPLEMENT
-                                    if (isInt && n.bit() == constants::zero)
+                                    if (isInt && n.bit().IsZero())
                                     {
                                         x.sq();
                                         n /= constants::two;
@@ -437,7 +449,7 @@ namespace omnn::math {
                             }
                         }
                         else { // zero
-                            if (ebase() == constants::zero)
+                            if (ebase().IsZero())
                             {
                                 IMPLEMENT
                                 throw "NaN"; // feel free to handle this properly

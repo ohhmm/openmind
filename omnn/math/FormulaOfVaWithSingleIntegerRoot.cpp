@@ -61,7 +61,7 @@ namespace math {
                 IMPLEMENT
             } else {
                 auto s = *solution.begin();
-                if ((s.IsInt() && fx(s) == 0_v)
+                if ((s.IsInt() && fx(s).IsZero())
                     || (mode!=Strict && mode!=Closest && mode!=Newton && knowNoZ))
                 {
                     return s;
@@ -90,7 +90,7 @@ namespace math {
                 _.Eval(getVa(), i);
                 _.optimize();
                 
-                bool found = _ == 0_v;
+                bool found = _.IsZero();
                 if (found) {
 //                    std::cout << "found " << i << std::endl;
                     singleIntegerRoot = i;

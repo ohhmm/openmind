@@ -94,7 +94,7 @@ namespace math {
 
     void Product::AddToVars(const Variable & va, const Valuable & exponentiation)
     {
-        if (exponentiation == constants::zero)
+        if (exponentiation.IsZero())
             return;
 
         if (exponentiation.IsInt()) {
@@ -511,7 +511,7 @@ namespace math {
             if (it != with.end()) {
                 auto& i1 = kv.second.ca();
                 auto& i2 = it->second.ca();
-                if (i1 > 0_v && i2 > 0_v) {
+                if (i1 > constants::zero && i2 > constants::zero) {
                     common[kv.first] = std::min(i1, i2);
                 }
                 else
@@ -535,13 +535,17 @@ namespace math {
                     IMPLEMENT
             }
         } else
-            _ = 0_v;
+            _ = constants::zero;
         return _;
     }
     
     Valuable Product::getCommVal(const Product& with) const
     {
         return VaVal(getCommonVars(with.getCommonVars()));
+    }
+
+    bool Product::IsZero() const {
+        return std::any_of(begin(), end(), [](auto& m) { return m.IsZero(); });
     }
 
     Valuable Product::InCommonWith(const Valuable& v) const
@@ -644,7 +648,7 @@ namespace math {
     
     Valuable& Product::operator +=(const Valuable& v)
     {
-        if(v == constants::zero)
+        if(v.IsZero())
             return *this;
         if (*this == v)
             return *this *= 2;
@@ -1212,7 +1216,7 @@ namespace math {
     
     Valuable Product::operator()(const Variable& va) const
     {
-        return operator()(va, 0_v);
+        return operator()(va, constants::zero);
     }
     
     Valuable Product::operator()(const Variable& va, const Valuable& augmentation) const
@@ -1304,7 +1308,7 @@ namespace math {
                 ++it;
             }
             if (found) {
-                if (e->getExponentiation() == 0_v) {
+                if (e->getExponentiation().IsZero()) {
                     IMPLEMENT
                 }
                 solutions.insert(0_v);
