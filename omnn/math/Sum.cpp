@@ -1085,7 +1085,7 @@ namespace
                                 ++it;
                             }
                             if (it == end()) {
-                                IMPLEMENT;
+                                break;
                             }
                             auto vars = it->Vars();
                             auto it2 = b;
