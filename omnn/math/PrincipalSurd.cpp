@@ -69,7 +69,7 @@ void PrincipalSurd::optimize() {
         if (rdcnd < 0) {
             Become(Product{constants::i, {PrincipalSurd{-_1, _2}}});
             return;
-        } else if (_1 == constants::zero || _2 == constants::one) {
+        } else if (_1.IsZero() || _2 == constants::one) {
             Become(std::move(_1));
             return;
         } else {
@@ -83,7 +83,7 @@ void PrincipalSurd::optimize() {
                 if (idx == 0) {
                     IMPLEMENT
                 }
-                while (_2.bit() == constants::zero) {
+                while (_2.bit().IsZero()) {
                     auto newRadicand = _1.Sqrt();
                     if (newRadicand.IsPrincipalSurd())
                         break;

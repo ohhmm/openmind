@@ -65,6 +65,7 @@ public:
     explicit operator int64_t() const;
 
     bool IsInt() const override { return true; }
+    bool IsZero() const override { return arbitrary == 0; }
     bool IsSimple() const override { return true; }
     //bool IsConstant() const override { return true; }   The Integer object may be applied an arithmetic operation and this object value changed. Only Constant class objects should return IsConstant true.
     bool is_optimized() const override { return true; }
