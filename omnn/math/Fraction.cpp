@@ -177,7 +177,7 @@ namespace math {
                 auto& denom = denominator();
                 auto dni = denom.IsInt();
                 if (n == 0) {
-                    if (dni && denom == 0_v)
+                    if (dni && denom.IsZero())
                         throw "NaN";
                     Become(std::move(numerator()));
                     break;

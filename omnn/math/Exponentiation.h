@@ -36,6 +36,8 @@ public:
     bool IsSimple() const override {
 		return !FindVa() && eexp().IsInt();
 	}
+    bool IsZero() const override { return _1.IsZero() && !_2.IsZero(); }
+
 
     Valuable Sign() const override;
     bool IsMultiSign() const;

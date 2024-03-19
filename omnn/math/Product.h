@@ -88,6 +88,7 @@ public:
     Valuable& reciprocal() override;
 
     bool IsProduct() const override { return true; }
+    bool IsZero() const override;
     std::pair<Valuable, Valuable> SplitSimplePart() const;
     std::pair<Valuable, Valuable> split_simple_part();
   

@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(Sum_tests)
     BOOST_TEST(_1 == _2);
     
     _1 = Sum{1, -1};
-    BOOST_TEST(_1 == 0_v);
+    BOOST_TEST(_1.IsZero());
     
     auto val1 = -2_v/3*v1;
     val1 += v1*v1;
