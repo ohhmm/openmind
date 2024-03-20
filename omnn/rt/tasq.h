@@ -73,11 +73,11 @@ public:
     {}
     
     template <class FnT, class ...ParamsT>
-    void AddTask(FnT&& f, ParamsT&&... params) {
+    auto& AddTask(FnT&& f, ParamsT&&... params) {
         this->CleanupReadyTasks();
         auto task = std::async(std::launch::async, std::bind(std::forward<FnT>(f), std::forward<ParamsT>(params)...));
         std::lock_guard lg(queueMutEx);
-        this->emplace(std::move(task));
+        return this->emplace(std::move(task));
     }
 
     template<typename C, class FnT, class ...ParamsT>
