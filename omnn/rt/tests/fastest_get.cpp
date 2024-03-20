@@ -20,4 +20,19 @@ BOOST_AUTO_TEST_CASE(GetTheFastestResult_test) {
     int result = result_future.get();
     std::cout << "Result: " << result << std::endl;
     BOOST_TEST(result == 7);
+
+    static std::atomic_bool done = false;
+    result = TheFastestResult<int>(
+        [] {
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+            done = true; 
+            return 42;
+        },
+        [] {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            return 7;
+        });
+    BOOST_TEST(done == false); // control returns once the fastest is done, other are expected to be still running
+    std::cout << "Result: " << result << std::endl;
+    BOOST_TEST(result == 7);
 }
