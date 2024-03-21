@@ -285,28 +285,6 @@ namespace
                 || (IsZero() && v.IsZero());
     }
     
-	namespace {
-		class SumOptimizationLoopDetect {
-            static thread_local std::unordered_set<Sum> SumOptimizingStack;
-            bool isLoop;
-            const Sum* sum;
-
-        public:
-            SumOptimizationLoopDetect(const Sum& sum) {
-                auto emplaced = SumOptimizingStack.emplace(sum);
-                this->sum = &*emplaced.first;
-                isLoop = !emplaced.second;
-			}
-
-            ~SumOptimizationLoopDetect() {
-                if (!isLoop)
-                    SumOptimizingStack.erase(*sum);
-			}
-
-			auto isLoopDetected() const { return isLoop; }
-		};
-        thread_local std::unordered_set<Sum> SumOptimizationLoopDetect::SumOptimizingStack;
-	}
     void Sum::optimize()
     {
         if (is_optimized() || !optimizations)
@@ -315,7 +293,7 @@ namespace
         if (isOptimizing)
             return;
 
-        SumOptimizationLoopDetect antilooper(*this);
+        OptimizationLoopDetect<Sum> antilooper(*this);
         if (antilooper.isLoopDetected()) {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
 			LOG_AND_IMPLEMENT("Loop of optimizating detected in " << *this);
