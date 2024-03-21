@@ -42,27 +42,30 @@ class Exponentiation;
 class Fraction;
 class Sum;
 size_t hash_value(const omnn::math::Valuable& v);
+size_t hash_value(const omnn::math::Fraction& v);
 size_t hash_value(const omnn::math::Sum& v);
 } // namespace math
 } // namespace omnn
 
-namespace std
-{
-    omnn::math::Valuable abs(const omnn::math::Valuable& v);
-    omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
+namespace std {
+omnn::math::Valuable abs(const omnn::math::Valuable& v);
+omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
 
-    template<>
-    struct hash<omnn::math::Valuable> {
-        size_t operator()(const omnn::math::Valuable& v) const {
-            return hash_value(v);
-        }
-    };
+template <>
+struct hash<omnn::math::Valuable> {
+    size_t operator()(const omnn::math::Valuable& v) const { return hash_value(v); }
+};
 
-	template <>
-    struct hash<omnn::math::Sum> {
-        size_t operator()(const omnn::math::Sum& v) const { return hash_value(v); }
-    };
-}
+template <>
+struct hash<omnn::math::Sum> {
+    size_t operator()(const omnn::math::Sum& v) const { return hash_value(v); }
+};
+
+template <>
+struct hash<omnn::math::Fraction> {
+    size_t operator()(const omnn::math::Fraction& v) const { return hash_value(v); }
+};
+} // namespace std
 
 namespace omnn{
 namespace math {
