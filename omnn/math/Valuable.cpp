@@ -2960,6 +2960,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 
     size_t hash_value(const Valuable& v) { return v.Hash(); }
     size_t hash_value(const Sum& v) { return v.Hash(); }
+    size_t hash_value(const Fraction& v) { return v.Hash(); }
 
 }}
 
