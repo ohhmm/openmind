@@ -51,17 +51,24 @@ namespace math {
         return Fraction(-getNumerator(), getDenominator());
     }
 
+    bool Fraction::operator==(const Fraction& f) const {
+        return Hash() == f.Hash()
+            && getNumerator().Hash() == f.getNumerator().Hash()
+            && getDenominator().Hash() == f.getDenominator().Hash()
+            && getNumerator() == f.getNumerator()
+            && getDenominator() == f.getDenominator()
+            ;
+    }
+
     bool Fraction::operator ==(const Valuable& v) const
     {
         auto eq = v.IsFraction() && Hash()==v.Hash();
         if(eq){
-            auto& ch = v.as<Fraction>();
-            eq= _1.Hash() == ch._1.Hash()
-                && _2.Hash() == ch._2.Hash()
-                && _1 == ch._1
-                && _2 == ch._2;
-        } else if (v.IsExponentiation()) {
+            eq = operator==(v.as<Fraction>());
+        } else if (v.IsExponentiation() || v.IsSum() || v.IsProduct()) {
             eq = v.operator==(*this);
+        } else if (v.IsInt()) {
+			eq = getNumerator() == v && getDenominator() == constants::one;
         }
         return eq;
     }
@@ -96,6 +103,14 @@ namespace math {
             if (h != hash){
                 LOG_AND_IMPLEMENT("Fix hash updating for " << *this);
             }
+#endif
+            return;
+        }
+
+        OptimizationLoopDetect<Fraction> antilooper(*this);
+        if (antilooper.isLoopDetected()) {
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            LOG_AND_IMPLEMENT("Loop of optimizating detected in " << *this);
 #endif
             return;
         }
