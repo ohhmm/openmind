@@ -37,14 +37,14 @@ System& System::operator<<(const Valuable& v)
 bool System::Add(const Variable& va, const Valuable& v)
 {
     auto& es = vEs[va];
-    return v != 0_v
+    return !v.IsZero()
         && es[v.Vars()].insert(v).second
         && Add(va.Equals(v));
 }
 
 bool System::Has(const Valuable& e) const
 {
-    if (!e.IsEquation() || !Valuable::optimizations) {
+    if (!e.IsEquation() || !e.is_optimized()) {
         auto copy = e;
         copy.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
         try {
