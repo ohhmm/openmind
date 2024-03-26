@@ -50,7 +50,15 @@ bool System::Has(const Valuable& e) const
         try {
             Valuable::OptimizeOn o;
             copy.optimize();
-            return Has(copy);
+            if (e.is_optimized()) {
+                return Has(copy);
+            }
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            else
+            {
+                LOG_AND_IMPLEMENT("Unoptimizable equation: " << e);
+            }
+#endif
         } catch (...) {
         }
     }
