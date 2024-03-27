@@ -168,9 +168,9 @@ namespace math {
     Valuable& Variable::operator^=(const Valuable& v)
     {
         auto ii = v.IsInt();
-        if (ii && v == 0_v) {
+        if (ii && v.IsZero()) {
             Become(1_v);
-        } else if (ii && v == 1_v) {
+        } else if (ii && v == constants::one) {
         } else
             Become(Exponentiation(*this, v));
         return *this;

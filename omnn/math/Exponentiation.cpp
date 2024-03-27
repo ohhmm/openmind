@@ -296,7 +296,7 @@ namespace omnn::math {
                     if (dn.bit()) {
                         Become(std::move(ebase()));
                         return;
-                    } else if (n != 1_v) {
+                    } else if (n != constants::one) {
                         hash ^= f.Hash();
                         f.update1(1_v);
                         hash ^= f.Hash();
@@ -1100,7 +1100,7 @@ namespace omnn::math {
         if (v.IsProduct()) {
             for(auto& m: v.as<Product>()){
                 c = InCommonWith(m);
-                if (c != 1_v) {
+                if (c != constants::one) {
                     break;
                 }
             }
@@ -1206,7 +1206,7 @@ namespace omnn::math {
                         b.sqrt();
                         d.shr();
                     } while(d.IsEven() == Valuable::YesNoMaybe::Yes);
-                    auto _ = b ^ (1_v / d);
+                    auto _ = b ^ d.Reciprocal();
                     auto distinct = _.Distinct();
                     if(denom==constants::two)
                         for (auto& branch : distinct)

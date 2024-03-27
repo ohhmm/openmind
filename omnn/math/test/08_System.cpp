@@ -35,6 +35,11 @@ using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace std;
 
+BOOST_AUTO_TEST_CASE(Basic_System_tests) {
+    auto& a = "a"_va;
+    System s;
+    s << a + (a ^ 2);
+}
 
 BOOST_AUTO_TEST_CASE(System_tests
     , *disabled() // FIXME:

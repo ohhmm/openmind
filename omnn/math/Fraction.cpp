@@ -205,7 +205,7 @@ namespace math {
                         reoptimize_the_fraction = true;
                         continue;
                     }
-                    if (dn == 1) {
+                    if (dn == constants::one) {
                         Become(std::move(numerator()));
                         break;
                     }
@@ -224,7 +224,7 @@ namespace math {
                     if (denom.IsPrincipalSurd()) {
                         auto& ps = denom.as<PrincipalSurd>();
                         auto& e = ps.Index();
-                        numerator() *= ps ^ (e - 1);
+                        numerator() *= ps ^ (e + constants::minus_1);
                         setDenominator(std::move(ps.Radicand()));
                         reoptimize_the_fraction = true;
                         continue;
