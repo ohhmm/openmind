@@ -23,8 +23,8 @@ namespace math {
         
         Valuable operator -() const override;
         
-        Valuable& operator --() override { optimized={}; return *this+=-1_v; }
-        Valuable& operator ++() override { optimized={}; return *this+=1_v; }
+        constexpr Valuable& operator --() override { return operator+=(constants::minus_1); }
+        constexpr Valuable& operator ++() override { return operator+=(constants::one); }
 
         Valuable& sq() override { return *this *= *this; }
 

@@ -1905,7 +1905,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 		if (exp)
 			return exp->Cos();
 		else {
-			return ((constant::e ^ Product{ constant::i, *this }) + (constant::e ^ Product{ -1_v, constant::i, *this })) / 2;
+			return ((constant::e ^ Product{ constant::i, *this }) + (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / 2;
 		}
 	}
 
@@ -1914,7 +1914,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 			return exp->Sin();
 		else {
 			static const Product _2i{ 2, constant::i };
-			return ((constant::e ^ Product{ constant::i, *this }) - (constant::e ^ Product{ -1_v, constant::i, *this })) / _2i;
+			return ((constant::e ^ Product{ constant::i, *this }) - (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / _2i;
 		}
 	}
 
@@ -2601,7 +2601,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return exp->bit(n);
         else if (n > 0) {
             return Shr().bit(n-1);
-        } else if (n == 0){
+        } else if (n.IsZero()){
             // bit0 = (this & 1) == (this % 2) == ((-1)^this)-1)/-2
             // for this=0: ((-1)^0)-1)/-2 = 0
             // this=1: ((-1^1)-1)/-2 = 1
@@ -2611,7 +2611,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             // TODO: this=-2:
             // TODO: this=-3:
             // ...
-            auto bit0 = (-1_v) ^ *this;
+            auto bit0 = constants::minus_1 ^ *this;
             --bit0;
             bit0 /= -2;
             return bit0;
