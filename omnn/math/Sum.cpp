@@ -1482,7 +1482,7 @@ namespace
                 coefficients.emplace_back(std::move(c0));
         }
 
-        while (coefficients.size() && *coefficients.rbegin() == 0) {
+        while (coefficients.size() && coefficients.rbegin()->IsZero()) {
             coefficients.pop_back();
             if (grade)
                 --grade;
@@ -1643,9 +1643,13 @@ namespace
             return Univariate()(va);
         }
 
-        std::vector<Valuable> coefs;
-        auto grade = FillPolyCoeff(coefs, va);
-        if (coefs.size() != grade+1){
+        std::vector<Valuable> coefficients;
+        auto grade = FillPolyCoeff(coefficients, va);
+
+        if (coefficients.size() == grade && grade == 0) {
+            throw std::runtime_error("Expression is empty");
+        }
+        if (coefficients.size() != grade+1){
 #ifndef NDEBUG
             // grade = FillPolyCoeff(coefs, va);
 #endif
@@ -1657,11 +1661,11 @@ namespace
 #endif
             return Valuable(std::move(s));
         } else if (grade == 1) {
-            return coefs[0] / -coefs[1];
+            return coefficients[0] / -coefficients[1];
         }
 
-        if(IsPowerX(coefs)){
-            return ((-coefs[0]) / (coefs[grade])) ^ (1_v / grade);
+        if(IsPowerX(coefficients)){
+            return ((-coefficients[0]) / (coefficients[grade])) ^ (1_v / grade);
         }
         
         auto doCheck = grade > 2;
@@ -1669,9 +1673,9 @@ namespace
                             ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true)
                             : Cache::Cached();
         if (grade == 2) {
-            auto& a = coefs[2];
-            auto& b = coefs[1];
-            auto& c = coefs[0];
+            auto& a = coefficients[2];
+            auto& b = coefficients[1];
+            auto& c = coefficients[0];
             auto d = (b ^ 2) - 4_v * a * c;
             return ((d^(1_v/2))-b)/(a*2);
         } else if (grade == 3) {
@@ -1690,11 +1694,11 @@ namespace
                 return checkCached;
             return Valuable(Solutions(va)); // TODO : debug this and uncomment custom solution
         }
-        else if (coefs.size())// && grade && grade < 3)
+        else if (coefficients.size())// && grade && grade < 3)
         {
             if(checkCached)
                 return checkCached;
-            solve(va, s, coefs, grade);
+            solve(va, s, coefficients, grade);
             for (auto i=s.begin(); i != s.end();) {
                 if (i->HasVa(va)) {
                     IMPLEMENT
@@ -1722,7 +1726,7 @@ namespace
                 return added;
             };
 
-            if(coefs[0].IsZero()) // no free coef -> zero root
+            if(coefficients[0].IsZero()) // no free coef -> zero root
             {
                 if(testSolutions(solutions_t{0}))
                 {
@@ -1938,6 +1942,10 @@ namespace
     
     void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const
     {
+        if(coefficients.size() == grade && grade == 0)
+		{
+			return;
+		}
         if(coefficients.size() != grade + 1) {
             std::cout << "Solving grade " << grade << " equation: " << str() << std::endl;
             IMPLEMENT
