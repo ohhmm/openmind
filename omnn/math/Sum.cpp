@@ -513,7 +513,7 @@ namespace
                         Delete(it2);
                         up();
                     }
-                    else if ((inc = it2->InCommonWith(c)) != 1_v
+                    else if ((inc = it2->InCommonWith(c)) != constants::one
                              && inc.IsMultival() != YesNoMaybe::Yes) {
                             auto sum = (c / inc).IsSummationSimplifiable(*it2 / inc);
                             if(sum.first)
@@ -770,7 +770,7 @@ namespace
             if(b != e)
             {
                 auto it = b;
-                while(c != 1_v && ++it != e)
+                while(c != constants::one && ++it != e)
                     c = it->InCommonWith(c);
             }
             return c;
@@ -1570,8 +1570,8 @@ namespace
                 else if (todo != constants::zero)
                 {
                     Valuable solution = Fraction(_, todo);
-                    if (it->second != 1_v) {
-                        solution ^= 1_v/it->second;
+                    if (it->second != constants::one) {
+                        solution ^= it->second.Reciprocal();
                     }
                     else
                         solution.optimize();
@@ -1665,7 +1665,7 @@ namespace
         }
 
         if(IsPowerX(coefficients)){
-            return ((-coefficients[0]) / (coefficients[grade])) ^ (1_v / grade);
+            return (-(coefficients[0] / coefficients[grade])) ^ (constants::one / grade);
         }
         
         auto doCheck = grade > 2;
@@ -1677,7 +1677,7 @@ namespace
             auto& b = coefficients[1];
             auto& c = coefficients[0];
             auto d = (b ^ 2) - 4_v * a * c;
-            return ((d^(1_v/2))-b)/(a*2);
+            return ((d ^ constants::half) - b) / (a * 2);
         } else if (grade == 3) {
             //            auto de = *this;  de.d(va);
             //            auto& a = coefs[3];
@@ -2227,9 +2227,9 @@ namespace
                 auto ac3 = a * c * 3; // -78
                 auto di = bsq*c.Sq() - 4_v*a*(c^3) - 4_v*(b^3)*d - 27_v*asq*d.Sq() + ac3*(18_v/3)*b*d; // 8837
                 auto d0 = bsq - ac3; //87
-                if (di == 0)
+                if (di.IsZero())
                 {
-                    if (d0 == 0)
+                    if (d0.IsZero())
                     {
                         solutions.emplace(b / (a*-3));
                     }
@@ -2243,8 +2243,8 @@ namespace
                 {
                     auto d1 = (bsq * 2 - ac3 * 3)*b + asq * d * 27; // +
                     auto subC = (asq*di*-27).Sqrt();
-                    auto C = ((d1+((d1.Sq()-d0.Sq()*d0*4)^(1_v/2)))/2)^(1_v/3); // +
-                    auto _1 = -1_v/(a*3); // +
+                    auto C = ((d1 + ((d1.Sq() - d0.Sq() * d0 * 4) ^ constants::half)) / 2) ^ (constants::one / 3); // +
+                    auto _1 = (a * -3).reciprocal();                                                        // +
                     auto _2 = b+C+(d0/C); // +
                     auto x = _1*_2; // complex with real part that is root
                     if(Test(va,x)) // << error in Eval
@@ -2304,7 +2304,7 @@ namespace
                     auto sb = b * b;
                     auto p1 = 2 * c * c * c - 9 * b * c * d + 27 * a * d * d + 27 * b * b * e - 72 * a * c * e;
                     auto p2 = p1 + (4 * ((c * c - 3 * b * d + 12 * a * e) ^ 3) + (p1 ^ 2)).Sqrt();
-                    auto qp2 = (p2 / 2) ^ (1_v / 3);
+                    auto qp2 = (p2 / 2) ^ (constants::one / 3);
                     p1.optimize();
                     p2.optimize();
                     qp2.optimize();
@@ -2551,7 +2551,7 @@ namespace
                 auto sb = b*b;
                 auto p1 = 2*c*c*c-9*b*c*d+27*a*d*d+27*b*b*e-72*a*c*e;
                 auto p2 = p1+(4*((c*c-3*b*d+12*a*e)^3)+(p1^2)).Sqrt();
-                auto qp2 = (p2/2)^(1_v/3);
+                auto qp2 = (p2/2)^(constants::one/3);
                 p1.optimize();
                 p2.optimize();
                 qp2.optimize();
