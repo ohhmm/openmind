@@ -57,7 +57,9 @@ Valuable MinusOneSurd::Sq() const {
     return Integer(-1); }
 
 namespace {
-Valuable sqrt_i = Fraction{Sum{1, MinusOneSurd()}, PrincipalSurd(2)};
+const Valuable sqrt_i = 
+    // Fraction{Sum{1, MinusOneSurd()}, PrincipalSurd(2)};
+    PrincipalSurd(-1,4);
 }
 Valuable MinusOneSurd::Sqrt() const { return sqrt_i; }
 

@@ -94,9 +94,7 @@ BOOST_AUTO_TEST_CASE(Sqrt_test)
     BOOST_TEST(_1 == _2);
 }
 
-BOOST_AUTO_TEST_CASE(Abs_test
-    , *disabled()
-) {
+BOOST_AUTO_TEST_CASE(Abs_test) {
     auto _1 = constants::i;
     _1.sqrt();
     _1 = _1.sqrt().abs(); // abs(sqrt(-i))
