@@ -421,7 +421,7 @@ namespace math {
                     Valuable n = v;
                     if (n < constants::zero)
                     {
-                        x = 1_v / x;
+                        x.reciprocal();
                         n = -n;
                     }
                     if (n.IsZero())
@@ -431,7 +431,7 @@ namespace math {
                         return *this;
                     }
                     auto y = 1_v;
-                    while(n > 1)
+                    while (n > constants::one)
                     {
                         auto nIsInt = n.IsInt();
                         if (!nIsInt) IMPLEMENT;
@@ -475,7 +475,7 @@ namespace math {
             auto n = std::cref(nlz ? mn : nu);
             auto dn = nlz ? -f.getDenominator() : f.getDenominator();
 
-            auto numeratorIsOne = n == 1_v;
+            auto numeratorIsOne = n == constants::one;
             if (!numeratorIsOne){
                 *this ^= n;
                 n = std::cref(constants::one);
@@ -495,7 +495,7 @@ namespace math {
                     ++signs;
                 } else {
 //                    IMPLEMENT
-                    if(n!=1_v)
+                    if(n!=constants::one)
                         IMPLEMENT;
                     auto gce = GreatestCommonExp(dn);
                     return Become(gce.first*Exponentiation{operator/=(gce.second),n/dn});
@@ -515,14 +515,14 @@ namespace math {
                         Valuable exp;
                         if (!numeratorIsOne) {
                             *this ^= n;
-                            exp = 1_v / dn;
+                            exp = dn.Reciprocal();
                         }
                         auto& exponentiating = numeratorIsOne ? v : exp;
                         auto xFactors = FactSet();
                         auto rb = xFactors.rbegin(), re = xFactors.rend();
                         for (auto it = rb; it != re; ++it) {
                             auto& xFactor = *it;
-                            if(xFactor > 1_v /* && !operator==(xFactor) */){
+                            if(xFactor > constants::one /* && !operator==(xFactor) */){
                                 auto e = xFactor ^ dn;
                                 if(operator==(e))
                                     return Become(e*(1_v^exponentiating));
@@ -561,7 +561,7 @@ namespace math {
                                 left = nroot;
                     }
                     else {
-                        nroot = Exponentiation(*this, 1_v/dn);
+                        nroot = Exponentiation(*this, dn.Reciprocal());
                         break;
                     }
                     // *this ^ 1/dn  == (nroot^dn + t)^ 1/dn
@@ -571,9 +571,9 @@ namespace math {
                 return Become(std::move(nroot));
             }
             if(dnSubZ)
-                Become(1_v / *this);
+                reciprocal();
             if(signs) {
-                return operator*=((isNeg?-1_v:1_v)^(1_v/(2_v^signs)));
+                return operator*=((isNeg ? constants::minus_1 : constants::one) ^ ((2_v ^ signs).Reciprocal()));
             }
         }
         else
@@ -597,7 +597,7 @@ namespace math {
     
     Valuable Integer::InCommonWith(const Valuable& v) const
     {
-        return v == constants::zero || operator==(constants::zero)
+        return v.IsZero() || IsZero()
             ? constants::one
             : v.IsInt()
             ? boost::gcd(v.ca(), ca())

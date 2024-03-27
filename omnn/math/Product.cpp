@@ -230,7 +230,7 @@ namespace math {
         std::function<void()> addToVars;
         if(it->IsVa())
         {
-            addToVars = std::bind(&Product::AddToVars, this, it->as<Variable>(), -1_v);
+            addToVars = std::bind(&Product::AddToVars, this, it->as<Variable>(), constants::minus_1);
         }
         else if (it->IsExponentiation())
         {
@@ -303,9 +303,9 @@ namespace math {
                     if (it->FindVa()) {
                         auto& f = it->as<Fraction>();
                         auto& dn = f.getDenominator();
-                        auto defract = dn.FindVa() ? (dn ^ (-1_v)) : 1_v / dn;
+                        auto defract = dn.FindVa() ? (dn ^ constants::minus_1) : dn.Reciprocal();
                         auto& n = f.getNumerator();
-                        if (n == 1_v) {
+                        if (n == constants::one) {
                             Delete(it);
                         } else {
                             Update(it, n);
@@ -977,7 +977,7 @@ namespace math {
                 return *this;
             }
             else {
-                return operator *=(Fraction{ 1_v,v });
+                return operator *=(v.Reciprocal());
             }
         }
         else
@@ -1234,7 +1234,7 @@ namespace math {
                 }
                 else
                 {
-                    s = (augmentation / (*this / (it->first ^ it->second))) ^ (1_v / it->second);
+                    s = (augmentation / (*this / (it->first ^ it->second))) ^ it->second.Reciprocal();
                 }
             }
             else
