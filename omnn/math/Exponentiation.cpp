@@ -308,9 +308,9 @@ namespace omnn::math {
                 } else
                     IMPLEMENT;
             } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0 && eexp() != 1) {
-                    eexp() = eexp().bit(0);
+                eexp() = eexp().bit();
             } else if (eexp()==-1) {
-                Become(Fraction{1,ebase()});
+                Become(std::move(ebase().reciprocal()));
                 return;
             } else if (eexp().IsInfinity()) {
                 IMPLEMENT
@@ -321,8 +321,8 @@ namespace omnn::math {
                     // TODO: auto is = ebase().IsExponentiationSimplifiable(n);
                     auto newBase = ebase() ^ n;
                     if(!newBase.IsExponentiation()){
-                        Become(newBase ^ (1_v / f.getDenominator()));
-                        return;
+                        setBase(std::move(newBase));
+                        setExponentiation(f.getDenominator().Reciprocal());
                     }
                 }
             }
@@ -661,14 +661,12 @@ namespace omnn::math {
             //        is.second = copy;
             //    }
             //} else 
-			if (ee == constants::minus_1)
+            if (ee == constants::minus_1)
             {
-                is.second = v ^ constants::minus_1; // v.IsExponentiationSimplifiable(ee)
-                is.first = is.second.MultiplyIfSimplifiable(getBase());
+                auto gcd = ebase().GCD(v);
+                is.first = gcd != constants::one;
                 if(is.first){
-                    auto copy = *this;
-                    copy.updateBase(std::move(is.second));
-                    is.second = copy;
+                    is.second = (v/gcd)/(ebase()/gcd);
                 }
             }
             else if (ee.IsInt() && (ee > constants::zero)) // TODO: ee < 0 too

@@ -49,14 +49,12 @@ BOOST_AUTO_TEST_CASE(Compare_test)
     if (_2.IsProduct())
         for(auto&a:_2.as<Product>())
             std::cout << a.Hash() << std::endl;
-    auto c = _1 == _2;
-    BOOST_TEST(c);
+    BOOST_TEST(_1 == _2);
     
     DECL_VA(x);
     _1 =(-1_v)^x;
     _2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
-    c = _1 != _2;
-    BOOST_TEST(c);
+    BOOST_TEST(_1 != _2);
 }
 
 BOOST_AUTO_TEST_CASE(Exponentiation_Simplification_tests)
@@ -70,6 +68,10 @@ BOOST_AUTO_TEST_CASE(Exponentiation_Simplification_tests)
     _1 = constants::one ^ x;
     auto varless = _1.varless();
     BOOST_TEST(varless == constants::one);
+
+    _1 = -1_v;
+    _2 = _1 * (_1 ^ _1);
+    BOOST_TEST(_2 == constants::one);
 }
 
 BOOST_AUTO_TEST_CASE(Sqrt_test)
@@ -140,9 +142,7 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test)
 
 BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
 {
-    auto v = "v"_va;
-    auto a = "a"_va;
-    auto b = "b"_va;
+    DECL_VARS(a, b, v);
     
     auto _ = (4_v*(v^2) + 2048)^(1_v/2);
     _.SetView(Valuable::View::Solving);

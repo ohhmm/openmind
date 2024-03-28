@@ -1,5 +1,6 @@
 
 git checkout origin/main
+cmake --build ~/openmind/build --config Release --target Integer_test
 
 until ctest -C Release -R Integer_test; do
   git checkout HEAD~1 -f
