@@ -8,8 +8,10 @@
 #include <thread>
 
 #include <rt/tasq.h>
+#include <storage/LevelDbCache.h>
 
 #include <boost/tokenizer.hpp>
+
 
 using namespace omnn::math;
 using namespace omnn::rt;
@@ -30,15 +32,9 @@ void Cache::DbOpen() {
 # if OPENMIND_MATH_CACHE_VOLATILE
   DeleteDB(path);
 # endif
-  leveldb::Options options;
-  options.create_if_missing = true;
-  options.compression = leveldb::kSnappyCompression;
-  options.max_file_size = 512*1024*1024;
-  options.block_size = 16*1024;
-  options.paranoid_checks=true;
-
   leveldb::Status status;
   auto strPath = path.string();
+  const auto& options = omnn::rt::storage::LevelDbCache::GetDbConnectionOptions();
   while (!((status = leveldb::DB::Open(options, strPath, &db)).ok())) {
     auto err = strPath + " DB connection error";
     std::cerr << err << status.ToString() << std::endl;
