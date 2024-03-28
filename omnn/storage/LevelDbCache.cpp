@@ -2,21 +2,17 @@
 #ifdef 	OPENMIND_STORAGE_LEVELDB
 #include <leveldb/db.h>
 
+#include <mutex>
 #include <stdexcept>
 #include <string>
+
 
 using namespace omnn::rt::storage; 
 
 
 LevelDbCache::LevelDbCache(const std::string_view &path)
 {
-	leveldb::Options options;
-	options.create_if_missing = true;
-	options.compression = leveldb::kSnappyCompression;
-	options.max_file_size = 512*1024*1024;
-	options.block_size = 16*1024;
-	options.paranoid_checks=true;
-	auto _status = leveldb::DB::Open(options, static_cast<const std::string>(path), &_db);
+    auto _status = leveldb::DB::Open(GetDbConnectionOptions(), static_cast<const std::string>(path), &_db);
 	if (!_status.ok())
 		throw std::runtime_error(_status.ToString());
 }
@@ -42,4 +38,20 @@ bool LevelDbCache::Clear(const std::string_view &key) {
 LevelDbCache::~LevelDbCache() {
 	delete _db;
 }
+
+namespace{
+	std::once_flag dbConnectionOptionsInitializedFlag;
+}
+const leveldb::Options& omnn::rt::storage::LevelDbCache::GetDbConnectionOptions() {
+	static leveldb::Options options;
+	std::call_once(dbConnectionOptionsInitializedFlag, [] {
+		options.create_if_missing = true;
+		options.compression = leveldb::kSnappyCompression;
+		options.max_file_size = 512*1024*1024;
+		options.block_size = 16*1024;
+		options.paranoid_checks=true;
+		});
+	return options;
+}
+
 #endif
