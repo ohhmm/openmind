@@ -10,6 +10,7 @@
 #include <boost/math/special_functions/factorials.hpp>
 #include <boost/math/special_functions/prime.hpp>
 #include <boost/multiprecision/miller_rabin.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #ifndef OPENMIND_PRIME_TABLE_OM
 #include <boost/tokenizer.hpp>
 #endif

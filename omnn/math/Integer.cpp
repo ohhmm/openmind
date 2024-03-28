@@ -40,7 +40,6 @@ namespace std {
 #endif
 #include <boost/filesystem.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/numeric/conversion/converter.hpp>
 #include <boost/math/special_functions/prime.hpp>
 #include <boost/multiprecision/integer.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
@@ -49,6 +48,7 @@ namespace std {
 #include <boost/multiprecision/detail/integer_ops.hpp>
 #include <boost/multiprecision/integer.hpp>
 #include <boost/multiprecision/miller_rabin.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 
 
 using namespace omnn::rt;
@@ -274,7 +274,7 @@ namespace math {
     
     Integer::operator a_rational() const
     {
-        return boost::numeric_cast<a_rational>(arbitrary);
+        return a_rational(arbitrary);
     }
     
     Integer::operator unsigned char() const
