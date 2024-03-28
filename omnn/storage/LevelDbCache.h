@@ -3,6 +3,7 @@
 
 namespace leveldb {
 class DB;
+class Options;
 }
 
 namespace omnn::rt::storage {
@@ -19,6 +20,8 @@ public:
     bool Set(const std::string_view& key, const std::string_view& v) override;
     bool Clear(const std::string_view& key) override;
     ~LevelDbCache() override;
+
+    static const leveldb::Options& GetDbConnectionOptions();
 };
 #endif // OPENMIND_STORAGE_LEVELDB
 
