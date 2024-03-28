@@ -33,7 +33,9 @@ if(OPENMIND_USE_CPACK)
 		option(CPACK_BINARY_WIX "Build installer with WIX toolset" ${WIX_FOUND})
 	endif()
 	if(NOT NSIS_FOUND)
-		find_program(MAKENSIS_EXECUTABLE makensis)
+		find_program(MAKENSIS_EXECUTABLE makensis
+			HINTS "$ENV{ProgramFiles}/NSIS" "$ENV{ProgramFiles\(x86\)}/NSIS"
+			)
 		if(EXISTS ${MAKENSIS_EXECUTABLE})
 			set(NSIS_FOUND ON)
 		endif()
