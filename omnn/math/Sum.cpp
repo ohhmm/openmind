@@ -1248,7 +1248,7 @@ namespace
     {
         if (!optimizations || !is_optimized()) {
             OptimizeOn o;
-            auto copy = *this;
+            Valuable copy = *this;
             copy.optimize();
             if (!copy.IsSum()) {
                 return copy.Sqrt();
@@ -1364,7 +1364,7 @@ namespace
                 return grade;
             }
         } else if(!IsPolynomial(v)){
-            auto copy = *this;
+            Valuable copy = *this;
             copy.SetView(View::Solving);
             copy.optimize(); // for Solving ^, object may morph, IsSum check and as<Sum> call required
             if (copy.IsPolynomial(v)) {
@@ -1407,11 +1407,15 @@ namespace
                     it = coVa.find(v);
                     noVa = it == coVa.end();
                     if(noVa){
-                        auto s = *this;
+                        Valuable s = *this;
                         s.SetView(View::Solving);
                         s.optimize();
-                        coefficients.clear();
-                        return s.FillPolyCoeff(coefficients, v);
+                        if (s.IsSum()) {
+                            coefficients.clear();
+                            return s.as<Sum>().FillPolyCoeff(coefficients, v);
+                        } else {
+                            IMPLEMENT
+						}
                     }
                 }
 
@@ -1679,7 +1683,7 @@ namespace
             auto d = (b ^ 2) - 4_v * a * c;
             return ((d ^ constants::half) - b) / (a * 2);
         } else if (grade == 3) {
-            //            auto de = *this;  de.d(va);
+            //            Valuable de = *this;  de.d(va);
             //            auto& a = coefs[3];
             //            auto& b = coefs[2];
             //            auto& c = coefs[1];
@@ -1921,7 +1925,7 @@ namespace
         auto grade = FillPolyCoeff(coefficients, va);
 //        if(grade > 2)
 //        {
-//            auto t = *this;
+//            Valuable t = *this;
 //            auto intSol = GetIntegerSolution(va);
 //            for(auto is : intSol)
 //                if(Test(va,is))
@@ -2100,7 +2104,7 @@ namespace
 ////                static const Variable y = VH->New(std::string("y"));
 ////                static const Variable lambda = VH->New(std::string("lambda"));
 //                Variable X,y,lambda;
-//                auto co = *this;
+//                Valuable co = *this;
 //                co.Eval(va,X+(1_v/2));
 //                co.Eval(X,y+lambda/y);
 //                co.optimize();
@@ -2327,7 +2331,7 @@ namespace
                 // build OpenCL kernel
 #ifdef OPENMIND_USE_OPENCL
 				using namespace boost::compute;
-                auto copy = *this;
+                Valuable copy = *this;
                 copy.optimize();
                 std::stringstream source;
                 source << "__kernel void f(__global long *c) {"
@@ -2357,7 +2361,7 @@ namespace
                 queue.enqueue_read_buffer(c, 0, sz, &z[0]);
                 queue.finish();
                 
-                auto simple = *this;
+                Valuable simple = *this;
                 auto addSolution = [&](auto& s) -> bool {
                     auto it = solutions.insert(s);
                     if (it.second) {
