@@ -26,6 +26,14 @@ void ohashes(const Valuable& v)
     }
 }
 
+BOOST_AUTO_TEST_CASE(SumCopy_test) {
+    Sum s;
+    s += 1;
+    s += 2;
+    s += 3;
+    auto s2 = s;
+    BOOST_TEST(s == s2);
+}
 
 BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
     SumOrderComparator cmp;
