@@ -120,6 +120,7 @@ function(apply_target_commons this_target)
 		EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+		CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:DebugDLL>
 		)
 	target_compile_options(${this_target} PUBLIC
 		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-fcoroutines>

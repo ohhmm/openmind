@@ -3,7 +3,7 @@
 
 namespace leveldb {
 class DB;
-class Options;
+struct Options;
 }
 
 namespace omnn::rt::storage {
