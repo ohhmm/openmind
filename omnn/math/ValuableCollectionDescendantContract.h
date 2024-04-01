@@ -234,7 +234,6 @@ namespace math {
         void Values(const std::function<bool(const Valuable&)>& fun) const override {
             auto& c = GetConstCont();
             auto count = c.size();
-            auto nTotal = count;
             auto sharedValuesProjection = std::vector<std::vector<Valuable>>();
             for (auto& m : c) {
                 if (m.IsMultival() == Valuable::YesNoMaybe::Yes) {

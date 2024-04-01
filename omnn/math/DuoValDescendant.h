@@ -182,8 +182,8 @@ namespace omnn::math {
                     f(*this);
                     return;
                 }
-                auto cache = Valuable::optimized;
-                // TODO: multival caching (inspect all optimized and optimization transisions) auto isCached = cach
+
+                // TODO: multival caching (inspect all optimized and optimization transisions)
                 
                 
                 Valuable::solutions_t vals, thisValues;
