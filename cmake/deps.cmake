@@ -69,6 +69,7 @@ macro(ext name location)
 			-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
 			-DHAVE_STD_REGEX=ON
 			-DRUN_HAVE_STD_REGEX=1
+			-DCMAKE_MSVC_RUNTIME_LIBRARY=${CMAKE_MSVC_RUNTIME_LIBRARY}
 			)
 
 		ext_configure_args(${name} ARGS)
