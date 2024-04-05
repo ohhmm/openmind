@@ -165,7 +165,7 @@ public:
     Valuable& factorial() override;
     Valuable& reciprocal() override;
 
-    solutions_t Distinct() const final { return { *this }; }
+    solutions_t Distinct() const final { return { arbitrary }; }
     Valuable Univariate() const final { return *this; }
 
     /// <summary>

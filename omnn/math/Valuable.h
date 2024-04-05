@@ -1,7 +1,6 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
-
 #pragma once
 #include <omnn/math/OpenOps.h>
 
@@ -38,12 +37,11 @@ namespace omnn {
 namespace math {
 class Valuable;
 class Variable;
+class Integer;
 class Exponentiation;
 class Fraction;
 class Sum;
 size_t hash_value(const omnn::math::Valuable& v);
-size_t hash_value(const omnn::math::Fraction& v);
-size_t hash_value(const omnn::math::Sum& v);
 } // namespace math
 } // namespace omnn
 
@@ -56,15 +54,6 @@ struct hash<omnn::math::Valuable> {
     size_t operator()(const omnn::math::Valuable& v) const { return hash_value(v); }
 };
 
-template <>
-struct hash<omnn::math::Sum> {
-    size_t operator()(const omnn::math::Sum& v) const { return hash_value(v); }
-};
-
-template <>
-struct hash<omnn::math::Fraction> {
-    size_t operator()(const omnn::math::Fraction& v) const { return hash_value(v); }
-};
 } // namespace std
 
 namespace omnn{
@@ -714,6 +703,16 @@ thread_local std::unordered_set<ValueT> OptimizationLoopDetect<ValueT>::LoopDete
 
 } // namespace math
 } // namespace omnn
+
+namespace std {
+
+template <class T>
+    requires std::derived_from<T, ::omnn::math::Valuable>
+struct hash<T> {
+    constexpr size_t operator()(const T& v) const { return static_cast<const omnn::math::Valuable&>(v).Hash(); }
+};
+
+} // namespace std
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);

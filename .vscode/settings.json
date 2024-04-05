@@ -28,6 +28,12 @@
   ],
   "files.associations": {
     "vector": "cpp",
-    "typeindex": "cpp"
+    "typeindex": "cpp",
+    "future": "cpp",
+    "set": "cpp",
+    "type_traits": "cpp",
+    "__hash_table": "cpp",
+    "__tuple": "cpp",
+    "sstream": "cpp"
   },
 }
