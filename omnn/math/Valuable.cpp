@@ -263,10 +263,22 @@ namespace math {
     : exp(std::move(std::make_shared<Fraction>(std::move(r))))
     { exp->optimize(); }
 
-//    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, 1_v/2)-b)/(a*2));
-//    auto aMergeOrF = MergeOrF(a);
-//    auto bMergeOrF = MergeOrF(b);
-//    auto cMergeOrF = MergeOrF(c);
+    namespace{
+        template<typename T>
+        constexpr T bits_in_use(T v) {
+            T bits = 0;
+            while (v) {
+                ++bits;
+                v = v >> 1;
+            }
+            return bits;
+        }
+
+        //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, 1_v/2)-b)/(a*2));
+        //    auto aMergeOrF = MergeOrF(a);
+        //    auto bMergeOrF = MergeOrF(b);
+        //    auto cMergeOrF = MergeOrF(c);
+    }
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2)
     {
         Valuable merged;
@@ -277,13 +289,23 @@ namespace math {
         else {
             // a = 1;
             auto s = v1 + v2;
-            // b = -s;
-            if(s==0)
+            if(s.IsZero()){
                 merged = (!v1.IsProduct() ? v1 : v2) * constants::plus_minus_1;
-            else{
+            }
+            else {
+                // b = -s;
                 auto c = v1 * v2;
-                auto d = s.Sq() - c*4;
-                merged = (Exponentiation(d, constants::half) + s) / constants::two;
+                auto d = s.Sq() + c*-4;
+                if (v1.IsMultival() == YesNoMaybe::No && v2.IsMultival() == YesNoMaybe::No)
+                {
+                    merged = (Exponentiation(d, constants::half) + s) / constants::two;
+                } else {
+                    auto dist = v1.Distinct(); // FIXME : not efficient branch, prefere better specializations
+                    dist.merge(v2.Distinct());
+                    auto grade = dist.size();
+                    auto targetGrade = constants::one.Shl(bits_in_use(grade));
+                    merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
+                }
             }
         }
         return merged;
