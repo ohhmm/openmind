@@ -128,6 +128,9 @@ function(apply_target_commons this_target)
 	target_compile_features(${this_target} PUBLIC
 		cxx_std_23
 	)
+	if(OPENMIND_USE_OPENCL_INTEL_SYCL)
+		target_compile_options(${this_target} PUBLIC ${SYCL_FLAGS})
+	endif(OPENMIND_USE_OPENCL_INTEL_SYCL)
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 		target_compile_definitions(${this_target} PUBLIC
 			APPLE_CONSTEXPR=
