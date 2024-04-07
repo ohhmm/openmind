@@ -117,9 +117,31 @@ namespace math {
 
         bool reoptimize_the_fraction;
         do {
-            reoptimize_the_fraction = false;
             numerator().optimize();
             denominator().optimize();
+            reoptimize_the_fraction = {};
+
+            if (denominator() == numerator() && IsMultival() == YesNoMaybe::No) {
+                // TODO : mark var constraints deduced from denominator!=0
+                Become(1);
+                break;
+            }
+
+            if (numerator().IsZero()) {
+                if (denominator().IsZero()) {
+                    throw "NaN";
+				}
+				Become(std::move(numerator()));
+                break;
+			}
+
+            auto gcd = numerator().GCD(denominator());
+            reoptimize_the_fraction = !gcd.IsZero() && gcd != 1;
+            if (reoptimize_the_fraction) {
+				numerator() /= gcd;
+				denominator() /= gcd;
+				continue;
+			}
 
             if (!FindVa() // TODO: variables reduction from denominator should log non-zero expression for post-check
                 && numerator() == denominator()
@@ -494,7 +516,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
     Valuable& Fraction::d(const Variable& x)
     {
         if (IsSimpleFraction()) {
-            Become(0_v);
+            Become(0);
         } else {
             IMPLEMENT
             optimized = {};
@@ -592,7 +614,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
 
     Valuable Fraction::InCommonWith(const Valuable& v) const
     {
-        auto c = 1_v;
+        auto c = constants::one;
         if (v.IsFraction()) {
             auto& f = v.as<Fraction>();
             c *= getNumerator().InCommonWith(f.getNumerator());
