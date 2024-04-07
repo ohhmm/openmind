@@ -2420,6 +2420,32 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 		return operator*=(with) /= intersection;
 	}
 
+    Valuable Valuable::Union(const Valuable& with) const {
+		auto intersection = Intersect(with);
+		return *this * with / intersection;
+	}
+
+    Valuable& Valuable::remove(const Valuable& v) {
+        for (auto gcd = GCD(v);
+            !gcd.IsZero() && gcd != constants::one;
+            gcd.gcd(*this))
+        {
+			operator/=(gcd);
+		}
+        return *this;
+    }
+
+    Valuable Valuable::RootSetDifference(const Valuable& v) const {
+		auto t = *this;
+		t.remove(v);
+		return t;
+	}
+
+    Valuable Valuable::RootsSymetricDifference(const Valuable& v) const {
+        auto setSymmetricDiff = *this * v;
+        setSymmetricDiff.remove(GCD(v));
+        return setSymmetricDiff;
+    }
 
     Valuable Valuable::Ifz(const Valuable& Then, const Valuable& Else) const
     {
