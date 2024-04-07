@@ -520,12 +520,16 @@ public:
     Valuable& operator&=(const Valuable& v) { return gcd(v); }
     Valuable Intersect(const Valuable& with, const Variable& va) const;
 
-    //Valuable Union(const Valuable& with) const;
+    Valuable Union(const Valuable& with) const;
 	//Valuable operator|(const Valuable& v) const { return Union(v); }
 	Valuable& unionize(const Valuable&); // inplace
 	//Valuable& unionize(const Valuable&, const Variable& va);
     Valuable& operator|=(const Valuable& v) { return unionize(v); }
 	//Valuable Union(const Valuable& with, const Variable& va) const;
+
+    Valuable& remove(const Valuable&);
+    Valuable RootSetDifference(const Valuable&) const;
+    Valuable RootsSymetricDifference(const Valuable&) const;
 
 	/// conditional operators
 	//
