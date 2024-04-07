@@ -293,19 +293,22 @@ namespace math {
                 merged = (!v1.IsProduct() ? v1 : v2) * constants::plus_minus_1;
             }
             else {
-                // b = -s;
-                auto c = v1 * v2;
-                auto d = s.Sq() + c*-4;
-                if (v1.IsMultival() == YesNoMaybe::No && v2.IsMultival() == YesNoMaybe::No)
+                for (OptimizeOff oo; 0 ;)
                 {
-                    merged = (Exponentiation(d, constants::half) + s) / constants::two;
-                } else {
-                    auto dist = v1.Distinct(); // FIXME : not efficient branch, prefere better specializations
-                    dist.merge(v2.Distinct());
-                    auto grade = dist.size();
-                    auto targetGrade = constants::one.Shl(bits_in_use(grade));
-                    merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
+                    // b = -s;
+                    auto c = v1 * v2;
+                    auto d = s.Sq() + c * -4;
+                    if (v1.IsMultival() == YesNoMaybe::No && v2.IsMultival() == YesNoMaybe::No) {
+                        merged = (Exponentiation(d, constants::half) + s) / constants::two;
+                    } else {
+                        auto dist = v1.Distinct(); // FIXME : not efficient branch, prefere better specializations
+                        dist.merge(v2.Distinct());
+                        auto grade = dist.size();
+                        auto targetGrade = constants::one.Shl(bits_in_use(grade));
+                        merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
+                    }
                 }
+                merged.optimize();
             }
         }
         return merged;
