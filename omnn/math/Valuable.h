@@ -520,6 +520,13 @@ public:
     Valuable& operator&=(const Valuable& v) { return gcd(v); }
     Valuable Intersect(const Valuable& with, const Variable& va) const;
 
+    //Valuable Union(const Valuable& with) const;
+	//Valuable operator|(const Valuable& v) const { return Union(v); }
+	Valuable& unionize(const Valuable&); // inplace
+	//Valuable& unionize(const Valuable&, const Variable& va);
+    Valuable& operator|=(const Valuable& v) { return unionize(v); }
+	//Valuable Union(const Valuable& with, const Variable& va) const;
+
 	/// conditional operators
 	//
     Valuable Ifz(const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression is zero and @Else otherwise

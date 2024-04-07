@@ -2415,6 +2415,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return GCD(with);
     }
 
+    Valuable& Valuable::unionize(const Valuable& with) {
+		auto intersection = Intersect(with);
+		return operator*=(with) /= intersection;
+	}
+
+
     Valuable Valuable::Ifz(const Valuable& Then, const Valuable& Else) const
     {
         auto thisAndThen = LogicAnd(Then);
