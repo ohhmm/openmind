@@ -177,8 +177,7 @@ function(apply_target_commons this_target)
 	else()
 		target_compile_definitions(${this_target} PUBLIC
 			MSVC_CONSTEXPR=
-			NO_MSVC_CONSTEXPR=constexpr
-			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:NO_CLANG_CONSTEXPR=constexpr>
+                        NO_MSVC_CONSTEXPR=constexpr
 			)
 		if(APPLE)
 			target_compile_definitions(${this_target} PUBLIC
@@ -190,6 +189,8 @@ function(apply_target_commons this_target)
 			target_compile_definitions(${this_target} PUBLIC
 				APPLE_CONSTEXPR=
 				NO_APPLE_CONSTEXPR=constexpr
+                                $<$<CXX_COMPILER_ID:Clang>:NO_CLANG_CONSTEXPR=>
+                                $<$<NOT:$<CXX_COMPILER_ID:Clang>>:NO_CLANG_CONSTEXPR=constexpr>
 				)
 		endif()
 	endif()
