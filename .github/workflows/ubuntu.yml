@@ -27,4 +27,4 @@ jobs:
       run: cmake --build ${{github.workspace}}/build -j `nproc` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest . -j`nproc` -C Release -E "Sum_test|MultiValues_test|Exponentiation_test|image_codec_test|test_extrapolator|ts|Polyfit_test" --output-on-failure
+      run: ctest . -j`nproc` -C Release -E "Sum_test|MultiValues_test|image_codec_test|test_extrapolator|ts|Polyfit_test" --output-on-failure
