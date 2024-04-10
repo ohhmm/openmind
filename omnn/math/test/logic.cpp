@@ -7,13 +7,30 @@ using namespace omnn::math;
 using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(logic_or_tests
-    , *disabled() // FIXME:
+    , *disabled()
 ) {
     DECL_VA(x);
-    auto eq = x.Equals(1) || x.Equals(2) || x.Equals(3);
-    auto ok = eq(x);
-    auto set = Valuable({1_v, 2_v, 3_v});
-    BOOST_TEST(ok == set);
+    auto _1 = x.Equals(1) || x.Equals(2) || x.Equals(3);
+    auto _2 = Valuable::Abet(x, {1, 2, 3});
+
+    auto express1 = _1(x);
+    auto express2 = _2(x);
+    BOOST_TEST(express1 == express2);
+
+    _2.optimize();
+    BOOST_TEST(_1 == _2);
+}
+
+BOOST_AUTO_TEST_CASE(merge_or_tests
+    , *disabled()
+) {
+    DECL_VA(x);
+    auto _1 = x.Equals(1) || x.Equals(2) || x.Equals(3);
+    auto express1 = _1(x);
+    auto set1 = Valuable::MergeOr(1, 2, 3);
+    BOOST_TEST(express1 == set1);
+    auto set2 = Valuable({1_v, 2_v, 3_v});
+    BOOST_TEST(set1 == set2);
 }
 
 BOOST_AUTO_TEST_CASE(Min_operator_test) {

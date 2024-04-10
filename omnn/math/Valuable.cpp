@@ -274,35 +274,35 @@ namespace math {
             return bits;
         }
 
-        //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, 1_v/2)-b)/(a*2));
+        //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, constants::half)-b)/(a*2));
         //    auto aMergeOrF = MergeOrF(a);
         //    auto bMergeOrF = MergeOrF(b);
         //    auto cMergeOrF = MergeOrF(c);
     }
-    Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2)
+    Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
     {
         Valuable merged;
-        if(v1 == v2)
-            merged = v1;
-        else if (v1 == -v2)
-            merged = v1 * constants::plus_minus_1;
+        if(_1 == _2)
+            merged = _1;
+        else if (_1 == -_2)
+            merged = _1 * constants::plus_minus_1;
         else {
             // a = 1;
-            auto s = v1 + v2;
+            auto s = _1 + _2;
             if(s.IsZero()){
-                merged = (!v1.IsProduct() ? v1 : v2) * constants::plus_minus_1;
+                merged = (!_1.IsProduct() ? _1 : _2) * constants::plus_minus_1;
             }
             else {
-                for (OptimizeOff oo; 0 ;)
                 {
+                    OptimizeOff oo;
                     // b = -s;
-                    auto c = v1 * v2;
+                    auto c = _1 * _2;
                     auto d = s.Sq() + c * -4;
-                    if (v1.IsMultival() == YesNoMaybe::No && v2.IsMultival() == YesNoMaybe::No) {
+                    if (_1.IsMultival() == YesNoMaybe::No && _2.IsMultival() == YesNoMaybe::No) {
                         merged = (Exponentiation(d, constants::half) + s) / constants::two;
                     } else {
-                        auto dist = v1.Distinct(); // FIXME : not efficient branch, prefere better specializations
-                        dist.merge(v2.Distinct());
+                        auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
+                        dist.merge(_2.Distinct());
                         auto grade = dist.size();
                         auto targetGrade = constants::one.Shl(bits_in_use(grade));
                         merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
