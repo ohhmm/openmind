@@ -430,7 +430,7 @@ namespace math {
                         hash = std::hash<base_int>()(arbitrary);
                         return *this;
                     }
-                    auto y = 1_v;
+                    auto y = constants::one;
                     while (n > constants::one)
                     {
                         auto nIsInt = n.IsInt();

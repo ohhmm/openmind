@@ -10,6 +10,7 @@
 #include <ctime>
 #include <iostream>
 
+#include <boost/numeric/conversion/cast.hpp>
 #include <boost/math/special_functions/prime.hpp>
 
 #include <rt/diag.hpp>
