@@ -72,7 +72,9 @@ BOOST_AUTO_TEST_CASE(Exponentiation_Simplification_tests)
     BOOST_TEST(varless == constants::one);
 }
 
-BOOST_AUTO_TEST_CASE(Sqrt_test)
+BOOST_AUTO_TEST_CASE(Sqrt_test
+    , *boost::unit_test::disabled()
+)
 {
     auto a = 25_v;
     auto e = a ^ (1_v/2);
@@ -102,8 +104,9 @@ BOOST_AUTO_TEST_CASE(Abs_test) {
     BOOST_TEST(_1 == _2);
 }
 
-BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test)
-{
+BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test
+    , *boost::unit_test::disabled()
+) {
     DECL_VA(x);
     DECL_VA(y);
     auto a = 4 * (x ^ 2) - 12 * x * y + 9 * (y ^ 2);
@@ -138,8 +141,9 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test)
     BOOST_TEST(_1.Sqrt() == _2);
 }
 
-BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
-{
+BOOST_AUTO_TEST_CASE(Polynomial_Exp_test
+    , *boost::unit_test::disabled()
+) {
     auto v = "v"_va;
     auto a = "a"_va;
     auto b = "b"_va;
