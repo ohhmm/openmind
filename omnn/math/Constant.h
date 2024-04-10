@@ -103,7 +103,7 @@ template <class Chld>
 
         Valuable InCommonWith(const Valuable& v) const override {
             return v.IsConstant() && this->OfSameType(v) ? v
-				: ((v.IsSimple() || v.IsVa()) ? 1_v
+				: ((v.IsSimple() || v.IsVa()) ? constants::one
 				: v.InCommonWith(*this));
         }
 
