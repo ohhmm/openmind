@@ -65,7 +65,7 @@ public:
     template<class T>
     void setExponentiation(T&& exponentiation)
     {
-		set1(std::forward<T>(exponentiation));
+		set2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
 	}

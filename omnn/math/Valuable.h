@@ -181,6 +181,11 @@ public:
         return static_cast<T&>(the);
     }
 
+    template <class T>
+    T* As() {
+        return Is<T>() ? as<T>() : nullptr;
+    }
+
     virtual encapsulated_instance SharedFromThis();
 
     //    friend constexpr operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }
@@ -347,6 +352,7 @@ public:
     virtual bool IsSimpleFraction() const;
     virtual bool IsFormula() const;
     virtual bool IsExponentiation() const;
+    virtual bool IsLogarithm() const;
     virtual bool IsVa() const;
     virtual bool IsVaExp() const;
     virtual bool IsProduct() const;
