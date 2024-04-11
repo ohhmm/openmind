@@ -96,7 +96,7 @@ namespace omnn::math {
         {
             auto& s = eexp().as<Sum>();
             auto sz = s.size();
-            auto v = 1_v;
+            auto v = constants::one;
             for(auto it = s.begin(), e = s.end();
                 it != e; )
             {
@@ -383,7 +383,7 @@ namespace omnn::math {
                 case View::Calc:
                 {
                     if (eexp().IsInt() && eexp()>0) {
-                        auto b = 1_v;
+                        auto b = constants::one;
                         for (; eexp()--;) {
                             b *= ebase();
                         }

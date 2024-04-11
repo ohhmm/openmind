@@ -109,8 +109,8 @@ namespace math {
 		Fraction& operator=(const Fraction& f)=default;
 		Fraction& operator=(Fraction&& f)=default;
 
-        const Valuable& getDenominator() const { return _2; }
-        const Valuable& getNumerator() const { return _1; }
+        constexpr const Valuable& getDenominator() const { return _2; }
+        constexpr const Valuable& getNumerator() const { return _1; }
 
         explicit operator unsigned char() const override;
         explicit operator a_int() const override;
