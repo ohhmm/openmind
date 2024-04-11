@@ -597,11 +597,7 @@ namespace math {
     
     Valuable Integer::InCommonWith(const Valuable& v) const
     {
-        return v.IsZero() || IsZero()
-            ? constants::one
-            : v.IsInt()
-            ? boost::gcd(v.ca(), ca())
-            : v.InCommonWith(*this);
+        return v.GCD(*this);
     }
 
     Valuable Integer::GCD(const Valuable& v) const {
