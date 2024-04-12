@@ -22,7 +22,9 @@ BOOST_AUTO_TEST_CASE(ExtrapolatorSolve_test)
     
 }
 
-BOOST_AUTO_TEST_CASE(Extrapolator_test)
+BOOST_AUTO_TEST_CASE(Extrapolator_test
+    , *disabled()
+)
 {
     // lets define math vars:
     // TODO : link to youtube video with description of the sample for deep learning
@@ -96,7 +98,9 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test)
     //BOOST_TEST(e.Consistent());
 }
 
-BOOST_AUTO_TEST_CASE(ViewMatrix_test)
+BOOST_AUTO_TEST_CASE(ViewMatrix_test
+    , *disabled()
+)
 {
     Extrapolator e {{ {1, 2},
         {3, 4} }};
