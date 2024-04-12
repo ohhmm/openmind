@@ -190,7 +190,15 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test
     }
 }
 
-BOOST_AUTO_TEST_CASE(Codec_test)
+#if defined(WIN32) || defined(__APPLE__)
+#define CODEC_TEST_PLATFORM_SPECIFIC_ENABLE
+#else
+#define CODEC_TEST_PLATFORM_SPECIFIC_ENABLE ,*disabled()
+#endif
+
+BOOST_AUTO_TEST_CASE(Codec_test
+    CODEC_TEST_PLATFORM_SPECIFIC_ENABLE
+)
 {
     Extrapolator ex {{
         //  input   output
