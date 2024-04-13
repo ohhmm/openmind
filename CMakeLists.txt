@@ -111,6 +111,8 @@ if(NOT IntelSYCL_FOUND)
 	find_package(IntelSYCL)
 	if(IntelSYCL_FOUND)
 		message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
+		message("SYCL_FLAGS: ${SYCL_FLAGS}")
+		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
 	endif()
 	option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
 endif()
@@ -125,6 +127,14 @@ find_package(CUDAToolkit)
 if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
+
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
+	AND NOT EXISTS OpenCL_INCLUDE_DIR
+	AND EXISTS IntelSYCL_DIR
+)
+	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
+endif()
+
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
 if(OPENMIND_USE_OPENCL)
 	find_package(OpenGL)
