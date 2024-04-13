@@ -6,13 +6,18 @@
  */
 
 #pragma once
+
 //#include <any>
+#include <list>
+#include <map>
 #include <memory>
 #include <set>
 #include <sstream>
 #include <string>
 #include <type_traits>
+
 #include <boost/any.hpp>
+
 #include "Integer.h"
 #include "Variable.h"
 
@@ -25,6 +30,9 @@ namespace math {
     class VarHost
         : public std::enable_shared_from_this<VarHost>
     {
+        using non_zero_log_t = std::map<Valuable::var_set_t, Valuable::solutions_t>;
+        non_zero_log_t nonZeroItems;
+
     public:
         using ptr = std::shared_ptr<VarHost>;
         using cptr = std::shared_ptr<const VarHost>;
@@ -49,7 +57,7 @@ namespace math {
 		Variable New();
 
     protected:
-        constexpr VarHost() = default;
+        VarHost() = default;
 
         const any::any& GetId(const Variable&) const;
 
@@ -91,6 +99,10 @@ namespace math {
 
         virtual const Variable& Host(const any::any& id) = 0;
         virtual Integer Stored() const = 0;
+
+        void LogNotZero(const Valuable&);
+        bool TestRootConsistencyWithNonZeroLog(const Variable& variable, const Valuable& value) const;
+        bool TestRootConsistencyWithNonZeroLog(const Valuable::vars_cont_t&) const;
     };
     
     /**

@@ -72,4 +72,45 @@ void VarHost::inc<>(std::string&)
 {
     IMPLEMENT
 }
+
+void VarHost::LogNotZero(const Valuable& v) {
+	if (v.IsZero())
+		throw std::runtime_error("Variable is zero");
+    nonZeroItems[v.Vars()].emplace(v);
+}
+
+namespace {
+    // Template function to extract keys from a map and store them in a set
+    template <typename K, typename V>
+    std::set<K> Keys(const std::map<K, V>& inputMap) {
+        std::set<K> resultSet;
+        for (const auto& element : inputMap) {
+            resultSet.insert(element.first);
+        }
+        return resultSet;
+    }
+}
+bool VarHost::TestRootConsistencyWithNonZeroLog(const Valuable::vars_cont_t& values) const {
+    auto ok = true;
+    auto keys = Keys(values);
+    auto it = nonZeroItems.find(keys);
+    if (it != nonZeroItems.end()) {
+        Valuable::OptimizeOn optimizeOn;
+        for (auto inequalityToZero : it->second) {
+            if (inequalityToZero.eval(values)) {
+                inequalityToZero.optimize();
+                ok = !inequalityToZero.IsZero();
+                if (!ok)
+                    break;
+            }
+		}
+    }
+    return ok;
+}
+
+bool VarHost::TestRootConsistencyWithNonZeroLog(const Variable& variable, const Valuable& value) const {
+    return nonZeroItems.empty()
+        || TestRootConsistencyWithNonZeroLog({{variable, value}});
+}
+
 } // namespace
