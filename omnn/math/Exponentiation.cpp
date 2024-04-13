@@ -1200,6 +1200,7 @@ namespace omnn::math {
                         LOG_AND_IMPLEMENT("Distinct for " << *this);
                     }
                 } else {
+                    OptimizeOn optimizeOn;
                     auto b = ebase() ^ f.numerator();
                     auto d = denom;
                     do {
