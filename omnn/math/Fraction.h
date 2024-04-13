@@ -21,20 +21,20 @@ namespace math {
 		mutable vars_cont_t vars;
 
 	protected:
-		Valuable& numerator() { return _1; }
-        Valuable& denominator() { return _2; }
+        constexpr Valuable& numerator() { return _1; }
+        constexpr Valuable& denominator() { return _2; }
 		std::ostream& print_sign(std::ostream& out) const override;
 
 	public:
         std::ostream& code(std::ostream& out) const override;
 
-        const Valuable& numerator() const { return _1; }
+        constexpr const Valuable& numerator() const { return _1; }
         template<class T>
         void setNumerator(T&& n)
         { set1(std::forward<T>(n)); }
         void updateNumerator(std::function<void(decltype(_1)&)>& f) { update1(f); }
 
-        const Valuable& denominator() const { return _2; }
+        constexpr const Valuable& denominator() const { return _2; }
 		template<class T>
         void setDenominator(T&& n)
         { set2(std::forward<T>(n)); }
