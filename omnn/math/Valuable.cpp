@@ -1612,7 +1612,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 //            std::cout << t << '\n';
 //        }
 //#endif
-        return t==0;
+        return t == 0
+            && va.getVaHost()->TestRootConsistencyWithNonZeroLog(va, v);
     }
 
     Valuable Valuable::SumOfRoots() const {
