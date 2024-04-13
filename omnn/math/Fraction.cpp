@@ -7,7 +7,7 @@
 #include "Product.h"
 #include "PrincipalSurd.h"
 #include "i.h"
-
+#include "VarHost.h"
 #include <utility>
 
 #include <boost/lexical_cast.hpp>
@@ -121,8 +121,14 @@ namespace math {
             denominator().optimize();
             reoptimize_the_fraction = {};
 
-            if (denominator() == numerator() && IsMultival() == YesNoMaybe::No) {
-                // TODO : mark var constraints deduced from denominator!=0
+            if (denominator() == numerator() && IsMultival() != YesNoMaybe::Yes) {
+                if (denominator().IsZero())
+					throw "NaN";
+                else {
+                    auto variable = denominator().FindVa();
+                    if (variable)
+                        variable->getVaHost()->LogNotZero(denominator());
+                }
                 Become(1);
                 break;
             }
