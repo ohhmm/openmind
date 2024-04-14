@@ -815,9 +815,9 @@ namespace omnn::math {
                 && _1 == e._1
                 && _2 == e._2;
         } else if (v.IsFraction()) {
-            eq = eexp().IsInt()
+            eq = (eexp().IsInt() || eexp().IsSimpleFraction())
                  && eexp() < 0
-                 && ebase() == (v.as<Fraction>().getDenominator() ^ (-eexp()));
+                 && ebase() == (v.Reciprocal() ^ (-eexp()));
         } else if (v.IsProduct()) {
             eq = v.as<Product>().operator==(*this);
         }

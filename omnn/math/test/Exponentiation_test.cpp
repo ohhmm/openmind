@@ -49,14 +49,19 @@ BOOST_AUTO_TEST_CASE(Compare_test)
     if (_2.IsProduct())
         for(auto&a:_2.as<Product>())
             std::cout << a.Hash() << std::endl;
-    auto c = _1 == _2;
-    BOOST_TEST(c);
+    BOOST_TEST(_1 == _2);
     
     DECL_VA(x);
     _1 =(-1_v)^x;
     _2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
-    c = _1 != _2;
-    BOOST_TEST(c);
+    BOOST_TEST(_1 != _2);
+
+    _1 = 2_v/3;
+    {
+        Valuable::OptimizeOff off;
+        _2 = Exponentiation{3, -1};
+        BOOST_TEST(_1 != _2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(Exponentiation_Simplification_tests)
