@@ -962,7 +962,7 @@ namespace math {
             return *this;
         }
         else if (v.IsSimple() ) {
-            if (v == 1_v) {
+            if (v == constants::one) {
                 return *this;
             } else if (v.IsConstant()) {
                 auto it = std::find(begin(), end(), v);
@@ -1148,12 +1148,12 @@ namespace math {
             auto e1 = c1.end(), e2 = c2.end();
             for(same = true;
                 same && it1 != e1 && it2 != e2;
-                ++it1, ++it2)
+                )
             {
-                if(it1->Same(1_v)){
+                if(it1->Same(constants::one)){
                     ++it1;
                 }
-                if(it2->Same(1_v)){
+                if(it2->Same(constants::one)){
                     ++it2;
                 }
 
@@ -1161,6 +1161,8 @@ namespace math {
                     continue;
 
                 same = same && it1->Same(*it2);
+
+                ++it1, ++it2;
             }
 
             same = same && it1 == e1 && it2 == e2;
@@ -1195,23 +1197,31 @@ namespace math {
             same = c1.rbegin()->operator==(v);
         } else if (members.empty()) {
             same = v == 1;
-        } else if (v.IsExponentiation() && Has(v)) {
-            auto n = members.size();
-            same = n == 1;
-            if (!same) {
-                auto& e = v.as<Exponentiation>();
-                same = e.IsMultiSign() && n == 2 && Has(constants::minus_1);
-                if (!same && Has(constants::i)) {
-                    auto& ee = e.getExponentiation();
-                    if (ee.IsFraction()) {
-                        auto& eef = ee.as<Fraction>();
-                        auto& eefdn = eef.getDenominator();
-                        same = eefdn >= 4 || eefdn <= -4;
-                    } else {
-                        LOG_AND_IMPLEMENT("Examine new multisign form: " << *this << " == " << e);
+        } else if (v.IsExponentiation()) {
+            if (Has(v)) {
+                auto sz1 = c1.size();
+                same = sz1 == 1;
+                if (!same) {
+                    auto& e = v.as<Exponentiation>();
+                    same = e.IsMultiSign() && sz1 == 2 && Has(constants::minus_1);
+                    if (!same && Has(constants::i)) {
+                        auto& ee = e.getExponentiation();
+                        if (ee.IsFraction()) {
+                            auto& eef = ee.as<Fraction>();
+                            auto& eefdn = eef.getDenominator();
+                            same = eefdn >= 4 || eefdn <= -4;
+                        } else {
+                            LOG_AND_IMPLEMENT("Examine new multisign form: " << *this << " == " << e);
+                        }
                     }
                 }
             }
+        } else if (v.IsProduct()
+            && IsMultival() == YesNoMaybe::Yes
+            && v.IsMultival() == YesNoMaybe::Yes)
+        {
+            // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
+            //LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
         }
         return same;
     }
@@ -1254,7 +1264,7 @@ namespace math {
             auto it = coVa.find(va);
             if (it != coVa.end()) {
                 if (it->second < 0) {
-                    s = ((*this / (it->first ^ it->second)) / augmentation) ^ (1_v / -it->second);
+                    s = ((*this / (it->first ^ it->second)) / augmentation) ^ (-it->second).Reciprocal();
                 }
                 else
                 {
