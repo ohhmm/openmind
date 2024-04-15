@@ -131,8 +131,8 @@ function(apply_target_commons this_target)
 	if(OPENMIND_USE_OPENCL_INTEL_SYCL)
 		target_compile_options(${this_target} PUBLIC ${SYCL_FLAGS})
 		target_include_directories(${this_target} PUBLIC 
-			"${IntelSYCL_DIR}/../../.."
-			"${IntelSYCL_DIR}/../../../sycl"
+			"${IntelSYCL_DIR}/../../../include"
+			"${IntelSYCL_DIR}/../../../include/sycl"
 		)
 	endif(OPENMIND_USE_OPENCL_INTEL_SYCL)
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
