@@ -54,7 +54,8 @@ bool MinusOneSurd::MultiplyIfSimplifiable(const Valuable& v)
 }
 
 Valuable MinusOneSurd::Sq() const {
-    return Integer(-1); }
+    return constants::minus_1;
+}
 
 namespace {
 const Valuable sqrt_i = 
