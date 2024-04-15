@@ -132,7 +132,7 @@ if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
-	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
+	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
 endif()
 
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
