@@ -226,7 +226,7 @@ bool System::Fetch(const Variable& va)
     }
 
     if (modified) {
-        this->fetched.insert(va);
+        modified = this->fetched.insert(va).second;
     }
     return modified;
 }
