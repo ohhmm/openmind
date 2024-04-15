@@ -54,6 +54,9 @@ BOOST_AUTO_TEST_CASE(BaseInt_tests)
     std::string_view s{"12345", 2};
     i = Integer::base_int(s);
     BOOST_TEST(i == 12); // fixed sice boost version 1.77.0
+
+    i = Integer::base_int("000144");
+    // FIXME : BOOST_TEST(i == 144); // BUG in boost::multiprecision::cpp_int, consider reporting
 }
 
 BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test)

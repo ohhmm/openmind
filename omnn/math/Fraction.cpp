@@ -37,12 +37,16 @@ namespace math {
             auto afterDotI = doti + 1;
             auto fsz = s.length() - afterDotI;
             denominator() = 10_v ^ fsz;
-            numerator() = Integer(boost::multiprecision::cpp_int(s.c_str()+afterDotI));
+            numerator() = Integer(boost::multiprecision::cpp_int(s.c_str() + s.find_first_not_of('0', afterDotI)));
             if (s[0]=='-') {
                 numerator() = -numerator();
             }
             s.erase(doti);
-            numerator() += Integer(boost::multiprecision::cpp_int(s)) * denominator();
+            if (!s.empty()) {
+                boost::multiprecision::cpp_int aliquot(s);
+                if (aliquot != 0)
+                    operator+=(aliquot);
+            }
         }
     }
     
