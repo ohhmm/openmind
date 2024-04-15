@@ -58,6 +58,10 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     BOOST_TEST((_.IsMultival() == Valuable::YesNoMaybe::Yes));
     eq = _ == (1_v^(1_v/2));
     BOOST_TEST(eq);
+
+    auto _1 = Valuable(0.000144);
+    auto _2 = 144_v / 1000000;
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(IrrationalFraction_tests) {
