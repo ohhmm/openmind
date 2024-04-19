@@ -49,8 +49,16 @@ bool System::Has(const Valuable& e) const
         copy.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
         try {
             Valuable::OptimizeOn o;
-            copy.optimize();
-            if (e.is_optimized()) {
+            try {
+                copy.optimize();
+            } catch (...) {
+                std::cerr << "Exception optimizing: " << e;
+                if (e != copy) {
+                    std::cerr << " -> " << copy;
+                }
+                std::cerr << std::endl;
+            }
+            if (copy.is_optimized()) {
                 return Has(copy);
             }
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
@@ -187,29 +195,33 @@ bool System::Fetch(const Variable& va)
         //std::all_of(equs, [&](auto it) { // todo: multithread System::Eval
             //auto& e = *it;
         for (auto& e : equs) {
-            e.CollectVa(vars);
-            if (e.HasVa(va)) {
-                if (e.IsSum()) {
-                    std::vector<Valuable> coefficients;
-                    auto grade = e.as<Sum>().FillPolyCoeff(coefficients, va);
-                    if (coefficients.size() == grade && grade == 0) {
-                        continue;
+            try {
+                e.CollectVa(vars);
+                if (e.HasVa(va)) {
+                    if (e.IsSum()) {
+                        std::vector<Valuable> coefficients;
+                        auto grade = e.as<Sum>().FillPolyCoeff(coefficients, va);
+                        if (coefficients.size() == grade && grade == 0) {
+                            continue;
+                        }
                     }
-                }
-                if (!e.IsSum() || e.as<Sum>().IsPolynomial(va)) {
-                    auto _ = e(va);
-                    modified = Add(va, _) || modified;
-                    if (_.Vars().size() == 0) {
-                        fetched = true;
-                    }
+                    if (!e.IsSum() || e.as<Sum>().IsPolynomial(va)) {
+                        auto _ = e(va);
+                        modified = Add(va, _) || modified;
+                        if (_.Vars().size() == 0) {
+                            fetched = true;
+                        }
 
-                    auto evaluated = Eval(va, _);
-                    modified = evaluated || modified;
-                    if (evaluated) {
-                        again = !fetched;
-                        break;
+                        auto evaluated = Eval(va, _);
+                        modified = evaluated || modified;
+                        if (evaluated) {
+                            again = !fetched;
+                            break;
+                        }
                     }
                 }
+            } catch (...) {
+
             }
         }
 		//);

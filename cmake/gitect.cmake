@@ -83,6 +83,16 @@ if(GIT_EXECUTABLE)
 			FOLDER "util")
 	endif()
 
+	add_custom_target(push-to-develop
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} push origin HEAD:develop
+		COMMAND ${GIT_EXECUTABLE} fetch --all
+	)
+	set_target_properties(push-to-develop PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util")
+
 	add_custom_target(force-push-head-to-develop
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		COMMAND ${GIT_EXECUTABLE} push origin HEAD:develop -f
