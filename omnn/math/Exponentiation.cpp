@@ -523,8 +523,8 @@ namespace omnn::math {
         auto& b = ebase();
         if (v.IsExponentiation()
             && b == (e = &v.as<Exponentiation>())->getBase()
-            && (eexp().IsInt() || eexp().IsSimpleFraction()) && eexp() > 0
-            && (e->eexp().IsInt() || e->eexp().IsSimpleFraction()) && e->eexp() > 0
+            && (eexp().IsInt() || eexp().IsSimpleFraction())
+            && (e->eexp().IsInt() || e->eexp().IsSimpleFraction())
             )
         {
             updateExponentiation(eexp() + e->getExponentiation());
