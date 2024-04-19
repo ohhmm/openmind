@@ -61,14 +61,10 @@ namespace math {
     constexpr const Valuable& zero = vo<0>();
     constexpr const Valuable& one = vo<1>();
     constexpr const Valuable& two = vo<2>();
-#ifdef MSVC
-    constexpr const Valuable& half = vf<.5>();
-    constexpr const Valuable& quarter = vf<.25>();
-#else
-    const Valuable& half = static_cast<const Valuable&>(vo<1>()) / static_cast<const Valuable&>(vo<2>());
-    const Fraction Quarter {static_cast<const Valuable&>(vo<1>()), static_cast<const Valuable&>(vo<4>()) };
+    const Fraction Half{1_v, 2_v};
+    constexpr const Valuable& half = Half;
+    const Fraction Quarter {1, 4};
     constexpr const Valuable& quarter = Quarter;
-#endif
     constexpr const Valuable& minus_1 = vo<-1>();
 
     const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
