@@ -19,6 +19,7 @@
 
 #include "stdafx.h"
 #include "trie.h"
+#include <cstdlib>
 
 #ifndef _MSC_VER
 //constexpr EnglishTrieTraits::range_t EnglishTrieTraits::alphabet[];
