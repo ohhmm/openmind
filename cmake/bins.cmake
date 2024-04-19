@@ -536,4 +536,11 @@ macro(exe)
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
     endif ()
 
+	if(CPACK_BINARY_NSIS)
+		LIST(APPEND CPACK_NSIS_CREATE_ICONS_EXTRA "  CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\${this_target}.lnk' '$INSTDIR\\\\bin\\\\${this_target}.exe' '' '$INSTDIR\\\\bin\\\\${this_target}.exe' 0 SW_SHOWNORMAL '' '%APPDATA%\\\\${this_target}'")
+		LIST(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA "  Delete '$SMPROGRAMS\\\\$START_MENU\\\\${this_target}.lnk'")
+		LIST(APPEND CPACK_NSIS_CREATE_ICONS_EXTRA  "  CreateShortCut '$DESKTOP\\\\${this_target}.lnk' '$INSTDIR\\\\bin\\\\${this_target}.exe' '' '$INSTDIR\\\\bin\\\\${this_target}.exe' 0 SW_SHOWNORMAL '' '%APPDATA%\\\\${this_target}'")
+		LIST(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA  "  Delete '$DESKTOP\\\\${this_target}.lnk'")
+	endif()
+
 endmacro()
