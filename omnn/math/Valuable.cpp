@@ -281,32 +281,38 @@ namespace math {
         if(_1 == _2)
             merged = _1;
         else if (_1 == -_2)
+        {
             merged = _1 * constants::plus_minus_1;
-        else {
+        }
+        else
+        {
             // a = 1;
             auto s = _1 + _2;
-            if(s.IsZero()){
+            if(s.IsZero())
+            {
                 merged = (!_1.IsProduct() ? _1 : _2) * constants::plus_minus_1;
             }
-            else {
-                {
-                    OptimizeOff oo;
-                    // b = -s;
-                    auto c = _1 * _2;
-                    auto d = s.Sq() + c * -4;
-                    if (_1.IsMultival() == YesNoMaybe::No && _2.IsMultival() == YesNoMaybe::No) {
-                        merged = (Exponentiation(d, constants::half) + s) / constants::two;
-                    } else {
-                        auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
-                        dist.merge(_2.Distinct());
-                        auto grade = dist.size();
-                        auto targetGrade = constants::one.Shl(bits_in_use(grade));
-                        merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
-                    }
+            else
+            {
+                OptimizeOff oo;
+                // b = -s;
+                auto c = _1 * _2;
+                auto d = s.Sq() + c * -4;
+                if (_1.IsMultival() == YesNoMaybe::No && _2.IsMultival() == YesNoMaybe::No) {
+                    merged = (Exponentiation(d, constants::half) + s) / constants::two;
+                } else {
+                    auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
+                    dist.merge(_2.Distinct());
+                    auto grade = dist.size();
+                    auto targetGrade = constants::one.Shl(bits_in_use(grade));
+                    merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
                 }
-                merged.optimize();
             }
         }
+        {
+            OptimizeOn oo;
+			merged.optimize();
+		}
         return merged;
     }
 
@@ -332,8 +338,27 @@ namespace math {
         return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
     }
 
+    namespace {
+    void Optimize(Valuable::solutions_t& s) {
+        Valuable::solutions_t distinct;
+        Valuable::OptimizeOn enable;
+        while (s.size()) {
+			auto it = s.begin();
+			auto v = std::move(s.extract(it).value());
+            v.optimize();
+            distinct.emplace(std::move(v));
+		}
+		std::swap(s, distinct);
+    }
+    } // namespace
     Valuable::Valuable(solutions_t&& s)
     {
+        if (!optimizations
+            || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
+        ) {
+            Optimize(s);
+        }
+
         auto it = s.begin();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
 		std::cout << " Merging [ ";
