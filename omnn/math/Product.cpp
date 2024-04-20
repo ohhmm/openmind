@@ -12,6 +12,7 @@
 #include "i.h"
 #include "pi.h"
 #include "PrincipalSurd.h"
+#include "VarHost.h"
 #include <type_traits>
 #include <boost/multiprecision/cpp_int.hpp>
 
@@ -985,6 +986,10 @@ namespace math {
             if (v.IsMultival() != YesNoMaybe::Yes) {
                 auto it = std::find(begin(), end(), v);
                 if (it != end()) {
+                    auto va = v.FindVa();
+                    if (va) {
+                        va->getVaHost()->LogNotZero(v);
+                    }
                     Delete(it); // TODO : Review this branch to make it compatible with multivalue v
                     optimize();
                     return *this;
