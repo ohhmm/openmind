@@ -791,14 +791,29 @@ namespace
         return GCDofMembers().varless();
     }
 
+    Valuable& Sum::operator+=(const Sum& s) {
+        {
+            OptimizeOff oo;
+            for (auto& i : s) {
+                operator+=(i); // FIXME: operator+= -> Add
+            }
+
+            if (s.size()) {
+                optimized = {};
+            }
+        }
+		optimize();
+		return *this;
+	}
+
     Valuable& Sum::operator +=(const Valuable& v)
     {
         if (v.IsInt() && v == 0) {
             return *this;
         }
-        if (v.IsSum())
-            for (auto& i : v.as<Sum>())
-                operator+=(i);
+        if (v.IsSum()) {
+            operator+=(v.as<Sum>());
+        }
         else
         {
             for (auto it = members.begin(); it != members.end(); ++it)
