@@ -74,9 +74,32 @@ void VarHost::inc<>(std::string&)
 }
 
 void VarHost::LogNotZero(const Valuable& v) {
-	if (v.IsZero())
-		throw std::runtime_error("Variable is zero");
-    nonZeroItems[v.Vars()].emplace(v);
+    if (v.IsZero()) {
+        throw std::runtime_error("Variable is zero");
+    }
+    else if (v.IsSimple() && v.is_optimized()) {
+	}
+    else {
+        if (!v.FindVa()) {
+            if (!v.is_optimized()) {
+                Valuable::OptimizeOn enable;
+                auto copy = v;
+                copy.optimize();
+                if (copy.IsZero()) {
+					throw std::runtime_error("Variable is zero");
+                }
+                else if (copy.IsSimple()) {
+                    return;
+                }
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+                else {
+                    LOG_AND_IMPLEMENT("LogNotZero " << v << "  =  " << copy);
+                }
+#endif
+            }
+        }
+        nonZeroItems[v.Vars()].emplace(v);
+    }
 }
 
 namespace {
