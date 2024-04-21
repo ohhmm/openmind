@@ -1748,7 +1748,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         if (exp)
             return exp->operator<(v);
-        else if (!FindVa()) {
+        else if (operator==(v))
+			return false;
+        else if (!FindVa())
+        {
             double _1 = operator double();
             double _2 = static_cast<double>(v);
             if (_1 == _2) {
