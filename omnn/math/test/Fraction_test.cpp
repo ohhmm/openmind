@@ -93,6 +93,14 @@ BOOST_AUTO_TEST_CASE(FractionSimplification_tests
 	BOOST_TEST(c);
 }
 
+BOOST_AUTO_TEST_CASE(Fraction_optimization_no_hang_test
+    , *timeout(2)
+) {
+    DECL_VARS(X);
+    auto _ = constants::one / (2 * X);
+    _.optimize();
+}
+
 BOOST_AUTO_TEST_CASE(Balancing_no_hang_test
     , *timeout(2)
     * disabled()
