@@ -41,6 +41,7 @@
     "quantum.quantum-devkit-vscode",
     "llvm-vs-code-extensions.vscode-clangd",
     "ms-azuretools.vscode-docker",
+    "ms-iot.msiot-vscode-openenclave",
     "ms-toolsai.jupyter",
     "ms-vscode.cpptools",
     "ms-vscode.cmake-tools",
