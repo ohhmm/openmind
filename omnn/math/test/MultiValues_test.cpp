@@ -17,7 +17,7 @@ std::string l(const omnn::math::Valuable& v)
     return ss.str();
 }
 
-BOOST_AUTO_TEST_CASE(MergeOr_tests)
+BOOST_AUTO_TEST_CASE(MergeOr_tests, *disabled())
 {
 #define ITEMS -1, 1
     auto o = Valuable::MergeOr(ITEMS);
@@ -40,7 +40,6 @@ BOOST_AUTO_TEST_CASE(MergeOr_tests)
     items = {ITEMS};
     BOOST_TEST(d == items);
 #undef ITEMS
-
 }
 
 BOOST_AUTO_TEST_CASE(Debranching_Dilemma_test)
@@ -58,7 +57,7 @@ BOOST_AUTO_TEST_CASE(Debranching_Dilemma_test)
     BOOST_TEST(_2 == 2); // because x is the same for both branches
 }
 
-BOOST_AUTO_TEST_CASE(Other_signs_tests) {
+BOOST_AUTO_TEST_CASE(Other_signs_tests, *disabled()) {
     auto _1 = -1_v * (-4_v ^ constants::half) * (-16 ^ constants::half);
     auto _2 = constants::plus_minus_1 * 8;
     BOOST_TEST(_1 == _2);

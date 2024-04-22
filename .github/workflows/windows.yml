@@ -48,12 +48,12 @@ jobs:
       id: cpu-cores
     - name: make check Debug
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 240 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "MultiValues_test|image_codec_test|ts|Polyfit_test" --output-on-failure
+      run: ctest --timeout 240 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test" --output-on-failure
             #   --rerun-failed --output-on-failure
     - name: Build Release
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --config Release
     - name: make check Release
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 240 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "MultiValues_test|image_codec_test|ts|Polyfit_test"  --output-on-failure
+      run: ctest --timeout 240 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test"  --output-on-failure
             #   --rerun-failed --output-on-failure
