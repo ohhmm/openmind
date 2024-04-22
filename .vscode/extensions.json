@@ -1,6 +1,7 @@
 {
   "recommendations": [
   "codeium.codeium",
+  "huggingface.huggingface-vscode",
   "github.copilot",
   "github.vscode-pull-request-github",
   "goast-ai.goast",
