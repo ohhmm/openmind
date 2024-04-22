@@ -1676,7 +1676,8 @@ namespace
         }
         if(grade==0){
 #ifndef NDEBUG
-            //grade = FillPolyCoeff(coefs, va);
+            //coefficients.clear();
+            //grade = FillPolyCoeff(coefficients, va);
 #endif
             return Valuable(std::move(s));
         } else if (grade == 1) {

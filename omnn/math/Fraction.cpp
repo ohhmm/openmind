@@ -138,9 +138,14 @@ namespace math {
             }
 
             if (numerator().IsZero()) {
-                if (denominator().IsZero()) {
+                auto& dn = denominator();
+                if (dn.IsZero()) {
                     throw "NaN";
-				}
+                } else {
+                    auto variable = dn.FindVa();
+                    if (variable)
+                        variable->getVaHost()->LogNotZero(denominator());
+                }
 				Become(std::move(numerator()));
                 break;
 			}
