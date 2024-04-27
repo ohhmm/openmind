@@ -87,6 +87,9 @@ extern const Variable& integration_result_constant;
     class VarHost;
     struct ValuableDescendantMarker {};
 
+    Valuable implement(const char* str = "");
+
+
 class Valuable
         : public OpenOps<Valuable>
 {
@@ -659,9 +662,6 @@ protected:
 
     //   TODO : std::shared_ptr<std::vector<Valuable>> cachedValues;
 };
-
-
-Valuable implement(const char* str = "");
 
 template<class T>
 const T& Valuable::as() const {

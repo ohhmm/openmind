@@ -30,8 +30,8 @@ namespace math {
 
         void optimize() override { }
         //void expand() override { }
-        Valuable Sqrt() const override { IMPLEMENT }
-        
+        Valuable Sqrt() const override;
+
         bool IsComesBefore(const Valuable& v) const override
         {
             return *this > v;

@@ -3,8 +3,8 @@
 //
 
 #pragma once
+#include <omnn/math/ValuableDescendantContract.h>
 #include <type_traits>
-#include "ValuableDescendantContract.h"
 
 namespace omnn{
 namespace math {
