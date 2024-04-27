@@ -15,8 +15,7 @@ class DB;
 
 #include <storage/CacheBase.h>
 
-#include "VarHost.h"
-#include "Variable.h"
+#include <omnn/math/VarHost.h>
 
 
 namespace omnn::math {

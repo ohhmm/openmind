@@ -18,8 +18,8 @@
 
 #include <boost/any.hpp>
 
-#include "Integer.h"
-#include "Variable.h"
+#include <omnn/math/Integer.h>
+#include <omnn/math/Variable.h>
 
 namespace omnn {
 namespace math {

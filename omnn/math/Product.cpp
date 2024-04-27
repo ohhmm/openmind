@@ -253,6 +253,13 @@ namespace math {
         if (!optimizations || optimized)
             return;
         MarkAsOptimized();
+        OptimizationLoopDetect<Product> antilooper(*this);
+        if (antilooper.isLoopDetected()) {
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            LOG_AND_IMPLEMENT("Loop of optimizating detected in " << *this);
+#endif
+            return;
+        }
 
         auto isPlusMinus = YesNoMaybe::Maybe;
         auto IsPlusMinus = [&] {
@@ -1121,6 +1128,49 @@ namespace math {
         return isLess;
     }
 
+    bool Product::operator ==(const Product& value) const
+    {
+        bool same = {};
+        auto& c1 = GetConstCont();
+        auto& c2 = value.GetConstCont();
+        auto sz1 = c1.size();
+        auto sz2 = c2.size();
+        auto sameSizes = sz1 == sz2;
+        if(sameSizes) {
+            same = c1 == c2;
+        } else if (sz1-sz2==1 || sz2-sz1==1) {
+            auto it1 = c1.begin(), it2 = c2.begin();
+            auto e1 = c1.end(), e2 = c2.end();
+            for(same = true;
+                same && it1 != e1 && it2 != e2;
+                ++it1, ++it2)
+            {
+                if(it1->Same(1_v)){
+                    ++it1;
+                }
+                if(it2->Same(1_v)){
+                    ++it2;
+                }
+
+                if(it1 == e1 || it2 == e2)
+                    continue;
+
+                same = same && it1->Same(*it2);
+            }
+
+            same = same && it1 == e1 && it2 == e2;
+        } else {
+            same = {};
+        }
+        if (!same // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
+            && IsMultival() == YesNoMaybe::Yes
+            && value.IsMultival() == YesNoMaybe::Yes)
+        {
+            //LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
+        }
+        return same;
+    }
+
     namespace {
         constexpr std::hash<a_int> Hasher;
         const size_t Hash1 = Hasher(1);
@@ -1130,42 +1180,12 @@ namespace math {
         auto sameHash = (Valuable::hash & ~Hash1) == (v.Hash() & ~Hash1); // ignore multiplication by 1
         auto same = v.Is<Product>() && sameHash;
         auto& c1 = GetConstCont();
-        auto sz1 = c1.size();
         if (same) {
-            auto& vp = v.as<Product>();
-            auto& c2 = vp.GetConstCont();
-            auto sz2 = c2.size();
-            auto sameSizes = sz1 == sz2;
-            if(sameSizes) {
-                same = c1 == c2;                
-            } else if (sz1-sz2==1 || sz2-sz1==1) {
-                auto it1 = c1.begin(), it2 = c2.begin();
-                auto e1 = c1.end(), e2 = c2.end();                    
-                for(same = true;
-                    same && it1 != e1 && it2 != e2;
-                    ++it1, ++it2)
-                {
-                    if(it1->Same(1_v)){
-                        ++it1;
-                    }
-                    if(it2->Same(1_v)){
-                        ++it2;
-                    }
-                    
-                    if(it1 == e1 || it2 == e2)
-                        continue;
-                    
-                    same = same && it1->Same(*it2);
-                }
-                
-                same = same && it1 == e1 && it2 == e2;
-            } else {
-                same = {};
-            }
+            same = operator ==(v.as<Product>());
         }
-        else if (sameHash
-                 && (sz1 == 1
-                     || (sz1 == 2 && c1.begin()->Same(1_v) )))
+        else if (size_t sz1; sameHash
+                             && ((sz1 = c1.size()) == 1
+                                 || (sz1 == 2 && c1.begin()->Same(1_v) )))
         {
             same = c1.rbegin()->operator==(v);
         } else if (members.empty()) {
@@ -1187,12 +1207,6 @@ namespace math {
                     }
                 }
             }
-        } else if (v.IsProduct()
-            && IsMultival() == YesNoMaybe::Yes
-            && v.IsMultival() == YesNoMaybe::Yes)
-        {
-            // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
-            //LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
         }
         return same;
     }

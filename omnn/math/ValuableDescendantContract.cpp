@@ -57,4 +57,9 @@ Valuable ValuableDescendantBase::Univariate() const {
 	return uni;
 }
 
-}}
+Valuable ValuableDescendantBase::Sqrt() const {
+    LOG_AND_IMPLEMENT("Implement Sqrt method for " << *this);
+}
+
+} // namespace math
+} // namespace omnn
