@@ -173,15 +173,19 @@ function(apply_target_commons this_target)
 			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-wunicode>
 			)
 		message("${CMAKE_BINARY_DIR}/bin")
-	    target_link_directories(${this_target} PUBLIC
-			${Boost_INCLUDE_DIR}/stage/lib
-			${EXTERNAL_FETCHED_BOOST}/stage/lib
-			C:/Boost/lib
-			)
+        if(EXISTS ${Boost_INCLUDE_DIR}/stage/lib)
+            target_link_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR}/stage/lib)
+        endif()
+        if(EXISTS ${EXTERNAL_FETCHED_BOOST}/stage/lib)
+            target_link_directories(${this_target} PUBLIC ${EXTERNAL_FETCHED_BOOST}/stage/lib)
+        endif()
+        if(EXISTS C:/Boost/lib)
+            target_link_directories(${this_target} PUBLIC C:/Boost/lib)
+        endif()
 	else()
 		target_compile_definitions(${this_target} PUBLIC
 			MSVC_CONSTEXPR=
-                        NO_MSVC_CONSTEXPR=constexpr
+            NO_MSVC_CONSTEXPR=constexpr
 			)
 		if(APPLE)
 			target_compile_definitions(${this_target} PUBLIC
@@ -193,8 +197,8 @@ function(apply_target_commons this_target)
 			target_compile_definitions(${this_target} PUBLIC
 				APPLE_CONSTEXPR=
 				NO_APPLE_CONSTEXPR=constexpr
-                                $<$<CXX_COMPILER_ID:Clang>:NO_CLANG_CONSTEXPR=>
-                                $<$<NOT:$<CXX_COMPILER_ID:Clang>>:NO_CLANG_CONSTEXPR=constexpr>
+                $<$<CXX_COMPILER_ID:Clang>:NO_CLANG_CONSTEXPR=>
+                $<$<NOT:$<CXX_COMPILER_ID:Clang>>:NO_CLANG_CONSTEXPR=constexpr>
 				)
 		endif()
 	endif()
@@ -476,13 +480,22 @@ macro(exe)
         ${CMAKE_BINARY_DIR}/include
         ${${this_target}_INCLUDE_DIR}
         )
-    target_link_directories(${this_target} PUBLIC
-        ${CMAKE_BINARY_DIR}/lib
-        ${Boost_LIBRARIES}
+
+    foreach(dir
+        /usr/local/lib
         ${Boost_INCLUDE_DIR}/stage/lib
         ${Boost_INCLUDE_DIR}/../../lib
-        /usr/local/lib
+        ${EXTERNAL_FETCHED_BOOST}/stage/lib
+        ${EXTERNAL_FETCHED_BOOST}/../../lib
+        ${CMAKE_BINARY_DIR}/lib
+        ${CMAKE_BINARY_DIR}/lib64
         )
+
+        if(EXISTS ${dir})
+            target_link_directories(${this_target} PUBLIC ${dir})
+        endif()
+
+    endforeach()
 
     foreach(item ${deps})
         message("adding ${item} sublib ${LIB} into ${this_target}")
