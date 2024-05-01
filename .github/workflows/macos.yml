@@ -5,8 +5,8 @@ on: [push]
 jobs:
   build-in-macos:
 
-    runs-on: macos-latest
-    
+    runs-on: macos-13
+
     steps:
     - uses: actions/checkout@v3
     - name: Create Build Dir
