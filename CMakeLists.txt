@@ -107,15 +107,13 @@ if(NOT EXISTS INTEL_COMPILER_PATH)
 		set(CMAKE_CXX_COMPILER ${INTEL_COMPILER_PATH} CACHE STRING "Intel compiler path" FORCE)
 	endif()
 endif()
-if(NOT IntelSYCL_FOUND)
-	find_package(IntelSYCL)
-	if(IntelSYCL_FOUND)
-		message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
-		message("SYCL_FLAGS: ${SYCL_FLAGS}")
-		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
-	endif()
-	option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
-endif()
+
+# Set the IntelSYCL_DIR to the known path in the Docker image
+set(IntelSYCL_DIR "/opt/intel/oneapi/2024.1/lib/cmake/IntelSYCL" CACHE PATH "Path to the IntelSYCL package")
+
+# Attempt to find the IntelSYCL package
+find_package(IntelSYCL REQUIRED)
+
 if(NOT IntelDPCPP_FOUND)
 	find_package(IntelDPCPP)
 	if(IntelDPCPP_FOUND)
@@ -128,7 +126,7 @@ if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
@@ -419,6 +417,6 @@ function(_openmind_hook_end_of_configure)
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT
 	)
 endfunction()
