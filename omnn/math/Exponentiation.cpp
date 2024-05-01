@@ -49,7 +49,7 @@ namespace omnn::math {
     {
         return getMaxVaExp(getBase(), getExponentiation());
     }
-    
+
     Valuable Exponentiation::varless() const
     {
         if (FindVa())
@@ -91,7 +91,7 @@ namespace omnn::math {
             Become(std::move(ebase()));
             return;
         }
-        
+
         if (eexp().IsSum())
         {
             auto& s = eexp().as<Sum>();
@@ -203,7 +203,7 @@ namespace omnn::math {
 //                }
 //            }
 //        }
-        
+
         if (ebase().IsFraction() && eexp().IsMultival()==YesNoMaybe::No) {
             auto& f = ebase().as<Fraction>();
             auto _ = (f.getNumerator() ^ eexp()) / (f.getDenominator() ^ eexp());
@@ -232,7 +232,7 @@ namespace omnn::math {
                 if (p.Has(constants::pi) &&
                     p.Has(constants::i)) { // TODO : sequence does matter :
 																 // e^(i*pi) =?= e^(pi*i)
-																 // https://en.wikipedia.org/wiki/Commutative_property#Division,_subtraction,_and_exponentiation 
+																 // https://en.wikipedia.org/wiki/Commutative_property#Division,_subtraction,_and_exponentiation
 																 // what about Commutativity on irrationals product?
 																 // lets assume yes for this particular expression, but there are some doubts, need a prove
 
@@ -496,7 +496,7 @@ namespace omnn::math {
             InitVars();
         }
     }
-    
+
     Valuable& Exponentiation::operator +=(const Valuable& v)
     {
         return Become(Sum {*this, v});
@@ -660,7 +660,7 @@ namespace omnn::math {
             //        copy.updateBase(std::move(is.second));
             //        is.second = copy;
             //    }
-            //} else 
+            //} else
 			if (ee == constants::minus_1)
             {
                 auto gcd = ebase().GCD(v);
@@ -760,14 +760,14 @@ namespace omnn::math {
                 thisValues.insert(thisVal);
                 return true;
             });
-            
+
             v.Values([&](auto& vVal) {
                 for (auto& tv : thisValues) {
                     vals.insert(tv / vVal);
                 }
                 return true;
             });
-            
+
             return Become(Valuable(std::move(vals)));
         }
         else if (v.IsExponentiation())
@@ -810,7 +810,7 @@ namespace omnn::math {
         optimize();
         return *this;
     }
-    
+
     bool Exponentiation::operator ==(const Valuable& v) const
     {
         auto eq = v.IsExponentiation() && Hash()==v.Hash();
@@ -829,7 +829,7 @@ namespace omnn::math {
         }
         return eq;
     }
-    
+
     Exponentiation::operator double() const
     {
         return std::pow(static_cast<double>(ebase()), static_cast<double>(eexp()));
@@ -842,9 +842,9 @@ namespace omnn::math {
         if(ehx) {
             IMPLEMENT
             if(bhx){
-                
+
             }else{
-                
+
             }
         } else if (bhx) {
             if(ebase() == x)
@@ -856,7 +856,7 @@ namespace omnn::math {
         optimize();
         return *this;
     }
-    
+
     Valuable& Exponentiation::integral(const Variable& x, const Variable& C)
     {
         if (ebase()==x) {
@@ -875,7 +875,7 @@ namespace omnn::math {
         } else {
             IMPLEMENT
         }
-        
+
         return *this;
     }
 
@@ -889,7 +889,7 @@ namespace omnn::math {
             if (e.getExponentiation() == getExponentiation())
                 return getBase() < e.getBase();
         }
-        
+
         return base::operator <(v);
     }
 
@@ -909,12 +909,12 @@ namespace omnn::math {
             is = _2.as<Fraction>().getDenominator().IsEven() || is;
         return is;
     }
-    
+
     void Exponentiation::Values(const std::function<bool(const Valuable&)>& fun) const
     {
         if (fun) {
             auto cache = optimized; // TODO: multival caching (inspect all optimized and optimization transisions) auto isCached =
-            
+
             solutions_t vals;
             {
             std::deque<Valuable> d1;
@@ -922,14 +922,14 @@ namespace omnn::math {
                 d1.push_back(v);
                 return true;
             });
-            
+
             _2.Values([&](auto& v){
                 auto vIsFrac = v.IsFraction();
                 const Fraction* f;
                 if(vIsFrac)
                     f = &v.template as<Fraction>();
                 auto vMakesMultival = vIsFrac && f->getDenominator().IsEven()==YesNoMaybe::Yes;
-                
+
                 for(auto& item1:d1){
                     if(vMakesMultival){
                         static const Variable x;
@@ -949,7 +949,7 @@ namespace omnn::math {
                 return true;
             });
             }
-            
+
             for(auto& v:vals)
                 fun(v);
         }
@@ -968,7 +968,7 @@ namespace omnn::math {
             out << "pow(";
             getBase().code(out) << ',';
             getExponentiation().code(out) << ')';
-        }       
+        }
         return out;
     }
 
@@ -1001,7 +1001,7 @@ namespace omnn::math {
                 if (c != ec)
                     is = c > ec;
                 else {
-                    is = getBase().IsComesBefore(e.getBase()) || 
+                    is = getBase().IsComesBefore(e.getBase()) ||
                         (!e.ebase().IsComesBefore(ebase()) && getExponentiation().IsComesBefore(e.getExponentiation())); //  || str().length() > e->str().length();
     //                auto expComesBefore = eexp().IsComesBefore(e->eexp());
     //                auto ebase()ComesBefore = ebase().IsComesBefore(e->ebase());
@@ -1026,7 +1026,7 @@ namespace omnn::math {
 
         return is;
     }
-    
+
     Valuable Exponentiation::calcFreeMember() const
     {
         Valuable c;
@@ -1061,7 +1061,7 @@ namespace omnn::math {
     }
 
     Valuable& Exponentiation::sqrt() {
-		hash ^= _2.Hash();
+        hash ^= _2.Hash();
         _2 /= 2;
         hash ^= _2.Hash();
         optimized = {};
@@ -1069,8 +1069,7 @@ namespace omnn::math {
         return *this;
     }
 
-    const Valuable::vars_cont_t& Exponentiation::getCommonVars() const
-    {
+    const Valuable::vars_cont_t& Exponentiation::getCommonVars() const {
 #ifndef NDEBUG
         auto& b = ebase();
         if (b.IsVa()) { // TODO: FindVa too
@@ -1082,14 +1081,13 @@ namespace omnn::math {
                 }
 
                 //<< (v.begin()->first == b)
-                LOG_AND_IMPLEMENT(*this << " Exponentiation::getCommonVars not ready, no " << b << " in v "
-				);
+                LOG_AND_IMPLEMENT(*this << " Exponentiation::getCommonVars not ready, no " << b << " in v ");
             }
         }
 #endif
         return v;
     }
-    
+
     Valuable::vars_cont_t Exponentiation::GetVaExps() const
     {
         auto vaExps = getBase().GetVaExps();
@@ -1099,7 +1097,7 @@ namespace omnn::math {
         }
         return vaExps;
     }
-    
+
     Valuable Exponentiation::InCommonWith(const Valuable& v) const
     {
         auto c = 1_v;
@@ -1161,7 +1159,7 @@ namespace omnn::math {
         }
         return c;
     }
-    
+
     Valuable Exponentiation::operator()(const Variable& va) const
     {
         return operator()(va, constants::zero);

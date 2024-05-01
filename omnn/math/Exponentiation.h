@@ -3,31 +3,32 @@
 //
 #pragma once
 #include <omnn/math/Variable.h>
-#include <omnn/math/DuoValDescendant.h>
+#include <omnn/math/Logarithm.h>
 
 namespace omnn::math {
 
 class Exponentiation
-        : public DuoValDescendant<Exponentiation>
+    : public DuoValDescendant<Exponentiation>
 {
-	using base = DuoValDescendant<Exponentiation>;
+    using base = DuoValDescendant<Exponentiation>;
     vars_cont_t v;
     void InitVars();
 
 protected:
-    Valuable& ebase() { return base::_1; }
-    Valuable& eexp() { return base::_2; }
+    friend Logarithm;
+    constexpr Valuable& ebase() { return base::_1; }
+    constexpr Valuable& eexp() { return base::_2; }
     std::ostream& print_sign(std::ostream& out) const override;
 public:
     std::ostream& code(std::ostream& out) const override;
 
     // DONT: overrides behaviour (calls InitVars)
-	// using base::base;
+    // using base::base;
 
-	template <class BaseT, class ExponentiationT>
+    template <class BaseT, class ExponentiationT>
     Exponentiation(BaseT&& b, ExponentiationT&& e)
         : base(std::forward<BaseT>(b), std::forward<ExponentiationT>(e))
-	{
+    {
         InitVars();
     }
 
@@ -35,13 +36,16 @@ public:
         return [](const auto& base, const auto& exp) { return ::std::pow(base, exp); };
     }
 
+    [[nodiscard]]
     bool IsExponentiation() const override { return true; }
+    [[nodiscard]]
     bool IsVaExp() const override { return ebase().IsVa(); }
+    [[nodiscard]]
     bool IsSimple() const override {
-		return !FindVa() && eexp().IsInt();
-	}
+        return !FindVa() && eexp().IsInt();
+    }
+    [[nodiscard]]
     bool IsZero() const override { return _1.IsZero() && !_2.IsZero(); }
-
 
     Valuable Sign() const override;
     bool IsMultiSign() const;
@@ -52,14 +56,14 @@ public:
     template<class T>
     void setBase(T&& b)
     {
-		set1(::std::forward<T>(b));
+        set1(::std::forward<T>(b));
         InitVars();
         optimized = {};
     }
     template<class T>
     void updateBase(T&& b)
     {
-		update1(std::forward<T>(b));
+        update1(std::forward<T>(b));
         InitVars();
         optimized = {};
     }
@@ -69,14 +73,14 @@ public:
     template<class T>
     void setExponentiation(T&& exponentiation)
     {
-		set2(std::forward<T>(exponentiation));
+        set2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
     }
     template<class T>
     void updateExponentiation(T&& exponentiation)
     {
-		update2(std::forward<T>(exponentiation));
+        update2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
     }
