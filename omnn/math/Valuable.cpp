@@ -51,8 +51,9 @@ using namespace std::string_view_literals;
 #undef min
 #endif
 
-namespace omnn{
-namespace math {
+namespace omnn::math {
+    class Valuable;
+
     const a_int Valuable::a_int_cz = 0;
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
@@ -870,7 +871,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 };
                 o_pSurd = [&](Valuable&& val) {
                     if (mulByNeg) {
-                        val *= -1;
+                        val *= constants::minus_1;
                         mulByNeg = {};
                     }
                     PrincipalSurd ps{std::move(v), std::move(val)};
@@ -1491,11 +1492,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable& Valuable::d(const Variable& x)
     {
         if(exp) {
-            Valuable& o = exp->d(x);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
+            return exp->d(x);
         }
         else
             IMPLEMENT
@@ -2022,12 +2019,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 		}
 	}
 
-	Valuable Valuable::Sqrt() const {
-        if(exp)
-            return exp->Sqrt();
-        else
-            return PrincipalSurd(*this, 2);
-    }
+        Valuable Valuable::Sqrt() const {
+            if (exp)
+                return exp->Sqrt();
+            else
+                return PrincipalSurd(*this, 2);
+        }
 
     Valuable& Valuable::sqrt() {
         if (exp)
@@ -3129,7 +3126,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 
     size_t hash_value(const Valuable& v) { return v.Hash(); }
 
-}}
+}
 
 namespace std
 {
@@ -3157,7 +3154,7 @@ namespace std
     {
         return base ^ exp;
     }
-}
+} // namespace std
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)
 {
