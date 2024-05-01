@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: intel/oneapi:basekit
+      image: intel/oneapi:2024.1.0-devel-ubuntu22.04
 
     steps:
     - uses: actions/checkout@v3
