@@ -114,7 +114,9 @@ if(NOT IntelSYCL_FOUND)
 		message("SYCL_FLAGS: ${SYCL_FLAGS}")
 		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
 	endif()
-	option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
+endif()
+if(NOT IntelSYCL_FOUND)
+  message(FATAL_ERROR "IntelSYCL package not found. Please ensure IntelSYCL is installed and properly configured in the environment.")
 endif()
 if(NOT IntelDPCPP_FOUND)
 	find_package(IntelDPCPP)
@@ -128,7 +130,7 @@ if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
@@ -419,6 +421,6 @@ function(_openmind_hook_end_of_configure)
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT
 	)
 endfunction()
