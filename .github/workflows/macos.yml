@@ -3,33 +3,22 @@ name: C/C++ CI
 on: [push]
 
 jobs:
-  build-in-macos:
+  build-in-linux-container:
+    runs-on: ubuntu-latest
 
-    runs-on: macos-13
+    container:
+      image: intel/oneapi:basekit
 
     steps:
     - uses: actions/checkout@v3
     - name: Create Build Dir
-      run: cmake -E make_directory ${{github.workspace}}/build
-    - name: Pre-Install Boost, LevelDB
-      run: |
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        brew install boost-python3 leveldb
-        brew install sycl
-    - name: Set IntelSYCL_DIR environment variable
-      run: echo "IntelSYCL_DIR=$(brew --prefix sycl)" >> $GITHUB_ENV
+      run: mkdir -p ${{github.workspace}}/build
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
-    - name: Install prerequisites
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu` --config Release
-    - name: Reconfigure to detect newly installed prerequisites
-      working-directory: ${{github.workspace}}/build
-      run: cmake .
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Release -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
-    - name: Check
+      run: cmake --build . --config Release
+    - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 120 -C Release -j `sysctl -n hw.ncpu` -E image_codec_test\|ts\|Polyfit_test
+      run: ctest -C Release
