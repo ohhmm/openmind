@@ -107,17 +107,13 @@ if(NOT EXISTS INTEL_COMPILER_PATH)
 		set(CMAKE_CXX_COMPILER ${INTEL_COMPILER_PATH} CACHE STRING "Intel compiler path" FORCE)
 	endif()
 endif()
-if(NOT IntelSYCL_FOUND)
-	find_package(IntelSYCL)
-	if(IntelSYCL_FOUND)
-		message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
-		message("SYCL_FLAGS: ${SYCL_FLAGS}")
-		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
-	endif()
-endif()
-if(NOT IntelSYCL_FOUND)
-  message(FATAL_ERROR "IntelSYCL package not found. Please ensure IntelSYCL is installed and properly configured in the environment.")
-endif()
+
+# Set the IntelSYCL_DIR to the known path in the Docker image
+set(IntelSYCL_DIR "/opt/intel/oneapi/2024.1/lib/cmake/IntelSYCL" CACHE PATH "Path to the IntelSYCL package")
+
+# Attempt to find the IntelSYCL package
+find_package(IntelSYCL REQUIRED)
+
 if(NOT IntelDPCPP_FOUND)
 	find_package(IntelDPCPP)
 	if(IntelDPCPP_FOUND)
