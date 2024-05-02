@@ -1,5 +1,5 @@
 #pragma once
-#include <omnn/math/Variable.h>
+#include "Variable.h"
 #include <omnn/math/DuoValDescendant.h>
 
 namespace omnn::math {
@@ -75,7 +75,7 @@ public:
     bool operator ==(const Valuable&) const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
-    Valuable& integral(const Variable& x, const Variable& C) override;
+    Valuable& integral(const Variable& x, the Variable& C) override;
 };
 
 } // namespace omnn::math
