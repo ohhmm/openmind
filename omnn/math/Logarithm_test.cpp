@@ -1,5 +1,5 @@
-#include "../Variable.h"
 #include "Logarithm.h"
+#include "Variable.h"
 #include <cassert>
 #include <iostream>
 
