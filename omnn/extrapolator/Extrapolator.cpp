@@ -6,6 +6,19 @@
 #include "math/Integer.h"
 #include "math/Sum.h"
 
+namespace omnn{
+namespace math{
+    Valuable abs(const Valuable& v) {
+        return v.abs();
+    }
+
+    Valuable sqrt(const Valuable& v) {
+        // Assuming Valuable class has a sqrt method
+        return v.sqrt();
+    }
+}
+}
+
 using namespace omnn;
 using namespace math;
 
@@ -14,20 +27,20 @@ auto det_fast(extrapolator_base_matrix matrix)
 {
     using T = extrapolator_base_matrix::value_type;
     ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
-    
+
     auto isSingular = ublas::lu_factorize(matrix, pivots);
     if (isSingular)
         return T(0);
-    
+
     T det = 1;
     for (std::size_t i = 0; i < pivots.size(); ++i)
     {
         if (pivots(i) != i)
             det *= static_cast<double>(-1);
-        
+
         det *= matrix(i, i);
     }
-    
+
     return det;
 }
 
