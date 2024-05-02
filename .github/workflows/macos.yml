@@ -14,7 +14,7 @@ jobs:
     - name: Create Build Dir
       run: mkdir -p ${{github.workspace}}/build
     - name: Set SYCL environment variable
-      run: echo "SYCL_DIR=/opt/intel/oneapi/compiler/latest/linux" >> $GITHUB_ENV
+      run: echo "SYCL_DIR=/opt/intel/oneapi/compiler/2024.1/lib/cmake/IntelSYCL" >> $GITHUB_ENV
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=Release -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
