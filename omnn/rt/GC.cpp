@@ -34,7 +34,7 @@ void Nop(std::shared_ptr<void> obj) { }
 
 void GC::DispatchDispose(std::shared_ptr<void>&& obj) {
     if (!GC::IsThreadGC() && !GC::GCThread.get_stop_token().stop_requested())
-        Bin.push(obj);
+        Bin.push(std::move(obj));
 }
 
 bool GC::IsThreadGC() {
