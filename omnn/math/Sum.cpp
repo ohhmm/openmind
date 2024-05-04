@@ -1434,7 +1434,7 @@ namespace
                     }
                 }
 
-                auto vcnt = noVa ? 0 : it->second; // exponentation of va
+                auto vcnt = noVa ? constants::zero : it->second; // exponentation of va
                 if (!vcnt.IsInt()) {
                     IMPLEMENT
                 }
