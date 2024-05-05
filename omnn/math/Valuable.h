@@ -2,7 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
-#include <omnn/math/OpenOps.h>
+#include "OpenOps.h"
 
 #include <deque>
 #include <functional>
@@ -58,7 +58,7 @@ struct hash<omnn::math::Valuable> {
 
 namespace omnn{
 namespace math {
-	
+
 namespace constants {
 extern const Valuable& e;
 extern const Valuable& i;
@@ -106,9 +106,9 @@ protected:
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
     static constexpr size_t DefaultAllocSize = 768;
-    constexpr virtual size_t getTypeSize() const { return sizeof(Valuable); }
-    constexpr virtual size_t getAllocSize() const { return sz; }
-    constexpr virtual void setAllocSize(size_t sz) { this->sz = sz; }
+    virtual size_t getTypeSize() const { return sizeof(Valuable); }
+    virtual size_t getAllocSize() const { return sz; }
+    virtual void setAllocSize(size_t sz) { this->sz = sz; }
 
     template<class T>
     constexpr Valuable() {}
@@ -248,12 +248,12 @@ public:
     explicit Valuable(Valuable* v);
     explicit Valuable(const encapsulated_instance& e);
     virtual std::type_index Type() const;
-    const Valuable Link() const; // TODO : handle simulteneous values changes 
+    const Valuable Link() const; // TODO : handle simulteneous values changes
 
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(Valuable&& v);
 
-    bool SerializedStrEqual(const std::string_view& s) const;
+    bool SerializedStrEqual(const std::string& s) const;
 
     Valuable(const Valuable& v);
 
@@ -274,7 +274,7 @@ public:
     : exp(t.Move())
     { }
 
-    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
+    Valuable(Valuable&&) = default;
     Valuable();
     Valuable(double d);
 
@@ -290,7 +290,7 @@ public:
 
     using NewVaFn_t = std::function<Valuable(const std::string&)>;
     Valuable(const std::string& s, NewVaFn_t newVa);
-    Valuable(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized = false);
+    Valuable(const std::string& str, std::shared_ptr<VarHost>, bool itIsOptimized = false);
 
     //constexpr
 	virtual ~Valuable()//{}
@@ -338,7 +338,7 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
     void SetView(View v);
-    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
+    bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
 
@@ -455,7 +455,7 @@ public:
     virtual bool HasVa(const Variable&) const;
     using var_set_t = std::set<Variable>;
     virtual void CollectVa(var_set_t& s) const;
-    using va_names_t = std::map<std::string_view, Variable>;
+    using va_names_t = std::map<const std::string, Variable>;
     virtual void CollectVaNames(va_names_t& s) const;
     va_names_t VaNames() const;
     virtual std::shared_ptr<VarHost> getVaHost() const;
@@ -470,7 +470,7 @@ public:
     bool IsMonic() const;
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
-    Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
+    Valuable(std::string str, const va_names_t& vaNames, bool itIsOptimized = false);
 
 	Valuable operator!() const;
     explicit operator bool() const;
@@ -544,7 +544,7 @@ public:
     Valuable IfEq(const Valuable& v, const Valuable& Then,
                   const Valuable& Else) const; /// returns an expression which equals to @Then when this expression
                                                /// equals to @v param and @Else otherwise
-    
+
 	/// <summary>
 	/// bool is 0 or 1
 	/// </summary>
@@ -642,6 +642,38 @@ public:
 
 	virtual std::ostream& code(std::ostream& out) const;
     std::string OpenCL(const std::string_view& TypeName = "float") const;
+    std::string Cuda(const std::string_view& TypeName = "float") const {
+        std::string cudaCode = "extern \"C\" __global__ void valuableKernel(" + std::string(TypeName) + "* data, int size) {\n";
+        cudaCode += "    int idx = blockIdx.x * blockDim.x + threadIdx.x;\n";
+        cudaCode += "    if (idx < size) {\n";
+        if (Is<Constant>()) {
+            cudaCode += "        data[idx] = " + std::to_string(as<Constant>().getValue()) + ";\n";
+        } else if (Is<Variable>()) {
+            cudaCode += "        data[idx] = idx;\n";
+        } else if (Is<Sum>()) {
+            auto& sum = as<Sum>();
+            cudaCode += "        " + TypeName + " sum = 0;\n";
+            for (auto& item : sum.GetItems()) {
+                cudaCode += "        sum += " + item.Cuda(TypeName) + ";\n";
+            }
+            cudaCode += "        data[idx] = sum;\n";
+        } else if (Is<Product>()) {
+            auto& product = as<Product>();
+            cudaCode += "        " + TypeName + " product = 1;\n";
+            for (auto& factor : product.GetFactors()) {
+                cudaCode += "        product *= " + factor.Cuda(TypeName) + ";\n";
+            }
+            cudaCode += "        data[idx] = product;\n";
+        } else if (Is<Exponentiation>()) {
+            auto& exp = as<Exponentiation>();
+            cudaCode += "        " + TypeName + " base = " + exp.getBase().Cuda(TypeName) + ";\n";
+            cudaCode += "        " + TypeName + " exponent = " + exp.getExponentiation().Cuda(TypeName) + ";\n";
+            cudaCode += "        data[idx] = pow(base, exponent);\n";
+        }
+        cudaCode += "    }\n";
+        cudaCode += "}\n";
+        return cudaCode;
+    }
     std::string OpenCLuint() const;
     va_names_t OpenCLparamVarNames() const;
 
@@ -721,21 +753,9 @@ thread_local std::unordered_set<ValueT> OptimizationLoopDetect<ValueT>::LoopDete
 } // namespace math
 } // namespace omnn
 
-namespace std {
-
-template <class T>
-    requires std::derived_from<T, ::omnn::math::Valuable>
-struct hash<T> {
-    constexpr size_t operator()(const T& v) const { return static_cast<const omnn::math::Valuable&>(v).Hash(); }
-};
-
-} // namespace std
-
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
 //constexpr
 ::omnn::math::Valuable operator"" _v(unsigned long long v);
 //constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
 ::omnn::math::Valuable operator"" _v(long double v);
-
-
