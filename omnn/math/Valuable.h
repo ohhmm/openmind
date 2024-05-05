@@ -110,7 +110,6 @@ protected:
     virtual size_t getAllocSize() const { return sz; }
     virtual void setAllocSize(size_t sz) { this->sz = sz; }
 
-    template<class T>
     constexpr Valuable() {}
 
     constexpr Valuable(ValuableDescendantMarker)
@@ -641,39 +640,8 @@ public:
     virtual std::wstring save(const std::wstring&) const;
 
 	virtual std::ostream& code(std::ostream& out) const;
-    std::string OpenCL(const std::string_view& TypeName = "float") const;
-    std::string Cuda(const std::string_view& TypeName = "float") const {
-        std::string cudaCode = "extern \"C\" __global__ void valuableKernel(" + std::string(TypeName) + "* data, int size) {\n";
-        cudaCode += "    int idx = blockIdx.x * blockDim.x + threadIdx.x;\n";
-        cudaCode += "    if (idx < size) {\n";
-        if (Is<Constant>()) {
-            cudaCode += "        data[idx] = " + std::to_string(as<Constant>().getValue()) + ";\n";
-        } else if (Is<Variable>()) {
-            cudaCode += "        data[idx] = idx;\n";
-        } else if (Is<Sum>()) {
-            auto& sum = as<Sum>();
-            cudaCode += "        " + TypeName + " sum = 0;\n";
-            for (auto& item : sum.GetItems()) {
-                cudaCode += "        sum += " + item.Cuda(TypeName) + ";\n";
-            }
-            cudaCode += "        data[idx] = sum;\n";
-        } else if (Is<Product>()) {
-            auto& product = as<Product>();
-            cudaCode += "        " + TypeName + " product = 1;\n";
-            for (auto& factor : product.GetFactors()) {
-                cudaCode += "        product *= " + factor.Cuda(TypeName) + ";\n";
-            }
-            cudaCode += "        data[idx] = product;\n";
-        } else if (Is<Exponentiation>()) {
-            auto& exp = as<Exponentiation>();
-            cudaCode += "        " + TypeName + " base = " + exp.getBase().Cuda(TypeName) + ";\n";
-            cudaCode += "        " + TypeName + " exponent = " + exp.getExponentiation().Cuda(TypeName) + ";\n";
-            cudaCode += "        data[idx] = pow(base, exponent);\n";
-        }
-        cudaCode += "    }\n";
-        cudaCode += "}\n";
-        return cudaCode;
-    }
+    std::string OpenCL(const std::string& TypeName = "float") const;
+    std::string Cuda(const std::string& TypeName = "float") const;
     std::string OpenCLuint() const;
     va_names_t OpenCLparamVarNames() const;
 
