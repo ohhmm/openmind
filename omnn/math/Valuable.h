@@ -5,7 +5,6 @@
 #include "OpenOps.h"
 
 #include <deque>
-#include <functional>
 #include <list>
 #include <map>
 #include <memory>
@@ -286,7 +285,7 @@ public:
     Valuable(a_rational&&);
     Valuable(const a_rational&);
 
-    using NewVaFn_t = std::function<Valuable(const std::string&)>;
+    using NewVaFn_t = Valuable(*)(const std::string&);
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string& str, std::shared_ptr<VarHost>, bool itIsOptimized = false);
 
