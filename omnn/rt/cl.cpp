@@ -64,7 +64,7 @@ auto ComputeUnitsWinner = []() -> boost::compute::device {
 
 
 namespace omnn::rt {
-const boost::compute::device& GetComputeUnitsWinnerDevice() { return ComputeUnitsWinner; }
+extern const boost::compute::device& GetComputeUnitsWinnerDevice() { return ComputeUnitsWinner; }
 }
 
 #endif
