@@ -37,6 +37,8 @@ if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
 endif()
 
 # Ensure out-of-source build
+message("Diagnostic: CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
+message("Diagnostic: CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(FATAL_ERROR "CMake build should be run in a separate 'build' directory. Please create a 'build' directory and run 'cmake ..' from there.")
 endif()
