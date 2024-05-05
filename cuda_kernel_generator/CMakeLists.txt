@@ -42,8 +42,17 @@ target_include_directories(cuda_kernel_generator PRIVATE
 # Link CUDA libraries and the omnn/math library
 target_link_libraries(cuda_kernel_generator
     CUDA::cudart
-    omnn_math # Replace with the actual math library target name if different
+    /home/ubuntu/openmind/omnn/math/libstorage.a # Corrected the full path to the storage library
 )
 
 # Ensure shared libraries are used for the linker
 set_property(TARGET cuda_kernel_generator PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+
+# Explicitly set the standard include directories for the host compiler to ensure the correct headers are included
+set(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "/usr/include/c++/11;/usr/include/x86_64-linux-gnu/c++/11;/usr/include/c++/11/backward;/usr/lib/gcc/x86_64-linux-gnu/11/include;/usr/local/include;/usr/include/x86_64-linux-gnu;/usr/include")
+
+# Add an executable for testing the shared library
+add_executable(test_cuda_kernel_generator test_cuda_kernel_generator.cpp)
+
+# Link the test executable with the shared library
+target_link_libraries(test_cuda_kernel_generator cuda_kernel_generator)
