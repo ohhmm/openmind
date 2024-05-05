@@ -37,7 +37,7 @@ if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
 endif()
 
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
-	message(WARNING "build dir matches source dir")
+    message(FATAL_ERROR "CMake build should be run in a separate 'build' directory. Please create a 'build' directory and run 'cmake ..' from there.")
 endif()
 
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
