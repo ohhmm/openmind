@@ -224,7 +224,7 @@ bool System::Fetch(const Variable& va)
     
     if (!fetched) {
         vars.erase(va);
-        each(vars,
+        rt::each(vars,
 			[&](auto& v){
 				auto fetchModified = Fetch(v);
 				modified = fetchModified || modified;
@@ -409,7 +409,7 @@ System::solutions_t System::Solve(const Variable& va)
                 }
             } while(modified);
             
-            auto& es = vEs[va];
+            auto& es = Yarns(va);
             modified = {};
             std::vector<Variable> singleVars;
             for(auto& esi : es)
@@ -432,7 +432,9 @@ System::solutions_t System::Solve(const Variable& va)
                 else
                 {
                     Valuable::var_set_t vset;
-                    each(esi.first, [&](auto& v){ return vset.insert(v).second; });
+                    for (auto& variable : esi.first) {
+                        vset.insert(variable);
+                    }
                     vset.erase(va);
                     for(auto& v: vset)
                         Solve(v);

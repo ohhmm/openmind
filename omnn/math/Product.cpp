@@ -1348,8 +1348,9 @@ namespace math {
                 solutions.insert(0_v);
             }
             else {
-                std::cout << "Solving " << str() << std::endl;
-                IMPLEMENT // TODO: find exponentiations of va
+                for (auto& member : members) {
+                    member.solve(va, solutions);
+                }
             }
         }
     }

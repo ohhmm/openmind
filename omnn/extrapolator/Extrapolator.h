@@ -20,14 +20,14 @@ namespace omnn::math {
     //using extrapolator_value_type = a_rational;
     using extrapolator_value_type = Valuable;
     using extrapolator_base_matrix = boost::numeric::ublas::matrix<extrapolator_value_type>;
-    
+
 
 class Extrapolator
         : public extrapolator_base_matrix
 {
     using base = extrapolator_base_matrix;
     using T = extrapolator_base_matrix::value_type;
-    
+
     using solution_t = typename ublas::matrix_vector_solve_traits<base, ublas::vector<T>>::result_type;
 
     mutable solution_t solution;
@@ -89,7 +89,7 @@ public:
     operator Valuable() const;
 
     Valuable Factors(const Variable& row, const Variable& col, const Variable& val) const;
-    
+
     /**
      * Build formula of its ViewMatrix
      * @returns formula from two params

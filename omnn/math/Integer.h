@@ -155,6 +155,7 @@ public:
 
     static const ranges_t empty_zero_zone;
 
+    void solve(const Variable&, solutions_t&) const override {}
     Valuable::solutions_t GetIntegerSolution(const Variable& va) const override;
     bool Factorization(const std::function<bool(const Valuable&)>& f,
                        const Valuable& max,

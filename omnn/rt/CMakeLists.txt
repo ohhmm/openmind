@@ -1,4 +1,3 @@
-
 if (OPENMIND_USE_VCPKG)
     set(DEPENDENCIES
             Boost::filesystem

@@ -71,7 +71,7 @@ public:
     StoringTasksQueue(bool autoCleanUp = true)
         : CleanUp(autoCleanUp)
     {}
-    
+
     template <class FnT, class ...ParamsT>
     auto& AddTask(FnT&& f, ParamsT&&... params) {
         this->CleanupReadyTasks();

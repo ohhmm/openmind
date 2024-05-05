@@ -4,6 +4,7 @@
 #include "Exponentiation.h"
 #include "Fraction.h"
 #include "Modulo.h"
+#include "PrincipalSurd.h"
 #include "Product.h"
 #include "Sum.h"
 
@@ -58,7 +59,7 @@ Valuable ValuableDescendantBase::Univariate() const {
 }
 
 Valuable ValuableDescendantBase::Sqrt() const {
-    LOG_AND_IMPLEMENT("Implement Sqrt method for " << *this);
+    return PrincipalSurd{*this};
 }
 
 bool ValuableDescendantBase::IsComesBefore(const Valuable& v) const {
