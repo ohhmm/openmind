@@ -28,12 +28,12 @@ namespace math {
         maxVaExp=1;
     }
     
-    void Variable::SetId(any::any id) {
+    void Variable::SetId(::std::any id) {
         hash = varSetHost->Hash(id);
         varId = std::move(id);
     }
 
-    const ::omnn::math::any::any& Variable::GetId() const {
+    const ::std::any& Variable::GetId() const {
         return varId;
     }
     

@@ -232,3 +232,7 @@ const Valuable::vars_cont_t& PrincipalSurd::getCommonVars() const {
     }
     return commonVars;
 }
+
+void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
+    Radicand().solve(va, solutions);
+}

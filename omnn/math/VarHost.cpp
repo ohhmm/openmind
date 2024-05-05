@@ -21,9 +21,9 @@ using namespace std::string_literals;
 
 namespace omnn::math {
 
-const any::any& omnn::math::VarHost::GetId(const Variable& va) const { return va.GetId(); }
+const ::std::any& omnn::math::VarHost::GetId(const Variable& va) const { return va.GetId(); }
 
-Variable VarHost::New(const any::any& id) {
+Variable VarHost::New(const ::std::any& id) {
     Variable v(sh());
     v.SetId(id);
     return v;
@@ -32,7 +32,7 @@ Variable VarHost::New(const any::any& id) {
 Variable VarHost::New() { return New(NewVarId()); }
 
 template<>
-any::any TypedVarHost<std::string>::NewVarId()
+::std::any TypedVarHost<std::string>::NewVarId()
 {
     static boost::uuids::random_generator UuidGen;
     auto id = UuidGen();
@@ -43,7 +43,7 @@ any::any TypedVarHost<std::string>::NewVarId()
 }
 
 template <>
-std::string_view TypedVarHost<std::string>::GetName(const any::any& v) const
+std::string_view TypedVarHost<std::string>::GetName(const ::std::any& v) const
 {
     auto& storage = const_cast<TypedVarHost<std::string>*>(this)->HostedStorage(v);
     auto& strCache = const_cast<std::string&>(storage.second);
@@ -55,7 +55,7 @@ std::string_view TypedVarHost<std::string>::GetName(const any::any& v) const
 }
 
 template <>
-std::string_view TypedVarHost<Valuable>::GetName(const any::any& v) const
+std::string_view TypedVarHost<Valuable>::GetName(const ::std::any& v) const
 {
     auto& storage = const_cast<TypedVarHost<Valuable>*>(this)->HostedStorage(v);
     auto& strCache = const_cast<std::string&>(storage.second);

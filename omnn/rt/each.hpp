@@ -17,6 +17,8 @@
 
 #include <omnn/rt/tasq.h>
 
+namespace omnn::rt {
+
 template <class T, class F>
 void peach(T&& c, F&& f) {
 #ifdef __APPLE__
@@ -34,4 +36,6 @@ void each(T&& t, F&& f) {
     else {
         std::for_each(std::begin(t), std::end(t), f);
     }
+}
+
 }

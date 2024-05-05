@@ -71,8 +71,7 @@ BOOST_AUTO_TEST_CASE(N456)
 {
 	std::cout
 		<< std::endl
-		<< 
-		"№456"
+		<< "№456"
 		<< std::endl;
 
 	DECL_VA(all);
@@ -142,7 +141,7 @@ BOOST_AUTO_TEST_CASE(Perimeter)
         << std::endl
         << "perimeter"
         << std::endl;
-    
+
     DECL_VA(x);
     DECL_VA(P);
     DECL_VA(a);
@@ -150,21 +149,30 @@ BOOST_AUTO_TEST_CASE(Perimeter)
 
     auto formula = (a+b)*2 - P;
     std::cout <<"formula: " << formula.str() << " = 0" << std::endl;
-    
+
     formula.eval({
         { P, 20 },
         { a, x },
         { b, 6 }
     });
     std::cout <<"evaluated: " << formula.str() << " = 0" << std::endl;
-    
+
     auto root = formula(x);
     std::cout <<"x = " << root << std::endl;
-    
+
     BOOST_TEST(root == 4);
-    
+
     formula.eval({ { x, root }});
     std::cout << "check: " << formula << " = 0" << std::endl;
     BOOST_TEST(formula == 0);
 }
 
+BOOST_AUTO_TEST_CASE(SquareRootEquationTest) {
+    DECL_VA(x);
+    auto equation = (x.Sqrt() + 15 + x.Sqrt()) - 15;
+    Valuable::solutions_t solutions;
+    equation.solve(x, solutions);
+    BOOST_TEST(solutions.size() == 1); // Expect one solution
+    auto solution = *solutions.begin();
+    BOOST_TEST(solution == 0); // The expected solution is x = 0
+}

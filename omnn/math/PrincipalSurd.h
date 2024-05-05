@@ -63,11 +63,13 @@ public:
 
     vars_cont_t GetVaExps() const override;
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
-	bool operator <(const Valuable&) const override;
+    bool operator <(const Valuable&) const override;
     Valuable& operator^=(const Valuable&) override;
-	bool IsComesBefore(const Valuable&) const override;
-	Valuable InCommonWith(const Valuable&) const override;
+    bool IsComesBefore(const Valuable&) const override;
+    Valuable InCommonWith(const Valuable&) const override;
     const Valuable::vars_cont_t& getCommonVars() const override;
+
+    void solve(const Variable&, solutions_t&) const override;
 };
 
 }

@@ -18,7 +18,7 @@ namespace math {
     class ValuableCollectionDescendantContract : public ValuableDescendantContract<ChildT>
     {
         using base = ValuableDescendantContract<ChildT>;
-        
+
     protected:
         using cont = ContT;
         virtual cont& GetCont() = 0;
@@ -34,7 +34,7 @@ namespace math {
             }
             return is;
         }
-        
+
     public:
         using iterator = typename cont::iterator;
         using const_reference = typename ContT::const_reference;
@@ -46,7 +46,7 @@ namespace math {
         ValuableCollectionDescendantContract& operator=(const ValuableCollectionDescendantContract&)=default;
 
         virtual const cont& GetConstCont() const = 0;
-        
+
         constexpr auto begin() noexcept { return GetCont().begin(); }
         constexpr auto end() noexcept { return GetCont().end(); }
         constexpr auto begin() const noexcept { return GetConstCont().begin(); }
@@ -62,7 +62,7 @@ namespace math {
         {
             return GetConstCont().size();
         }
-        
+
         static iterator getit(iterator it){
             return it;
         }
@@ -77,7 +77,7 @@ namespace math {
         {
             IMPLEMENT
         }
-        
+
         bool VarSurdFactor(const iterator it) const {
             return VarSurdFactor(*it);
         }
@@ -85,7 +85,7 @@ namespace math {
         bool HasSurdFactor() const {
             return std::any_of(begin(), end(), ChildT::VarSurdFactor);
 		}
-        
+
         virtual const iterator Add(const Valuable& item, const iterator hint)
         {
             Valuable::hash ^= item.Hash();
@@ -135,14 +135,14 @@ namespace math {
                     break;
             return i;
         }
-        
+
         a_int Complexity() const override {
             a_int c = 0;
             for(auto& m : GetConstCont())
                 c += m.Complexity();
             return c;
         }
-        
+
         bool HasValueType(const std::type_info& type) const
         {
             for(const auto& a : GetConstCont())
@@ -150,7 +150,7 @@ namespace math {
                     return true;
             return false;
         }
-        
+
         template<class T>
         bool HasValueType() const
         {
@@ -161,7 +161,7 @@ namespace math {
                     return m.template Is<T>();
                 });
         }
-        
+
         bool Has(const Valuable& v) const
         {
             auto& c = GetConstCont();
@@ -176,7 +176,7 @@ namespace math {
 #endif
             return has;
         }
-        
+
         const Variable* FindVa() const override
         {
             for (auto& i : GetConstCont())
@@ -187,7 +187,7 @@ namespace math {
             }
             return nullptr;
         }
-        
+
         bool HasVa(const Variable& va) const override
         {
             for (auto& i : GetConstCont())
@@ -195,7 +195,7 @@ namespace math {
                     return true;
             return false;
         }
-        
+
         void CollectVa(std::set<Variable>& s) const override {
             for (auto& i : GetConstCont())
                 i.CollectVa(s);
@@ -204,10 +204,14 @@ namespace math {
             for (auto& i : GetConstCont())
                 i.CollectVaNames(s);
         }
-        
+
+        void CallForEach(const std::function<void (const Valuable&)>& call) const {
+            rt::each(GetConstCont(), call);
+        }
+
         Valuable Each(const std::function<Valuable(const Valuable&)>& m) const {
             ChildT c;
-            for(auto& i:GetConstCont())
+            for (auto& i : GetConstCont())
                 c.Add(m(i));
             return c;
         }
@@ -233,7 +237,7 @@ namespace math {
             }
             return is;
         }
-        
+
         void Values(const std::function<bool(const Valuable&)>& fun) const override {
             auto sharedValuesProjection = std::vector<std::vector<Valuable>>();
             for (auto& m : GetConstCont()) {
@@ -249,7 +253,7 @@ namespace math {
                             return true;
                         });
                     } else {
-                        m.Values([&](const Valuable& value) { 
+                        m.Values([&](const Valuable& value) {
                             sharedValuesProjection.emplace_back().emplace_back(value.Link());
                             return true;
                         });
@@ -306,7 +310,7 @@ namespace math {
             }
             return evaluated;
         }
-        
+
         void Eval(const Variable& va, const Valuable& v) override
         {
             Valuable::SetView(Valuable::View::Calc);
@@ -329,7 +333,7 @@ namespace math {
                     }
                 }
             } while (updated);
-            
+
 //            if(!FindVa())
 //                this->optimize();
         }
@@ -358,7 +362,7 @@ namespace math {
             c.erase(it++);
             Valuable::optimized &= c.size() > 1;
             if (findNewMaxVaExp)
-                Valuable::maxVaExp = base::Ptr()->findMaxVaExp(); // TODO: consider heap structure
+                Valuable::maxVaExp = this->Ptr()->findMaxVaExp(); // TODO: consider heap structure
         }
 
         virtual Valuable Extract(const iterator it)
@@ -369,7 +373,7 @@ namespace math {
             Valuable::optimized &= c.size() > 2;
             auto extracted = std::move(c.extract(it).value());
             if (findNewMaxVaExp)
-                Valuable::maxVaExp = base::Ptr()->findMaxVaExp();
+                Valuable::maxVaExp = this->Ptr()->findMaxVaExp();
             return extracted;
         }
 
