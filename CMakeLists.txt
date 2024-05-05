@@ -127,16 +127,16 @@ endif()
 find_optional_pkg(IntelDPCPP)
 
 find_package(CUDAToolkit)
-if(NOT OpenCL_FOUND)
-	find_package(OpenCL)
-endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
-	AND NOT EXISTS OpenCL_INCLUDE_DIR
-	AND EXISTS IntelSYCL_DIR
-)
-	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
-endif()
+# Manually set OpenCL include directory and library
+set(OpenCL_INCLUDE_DIR "/usr/include/CL")
+set(OpenCL_LIBRARY "/usr/lib/x86_64-linux-gnu/libOpenCL.so")
+
+# Ensure OpenCL is used
+set(OPENMIND_USE_OPENCL ON CACHE BOOL "Use OpenCL calculations" FORCE)
+
+# Add OpenCL library directory to CMAKE_PREFIX_PATH
+list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
 
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
 if(OPENMIND_USE_OPENCL)
