@@ -274,7 +274,6 @@ public:
     { }
 
     Valuable(Valuable&&) = default;
-    Valuable();
     Valuable(double d);
 
     template<class T,
@@ -291,8 +290,7 @@ public:
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string& str, std::shared_ptr<VarHost>, bool itIsOptimized = false);
 
-    //constexpr
-	virtual ~Valuable()//{}
+    virtual ~Valuable()//{}
         ;
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
