@@ -813,6 +813,18 @@ namespace math {
         return f;
     }
 
+    Valuable Integer::FirstFactor() const {
+        if (arbitrary <= 1)
+            return arbitrary;
+
+        for (base_int i = 2; i * i <= arbitrary; ++i) {
+            if (arbitrary % i == 0) {
+                return i;
+            }
+        }
+        return arbitrary; // returns the number itself if it is prime
+    }
+
     bool Integer::SimpleFactorization(const std::function<bool(const Valuable&)>& f, const Valuable& max,
                                 const ranges_t& zz) const {
         auto h = arbitrary;

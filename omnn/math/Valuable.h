@@ -393,6 +393,10 @@ public:
     virtual Valuable Gamma() const;
     virtual Valuable& factorial();
     virtual Valuable Factorial() const;
+    Valuable Factors(const Variable& factor) const;
+    virtual Valuable FirstFactor() const;
+    Valuable LastFactor() const;
+
     virtual Valuable calcFreeMember() const;
 
     virtual Valuable& reciprocal();

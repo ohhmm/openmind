@@ -2065,6 +2065,31 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
 	}
 
+    Valuable Valuable::Factors(const Variable& factor) const {
+        return constants::two.LessOrEqual(factor)
+            .gcd(GreaterOrEqual(factor.Sq()))
+            .gcd((*this % factor).Equals(constants::zero));
+    }
+
+	Valuable Valuable::FirstFactor() const {
+        if (exp)
+            return exp->FirstFactor();
+        else {
+            auto host = getVaHost();
+            Variable factor(host);
+            auto factors = Factors(factor);
+            // TODO: implement GetMinRoot: return factors.MinimalRoot();
+
+            auto foundFactors = factors.Solutions(factor);
+            return *std::min_element(foundFactors.begin(), foundFactors.end()
+                , [](auto item1, auto item2) { return item1 <= item2; }
+                );
+        }
+	}
+
+    Valuable Valuable::LastFactor() const {
+        return *this / FirstFactor();
+	}
 
 	Valuable& Valuable::reciprocal() {
         if (exp)
