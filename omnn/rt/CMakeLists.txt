@@ -44,9 +44,12 @@ add_library(rt STATIC ${RT_SOURCES} ${RT_HEADERS})
 # Add preprocessor definition to use Boost's prime number functionality
 add_definitions(-DOPENMIND_PRIME_TABLE_BOOST)
 
-# Link the Boost libraries with the rt target
+# Define _rt_SRC_DIR to point to the current source directory
+target_compile_definitions(rt PRIVATE _rt_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Link the Boost and OpenCL libraries with the rt target
 if(TARGET rt)
-    target_link_libraries(rt PUBLIC Boost::filesystem Boost::system Boost::thread)
+    target_link_libraries(rt PUBLIC Boost::filesystem Boost::system Boost::thread OpenCL)
 endif()
 
 # Diagnostic message to confirm source and header files
