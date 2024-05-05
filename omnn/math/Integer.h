@@ -8,7 +8,7 @@
 
 namespace omnn{
 namespace math {
-    
+
     class Fraction;
 
 class Integer
@@ -25,7 +25,7 @@ public:
     using base_int = a_int;
 
 	using const_base_int_ref = const base_int&;
-	
+
 	using base::base;
 
     MSVC_CONSTEXPR Integer(const Integer&)=default;
@@ -39,7 +39,7 @@ public:
     {
         hash = std::hash<base_int>()(arbitrary);
     }
-    
+
     explicit
     constexpr
     Integer(const std::string& s)
@@ -57,11 +57,13 @@ public:
     }
 
     explicit Integer(const Fraction& f);
-    
+
     const_base_int_ref as_const_base_int_ref() const {
         return arbitrary;
     }
-    
+
+    Valuable FirstFactor() const override;
+
     explicit operator int64_t() const;
 
     bool IsInt() const override { return true; }
@@ -74,8 +76,8 @@ public:
     bool IsPolynomial(const Variable&) const override { return true; }
     YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
-    
-    // virtual operators 
+
+    // virtual operators
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator +=(int v) override;
@@ -89,7 +91,7 @@ public:
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override;
     Valuable& operator ++() override;
-    
+
     vars_cont_t GetVaExps() const override { return {}; }
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result
     Valuable& operator^=(const Valuable&) override;
@@ -115,7 +117,7 @@ public:
     explicit operator unsigned char() const override;
     a_int& a() override;
     const a_int& ca() const override;
-    
+
     Valuable bit(const Valuable& n) const override;
     Valuable Or(const Valuable& n, const Valuable& v) const override;
     Valuable And(const Valuable& n, const Valuable& v) const override;
@@ -127,15 +129,15 @@ public:
     Valuable& shr() override { return shr(1); }
     Valuable Shr() const override;
     Valuable Shr(const Valuable& n) const override;
-    
+
     Valuable operator()(const Variable&) const override { return 0; }
     Valuable operator()(const Variable&, const Valuable& augmentation) const override { return 0; }
-    
+
     const Variable* FindVa() const override { return nullptr; }
     bool HasVa(const Variable& va) const override { return {}; }
     void CollectVa(std::set<Variable>&) const override { }
     void CollectVaNames(Valuable::va_names_t& s) const override { }
-    
+
     bool eval(const std::map<Variable, Valuable>& with) override { return {}; }
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;
@@ -149,7 +151,7 @@ public:
 
     std::wstring save(const std::wstring&) const override;
     std::ostream& code(std::ostream&) const override;
-    
+
     static const ranges_t empty_zero_zone;
 
     Valuable::solutions_t GetIntegerSolution(const Variable& va) const override;
@@ -234,4 +236,3 @@ private:
 
 }
 }
-
