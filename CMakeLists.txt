@@ -128,7 +128,7 @@ if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
@@ -214,11 +214,16 @@ elseif(OPENMIND_USE_CONAN)
 	endif()
 endif()
 
+# Set the Boost library paths
+set(BOOST_ROOT "/usr/local")
+set(BOOST_INCLUDEDIR "/usr/local/include")
+set(BOOST_LIBRARYDIR "/usr/local/lib")
+
+# Find the Boost package with the specified root, include, and library directories
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-	CONFIG
-	HINTS C:/Boost
-	COMPONENTS ${BOOST_USED_COMPONENTS}
-	)
+    PATHS ${BOOST_ROOT}
+    COMPONENTS ${BOOST_USED_COMPONENTS}
+    )
 if(NOT Boost_FOUND)
 	find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 		CONFIG
@@ -419,6 +424,6 @@ function(_openmind_hook_end_of_configure)
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT
 	)
 endfunction()
