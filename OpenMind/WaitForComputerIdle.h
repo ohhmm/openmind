@@ -19,13 +19,13 @@ class WaitForComputerIdle :
     void ReachIdleWork();
     void DoNothing();
     bool Archivable(); // FIXME : Should not be archivable
-    
+
 public:
     WaitForComputerIdle( GoalGenerator::ptr_t parent );
 
     bool        Reach();
-    void		GetResult(void*);
-	void*		GetResult();
+    void		GetResult(void*) override;
+	void*		GetResult() override;
 
     string_t	Name();
 };
