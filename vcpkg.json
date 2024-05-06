@@ -20,6 +20,7 @@
     "boost-ublas",
     "boost-uuid",
     "leveldb",
+    "onnxruntime-gpu",
     {
       "name": "vcpkg-cmake",
       "host": true
