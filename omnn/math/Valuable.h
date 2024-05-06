@@ -24,6 +24,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/split_member.hpp>
 
+#include <onnxruntime/core/session/onnxruntime_cxx_api.h>
 
 #define _NUM2STR(x) #x
 #define NUM2STR(x) _NUM2STR(x)
@@ -291,8 +292,9 @@ public:
     : exp(t.Move())
     { }
 
-    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
+    Valuable(Valuable&&) = default;
     Valuable();
+
     Valuable(double d);
 
     template<class T,
@@ -355,7 +357,7 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
     void SetView(View v);
-    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
+    bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
 
@@ -493,7 +495,7 @@ public:
     bool IsMonic() const;
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
-    Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
+    void CheckDeserialization(const std::string_view& s);
 
 	Valuable operator!() const;
     explicit operator bool() const;
@@ -703,6 +705,18 @@ public:
 
     [[nodiscard]] virtual bool is_optimized() const;
 
+public:
+    // Method to load an ONNX model
+    void LoadONNXModel(const std::string& model_path);
+
+    // Method to run inference with the loaded ONNX model
+    std::vector<float> RunONNXInference(const std::vector<float>& input_data);
+
+    // Methods to add ONNX operations as mathematical expressions
+    void add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+    void add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+    void add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+
 protected:
     friend class boost::serialization::access;
 
@@ -720,6 +734,9 @@ protected:
         }
     }
 
+    // ONNX Runtime environment and session
+    std::shared_ptr<Ort::Env> onnx_env;
+    std::shared_ptr<Ort::Session> onnx_session;
 };
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(Valuable)

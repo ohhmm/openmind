@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /home/ubuntu/onnxruntime/build/Linux/Release/lib/cmake/onnxruntime)
+
+# Include vcpkg toolchain if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+endif()
 
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
@@ -138,16 +144,16 @@ find_optional_pkg(
 	IntelDPCPP
 	CUDAToolkit
 	OpenCL
+	onnxruntime
 )
 
 if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
-	AND NOT EXISTS OpenCL_INCLUDE_DIR
+	AND NOT EXISTS OpenCl_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
 	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
 endif()
-
-option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
+option(OPENMIND_USE_OPENCL "Use OpenCl calculations" OFF)
 if(OPENMIND_USE_OPENCL)
 	find_optional_pkg(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
@@ -253,6 +259,7 @@ if (NOT Boost_FOUND)
 				/usr/local/lib/cmake/Boost-*
 				/usr/lib/x86_64-linux-gnu/cmake/Boost-*
 				/usr/local/share/boost-*
+				/usr/local/boost_*
 		)
 		find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
 				CONFIG
@@ -442,8 +449,14 @@ endif()
 if(Python_FOUND)
     message(STATUS "Python found: ${Python_EXECUTABLE}")
     message(STATUS "Python version: ${Python_VERSION}")
+    include_directories(${Python_INCLUDE_DIRS})
+    link_directories(${Python_LIBRARIES})
 endif()
 
+set(Python_INCLUDE_DIRS /usr/include/python3.10)
+set(Python_LIBRARIES /usr/lib/x86_64-linux-gnu/libpython3.10.so)
+include_directories(${Python_INCLUDE_DIRS})
+link_directories(${Python_LIBRARIES})
 
 if (OPENMIND_BUILD_TESTS)
 	if(NOT MSVC)
@@ -489,3 +502,17 @@ function(_openmind_hook_end_of_configure)
 		COMMAND_ECHO STDOUT
 	)
 endfunction()
+
+# Add pybind11 package
+find_package(pybind11 REQUIRED)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /usr/lib/python3/dist-packages/pybind11/share/cmake/pybind11)
+
+# Add valuable_bindings.cpp to the list of source files
+set(SOURCE_FILES
+    ${SOURCE_FILES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/omnn/math/valuable_bindings.cpp
+)
+
+# Create Python module for Valuable class bindings
+add_library(valuable_bindings MODULE ${CMAKE_CURRENT_SOURCE_DIR}/omnn/math/valuable_bindings.cpp)
+target_link_libraries(valuable_bindings PRIVATE pybind11::module pybind11::headers)
