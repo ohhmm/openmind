@@ -72,7 +72,7 @@ bool getIdleMsec(unsigned& idleTime) {
 //    return true;
 //}
 
-#elif __has_include(<X11/extensions/scrnsaver.h>)
+#elif defined(__linux__) && __has_include(<X11/extensions/scrnsaver.h>)
 # include <X11/extensions/scrnsaver.h>
 bool getIdleMsec(unsigned& idleTime) {
 	XScreenSaverInfo info;
@@ -123,7 +123,7 @@ void WaitForComputerIdle::ReachIdleWork()
             _parentGenerator->UseFacilities(
 				[] (Facility::ptr_t facility) { facility->ForceShutdown(); }
 			);
-                
+
         _result << L"Workers are stopped" << std::endl;
 
         _state = Stopped;
