@@ -185,17 +185,17 @@ prerequisites/fast:
 .PHONY : prerequisites/fast
 
 #=============================================================================
-# Target rules for targets named enable_openmind_tests
+# Target rules for targets named disable_openmind_tests
 
 # Build rule for target.
-enable_openmind_tests: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 enable_openmind_tests
-.PHONY : enable_openmind_tests
+disable_openmind_tests: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 disable_openmind_tests
+.PHONY : disable_openmind_tests
 
 # fast build rule for target.
-enable_openmind_tests/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/enable_openmind_tests.dir/build.make CMakeFiles/enable_openmind_tests.dir/build
-.PHONY : enable_openmind_tests/fast
+disable_openmind_tests/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/disable_openmind_tests.dir/build.make CMakeFiles/disable_openmind_tests.dir/build
+.PHONY : disable_openmind_tests/fast
 
 #=============================================================================
 # Target rules for targets named rt
@@ -224,6 +224,19 @@ storage/fast:
 .PHONY : storage/fast
 
 #=============================================================================
+# Target rules for targets named LevelDbStorage
+
+# Build rule for target.
+LevelDbStorage: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 LevelDbStorage
+.PHONY : LevelDbStorage
+
+# fast build rule for target.
+LevelDbStorage/fast:
+	$(MAKE) $(MAKESILENT) -f omnn/storage/tests/CMakeFiles/LevelDbStorage.dir/build.make omnn/storage/tests/CMakeFiles/LevelDbStorage.dir/build
+.PHONY : LevelDbStorage/fast
+
+#=============================================================================
 # Target rules for targets named math
 
 # Build rule for target.
@@ -235,6 +248,19 @@ math: cmake_check_build_system
 math/fast:
 	$(MAKE) $(MAKESILENT) -f omnn/math/CMakeFiles/math.dir/build.make omnn/math/CMakeFiles/math.dir/build
 .PHONY : math/fast
+
+#=============================================================================
+# Target rules for targets named math_tests
+
+# Build rule for target.
+math_tests: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 math_tests
+.PHONY : math_tests
+
+# fast build rule for target.
+math_tests/fast:
+	$(MAKE) $(MAKESILENT) -f omnn/math/test/CMakeFiles/math_tests.dir/build.make omnn/math/test/CMakeFiles/math_tests.dir/build
+.PHONY : math_tests/fast
 
 #=============================================================================
 # Target rules for targets named ct
@@ -301,13 +327,15 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... enable_openmind_tests"
+	@echo "... disable_openmind_tests"
 	@echo "... prerequisites"
+	@echo "... LevelDbStorage"
 	@echo "... OpenMind"
 	@echo "... ct"
 	@echo "... extrapolator"
 	@echo "... logic"
 	@echo "... math"
+	@echo "... math_tests"
 	@echo "... rt"
 	@echo "... storage"
 .PHONY : help

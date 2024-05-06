@@ -1,0 +1,180 @@
+Determining if the CL_VERSION_2_2 exist failed with the following output:
+Change Dir: /home/ubuntu/openmind/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_29d78/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_29d78.dir/build.make CMakeFiles/cmTC_29d78.dir/build
+gmake[1]: Entering directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_29d78.dir/CheckSymbolExists.c.o
+/usr/bin/cc  -I/usr/include/CL  -o CMakeFiles/cmTC_29d78.dir/CheckSymbolExists.c.o -c /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: /usr/include/CL/CL/cl.h: No such file or directory
+    2 | #include </usr/include/CL/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_29d78.dir/build.make:78: CMakeFiles/cmTC_29d78.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_29d78/fast] Error 2
+
+
+File /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include </usr/include/CL/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_2_2
+  return ((int*)(&CL_VERSION_2_2))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_2_1 exist failed with the following output:
+Change Dir: /home/ubuntu/openmind/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_9e328/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_9e328.dir/build.make CMakeFiles/cmTC_9e328.dir/build
+gmake[1]: Entering directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9e328.dir/CheckSymbolExists.c.o
+/usr/bin/cc  -I/usr/include/CL  -o CMakeFiles/cmTC_9e328.dir/CheckSymbolExists.c.o -c /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: /usr/include/CL/CL/cl.h: No such file or directory
+    2 | #include </usr/include/CL/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_9e328.dir/build.make:78: CMakeFiles/cmTC_9e328.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_9e328/fast] Error 2
+
+
+File /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include </usr/include/CL/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_2_1
+  return ((int*)(&CL_VERSION_2_1))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_2_0 exist failed with the following output:
+Change Dir: /home/ubuntu/openmind/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_20d15/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_20d15.dir/build.make CMakeFiles/cmTC_20d15.dir/build
+gmake[1]: Entering directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_20d15.dir/CheckSymbolExists.c.o
+/usr/bin/cc  -I/usr/include/CL  -o CMakeFiles/cmTC_20d15.dir/CheckSymbolExists.c.o -c /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: /usr/include/CL/CL/cl.h: No such file or directory
+    2 | #include </usr/include/CL/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_20d15.dir/build.make:78: CMakeFiles/cmTC_20d15.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_20d15/fast] Error 2
+
+
+File /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include </usr/include/CL/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_2_0
+  return ((int*)(&CL_VERSION_2_0))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_1_2 exist failed with the following output:
+Change Dir: /home/ubuntu/openmind/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_9e7e5/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_9e7e5.dir/build.make CMakeFiles/cmTC_9e7e5.dir/build
+gmake[1]: Entering directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9e7e5.dir/CheckSymbolExists.c.o
+/usr/bin/cc  -I/usr/include/CL  -o CMakeFiles/cmTC_9e7e5.dir/CheckSymbolExists.c.o -c /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: /usr/include/CL/CL/cl.h: No such file or directory
+    2 | #include </usr/include/CL/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_9e7e5.dir/build.make:78: CMakeFiles/cmTC_9e7e5.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_9e7e5/fast] Error 2
+
+
+File /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include </usr/include/CL/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_1_2
+  return ((int*)(&CL_VERSION_1_2))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_1_1 exist failed with the following output:
+Change Dir: /home/ubuntu/openmind/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b94cb/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_b94cb.dir/build.make CMakeFiles/cmTC_b94cb.dir/build
+gmake[1]: Entering directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b94cb.dir/CheckSymbolExists.c.o
+/usr/bin/cc  -I/usr/include/CL  -o CMakeFiles/cmTC_b94cb.dir/CheckSymbolExists.c.o -c /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: /usr/include/CL/CL/cl.h: No such file or directory
+    2 | #include </usr/include/CL/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_b94cb.dir/build.make:78: CMakeFiles/cmTC_b94cb.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_b94cb/fast] Error 2
+
+
+File /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include </usr/include/CL/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_1_1
+  return ((int*)(&CL_VERSION_1_1))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_1_0 exist failed with the following output:
+Change Dir: /home/ubuntu/openmind/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d0018/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_d0018.dir/build.make CMakeFiles/cmTC_d0018.dir/build
+gmake[1]: Entering directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d0018.dir/CheckSymbolExists.c.o
+/usr/bin/cc  -I/usr/include/CL  -o CMakeFiles/cmTC_d0018.dir/CheckSymbolExists.c.o -c /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: /usr/include/CL/CL/cl.h: No such file or directory
+    2 | #include </usr/include/CL/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_d0018.dir/build.make:78: CMakeFiles/cmTC_d0018.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/ubuntu/openmind/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_d0018/fast] Error 2
+
+
+File /home/ubuntu/openmind/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include </usr/include/CL/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_1_0
+  return ((int*)(&CL_VERSION_1_0))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
