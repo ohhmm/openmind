@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /home/ubuntu/onnxruntime/build/Linux/Release/lib/cmake/onnxruntime)
+
+# Include vcpkg toolchain if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+endif()
 
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
@@ -465,3 +471,17 @@ function(_openmind_hook_end_of_configure)
 		COMMAND_ECHO STDOUT
 	)
 endfunction()
+
+# Add pybind11 package
+find_package(pybind11 REQUIRED)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /usr/lib/python3/dist-packages/pybind11/share/cmake/pybind11)
+
+# Add valuable_bindings.cpp to the list of source files
+set(SOURCE_FILES
+    ${SOURCE_FILES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/omnn/math/valuable_bindings.cpp
+)
+
+# Create Python module for Valuable class bindings
+add_library(valuable_bindings MODULE ${CMAKE_CURRENT_SOURCE_DIR}/omnn/math/valuable_bindings.cpp)
+target_link_libraries(valuable_bindings PRIVATE pybind11::module pybind11::headers)

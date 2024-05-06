@@ -23,6 +23,7 @@
     "boost-uuid",
     "leveldb",
     "liblzma",
+    "onnxruntime-gpu",
     {
       "name": "vcpkg-cmake",
       "host": true

@@ -60,7 +60,7 @@ public:
     Valuable& operator^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
     bool operator <(const Valuable& v) const override;
-    
+
     bool IsComesBefore(const Valuable& v) const override { return true; }
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
 };

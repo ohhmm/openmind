@@ -23,6 +23,7 @@ endif()
 find_optional_pkg(
 	IntelDPCPP
 	CUDAToolkit
+	onnxruntime
 	OpenCL
 )
 

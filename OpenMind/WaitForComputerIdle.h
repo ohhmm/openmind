@@ -19,7 +19,6 @@ class WaitForComputerIdle :
     void ReachIdleWork();
     void DoNothing();
     bool Archivable() override; // FIXME : Should not be archivable
-
 public:
     WaitForComputerIdle( GoalGenerator::ptr_t parent );
 
