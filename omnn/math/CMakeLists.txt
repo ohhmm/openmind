@@ -23,3 +23,14 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
         target_compile_definitions(${this_target} PUBLIC ALLOW_CACHE_UPGRADE)
     endif()
 endif()
+
+# Include the directory where tasq.h and other headers are located
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../rt)
+
+# Link the math library with the OpenCL library
+find_package(OpenCL REQUIRED)
+if(OpenCL_FOUND)
+    include_directories(${OpenCL_INCLUDE_DIRS})
+    link_directories(${OpenCL_LIBRARIES})
+    target_link_libraries(storage PUBLIC ${OpenCL_LIBRARIES})
+endif()

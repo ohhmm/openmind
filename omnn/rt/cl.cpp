@@ -4,7 +4,7 @@
 
 #include <boost/compute.hpp>
 
-namespace {
+namespace omnn::rt {
 
 auto ComputeUnitsWinner = []() -> boost::compute::device {
     try {
@@ -60,11 +60,8 @@ auto ComputeUnitsWinner = []() -> boost::compute::device {
     }
 }();
 
-} // namespace
+const boost::compute::device& GetComputeUnitsWinnerDevice() { return ComputeUnitsWinner; }
 
-
-namespace omnn::rt {
-extern const boost::compute::device& GetComputeUnitsWinnerDevice() { return ComputeUnitsWinner; }
-}
+} // namespace omnn::rt
 
 #endif

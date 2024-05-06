@@ -1,0 +1,13 @@
+# Target labels
+ leveldb
+# Source files and their labels
+/home/ubuntu/openmind/omnn/storage/CMakeFiles/leveldb
+/home/ubuntu/openmind/omnn/storage/CMakeFiles/leveldb.rule
+/home/ubuntu/openmind/omnn/storage/CMakeFiles/leveldb-complete.rule
+/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-build.rule
+/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-configure.rule
+/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-download.rule
+/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-install.rule
+/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-mkdir.rule
+/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-patch.rule
+/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-update.rule

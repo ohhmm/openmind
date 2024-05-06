@@ -1,0 +1,2 @@
+/usr/bin/ar qc libextrapolator.a CMakeFiles/extrapolator.dir/Extrapolator.cpp.o
+/usr/bin/ranlib libextrapolator.a

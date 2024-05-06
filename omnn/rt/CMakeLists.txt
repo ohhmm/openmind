@@ -11,6 +11,9 @@ if(Boost_FOUND)
     endif()
 endif()
 
+# Ensure OPENMIND_USE_OPENCL is defined
+add_compile_definitions(OPENMIND_USE_OPENCL)
+
 if(OPENMIND_USE_OPENCL)
     set(DEPENDENCIES ${DEPENDENCIES} OpenCL)
 endif()
@@ -40,6 +43,9 @@ set(RT_HEADERS
 
 # Add the rt library target with the specified source files
 add_library(rt STATIC ${RT_SOURCES} ${RT_HEADERS})
+
+# Set property to build with position independent code
+set_property(TARGET rt PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # Add preprocessor definition to use Boost's prime number functionality
 add_definitions(-DOPENMIND_PRIME_TABLE_BOOST)

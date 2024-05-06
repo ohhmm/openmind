@@ -83,7 +83,7 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
             up += chunk; // NOTE: preserving up type same as j. Expression (j+chunk)  type differs from j type.
             {
                 static std::mutex m;
-                std::lock_guard l(m);
+                std::lock_guard<std::mutex> l(m);
                 std::cout << '[' << j << ',' << up << ')';
             }
             for (; j < up; ++j) {

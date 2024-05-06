@@ -134,14 +134,14 @@ macro(ext name location)
 		${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
 		CMAKE_ARGS ${ARGS}
 		)")
-		ExternalProject_Add(${name}
-			GIT_REPOSITORY ${location}
-			GIT_SHALLOW ON
-			GIT_TAG ${${name}_TAG}
-			INSTALL_DIR ${CMAKE_BINARY_DIR}
-			${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
-			CMAKE_ARGS ${ARGS}
-			)
+		 # ExternalProject_Add(${name}
+		 #   GIT_REPOSITORY ${location}
+		 #   GIT_SHALLOW ON
+		 #   GIT_TAG ${${name}_TAG}
+		 #   INSTALL_DIR ${CMAKE_BINARY_DIR}
+		 #   ${OPENMIND_UPDATE_EXTERNAL_DEPS_CMD_PARAM}
+		 #   CMAKE_ARGS ${ARGS}
+		 #   )
 		if(NOT TARGET ${name})
 			add_custom_target(${name})
 		endif()
@@ -377,4 +377,3 @@ macro(deps)
     endif()
 
 endmacro()
-

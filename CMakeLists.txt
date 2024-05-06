@@ -5,7 +5,7 @@ string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
 
 enable_language(CXX)
-set (CMAKE_CXX_STANDARD 23)
+set (CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -110,39 +110,41 @@ if(NOT EXISTS INTEL_COMPILER_PATH)
 		set(CMAKE_CXX_COMPILER ${INTEL_COMPILER_PATH} CACHE STRING "Intel compiler path" FORCE)
 	endif()
 endif()
-if(NOT IntelSYCL_FOUND)
-	if(NOT DEFINED OPENMIND_USE_OPENCL_INTEL_SYCL)
-		option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
-		find_package(IntelSYCL)
-		if(IntelSYCL_FOUND)
-			set(OPENMIND_USE_OPENCL_INTEL_SYCL ON CACHE BOOL "OpenCL GPU calculations" FORCE)
-		endif()
-	endif()
-	if(IntelSYCL_FOUND)
-		message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
-		message("SYCL_FLAGS: ${SYCL_FLAGS}")
-		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
-	endif()
-endif()
-find_optional_pkg(IntelDPCPP)
+# find_optional_pkg(IntelDPCPP)
 
+# if(NOT IntelSYCL_FOUND)
+#   if(NOT DEFINED OPENMIND_USE_OPENCL_INTEL_SYCL)
+#     option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
+#     find_package(IntelSYCL)
+#     if(IntelSYCL_FOUND)
+#       set(OPENMIND_USE_OPENCL_INTEL_SYCL ON CACHE BOOL "OpenCL GPU calculations" FORCE)
+#     endif()
+#   endif()
+#   if(IntelSYCL_FOUND)
+#     message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
+#     message("SYCL_FLAGS: ${SYCL_FLAGS}")
+#     message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
+#   endif()
+# endif
 find_package(CUDAToolkit)
 
-# Manually set OpenCL include directory and library
-set(OpenCL_INCLUDE_DIR "/usr/include/CL")
-set(OpenCL_LIBRARY "/usr/lib/x86_64-linux-gnu/libOpenCL.so")
+# Find the OpenCL include directory
+find_path(OpenCL_INCLUDE_DIR NAMES cl.h PATHS /usr/include/CL NO_DEFAULT_PATH)
+mark_as_advanced(OpenCL_INCLUDE_DIR)
+
+# If found, set the OpenCL include directory as a cached variable
+if(OpenCL_INCLUDE_DIR)
+  set(OpenCL_INCLUDE_DIR ${OpenCL_INCLUDE_DIR} CACHE PATH "OpenCL include directory")
+endif()
+
+# Include the OpenCL headers directory
+include_directories(${OpenCL_INCLUDE_DIR})
 
 # Ensure OpenCL is used
 set(OPENMIND_USE_OPENCL ON CACHE BOOL "Use OpenCL calculations" FORCE)
 
 # Add OpenCL library directory to CMAKE_PREFIX_PATH
 list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
-
-option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
-if(OPENMIND_USE_OPENCL)
-	find_package(OpenGL)
-	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
-endif()
 
 if(NOT WIN32)
 	find_package(TBB)

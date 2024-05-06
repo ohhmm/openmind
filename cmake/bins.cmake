@@ -130,7 +130,7 @@ function(apply_target_commons this_target)
 	)
 	if(OPENMIND_USE_OPENCL_INTEL_SYCL)
 		target_compile_options(${this_target} PUBLIC ${SYCL_FLAGS})
-		target_include_directories(${this_target} PUBLIC 
+		target_include_directories(${this_target} PUBLIC
 			"${IntelSYCL_DIR}/../../../include"
 			"${IntelSYCL_DIR}/../../../include/sycl"
 		)
@@ -140,8 +140,8 @@ function(apply_target_commons this_target)
 			APPLE_CONSTEXPR=
 			NO_APPLE_CONSTEXPR=constexpr
 			NO_CLANG_CONSTEXPR=constexpr
-			MSVC_CONSTEXPR=constexpr
-			NO_MSVC_CONSTEXPR=
+			MSVC_CONSTEXPR=
+			NO_MSVC_CONSTEXPR=constexpr
 			MSVC
 			$<$<CONFIG:DEBUG>:BOOST_ALL_STATIC_LINK>
 			$<$<CONFIG:Release>:BOOST_ALL_STATIC_LINK>
@@ -181,7 +181,10 @@ function(apply_target_commons this_target)
 	else()
 		target_compile_definitions(${this_target} PUBLIC
 			MSVC_CONSTEXPR=
-                        NO_MSVC_CONSTEXPR=constexpr
+            NO_MSVC_CONSTEXPR=constexpr
+			APPLE_CONSTEXPR=
+			NO_APPLE_CONSTEXPR=constexpr
+            NO_CLANG_CONSTEXPR=constexpr
 			)
 		if(APPLE)
 			target_compile_definitions(${this_target} PUBLIC
@@ -193,8 +196,8 @@ function(apply_target_commons this_target)
 			target_compile_definitions(${this_target} PUBLIC
 				APPLE_CONSTEXPR=
 				NO_APPLE_CONSTEXPR=constexpr
-                                $<$<CXX_COMPILER_ID:Clang>:NO_CLANG_CONSTEXPR=>
-                                $<$<NOT:$<CXX_COMPILER_ID:Clang>>:NO_CLANG_CONSTEXPR=constexpr>
+                $<$<CXX_COMPILER_ID:Clang>:NO_CLANG_CONSTEXPR=>
+                $<$<NOT:$<CXX_COMPILER_ID:Clang>>:NO_CLANG_CONSTEXPR=constexpr>
 				)
 		endif()
 	endif()
@@ -332,7 +335,7 @@ macro(lib)
     set_target_properties(${this_target} PROPERTIES
 		FOLDER "libs"
 		PUBLIC_HEADER "${headers}"
-		)	
+		)
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}

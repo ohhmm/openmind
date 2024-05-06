@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/CMakeFiles/leveldb"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/CMakeFiles/leveldb.rule"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/CMakeFiles/leveldb-complete.rule"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-build.rule"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-configure.rule"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-download.rule"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-install.rule"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-mkdir.rule"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-patch.rule"
+		},
+		{
+			"file" : "/home/ubuntu/openmind/omnn/storage/leveldb-prefix/src/leveldb-stamp/leveldb-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"leveldb"
+		],
+		"name" : "leveldb"
+	}
+}

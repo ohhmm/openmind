@@ -2,8 +2,8 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
-#include <omnn/math/Variable.h>
-#include <omnn/math/DuoValDescendant.h>
+#include "Variable.h"
+#include "DuoValDescendant.h"
 
 namespace omnn::math {
 
@@ -51,14 +51,14 @@ public:
 		set1(::std::forward<T>(b));
         InitVars();
         optimized = {};
-	}
+    }
     template<class T>
     void updateBase(T&& b)
     {
 		update1(std::forward<T>(b));
         InitVars();
         optimized = {};
-	}
+    }
 
     const Valuable& eexp() const { return _2; }
     const Valuable& getExponentiation() const { return _2; }
@@ -68,7 +68,7 @@ public:
 		set2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
-	}
+    }
     template<class T>
     void updateExponentiation(T&& exponentiation)
     {
@@ -76,7 +76,7 @@ public:
         InitVars();
         optimized = {};
     }
-    
+
     static max_exp_t getMaxVaExp(const Valuable& b, const Valuable& e);
     max_exp_t getMaxVaExp() const override;
 
@@ -93,10 +93,10 @@ public:
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable& integral(const Variable& x, const Variable& C) override;
-    
+
     bool operator <(const Valuable& v) const override;
     void optimize() override;
-    
+
     Valuable varless() const override;
     const vars_cont_t& getCommonVars() const override;
     vars_cont_t GetVaExps() const override;

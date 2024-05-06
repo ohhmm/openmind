@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblogic1.a CMakeFiles/logic1.dir/Equality.cpp.o
+/usr/bin/ranlib liblogic1.a

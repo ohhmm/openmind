@@ -51,7 +51,7 @@ protected:
             bool overburdened = {};
             do {
                 {
-                    std::lock_guard lg(queueMutEx);
+                    std::lock_guard<std::mutex> lg(queueMutEx);
                     while (this->size()
                         && this->front().valid()
                         && this->front().wait_for(std::chrono::seconds(0)) == std::future_status::ready
@@ -71,12 +71,12 @@ public:
     StoringTasksQueue(bool autoCleanUp = true)
         : CleanUp(autoCleanUp)
     {}
-    
+
     template <class FnT, class ...ParamsT>
     auto& AddTask(FnT&& f, ParamsT&&... params) {
         this->CleanupReadyTasks();
         auto task = std::async(std::launch::async, std::bind(std::forward<FnT>(f), std::forward<ParamsT>(params)...));
-        std::lock_guard lg(queueMutEx);
+        std::lock_guard<std::mutex> lg(queueMutEx);
         return this->emplace(std::move(task));
     }
 
@@ -95,7 +95,7 @@ public:
     }
 
     auto PopCurrentTask() {
-        std::lock_guard lg(queueMutEx);
+        std::lock_guard<std::mutex> lg(queueMutEx);
         auto future = std::move(this->front());
         this->pop();
         return future;
