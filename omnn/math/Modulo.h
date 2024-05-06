@@ -37,7 +37,7 @@ public:
     }
 
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
-    
+
     void optimize() override;
 
 	Valuable operator-() const override;

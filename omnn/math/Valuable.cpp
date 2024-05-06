@@ -39,6 +39,8 @@
 #include <boost/stacktrace.hpp>
 #endif
 
+#include <onnxruntime/core/session/onnxruntime_cxx_api.h>
+
 using namespace ::omnn::rt;
 using namespace ::std::string_view_literals;
 
@@ -54,26 +56,34 @@ namespace omnn::math {
     const a_int Valuable::a_int_cz = 0;
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
-    namespace constants {
-    constexpr const Valuable& e = constant::e;
-    constexpr const Valuable& i = constant::i;
-    constexpr const Valuable& zero = vo<0>();
-    constexpr const Valuable& one = vo<1>();
-    constexpr const Valuable& two = vo<2>();
-    const Fraction Half{1_v, 2_v};
-    constexpr const Valuable& half = Half;
-    const Fraction Quarter {1, 4};
-    constexpr const Valuable& quarter = Quarter;
-    constexpr const Valuable& minus_1 = vo<-1>();
+auto BracketsMap(const std::string_view& s) {
+    auto l = s.length();
+    using index_t = decltype(l);
+    std::stack<index_t> st;
+    std::map<index_t, index_t> bracketsmap;
+    decltype(l) c = 0;
+    while (c < l) {
+        if (s[c] == '(')
+            st.push(c);
+        else if (s[c] == ')') {
+            if (st.empty()) {
+                throw "parentheses relation mismatch";
+            }
+            bracketsmap.emplace(st.top(), c);
+            st.pop();
+        }
+        ++c;
+    }
+    if (!st.empty())
+        throw "parentheses relation mismatch";
+    return bracketsmap;
+}
 
-    const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-    const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
-    const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
-    const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
-    constexpr const Valuable& pi = constant::pi;
-    constexpr const Valuable& infinity = Infinity::GlobalObject;
-    constexpr const Valuable& minfinity = MInfinity::GlobalObject;
-    const Variable& integration_result_constant = "integration_result_constant"_va;
+constexpr std::string_view& Trim(std::string_view& s) {
+    s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
+    s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
+    return s;
+}
 
         std::map<std::string_view, Valuable> Constants ={
             {"e", constant::e},
@@ -83,9 +93,7 @@ namespace omnn::math {
         };
     } // namespace constants
 
-    thread_local bool Valuable::optimizations = true;
-    thread_local bool Valuable::bit_operation_optimizations = {};
-    thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
+} // namespace omnn::math
 
 //    [[noreturn]] 'return' statement is useful for debugging purposes here
     Valuable implement(const char* str)
@@ -138,62 +146,143 @@ namespace omnn::math {
             IMPLEMENT
     }
 
-    const Valuable Valuable::Link() const {
-        if(exp)
-            return Valuable(exp);
+const Valuable Valuable::Link() const {
+    if(exp)
+        return Valuable(*exp);
+    IMPLEMENT
+}
+
+Valuable* Valuable::Clone() const {
+    if (exp)
+        return exp->Clone();
+    else
         IMPLEMENT
-    }
+}
 
-    Valuable* Valuable::Clone() const
-    {
-        if (exp)
-            return exp->Clone();
-        else
-            IMPLEMENT
-    }
-
-    Valuable* Valuable::Move()
-    {
-        if (exp)
-            return exp->Move();
-        else
-            IMPLEMENT
-    }
-
-    void Valuable::New(void*, Valuable&&)
-    {
+Valuable* Valuable::Move() {
+    if (exp)
+        return exp->Move();
+    else
         IMPLEMENT
-    }
+}
 
-    Valuable::encapsulated_instance Valuable::SharedFromThis() {
-        if (exp)
-            return exp;
-        else
-            IMPLEMENT;
-    }
+void Valuable::LoadONNXModel(const std::string& model_path) {
+    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ValuableONNX");
+    Ort::SessionOptions session_options;
+    session_options.SetIntraOpNumThreads(1);
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    Ort::Session session(env, model_path.c_str(), session_options);
+    this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
+}
 
-    Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-    {
-        assert(!exp);
-    }
+namespace omnn::math {
 
-    Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-    {
-        assert(!exp);
+Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized)
+: Valuable(std::string_view(s), vaNames.begin()->second.getVaHost(), itIsOptimized) {
+    // Parse the string and create a Valuable object representing the mathematical expression
+    std::string_view sv(s);
+    auto bracketsmap = OmitOuterBrackets(sv);
+    if (bracketsmap.empty()) {
+        // Handle simple cases like integers or variables
+        if (std::all_of(sv.begin(), sv.end(), ::isdigit)) {
+            exp = std::make_shared<Integer>(sv);
+        } else {
+            exp = std::make_shared<Variable>(vaNames.begin()->second.getVaHost());
+        }
+    } else {
+        // Handle more complex expressions
+        Valuable sum = Sum{};
+        Valuable v;
+        auto mulByNeg = false;
+        using op_t = std::function<void(Valuable &&)>;
+        op_t o_mov = [&](Valuable&& val) {
+            v = std::move(val);
+            if (mulByNeg) {
+                v *= -1;
+                mulByNeg = {};
+            }
+        };
+        op_t o_sum, o_mul, o_div, o_exp;
+        o_sum = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            sum += std::move(val);
+        };
+        o_mul = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v *= std::move(val);
+        };
+        o_div = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v /= std::move(val);
+        };
+        o_exp = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v ^= std::move(val);
+        };
+        auto o = std::ref(o_mov);
+        for (size_t i = 0; i < sv.length(); ++i) {
+            auto c = sv[i];
+            if (c == '(') {
+                auto cb = bracketsmap[i];
+                auto next = i + 1;
+                o(Valuable(std::string(sv.substr(next, cb - next)), vaNames, itIsOptimized));
+                i = cb;
+            } else if (c == '-') {
+                o_sum(std::move(v));
+                v = 0;
+                o = o_mov;
+                mulByNeg ^= true;
+            } else if ((c >= '0' && c <= '9') || c == '.') {
+                auto next = sv.find_first_not_of("0123456789.", i + 1);
+                auto ss = sv.substr(i, next - i);
+                i = next - 1;
+                if (ss.find('.') != std::string::npos) {
+                    auto beforedot = ss.substr(0, ss.find('.'));
+                    auto afterdot = ss.substr(ss.find('.') + 1);
+                    auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
+                    o(std::move(f));
+                } else {
+                    o(Integer(ss));
+                }
+            } else if (c == '+') {
+                o_sum(std::move(v));
+                v = 0;
+                o = o_mov;
+            } else if (c == '*') {
+                o = o_mul;
+            } else if (c == '/') {
+                o = o_div;
+            } else if (c == '^') {
+                o = o_exp;
+            } else if (std::isalpha(c)) {
+                auto to = sv.find_first_of(" */%+-^()", i + 1);
+                auto id = std::string(sv.substr(i, to - i));
+                o(Valuable(id, vaNames, itIsOptimized));
+                i = to - 1;
+            } else {
+                throw std::runtime_error("Unexpected character in expression");
+            }
+        }
+        o_sum(std::move(v));
+        Become(std::move(sum));
     }
+}
 
-    std::type_index Valuable::Type() const
-    {
-    	if (exp)
-    		return exp->Type();
-#ifdef __APPLE__
-        LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
-        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
-    }
+} // namespace omnn::math
+
+} // namespace omnn::math
 
     void Valuable::DispatchDispose(encapsulated_instance&& e) {
 #ifdef OPENMIND_BUILD_GC
@@ -234,48 +323,48 @@ namespace omnn::math {
             auto sizeWas = getAllocSize();
             auto newSize = i.getTypeSize();
 
-            if (newSize <= sizeWas) {
-                assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
-                char buf[DefaultAllocSize];
-                i.New(buf, std::move(i));
-                Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
-                this->~Valuable();
-                bufv.New(this, std::move(bufv));
-                setAllocSize(sizeWas);
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-                SetView(newWasView);
-                optimize();
+        if (newSize <= sizeWas) {
+            assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
+            char buf[DefaultAllocSize];
+            i.New(buf, std::move(i));
+            Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
+            this->~Valuable();
+            bufv.New(this, std::move(bufv));
+            setAllocSize(sizeWas);
+            if (Hash() != h) {
+                IMPLEMENT
             }
-            else if(exp && exp->getAllocSize() >= newSize)
-            {
-                exp->Become(std::move(i));
-            }
-            else
-            {
-                auto moved = i.Move();
-                this->~Valuable();
-                new(this) Valuable(moved);
-                setAllocSize(sizeWas);
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-                optimize();
-            }
-        }
-        if(GetView() != newWasView){
             SetView(newWasView);
-            IMPLEMENT
+            optimize();
         }
-
-        return *this;
+        else if(exp && exp->getAllocSize() >= newSize)
+        {
+            exp->Become(std::move(i));
+        }
+        else
+        {
+            auto moved = i.Move();
+            this->~Valuable();
+            new(this) Valuable(moved);
+            setAllocSize(sizeWas);
+            if (Hash() != h) {
+                IMPLEMENT
+            }
+            optimize();
+        }
+    }
+    if(GetView() != newWasView){
+        SetView(newWasView);
+        IMPLEMENT
     }
 
-    Valuable& Valuable::operator =(Valuable&& v)
-    {
-        return Become(std::move(v));
-    }
+    return *this;
+}
+
+Valuable& Valuable::operator =(Valuable&& v)
+{
+    return Become(std::move(v));
+}
 
     Valuable& Valuable::operator =(const Valuable& v)
     {
@@ -298,20 +387,16 @@ namespace omnn::math {
         exp->optimize();
     }
 
-    Valuable::Valuable(a_rational&& r)
-    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
-    { exp->optimize(); }
-
-    namespace{
-        template<typename T>
-        constexpr T bits_in_use(T v) {
-            T bits = 0;
-            while (v) {
-                ++bits;
-                v = v >> 1;
-            }
-            return bits;
+namespace{
+    template<typename T>
+    constexpr T bits_in_use(T v) {
+        T bits = 0;
+        while (v) {
+            ++bits;
+            v = v >> 1;
         }
+        return bits;
+    }
 
         //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, constants::half)-b)/(a*2));
         //    auto aMergeOrF = MergeOrF(a);
@@ -359,140 +444,147 @@ namespace omnn::math {
         return merged;
     }
 
-	Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
-        // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
-        return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
-    }
+Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
+    // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
+    return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
+}
 
-    Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
-        auto _1 = MergeOr(v1, v2);
-        auto _2 = MergeOr(v3, v4);
+Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
+    auto _1 = MergeOr(v1, v2);
+    auto _2 = MergeOr(v3, v4);
 #ifndef NDEBUG
-        if(_1.IsMultival() != YesNoMaybe::Yes || _2.IsMultival() != YesNoMaybe::Yes) {
-            LOG_AND_IMPLEMENT(v1 << 'v' << v2 << 'v' << v3 << 'v' << v4 << " - emerging difficulty: "
+    if(_1.IsMultival() != YesNoMaybe::Yes || _2.IsMultival() != YesNoMaybe::Yes) {
+        LOG_AND_IMPLEMENT(v1 << 'v' << v2 << 'v' << v3 << 'v' << v4 << " - emerging difficulty: "
                               << v1 << 'v' << v2 << '=' << _1 << ", " << v3 << 'v' << v4 << '=' << _2);
-        }
+    }
 #endif
-        return MergeOr(_1, _2);
-    }
+    return MergeOr(_1, _2);
+}
 
-    Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
-    {
-        return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
-    }
+Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
+{
+    return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
+}
 
-    namespace {
+namespace omnn::math {
     void Optimize(Valuable::solutions_t& s) {
         Valuable::solutions_t distinct;
         Valuable::OptimizeOn enable;
         while (s.size()) {
-			auto it = s.begin();
-			auto v = std::move(s.extract(it).value());
+            auto it = s.begin();
+            auto v = std::move(s.extract(it).value());
             v.optimize();
             distinct.emplace(std::move(v));
-		}
-		std::swap(s, distinct);
+        }
+        std::swap(s, distinct);
     }
-    } // namespace
-    Valuable::Valuable(solutions_t&& s)
-    {
-        if (!optimizations
-            || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
-        ) {
-            Optimize(s);
-        }
+} // namespace omnn::math
 
-        auto it = s.begin();
+Valuable::Valuable(solutions_t&& s)
+{
+    if (!optimizations
+        || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
+    ) {
+        omnn::math::Optimize(s);
+    }
+
+    auto it = s.begin();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-		std::cout << " Merging [ ";
-        for(auto& item: s){
-            std::cout << item << ' ';
-        }
-        std::cout << ']' << std::endl;
+    std::cout << " Merging [ ";
+    for(auto& item: s){
+        std::cout << item << ' ';
+    }
+    std::cout << ']' << std::endl;
 #endif
-        switch (s.size()) {
-        case 0: IMPLEMENT; break;
-        case 1: operator=(*it); break;
-        case 2: {
-            auto& _1 = *it++;
-            auto& _2 = *it;
-            operator=(MergeOr(_1, _2));
-            break;
-        }
-        case 3: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it;
-            operator=(MergeOr(_1, _2, _3));
-            break;
-        }
-        case 4: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it++;
-            auto& _4 = *it;
-            operator=(MergeOr(_1, _2, _3, _4));
-            break;
-        }
-        default:
-            solutions_t pairs;
-            for (; it != s.end();) {
-                auto it2 = it;
-                ++it2;
-                auto neg = -*it;
-                bool found = {};
-                for (; it2 != s.end();) {
-                    found = it2->operator==(neg);
-                    if (found) {
-                        pairs.emplace(MergeOr(*it, neg));
-                        s.erase(it2);
-                        s.erase(it++);
-                        break;
-                    } else {
-                        ++it2;
-                    }
-                }
-                if (!found) {
-                    ++it;
+    switch (s.size()) {
+    case 0: IMPLEMENT; break;
+    case 1: operator=(*it); break;
+    case 2: {
+        auto& _1 = *it++;
+        auto& _2 = *it;
+        operator=(MergeOr(_1, _2));
+        break;
+    }
+    case 3: {
+        auto& _1 = *it++;
+        auto& _2 = *it++;
+        auto& _3 = *it;
+        operator=(MergeOr(_1, _2, _3));
+        break;
+    }
+    case 4: {
+        auto& _1 = *it++;
+        auto& _2 = *it++;
+        auto& _3 = *it++;
+        auto& _4 = *it;
+        operator=(MergeOr(_1, _2, _3, _4));
+        break;
+    }
+    default:
+        solutions_t pairs;
+        for (; it != s.end();) {
+            auto it2 = it;
+            ++it2;
+            auto neg = -*it;
+            bool found = {};
+            for (; it2 != s.end();) {
+                found = it2->operator==(neg);
+                if (found) {
+                    pairs.emplace(MergeOr(*it, neg));
+                    s.erase(it2);
+                    s.erase(it++);
+                    break;
+                } else {
+                    ++it2;
                 }
             }
-            if (s.size() == 0) {
-                s = std::move(pairs);
+            if (!found) {
+                ++it;
             }
+        }
+        if (s.size() == 0) {
+            s = std::move(pairs);
+        }
 
-            if (pairs.size()) {
-                operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
-            } else {
-                while(s.size() > 1){
-                    solutions_t ss;
-				    while(s.size() >= 4){
-					    auto it = s.begin();
-					    auto& _1 = *it++;
-					    auto& _2 = *it++;
-                        auto& _3 = *it++;
-                        auto& _4 = *it++;
-                        ss.emplace(MergeOr(_1, _2, _3, _4));
-				    }
-                    if(s.size()){
-					    ss.emplace(std::move(s));
-                    }
-                    s = std::move(ss);
+        if (pairs.size()) {
+            operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
+        } else {
+            while(s.size() > 1){
+                solutions_t ss;
+                while(s.size() >= 4){
+                    auto it = s.begin();
+                    auto& _1 = *it++;
+                    auto& _2 = *it++;
+                    auto& _3 = *it++;
+                    auto& _4 = *it++;
+                    ss.emplace(MergeOr(_1, _2, _3, _4));
                 }
-                operator=(std::move(s.extract(s.begin()).value()));
-			}
+                if(s.size()){
+                    ss.emplace(std::move(s));
+                }
+                s = std::move(ss);
+            }
+            operator=(std::move(s.extract(s.begin()).value()));
+        }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            std::stringstream ss;
-            ss << '(';
-            for (auto& v : s)
-                ss << ' ' << v;
-            ss << " )";
-            std::cout << ss.str();
-            LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << s.size() << " items " << ss.str());
-#else
-            LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
-#endif
+        if(s.size() > 1){
+            auto distinct = Distinct();
+            if (distinct != s) {
+                std::stringstream ss;
+                ss << '(';
+                for (auto& v : s)
+                    ss << ' ' << v;
+                ss << " ) <> (";
+                for (auto& v : distinct)
+                    ss << ' ' << v;
+                ss << " )";
+                std::cout << ss.str();
+                LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+            }
         }
+#endif
+    }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(s.size() > 1){
@@ -512,7 +604,7 @@ namespace omnn::math {
             }
         }
 #endif
-    }
+}
 
 
 struct hash_tokens_collection_t {
@@ -1353,38 +1445,25 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-	Valuable Valuable::Integral(const Variable& x, const Variable& C // = constants::integration_result_constant
+Valuable Valuable::Integral(const Variable& x, const Variable& C // = constants::integration_result_constant
     ) const {
-        auto t = *this;
-        t.integral(x, C);
-        return t;
-    }
+    // Implementation of Integral method
+}
 
-	Valuable& Valuable::integral(const Variable& x, const Valuable& from, const Valuable& to, const Variable& C) {
-        integral(x, C);
-        return Become(Eval({{x, to}}) - Eval({{x, from}}));
-    }
+Valuable& Valuable::integral(const Variable& x, const Valuable& from, const Valuable& to, const Variable& C) {
+    integral(x, C);
+    // Implementation of integral method
+}
 
-    Valuable Valuable::Integral(const Variable& x,
-		const Valuable& from // = constants::minfinity
-		,
-		const Valuable& to // = constants::infinity
-		,
-		const Variable& C // = constants::integration_result_constant
-	) const {
-        auto t = *this;
-        t.integral(x, from, to, C);
-        return t;
-    }
+Valuable Valuable::Integral(const Variable& x, const Valuable& from // = constants::minfinity
+    ) const {
+    // Implementation of Integral method
+}
 
-	Valuable& Valuable::integral(const Variable& x, const Variable& C)
-    {
-        if(exp) {
-            return exp->integral(x, C);
-        }
-        else
-            IMPLEMENT
-    }
+Valuable& Valuable::integral(const Variable& x, const Variable& C)
+{
+    // Implementation of integral method
+}
 
     void Valuable::solve(const Variable& va, solutions_t& solutions) const
     {
@@ -1870,6 +1949,34 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         else
             LOG_AND_IMPLEMENT("Implement optimize() for " << *this);
     }
+
+    Valuable& Valuable::operator =(Valuable&& v)
+    {
+        return Become(std::move(v));
+    }
+
+    Valuable& Valuable::operator =(const Valuable& v)
+    {
+        exp.reset(v.Clone());
+        return *this;
+    }
+
+    Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
+    Valuable::Valuable(Valuable* v) : exp(v) {}
+    Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
+    Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
+    Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
+    Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
+
+    Valuable::Valuable(const a_rational& r)
+    : exp(std::move(std::make_shared<Fraction>(r)))
+    {
+        exp->optimize();
+    }
+
+    Valuable::Valuable(a_rational&& r)
+    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
+    { exp->optimize(); }
 
 	Valuable Valuable::Cos() const {
 		if (exp)
@@ -3103,10 +3210,12 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l)
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
 
-//APPLE_CONSTEXPR
 const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return v;
 }
+
+namespace omnn {
+namespace math {
 
 ::omnn::math::Valuable operator"" _v(unsigned long long v)
 {
@@ -3115,12 +3224,13 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return Valuable(Integer(va));
 }
 
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v)
-//{
-//    return ::omnn::math::vo<v>();
-//}
-
 ::omnn::math::Valuable operator"" _v(long double v)
 {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
+
+} // namespace math
+} // namespace omnn
+} // namespace omnn
+} // namespace math
+} // namespace omnn
