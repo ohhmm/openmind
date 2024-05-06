@@ -11,7 +11,7 @@ public:
 	IdleTimeGoalGenerator(void);
 	~IdleTimeGoalGenerator(void);
 
-	Goal::ptr_t GenerateGoal();
+	Goal::ptr_t GenerateGoal() override;
 
     void AddFacility(Facility::ptr_t facility);
 };
