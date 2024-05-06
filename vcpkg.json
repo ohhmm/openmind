@@ -18,6 +18,7 @@
     "boost-test",
     "boost-thread",
     "leveldb",
+    "onnxruntime-gpu",
     {
       "name": "vcpkg-cmake",
       "host": true

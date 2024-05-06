@@ -1,4 +1,3 @@
-
 if (OPENMIND_USE_VCPKG)
     set(DEPENDENCIES
             Boost::filesystem
@@ -29,5 +28,7 @@ if(OPENMIND_USE_OPENCL)
         list(APPEND DEPENDENCIES Boost::compute)
     endif()
 endif()
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 lib(${DEPENDENCIES})

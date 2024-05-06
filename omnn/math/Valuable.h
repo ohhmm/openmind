@@ -19,6 +19,8 @@
 #include <boost/preprocessor.hpp>
 #include <boost/rational.hpp>
 
+#include <onnxruntime/core/session/onnxruntime_cxx_api.h>
+
 #define _NUM2STR(x) #x
 #define NUM2STR(x) _NUM2STR(x)
 #define LINE_NUMBER_STR NUM2STR(__LINE__)
@@ -59,7 +61,7 @@ struct hash<omnn::math::Valuable> {
 
 namespace omnn{
 namespace math {
-	
+
 namespace constants {
 extern const Valuable& e;
 extern const Valuable& i;
@@ -253,7 +255,7 @@ public:
     explicit Valuable(Valuable* v);
     explicit Valuable(const encapsulated_instance& e);
     virtual std::type_index Type() const;
-    const Valuable Link() const; // TODO : handle simulteneous values changes 
+    const Valuable Link() const; // TODO : handle simulteneous values changes
 
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(Valuable&& v);
@@ -279,8 +281,9 @@ public:
     : exp(t.Move())
     { }
 
-    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
+    Valuable(Valuable&&) = default;
     Valuable();
+
     Valuable(double d);
 
     template<class T,
@@ -296,6 +299,7 @@ public:
     using NewVaFn_t = std::function<Valuable(const std::string&)>;
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized = false);
+    Valuable(const std::string& s);
 
     //constexpr
 	virtual ~Valuable()//{}
@@ -343,7 +347,7 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
     void SetView(View v);
-    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
+    bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
 
@@ -480,7 +484,7 @@ public:
     bool IsMonic() const;
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
-    Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
+    void CheckDeserialization(const std::string_view& s);
 
 	Valuable operator!() const;
     explicit operator bool() const;
@@ -555,7 +559,7 @@ public:
     Valuable IfEq(const Valuable& v, const Valuable& Then,
                   const Valuable& Else) const; /// returns an expression which equals to @Then when this expression
                                                /// equals to @v param and @Else otherwise
-    
+
 	/// <summary>
 	/// bool is 0 or 1
 	/// </summary>
@@ -658,12 +662,26 @@ public:
 
     [[nodiscard]] virtual bool is_optimized() const;
 
+public:
+    // Method to load an ONNX model
+    void LoadONNXModel(const std::string& model_path);
+
+    // Method to run inference with the loaded ONNX model
+    std::vector<float> RunONNXInference(const std::vector<float>& input_data);
+
+    // Methods to add ONNX operations as mathematical expressions
+    void add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+    void add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+    void add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+
 protected:
     View view = View::Flat;
     bool optimized = false;
     void MarkAsOptimized();
 
-    //   TODO : std::shared_ptr<std::vector<Valuable>> cachedValues;
+    // ONNX Runtime environment and session
+    std::shared_ptr<Ort::Env> onnx_env;
+    std::shared_ptr<Ort::Session> onnx_session;
 };
 
 template<class T>
@@ -745,5 +763,3 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
 ::omnn::math::Valuable operator"" _v(unsigned long long v);
 //constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
 ::omnn::math::Valuable operator"" _v(long double v);
-
-

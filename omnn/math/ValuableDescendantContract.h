@@ -20,9 +20,9 @@ namespace math {
         Valuable& operator*=(const Valuable &v) override;
         Valuable& operator/=(const Valuable &v) override;
         Valuable& operator%=(const Valuable &v) override;
-        
+
         Valuable operator -() const override;
-        
+
         constexpr Valuable& operator --() override { return operator+=(constants::minus_1); }
         constexpr Valuable& operator ++() override { return operator+=(constants::one); }
 
@@ -31,12 +31,11 @@ namespace math {
         void optimize() override { }
         //void expand() override { }
         Valuable Sqrt() const override;
-
         bool IsComesBefore(const Valuable& v) const override
         {
             return *this > v;
         }
-        
+
         void Values(const std::function<bool(const Valuable&)> &fun) const override;
 
         Valuable Univariate() const override;
@@ -52,7 +51,7 @@ namespace math {
         using self = ValuableDescendantContract;
         friend Chld;
         friend Valuable;
-        
+
         class DepSz {
         public:
             constexpr DepSz(self* ths) {
@@ -63,8 +62,8 @@ namespace math {
             }
         };
         DepSz depSz = this;
-        
-        
+
+
 #ifndef BOOST_TEST_MODULE
     protected:
 #endif
@@ -81,9 +80,9 @@ namespace math {
         {
             return new Chld(*CPtr());
         }
-    
+
         NO_CLANG_CONSTEXPR size_t getTypeSize() const override { return sizeof(Chld); }
-        
+
         Valuable* Move() override
         {
             return static_cast<Valuable*>(new Chld(std::move(*Ptr())));
@@ -92,7 +91,7 @@ namespace math {
         void New(void* addr, Valuable&& v) override {
             new(addr) Chld(std::move(v.as<Chld>()));
         }
-        
+
     public:
         // once compiler allow
         // todo :
@@ -113,7 +112,7 @@ namespace math {
             optimized = v.optimized;
             return *this;
         }
-        
+
 //        operator Valuable&&() {
 //            return std::move(Valuable(Move()));
 //        }

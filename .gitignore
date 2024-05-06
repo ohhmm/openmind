@@ -47,3 +47,41 @@ CMakeLists.txt.user.*
 /*.cmake
 /*.ninja
 /compile_commands.json
+
+# Exclude Boost library files
+boost_*
+
+# Exclude CMake files
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+
+# Exclude ONNX Runtime build files
+onnxruntime/build/
+onnxruntime/install/
+
+# Exclude conflict resolution scripts
+/full_outputs/
+split_conflicts.sh
+find_conflicts_in_cmakelists.sh
+extract_conflict_sections.sh
+apply_resolved_conflicts.sh
+
+# Exclude large files
+omnn/math/resnet50-v1-7.onnx
+boost_1_85_0.tar.gz
+
+# Exclude untracked files
+CMakeLists.txt.bak
+analyze_large_file.sh
+analyze_log.sh
+check_conflicts.sh
+check_valuable_conflicts.sh
+identify_conflicts.sh
+process_conflicts.sh
+process_large_conflict_file.sh
+remove_large_files_history.sh
+resolve_conflicts.sh
+resolve_valuable_conflicts.sh
+search_conflicts_in_chunks.sh
+search_conflicts_in_sections.sh

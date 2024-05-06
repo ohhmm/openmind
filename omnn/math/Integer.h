@@ -63,7 +63,6 @@ public:
     }
 
     Valuable FirstFactor() const override;
-
     explicit operator int64_t() const;
 
     bool IsInt() const override { return true; }
