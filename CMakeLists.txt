@@ -5,7 +5,7 @@ string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
 
 enable_language(CXX)
-set (CMAKE_CXX_STANDARD 23)
+set (CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -107,20 +107,7 @@ if(NOT EXISTS INTEL_COMPILER_PATH)
 		set(CMAKE_CXX_COMPILER ${INTEL_COMPILER_PATH} CACHE STRING "Intel compiler path" FORCE)
 	endif()
 endif()
-if(NOT IntelSYCL_FOUND)
-	if(NOT DEFINED OPENMIND_USE_OPENCL_INTEL_SYCL)
-		option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
-		find_package(IntelSYCL)
-		if(IntelSYCL_FOUND)
-			set(OPENMIND_USE_OPENCL_INTEL_SYCL ON CACHE BOOL "OpenCL GPU calculations" FORCE)
-		endif()
-	endif()
-	if(IntelSYCL_FOUND)
-		message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
-		message("SYCL_FLAGS: ${SYCL_FLAGS}")
-		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
-	endif()
-endif()
+find_optional_pkg(IntelSYCL)
 find_optional_pkg(IntelDPCPP)
 
 find_package(CUDAToolkit)
@@ -128,7 +115,7 @@ if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
@@ -148,8 +135,8 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.85.0 CACHE STRING "Boost library version to use")
-set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.74.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_REQUIRED_BOOST_VERSION 1.74.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
 if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
@@ -214,15 +201,13 @@ elseif(OPENMIND_USE_CONAN)
 	endif()
 endif()
 
-find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
+find_package(Boost
 	CONFIG
-	HINTS C:/Boost
 	COMPONENTS ${BOOST_USED_COMPONENTS}
 	)
 if(NOT Boost_FOUND)
-	find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+	find_package(Boost
 		CONFIG
-		HINTS C:/Boost
 		COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 endif()
@@ -419,6 +404,6 @@ function(_openmind_hook_end_of_configure)
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT
 	)
 endfunction()
