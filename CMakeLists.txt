@@ -128,7 +128,7 @@ if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
@@ -215,16 +215,16 @@ elseif(OPENMIND_USE_CONAN)
 endif()
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-	CONFIG
-	HINTS C:/Boost
-	COMPONENTS ${BOOST_USED_COMPONENTS}
-	)
+    CONFIG
+    HINTS ${BOOST_ROOT}  # This should point to the directory where Boost 1.85.0 is installed
+    COMPONENTS ${BOOST_USED_COMPONENTS}
+    )
 if(NOT Boost_FOUND)
-	find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
-		CONFIG
-		HINTS C:/Boost
-		COMPONENTS ${BOOST_USED_COMPONENTS}
-		)
+    find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+        CONFIG
+        HINTS ${BOOST_ROOT}  # This should point to the directory where Boost 1.85.0 is installed
+        COMPONENTS ${BOOST_USED_COMPONENTS}
+        )
 endif()
 add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
@@ -419,6 +419,6 @@ function(_openmind_hook_end_of_configure)
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT
 	)
 endfunction()
