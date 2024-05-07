@@ -216,13 +216,13 @@ endif()
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
     CONFIG
-    HINTS ${BOOST_ROOT}  # This should point to the directory where Boost 1.85.0 is installed
+    HINTS ${BOOST_ROOT}/stage/lib/cmake/Boost-1.85.0  # Updated to point to the directory containing BoostConfig.cmake
     COMPONENTS ${BOOST_USED_COMPONENTS}
     )
 if(NOT Boost_FOUND)
     find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
         CONFIG
-        HINTS ${BOOST_ROOT}  # This should point to the directory where Boost 1.85.0 is installed
+        HINTS ${BOOST_ROOT}/stage/lib/cmake/Boost-1.85.0  # Updated to point to the directory containing BoostConfig.cmake
         COMPONENTS ${BOOST_USED_COMPONENTS}
         )
 endif()
