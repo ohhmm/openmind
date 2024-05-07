@@ -9,8 +9,8 @@ SolveEquation::SolveEquation( const std::wstring& equation )
 : equation_(equation)
 {
     using namespace omnn::math;
-    std::string s(equation.begin(), equation.end());
-    std::string_view sv(s);
+    std::string equation_str(equation.begin(), equation.end());
+    std::string_view sv(equation_str);
     auto& varHost = VarHost::Global<std::string>();
     auto varHostPtr = varHost.sh();
     Valuable eq(sv, varHostPtr);
