@@ -221,51 +221,13 @@ public:
 
 namespace std {
     template <typename T>
-    struct allocator_traits<custom_allocator<T>> {
-        using allocator_type = custom_allocator<T>;
-        using value_type = T;
-        using pointer = typename allocator_type::pointer;
-        using const_pointer = typename allocator_type::const_pointer;
-        using void_pointer = typename allocator_type::void_pointer;
-        using const_void_pointer = typename allocator_type::const_void_pointer;
-        using difference_type = typename allocator_type::difference_type;
-        using size_type = typename allocator_type::size_type;
-        using propagate_on_container_move_assignment = std::true_type;
-        using is_always_equal = std::is_empty<allocator_type>;
-
-        template <class U, class... Args>
-        static void construct(allocator_type& a, U* p, Args&&... args) {
-            ::new((void*)p) U(std::forward<Args>(args)...);
-        }
-
-        template <class U>
-        static void destroy(allocator_type& a, U* p) {
-            p->~U();
-        }
+    struct allocator_traits<custom_allocator<T>> : std::allocator_traits<std::allocator<T>> {
+        // Inherit all functionality from std::allocator_traits
     };
 
     template <>
-    struct allocator_traits<custom_allocator<std::size_t>> {
-        using allocator_type = custom_allocator<std::size_t>;
-        using value_type = std::size_t;
-        using pointer = typename allocator_type::pointer;
-        using const_pointer = typename allocator_type::const_pointer;
-        using void_pointer = typename allocator_type::void_pointer;
-        using const_void_pointer = typename allocator_type::const_void_pointer;
-        using difference_type = typename allocator_type::difference_type;
-        using size_type = typename allocator_type::size_type;
-        using propagate_on_container_move_assignment = std::true_type;
-        using is_always_equal = std::is_empty<allocator_type>;
-
-        template <class U, class... Args>
-        static void construct(allocator_type& a, U* p, Args&&... args) {
-            ::new((void*)p) U(std::forward<Args>(args)...);
-        }
-
-        template <class U>
-        static void destroy(allocator_type& a, U* p) {
-            p->~U();
-        }
+    struct allocator_traits<custom_allocator<std::size_t>> : std::allocator_traits<std::allocator<std::size_t>> {
+        // Inherit all functionality from std::allocator_traits
     };
 }
 
