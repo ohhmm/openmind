@@ -56,12 +56,20 @@ public:
 
     template <class U, class... Args>
     void construct(U* p, Args&&... args) {
+#if __cplusplus >= 201703L
+        std::allocator_traits<custom_allocator>::construct(*this, p, std::forward<Args>(args)...);
+#else
         ::new((void*)p) U(std::forward<Args>(args)...);
+#endif
     }
 
     template <class U>
     void destroy(U* p) {
+#if __cplusplus >= 201703L
+        std::allocator_traits<custom_allocator>::destroy(*this, p);
+#else
         p->~U();
+#endif
     }
 
     // Dummy resize method to satisfy the Boost Numeric Ublass library's requirements
@@ -213,13 +221,13 @@ public:
 
 namespace std {
     template <typename T>
-    struct allocator_traits<custom_allocator<T>> : std::allocator_traits<std::allocator<T>> {
+    struct allocator_traits<custom_allocator<T>> {
         using allocator_type = custom_allocator<T>;
         using value_type = T;
         using pointer = typename allocator_type::pointer;
         using const_pointer = typename allocator_type::const_pointer;
-        using void_pointer = typename std::allocator<T>::void_pointer;
-        using const_void_pointer = typename std::allocator<T>::const_void_pointer;
+        using void_pointer = typename allocator_type::void_pointer;
+        using const_void_pointer = typename allocator_type::const_void_pointer;
         using difference_type = typename allocator_type::difference_type;
         using size_type = typename allocator_type::size_type;
         using propagate_on_container_move_assignment = std::true_type;
@@ -227,23 +235,23 @@ namespace std {
 
         template <class U, class... Args>
         static void construct(allocator_type& a, U* p, Args&&... args) {
-            a.construct(p, std::forward<Args>(args)...);
+            ::new((void*)p) U(std::forward<Args>(args)...);
         }
 
         template <class U>
         static void destroy(allocator_type& a, U* p) {
-            a.destroy(p);
+            p->~U();
         }
     };
 
     template <>
-    struct allocator_traits<custom_allocator<std::size_t>> : std::allocator_traits<std::allocator<std::size_t>> {
+    struct allocator_traits<custom_allocator<std::size_t>> {
         using allocator_type = custom_allocator<std::size_t>;
         using value_type = std::size_t;
         using pointer = typename allocator_type::pointer;
         using const_pointer = typename allocator_type::const_pointer;
-        using void_pointer = void*;
-        using const_void_pointer = const void*;
+        using void_pointer = typename allocator_type::void_pointer;
+        using const_void_pointer = typename allocator_type::const_void_pointer;
         using difference_type = typename allocator_type::difference_type;
         using size_type = typename allocator_type::size_type;
         using propagate_on_container_move_assignment = std::true_type;
@@ -251,12 +259,12 @@ namespace std {
 
         template <class U, class... Args>
         static void construct(allocator_type& a, U* p, Args&&... args) {
-            a.construct(p, std::forward<Args>(args)...);
+            ::new((void*)p) U(std::forward<Args>(args)...);
         }
 
         template <class U>
         static void destroy(allocator_type& a, U* p) {
-            a.destroy(p);
+            p->~U();
         }
     };
 }
