@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <new>
+#include <boost/version.hpp>
 
 template <typename T>
 class custom_allocator {
@@ -56,20 +57,12 @@ public:
 
     template <class U, class... Args>
     void construct(U* p, Args&&... args) {
-#if __cplusplus >= 201703L
-        std::allocator_traits<custom_allocator>::construct(*this, p, std::forward<Args>(args)...);
-#else
         ::new((void*)p) U(std::forward<Args>(args)...);
-#endif
     }
 
     template <class U>
     void destroy(U* p) {
-#if __cplusplus >= 201703L
-        std::allocator_traits<custom_allocator>::destroy(*this, p);
-#else
         p->~U();
-#endif
     }
 
     // Dummy resize method to satisfy the Boost Numeric Ublass library's requirements
