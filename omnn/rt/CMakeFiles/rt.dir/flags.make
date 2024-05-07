@@ -6,5 +6,5 @@ CXX_DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_ALL_STATIC_LINK -DOPENMIND_PRIME_TABLE_
 
 CXX_INCLUDES = -I/home/ubuntu/openmind/omnn/rt -I/usr/include/CL -I/home/ubuntu/openmind/omnn
 
-CXX_FLAGS = -fPIC -std=c++14
+CXX_FLAGS = -fPIC -std=c++17
 

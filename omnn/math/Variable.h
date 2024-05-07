@@ -67,14 +67,14 @@ public:
     bool IsComesBefore(const Valuable& v) const override;
     a_int Complexity() const override { return 1; }
 
-    const Valuable* FindVa() const override { return this; }
+    const Variable* FindVa() const override { return this; }
     bool HasVa(const Variable& va) const override { return operator==(va); }
 
     void CollectVa(std::set<Variable>& s) const override;
     void CollectVaNames(Valuable::va_names_t& s) const override;
 
     bool eval(const std::map<Variable, Valuable>& with) override;
-    void Eval(const Variable& va, const Valuable& v) override;
+    void Eval(const Variable& va, the Valuable& v) override;
     void solve(const Variable& va, solutions_t& solutions) const override;
 
     const vars_cont_t& getCommonVars() const override;

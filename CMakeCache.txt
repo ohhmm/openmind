@@ -554,7 +554,7 @@ X11_xkbfile_INCLUDE_PATH:PATH=/usr/include
 X11_xkbfile_LIB:FILEPATH=/usr/lib/x86_64-linux-gnu/libxkbfile.so
 
 //Components
-_BOOST_USED_COMPONENTS:STRING=date_time;filesystem;iostreams;locale;serialization;system;thread;unit_test_framework;test_exec_monitor
+_BOOST_USED_COMPONENTS:STRING=date_time;filesystem;iostreams;locale;serialization;system;thread;unit_test_framework;test_exec_monitor;date_time;filesystem;iostreams;locale;serialization;system;thread;unit_test_framework;test_exec_monitor
 
 //address_model
 address_model:STRING=64
