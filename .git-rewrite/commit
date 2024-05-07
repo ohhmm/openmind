@@ -1,0 +1,6 @@
+tree 0e88adaf5ff2b6cef0b24020301a1dc9958f8371
+parent 2a84c9db1a13776f63883d29b75b6fb4c737e633
+author Serg Krivonos <SergeiKrivonos@GMAIL.com> 1630006028 +0300
+committer Serg Krivonos <SergeiKrivonos@GMAIL.com> 1630143822 +0300
+
+Generalize MergeOr for two and three params
