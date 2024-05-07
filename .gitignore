@@ -24,3 +24,19 @@ CMakeLists.txt.user.*
 /enc_temp_folder/
 
 *.cpp.gch
+
+# Add build directories and common build artifacts
+/CMakeFiles/
+/CMakeCache.txt
+/CTestTestfile.cmake
+/Makefile
+/cmake_install.cmake
+*.a
+*.o
+*.so
+/bin/
+/lib/
+/*/CMakeFiles/
+/*/CTestTestfile.cmake
+/*/Makefile
+/*/cmake_install.cmake
