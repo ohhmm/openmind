@@ -8,7 +8,7 @@ class GetEquation :
 	typedef GeneralGoalGenerator<GetEquation> base_t;
 public:
 //	using base_t::GeneralGoalGenerator;
-	GetEquation(const string_t& name) : base_t(name) {}
+	explicit GetEquation(const string_t& name) : base_t(name) {}
 	~GetEquation(void);
 	Goal::ptr_t GenerateGoal();
 };
