@@ -1,23 +1,23 @@
 //
 // Created by Sergej Krivonos on 31.12.2019.
 //
-#include "Cache.h"
-#include "Valuable.h" // Ensure Valuable class is included
-
 #include <chrono>
 #include <iostream>
 #include <thread>
-#include <any> // For std::any
-#include <sstream> // For std::stringstream
-#include <utility> // For std::move and std::pair
-#include <future> // For std::future, std::future_error
-#include <type_traits> // For std::is_nothrow_move_constructible, std::aligned_storage, etc.
-#include <new> // For std::launder and other utilities
+#include <any>
+#include <sstream>
+#include <utility>
+#include <future>
+#include <type_traits>
+#include <new>
+
+#include <boost/tokenizer.hpp>
 
 #include <rt/tasq.h>
 #include <storage/LevelDbCache.h>
 
-#include <boost/tokenizer.hpp>
+#include "Cache.h"
+#include "Valuable.h"
 #include "Variable.h"
 
 void TestStandardLibraryTypes() {
