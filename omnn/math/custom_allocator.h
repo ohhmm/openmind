@@ -54,6 +54,16 @@ public:
         return std::numeric_limits<size_type>::max() / sizeof(T);
     }
 
+    template <class U, class... Args>
+    void construct(U* p, Args&&... args) {
+        ::new((void*)p) U(std::forward<Args>(args)...);
+    }
+
+    template <class U>
+    void destroy(U* p) {
+        p->~U();
+    }
+
     // Dummy resize method to satisfy the Boost Numeric Ublass library's requirements
     void resize(size_type) noexcept {
         // This method is not required by the standard allocator interface.
@@ -145,6 +155,16 @@ public:
         return std::numeric_limits<size_type>::max() / sizeof(std::size_t);
     }
 
+    template <class U, class... Args>
+    void construct(U* p, Args&&... args) {
+        ::new((void*)p) U(std::forward<Args>(args)...);
+    }
+
+    template <class U>
+    void destroy(U* p) {
+        p->~U();
+    }
+
     // Dummy resize method to satisfy the Boost Numeric Ublass library's requirements
     void resize(size_type) noexcept {
         // This method is not required by the standard allocator interface.
@@ -186,6 +206,59 @@ public:
         // It is only provided for compatibility purposes and will return a null iterator.
         return nullptr;
     }
+
+    using void_pointer = void*;
+    using const_void_pointer = const void*;
 };
+
+namespace std {
+    template <typename T>
+    struct allocator_traits<custom_allocator<T>> : std::allocator_traits<std::allocator<T>> {
+        using allocator_type = custom_allocator<T>;
+        using value_type = T;
+        using pointer = typename allocator_type::pointer;
+        using const_pointer = typename allocator_type::const_pointer;
+        using void_pointer = typename std::allocator<T>::void_pointer;
+        using const_void_pointer = typename std::allocator<T>::const_void_pointer;
+        using difference_type = typename allocator_type::difference_type;
+        using size_type = typename allocator_type::size_type;
+        using propagate_on_container_move_assignment = std::true_type;
+        using is_always_equal = std::is_empty<allocator_type>;
+
+        template <class U, class... Args>
+        static void construct(allocator_type& a, U* p, Args&&... args) {
+            a.construct(p, std::forward<Args>(args)...);
+        }
+
+        template <class U>
+        static void destroy(allocator_type& a, U* p) {
+            a.destroy(p);
+        }
+    };
+
+    template <>
+    struct allocator_traits<custom_allocator<std::size_t>> : std::allocator_traits<std::allocator<std::size_t>> {
+        using allocator_type = custom_allocator<std::size_t>;
+        using value_type = std::size_t;
+        using pointer = typename allocator_type::pointer;
+        using const_pointer = typename allocator_type::const_pointer;
+        using void_pointer = void*;
+        using const_void_pointer = const void*;
+        using difference_type = typename allocator_type::difference_type;
+        using size_type = typename allocator_type::size_type;
+        using propagate_on_container_move_assignment = std::true_type;
+        using is_always_equal = std::is_empty<allocator_type>;
+
+        template <class U, class... Args>
+        static void construct(allocator_type& a, U* p, Args&&... args) {
+            a.construct(p, std::forward<Args>(args)...);
+        }
+
+        template <class U>
+        static void destroy(allocator_type& a, U* p) {
+            a.destroy(p);
+        }
+    };
+}
 
 #endif // CUSTOM_ALLOCATOR_H
