@@ -17,6 +17,7 @@
 #include <storage/LevelDbCache.h>
 
 #include "Cache.h"
+#include "PrincipalSurd.h"
 #include "Valuable.h"
 #include "Variable.h"
 
