@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
+if(EXISTS "${CMAKE_BINARY_DIR}/CMakeCache.txt")
+  file(REMOVE "${CMAKE_BINARY_DIR}/CMakeCache.txt")
+endif()
+
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
