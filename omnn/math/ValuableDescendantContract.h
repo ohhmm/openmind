@@ -3,10 +3,11 @@
 //
 #pragma once
 #include "Valuable.h"
-#include "PrincipalSurd.h"
 
 namespace omnn{
 namespace math {
+
+    class PrincipalSurd; // forward declaration
 
     class ValuableDescendantBase : public Valuable
     {
@@ -126,7 +127,7 @@ namespace math {
         }
 
         std::type_index Type() const override {
-        	return typeid(Chld);
+            return typeid(Chld);
         }
 
         Valuable::encapsulated_instance SharedFromThis() override {

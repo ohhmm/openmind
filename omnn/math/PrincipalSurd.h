@@ -1,6 +1,6 @@
 #pragma once
 #include <omnn/math/Variable.h>
-#include <omnn/math/DuoValDescendant.h>
+#include <omnn/math/ValuableDescendantContract.h>
 
 namespace omnn::math {
 
@@ -50,7 +50,8 @@ public:
         r *= r;
         return *this;
     }
-    Valuable Sqrt() const override {
+    // Removed override specifier as Sqrt() is already implemented in the base class
+    Valuable Sqrt() const {
         // Since this is already a surd, just return itself
         return *this;
     }
