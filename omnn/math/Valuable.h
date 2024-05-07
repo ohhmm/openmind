@@ -23,10 +23,6 @@
 #define NUM2STR(x) _NUM2STR(x)
 #define LINE_NUMBER_STR NUM2STR(__LINE__)
 
-#define IMPLEMENT {                                                                                                    \
-        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                                   \
-        throw;                                                                                                         \
-    }
 #define LOG_AND_IMPLEMENT(Param) { \
     ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
         throw;                                                                                                          \
@@ -37,6 +33,7 @@ namespace omnn {
 namespace math {
 class Valuable;
 class Variable;
+#include "Variable.h"
 class Integer;
 class Exponentiation;
 class Fraction;
@@ -172,16 +169,13 @@ public:
     Valuable& get() { return exp ? exp->get() : *this; }
 
     template<class T>
-    const T& as() const;
-
-    template<class T>
     T& as() {
         auto& the = get();
         assert(the.Is<T>());
         return static_cast<T&>(the);
     }
 
-    template <class T>
+    template<class T>
     T* As() {
         return Is<T>() ? as<T>() : nullptr;
     }
@@ -486,21 +480,51 @@ public:
     virtual const a_int& ca() const;
 
     // bits
-    virtual Valuable bit(const Valuable& n = constants::zero) const;
-    virtual Valuable bits(int n, int l) const;
-    virtual Valuable Or(const Valuable& n, const Valuable& v) const;
-    virtual Valuable And(const Valuable& n, const Valuable& v) const;
-    virtual Valuable Xor(const Valuable& n, const Valuable& v) const;
-    virtual Valuable Not(const Valuable& n) const;
-    virtual Valuable& shl();
-    virtual Valuable& shl(const Valuable& n);
-    virtual Valuable& shr(const Valuable& n);
-    virtual Valuable& shr();
-    virtual Valuable Shl(const Valuable& n) const;
-    virtual Valuable Shr(const Valuable& n) const;
-    virtual Valuable Shr() const;
-    virtual Valuable sh(const Valuable& n) const;
-    virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const;
+    virtual Valuable bit(const Valuable& n = constants::zero) const {
+        throw std::logic_error("Method bit not implemented.");
+    }
+    virtual Valuable bits(int n, int l) const {
+        throw std::logic_error("Method bits not implemented.");
+    }
+    virtual Valuable Or(const Valuable& n, const Valuable& v) const {
+        throw std::logic_error("Method Or not implemented.");
+    }
+    virtual Valuable And(const Valuable& n, Valuable& v) const {
+        throw std::logic_error("Method And not implemented.");
+    }
+    virtual Valuable Xor(const Valuable& n, const Valuable& v) const {
+        throw std::logic_error("Method Xor not implemented.");
+    }
+    virtual Valuable Not(const Valuable& n) const {
+        throw std::logic_error("Method Not not implemented.");
+    }
+    virtual Valuable& shl() {
+        throw std::logic_error("Method shl not implemented.");
+    }
+    virtual Valuable& shl(const Valuable& n) {
+        throw std::logic_error("Method shl not implemented.");
+    }
+    virtual Valuable& shr(const Valuable& n) {
+        throw std::logic_error("Method shr not implemented.");
+    }
+    virtual Valuable& shr() {
+        throw std::logic_error("Method shr not implemented.");
+    }
+    virtual Valuable Shl(const Valuable& n) const {
+        throw std::logic_error("Method Shl not implemented.");
+    }
+    virtual Valuable Shr(const Valuable& n) const {
+        throw std::logic_error("Method Shr not implemented.");
+    }
+    virtual Valuable Shr() const {
+        throw std::logic_error("Method Shr not implemented.");
+    }
+    virtual Valuable sh(const Valuable& n) const {
+        throw std::logic_error("Method sh not implemented.");
+    }
+    virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const {
+        throw std::logic_error("Method Cyclic not implemented.");
+    }
 
     // logic
     static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
@@ -511,8 +535,8 @@ public:
     }
     Valuable Equals(const Valuable& v) const;
     Valuable NotEquals(const Valuable& v) const;
-//    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
-//    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
+//    Valuable NE(const Valuable& to, the Valuable& abet) const; // not equals
+//    Valuable NE(const Variable& x, the Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
     Valuable LogicAnd(const Valuable& v) const;
     Valuable operator&&(const Valuable& v) const { return LogicAnd(v); }
     Valuable LogicOr(const Valuable& v) const;
@@ -657,79 +681,6 @@ protected:
 
 
 Valuable implement(const char* str = "");
-
-template<class T>
-const T& Valuable::as() const {
-    auto& the = get();
-    if(!the.Is<T>()){
-        IMPLEMENT
-    }
-    return static_cast<const T&>(the);
-}
-
-template <const long long I>
-class vo {
-    static const Valuable val;
-public:
-    constexpr operator const Valuable& () const {
-        return val;
-    }
-    static const Valuable& get() { return val; }
-};
-
-template <const long long I>
-const Valuable vo<I>::val = I;
-
-#if defined(MSVC) || defined(__APPLE__)
-template <const double I>
-class vf {
-    static const Valuable val;
-public:
-    constexpr operator const Valuable& () const {
-        return val;
-    }
-    static const Valuable& get() { return val; }
-};
-
-template <const double I>
-const Valuable vf<I>::val = I;
-#endif
-
-template <typename ValueT>
-class OptimizationLoopDetect {
-    static thread_local std::unordered_set<ValueT> LoopDetectionStack;
-    bool isLoop;
-    const ValueT* value;
-
-public:
-    OptimizationLoopDetect(const ValueT& value) {
-        auto emplaced = LoopDetectionStack.emplace(value);
-        this->value = &*emplaced.first;
-        isLoop = !emplaced.second;
-    }
-
-    ~OptimizationLoopDetect() {
-        if (!isLoop)
-            LoopDetectionStack.erase(*value);
-    }
-
-    auto isLoopDetected() const { return isLoop; }
-};
-template <typename ValueT>
-thread_local std::unordered_set<ValueT> OptimizationLoopDetect<ValueT>::LoopDetectionStack;
-
-} // namespace math
-} // namespace omnn
-
-namespace std {
-
-template <class T>
-    requires std::derived_from<T, ::omnn::math::Valuable>
-struct hash<T> {
-    constexpr size_t operator()(const T& v) const { return static_cast<const omnn::math::Valuable&>(v).Hash(); }
-};
-
-} // namespace std
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);

@@ -45,8 +45,15 @@ public:
 
     void optimize() override;
 
-    Valuable& sq() override;
-    Valuable Sqrt() const override;
+    Valuable& sq() override {
+        auto& r = radicand();
+        r *= r;
+        return *this;
+    }
+    Valuable Sqrt() const override {
+        // Since this is already a surd, just return itself
+        return *this;
+    }
 
     Valuable Sign() const override;
 

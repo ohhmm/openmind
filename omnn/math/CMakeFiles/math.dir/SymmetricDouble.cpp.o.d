@@ -181,29 +181,26 @@ omnn/math/CMakeFiles/math.dir/SymmetricDouble.cpp.o: \
  /usr/include/c++/11/bits/ostream.tcc /usr/include/c++/11/istream \
  /usr/include/c++/11/bits/istream.tcc \
  /home/ubuntu/openmind/omnn/math/OpenOps.h \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/operators.hpp \
- /usr/include/c++/11/cstddef /usr/include/c++/11/iterator \
- /usr/include/c++/11/bits/stream_iterator.h \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/user.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/detail/select_compiler_config.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/compiler/gcc.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/detail/select_stdlib_config.hpp \
+ /usr/include/boost/operators.hpp /usr/include/c++/11/cstddef \
+ /usr/include/c++/11/iterator /usr/include/c++/11/bits/stream_iterator.h \
+ /usr/include/boost/config.hpp /usr/include/boost/config/user.hpp \
+ /usr/include/boost/config/detail/select_compiler_config.hpp \
+ /usr/include/boost/config/compiler/gcc.hpp \
+ /usr/include/boost/config/detail/select_stdlib_config.hpp \
  /usr/include/c++/11/version \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/stdlib/libstdcpp3.hpp \
- /usr/include/unistd.h /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/boost/config/stdlib/libstdcpp3.hpp /usr/include/unistd.h \
+ /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
  /usr/include/linux/close_range.h \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/detail/select_platform_config.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/platform/linux.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/detail/posix_features.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/detail/suffix.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/helper_macros.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/detail/cxx_composite.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/detail/workaround.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/config/workaround.hpp \
- /home/ubuntu/openmind/boost-prefix/src/boost/boost/core/addressof.hpp
+ /usr/include/boost/config/detail/select_platform_config.hpp \
+ /usr/include/boost/config/platform/linux.hpp \
+ /usr/include/boost/config/detail/posix_features.hpp \
+ /usr/include/boost/config/detail/suffix.hpp \
+ /usr/include/boost/config/helper_macros.hpp \
+ /usr/include/boost/detail/workaround.hpp \
+ /usr/include/boost/config/workaround.hpp \
+ /usr/include/boost/core/addressof.hpp

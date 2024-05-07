@@ -165,7 +165,7 @@ bool Extrapolator::Consistent(const ublas::vector<T>& augment)
 Valuable Extrapolator::Complete(const Valuable& e)
 {
     // search for the row
-    IMPLEMENT
+    std::cout << "Method Complete not implemented." << std::endl;
 }
 
 Extrapolator Extrapolator::ViewMatrix() const

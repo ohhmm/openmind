@@ -3,6 +3,7 @@
 //
 #pragma once
 #include "Valuable.h"
+#include "PrincipalSurd.h"
 
 namespace omnn{
 namespace math {
@@ -29,7 +30,10 @@ namespace math {
 
         void optimize() override { }
         //void expand() override { }
-        Valuable Sqrt() const override { IMPLEMENT }
+        Valuable Sqrt() const override {
+            // Return a PrincipalSurd representation of the square root
+            return PrincipalSurd{*this};
+        }
 
         bool IsComesBefore(const Valuable& v) const override
         {

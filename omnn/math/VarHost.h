@@ -23,10 +23,10 @@
 
 namespace omnn {
 namespace math {
-    
+
     template<class T>
     class TypedVarHost;
-    
+
     class VarHost
         : public std::enable_shared_from_this<VarHost>
     {
@@ -38,7 +38,7 @@ namespace math {
         using cptr = std::shared_ptr<const VarHost>;
         using cref = const VarHost&;
         using hosted_storage_t = std::pair<Variable, std::string>;
-        
+
         virtual ~VarHost() = default;
 
         template<class T>
@@ -46,14 +46,14 @@ namespace math {
 #ifndef NDEBUG
             auto host = dynamic_cast<TypedVarHost<T>*>(this);
             if (host != this) {
-                LOG_AND_IMPLEMENT("wrong id type");
+                std::cout << "wrong id type" << std::endl;
             }
 #endif
                 Variable v(sh());
                 v.SetId(id);
                 return v;
             }
-        
+
 		Variable New();
 
     protected:
@@ -64,7 +64,7 @@ namespace math {
         Variable New(const any::any& id);
 
         virtual void AddNewId(const void* id) {
-            IMPLEMENT;
+            std::cout << "Function AddNewId not implemented." << std::endl;
         }
         virtual const hosted_storage_t& HostedStorage(const any::any& id) = 0;
 
@@ -91,10 +91,10 @@ namespace math {
         virtual bool CompareIdsLess(const any::any& a, const any::any& b) const = 0;
         virtual bool CompareIdsEqual(const any::any& a, const any::any& b) const = 0;
         virtual std::string_view GetName(const any::any&) const {
-            LOG_AND_IMPLEMENT("Implement TypedVarHost<>::GetName specialization");
+            std::cout << "Implement TypedVarHost<>::GetName specialization" << std::endl;
             return {};
         }
-        
+
         std::ostream& print(std::ostream& out, const any::any& v) const { return out << GetName(v); }
 
         virtual const Variable& Host(const any::any& id) = 0;
@@ -104,7 +104,7 @@ namespace math {
         bool TestRootConsistencyWithNonZeroLog(const Variable& variable, const Valuable& value) const;
         bool TestRootConsistencyWithNonZeroLog(const Valuable::vars_cont_t&) const;
     };
-    
+
     /**
      * ensures variable id uniquness in a space of variables
      */
@@ -115,7 +115,7 @@ namespace math {
         std::map<T, hosted_storage_t> hosted;
         friend class VarHost;
         constexpr TypedVarHost()=default;
-        
+
     protected:
 
         void AddNewId(const void* id) override {
@@ -132,7 +132,7 @@ namespace math {
                     throw "Wrong param";
                 }
             } else {
-                IMPLEMENT;
+                std::cout << "Function AddNewId not implemented." << std::endl;
             }
         }
 
@@ -141,9 +141,9 @@ namespace math {
             auto idTp = any::any_cast<T>(&id);
             return *idTp;
         }
-        
+
     public:
-        
+
         any::any NewVarId() override {
 
             T t = {};
@@ -162,43 +162,43 @@ namespace math {
                 varIds.insert(n);
                 return n;
             } else {
-                LOG_AND_IMPLEMENT("Implement new specialization for the variable object template<> any::any TypedVarHost<T>::NewVarId()!");
+                std::cout << "Implement new specialization for the variable object template<> any::any TypedVarHost<T>::NewVarId()!" << std::endl;
             }
-            
+
         }
-        
+
         any::any CloneId(const any::any& a) override {
             return a;
         }
-        
+
         bool IsIntegerId() const override {
             return std::is_integral<T>::value || std::is_same<T, Integer>::value;
         }
 
         bool Has(const any::any& id) const override {
-            IMPLEMENT
+            std::cout << "Function Has not implemented." << std::endl;
             return varIds.find(any::any_cast<T>(id)) != varIds.end();
         }
-        
+
         size_t Hash(const any::any& id) const override {
             return std::hash<T>()(any::any_cast<T>(id));
         }
-        
+
         bool CompareIdsLess(const any::any& a, const any::any& b) const override {
             return any::any_cast<T>(a) < any::any_cast<T>(b);
         }
-        
+
         bool CompareIdsEqual(const any::any& a, const any::any& b) const override {
             auto& ca = any::any_cast<const T&>(a);
             auto& cb = any::any_cast<const T&>(b);
             return ca == cb;
         }
-        
+
         std::string_view GetName(const any::any& v) const override {
-            LOG_AND_IMPLEMENT("Implement TypedVarHost<" << typeid(T).name() << ">::GetName specialization");
+            std::cout << "Implement TypedVarHost<" << typeid(T).name() << ">::GetName specialization" << std::endl;
             return {};
         }
-        
+
         hosted_storage_t& HostedStorage(const any::any& id) override {
             using namespace std::string_literals;
 
@@ -215,8 +215,8 @@ namespace math {
                             it = hosted.emplace(id, hosted_storage_t{New(id), ""s}).first;
                         }
                     } else {
-						IMPLEMENT
-					}
+                        std::cout << "Function HostedStorage not implemented for std::string specialization." << std::endl;
+                    }
                 }
             }
             if (it == hosted.end()) {

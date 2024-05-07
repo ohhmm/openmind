@@ -118,7 +118,7 @@ public:
 
     Valuable bit(const Valuable& n) const override;
     Valuable Or(const Valuable& n, const Valuable& v) const override;
-    Valuable And(const Valuable& n, const Valuable& v) const override;
+    Valuable And(const Valuable& n, const Valuable& v) const;
     Valuable Xor(const Valuable& n, const Valuable& v) const override;
     Valuable Not(const Valuable& n) const override;
     Valuable& shl() override;

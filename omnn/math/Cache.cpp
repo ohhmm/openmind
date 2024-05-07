@@ -2,22 +2,25 @@
 // Created by Sergej Krivonos on 31.12.2019.
 //
 #include "Cache.h"
+#include "Valuable.h" // Ensure Valuable class is included
 
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <any> // For std::any
+#include <sstream> // For std::stringstream
+#include <utility> // For std::move and std::pair
+#include <future> // For std::future, std::future_error
+#include <type_traits> // For std::is_nothrow_move_constructible, std::aligned_storage, etc.
+#include <new> // For std::launder and other utilities
 
 #include <rt/tasq.h>
 #include <storage/LevelDbCache.h>
 
 #include <boost/tokenizer.hpp>
-
-
-using namespace omnn::math;
-using namespace omnn::rt;
+#include "Variable.h"
 
 namespace {
-
 
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
 void DeleteDB(const Cache::path_str_t& path) {
@@ -40,8 +43,7 @@ void Cache::DbOpen() {
     std::cerr << err << status.ToString() << std::endl;
     if(status.IsIOError()){
       std::cout << "DB is busy. Waiting. Retrying in 5 sec." << std::endl;
-      using namespace std::chrono_literals;
-      std::this_thread::sleep_for(5s);
+      std::this_thread::sleep_for(std::chrono::seconds(5));
     } else {
 #ifndef NDEBUG
       DeleteDB(path);
@@ -67,9 +69,8 @@ omnn::math::Cache::~Cache() {
 
 Cache::Cached Cache::AsyncFetch(const Valuable &v, bool itIsOptimized) {
   using self_t = std::remove_reference<decltype(*this)>::type;
-    auto&& task = std::async(std::launch::async, &self_t::GetOne,
-                             this, v.str(), v.VaNames(), itIsOptimized);
-//    Cache::Cached cached(task);
+  auto&& task = std::async(std::launch::async, &self_t::GetOne,
+                           this, v.str(), v.VaNames(), itIsOptimized);
   return std::move(task);
 }
 
@@ -170,40 +171,83 @@ void Cache::AsyncSet(std::string &&key, std::string &&v) {
   CacheStoringTasks.AddTask(
       [ This=this, // TODO: This=shared_from_this(),
         k=std::move(key), v=std::move(v)
-       ](){
-          return This->Set(k,v);
-        }
-      );
+      ](){
+          return This->Set(k, v);
+      }
+  );
 #endif
 }
 
 void Cache::AsyncSetSet(const Valuable& key, const val_set_t& v) {
-  std::stringstream ss;
-  ss << v;
-  auto s = ss.str();
-  auto l = s.length();
-  if (s[l-1] == ' ')
-    s[l-1] = 0;
-  AsyncSet(key.str(), std::move(s));
+    std::stringstream ss; // Declare the stringstream object
+    for (const auto& item : v)
+        ss << item.str() << ' '; // Serialize each Valuable in the set
+    auto s = ss.str();
+    if (!s.empty() && s.back() == ' ')
+        s.pop_back(); // Remove the trailing space
+    AsyncSet(key.str(), std::move(s)); // Use std::move from the std namespace
+}
+
+std::pair<bool, Valuable> Cache::Cached::Get() {
+    if (!future.valid())
+        throw std::future_error(std::future_errc::no_state);
+    try {
+        auto result = future.get();
+        return std::make_pair(true, std::move(result)); // Use std::make_pair from the std namespace
+    } catch (const std::future_error& e) {
+        // Handle the case where the future is not ready
+        throw;
+    }
+}
+
+std::pair<bool, val_set_t> Cache::CachedSet::Get() {
+    if (!future.valid())
+        throw std::future_error(std::future_errc::no_state);
+    try {
+        auto result = future.get();
+        return std::make_pair(true, std::move(result)); // Use std::make_pair from the std namespace
+    } catch (const std::future_error& e) {
+        // Handle the case where the future is not ready
+        throw;
+    }
+}
+
+std::pair<bool, Valuable> Cache::Cached::Get() {
+  if (!future.valid())
+      throw std::future_error(std::future_errc::no_state);
+  try {
+      auto result = future.get();
+      return std::make_pair(true, std::move(result));
+  } catch (const std::future_error& e) {
+      // Handle the case where the future is not ready
+      throw;
+  }
+}
+
+std::pair<bool, val_set_t> Cache::CachedSet::Get() {
+  if (!future.valid())
+      throw std::future_error(std::future_errc::no_state);
+  try {
+      auto result = future.get();
+      return std::make_pair(true, std::move(result));
+  } catch (const std::future_error& e) {
+      // Handle the case where the future is not ready
+      throw;
+  }
 }
 
 Cache::Cached::operator Valuable() {
-  assert(operator bool());
-  auto& got = Get();
-#ifndef NDEBUG
-  assert(got.first);
-//  std::cout << "Used from cache: " << got.second << std::endl;
-#endif
-  assert(got.second.is_optimized()); // if cached value is not optimized then just remove this assert
-  return got.second;
+  if (!*this) // Check if the future is ready and valid
+    throw std::future_error(std::future_errc::future_not_ready);
+  auto& got = Get(); // Extract the result from the future
+  assert(got.first); // Assert that the cached value is valid
+  return got.second; // Return the Valuable object
 }
 
-Cache::CachedSet::operator Cache::val_set_t() {
-  assert(operator bool());
-  auto got = Get();
-  assert(got.first);
-#ifndef NDEBUG
-//    std::cout << "Used from cache: [ " << got.second << "]" << std::endl;
-#endif
-  return got.second;
-}
+Cache::CachedSet::operator val_set_t() {
+  if (!*this) // Check if the future is ready and valid
+    throw std::future_error(std::future_errc::future_not_ready);
+  auto got = Get(); // Extract the result from the future
+  assert(got.first); // Assert that the cached set is valid
+  return got.second; // Return the val_set_t object
+} // Missing closing brace added
