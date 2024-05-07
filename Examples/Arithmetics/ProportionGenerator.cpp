@@ -1,10 +1,6 @@
 #include "ProportionGenerator.h"
 #include "SolveProportion.h"
 
-ProportionGenerator::ProportionGenerator(string_t::const_pointer name)
-: base_t(name)
-{
-}
 
 Goal::ptr_t ProportionGenerator::GenerateGoal()
 {
