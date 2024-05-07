@@ -28,12 +28,16 @@
         throw;                                                                                                          \
     }
 
+// Forward declaration of Variable within the omnn::math namespace
+namespace omnn {
+namespace math {
+    class Variable;
+}
+}
 
 namespace omnn {
 namespace math {
 class Valuable;
-class Variable;
-#include "Variable.h"
 class Integer;
 class Exponentiation;
 class Fraction;
