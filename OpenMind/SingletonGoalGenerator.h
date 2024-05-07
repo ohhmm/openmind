@@ -18,7 +18,7 @@ public:
 			base_t(name), generated_(false) {
 	}
 
-	bool IsNeedToGenerate() {
+	bool IsNeedToGenerate() override {
 		return !generated_;
 	}
 
@@ -37,5 +37,4 @@ public:
 			}
 		}
 	}
-
 };
