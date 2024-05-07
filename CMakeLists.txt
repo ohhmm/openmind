@@ -135,7 +135,7 @@ if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
 endif()
 
-option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
+option(OPENMIND_USE_OPENCL "Use OpenCL calculations" OFF)
 if(OPENMIND_USE_OPENCL)
 	find_package(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
