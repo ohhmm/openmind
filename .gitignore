@@ -35,3 +35,4 @@ lib*.a
 *.internal
 *.make
 *.link.txt
+/omnn/
