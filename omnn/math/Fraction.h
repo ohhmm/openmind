@@ -8,24 +8,23 @@
 #include <omnn/math/Variable.h>
 #include <omnn/math/DuoValDescendant.h>
 
-        explicit Fraction(double d)
 namespace math {
 
-	class Integer;
+    class Integer;
 
-	class Fraction
-			: public DuoValDescendant<Fraction>
-	{
-		using base = DuoValDescendant<Fraction>;
+    class Fraction
+            : public DuoValDescendant<Fraction>
+    {
+        using base = DuoValDescendant<Fraction>;
 
-		mutable vars_cont_t vars;
+        mutable vars_cont_t vars;
 
-	protected:
+    protected:
         constexpr Valuable& numerator() { return _1; }
         constexpr Valuable& denominator() { return _2; }
-		std::ostream& print_sign(std::ostream& out) const override;
+        std::ostream& print_sign(std::ostream& out) const override;
 
-	public:
+    public:
         std::ostream& code(std::ostream& out) const override;
 
         constexpr const Valuable& numerator() const { return _1; }
@@ -127,5 +126,4 @@ namespace math {
         Valuable Sign() const override;
         Valuable abs() const override;
     };
-
-}}
+}
