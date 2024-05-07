@@ -2,6 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
+#include <omnn/math/Variable.h>
 #include <omnn/math/OpenOps.h>
 
 #include <deque>
