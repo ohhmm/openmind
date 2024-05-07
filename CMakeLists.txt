@@ -172,6 +172,7 @@ endif()
 set(_BOOST_USED_COMPONENTS
 	${BOOST_USED_COMPONENTS}
 	${BOOST_ADDITIONAL_COMPONENTS}
+	chrono
 	date_time
 	filesystem
 	iostreams
@@ -354,9 +355,10 @@ if(TARGET boost)
 endif()
 
 set(BOOST_LINK_LIBS
+	Boost::chrono
+	Boost::filesystem
     Boost::serialization
     Boost::system
-    Boost::filesystem
     )
 if(NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0)
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
