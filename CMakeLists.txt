@@ -42,6 +42,8 @@ endif()
 
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
 
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default to Release)" FORCE)
+
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 	set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} CACHE PATH "hint for find_package")
 	set(_IS_DEBUG TRUE)
