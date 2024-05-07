@@ -1,2 +1,0 @@
-/usr/bin/ar qc libct.a CMakeFiles/ct.dir/omnn.cpp.o
-/usr/bin/ranlib libct.a
