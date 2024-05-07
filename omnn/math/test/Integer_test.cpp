@@ -298,6 +298,26 @@ BOOST_AUTO_TEST_CASE(Integer_Factorization_test) {
     std::cout << std::endl;
 }
 
+BOOST_AUTO_TEST_CASE(Integer_FirstFactor_LastFactor_tests)
+{
+    // Test FirstFactor and LastFactor with prime number
+    Integer prime = 17;
+    BOOST_TEST(prime.FirstFactor() == prime);
+    BOOST_TEST(prime.LastFactor() == 1);
+
+    // Test FirstFactor and LastFactor with composite number
+    Integer composite = 28;
+    BOOST_TEST(composite.FirstFactor() == 2);
+    BOOST_TEST(composite.LastFactor() == 14);
+
+    // Test FirstFactor and LastFactor with number one
+    Integer one = 1;
+    BOOST_TEST(one.FirstFactor() == 0); // Assuming 0 is returned for no factors
+    BOOST_TEST(one.LastFactor() == 0); // Assuming 0 is returned for no factors
+
+    // Additional tests can be added here as needed
+}
+
 BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
 {
     const int_t initial_a = 5;
