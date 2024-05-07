@@ -7,8 +7,12 @@
 #include "omnn/math/Integer.h"
 #include "omnn/math/Sum.h"
 
+#include <boost/numeric/ublas/storage.hpp>
+
+
 using namespace omnn;
 using namespace math;
+using namespace boost::numeric::ublas;
 
 
 auto det_fast(extrapolator_base_matrix matrix)
@@ -24,7 +28,7 @@ auto det_fast(extrapolator_base_matrix matrix)
     for (std::size_t i = 0; i < pivots.size(); ++i)
     {
         if (pivots(i) != i)
-            det *= static_cast<double>(-1);
+            det *= T(-1);
 
         det *= matrix(i, i);
     }
