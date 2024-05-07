@@ -36,3 +36,4 @@ lib*.a
 *.make
 *.link.txt
 /omnn/
+/OpenMind/CMakeFiles/
