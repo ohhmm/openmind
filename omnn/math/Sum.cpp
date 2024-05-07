@@ -337,7 +337,7 @@ namespace
                 Become(checkCache);
                 return;
             }
-            
+
             if (members.size() == 0) {
                 Become(0_v);
                 return;
@@ -382,13 +382,13 @@ namespace
                     Update(it, copy);
                 else
                     ++it;
-                
+
                 if (checkCache) {
                     Become(checkCache);
                     return;
                 }
             }
-            
+
             if (IsEquation()) {
                 auto e = members.end();
                 for (auto it = members.begin(); it != e;) {

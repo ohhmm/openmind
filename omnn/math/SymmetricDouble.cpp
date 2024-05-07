@@ -1,10 +1,17 @@
 #include "SymmetricDouble.h"
 
+#include <cmath>
+#include <string>
+
+
 namespace std {
-    omnn::math::SymmetricDouble abs(const omnn::math::SymmetricDouble& n)
-    {
-        return omnn::math::SymmetricDouble(abs(n.AsDouble()));
+
+    [[nodiscard]]
+    constexpr
+    omnn::math::SymmetricDouble pow(const omnn::math::SymmetricDouble& base, const omnn::math::SymmetricDouble& exp) {
+        return omnn::math::SymmetricDouble(std::pow(base.AsDouble(), exp.AsDouble()));
     }
+
     omnn::math::SymmetricDouble sqrt(const omnn::math::SymmetricDouble& n)
     {
         return omnn::math::SymmetricDouble{
@@ -13,5 +20,6 @@ namespace std {
             : sqrt(n.AsDouble())
         };
     }
+
 } // namespace std
 
