@@ -62,7 +62,7 @@ public:
         return arbitrary;
     }
 
-    Valuable Integer::FirstFactor() const {
+    Valuable FirstFactor() const {
         if (arbitrary <= 1) return arbitrary;
         for (base_int i = 2; i * i <= arbitrary; ++i) {
             if (arbitrary % i == 0) {
@@ -72,7 +72,7 @@ public:
         return arbitrary; // returns the number itself if it is prime
     }
 
-    Valuable Integer::LastFactor() const {
+    Valuable LastFactor() const {
         if (arbitrary <= 1) return arbitrary;
         for (base_int i = arbitrary - 1; i > 1; --i) {
             if (arbitrary % i == 0) {
