@@ -24,3 +24,14 @@ CMakeLists.txt.user.*
 /enc_temp_folder/
 
 *.cpp.gch
+
+# Added patterns
+/CMakeFiles/
+*.dir/
+*.o
+*.o.d
+lib*.a
+/bin/
+*.internal
+*.make
+*.link.txt
