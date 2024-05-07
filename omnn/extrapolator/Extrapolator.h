@@ -23,7 +23,7 @@ namespace omnn::math {
     namespace ublas = boost::numeric::ublas;
     //using extrapolator_value_type = a_rational;
     using extrapolator_value_type = Valuable;
-    using extrapolator_base_matrix = boost::numeric::ublas::matrix<extrapolator_value_type>;
+    using extrapolator_base_matrix = ublas::matrix<extrapolator_value_type>;
 
 
 class Extrapolator
@@ -37,6 +37,9 @@ class Extrapolator
     mutable solution_t solution;
 
 public:
+    using vector_t = ublas::vector<T, custom_allocator<T>>;
+    using matrix_t = ublas::matrix<T, ublas::row_major, custom_allocator<T>>;
+
     using base::base;
 
 	Extrapolator() = default;
