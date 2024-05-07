@@ -24,3 +24,16 @@ CMakeLists.txt.user.*
 /enc_temp_folder/
 
 *.cpp.gch
+
+# Add CMake build directories to .gitignore
+/CMakeFiles/
+/CMakeCache.txt
+/CTestTestfile.cmake
+/Makefile
+/cmake_install.cmake
+
+# Add build artifacts for subdirectories
+/*/CMakeFiles/
+/*/CTestTestfile.cmake
+/*/Makefile
+/*/cmake_install.cmake

@@ -8,6 +8,7 @@ enable_language(CXX)
 set (CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+add_compile_options(-std=c++2b)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -41,6 +42,8 @@ if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
+
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default to Release)" FORCE)
 
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 	set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} CACHE PATH "hint for find_package")
@@ -105,6 +108,7 @@ if(NOT EXISTS INTEL_COMPILER_PATH)
 	if(INTEL_COMPILER_PATH)
 		message("INTEL_COMPILER_PATH: ${INTEL_COMPILER_PATH}")
 		set(CMAKE_CXX_COMPILER ${INTEL_COMPILER_PATH} CACHE STRING "Intel compiler path" FORCE)
+        add_compile_options(-Wno-enum-constexpr-conversion -std=c++2b)
 	endif()
 endif()
 if(NOT IntelSYCL_FOUND)
@@ -128,7 +132,7 @@ if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
@@ -148,8 +152,8 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.85.0 CACHE STRING "Boost library version to use")
-set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.74.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_REQUIRED_BOOST_VERSION 1.74.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
 if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
@@ -214,131 +218,12 @@ elseif(OPENMIND_USE_CONAN)
 	endif()
 endif()
 
-find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-	CONFIG
-	HINTS C:/Boost
-	COMPONENTS ${BOOST_USED_COMPONENTS}
-	)
-if(NOT Boost_FOUND)
-	find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
-		CONFIG
-		HINTS C:/Boost
-		COMPONENTS ${BOOST_USED_COMPONENTS}
-		)
-endif()
+find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION} REQUIRED
+    COMPONENTS ${BOOST_USED_COMPONENTS} chrono
+)
 add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
 
-
-if(NOT Boost_FOUND AND NOT OPENMIND_USE_CONAN)
-    message("Building Boost ${OPENMIND_PREFERRED_BOOST_VERSION}")
-    set(OM_BUILD_BOOST True)
-else()
-	message("Boost_VERSION: ${Boost_VERSION}")
-	message("Boost_VERSION_STRING: ${Boost_VERSION_STRING}")
-	message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
-	message("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
-	message("BOOST_ADDITIONAL_COMPONENTS: ${BOOST_ADDITIONAL_COMPONENTS}")
-	message("BOOST_USED_COMPONENTS: ${BOOST_USED_COMPONENTS}")
-	message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
-	message("Boost_USE_STATIC_LIBS: ${Boost_USE_STATIC_LIBS}")
-
-    foreach(_module ${BOOST_USED_COMPONENTS})
-		string(TOUPPER ${_module} _module_upcase)
-		message("Boost_${_module_upcase}_FOUND: ${Boost_${_module_upcase}_FOUND}")
-		message("Boost_${_module_upcase}_LIBRARY: ${Boost_${_module_upcase}_LIBRARY}")
-	endforeach()
-endif()
-
-option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
-
-include(packaging)
-include(ExternalData)
-include(ExternalProject)
-find_package(OpenMP)
-#if (OPENMP_FOUND)
-#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-#elseif(NOT MSVC)
-#   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-#endif()
-
-if (Boost_FOUND OR OPENMIND_USE_CONAN)
-	if(NOT TARGET boost)
-		add_custom_target(boost)
-	endif()
-elseif(OPENMIND_BUILD_BOOST)
-    message("Required boost components ${BOOST_USED_COMPONENTS}")
-    foreach(_module ${BOOST_USED_COMPONENTS})
-        if(_module STREQUAL "unit_test_framework"
-            OR _module STREQUAL "test_exec_monitor")
-            string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
-        else()
-            string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
-        endif()
-
-        string(TOUPPER ${_module} BOOST_MODULE_NAME_UPCASE)
-        add_definitions(-DBOOST_${BOOST_MODULE_NAME_UPCASE}_STATIC_LIB)
-    endforeach()
-    string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
-    message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
-
-    set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared --disable-icu ${BOOST_BUILD_PARAMS}")
-    if(WIN32)
-    	if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "MinGW")
-        	separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat gcc")
-	        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} toolset=gcc install")
-    	else()
-	        set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
-	        separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
-	        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} install")
-		endif()
-    else()
-        set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
-		if(APPLE)
-			set(BOOST_BUILD_APPLE_ARGS "-address-model=64 architecture=arm+x86 -s NO_LZMA=1 -s NO_ZSTD=1")
-		endif()
-        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND}")
-        separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
-    endif()
-
-    message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
-    ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
-        GIT_TAG boost-${OPENMIND_PREFERRED_BOOST_VERSION}
-        GIT_SHALLOW ON
-        BUILD_IN_SOURCE 1
-        CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE} --without-icu
-        BUILD_COMMAND ${BOOST_BUILD_COMMAND}
-        INSTALL_COMMAND ${BOOST_INSTALL_COMMAND}
-        UPDATE_COMMAND ""
-        )
-    set(EXTERNAL_FETCHED_BOOST ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
-    set(Boost_INCLUDE_DIR ${EXTERNAL_FETCHED_BOOST} CACHE PATH "Path" FORCE)
-    build_command(BOOST_BUILD_CMD TARGET boost)
-    message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
-    message("BOOST_BUILD_CMD ${BOOST_BUILD_CMD}")
-    execute_process(COMMAND ${BOOST_BUILD_CMD}
-        WORKING_DIRECTORY ${EXTERNAL_FETCHED_BOOST}
-        )
-    if(WIN32)
-        find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
-            PATHS C:/Boost
-            COMPONENTS ${BOOST_USED_COMPONENTS}
-            )
-    endif()
-    #find_package(Boost COMPONENTS ${BOOST_USED_COMPONENTS})
-    if(Boost_FOUND)
-		if(NOT TARGET boost)
-			add_custom_target(boost)
-		endif()
-    endif()
-else()
-	if(NOT TARGET boost)
-		add_custom_target(boost)
-	endif()
-endif()
-add_dependencies(prerequisites boost)
 if(TARGET boost)
 	set_target_properties(boost PROPERTIES FOLDER "util")
 endif()
@@ -347,6 +232,7 @@ set(BOOST_LINK_LIBS
     Boost::serialization
     Boost::system
     Boost::filesystem
+    Boost::chrono
     )
 if(NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0)
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
@@ -419,6 +305,6 @@ function(_openmind_hook_end_of_configure)
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT
 	)
 endfunction()

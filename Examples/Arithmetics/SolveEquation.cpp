@@ -14,8 +14,8 @@ SolveEquation::SolveEquation( const std::wstring& equation )
     auto& varHost = VarHost::Global<std::string>();
     auto varHostPtr = varHost.sh();
     Valuable eq(sv, varHostPtr);
-    for (auto&& s : eq.Solutions())
-        _result << s << ' ';
+    for (auto&& solution : eq.Solutions())
+        _result << solution << ' ';
 }
 
 SolveEquation::~SolveEquation(void)

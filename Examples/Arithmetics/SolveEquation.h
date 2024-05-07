@@ -8,7 +8,7 @@ class SolveEquation :
 	std::wstring equation_;
 
 public:
-	SolveEquation(const std::wstring& equation);
+	explicit SolveEquation(const std::wstring& equation);
 	~SolveEquation(void);
 
 	bool Reach() { return true; }

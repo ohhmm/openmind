@@ -42,14 +42,14 @@ namespace omnn::math {
                 LOG_AND_IMPLEMENT(maxVaExp << " uncovered case for Exponentiation::getMaxVaExp")
             }
         }
-        IMPLEMENT
+        // TODO: Implement functionality
     }
 
     max_exp_t Exponentiation::getMaxVaExp() const
     {
         return getMaxVaExp(getBase(), getExponentiation());
     }
-    
+
     Valuable Exponentiation::varless() const
     {
         if (FindVa())
@@ -91,7 +91,7 @@ namespace omnn::math {
             Become(std::move(ebase()));
             return;
         }
-        
+
         if (eexp().IsSum())
         {
             auto& s = eexp().as<Sum>();
@@ -203,14 +203,14 @@ namespace omnn::math {
 //                }
 //            }
 //        }
-        
+
         if (ebase().IsFraction() && eexp().IsMultival()==YesNoMaybe::No) {
             auto& f = ebase().as<Fraction>();
             auto _ = (f.getNumerator() ^ eexp()) / (f.getDenominator() ^ eexp());
             if (_.IsExponentiation()) {
                 auto& e = _.as<Exponentiation>();
                 if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
-                    IMPLEMENT
+                    // TODO: Implement functionality
                 }
             } else {
                 Become(std::move(_));
@@ -232,7 +232,7 @@ namespace omnn::math {
                 if (p.Has(constants::pi) &&
                     p.Has(constants::i)) { // TODO : sequence does matter :
 																 // e^(i*pi) =?= e^(pi*i)
-																 // https://en.wikipedia.org/wiki/Commutative_property#Division,_subtraction,_and_exponentiation 
+																 // https://en.wikipedia.org/wiki/Commutative_property#Division,_subtraction,_and_exponentiation
 																 // what about Commutativity on irrationals product?
 																 // lets assume yes for this particular expression, but there are some doubts, need a prove
 
@@ -306,14 +306,14 @@ namespace omnn::math {
                     Become(std::move(ebase()));
                     return;
                 } else
-                    IMPLEMENT;
+                    // TODO: Implement functionality
             } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0 && eexp() != 1) {
                     eexp() = eexp().bit(0);
             } else if (eexp()==-1) {
                 Become(Fraction{1,ebase()});
                 return;
             } else if (eexp().IsInfinity()) {
-                IMPLEMENT
+                // TODO: Implement functionality
             } else if (eexp().IsFraction()) {
                 auto& f = eexp().as<Fraction>();
                 auto& n = f.getNumerator();
@@ -333,7 +333,7 @@ namespace omnn::math {
         if(exz)
         {
             if (ebase().IsInfinity() || ebase().IsMInfinity()) {
-                IMPLEMENT
+                // TODO: Implement functionality
             }
             if(ebz)
                 throw "NaN";
@@ -358,7 +358,7 @@ namespace omnn::math {
             if (eexp() > 0) {
                 Become(std::move(ebase()));
             } else
-                IMPLEMENT
+                // TODO: Implement functionality
         }
         else if (ebase().IsMInfinity())
         {
@@ -368,7 +368,7 @@ namespace omnn::math {
                 else
                     Become(Infinity());
             } else
-                IMPLEMENT
+                // TODO: Implement functionality
         }
         else if (ebase().IsVa() && eexp().IsSimple())
         {
@@ -427,7 +427,7 @@ namespace omnn::math {
                                 {
                                     bool isInt = n.IsInt();
                                     if (!isInt)
-                                        IMPLEMENT
+                                        // TODO: Implement functionality
                                     if (isInt && n.bit().IsZero())
                                     {
                                         x.sq();
@@ -451,7 +451,7 @@ namespace omnn::math {
                         else { // zero
                             if (ebase().IsZero())
                             {
-                                IMPLEMENT
+                                // TODO: Implement functionality
                                 throw "NaN"; // feel free to handle this properly
                             }
                             else
@@ -496,7 +496,7 @@ namespace omnn::math {
             InitVars();
         }
     }
-    
+
     Valuable& Exponentiation::operator +=(const Valuable& v)
     {
         return Become(Sum {*this, v});
@@ -628,7 +628,7 @@ namespace omnn::math {
         } else if (v.IsMultival() == YesNoMaybe::Yes) {
             LOG_AND_IMPLEMENT(str() << " Exponentiation::MultiplyIfSimplifiable " << v);
         } else if (v.IsInt()) {
-            IMPLEMENT
+            // TODO: Implement functionality
         } else {
 //            std::cout << str() << " * " << v.str() << std::endl;
         }
@@ -660,7 +660,7 @@ namespace omnn::math {
             //        copy.updateBase(std::move(is.second));
             //        is.second = copy;
             //    }
-            //} else 
+            //} else
 			if (ee == constants::minus_1)
             {
                 is.second = v ^ constants::minus_1; // v.IsExponentiationSimplifiable(ee)
@@ -754,14 +754,14 @@ namespace omnn::math {
                 thisValues.insert(thisVal);
                 return true;
             });
-            
+
             v.Values([&](auto& vVal) {
                 for (auto& tv : thisValues) {
                     vals.insert(tv / vVal);
                 }
                 return true;
             });
-            
+
             return Become(Valuable(std::move(vals)));
         }
         else if (v.IsExponentiation())
@@ -804,7 +804,7 @@ namespace omnn::math {
         optimize();
         return *this;
     }
-    
+
     bool Exponentiation::operator ==(const Valuable& v) const
     {
         auto eq = v.IsExponentiation() && Hash()==v.Hash();
@@ -823,7 +823,7 @@ namespace omnn::math {
         }
         return eq;
     }
-    
+
     Exponentiation::operator double() const
     {
         return std::pow(static_cast<double>(ebase()), static_cast<double>(eexp()));
@@ -834,23 +834,23 @@ namespace omnn::math {
         bool bhx = ebase().HasVa(x);
         bool ehx = eexp().HasVa(x);
         if(ehx) {
-            IMPLEMENT
+            // TODO: Implement functionality
             if(bhx){
-                
+
             }else{
-                
+
             }
         } else if (bhx) {
             if(ebase() == x)
                 Become(eexp() * (ebase() ^ (eexp()-1)));
             else
-                IMPLEMENT
+                // TODO: Implement functionality
         } else
             Become(0_v);
         optimize();
         return *this;
     }
-    
+
     Valuable& Exponentiation::integral(const Variable& x, const Variable& C)
     {
         if (ebase()==x) {
@@ -867,9 +867,9 @@ namespace omnn::math {
                 Become(std::move(p.integral(x, C)));
             }
         } else {
-            IMPLEMENT
+            // TODO: Implement functionality
         }
-        
+
         return *this;
     }
 
@@ -883,7 +883,7 @@ namespace omnn::math {
             if (e.getExponentiation() == getExponentiation())
                 return getBase() < e.getBase();
         }
-        
+
         return base::operator <(v);
     }
 
@@ -903,12 +903,12 @@ namespace omnn::math {
             is = _2.as<Fraction>().getDenominator().IsEven() || is;
         return is;
     }
-    
+
     void Exponentiation::Values(const std::function<bool(const Valuable&)>& fun) const
     {
         if (fun) {
             auto cache = optimized; // TODO: multival caching (inspect all optimized and optimization transisions) auto isCached =
-            
+
             solutions_t vals;
             {
             std::deque<Valuable> d1;
@@ -916,14 +916,14 @@ namespace omnn::math {
                 d1.push_back(v);
                 return true;
             });
-            
+
             _2.Values([&](auto& v){
                 auto vIsFrac = v.IsFraction();
                 const Fraction* f;
                 if(vIsFrac)
                     f = &v.template as<Fraction>();
                 auto vMakesMultival = vIsFrac && f->getDenominator().IsEven()==YesNoMaybe::Yes;
-                
+
                 for(auto& item1:d1){
                     if(vMakesMultival){
                         static const Variable x;
@@ -936,14 +936,14 @@ namespace omnn::math {
                         if(value.IsMultival()==YesNoMaybe::No)
                             vals.insert(value);
                         else {
-                            IMPLEMENT
+                            // TODO: Implement functionality
                         }
                     }
                 }
                 return true;
             });
             }
-            
+
             for(auto& v:vals)
                 fun(v);
         }
@@ -962,10 +962,10 @@ namespace omnn::math {
             out << "pow(";
             getBase().code(out) << ',';
             getExponentiation().code(out) << ')';
-        }       
+        }
         return out;
     }
-    
+
     bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
         auto mve = getMaxVaExp();
@@ -995,7 +995,7 @@ namespace omnn::math {
                 if (c != ec)
                     is = c > ec;
                 else {
-                    is = getBase().IsComesBefore(e.getBase()) || 
+                    is = getBase().IsComesBefore(e.getBase()) ||
                         (!e.ebase().IsComesBefore(ebase()) && getExponentiation().IsComesBefore(e.getExponentiation())); //  || str().length() > e->str().length();
     //                auto expComesBefore = eexp().IsComesBefore(e->eexp());
     //                auto ebase()ComesBefore = ebase().IsComesBefore(e->ebase());
@@ -1016,11 +1016,11 @@ namespace omnn::math {
         else if(v.IsSum())
             is = IsComesBefore(*v.as<Sum>().begin());
         else
-            IMPLEMENT
+            // TODO: Implement functionality
 
         return is;
     }
-    
+
     Valuable Exponentiation::calcFreeMember() const
     {
         Valuable c;
@@ -1029,7 +1029,7 @@ namespace omnn::math {
         } else if(getBase().IsVa()) {
             c = 0_v;
         } else
-            IMPLEMENT;
+            // TODO: Implement functionality
         return c;
     }
 
@@ -1083,7 +1083,7 @@ namespace omnn::math {
 #endif
         return v;
     }
-    
+
     Valuable::vars_cont_t Exponentiation::GetVaExps() const
     {
         auto vaExps = getBase().GetVaExps();
@@ -1093,7 +1093,7 @@ namespace omnn::math {
         }
         return vaExps;
     }
-    
+
     Valuable Exponentiation::InCommonWith(const Valuable& v) const
     {
         auto c = 1_v;
@@ -1121,7 +1121,7 @@ namespace omnn::math {
                         } else
                             c = *this;
                     } else {
-                        IMPLEMENT
+                        // TODO: Implement functionality
                     }
                 } else if (getExponentiation().IsSimpleFraction() && e.getExponentiation().IsSimpleFraction()) {
                     if (getExponentiation()<0 == e.getExponentiation()<0) {
@@ -1137,7 +1137,7 @@ namespace omnn::math {
                 } else if (e.getExponentiation().IsProduct()) {
                     c = ebase() ^ e.eexp().InCommonWith(eexp());
                 } else {
-                    IMPLEMENT
+                    // TODO: Implement functionality
                 }
             }
         } else if (getExponentiation().IsInt()) {
@@ -1151,11 +1151,11 @@ namespace omnn::math {
         } else if (getExponentiation().IsVa()) {
         } else if (getExponentiation().IsModulo()) {
         } else {
-            IMPLEMENT
+            // TODO: Implement functionality
         }
         return c;
     }
-    
+
     Valuable Exponentiation::operator()(const Variable& va) const
     {
         return operator()(va, constants::zero);
@@ -1169,7 +1169,7 @@ namespace omnn::math {
             auto& f = getExponentiation().as<Fraction>();
             return (getBase()^f.getNumerator())(v,augmentation^f.getDenominator());
         } else {
-            IMPLEMENT
+            // TODO: Implement functionality
         }
     }
 
@@ -1268,7 +1268,7 @@ namespace omnn::math {
 		{
             s.emplace(constants::zero);
         } else {
-			IMPLEMENT
+			 // TODO: Implement functionality
         }
     }
 
