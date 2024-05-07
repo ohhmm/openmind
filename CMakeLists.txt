@@ -4,6 +4,8 @@ get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
 
+add_definitions(-DCL_TARGET_OPENCL_VERSION=220)
+
 enable_language(CXX)
 set (CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -128,7 +130,7 @@ if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
@@ -419,6 +421,6 @@ function(_openmind_hook_end_of_configure)
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT
 	)
 endfunction()
