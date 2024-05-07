@@ -3,11 +3,10 @@
 //
 #pragma once
 #include "Valuable.h"
+#include "PrincipalSurd.h"
 
 namespace omnn{
 namespace math {
-
-    class PrincipalSurd; // forward declaration
 
     class ValuableDescendantBase : public Valuable
     {
@@ -50,9 +49,9 @@ namespace math {
     class ValuableDescendantContract
             : public ValuableDescendantBase
     {
-#ifdef BOOST_TEST_MODULE
+    #ifdef BOOST_TEST_MODULE
     public:
-#endif
+    #endif
         using self = ValuableDescendantContract;
         friend Chld;
         friend Valuable;
@@ -61,17 +60,17 @@ namespace math {
         public:
             constexpr DepSz(self* ths) {
                 ths->setAllocSize(sizeof(Chld));
-#ifndef NOOMDEBUG
+    #ifndef NOOMDEBUG
                 assert(DefaultAllocSize >= sizeof(Chld) && "Increase DefaultAllocSize");
-#endif
+    #endif
             }
         };
         DepSz depSz = this;
 
 
-#ifndef BOOST_TEST_MODULE
+    #ifndef BOOST_TEST_MODULE
     protected:
-#endif
+    #endif
 
         auto CPtr() const noexcept {
             return reinterpret_cast<const Chld*>(this);
