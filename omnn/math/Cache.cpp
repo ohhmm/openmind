@@ -20,6 +20,18 @@
 #include <boost/tokenizer.hpp>
 #include "Variable.h"
 
+void TestStandardLibraryTypes() {
+    // Test for std::aligned_storage
+    std::aligned_storage<sizeof(int), alignof(int)> storage;
+
+    // Test for std::future_error
+    try {
+        throw std::future_error(std::future_errc::no_state);
+    } catch (const std::future_error& e) {
+        // If caught, std::future_error is recognized
+    }
+}
+
 namespace {
 
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
@@ -68,10 +80,10 @@ omnn::math::Cache::~Cache() {
 }
 
 Cache::Cached Cache::AsyncFetch(const Valuable &v, bool itIsOptimized) {
-  using self_t = std::remove_reference<decltype(*this)>::type;
-  auto&& task = std::async(std::launch::async, &self_t::GetOne,
+    using self_t = std::remove_reference<decltype(*this)>::type;
+    auto task = std::async(std::launch::async, &self_t::GetOne,
                            this, v.str(), v.VaNames(), itIsOptimized);
-  return std::move(task);
+    return task;
 }
 
 Cache::CheckCacheResult Cache::GetOneUsingVarHost(std::string&& key, VarHost::ptr host, bool itIsOptimized) {
@@ -193,7 +205,7 @@ std::pair<bool, Valuable> Cache::Cached::Get() {
         throw std::future_error(std::future_errc::no_state);
     try {
         auto result = future.get();
-        return std::make_pair(true, std::move(result)); // Use std::make_pair from the std namespace
+        return {true, std::move(result)}; // Changed to uniform initialization
     } catch (const std::future_error& e) {
         // Handle the case where the future is not ready
         throw;
@@ -205,35 +217,11 @@ std::pair<bool, val_set_t> Cache::CachedSet::Get() {
         throw std::future_error(std::future_errc::no_state);
     try {
         auto result = future.get();
-        return std::make_pair(true, std::move(result)); // Use std::make_pair from the std namespace
+        return {true, std::move(result)}; // Changed to uniform initialization
     } catch (const std::future_error& e) {
         // Handle the case where the future is not ready
         throw;
     }
-}
-
-std::pair<bool, Valuable> Cache::Cached::Get() {
-  if (!future.valid())
-      throw std::future_error(std::future_errc::no_state);
-  try {
-      auto result = future.get();
-      return std::make_pair(true, std::move(result));
-  } catch (const std::future_error& e) {
-      // Handle the case where the future is not ready
-      throw;
-  }
-}
-
-std::pair<bool, val_set_t> Cache::CachedSet::Get() {
-  if (!future.valid())
-      throw std::future_error(std::future_errc::no_state);
-  try {
-      auto result = future.get();
-      return std::make_pair(true, std::move(result));
-  } catch (const std::future_error& e) {
-      // Handle the case where the future is not ready
-      throw;
-  }
 }
 
 Cache::Cached::operator Valuable() {
@@ -251,3 +239,4 @@ Cache::CachedSet::operator val_set_t() {
   assert(got.first); // Assert that the cached set is valid
   return got.second; // Return the val_set_t object
 } // Missing closing brace added
+} // Closes the namespace or class
