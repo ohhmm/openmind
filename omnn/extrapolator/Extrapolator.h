@@ -2,13 +2,17 @@
 // Created by Сергей Кривонос on 10.08.17.
 //
 #pragma once
+
+#include <omnn/math/FormulaOfVaWithSingleIntegerRoot.h>
+
+#include <omnn/rt/custom_allocator.hpp>
+
+
 #include <algorithm>
 #include <initializer_list>
 #include <limits>
 #include <limits.h>
 #include <type_traits>
-
-#include <omnn/math/FormulaOfVaWithSingleIntegerRoot.h>
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>

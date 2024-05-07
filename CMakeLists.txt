@@ -248,15 +248,21 @@ if (NOT Boost_FOUND)
 		unset(Boost_INCLUDE_DIR CACHE)
 		find_package(Boost CONFIG COMPONENTS ${BOOST_USED_COMPONENTS} REQUIRED)
 	else()
+		set(BOOST_PATHS_HINTS
+				C:/Boost
+				/usr/local/lib/cmake/Boost-*
+				/usr/lib/x86_64-linux-gnu/cmake/Boost-*
+				/usr/local/share/boost-*
+		)
 		find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
 				CONFIG
-				HINTS C:/Boost
+				HINTS ${BOOST_PATHS_HINTS}
 				COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
 		if(NOT Boost_FOUND)
 			find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 					CONFIG
-					HINTS C:/Boost
+					HINTS ${BOOST_PATHS_HINTS}
 					COMPONENTS ${BOOST_USED_COMPONENTS}
 			)
 		endif()

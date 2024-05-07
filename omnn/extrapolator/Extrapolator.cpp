@@ -3,6 +3,7 @@
 //
 
 #include "Extrapolator.h"
+
 #include "math/Integer.h"
 #include "math/Sum.h"
 

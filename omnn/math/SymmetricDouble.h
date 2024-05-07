@@ -1,7 +1,9 @@
 #pragma once
+#include <omnn/math/OpenOps.h>
+
 #include <cmath>
 #include <iostream>
-#include "OpenOps.h"
+
 
 namespace omnn {
 namespace math {
@@ -16,30 +18,37 @@ class SymmetricDouble
     value_type d;
 
 public:
+    constexpr
     SymmetricDouble() : d(0.) {}
 
+    constexpr
     SymmetricDouble(const_reference_type number) : d(number) {}
 
+    constexpr
     const_reference_type AsDouble() const
     {
         return d;
     }
-    
+
+    constexpr
     SymmetricDouble operator-() const {
         return -d;
     }
 
+    constexpr
     SymmetricDouble &operator+=(const SymmetricDouble &number) {
         d += number.d;
         return *this;
     }
-    
+
+    constexpr
     SymmetricDouble &operator*=(const SymmetricDouble &number) {
         auto res = d * number.d;
         d = d < 0 && number.d < 0 ? -res : res;
         return *this;
     }
-    
+
+    constexpr
     SymmetricDouble &operator/=(const SymmetricDouble &number) {
         auto res = d / number.d;
         d = d < 0 && number.d < 0 ? -res : res;
@@ -50,6 +59,7 @@ public:
         return std::abs(number.d - d) < 0.0000001;
     }
 
+    [[nodiscard]] constexpr
     bool operator<(const SymmetricDouble &number) const {
         return d < number.d;
     }
@@ -59,18 +69,13 @@ public:
         out << obj.d;
         return out;
     }
-    
-    friend SymmetricDouble operator "" _sd(value_type d)
-    {
-        return SymmetricDouble(d);
-    }
-    
+
 };
 }
 }
 
 namespace std {
-    omnn::math::SymmetricDouble abs(const omnn::math::SymmetricDouble& n);
-    omnn::math::SymmetricDouble sqrt(const omnn::math::SymmetricDouble& n);
+[[nodiscard]] constexpr omnn::math::SymmetricDouble abs(const omnn::math::SymmetricDouble& n) { return omnn::math::SymmetricDouble(abs(n.AsDouble())); }
+[[nodiscard]] constexpr omnn::math::SymmetricDouble pow(const omnn::math::SymmetricDouble& base, const omnn::math::SymmetricDouble& exp);
+[[nodiscard]] omnn::math::SymmetricDouble sqrt(const omnn::math::SymmetricDouble& n);
 } // namespace std
-

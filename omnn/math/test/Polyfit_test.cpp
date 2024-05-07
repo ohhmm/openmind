@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
     const int SZ = 73;
     const f128  PI2 = constants::pi * 2,
                 SZf = SZ;
-    
+
     // generate the data
     std::vector<f128> oX(SZ), oY(SZ);
     for (auto i = 0; i < SZ; ++i)
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
         oX[i] = i;
         oY[i] = (PI2 * i / SZf).Sin();
     }
-    
+
     // polynomial fitting
     auto oCoeff = polyfit( oX, oY, SZ );
     auto oFittedY = polyval( oCoeff, oX );
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification
     {
         BOOST_TEST(oY[i] == oFittedY[i]);
     }
-    
+
     oX = {{
         0000,
         0001,
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification
         000,
         000,
     }};
-    
+
     oFittedY = polyval( oCoeff, oX );
     for (auto i = 0; i < SZ; i++)
     {
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
     }};
     BOOST_TEST(oX.size() == oY.size());
     auto SZ = oX.size();
-    
+
     // polynomial fitting
     auto oCoeff = polyfit( oX, oY, SZ );
     auto oFittedY = polyval( oCoeff, oX );
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
     {
         BOOST_TEST(oY[i] == oFittedY[i]);
     }
-    
+
     oX = {{
         0000,
         0001,
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
         000,
         000,
     }};
-    
+
     oFittedY = polyval( oCoeff, oX );
     for ( unsigned int i = 0; i < SZ; i++ )
     {
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
 
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
-//, *tolerance(0.1) 
+//, *tolerance(0.1)
 , *disabled()
 )
 {
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
     }};
     BOOST_TEST(oX.size() == oY.size());
     auto SZ = oX.size();
-    
+
     // polynomial fitting
     auto oCoeff = polyfit( oX, oY, SZ ),
         oFittedY = polyval( oCoeff, oX );
