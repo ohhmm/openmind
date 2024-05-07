@@ -6,8 +6,8 @@ class RunProcess: public Facility {
 public:
     typedef std::string string_t;
 
-    RunProcess(const string_t& cmd);
-    
+    explicit RunProcess(const string_t& cmd);
+
     static Facility::ptr_t Make(const string_t& cmd);
 
 	virtual void SetNoWindow();
@@ -16,7 +16,7 @@ public:
 	virtual bool TryShutdown();
 
 	virtual void ForceShutdown();
-    
+
 protected:
     string_t cmd_;
 };
