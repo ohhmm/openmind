@@ -7,33 +7,43 @@
 #include "omnn/math/Integer.h"
 #include "omnn/math/Sum.h"
 
+#include <boost/numeric/ublas/storage.hpp>
+
+
 using namespace omnn;
 using namespace math;
+using namespace boost::numeric::ublas;
 
 
-auto det_fast(extrapolator_base_matrix matrix)
-{
-    using T = extrapolator_base_matrix::value_type;
-    ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
+// Ensure that matrix_t, vector_t, and permutation_matrix_t are using unbounded_array_wrapper with custom_allocator
+using matrix_t = boost::numeric::ublas::matrix<Valuable, boost::numeric::ublas::basic_row_major<>, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
+using vector_t = boost::numeric::ublas::vector<Valuable, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
+using permutation_matrix_t = boost::numeric::ublas::permutation_matrix<std::size_t, unbounded_array_wrapper<std::size_t, custom_allocator<std::size_t>>>;
 
-    auto isSingular = ublas::lu_factorize(matrix, pivots);
+// This function calculates the determinant of a matrix using LU factorization
+auto det_fast(matrix_t matrix) {
+    // Use the matrix's size1 directly to avoid calling size on the allocator
+    auto matrix_size = matrix.size1();
+    permutation_matrix_t pivots(matrix_size);
+
+    // Perform LU factorization on a copy of the matrix to preserve the original matrix
+    matrix_t matrix_copy(matrix);
+    auto isSingular = ublas::lu_factorize(matrix_copy, pivots);
     if (isSingular)
-        return T(0);
+        return Valuable(0);
 
-    T det = 1;
-    for (std::size_t i = 0; i < pivots.size(); ++i)
-    {
+    Valuable det(1);
+    for (std::size_t i = 0; i < matrix_size; ++i) {
         if (pivots(i) != i)
-            det *= static_cast<double>(-1);
+            det *= Valuable(-1);
 
-        det *= matrix(i, i);
+        det *= matrix_copy(i, i);
     }
 
     return det;
 }
 
-bool Extrapolator::Consistent(const extrapolator_base_matrix& augment)
-{
+bool Extrapolator::Consistent(const matrix_t& augment) {
     return Determinant() == det_fast(augment);
 }
 
@@ -95,35 +105,35 @@ Extrapolator::Extrapolator(std::initializer_list<std::vector<T>> dependancy_matr
         ++r;
     }
 }
-Extrapolator::solution_t Extrapolator::Solve(const ublas::vector<T>& augment) const
+Extrapolator::solution_t Extrapolator::Solve(const vector_t& augment) const
 {
-    auto e = *this;
+    auto e = static_cast<const matrix_t&>(*this);
     auto sz1 = size1();
     auto sz2 = size2();
 
-    ublas::vector<T> a(sz2);
-    const ublas::vector<T>* au = &augment;
+    // Initialize vector with size and default value
+    vector_t a(sz2, Valuable(0));
+    const vector_t* au = &augment;
     if (sz1 > sz2 + 1 /*augment*/) {
         // make square matrix to make it solvable by boost ublas
         e = Extrapolator(sz2, sz2);
         // sum first equations
-        a[0] = 0;
         for (auto i = sz2; i--;) {
-            e(0, i) = 0;
+            e.insert_element(0, i, Valuable(0));
         }
         auto d = sz1 - sz2;
         for (auto i = d; i--;) {
             for (auto j = sz2; j--;) {
                 e(0, j) += operator()(i, j);
             }
-            a[0] += augment[i];
+            a(i - d) = (*au)(i); // Use vector's operator() provided by Boost Ublas for element access
         }
 
         for (auto i = d; i < sz1; ++i) {
             for (auto j = sz2; j--;) {
                 e(i - d, j) = operator()(i, j);
             }
-            a[i - d] = augment[i];
+            a(i - d) = (*au)(i); // Use vector's operator() provided by Boost Ublas for element access
         }
         au = &a;
     }
@@ -131,9 +141,8 @@ Extrapolator::solution_t Extrapolator::Solve(const ublas::vector<T>& augment) co
     return solution;
 }
 
-Extrapolator::T Extrapolator::Determinant() const
-{
-    ublas::permutation_matrix<std::size_t> pivots(this->size1());
+Extrapolator::T Extrapolator::Determinant() const {
+    permutation_matrix_t pivots(this->size1());
     auto mLu = *this;
     auto isSingular = ublas::lu_factorize(mLu, pivots);
     if (isSingular)
@@ -150,12 +159,11 @@ Extrapolator::T Extrapolator::Determinant() const
     return det;
 }
 
-bool Extrapolator::Consistent(const ublas::vector<T>& augment)
-{
+bool Extrapolator::Consistent(const vector_t& augment) {
     auto sz = augment.size();
-    extrapolator_base_matrix augmentedMatrix(sz, 1);
+    matrix_t augmentedMatrix(sz, 1);
     for (auto i = sz; i-- > 0;) {
-        augmentedMatrix(i, 0) = augment[i];
+        augmentedMatrix(i, 0) = augment(i);
     }
     return Consistent(augmentedMatrix);
 }
