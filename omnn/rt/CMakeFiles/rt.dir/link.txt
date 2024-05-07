@@ -1,0 +1,2 @@
+/usr/bin/ar qc librt.a CMakeFiles/rt.dir/GC.cpp.o CMakeFiles/rt.dir/Neuron.cpp.o CMakeFiles/rt.dir/Prime.cpp.o CMakeFiles/rt.dir/cl.cpp.o CMakeFiles/rt.dir/tasq.cpp.o
+/usr/bin/ranlib librt.a

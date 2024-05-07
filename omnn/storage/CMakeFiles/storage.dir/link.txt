@@ -1,0 +1,2 @@
+/usr/bin/ar qc libstorage.a CMakeFiles/storage.dir/CacheBase.cpp.o CMakeFiles/storage.dir/LevelDbCache.cpp.o
+/usr/bin/ranlib libstorage.a

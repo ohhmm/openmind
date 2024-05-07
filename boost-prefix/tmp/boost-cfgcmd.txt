@@ -1,0 +1,1 @@
+cmd='./bootstrap.sh;--without-icu'
