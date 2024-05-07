@@ -47,3 +47,19 @@ CMakeLists.txt.user.*
 /*.cmake
 /*.ninja
 /compile_commands.json
+
+# Add build directories and common build artifacts
+/CMakeFiles/
+/CMakeCache.txt
+/CTestTestfile.cmake
+/Makefile
+/cmake_install.cmake
+*.a
+*.o
+*.so
+/bin/
+/lib/
+/*/CMakeFiles/
+/*/CTestTestfile.cmake
+/*/Makefile
+/*/cmake_install.cmake
