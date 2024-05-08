@@ -16,9 +16,9 @@ using namespace boost::numeric::ublas;
 // Replace incorrect allocator functions with correct Boost Ublas container functions
 
 // Corrected instantiation of Boost Ublas types with unbounded_array_wrapper using custom_allocator
-using matrix_t = matrix<Valuable, basic_row_major<>, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
-using vector_t = vector<Valuable, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
-using permutation_matrix_t = permutation_matrix<std::size_t, unbounded_array_wrapper<std::size_t, custom_allocator<std::size_t>>>;
+using matrix_t = matrix<Valuable, basic_row_major<>, unbounded_array<Valuable, custom_allocator<Valuable>>>;
+using vector_t = vector<Valuable, unbounded_array<Valuable, custom_allocator<Valuable>>>;
+using permutation_matrix_t = permutation_matrix<std::size_t, unbounded_array<std::size_t, custom_allocator<std::size_t>>>;
 
 // This function calculates the determinant of a matrix using LU factorization
 auto det_fast(matrix_t matrix)
