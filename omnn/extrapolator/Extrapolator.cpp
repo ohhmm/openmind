@@ -17,22 +17,24 @@ using vector_t = boost::numeric::ublas::vector<Valuable, custom_allocator<Valuab
 // Ensure that the custom allocator is used for the permutation_matrix type
 using permutation_matrix_t = boost::numeric::ublas::permutation_matrix<std::size_t, custom_allocator<std::size_t>>;
 
+// This function calculates the determinant of a matrix using LU factorization
 auto det_fast(matrix_t matrix)
 {
-    using T = matrix_t::value_type;
     permutation_matrix_t pivots(matrix.size1());
 
-    auto isSingular = ublas::lu_factorize(matrix, pivots);
+    // Perform LU factorization on a copy of the matrix to preserve the original matrix
+    matrix_t matrix_copy(matrix);
+    auto isSingular = ublas::lu_factorize(matrix_copy, pivots);
     if (isSingular)
-        return T(0);
+        return Valuable(0);
 
-    T det = 1;
+    Valuable det(1);
     for (std::size_t i = 0; i < pivots.size(); ++i)
     {
         if (pivots(i) != i)
-            det *= static_cast<double>(-1);
+            det *= Valuable(-1);
 
-        det *= matrix(i, i);
+        det *= matrix_copy(i, i);
     }
 
     return det;
