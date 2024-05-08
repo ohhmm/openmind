@@ -68,7 +68,7 @@ public:
 };
 
 // Wrapper class for unbounded_array
-template <typename T, typename Allocator = std::allocator<T>>
+template <typename T, typename Allocator = custom_allocator<T>>
 class unbounded_array_wrapper {
 public:
     using size_type = typename Allocator::size_type;

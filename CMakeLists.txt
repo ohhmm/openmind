@@ -407,3 +407,24 @@ function(_openmind_hook_end_of_configure)
 		COMMAND_ECHO STDOUT
 	)
 endfunction()
+
+# Define test executables and their properties
+add_test(NAME 08_System COMMAND 08_System)
+set_tests_properties(08_System PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_test(NAME 8Q COMMAND 8Q)
+set_tests_properties(8Q PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# ... (additional add_test and set_tests_properties commands for each test executable)
+
+add_test(NAME VarHost_test COMMAND VarHost_test)
+set_tests_properties(VarHost_test PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_test(NAME logic COMMAND logic)
+set_tests_properties(logic PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_test(NAME sh_test COMMAND sh_test)
+set_tests_properties(sh_test PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_test(NAME ts COMMAND ts)
+set_tests_properties(ts PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
