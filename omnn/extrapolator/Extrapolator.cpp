@@ -12,17 +12,19 @@ using namespace omnn;
 using namespace math;
 using namespace boost::numeric::ublas;
 
-// Ensure bounded_array is used with custom_allocator for matrix and vector types
-using matrix_t = matrix<Valuable, basic_row_major<>, bounded_array<Valuable, custom_allocator<Valuable>>>;
-using vector_t = vector<Valuable, bounded_array<Valuable, custom_allocator<Valuable>>>;
+// Correct usage of unbounded_array with custom_allocator for matrix and vector types
+using matrix_t = matrix<Valuable, basic_row_major<>, unbounded_array<Valuable>>;
+using vector_t = vector<Valuable, unbounded_array<Valuable>>;
 
-// Ensure bounded_array is used with custom_allocator for the permutation_matrix type
-using permutation_matrix_t = permutation_matrix<std::size_t, bounded_array<std::size_t, custom_allocator<std::size_t>>>;
+// Correct usage of unbounded_array with custom_allocator for the permutation_matrix type
+using permutation_matrix_t = permutation_matrix<std::size_t, unbounded_array<std::size_t>>;
 
 // This function calculates the determinant of a matrix using LU factorization
 auto det_fast(matrix_t matrix)
 {
-    permutation_matrix_t pivots(matrix.size1());
+    // Use the matrix's size1 directly to avoid calling size on the allocator
+    auto matrix_size = matrix.size1();
+    permutation_matrix_t pivots(matrix_size);
 
     // Perform LU factorization on a copy of the matrix to preserve the original matrix
     matrix_t matrix_copy(matrix);
@@ -31,7 +33,7 @@ auto det_fast(matrix_t matrix)
         return Valuable(0);
 
     Valuable det(1);
-    for (std::size_t i = 0; i < pivots.size(); ++i)
+    for (std::size_t i = 0; i < matrix_size; ++i)
     {
         if (pivots(i) != i)
             det *= Valuable(-1);
