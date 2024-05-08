@@ -12,12 +12,13 @@ using namespace omnn;
 using namespace math;
 using namespace boost::numeric::ublas;
 
-// Correct usage of unbounded_array with custom_allocator for matrix and vector types
-using matrix_t = matrix<Valuable, basic_row_major<>, unbounded_array<Valuable>>;
-using vector_t = vector<Valuable, unbounded_array<Valuable>>;
+// Correct usage of Boost Ublas vector and matrix with custom_allocator
+// Replace incorrect allocator functions with correct Boost Ublas container functions
 
-// Correct usage of unbounded_array with custom_allocator for the permutation_matrix type
-using permutation_matrix_t = permutation_matrix<std::size_t, unbounded_array<std::size_t>>;
+// Corrected instantiation of Boost Ublas types with unbounded_array_wrapper using custom_allocator
+using matrix_t = matrix<Valuable, basic_row_major<>, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
+using vector_t = vector<Valuable, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
+using permutation_matrix_t = permutation_matrix<std::size_t, unbounded_array_wrapper<std::size_t, custom_allocator<std::size_t>>>;
 
 // This function calculates the determinant of a matrix using LU factorization
 auto det_fast(matrix_t matrix)
@@ -116,28 +117,32 @@ Extrapolator::solution_t Extrapolator::Solve(const vector_t& augment) const
     auto sz2 = size2();
 
     vector_t a(sz2);
+    // Use vector's clear method to set all elements to zero
+    a.clear();
     const vector_t* au = &augment;
     if (sz1 > sz2 + 1 /*augment*/) {
         // make square matrix to make it solvable by boost ublas
         e = Extrapolator(sz2, sz2);
         // sum first equations
-        a[0] = 0;
         for (auto i = sz2; i--;) {
-            e(0, i) = 0;
+            // Use matrix's insert_element method to set elements to zero
+            e.insert_element(0, i, 0);
         }
         auto d = sz1 - sz2;
         for (auto i = d; i--;) {
             for (auto j = sz2; j--;) {
                 e(0, j) += operator()(i, j);
             }
-            a[0] += augment[i];
+            // Use vector's operator() for element access
+            a(0) += augment(i);
         }
 
         for (auto i = d; i < sz1; ++i) {
             for (auto j = sz2; j--;) {
                 e(i - d, j) = operator()(i, j);
             }
-            a[i - d] = augment[i];
+            // Use vector's operator() for element access
+            a(i - d) = augment(i);
         }
         au = &a;
     }
