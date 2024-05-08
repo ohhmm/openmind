@@ -6,16 +6,18 @@
 #include "math/Integer.h"
 #include "math/Sum.h"
 #include "math/custom_allocator.h"
+#include <boost/numeric/ublas/storage.hpp>
 
 using namespace omnn;
 using namespace math;
+using namespace boost::numeric::ublas;
 
-// Ensure that the custom allocator is used for the matrix and vector types
-using matrix_t = boost::numeric::ublas::matrix<Valuable, boost::numeric::ublas::basic_row_major<>, custom_allocator<Valuable>>;
-using vector_t = boost::numeric::ublas::vector<Valuable, custom_allocator<Valuable>>;
+// Ensure bounded_array is used with custom_allocator for matrix and vector types
+using matrix_t = matrix<Valuable, basic_row_major<>, bounded_array<Valuable, custom_allocator<Valuable>>>;
+using vector_t = vector<Valuable, bounded_array<Valuable, custom_allocator<Valuable>>>;
 
-// Ensure that the custom allocator is used for the permutation_matrix type
-using permutation_matrix_t = boost::numeric::ublas::permutation_matrix<std::size_t, custom_allocator<std::size_t>>;
+// Ensure bounded_array is used with custom_allocator for the permutation_matrix type
+using permutation_matrix_t = permutation_matrix<std::size_t, bounded_array<std::size_t, custom_allocator<std::size_t>>>;
 
 // This function calculates the determinant of a matrix using LU factorization
 auto det_fast(matrix_t matrix)
