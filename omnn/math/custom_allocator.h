@@ -7,6 +7,7 @@
 #include <limits>
 #include <new>
 #include <boost/version.hpp>
+#include <vector>
 
 template <typename T>
 class custom_allocator {
@@ -57,171 +58,80 @@ public:
 
     template <class U, class... Args>
     void construct(U* p, Args&&... args) {
-        ::new((void*)p) U(std::forward<Args>(args)...);
+        new(static_cast<void*>(p)) U(std::forward<Args>(args)...);
     }
 
     template <class U>
     void destroy(U* p) {
         p->~U();
     }
-
-    // Dummy resize method to satisfy the Boost Numeric Ublass library's requirements
-    void resize(size_type) noexcept {
-        // This method is not required by the standard allocator interface.
-        // It is provided as a dummy implementation to satisfy the requirements of the Boost Numeric Ublass library.
-        // The actual resizing should be handled by the container using this allocator.
-    }
-
-    size_type size() const noexcept {
-        // This is not a standard allocator function and is only here to satisfy the Boost Numeric Ublass library's requirements.
-        // The actual size management should be handled by the container using this allocator.
-        // Returning a dummy value as the size is not tracked by the allocator.
-        return 0;
-    }
-
-    T& operator[](size_type n) {
-        // This is not a standard allocator function and is only here to satisfy the Boost Numeric Ublass library's requirements.
-        // The actual element access should be handled by the container using this allocator.
-        // Returning a reference to a dummy static variable as this operator should not be used directly.
-        static T dummy;
-        return dummy;
-    }
-
-    const T& operator[](size_type n) const {
-        // This is not a standard allocator function and is only here to satisfy the Boost Numeric Ublass library's requirements.
-        // The actual element access should be handled by the container using this allocator.
-        // Returning a reference to a dummy static variable as this operator should not be used directly.
-        static T dummy;
-        return dummy;
-    }
-
-    // Add swap method for compatibility with Boost Numeric Ublass
-    void swap(custom_allocator& other) noexcept {
-        std::swap(*this, other);
-    }
-
-    // Add begin method for compatibility with Boost Numeric Ublass
-    pointer begin() noexcept {
-        // Since the allocator does not actually hold the data, this method should not be used.
-        // It is only provided for compatibility purposes and will return a null iterator.
-        return nullptr;
-    }
 };
 
-// Specialization for std::size_t
-template <>
-class custom_allocator<std::size_t> {
+// Wrapper class for unbounded_array
+template <typename T, typename Allocator = std::allocator<T>>
+class unbounded_array_wrapper {
 public:
-    using size_type = std::size_t;
-    using difference_type = std::ptrdiff_t;
-    using pointer = std::size_t*;
-    using const_pointer = const std::size_t*;
-    using reference = std::size_t&;
-    using const_reference = const std::size_t&;
-    using value_type = std::size_t;
-    using iterator = std::size_t*;
-    using const_iterator = const std::size_t*;
+    using size_type = typename Allocator::size_type;
+    using difference_type = typename Allocator::difference_type;
+    using pointer = typename Allocator::pointer;
+    using const_pointer = typename Allocator::const_pointer;
+    using reference = T&;
+    using const_reference = const T&;
+    using value_type = T;
+    using iterator = pointer;
+    using const_iterator = const_pointer;
+    using allocator_type = Allocator;
 
-    template <class U>
-    struct rebind {
-        typedef custom_allocator<U> other;
-    };
+private:
+    std::vector<T, Allocator> data_;
 
-    custom_allocator() noexcept {}
+public:
+    explicit unbounded_array_wrapper(size_type size, const T& value = T(), const Allocator& alloc = Allocator())
+        : data_(size, value, alloc) {}
 
-    custom_allocator(size_type) noexcept : custom_allocator() {}
+    unbounded_array_wrapper(const unbounded_array_wrapper& other)
+        : data_(other.data_) {}
 
-    template <class U>
-    custom_allocator(const custom_allocator<U>&) noexcept {}
-
-    pointer address(reference x) const noexcept {
-        return std::addressof(x);
+    unbounded_array_wrapper& operator=(const unbounded_array_wrapper& other) {
+        data_ = other.data_;
+        return *this;
     }
 
-    const_pointer address(const_reference x) const noexcept {
-        return std::addressof(x);
+    iterator begin() noexcept {
+        return &data_[0];
     }
 
-    pointer allocate(size_type n, const void* hint = 0) {
-        if (n > this->max_size())
-            throw std::bad_alloc();
-        return static_cast<pointer>(::operator new(n * sizeof(std::size_t), std::nothrow));
+    const_iterator begin() const noexcept {
+        return &data_[0];
     }
 
-    void deallocate(pointer p, size_type n) noexcept {
-        ::operator delete(p);
+    iterator end() noexcept {
+        return &data_[0] + data_.size();
     }
 
-    size_type max_size() const noexcept {
-        return std::numeric_limits<size_type>::max() / sizeof(std::size_t);
-    }
-
-    template <class U, class... Args>
-    void construct(U* p, Args&&... args) {
-        ::new((void*)p) U(std::forward<Args>(args)...);
-    }
-
-    template <class U>
-    void destroy(U* p) {
-        p->~U();
-    }
-
-    // Dummy resize method to satisfy the Boost Numeric Ublass library's requirements
-    void resize(size_type) noexcept {
-        // This method is not required by the standard allocator interface.
-        // It is provided as a dummy implementation to satisfy the requirements of the Boost Numeric Ublass library.
-        // The actual resizing should be handled by the container using this allocator.
+    const_iterator end() const noexcept {
+        return &data_[0] + data_.size();
     }
 
     size_type size() const noexcept {
-        // This is not a standard allocator function and is only here to satisfy the Boost Numeric Ublass library's requirements.
-        // The actual size management should be handled by the container using this allocator.
-        // Returning a dummy value as the size is not tracked by the allocator.
-        return 0;
+        return data_.size();
     }
 
-    std::size_t& operator[](size_type n) {
-        // This is not a standard allocator function and is only here to satisfy the Boost Numeric Ublass library's requirements.
-        // The actual element access should be handled by the container using this allocator.
-        // Returning a reference to a dummy static variable as this operator should not be used directly.
-        static std::size_t dummy;
-        return dummy;
+    reference operator[](size_type i) {
+        return data_[i];
     }
 
-    const std::size_t& operator[](size_type n) const {
-        // This is not a standard allocator function and is only here to satisfy the Boost Numeric Ublass library's requirements.
-        // The actual element access should be handled by the container using this allocator.
-        // Returning a reference to a dummy static variable as this operator should not be used directly.
-        static std::size_t dummy;
-        return dummy;
+    const_reference operator[](size_type i) const {
+        return data_[i];
     }
 
-    // Add swap method for compatibility with Boost Numeric Ublass
-    void swap(custom_allocator& other) noexcept {
-        std::swap(*this, other);
+    void resize(size_type new_size, const T& value = T()) {
+        data_.resize(new_size, value);
     }
 
-    // Add begin method for compatibility with Boost Numeric Ublass
-    pointer begin() noexcept {
-        // Since the allocator does not actually hold the data, this method should not be used.
-        // It is only provided for compatibility purposes and will return a null iterator.
-        return nullptr;
+    void clear() noexcept {
+        data_.clear();
     }
-
-    using void_pointer = void*;
-    using const_void_pointer = const void*;
 };
-
-namespace std {
-    template <typename T>
-    struct allocator_traits<custom_allocator<T>> : std::allocator_traits<std::allocator<T>> {
-        // Inherit all functionality from std::allocator_traits
-    };
-
-    template <>
-    struct allocator_traits<custom_allocator<std::size_t>> : std::allocator_traits<std::allocator<std::size_t>> {
-        // Inherit all functionality from std::allocator_traits
-    };
-}
 
 #endif // CUSTOM_ALLOCATOR_H
