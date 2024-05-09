@@ -42,7 +42,9 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
     DECL_VA(x);
     auto ExtractMove = [&](auto&& i) {
         std::cout << "Extracting move for i = " << i << std::endl;
+        std::cout << "TS_1d test case - Before ExtractMove" << std::endl;
         auto targetId = x.And((i + 1) * encodeBits, mask << (i * encodeBits)).shr(i * encodeBits);
+        std::cout << "TS_1d test case - After ExtractMove" << std::endl;
         std::cout << "Extracted move for i = " << i << ": " << targetId << std::endl;
         return targetId;
     };
@@ -74,18 +76,22 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
         std::cout << "Getting value by index: " << i << std::endl;
         DECL_VA(id);
         static auto MathDataForm = [&]() {
+            std::cout << "TS_1d test case - Before MathDataForm" << std::endl;
             auto data = constants::one;
             DECL_VA(val);
             for (int i = 0; i < n; ++i) {
                 data.logic_or(id.Equals(i).logic_and(val.Equals(points[i])));
             }
+            std::cout << "TS_1d test case - After MathDataForm" << std::endl;
             return data(val);
         };
 
         static auto data = MathDataForm();
 
         auto localData = data;
+        std::cout << "TS_1d test case - Before Eval" << std::endl;
         localData.Eval(id, i);
+        std::cout << "TS_1d test case - After Eval" << std::endl;
         std::cout << "Got value by index: " << i << " = " << localData << std::endl;
         return localData;
     };
@@ -99,7 +105,9 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
         auto prev = ExtractMove(i - 1);
         auto target = ExtractMove(i);
         auto diff = ValueByIdx(prev) - ValueByIdx(target);
+        std::cout << "TS_1d test case - Before MoveLenSq" << std::endl;
         auto lenSq = diff ^ 2;
+        std::cout << "TS_1d test case - After MoveLenSq" << std::endl;
         std::cout << "Calculated move length square for i = " << i << ": " << lenSq << std::endl;
         return lenSq;
     };
@@ -108,12 +116,13 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
     // sum square lengths
     std::cout << "TS_1d test case - Starting sum square lengths" << std::endl;
     auto SumSqLens = [&]() {
-        std::cout << "Summing square lengths" << std::endl;
+        std::cout << "TS_1d test case - Before SumSqLens" << std::endl;
         auto sum = constants::zero;
         for (auto i = 1; i < n; ++i) {
             sum += MoveLenSq(i);
             std::cout << "Sum after i = " << i << ": " << sum << std::endl;
         }
+        std::cout << "TS_1d test case - After SumSqLens" << std::endl;
         std::cout << "Completed summing square lengths: " << sum << std::endl;
         return sum;
     };

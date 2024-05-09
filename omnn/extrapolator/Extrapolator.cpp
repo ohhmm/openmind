@@ -15,10 +15,10 @@ using namespace boost::numeric::ublas;
 // Correct usage of Boost Ublas vector and matrix with custom_allocator
 // Replace incorrect allocator functions with correct Boost Ublas container functions
 
-// Ensure that matrix_t, vector_t, and permutation_matrix_t are using unbounded_array_wrapper with custom_allocator
-using matrix_t = boost::numeric::ublas::matrix<Valuable, boost::numeric::ublas::basic_row_major<>, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
-using vector_t = boost::numeric::ublas::vector<Valuable, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
-using permutation_matrix_t = boost::numeric::ublas::permutation_matrix<std::size_t, unbounded_array_wrapper<std::size_t, custom_allocator<std::size_t>>>;
+// Ensure that matrix_t, vector_t, and permutation_matrix_t are using std::vector with custom_allocator
+using matrix_t = boost::numeric::ublas::matrix<Valuable, boost::numeric::ublas::basic_row_major<>, std::vector<Valuable, custom_allocator<Valuable>>>;
+using vector_t = boost::numeric::ublas::vector<Valuable, std::vector<Valuable, custom_allocator<Valuable>>>;
+using permutation_matrix_t = boost::numeric::ublas::permutation_matrix<std::size_t, std::vector<std::size_t, custom_allocator<std::size_t>>>;
 
 // This function calculates the determinant of a matrix using LU factorization
 auto det_fast(matrix_t matrix) {
@@ -124,14 +124,14 @@ Extrapolator::solution_t Extrapolator::Solve(const vector_t& augment) const
             for (auto j = sz2; j--;) {
                 e(0, j) += operator()(i, j);
             }
-            a[0] += augment(i); // Use vector's operator[] provided by unbounded_array_wrapper for element access
+            a(0) += augment(i); // Use vector's operator[] provided by unbounded_array_wrapper for element access
         }
 
         for (auto i = d; i < sz1; ++i) {
             for (auto j = sz2; j--;) {
                 e(i - d, j) = operator()(i, j);
             }
-            a[i - d] = augment(i); // Use vector's operator[] provided by unbounded_array_wrapper for element access
+            a(i - d) = augment(i); // Use vector's operator[] provided by unbounded_array_wrapper for element access
         }
         au = &a;
     }
