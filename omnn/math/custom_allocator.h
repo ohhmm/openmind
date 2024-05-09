@@ -78,8 +78,8 @@ public:
     using reference = T&;
     using const_reference = const T&;
     using value_type = T;
-    using iterator = pointer;
-    using const_iterator = const_pointer;
+    using iterator = typename std::vector<T, Allocator>::iterator;
+    using const_iterator = typename std::vector<T, Allocator>::const_iterator;
     using allocator_type = Allocator;
 
 private:
@@ -98,19 +98,19 @@ public:
     }
 
     iterator begin() noexcept {
-        return &data_[0];
+        return data_.begin();
     }
 
     const_iterator begin() const noexcept {
-        return &data_[0];
+        return data_.cbegin();
     }
 
     iterator end() noexcept {
-        return &data_[0] + data_.size();
+        return data_.end();
     }
 
     const_iterator end() const noexcept {
-        return &data_[0] + data_.size();
+        return data_.cend();
     }
 
     size_type size() const noexcept {

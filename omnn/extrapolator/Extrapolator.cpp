@@ -15,14 +15,13 @@ using namespace boost::numeric::ublas;
 // Correct usage of Boost Ublas vector and matrix with custom_allocator
 // Replace incorrect allocator functions with correct Boost Ublas container functions
 
-// Corrected instantiation of Boost Ublas types with unbounded_array_wrapper using custom_allocator
-using matrix_t = matrix<Valuable, basic_row_major<>, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
-using vector_t = vector<Valuable, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
-using permutation_matrix_t = permutation_matrix<std::size_t, unbounded_array_wrapper<std::size_t, custom_allocator<std::size_t>>>;
+// Ensure that matrix_t, vector_t, and permutation_matrix_t are using unbounded_array_wrapper with custom_allocator
+using matrix_t = boost::numeric::ublas::matrix<Valuable, boost::numeric::ublas::basic_row_major<>, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
+using vector_t = boost::numeric::ublas::vector<Valuable, unbounded_array_wrapper<Valuable, custom_allocator<Valuable>>>;
+using permutation_matrix_t = boost::numeric::ublas::permutation_matrix<std::size_t, unbounded_array_wrapper<std::size_t, custom_allocator<std::size_t>>>;
 
 // This function calculates the determinant of a matrix using LU factorization
-auto det_fast(matrix_t matrix)
-{
+auto det_fast(matrix_t matrix) {
     // Use the matrix's size1 directly to avoid calling size on the allocator
     auto matrix_size = matrix.size1();
     permutation_matrix_t pivots(matrix_size);
@@ -34,8 +33,7 @@ auto det_fast(matrix_t matrix)
         return Valuable(0);
 
     Valuable det(1);
-    for (std::size_t i = 0; i < matrix_size; ++i)
-    {
+    for (std::size_t i = 0; i < matrix_size; ++i) {
         if (pivots(i) != i)
             det *= Valuable(-1);
 
@@ -45,13 +43,11 @@ auto det_fast(matrix_t matrix)
     return det;
 }
 
-bool Extrapolator::Consistent(const matrix_t& augment)
-{
+bool Extrapolator::Consistent(const matrix_t& augment) {
     return Determinant() == det_fast(augment);
 }
 
-Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const Variable& val) const
-{
+Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const Variable& val) const {
     Product e;
     auto szy = size1();
     auto szx = size2();
@@ -68,8 +64,7 @@ Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const V
     return Valuable(std::move(e));
 }
 
-Extrapolator::operator Formula() const
-{
+Extrapolator::operator Formula() const {
     bool integers = true;
     auto vm = ViewMatrix();
     Valuable e = 1_v;
@@ -96,8 +91,7 @@ Extrapolator::operator Formula() const
 }
 
 Extrapolator::Extrapolator(std::initializer_list<std::vector<Valuable>> dependancy_matrix)
-    : base(dependancy_matrix.size(), dependancy_matrix.begin()->size())
-{
+    : base(dependancy_matrix.size(), dependancy_matrix.begin()->size()) {
     auto rows = dependancy_matrix.size();
     auto r = dependancy_matrix.begin();
     auto columns = r->size();
@@ -116,33 +110,28 @@ Extrapolator::solution_t Extrapolator::Solve(const vector_t& augment) const
     auto sz1 = size1();
     auto sz2 = size2();
 
-    vector_t a(sz2);
-    // Use vector's clear method to set all elements to zero
-    a.clear();
+    vector_t a(sz2); // Initialize vector with size using custom_allocator implicitly
     const vector_t* au = &augment;
     if (sz1 > sz2 + 1 /*augment*/) {
         // make square matrix to make it solvable by boost ublas
         e = Extrapolator(sz2, sz2);
         // sum first equations
         for (auto i = sz2; i--;) {
-            // Use matrix's insert_element method to set elements to zero
-            e.insert_element(0, i, 0);
+            e.insert_element(0, i, Valuable(0));
         }
         auto d = sz1 - sz2;
         for (auto i = d; i--;) {
             for (auto j = sz2; j--;) {
                 e(0, j) += operator()(i, j);
             }
-            // Use vector's operator() for element access
-            a(0) += augment(i);
+            a[0] += augment(i); // Use vector's operator[] provided by unbounded_array_wrapper for element access
         }
 
         for (auto i = d; i < sz1; ++i) {
             for (auto j = sz2; j--;) {
                 e(i - d, j) = operator()(i, j);
             }
-            // Use vector's operator() for element access
-            a(i - d) = augment(i);
+            a[i - d] = augment(i); // Use vector's operator[] provided by unbounded_array_wrapper for element access
         }
         au = &a;
     }
@@ -150,8 +139,7 @@ Extrapolator::solution_t Extrapolator::Solve(const vector_t& augment) const
     return solution;
 }
 
-Extrapolator::T Extrapolator::Determinant() const
-{
+Extrapolator::T Extrapolator::Determinant() const {
     permutation_matrix_t pivots(this->size1());
     auto mLu = *this;
     auto isSingular = ublas::lu_factorize(mLu, pivots);
@@ -169,12 +157,11 @@ Extrapolator::T Extrapolator::Determinant() const
     return det;
 }
 
-bool Extrapolator::Consistent(const vector_t& augment)
-{
+bool Extrapolator::Consistent(const vector_t& augment) {
     auto sz = augment.size();
     matrix_t augmentedMatrix(sz, 1);
     for (auto i = sz; i-- > 0;) {
-        augmentedMatrix(i, 0) = augment[i];
+        augmentedMatrix(i, 0) = augment(i);
     }
     return Consistent(augmentedMatrix);
 }
@@ -203,8 +190,7 @@ Extrapolator Extrapolator::ViewMatrix() const
     return e;
 }
 
-Extrapolator::operator Valuable() const
-{
+Extrapolator::operator Valuable() const {
     Valuable v = 0_v;
     auto szy = size1();
     auto szx = size2();

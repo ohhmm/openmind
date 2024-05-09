@@ -19,9 +19,9 @@ T bits_in_use(T v){
     return bits;
 }
 
-/// Control theory generalization hints are here: finds best moves/goods for single dimension
+// Adding print statements to track the execution flow
 BOOST_AUTO_TEST_CASE(TS_1d) {
-    std::cout << "Starting TS_1d test case" << std::endl;
+    std::cout << "TS_1d test case - Start" << std::endl;
     //    System s;
     //    s.MakeTotalEqu(true);
     // y=f(x), where x is code of sequence
@@ -33,11 +33,12 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
     auto encodeBits = bits_in_use(n);
     auto mask = (1 << encodeBits) - 1;
 
-    std::cout << "Initialized variables" << std::endl;
+    std::cout << "TS_1d test case - Initialized variables" << std::endl;
 
     auto sys = constants::zero;
 
     // points math data
+    std::cout << "TS_1d test case - Starting points math data" << std::endl;
     DECL_VA(x);
     auto ExtractMove = [&](auto&& i) {
         std::cout << "Extracting move for i = " << i << std::endl;
@@ -51,19 +52,24 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
     //    s << statement;
     sys += statement.sq();
     std::cout << "Last move back to start checked" << std::endl;
+    std::cout << "TS_1d test case - Completed points math data" << std::endl;
+
     // moves uniqueness
+    std::cout << "TS_1d test case - Starting moves uniqueness checks" << std::endl;
     for (auto i = 1; i < n; ++i) {
-        std::cout << "Processing move uniqueness for i = " << i << std::endl;
+        std::cout << "Processing move uniqueness for i = " << i << " - Start" << std::endl;
         statement = ExtractMove(i).NotEquals(
             ExtractMove(i - 1)); // FIXME: NotEquals behaviour changed. It was 0 for a!=b and 1 for a==b.  then it
                                  // became  /=(a-b) like if a=b then its a division by zero which must exclude branches,
                                  // but does it or it just breaks expression
                                  //        s << statement;
         sys += statement.sq();
-        std::cout << "Processed move uniqueness for i = " << i << std::endl;
+        std::cout << "Processed move uniqueness for i = " << i << " - End" << std::endl;
     }
-    std::cout << "Completed move uniqueness checks" << std::endl;
+    std::cout << "TS_1d test case - Completed moves uniqueness checks" << std::endl;
+
     // generate function of getting point value by its index
+    std::cout << "TS_1d test case - Starting generate function of getting point value by its index" << std::endl;
     auto ValueByIdx = [&](Valuable i) {
         std::cout << "Getting value by index: " << i << std::endl;
         DECL_VA(id);
@@ -83,7 +89,10 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
         std::cout << "Got value by index: " << i << " = " << localData << std::endl;
         return localData;
     };
+    std::cout << "TS_1d test case - Completed generate function of getting point value by its index" << std::endl;
+
     // move len square
+    std::cout << "TS_1d test case - Starting move len square calculations" << std::endl;
     auto MoveLenSq = [&](int i) {
         std::cout << "Calculating move length square for i = " << i << std::endl;
         assert(i);
@@ -94,6 +103,10 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
         std::cout << "Calculated move length square for i = " << i << ": " << lenSq << std::endl;
         return lenSq;
     };
+    std::cout << "TS_1d test case - Completed move len square calculations" << std::endl;
+
+    // sum square lengths
+    std::cout << "TS_1d test case - Starting sum square lengths" << std::endl;
     auto SumSqLens = [&]() {
         std::cout << "Summing square lengths" << std::endl;
         auto sum = constants::zero;
@@ -105,7 +118,9 @@ BOOST_AUTO_TEST_CASE(TS_1d) {
         return sum;
     };
     auto sumSqLens = SumSqLens();
-    std::cout << "Completed TS_1d test case" << std::endl;
+    std::cout << "TS_1d test case - Completed sum square lengths" << std::endl;
+
+    std::cout << "TS_1d test case - End" << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(TS_2d
