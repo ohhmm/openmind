@@ -6,6 +6,7 @@
 
 #include "Integer.h"
 #include "Fraction.h"
+#include "PrincipalSurd.h"
 
 #include <ctime>
 #include <iostream>
@@ -331,4 +332,9 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
     _1 = _;
     _ *= _1;
     BOOST_TEST(_==4_v);
+
+    _ = 24;
+    _1 = _.Sqrt();
+    _2 = PrincipalSurd(6) * 2;
+    BOOST_TEST(_1 == _2);
 }

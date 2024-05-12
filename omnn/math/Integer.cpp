@@ -381,8 +381,8 @@ namespace math {
             if(xFactor > constants::one) {
                 if(e == constants::two){
                     Valuable v = boost::multiprecision::sqrt(xFactor.ca());
-                    if((v^e) == xFactor)
-                        return {std::move(v),std::move(xFactor)};
+                    if ((v ^ e) == xFactor)
+                        return {std::move(v), std::move(xFactor)};
                 } else if (e < constants::zero) {
                     auto me = -e;
                     LOG_AND_IMPLEMENT(arbitrary << " GreatestCommonExp " << e);
@@ -624,24 +624,20 @@ namespace math {
         return *this;
     }
 
-
-    // sqrt using boost
     Valuable Integer::Sqrt() const
     {
-        auto minus = arbitrary < 0;
-        auto _ = boost::multiprecision::sqrt(minus ? -arbitrary : arbitrary); // integer square root
-        auto _sq = _ * _;
-        if (_sq != boost::multiprecision::abs(arbitrary)){ // no integer square root
-            auto d = GreatestCommonExp(2);
-            if (d.second != 1)
+        auto arbitraryAbsoluteValue = boost::multiprecision::abs(arbitrary);
+        auto sqrtIntegerPart = boost::multiprecision::sqrt(arbitraryAbsoluteValue); // integer square root
+        if (sqrtIntegerPart * sqrtIntegerPart != arbitraryAbsoluteValue) { // no integer square root
+            auto d = GreatestCommonExp(constants::two);
+            if (d.second != constants::one) {
+                std::cout << *this << ".GreatestCommonExp(2): " << d.first << " , " << d.second << " ; sqrtIntegerPart=" << sqrtIntegerPart << std::endl;
                 return (*this / d.second).Sqrt() * d.first;
-            else
-            {
-                return Valuable(std::make_shared<PrincipalSurd>(*this));
-                LOG_AND_IMPLEMENT(str() << " integer square root is " << _ << " and " << _ << "^2=" << _sq); // implement radicals support
             }
+            else
+                return Valuable(std::make_shared<PrincipalSurd>(*this));
         }
-        return minus ? constant::i * _ : _;
+        return arbitrary.sign() == -1 ? constant::i * sqrtIntegerPart : sqrtIntegerPart;
     }
 
     // Sqrt using rational root test

@@ -13,4 +13,9 @@ BOOST_AUTO_TEST_CASE(PrincipalSurd_test) {
 	BOOST_TEST(_1 == 0.012);
     auto _2 = 12_v / 1000;
     BOOST_TEST(_1 == _2);
+
+    _1 = -24;
+    _1.sqrt();
+    _2 = PrincipalSurd(6) * 2 * constants::i;
+    BOOST_TEST(_1 == _2);
 }
