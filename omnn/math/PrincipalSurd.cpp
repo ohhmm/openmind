@@ -204,7 +204,7 @@ Valuable PrincipalSurd::InCommonWith(const Valuable& v) const {
                 return PrincipalSurd{ic, _2};
             }
         } else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT(*this << " InCommonWith " << v);
         }
     } else if(v.Is_i()) {
         return _2.IsEven() == YesNoMaybe::Yes && _1.Sign() != constants::one
