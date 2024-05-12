@@ -4,7 +4,7 @@ get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
 
-add_definitions(-DCL_TARGET_OPENCL_VERSION=220)
+# add_definitions(-DCL_TARGET_OPENCL_VERSION=220) # Suppressed to ensure compatibility across different OpenCL versions
 
 enable_language(CXX)
 set (CMAKE_CXX_STANDARD 23)
