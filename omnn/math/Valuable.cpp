@@ -61,10 +61,10 @@ namespace math {
     constexpr const Valuable& zero = vo<0>();
     constexpr const Valuable& one = vo<1>();
     constexpr const Valuable& two = vo<2>();
-    constexpr Fraction Half{1_v, 2_v};
-    constexpr const Valuable& half = Half;
-    constexpr Fraction Quarter {1, 4};
-    constexpr const Valuable& quarter = Quarter;
+    const Fraction Half{1_v, 2_v};
+    const Valuable& half = Half;
+    const Fraction Quarter {1, 4};
+    const Valuable& quarter = Quarter;
     constexpr const Valuable& minus_1 = vo<-1>();
 
     const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
@@ -2478,38 +2478,16 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             !gcd.IsZero() && gcd != constants::one;
             gcd.gcd(*this))
         {
-			operator/=(gcd);
-		}
+            operator/=(gcd);
+        }
         return *this;
     }
 
     Valuable Valuable::RootSetDifference(const Valuable& v) const {
-		auto t = *this;
-		t.remove(v);
-		return t;
-	}
-
-    Valuable Valuable::RootsSymetricDifference(const Valuable& v) const {
-        auto setSymmetricDiff = *this * v;
-        setSymmetricDiff.remove(GCD(v));
-        return setSymmetricDiff;
+        auto t = *this;
+        t.remove(v);
+        return t;
     }
-
-    Valuable& Valuable::remove(const Valuable& v) {
-        for (auto gcd = GCD(v);
-            !gcd.IsZero() && gcd != constants::one;
-            gcd.gcd(*this))
-        {
-			operator/=(gcd);
-		}
-        return *this;
-    }
-
-    Valuable Valuable::RootSetDifference(const Valuable& v) const {
-		auto t = *this;
-		t.remove(v);
-		return t;
-	}
 
     Valuable Valuable::RootsSymetricDifference(const Valuable& v) const {
         auto setSymmetricDiff = *this * v;
