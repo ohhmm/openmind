@@ -61,9 +61,9 @@ namespace math {
     constexpr const Valuable& zero = vo<0>();
     constexpr const Valuable& one = vo<1>();
     constexpr const Valuable& two = vo<2>();
-    const Fraction Half{1_v, 2_v};
+    constexpr Fraction Half{1_v, 2_v};
     constexpr const Valuable& half = Half;
-    const Fraction Quarter {1, 4};
+    constexpr Fraction Quarter {1, 4};
     constexpr const Valuable& quarter = Quarter;
     constexpr const Valuable& minus_1 = vo<-1>();
 
@@ -450,7 +450,7 @@ namespace math {
             LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
 #endif
         }
-        
+
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(s.size() > 1){
             auto distinct = Distinct();
@@ -771,7 +771,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             else
                 ok = {};
         }
-		
+
         if (!ok)
         {
             Valuable sum = Sum{};
@@ -786,8 +786,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
 			};
             op_t o_sum, o_mul, o_div, o_exp;
-            op_t o_mod; 
-            op_t o_pSurd; 
+            op_t o_mod;
+            op_t o_pSurd;
             if (itIsOptimized) {
                 sum.MarkAsOptimized();
                 v.MarkAsOptimized();
@@ -2035,7 +2035,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             //Integral({});
         }
     }
-	
+
 	Valuable Valuable::Gamma() const {
         if (exp)
             return exp->Gamma();
@@ -2054,7 +2054,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
         return *this;
     }
-    
+
 	Valuable Valuable::Factorial() const {
         if (exp)
             return exp->Factorial();
@@ -2495,6 +2495,28 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return setSymmetricDiff;
     }
 
+    Valuable& Valuable::remove(const Valuable& v) {
+        for (auto gcd = GCD(v);
+            !gcd.IsZero() && gcd != constants::one;
+            gcd.gcd(*this))
+        {
+			operator/=(gcd);
+		}
+        return *this;
+    }
+
+    Valuable Valuable::RootSetDifference(const Valuable& v) const {
+		auto t = *this;
+		t.remove(v);
+		return t;
+	}
+
+    Valuable Valuable::RootsSymetricDifference(const Valuable& v) const {
+        auto setSymmetricDiff = *this * v;
+        setSymmetricDiff.remove(GCD(v));
+        return setSymmetricDiff;
+    }
+
     Valuable Valuable::Ifz(const Valuable& Then, const Valuable& Else) const
     {
         auto thisAndThen = LogicAnd(Then);
@@ -2671,7 +2693,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
         // simplified to formula:
         // (Y + X -sqrt(Y^2 + X^2 -2YX))/2
-        // expressed through Abs: 
+        // expressed through Abs:
         // (Y + X -sqrt((Y-X)^2))/2 = (X+Y-|X-Y|)/2
         return ((second + *this) - (second - *this).abs()) / constants::two;
     }
