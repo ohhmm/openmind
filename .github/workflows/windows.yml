@@ -58,3 +58,15 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 240 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test"  --output-on-failure
             #   --rerun-failed --output-on-failure
+    - name: Find Boost Config File
+      run: |
+        echo "Searching for BoostConfig.cmake or boost-config.cmake..."
+        $boostConfigFiles = Get-ChildItem -Recurse -Filter "BoostConfig.cmake" -or -Filter "boost-config.cmake"
+        if ($boostConfigFiles.Length -eq 0) {
+          echo "Boost config files not found"
+        } else {
+          echo "Found Boost config files at:"
+          foreach ($file in $boostConfigFiles) {
+            echo $file.DirectoryName
+          }
+        }
