@@ -215,7 +215,7 @@ elseif(OPENMIND_USE_CONAN)
 endif()
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-    PATHS /usr/local/boost_1_85_0
+    PATHS /usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
 )
