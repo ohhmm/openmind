@@ -215,7 +215,7 @@ elseif(OPENMIND_USE_CONAN)
 endif()
 
 # Set the Boost_DIR variable to the directory containing BoostConfig.cmake or boost-config.cmake
-set(Boost_DIR "/usr/lib/x86_64-linux-gnu/cmake/Boost-1.85.0" CACHE PATH "Boost package configuration file directory")
+set(Boost_DIR "/usr/local/lib/cmake/Boost-1.85.0" CACHE PATH "Boost package configuration file directory")
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
     PATHS ${Boost_DIR}
