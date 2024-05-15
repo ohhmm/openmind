@@ -27,6 +27,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
+        Boost_DIR: C:/local/boost_1_85_0
       run: cmake ${{github.workspace}} -DOPENMIND_USE_CONAN=OFF -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
     - name: Install prerequisites with conan
       working-directory: ${{github.workspace}}/build
