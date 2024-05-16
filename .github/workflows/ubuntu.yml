@@ -29,3 +29,5 @@ jobs:
     - name: Check
       working-directory: ${{github.workspace}}/build
       run: ctest . -j`nproc` -C Release -E "image_codec_test|ts|Polyfit_test" --rerun-failed --output-on-failure
+    - name: List Boost installation
+      run: ls -l /usr/local/lib/cmake/Boost-1.85.0
