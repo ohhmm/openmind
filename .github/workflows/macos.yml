@@ -6,13 +6,21 @@ jobs:
   build-in-macos:
 
     runs-on: macos-latest
-    
+
     steps:
     - uses: actions/checkout@v3
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
-    - name: Pre-Install Boost, LevelDB
-      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && ( brew install boost-python3 || brew install boost-python3 )
+    - name: Install Boost from source
+      run: |
+        brew install wget
+        wget -O boost_1_85_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.tar.gz
+        tar xzf boost_1_85_0.tar.gz
+        cd boost_1_85_0
+        ./bootstrap.sh --prefix=/usr/local
+        ./b2 install
+    - name: Install TBB
+      run: brew install tbb
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
