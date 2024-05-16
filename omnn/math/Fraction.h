@@ -11,21 +11,21 @@
 namespace omnn{
 namespace math {
 
-	class Integer;
+    class Integer;
 
-	class Fraction
-			: public DuoValDescendant<Fraction>
-	{
-		using base = DuoValDescendant<Fraction>;
+    class Fraction
+            : public DuoValDescendant<Fraction>
+    {
+        using base = DuoValDescendant<Fraction>;
 
-		mutable vars_cont_t vars;
+        mutable vars_cont_t vars;
 
-	protected:
+    protected:
         constexpr Valuable& numerator() { return _1; }
         constexpr Valuable& denominator() { return _2; }
-		std::ostream& print_sign(std::ostream& out) const override;
+        std::ostream& print_sign(std::ostream& out) const override;
 
-	public:
+    public:
         std::ostream& code(std::ostream& out) const override;
 
         constexpr const Valuable& numerator() const { return _1; }
@@ -35,54 +35,54 @@ namespace math {
         void updateNumerator(std::function<void(decltype(_1)&)>& f) { update1(f); }
 
         constexpr const Valuable& denominator() const { return _2; }
-		template<class T>
+        template<class T>
         void setDenominator(T&& n)
         { set2(std::forward<T>(n)); }
         void updateDenominator(std::function<void(decltype(_2)&)>& f) { update2(f); }
 
         Valuable operator -() const override;
-		Valuable& operator +=(const Valuable& v) override;
-		Valuable& operator *=(const Valuable& v) override;
+        Valuable& operator +=(const Valuable& v) override;
+        Valuable& operator *=(const Valuable& v) override;
         Valuable& operator *=(const Fraction& v);
         bool MultiplyIfSimplifiable(const Valuable& v) override;
         std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
         bool SumIfSimplifiable(const Valuable& v) override;
         std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
-		Valuable& operator /=(const Valuable& v) override;
-		Valuable& operator %=(const Valuable& v) override;
-		Valuable& operator^=(const Valuable&) override;
+        Valuable& operator /=(const Valuable& v) override;
+        Valuable& operator %=(const Valuable& v) override;
+        Valuable& operator^=(const Valuable&) override;
         Valuable& d(const Variable& x) override;
         bool operator==(const Fraction&) const;
         bool operator ==(const Valuable& v) const override;
-		bool operator <(const Valuable& v) const override;
+        bool operator <(const Valuable& v) const override;
         explicit operator double() const override;
         void solve(const Variable& va, solutions_t&) const override;
         Valuable::solutions_t Distinct() const override;
 
-		void optimize() override;
-		Valuable Sqrt() const override;
-		const vars_cont_t& getCommonVars() const override;
+        void optimize() override;
+        Valuable Sqrt() const override;
+        const vars_cont_t& getCommonVars() const override;
         vars_cont_t GetVaExps() const override;
         Valuable InCommonWith(const Valuable& v) const override;
-		bool IsComesBefore(const Valuable& v) const override;
-		bool IsFraction() const override { return true; }
-		bool IsSimpleFraction() const override { return IsSimple(); }
+        bool IsComesBefore(const Valuable& v) const override;
+        bool IsFraction() const override { return true; }
+        bool IsSimpleFraction() const override { return IsSimple(); }
         bool IsZero() const override { return _1.IsZero() && !_2.IsZero() && !_2.IsInfinity(); }
         YesNoMaybe IsMultival() const override { return _1.IsMultival() || _2.IsMultival(); }
         bool IsPolynomial(const Variable& x) const override {
             return _1.IsPolynomial(x) && _2.IsSimple();
         }
 
-		using base::base;
+        using base::base;
 
         Fraction(double d)
         : Fraction(boost::multiprecision::cpp_dec_float_100(d))
         { }
-        
-		Fraction(const Valuable& n)
-		: base(n, constants::one)
-		{
-		}
+
+        Fraction(const Valuable& n)
+        : base(n, constants::one)
+        {
+        }
 
         explicit
         Fraction(const Integer&);
@@ -111,6 +111,7 @@ namespace math {
 
         constexpr const Valuable& getDenominator() const { return _2; }
         constexpr const Valuable& getNumerator() const { return _1; }
+        // Removed duplicate destructor declaration
 
         explicit operator unsigned char() const override;
         explicit operator a_int() const override;
@@ -126,6 +127,7 @@ namespace math {
         Valuable& sq() override;
         Valuable Sign() const override;
         Valuable abs() const override;
+
     };
 
 }}

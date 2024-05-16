@@ -33,24 +33,24 @@ template <class Chld>
         using base::base;
         static const /*init*/ Chld GlobalObject;
 
-        bool IsConstant() const override { return true; }
-        bool IsSimple() const override { return true; }
-        bool IsPolynomial(const Variable&) const override { return true; }
+        constexpr bool IsConstant() const override { return true; }
+        constexpr bool IsSimple() const override { return true; }
+        constexpr bool IsPolynomial(const Variable&) const override { return true; }
         Valuable::YesNoMaybe IsMultival() const override { return Valuable::YesNoMaybe::No; }
 
         const Variable* FindVa() const override {
             return {};
         }
-        
+
         bool HasVa(const Variable& va) const override {
             return {};
         }
-        
+
         void CollectVa(std::set<Variable>& s) const override
         { }
         void CollectVaNames(Valuable::va_names_t& s) const override
         { }
-        
+
         bool eval(const Valuable::vars_cont_t&) override {
             return {};
         }
@@ -77,11 +77,11 @@ template <class Chld>
             }
             return is;
         }
-        
+
         bool operator==(const Valuable& v) const override {
             return this->OfSameType(v);
         }
-        
+
         Valuable& operator/=(const Valuable& v) override {
             if (v == *this)
                 return this->Become(1);
@@ -92,7 +92,7 @@ template <class Chld>
         const Valuable::vars_cont_t& getCommonVars() const override {
             return Valuable::emptyCommonVars();
         }
-        
+
         Valuable::vars_cont_t GetVaExps() const override { return {}; }
 
         a_int Complexity() const override { return 1; }
@@ -103,8 +103,8 @@ template <class Chld>
 
         Valuable InCommonWith(const Valuable& v) const override {
             return v.IsConstant() && this->OfSameType(v) ? v
-				: ((v.IsSimple() || v.IsVa()) ? constants::one
-				: v.InCommonWith(*this));
+                : ((v.IsSimple() || v.IsVa()) ? constants::one
+                : v.InCommonWith(*this));
         }
 
     };
@@ -124,7 +124,6 @@ template <class Chld>
 
 	template <class Chld>
     const/*init*/ constants::ConstNameAdder
-		Constant<Chld>::ConstNameToSerializationNamesMapAdder(Chld::SerializationName, Constant<Chld>::GlobalObject);
+        Constant<Chld>::ConstNameToSerializationNamesMapAdder(Chld::SerializationName, Constant<Chld>::GlobalObject);
 
 }} // namespace
-

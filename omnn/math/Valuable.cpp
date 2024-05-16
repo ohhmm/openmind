@@ -63,7 +63,7 @@ namespace math {
     constexpr const Valuable& two = vo<2>();
     const Fraction Half{1_v, 2_v};
     const Valuable& half = Half;
-    const Fraction Quarter {1, 4};
+    const Fraction Quarter{1_v, 4_v};
     const Valuable& quarter = Quarter;
     constexpr const Valuable& minus_1 = vo<-1>();
 
