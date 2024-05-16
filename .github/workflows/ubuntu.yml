@@ -13,9 +13,10 @@ jobs:
       run: |
         sudo apt update &&
         sudo apt install -y libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
-    - name: Install Boost
-      run: |
-        sudo apt-get install -y libboost1.85-dev libboost-filesystem1.85-dev libboost-thread1.85-dev libboost-system1.85-dev libboost-date-time1.85-dev libboost-serialization1.85-dev libboost-regex1.85-dev
+    # Boost is now built from source, installation from package manager is not required
+    # - name: Install Boost
+    #   run: |
+    #     sudo apt-get install -y libboost1.85-dev libboost-filesystem1.85-dev libboost-thread1.85-dev libboost-system1.85-dev libboost-date-time1.85-dev libboost-serialization1.85-dev libboost-regex1.85-dev
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
