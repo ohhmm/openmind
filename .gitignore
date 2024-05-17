@@ -24,3 +24,17 @@ CMakeLists.txt.user.*
 /enc_temp_folder/
 
 *.cpp.gch
+
+# Build artifacts
+*.ninja_deps
+*.ninja_log
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+bin/
+boost-prefix/
+boost_1_85_0.tar.gz
+boost_1_85_0/
+*.tar.gz*
+/Debug/
