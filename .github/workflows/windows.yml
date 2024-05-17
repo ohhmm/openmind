@@ -70,3 +70,13 @@ jobs:
             echo $file.DirectoryName
           }
         }
+    - name: Verify Boost Installation
+      run: |
+        echo "Verifying Boost installation at ${{env.BOOST_ROOT}}..."
+        if (Test-Path "${{env.BOOST_ROOT}}") {
+          echo "Boost directory exists. Listing contents:"
+          Get-ChildItem -Path "${{env.BOOST_ROOT}}" -Recurse
+        } else {
+          echo "Boost directory does not exist at ${{env.BOOST_ROOT}}"
+          exit 1
+        }
