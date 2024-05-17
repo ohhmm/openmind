@@ -218,11 +218,10 @@ message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
 # Ensure that CMake can find the Boost library installed in the system paths
 set(Boost_DIR "" CACHE PATH "Boost package configuration file directory")
 
-# Set the Boost_DIR variable to the directory containing BoostConfig.cmake or boost-config.cmake
-set(Boost_DIR "/usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0" CACHE PATH "Boost package configuration file directory")
+# Comment out the hardcoded Boost_DIR path to allow CMake to find Boost in the default system paths
+# set(Boost_DIR "/usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0" CACHE PATH "Boost package configuration file directory")
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-    PATHS ${Boost_DIR}
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
 )
