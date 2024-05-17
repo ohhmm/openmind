@@ -217,14 +217,13 @@ message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
 #   endif()
 # endif()
 
-# Set Boost_DIR to the directory containing BoostConfig.cmake or boost-config.cmake for Boost 1.85.0
-set(Boost_DIR "/usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0" CACHE PATH "Boost package configuration file directory")
-
+# Use BOOST_ROOT if set in the environment, otherwise use the hardcoded Boost_DIR
+set(Boost_DIR $ENV{BOOST_ROOT} CACHE PATH "Boost package configuration file directory")
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-    PATHS ${Boost_DIR}
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
 )
+
 if(Boost_FOUND)
     set(Boost_ADDITIONAL_VERSIONS ${OPENMIND_PREFERRED_BOOST_VERSION})
 endif()
