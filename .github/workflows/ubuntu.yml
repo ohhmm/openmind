@@ -31,6 +31,8 @@ jobs:
       run: |
         export BOOST_ROOT=/usr/local/boost_1_85_0
         cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -G "Ninja Multi-Config"
+      env:
+        BOOST_ROOT: /usr/local/boost_1_85_0
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: |
