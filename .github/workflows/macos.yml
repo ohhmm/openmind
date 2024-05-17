@@ -26,20 +26,31 @@ jobs:
         cd boost_1_85_0
         ./bootstrap.sh --prefix=/usr/local/boost_1_85_0
         ./b2 install
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
     - name: Install TBB
       run: brew install tbb
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
+      run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
+        cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu` --config Release
+      run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
+        cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu` --config Release
     - name: Reconfigure to detect newly installed prerequisites
       working-directory: ${{github.workspace}}/build
-      run: cmake .
+      run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
+        cmake .
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
+      run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
+        cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 120 -C Release -j `sysctl -n hw.ncpu` -E image_codec_test\|ts\|Polyfit_test
+      run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
+        ctest --timeout 120 -C Release -j `sysctl -n hw.ncpu` -E image_codec_test\|ts\|Polyfit_test
