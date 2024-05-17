@@ -107,21 +107,23 @@ if(NOT EXISTS INTEL_COMPILER_PATH)
 		set(CMAKE_CXX_COMPILER ${INTEL_COMPILER_PATH} CACHE STRING "Intel compiler path" FORCE)
 	endif()
 endif()
-if(NOT IntelSYCL_FOUND)
-	if(NOT DEFINED OPENMIND_USE_OPENCL_INTEL_SYCL)
-		option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
-		find_package(IntelSYCL)
-		if(IntelSYCL_FOUND)
-			set(OPENMIND_USE_OPENCL_INTEL_SYCL ON CACHE BOOL "OpenCL GPU calculations" FORCE)
-		endif()
-	endif()
-	if(IntelSYCL_FOUND)
-		message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
-		message("SYCL_FLAGS: ${SYCL_FLAGS}")
-		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
-	endif()
-endif()
-find_optional_pkg(IntelDPCPP)
+
+# Commenting out IntelSYCL and IntelDPCPP as they are not found in the CI environment
+# if(NOT IntelSYCL_FOUND)
+#     if(NOT DEFINED OPENMIND_USE_OPENCL_INTEL_SYCL)
+#         option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
+#         find_package(IntelSYCL)
+#         if(IntelSYCL_FOUND)
+#             set(OPENMIND_USE_OPENCL_INTEL_SYCL ON CACHE BOOL "OpenCL GPU calculations" FORCE)
+#         endif()
+#     endif()
+#     if(IntelSYCL_FOUND)
+#         message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
+#         message("SYCL_FLAGS: ${SYCL_FLAGS}")
+#         message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
+#     endif()
+# endif()
+# find_optional_pkg(IntelDPCPP)
 
 find_package(CUDAToolkit)
 if(NOT OpenCL_FOUND)
@@ -215,13 +217,11 @@ message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
 #   endif()
 # endif()
 
-# Ensure that CMake can find the Boost library installed in the system paths
-set(Boost_DIR "" CACHE PATH "Boost package configuration file directory")
-
-# Comment out the hardcoded Boost_DIR path to allow CMake to find Boost in the default system paths
-# set(Boost_DIR "/usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0" CACHE PATH "Boost package configuration file directory")
+# Set Boost_DIR to the directory containing BoostConfig.cmake or boost-config.cmake for Boost 1.85.0
+set(Boost_DIR "/usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0" CACHE PATH "Boost package configuration file directory")
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
+    PATHS ${Boost_DIR}
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
 )
