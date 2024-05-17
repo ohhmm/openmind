@@ -37,4 +37,4 @@ boost-prefix/
 boost_1_85_0.tar.gz
 boost_1_85_0/
 *.tar.gz*
-/Debug/
+**/Debug/
