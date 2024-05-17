@@ -222,7 +222,7 @@ if(DEFINED ENV{BOOST_ROOT})
   message(STATUS "Using BOOST_ROOT: $ENV{BOOST_ROOT}")
   set(Boost_DIR "$ENV{BOOST_ROOT}/lib/cmake/Boost-${OPENMIND_PREFERRED_BOOST_VERSION}")
 else()
-  message(FATAL_ERROR "BOOST_ROOT environment variable is not set. Please set BOOST_ROOT to the Boost installation directory.")
+  message(FATAL_ERROR "BOOST_ROOT environment variable is not set or is set incorrectly. Current value: '$ENV{BOOST_ROOT}'. Please set BOOST_ROOT to the Boost installation directory.")
 endif()
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
