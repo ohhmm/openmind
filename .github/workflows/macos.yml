@@ -17,7 +17,7 @@ jobs:
         wget -O boost_1_85_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.tar.gz
         tar xzf boost_1_85_0.tar.gz
         cd boost_1_85_0
-        ./bootstrap.sh --prefix=/usr/local
+        ./bootstrap.sh --prefix=/usr/local/boost_1_85_0
         ./b2 install
     - name: Install TBB
       run: brew install tbb
