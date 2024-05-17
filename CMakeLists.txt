@@ -219,6 +219,7 @@ message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
 
 # Use BOOST_ROOT if set, otherwise use a non-existent default path to force an error if BOOST_ROOT is not set
 if(DEFINED ENV{BOOST_ROOT})
+  message(STATUS "Using BOOST_ROOT: $ENV{BOOST_ROOT}")
   set(Boost_DIR "$ENV{BOOST_ROOT}/lib/cmake/Boost-${OPENMIND_PREFERRED_BOOST_VERSION}")
 else()
   message(FATAL_ERROR "BOOST_ROOT environment variable is not set. Please set BOOST_ROOT to the Boost installation directory.")
