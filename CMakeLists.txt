@@ -197,22 +197,26 @@ endif()
 set(OPENMIND_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 message("OPENMIND_INCLUDE_DIR ${OPENMIND_INCLUDE_DIR}")
 
-if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-	option(OPENMIND_USE_CONAN "Use conan dependencies" ON)
-	if(OPENMIND_USE_CONAN)
-		message("Using conanbuildinfo.cmake")
-		include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-		conan_basic_setup(TARGETS)
-	endif()
-elseif(OPENMIND_USE_CONAN)
-	if(EXISTS ${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
-		message("conanbuildinfo.cmake created in source directory")
-		include(${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
-		conan_basic_setup(TARGETS)
-	else()
-		message("conanbuildinfo.cmake not found. Try building Install__Conan target.")
-	endif()
-endif()
+# Comment out Conan usage as we are building Boost from source
+# if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+#   option(OPENMIND_USE_CONAN "Use conan dependencies" ON)
+#   if(OPENMIND_USE_CONAN)
+#       message("Using conanbuildinfo.cmake")
+#       include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+#       conan_basic_setup(TARGETS)
+#   endif()
+# elseif(OPENMIND_USE_CONAN)
+#   if(EXISTS ${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
+#       message("conanbuildinfo.cmake created in source directory")
+#       include(${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
+#       conan_basic_setup(TARGETS)
+#   else()
+#       message("conanbuildinfo.cmake not found. Try building Install__Conan target.")
+#   endif()
+# endif()
+
+# Ensure that CMake can find the Boost library installed in the system paths
+set(Boost_DIR "" CACHE PATH "Boost package configuration file directory")
 
 # Set the Boost_DIR variable to the directory containing BoostConfig.cmake or boost-config.cmake
 set(Boost_DIR "/usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0" CACHE PATH "Boost package configuration file directory")
@@ -221,7 +225,6 @@ find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
     PATHS ${Boost_DIR}
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
-    NO_DEFAULT_PATH
 )
 if(Boost_FOUND)
     set(Boost_ADDITIONAL_VERSIONS ${OPENMIND_PREFERRED_BOOST_VERSION})
