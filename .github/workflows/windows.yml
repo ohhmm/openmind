@@ -15,32 +15,18 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
-    - name: Use Conan
+    - name: Install Boost from source
       run: |
-          pip install conan && conan profile detect
-
-          echo "[requires]" > ${{github.workspace}}/conanfile.txt
-          echo boost/1.85.0 >> ${{github.workspace}}/conanfile.txt
-          echo leveldb/1.23 >> ${{github.workspace}}/conanfile.txt
-
-          echo "[generators]" >> ${{github.workspace}}/conanfile.txt
-          echo CMakeDeps >> ${{github.workspace}}/conanfile.txt
-          echo CMakeToolchain >> ${{github.workspace}}/conanfile.txt
+        choco install wget
+        wget -O boost_1_85_0.zip https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_1_85_0.zip
+        Expand-Archive boost_1_85_0.zip -DestinationPath C:/local
+        cd C:/local/boost_1_85_0
+        .\bootstrap.bat
+        .\b2 headers
+        .\b2 --build-type=complete --architecture=x64 --toolset=msvc install
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: cmake ${{github.workspace}} -DOPENMIND_USE_CONAN=OFF -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
-    - name: Install prerequisites with conan
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build --target Install__Conan --config Release
-    - name: Reconfigure to detect newly installed prerequisites
-      working-directory: ${{github.workspace}}/build
-      run: cmake . -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/conan_toolchain.cmake
-    - name: Install prerequisites
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
-    - name: Reconfigure to detect newly installed prerequisites
-      working-directory: ${{github.workspace}}/build
-      run: cmake .
     - name: Build Debug
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --config Debug
@@ -50,26 +36,12 @@ jobs:
     - name: make check Debug
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 240 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test" --output-on-failure
-            #   --rerun-failed --output-on-failure
     - name: Build Release
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --config Release
     - name: make check Release
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 240 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test"  --output-on-failure
-            #   --rerun-failed --output-on-failure
-    - name: Find Boost Config File
-      run: |
-        echo "Searching for BoostConfig.cmake or boost-config.cmake..."
-        $boostConfigFiles = Get-ChildItem -Recurse -Filter "BoostConfig.cmake" -or -Filter "boost-config.cmake"
-        if ($boostConfigFiles.Length -eq 0) {
-          echo "Boost config files not found"
-        } else {
-          echo "Found Boost config files at:"
-          foreach ($file in $boostConfigFiles) {
-            echo $file.DirectoryName
-          }
-        }
     - name: Verify Boost Installation
       run: |
         echo "Verifying Boost installation at ${{env.BOOST_ROOT}}..."
