@@ -24,17 +24,25 @@ jobs:
         cd boost_1_85_0
         ./bootstrap.sh --prefix=/usr/local/boost_1_85_0
         sudo ./b2 install
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
         cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -DBOOST_ROOT=${{env.BOOST_ROOT}} -G "Ninja Multi-Config"
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `nproc` --config Release
+      run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
+        cmake --build ${{github.workspace}}/build -j `nproc` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest . -j`nproc` -C Release -E "image_codec_test|ts|Polyfit_test" --rerun-failed --output-on-failure
+      run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
+        ctest . -j`nproc` -C Release -E "image_codec_test|ts|Polyfit_test" --rerun-failed --output-on-failure
     - name: List Boost installation
-      run: ls -l /usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0
+      run: |
+        echo "BOOST_ROOT=/usr/local/boost_1_85_0" >> $GITHUB_ENV
+        ls -l /usr/local/boost_1_85_0/lib/cmake/Boost-1.85.0
