@@ -121,12 +121,11 @@ if(NOT IntelSYCL_FOUND)
 		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
 	endif()
 endif()
-find_optional_pkg(IntelDPCPP)
-
-find_package(CUDAToolkit)
-if(NOT OpenCL_FOUND)
-	find_package(OpenCL)
-endif()
+find_optional_pkg(
+	IntelDPCPP
+	CUDAToolkit
+	OpenCL
+)
 
 if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
@@ -137,7 +136,7 @@ endif()
 
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
 if(OPENMIND_USE_OPENCL)
-	find_package(OpenGL)
+	find_optional_pkg(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
 endif()
 
