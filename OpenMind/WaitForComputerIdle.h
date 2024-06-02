@@ -18,16 +18,16 @@ class WaitForComputerIdle :
     void ReachNone();
     void ReachIdleWork();
     void DoNothing();
-    bool Archivable(); // FIXME : Should not be archivable
+    bool Archivable() override; // FIXME : Should not be archivable
 
 public:
     WaitForComputerIdle( GoalGenerator::ptr_t parent );
 
-    bool        Reach();
+    bool        Reach() override;
     void		GetResult(void*) override;
 	void*		GetResult() override;
 
-    string_t	Name();
+    string_t	Name() override;
 };
 
 #include "IdleTimeGoalGenerator.h"
