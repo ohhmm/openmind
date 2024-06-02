@@ -735,46 +735,7 @@ namespace
     
     Valuable Sum::InCommonWith(const Valuable& v) const
     {
-        if(v.IsSum())
-        {
-            auto& s = v.as<Sum>();
-            auto vars = Vars();
-            if (vars.size() == 1 && vars == s.Vars()) {
-                auto& v = vars.begin()->as<Variable>();
-                auto solutions = Solutions(v);
-                auto vSolutions = s.Solutions(v);
-
-                // get common solutions
-                decltype(solutions) commonSolutions;
-                std::set_intersection(solutions.begin(), solutions.end(),
-                    vSolutions.begin(), vSolutions.end(),
-                    std::inserter(commonSolutions, commonSolutions.begin()));
-
-                if (commonSolutions.size() > 0) {
-                    Product p({});
-                    for (auto& solution : commonSolutions) {
-                        p.Add(v - solution);
-                    }
-                    return p;
-                }
-                else {
-                    IMPLEMENT
-                }
-            }else{
-                return GCD(v);
-            }
-        }else{
-            auto c = v;
-            auto b = GetConstCont().begin();
-            auto e = GetConstCont().end();
-            if(b != e)
-            {
-                auto it = b;
-                while(c != constants::one && ++it != e)
-                    c = it->InCommonWith(c);
-            }
-            return c;
-        }
+        return GCD(v);
     }
 
     max_exp_t Sum::findMaxVaExp() {
@@ -1302,6 +1263,8 @@ namespace
                 }
             }
         }
+
+        // TODO: https://math.stackexchange.com/a/1854191/118612
 
         return PrincipalSurd(*this, 2);
     }
