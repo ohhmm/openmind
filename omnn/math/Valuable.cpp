@@ -41,6 +41,7 @@
 #ifdef __APPLE__
 #define BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED
 #endif
+#include <boost/log/trivial.hpp>
 #include <boost/stacktrace.hpp>
 
 using namespace ::omnn::rt;
@@ -472,7 +473,7 @@ namespace omnn::math {
 
         auto it = s.begin();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-		std::cout << " Merging [ ";
+        std::cout << " Merging [ ";
         for(auto& item: s){
             std::cout << item << ' ';
         }
@@ -2451,9 +2452,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     bool Valuable::IsMonic() const
     {
-        std::set<Variable> vars;
-        CollectVa(vars);
-        return vars.size() == 1;
+        IMPLEMENT
     }
 
     Valuable::vars_cont_t Valuable::GetVaExps() const

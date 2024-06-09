@@ -67,22 +67,39 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
         }
     }
 
+    // Remove debug output statements
+    // std::cerr << "Input oX: ";
+    // for (const auto& val : oX) std::cerr << val << " ";
+    // std::cerr << std::endl;
+
+    // std::cerr << "Input oY: ";
+    // for (const auto& val : oY) std::cerr << val << " ";
+    // std::cerr << std::endl;
+
+    // std::cerr << "oXMatrix: " << oXMatrix << std::endl;
+    // std::cerr << "oYMatrix: " << oYMatrix << std::endl;
     // transpose X matrix
     matrix<T> oXtMatrix( trans(oXMatrix) );
+    // std::cerr << "oXtMatrix: " << oXtMatrix << std::endl;
+
     // multiply transposed X matrix with X matrix
     matrix<T> oXtXMatrix( prec_prod(oXtMatrix, oXMatrix) );
+    // std::cerr << "oXtXMatrix: " << oXtXMatrix << std::endl;
+
     // multiply transposed X matrix with Y matrix
     matrix<T> oXtYMatrix( prec_prod(oXtMatrix, oYMatrix) );
-
+// std::cerr << "oXtYMatrix: " << oXtYMatrix << std::endl;
     // lu decomposition
     permutation_matrix<int> pert(oXtXMatrix.size1());
     auto singular = lu_factorize(oXtXMatrix, pert);
-    // must be singular
-    BOOST_ASSERT( singular == 0 );
-
+    if (singular != 0) {
+        // std::cerr << "Matrix is singular and cannot be inverted. oXtXMatrix: " << oXtXMatrix << std::endl;
+        throw std::runtime_error("Matrix is singular and cannot be inverted");
+    }
     // backsubstitution
     lu_substitute(oXtXMatrix, pert, oXtYMatrix);
 
+    // std::cerr << "Backsubstitution result: oXtYMatrix: " << oXtYMatrix << std::endl;
     // copy the result to coeff
     return std::vector<T>( oXtYMatrix.data().begin(), oXtYMatrix.data().end() );
 }

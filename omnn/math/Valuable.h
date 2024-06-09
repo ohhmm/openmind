@@ -58,6 +58,7 @@ namespace omnn {
 namespace math {
 class Valuable;
 class Variable;
+class VarHost;
 class Integer;
 class Exponentiation;
 class Fraction;
@@ -595,6 +596,7 @@ public:
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
     Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
+    void ParseExpression(const std::string_view& s, const va_names_t& vaNames, bool itIsOptimized);
 
 	Valuable operator!() const;
     explicit operator bool() const;
@@ -834,6 +836,8 @@ public:
 
 protected:
     friend class boost::serialization::access;
+
+    void CleanupExp();
 
     View view = View::Flat;
 
