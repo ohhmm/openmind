@@ -75,7 +75,7 @@ namespace math {
         }
         virtual iterator Had(iterator it)
         {
-            IMPLEMENT
+            throw std::logic_error("Had method not implemented");
         }
 
         bool VarSurdFactor(const iterator it) const {
@@ -344,7 +344,7 @@ namespace math {
             moved = std::move(v);
             this->Delete(it); // original v may be [sub]object of *it
             it = this->Add(std::move(moved), it);
-            Valuable::optimized = {};
+            this->optimized = {};
         }
 
         virtual void Update(iterator& it, const Valuable& v)
@@ -352,7 +352,7 @@ namespace math {
             auto copy = v;
             this->Delete(it);
             it = this->Add(std::move(copy), it);
-            Valuable::optimized = {};
+            this->optimized = {};
         }
 
         virtual void Delete(iterator& it) {
@@ -360,7 +360,7 @@ namespace math {
             auto& c = GetCont();
             auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             c.erase(it++);
-            Valuable::optimized &= c.size() > 1;
+            this->optimized &= c.size() > 1;
             if (findNewMaxVaExp)
                 Valuable::maxVaExp = this->Ptr()->findMaxVaExp(); // TODO: consider heap structure
         }
@@ -370,7 +370,7 @@ namespace math {
             Valuable::hash ^= it->Hash();
             auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             auto& c = GetCont();
-            Valuable::optimized &= c.size() > 2;
+            this->optimized &= c.size() > 2;
             auto extracted = std::move(c.extract(it).value());
             if (findNewMaxVaExp)
                 Valuable::maxVaExp = this->Ptr()->findMaxVaExp();
@@ -406,6 +406,15 @@ namespace math {
                         return ChildT::GetBinaryOperationLambdaTemplate()(lambda1(params), lambda2(params));
                     };
                 });
+        }
+
+    private:
+        friend class boost::serialization::access;
+
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version) {
+            ar & boost::serialization::base_object<ValuableDescendantContract<ChildT>>(*this);
+            ar & GetCont();
         }
     };
 }}
