@@ -18,6 +18,10 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/preprocessor.hpp>
 #include <boost/rational.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/serialization.hpp>
 
 #define _NUM2STR(x) #x
 #define NUM2STR(x) _NUM2STR(x)
@@ -59,7 +63,7 @@ struct hash<omnn::math::Valuable> {
 
 namespace omnn{
 namespace math {
-	
+
 namespace constants {
 extern const Valuable& e;
 extern const Valuable& i;
@@ -134,6 +138,10 @@ protected:
     static constexpr a_int const& a_int_z = a_int_cz;
     static constexpr max_exp_t const& max_exp_z = max_exp_cz;
     max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
+
+    bool optimized = false;
+
+    void MarkAsOptimized();
 
 public:
 
@@ -253,7 +261,7 @@ public:
     explicit Valuable(Valuable* v);
     explicit Valuable(const encapsulated_instance& e);
     virtual std::type_index Type() const;
-    const Valuable Link() const; // TODO : handle simulteneous values changes 
+    const Valuable Link() const; // TODO : handle simulteneous values changes
 
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(Valuable&& v);
@@ -555,7 +563,7 @@ public:
     Valuable IfEq(const Valuable& v, const Valuable& Then,
                   const Valuable& Else) const; /// returns an expression which equals to @Then when this expression
                                                /// equals to @v param and @Else otherwise
-    
+
 	/// <summary>
 	/// bool is 0 or 1
 	/// </summary>
@@ -658,13 +666,24 @@ public:
 
     [[nodiscard]] virtual bool is_optimized() const;
 
-protected:
-    View view = View::Flat;
-    bool optimized = false;
-    void MarkAsOptimized();
+private:
+    friend class boost::serialization::access;
 
-    //   TODO : std::shared_ptr<std::vector<Valuable>> cachedValues;
+    View view = View::Flat;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        ar & exp;
+        ar & hash;
+        ar & sz;
+        ar & maxVaExp;
+        ar & view;
+        ar & optimized;
+    }
+
 };
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(Valuable)
 
 template<class T>
 const T& Valuable::as() const {
