@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include <boost/gil/extension/io/targa.hpp>
+#include <boost/log/trivial.hpp>
 
 #include <omnn/rt/tasq.h>
 
@@ -56,13 +57,17 @@ DECL_VARS(x, y, z);
 
 BOOST_AUTO_TEST_CASE(ImageCodec_test)
 {
+    BOOST_LOG_TRIVIAL(info) << "Starting ImageCodec_test";
+
     rgba8_image_t src;
+    BOOST_LOG_TRIVIAL(info) << "Before reading image";
     read_image(TEST_SRC_DIR "g.tga", src, targa_tag());
     auto& v = view(src);
     write_view(TEST_BIN_DIR "was.tga", v, targa_tag());
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
     std::list<Variable> formulaParamSequence = { y, x };
+    BOOST_LOG_TRIVIAL(info) << "Extrapolator b initialized";
 
     auto get_color_formula = [&](auto tag) {
         auto extrapolator = Extrapolator(rows, cols);
@@ -150,26 +155,34 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test)
     auto bfo = tasksInParallel.PeekNextResult();
 
     // inbound data deduce
+    BOOST_LOG_TRIVIAL(info) << "Before deducing inbound data";
     decltype(src) dst(src.dimensions());
     auto dv = view(dst);
     for (auto i = rows; i--;) { // raw
         for (auto j = cols; j--;) { // column
             auto& d = dv(i, j);
             auto& s = v(i,j);
+            BOOST_LOG_TRIVIAL(info) << "Deducing alpha for pixel (" << i << ", " << j << ")";
             get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
+            BOOST_LOG_TRIVIAL(info) << "Deducing red for pixel (" << i << ", " << j << ")";
             get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
+            BOOST_LOG_TRIVIAL(info) << "Deducing green for pixel (" << i << ", " << j << ")";
             get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
+            BOOST_LOG_TRIVIAL(info) << "Deducing blue for pixel (" << i << ", " << j << ")";
             get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
 
+            BOOST_LOG_TRIVIAL(info) << "Verifying pixel (" << i << ", " << j << ")";
             BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
             BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
             BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
             BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
         }
     }
+    BOOST_LOG_TRIVIAL(info) << "Inbound data deduced successfully.";
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
 
     // outband data deduce
+    BOOST_LOG_TRIVIAL(info) << "Before deducing outband data";
     afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     afo.SetMin(0); afo.SetMax(255);
     rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
@@ -187,14 +200,20 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test)
         for (auto j = cols; --j>=-d;) { // column
             auto c=j+d;
             auto r = i+d;
-            auto& d = dv(r, c);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+            BOOST_LOG_TRIVIAL(info) << "Deducing alpha for pixel (" << r << ", " << c << ")";
+            get_color(dv(r, c),alpha_t()) = static_cast<unsigned char>(afo(i,j));
+            BOOST_LOG_TRIVIAL(info) << "Deducing red for pixel (" << r << ", " << c << ")";
+            get_color(dv(r, c),red_t()) = static_cast<unsigned char>(rfo(i,j));
+            BOOST_LOG_TRIVIAL(info) << "Deducing green for pixel (" << r << ", " << c << ")";
+            get_color(dv(r, c),green_t()) = static_cast<unsigned char>(gfo(i,j));
+            BOOST_LOG_TRIVIAL(info) << "Deducing blue for pixel (" << r << ", " << c << ")";
+            get_color(dv(r, c),blue_t()) = static_cast<unsigned char>(bfo(i,j));
         }
     }
+    BOOST_LOG_TRIVIAL(info) << "Outband data deduced successfully.";
     write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
+
+    BOOST_LOG_TRIVIAL(info) << "Completed ImageCodec_test";
 }
 
 #endif

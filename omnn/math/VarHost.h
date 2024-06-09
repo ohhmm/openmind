@@ -24,6 +24,8 @@
 namespace omnn {
 namespace math {
 
+class Valuable; // Forward declaration
+using va_names_t = std::map<std::string_view, Variable>; // Type alias
     template<class T>
     class TypedVarHost;
 
@@ -115,6 +117,18 @@ namespace math {
         void LogNotZeroBypassScopes(const Valuable&);
         bool TestRootConsistencyWithNonZeroLog(const Variable& variable, const Valuable& value) const;
         bool TestRootConsistencyWithNonZeroLog(const Valuable::vars_cont_t&) const;
+
+        using valuable_ptr = std::shared_ptr<Valuable>;
+        std::vector<valuable_ptr> hostedValuables; // Collection of Valuable instances
+
+        va_names_t VaNames() const {
+            va_names_t names;
+            // Assuming VarHost contains a collection of Valuable instances
+            for (const auto& valuable : hostedValuables) {
+                valuable->CollectVaNames(names);
+            }
+            return names;
+        }
     };
 
     /**

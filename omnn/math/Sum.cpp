@@ -33,6 +33,7 @@
 #include <stack>
 #include <thread>
 #include <type_traits>
+#include <boost/log/trivial.hpp>
 
 
 namespace omnn::math {
@@ -297,11 +298,17 @@ namespace
     
     void Sum::optimize()
     {
-        if (is_optimized() || !optimizations)
-            return;
+        BOOST_LOG_TRIVIAL(info) << "Starting optimization for Sum: " << *this;
 
-        if (isOptimizing)
+        if (is_optimized() || !optimizations) {
+            BOOST_LOG_TRIVIAL(info) << "Sum is already optimized or optimizations are disabled.";
             return;
+        }
+
+        if (isOptimizing) {
+            BOOST_LOG_TRIVIAL(info) << "Sum is currently being optimized.";
+            return;
+        }
 
         ANTILOOP(Sum)
 
@@ -443,7 +450,7 @@ namespace
                     else if(it2->Same(mc))
                     {
                         c = constants::zero;
-                        Delete(it2);
+                        Delete(it);
                         up();
                     }
                     else if ((inc = it2->InCommonWith(c)) != constants::one
@@ -502,12 +509,12 @@ namespace
                 else
                     ++it;
             }
-            
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-//            if (w!=*this) {
-//                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
-//            }
-#endif
+
+    #if !defined(NDEBUG) && !defined(NOOMDEBUG)
+    //            if (w!=*this) {
+    //                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
+    //            }
+    #endif
         } while (w != *this);
 
         if (IsSum()) {
