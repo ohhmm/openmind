@@ -78,7 +78,7 @@ namespace omnn::math {
             Valuable::hash ^= _1.Hash();
             Valuable::optimized = {};
         }
-        
+
         const Valuable& get2() const { return _2; }
         template<class T>
         void set2(T&& p) {
@@ -99,7 +99,7 @@ namespace omnn::math {
             Valuable::hash ^= _2.Hash();
             Valuable::optimized = {};
         }
-        
+
         using base::base;
 
         template <class T1, class T2>
@@ -165,16 +165,16 @@ namespace omnn::math {
         max_exp_t getMaxVaExp()  const override {
             return Chld::getMaxVaExp(_1, _2);
         }
-        
+
         bool IsSimple() const override {
             return IsMultival() == Valuable::YesNoMaybe::No
                 && _1.IsSimple() && _2.IsSimple();
         }
-        
+
         Valuable::YesNoMaybe IsMultival() const override {
             return _1.IsMultival() || _2.IsMultival();
         }
-        
+
         void Values(const std::function<bool(const Valuable&)>& f) const override
         {
             if (f) {
@@ -184,14 +184,14 @@ namespace omnn::math {
                 }
 
                 // TODO: multival caching (inspect all optimized and optimization transisions)
-                
-                
+
+
                 Valuable::solutions_t vals, thisValues;
                 _1.Values([&](auto& thisVal){
                     thisValues.insert(thisVal);
                     return true;
                 });
-                
+
                 _2.Values([&](auto&vVal){
                     for(auto& tv:thisValues){
                         Valuable v = Chld{tv,vVal};
@@ -200,17 +200,17 @@ namespace omnn::math {
                     }
                     return true;
                 });
-                
+
                 for(auto& v:vals)
                     f(v);
             }
         }
-        
+
         a_int Complexity() const override {
             return _1.Complexity() + _2.Complexity();
         }
 
-        
+
         Valuable::solutions_t Distinct() const override {
             Valuable::solutions_t branches;
             for (auto&& f : _1.Distinct()) {
@@ -222,4 +222,3 @@ namespace omnn::math {
         }
     };
 }
-

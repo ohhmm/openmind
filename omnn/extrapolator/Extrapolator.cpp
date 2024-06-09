@@ -5,6 +5,7 @@
 #include "Extrapolator.h"
 #include "math/Integer.h"
 #include "math/Sum.h"
+#include <boost/log/trivial.hpp>
 
 using namespace omnn;
 using namespace math;
@@ -14,20 +15,20 @@ auto det_fast(extrapolator_base_matrix matrix)
 {
     using T = extrapolator_base_matrix::value_type;
     ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
-    
+
     auto isSingular = ublas::lu_factorize(matrix, pivots);
     if (isSingular)
         return T(0);
-    
+
     T det = 1;
     for (std::size_t i = 0; i < pivots.size(); ++i)
     {
         if (pivots(i) != i)
             det *= static_cast<double>(-1);
-        
+
         det *= matrix(i, i);
     }
-    
+
     return det;
 }
 
@@ -38,19 +39,25 @@ bool Extrapolator::Consistent(const extrapolator_base_matrix& augment)
 
 Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const Variable& val) const
 {
+    BOOST_LOG_TRIVIAL(info) << "Entering Factors method";
+    BOOST_LOG_TRIVIAL(info) << "row: " << row << ", col: " << col << ", val: " << val;
     Product e;
     auto szy = size1();
     auto szx = size2();
+    BOOST_LOG_TRIVIAL(info) << "szy: " << szy << ", szx: " << szx;
     auto optsWas = Valuable::optimizations;
     Valuable::optimizations = {};
     for (auto y = 0; y < szy; ++y) {
         for (auto x = 0; x < szx; ++x) {
+            BOOST_LOG_TRIVIAL(info) << "y: " << y << ", x: " << x << ", value: " << (*this)(y,x);
             e.Add(((row-y)^2)
                   +((col-x)^2)
                   +((val-(*this)(y,x))^2));
+            BOOST_LOG_TRIVIAL(info) << "Product e after addition: " << e;
         }
     }
     Valuable::optimizations = optsWas;
+    BOOST_LOG_TRIVIAL(info) << "Exiting Factors method with Product e: " << e;
     return Valuable(std::move(e));
 }
 

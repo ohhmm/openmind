@@ -16,7 +16,7 @@ namespace math {
     class ValuableCollectionDescendantContract : public ValuableDescendantContract<ChildT>
     {
         using base = ValuableDescendantContract<ChildT>;
-        
+
     protected:
         using cont = ContT;
         virtual cont& GetCont() = 0;
@@ -31,7 +31,7 @@ namespace math {
             }
             return is;
         }
-        
+
     public:
         using iterator = typename cont::iterator;
         using const_reference = typename ContT::const_reference;
@@ -43,7 +43,7 @@ namespace math {
         ValuableCollectionDescendantContract& operator=(const ValuableCollectionDescendantContract&)=default;
 
         virtual const cont& GetConstCont() const = 0;
-        
+
         constexpr auto begin() noexcept { return GetCont().begin(); }
         constexpr auto end() noexcept { return GetCont().end(); }
         constexpr auto begin() const noexcept { return GetConstCont().begin(); }
@@ -59,7 +59,7 @@ namespace math {
         {
             return GetConstCont().size();
         }
-        
+
         static iterator getit(iterator it){
             return it;
         }
@@ -72,9 +72,9 @@ namespace math {
         }
         virtual iterator Had(iterator it)
         {
-            IMPLEMENT
+            throw std::logic_error("Had method not implemented");
         }
-        
+
         bool VarSurdFactor(const iterator it) const {
             return VarSurdFactor(*it);
         }
@@ -82,7 +82,7 @@ namespace math {
         bool HasSurdFactor() const {
             return std::any_of(begin(), end(), ChildT::VarSurdFactor);
 		}
-        
+
         virtual const iterator Add(const Valuable& item, const iterator hint)
         {
             Valuable::hash ^= item.Hash();
@@ -132,14 +132,14 @@ namespace math {
                     break;
             return i;
         }
-        
+
         a_int Complexity() const override {
             a_int c = 0;
             for(auto& m : GetConstCont())
                 c += m.Complexity();
             return c;
         }
-        
+
         bool HasValueType(const std::type_info& type) const
         {
             for(const auto& a : GetConstCont())
@@ -147,7 +147,7 @@ namespace math {
                     return true;
             return false;
         }
-        
+
         template<class T>
         bool HasValueType() const
         {
@@ -158,7 +158,7 @@ namespace math {
                     return m.template Is<T>();
                 });
         }
-        
+
         bool Has(const Valuable& v) const
         {
             auto& c = GetConstCont();
@@ -173,7 +173,7 @@ namespace math {
 #endif
             return has;
         }
-        
+
         const Variable* FindVa() const override
         {
             for (auto& i : GetConstCont())
@@ -184,7 +184,7 @@ namespace math {
             }
             return nullptr;
         }
-        
+
         bool HasVa(const Variable& va) const override
         {
             for (auto& i : GetConstCont())
@@ -192,7 +192,7 @@ namespace math {
                     return true;
             return false;
         }
-        
+
         void CollectVa(std::set<Variable>& s) const override {
             for (auto& i : GetConstCont())
                 i.CollectVa(s);
@@ -201,7 +201,7 @@ namespace math {
             for (auto& i : GetConstCont())
                 i.CollectVaNames(s);
         }
-        
+
         Valuable Each(const std::function<Valuable(const Valuable&)>& m) const {
             ChildT c;
             for(auto& i:GetConstCont())
@@ -230,7 +230,7 @@ namespace math {
             }
             return is;
         }
-        
+
         void Values(const std::function<bool(const Valuable&)>& fun) const override {
             auto sharedValuesProjection = std::vector<std::vector<Valuable>>();
             for (auto& m : GetConstCont()) {
@@ -246,7 +246,7 @@ namespace math {
                             return true;
                         });
                     } else {
-                        m.Values([&](const Valuable& value) { 
+                        m.Values([&](const Valuable& value) {
                             sharedValuesProjection.emplace_back().emplace_back(value.Link());
                             return true;
                         });
@@ -303,7 +303,7 @@ namespace math {
             }
             return evaluated;
         }
-        
+
         void Eval(const Variable& va, const Valuable& v) override
         {
             Valuable::SetView(Valuable::View::Calc);
@@ -326,7 +326,7 @@ namespace math {
                     }
                 }
             } while (updated);
-            
+
 //            if(!FindVa())
 //                this->optimize();
         }
@@ -337,7 +337,7 @@ namespace math {
             moved = std::move(v);
             this->Delete(it); // original v may be [sub]object of *it
             it = this->Add(std::move(moved), it);
-            Valuable::optimized = {};
+            this->optimized = {};
         }
 
         virtual void Update(iterator& it, const Valuable& v)
@@ -345,7 +345,7 @@ namespace math {
             auto copy = v;
             this->Delete(it);
             it = this->Add(std::move(copy), it);
-            Valuable::optimized = {};
+            this->optimized = {};
         }
 
         virtual void Delete(iterator& it) {
@@ -353,7 +353,7 @@ namespace math {
             auto& c = GetCont();
             auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             c.erase(it++);
-            Valuable::optimized &= c.size() > 1;
+            this->optimized &= c.size() > 1;
             if (findNewMaxVaExp)
                 Valuable::maxVaExp = base::Ptr()->findMaxVaExp(); // TODO: consider heap structure
         }
@@ -363,7 +363,7 @@ namespace math {
             Valuable::hash ^= it->Hash();
             auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             auto& c = GetCont();
-            Valuable::optimized &= c.size() > 2;
+            this->optimized &= c.size() > 2;
             auto extracted = std::move(c.extract(it).value());
             if (findNewMaxVaExp)
                 Valuable::maxVaExp = base::Ptr()->findMaxVaExp();
@@ -378,6 +378,15 @@ namespace math {
         virtual void Update(iterator& it) {
             auto e = this->Extract(it++);
             it = Add(e, it);
+        }
+
+    private:
+        friend class boost::serialization::access;
+
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version) {
+            ar & boost::serialization::base_object<ValuableDescendantContract<ChildT>>(*this);
+            ar & GetCont();
         }
     };
 }}
