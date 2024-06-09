@@ -367,7 +367,7 @@ namespace omnn::math {
         }
         else
         {
-            switch(view)
+            switch(GetView())
             {
                 case View::Solving:
 
@@ -464,7 +464,7 @@ namespace omnn::math {
                     break;
                 }
                 default: {
-                    LOG_AND_IMPLEMENT(*this << " mode is " << static_cast<int>(view));
+                    LOG_AND_IMPLEMENT(*this << " mode is " << static_cast<int>(GetView()));
                 }
             }
             if (IsEquation()) {

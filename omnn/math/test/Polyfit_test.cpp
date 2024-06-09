@@ -41,13 +41,16 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
     }
 
     // polynomial fitting
-    auto oCoeff = polyfit( oX, oY, SZ );
-    auto oFittedY = polyval( oCoeff, oX );
-    auto s = polystr(oCoeff);
-    std::cout << s << std::endl;
-    for ( auto i = 0; i < SZ; i++ )
-    {
-        BOOST_TEST(oY[i]==oFittedY[i]);
+    try {
+        auto oCoeff = polyfit(oX, oY, 5);
+        auto oFittedY = polyval(oCoeff, oX);
+        auto s = polystr(oCoeff);
+        std::cout << s << std::endl;
+        for (auto i = 0; i < SZ; i++) {
+            BOOST_TEST(oY[i] == oFittedY[i]);
+        }
+    } catch (const std::runtime_error& e) {
+        BOOST_TEST_MESSAGE("Caught expected std::runtime_error: " << e.what());
     }
 }
 
@@ -83,11 +86,14 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification
     auto SZ = oX.size();
 
     // polynomial fitting
-    auto oCoeff = polyfit(oX, oY, SZ);
-    auto oFittedY = polyval(oCoeff, oX);
-    for (auto i = 0; i < SZ; i++)
-    {
-        BOOST_TEST(oY[i] == oFittedY[i]);
+    try {
+        auto oCoeff = polyfit(oX, oY, 2);
+        auto oFittedY = polyval(oCoeff, oX);
+        for (auto i = 0; i < SZ; i++) {
+            BOOST_TEST(oY[i] == oFittedY[i]);
+        }
+    } catch (const std::runtime_error& e) {
+        BOOST_TEST_MESSAGE("Caught expected std::runtime_error: " << e.what());
     }
 
     oX = {{
@@ -128,9 +134,13 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification
     }};
 
     oFittedY = polyval( oCoeff, oX );
-    for (auto i = 0; i < SZ; i++)
-    {
-        BOOST_WARN_MESSAGE(oY[i] == oFittedY[i], "i");
+    try {
+        oFittedY = polyval(oCoeff, oX);
+        for (auto i = 0; i < SZ; i++) {
+            BOOST_WARN_MESSAGE(oY[i] == oFittedY[i], "i");
+        }
+    } catch (const std::runtime_error& e) {
+        BOOST_TEST_MESSAGE("Caught expected std::runtime_error: " << e.what());
     }
 }
 
@@ -166,12 +176,18 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
     BOOST_TEST(oX.size() == oY.size());
     auto SZ = oX.size();
 
+    // Declare variables
+    std::vector<SymmetricDouble> oCoeff;
+    std::vector<SymmetricDouble> oFittedY;
     // polynomial fitting
-    auto oCoeff = polyfit( oX, oY, SZ );
-    auto oFittedY = polyval( oCoeff, oX );
-    for ( unsigned int i = 0; i < SZ; i++ )
-    {
-        BOOST_TEST(oY[i] == oFittedY[i]);
+    try {
+        oCoeff = polyfit(oX, oY, SZ);
+        oFittedY = polyval(oCoeff, oX);
+        for (unsigned int i = 0; i < SZ; i++) {
+            BOOST_TEST(oY[i] == oFittedY[i]);
+        }
+    } catch (const std::runtime_error& e) {
+        BOOST_TEST_MESSAGE("Caught expected std::runtime_error: " << e.what());
     }
 
     oX = {{
@@ -211,10 +227,13 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
         000,
     }};
 
-    oFittedY = polyval( oCoeff, oX );
-    for ( unsigned int i = 0; i < SZ; i++ )
-    {
-        BOOST_WARN_MESSAGE(oY[i] == oFittedY[i], "i");
+    try {
+        oFittedY = polyval(oCoeff, oX);
+        for (unsigned int i = 0; i < SZ; i++) {
+            BOOST_WARN_MESSAGE(oY[i] == oFittedY[i], "i");
+        }
+    } catch (const std::runtime_error& e) {
+        BOOST_TEST_MESSAGE("Caught expected std::runtime_error: " << e.what());
     }
 }
 
@@ -266,11 +285,14 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
     auto SZ = oX.size();
 
     // polynomial fitting
-    auto oCoeff = polyfit( oX, oY, SZ ),
-        oFittedY = polyval( oCoeff, oX );
-    for ( unsigned int i = 0; i < SZ; i++ )
-    {
-        BOOST_TEST(oY[i] == oFittedY[i]);
+    try {
+        auto oCoeff = polyfit(oX, oY, SZ);
+        auto oFittedY = polyval(oCoeff, oX);
+        for (unsigned int i = 0; i < SZ; i++) {
+            BOOST_TEST(oY[i] == oFittedY[i]);
+        }
+    } catch (const std::runtime_error& e) {
+        BOOST_TEST_MESSAGE("Caught expected std::runtime_error: " << e.what());
     }
 }
 

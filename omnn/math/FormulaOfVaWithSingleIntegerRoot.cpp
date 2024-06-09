@@ -10,6 +10,7 @@
 #include <deque>
 #include <list>
 #include <ranges>
+#include <boost/log/trivial.hpp>
 
 
 namespace omnn {
@@ -35,6 +36,7 @@ namespace math {
         if (g<3)
         {
             solutions_t solutions;
+            BOOST_LOG_TRIVIAL(info) << "Before solving sum";
             sum.solve(getVa(), solutions, coefficients, g);
 
             if(solutions.size() == 1)
@@ -111,7 +113,7 @@ namespace math {
         auto knowNoZ = !(min.IsMInfinity() || max.IsInfinity()) ? fx(min)*fx(max) > 0 : 0; // strictly saying this may mean >1
         if (sum.size() > 2) {
             auto dx = _;
-
+            BOOST_LOG_TRIVIAL(info) << "Before differentiating dx";
             while (dx.as<Sum>().size()>2) {
                 dx.d(getVa());
             }
@@ -163,7 +165,6 @@ namespace math {
 
                 bool found = _.IsZero();
                 if (found) {
-//                    std::cout << "found " << i << std::endl;
                     singleIntegerRoot = i;
                 }
                 else
@@ -224,7 +225,9 @@ namespace math {
         if(mode!=Strict && haveMin)
             return closest;
 
+        BOOST_LOG_TRIVIAL(info) << "Before calling finder";
         if (finder(&i)) {
+            BOOST_LOG_TRIVIAL(info) << "Finder succeeded, singleIntegerRoot: " << singleIntegerRoot;
             return singleIntegerRoot;
         } else if (!min.IsMInfinity() && !max.IsInfinity()){
             for (auto i = min; i <= max; ++i) {
@@ -242,7 +245,7 @@ namespace math {
         // If no solution found and not in strict mode, return closest
         return mode != Strict ? closest : Valuable();
     }
-    
+
     std::ostream& FormulaOfVaWithSingleIntegerRoot::print(std::ostream& out) const
     {
         return out << "f(" << getVa() << ") = solve(" << getEx() << ")(x,y)";
