@@ -6,6 +6,7 @@
 
 #include "math/Integer.h"
 #include "math/Sum.h"
+#include <boost/log/trivial.hpp>
 
 using namespace omnn;
 using namespace math;
@@ -39,15 +40,19 @@ bool Extrapolator::Consistent(const extrapolator_base_matrix& augment)
 
 Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const Variable& val) const
 {
+    BOOST_LOG_TRIVIAL(info) << "Entering Factors method";
+    BOOST_LOG_TRIVIAL(info) << "row: " << row << ", col: " << col << ", val: " << val;
     Product e;
     auto szy = size1();
     auto szx = size2();
     Valuable::OptimizeOff off;
     for (auto y = 0; y < szy; ++y) {
         for (auto x = 0; x < szx; ++x) {
+            BOOST_LOG_TRIVIAL(info) << "y: " << y << ", x: " << x << ", value: " << (*this)(y,x);
             e.Add(((row-y)^2)
                   +((col-x)^2)
                   +((val-(*this)(y,x))^2));
+            BOOST_LOG_TRIVIAL(info) << "Product e after addition: " << e;
         }
     }
     return e;

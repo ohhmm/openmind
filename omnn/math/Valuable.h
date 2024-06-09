@@ -31,12 +31,10 @@
 #define LINE_NUMBER_STR NUM2STR(__LINE__)
 
 #define IMPLEMENT {                                                                                                    \
-        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                                   \
-        throw;                                                                                                         \
+        throw std::logic_error(__FILE__ ":" LINE_NUMBER_STR " not implemented");                                       \
     }
-#define LOG_AND_IMPLEMENT(Param) { \
-    ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
-        throw;                                                                                                          \
+#define LOG_AND_IMPLEMENT(Param) {                                                                                     \
+        throw std::logic_error(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
     }
 
 
@@ -50,6 +48,7 @@ class Fraction;
 class PrincipalSurd;
 class Sum;
 size_t hash_value(const omnn::math::Valuable&);
+void OmitOuterBrackets(std::string_view& s);
 } // namespace math
 } // namespace omnn
 
@@ -471,7 +470,7 @@ public:
     bool Test(const Variable& va, const Valuable&) const;
 
     // FIXME : waiting for virtual template method https://github.com/ohhmm/llvm-project/pull/1
-    //virtual template <typename T> 
+    //virtual template <typename T>
     //const T* Divisor() const {
     //    if (exp)
     //        return exp->Divisor<T>();
@@ -532,6 +531,7 @@ public:
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
     Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
+    void ParseExpression(const std::string_view& s, const va_names_t& vaNames, bool itIsOptimized);
 
 	Valuable operator!() const;
     explicit operator bool() const;
@@ -767,6 +767,7 @@ public:
     [[nodiscard]] Valuable Optimized() const;
     [[nodiscard]] Valuable Optimized(View) const;
 
+
 protected:
     friend class boost::serialization::access;
 
@@ -842,9 +843,7 @@ struct hash<T> {
 
 } // namespace std
 
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
-const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
-//constexpr
-::omnn::math::Valuable operator"" _v(unsigned long long v);
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
-::omnn::math::Valuable operator"" _v(long double v);
+extern ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l);
+extern const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l);
+extern ::omnn::math::Valuable operator"" _v(unsigned long long v);
+extern ::omnn::math::Valuable operator"" _v(long double v);
