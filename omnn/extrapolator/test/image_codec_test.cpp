@@ -31,22 +31,25 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     BOOST_LOG_TRIVIAL(info) << "Starting ImageCodec_test";
 
     rgba8_image_t src;
+    BOOST_LOG_TRIVIAL(info) << "Before reading image";
     read_image(TEST_SRC_DIR "g.tga", src, targa_tag());
     BOOST_LOG_TRIVIAL(info) << "Image read successfully";
 
+    BOOST_LOG_TRIVIAL(info) << "Before writing image";
     write_view(TEST_BIN_DIR "was.tga", view(src), targa_tag());
     BOOST_LOG_TRIVIAL(info) << "Image written successfully";
 
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
+    BOOST_LOG_TRIVIAL(info) << "Before initializing extrapolators";
     Extrapolator a(rows, cols);
     Extrapolator r(rows, cols);
     Extrapolator g(rows, cols);
     Extrapolator b(rows, cols);
-
     BOOST_LOG_TRIVIAL(info) << "Extrapolators initialized";
 
     auto& v = view(src);
+    BOOST_LOG_TRIVIAL(info) << "Before populating extrapolators";
     for (auto i = rows; i--;) { // raw
         for (auto j = cols; j--;) { // column
             auto px = v(i,j);
@@ -60,15 +63,19 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
 
     Variable x, y, z;
     std::list<Variable> formulaParamSequence = { y, x };
+    BOOST_LOG_TRIVIAL(info) << "Before optimizing fa";
     auto fa = a.Factors(y, x, z);
     fa.optimize();
     BOOST_LOG_TRIVIAL(info) << "fa optimized: " << fa;
+    BOOST_LOG_TRIVIAL(info) << "Before optimizing fr";
     auto fr = r.Factors(y, x, z);
     fr.optimize();
     BOOST_LOG_TRIVIAL(info) << "fr optimized: " << fr;
+    BOOST_LOG_TRIVIAL(info) << "Before optimizing fg";
     auto fg = g.Factors(y, x, z);
     fg.optimize();
     BOOST_LOG_TRIVIAL(info) << "fg optimized: " << fg;
+    BOOST_LOG_TRIVIAL(info) << "Before optimizing fb";
     auto fb = b.Factors(y, x, z);
     fb.optimize();
     BOOST_LOG_TRIVIAL(info) << "fb optimized: " << fb;
@@ -81,6 +88,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         bfo(z, fb, &formulaParamSequence);
 
     // inbound data deduce
+    BOOST_LOG_TRIVIAL(info) << "Before deducing inbound data";
     decltype(src) dst(src.dimensions());
     auto dv = view(dst);
     for (auto i = rows; i--;) { // raw
@@ -98,9 +106,11 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
             BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
         }
     }
+    BOOST_LOG_TRIVIAL(info) << "Inbound data deduced";
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
 
     // outband data deduce
+    BOOST_LOG_TRIVIAL(info) << "Before deducing outband data";
     afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     afo.SetMin(0); afo.SetMax(255);
     rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
@@ -125,6 +135,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
             get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
         }
     }
+    BOOST_LOG_TRIVIAL(info) << "Outband data deduced";
     write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
 
     BOOST_LOG_TRIVIAL(info) << "Completed ImageCodec_test";
