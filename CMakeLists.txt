@@ -168,6 +168,8 @@ set(_BOOST_USED_COMPONENTS
 	filesystem
 	iostreams
 	locale
+    log
+    log_setup
 	python
 	serialization
 	system

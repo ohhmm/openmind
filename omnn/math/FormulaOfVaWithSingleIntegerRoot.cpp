@@ -10,6 +10,7 @@
 #include <deque>
 #include <list>
 #include <ranges>
+#include <boost/log/trivial.hpp>
 
 
 namespace omnn {
@@ -20,8 +21,9 @@ namespace math {
     {
         Valuable singleIntegerRoot;
         bool haveMin = false;
+        BOOST_LOG_TRIVIAL(info) << "Before optimizing _";
         _.optimize();
-
+        BOOST_LOG_TRIVIAL(info) << "After optimizing _";
         if (!_.IsSum()) {
             // Handle non-sum case by converting to sum form
             _ = Sum{_};
@@ -35,7 +37,9 @@ namespace math {
         if (g<3)
         {
             solutions_t solutions;
+            BOOST_LOG_TRIVIAL(info) << "Before solving sum";
             sum.solve(getVa(), solutions, coefficients, g);
+            BOOST_LOG_TRIVIAL(info) << "After solving sum, solutions size: " << solutions.size();
 
             if(solutions.size() == 1)
             {
@@ -108,13 +112,16 @@ namespace math {
             return t;
         };
 
-        auto knowNoZ = !(min.IsMInfinity() || max.IsInfinity()) ? fx(min)*fx(max) > 0 : 0; // strictly saying this may mean >1
+        BOOST_LOG_TRIVIAL(info) << "Before evaluating fx(min) and fx(max)";
+        auto knowNoZ = !(min.IsMInfinity() || max.IsInfinity()) ? fx(min)*fx(max) > 0 : 0;
+        BOOST_LOG_TRIVIAL(info) << "After evaluating fx(min) and fx(max), knowNoZ: " << knowNoZ;
         if (sum.size() > 2) {
             auto dx = _;
-
+            BOOST_LOG_TRIVIAL(info) << "Before differentiating dx";
             while (dx.as<Sum>().size()>2) {
                 dx.d(getVa());
             }
+            BOOST_LOG_TRIVIAL(info) << "After differentiating dx";
 
             auto solution = dx.Solutions(getVa());
             if (solution.size() != 1) {
@@ -142,6 +149,9 @@ namespace math {
             closest_y = fx(closest);
         }
 
+
+        Valuable closest;
+        auto closestY = fx(closest);
         auto finder = [&](const Integer* i) -> bool
         {
             auto c = _;
@@ -163,7 +173,6 @@ namespace math {
 
                 bool found = _.IsZero();
                 if (found) {
-//                    std::cout << "found " << i << std::endl;
                     singleIntegerRoot = i;
                 }
                 else
@@ -224,7 +233,9 @@ namespace math {
         if(mode!=Strict && haveMin)
             return closest;
 
+        BOOST_LOG_TRIVIAL(info) << "Before calling finder";
         if (finder(&i)) {
+            BOOST_LOG_TRIVIAL(info) << "Finder succeeded, singleIntegerRoot: " << singleIntegerRoot;
             return singleIntegerRoot;
         } else if (!min.IsMInfinity() && !max.IsInfinity()){
             for (auto i = min; i <= max; ++i) {
@@ -242,7 +253,7 @@ namespace math {
         // If no solution found and not in strict mode, return closest
         return mode != Strict ? closest : Valuable();
     }
-    
+
     std::ostream& FormulaOfVaWithSingleIntegerRoot::print(std::ostream& out) const
     {
         return out << "f(" << getVa() << ") = solve(" << getEx() << ")(x,y)";

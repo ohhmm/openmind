@@ -41,6 +41,7 @@
 #ifndef __APPLE__
 #include <boost/stacktrace.hpp>
 #endif
+#include <boost/log/trivial.hpp>
 
 using namespace ::omnn::rt;
 using namespace ::std::string_view_literals;
@@ -463,7 +464,7 @@ namespace omnn::math {
 
         auto it = s.begin();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-		std::cout << " Merging [ ";
+        std::cout << " Merging [ ";
         for(auto& item: s){
             std::cout << item << ' ';
         }
@@ -715,10 +716,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (!same) {
             auto str2set = [this](auto& str) {
                 StateProxyComparator strCmpPassthrough(this);
-                auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(str, '+');
+                auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetOmitOuterBraces(str, '+');
                 std::unordered_multiset<decltype(sumItemsSubstrings), hash_tokens_collection_t> sets;
                 for (auto& s : sumItemsSubstrings) {
-                    sets.insert(strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(s, '*'));
+                    sets.insert(strCmpPassthrough.TokenizeStringViewToMultisetOmitOuterBraces(s, '*'));
                 }
                 return sets;
             };
@@ -2435,9 +2436,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     bool Valuable::IsMonic() const
     {
-        std::set<Variable> vars;
-        CollectVa(vars);
-        return vars.size() == 1;
+        IMPLEMENT
     }
 
     Valuable::vars_cont_t Valuable::GetVaExps() const

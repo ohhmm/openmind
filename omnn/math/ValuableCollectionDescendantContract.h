@@ -376,7 +376,7 @@ namespace omnn::math {
             moved = std::move(v);
             this->Delete(it); // original v may be [sub]object of *it
             it = this->Add(std::move(moved), it);
-            Valuable::optimized = {};
+            this->optimized = {};
         }
 
         virtual void Update(iterator& it, const Valuable& v)
@@ -384,7 +384,7 @@ namespace omnn::math {
             auto copy = v;
             this->Delete(it);
             it = this->Add(std::move(copy), it);
-            Valuable::optimized = {};
+            this->optimized = {};
         }
 
         virtual void Delete(iterator& it) {
@@ -392,7 +392,7 @@ namespace omnn::math {
             auto& c = GetCont();
             auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             c.erase(it++);
-            Valuable::optimized &= c.size() > 1;
+            this->optimized &= c.size() > 1;
             if (findNewMaxVaExp)
                 Valuable::maxVaExp = this->Ptr()->findMaxVaExp(); // TODO: consider heap structure
         }
@@ -416,7 +416,7 @@ namespace omnn::math {
             Valuable::hash ^= it->Hash();
             auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             auto& c = GetCont();
-            Valuable::optimized &= c.size() > 2;
+            this->optimized &= c.size() > 2;
             auto extracted = std::move(c.extract(it).value());
             if (findNewMaxVaExp)
                 Valuable::maxVaExp = this->Ptr()->findMaxVaExp();
