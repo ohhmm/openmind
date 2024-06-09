@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification
 
     // polynomial fitting
     try {
-        auto oCoeff = polyfit(oX, oY, 3);
+        auto oCoeff = polyfit(oX, oY, 2);
         auto oFittedY = polyval(oCoeff, oX);
         for (auto i = 0; i < SZ; i++) {
             BOOST_TEST(oY[i] == oFittedY[i]);
