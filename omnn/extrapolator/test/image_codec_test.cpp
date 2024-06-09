@@ -8,6 +8,7 @@
 #include <sstream>
 #include <boost/gil/extension/io/targa.hpp>
 #include "Extrapolator.h"
+#include <boost/log/trivial.hpp>
 
 
 using namespace omnn::math;
@@ -27,16 +28,23 @@ std::string l(const omnn::math::Valuable& v)
 
 BOOST_AUTO_TEST_CASE(ImageCodec_test)
 {
+    BOOST_LOG_TRIVIAL(info) << "Starting ImageCodec_test";
+
     rgba8_image_t src;
     read_image(TEST_SRC_DIR "g.tga", src, targa_tag());
+    BOOST_LOG_TRIVIAL(info) << "Image read successfully";
+
     write_view(TEST_BIN_DIR "was.tga", view(src), targa_tag());
-    
+    BOOST_LOG_TRIVIAL(info) << "Image written successfully";
+
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
     Extrapolator a(rows, cols);
     Extrapolator r(rows, cols);
     Extrapolator g(rows, cols);
     Extrapolator b(rows, cols);
+
+    BOOST_LOG_TRIVIAL(info) << "Extrapolators initialized";
 
     auto& v = view(src);
     for (auto i = rows; i--;) { // raw
@@ -48,25 +56,22 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
             b(i,j) = get_color(px,blue_t());
         }
     }
+    BOOST_LOG_TRIVIAL(info) << "Extrapolators populated";
 
     Variable x, y, z;
     std::list<Variable> formulaParamSequence = { y, x };
     auto fa = a.Factors(y, x, z);
-//    fa.SetView(Valuable::View::Flat);
     fa.optimize();
-    std::cout << fa << std::endl;
+    BOOST_LOG_TRIVIAL(info) << "fa optimized: " << fa;
     auto fr = r.Factors(y, x, z);
-//    fr.SetView(Valuable::View::Flat);
     fr.optimize();
-    std::cout << fr << std::endl;
+    BOOST_LOG_TRIVIAL(info) << "fr optimized: " << fr;
     auto fg = g.Factors(y, x, z);
-//    fg.SetView(Valuable::View::Flat);
     fg.optimize();
-    std::cout << fg << std::endl;
+    BOOST_LOG_TRIVIAL(info) << "fg optimized: " << fg;
     auto fb = b.Factors(y, x, z);
-//    fb.SetView(Valuable::View::Flat);
     fb.optimize();
-    std::cout << fb << std::endl;
+    BOOST_LOG_TRIVIAL(info) << "fb optimized: " << fb;
 
     // Unification
     FormulaOfVaWithSingleIntegerRoot
@@ -94,7 +99,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         }
     }
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
-    
+
     // outband data deduce
     afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     afo.SetMin(0); afo.SetMax(255);
@@ -104,7 +109,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     gfo.SetMin(0); gfo.SetMax(255);
     bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     bfo.SetMin(0); bfo.SetMax(255);
-    
+
     const auto d = 2; // 5
     cols+=d;rows+=d;
     dst = decltype(src)(rows+d, cols+d);
@@ -121,5 +126,6 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         }
     }
     write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
-}
 
+    BOOST_LOG_TRIVIAL(info) << "Completed ImageCodec_test";
+}
