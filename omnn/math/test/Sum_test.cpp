@@ -1,3 +1,4 @@
+#include "Pub.h"
 #define BOOST_TEST_MODULE Sum test
 #include <boost/test/unit_test.hpp>
 #include "Sum.h"
@@ -408,14 +409,9 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     
 }
 
-class Pub : public Valuable
-{
-    using base = Valuable;
-public:
-    auto e() { return getInst(); }
-    void so(bool o) { optimized = o; }
-    using base::get;
-};
+#include "Pub.h"
+
+// Other includes and code in Sum_test.cpp
 
 BOOST_AUTO_TEST_CASE(Become_tests)
 {

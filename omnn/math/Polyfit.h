@@ -65,12 +65,28 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
         }
     }
 
+    std::cerr << "Input oX: ";
+    for (const auto& val : oX) std::cerr << val << " ";
+    std::cerr << std::endl;
+
+    std::cerr << "Input oY: ";
+    for (const auto& val : oY) std::cerr << val << " ";
+    std::cerr << std::endl;
+
+    std::cerr << "oXMatrix: " << oXMatrix << std::endl;
+    std::cerr << "oYMatrix: " << oYMatrix << std::endl;
+
     // transpose X matrix
     matrix<T> oXtMatrix( trans(oXMatrix) );
+    std::cerr << "oXtMatrix: " << oXtMatrix << std::endl;
+
     // multiply transposed X matrix with X matrix
     matrix<T> oXtXMatrix( prec_prod(oXtMatrix, oXMatrix) );
+    std::cerr << "oXtXMatrix: " << oXtXMatrix << std::endl;
+
     // multiply transposed X matrix with Y matrix
     matrix<T> oXtYMatrix( prec_prod(oXtMatrix, oYMatrix) );
+    std::cerr << "oXtYMatrix: " << oXtYMatrix << std::endl;
 
     // lu decomposition
     permutation_matrix<int> pert(oXtXMatrix.size1());
