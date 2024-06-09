@@ -76,11 +76,14 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     permutation_matrix<int> pert(oXtXMatrix.size1());
     auto singular = lu_factorize(oXtXMatrix, pert);
     if (singular != 0) {
+        std::cerr << "Matrix is singular and cannot be inverted. oXtXMatrix: " << oXtXMatrix << std::endl;
         throw std::runtime_error("Matrix is singular and cannot be inverted");
     }
 
     // backsubstitution
     lu_substitute(oXtXMatrix, pert, oXtYMatrix);
+
+    std::cerr << "Backsubstitution result: oXtYMatrix: " << oXtYMatrix << std::endl;
 
     // copy the result to coeff
     return std::vector<T>( oXtYMatrix.data().begin(), oXtYMatrix.data().end() );
