@@ -42,7 +42,7 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
 
     if ( oX.size() != oY.size() )
         throw std::invalid_argument( "X and Y vector sizes do not match" );
-    
+
     // more intuitive this way
     nDegree++;
 
