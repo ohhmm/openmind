@@ -40,6 +40,7 @@
 #ifndef __APPLE__
 #include <boost/stacktrace.hpp>
 #endif
+#include <boost/log/trivial.hpp>
 
 using namespace std::string_view_literals;
 
@@ -363,7 +364,7 @@ namespace omnn::math {
 
         auto it = s.begin();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-		std::cout << " Merging [ ";
+        std::cout << " Merging [ ";
         for(auto& item: s){
             std::cout << item << ' ';
         }
@@ -559,7 +560,7 @@ struct HashStrOmitOuterBrackets
 struct HashStrIgnoringAnyParentheses
 {
     [[nodiscard]] size_t operator()(const std::string_view& str) const {
-        size_t hash = 0; 
+        size_t hash = 0;
         for (auto ch : str) {
             if (ch != '(' && ch != ')')
                 hash ^= ch;
@@ -600,14 +601,18 @@ private:
             }
             // Tokenize at delimiter if not within braces
             else if (c == delimiter && braceStack.empty()) {
-                tokens.emplace(str.data() + start, i - start);
+                std::string_view item(str.data() + start, i - start);
+                (void)OmitOuterBrackets(item);
+                tokens.emplace(item);
                 start = i + 1;
             }
         }
 
         // Add the last token after the final delimiter if it's not at the end of the string
         if (start < str.size()) {
-            tokens.emplace(str.data() + start, str.size() - start);
+            std::string_view item(str.data() + start, str.size() - start);
+            (void)OmitOuterBrackets(item);
+            tokens.emplace(item);
         }
 
         return tokens;
@@ -648,6 +653,11 @@ public:
     [[nodiscard]]
     auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
         return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
+    }
+
+    [[nodiscard]] auto TokenizeStringViewToMultisetOmitOuterBraces(std::string_view str, char delimiter) const {
+        (void)OmitOuterBrackets(str);
+        return TokenizeStringViewToMultisetKeepBraces(str, delimiter);
     }
 };
 thread_local const Valuable* StateProxyComparator::state = {};
@@ -707,10 +717,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (!same) {
             auto str2set = [this](auto& str) {
                 StateProxyComparator strCmpPassthrough(this);
-                auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(str, '+');
+                auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetOmitOuterBraces(str, '+');
                 std::unordered_multiset<decltype(sumItemsSubstrings), hash_tokens_collection_t> sets;
                 for (auto& s : sumItemsSubstrings) {
-                    sets.insert(strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(s, '*'));
+                    sets.insert(strCmpPassthrough.TokenizeStringViewToMultisetOmitOuterBraces(s, '*'));
                 }
                 return sets;
             };
@@ -730,9 +740,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 std::cout << "SerializedStrEqual detected deserialization issue: " << _ << " != " << s << std::endl
                           << _1 << "\n !=\n"
                           << _2 << std::endl;
-                ::omnn::rt::OptimizationLoopDetect<Valuable> antilooper(*this);                                                        
-                if (antilooper.isLoopDetected()) {                                                                                 
-                    std::cout << "Loop of optimizing detected in " << *this << std::endl;                                          
+                ::omnn::rt::OptimizationLoopDetect<Valuable> antilooper(*this);
+                if (antilooper.isLoopDetected()) {
+                    std::cout << "Loop of optimizing detected in " << *this << std::endl;
                 } else {
                     Valuable v(s, getVaHost(), true);
                     same = operator==(v);
@@ -2310,9 +2320,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     bool Valuable::IsMonic() const
     {
-        std::set<Variable> vars;
-        CollectVa(vars);
-        return vars.size() == 1;
+        IMPLEMENT
     }
 
     Valuable::vars_cont_t Valuable::GetVaExps() const

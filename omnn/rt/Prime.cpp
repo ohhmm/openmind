@@ -32,8 +32,10 @@ static_assert(!"Specify primes table");
 namespace {
 #ifdef _rt_SRC_DIR
 boost::filesystem::path PrimeListDir = _rt_SRC_DIR;
-auto PrimeListPath = PrimeListDir / PRIME_LIST_FILENAME;
+#else
+boost::filesystem::path PrimeListDir = ".";
 #endif
+auto PrimeListPath = PrimeListDir / PRIME_LIST_FILENAME;
 } // namespace
 
 namespace omnn::rt {
