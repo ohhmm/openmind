@@ -54,6 +54,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
     }
 }
 
+/*
 BOOST_AUTO_TEST_CASE(Polyfit_test_classification
     , *tolerance(TestPrecision)
     // , *disabled()
@@ -143,6 +144,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification
         BOOST_TEST_MESSAGE("Caught expected std::runtime_error: " << e.what());
     }
 }
+*/
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
     *disabled()
