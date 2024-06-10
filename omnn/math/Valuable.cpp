@@ -385,7 +385,8 @@ Valuable& Valuable::Become(Valuable&& i)
 } // namespace math
 } // namespace omnn
 
-// Removed duplicate definition of the Become method
+namespace omnn {
+namespace math {
 
 class StateProxyComparator
 {
@@ -432,6 +433,10 @@ public:
         return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
     }
 };
+thread_local const Valuable* StateProxyComparator::state = {};
+
+} // namespace math
+} // namespace omnn
 thread_local const Valuable* StateProxyComparator::state = {};
 
 namespace omnn {
