@@ -1964,14 +1964,30 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     void Valuable::optimize()
     {
+        static const int MAX_RECURSION_DEPTH = 1000;
+        static thread_local int recursion_depth = 0;
+
+        if (recursion_depth > MAX_RECURSION_DEPTH) {
+            BOOST_LOG_TRIVIAL(error) << "Max recursion depth exceeded in optimize()";
+            return;
+        }
+
         if (exp) {
             if (optimizations) {
+                std::unordered_set<const Valuable*> visited;
                 while (exp->exp) {
+                    if (visited.find(exp.get()) != visited.end()) {
+                        BOOST_LOG_TRIVIAL(error) << "Cycle detected in exp chain";
+                        return;
+                    }
+                    visited.insert(exp.get());
                     BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain: " << exp;
                     exp = exp->exp;
                 }
                 BOOST_LOG_TRIVIAL(info) << "Calling optimize on: " << exp;
+                recursion_depth++;
                 exp->optimize();
+                recursion_depth--;
                 while (exp->exp) {
                     BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain after optimize: " << exp;
                     exp = exp->exp;
