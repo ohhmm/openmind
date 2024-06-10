@@ -314,9 +314,6 @@ std::type_index Valuable::Type() const
 #endif
 }
 
-Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
-Valuable::Valuable(Valuable* v) : exp(v) {}
-
 namespace omnn {
 namespace math {
 
