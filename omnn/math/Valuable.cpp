@@ -788,8 +788,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
 			};
             op_t o_sum, o_mul, o_div, o_exp;
-            op_t o_mod; 
-            op_t o_pSurd; 
+            op_t o_mod;
+            op_t o_pSurd;
             if (itIsOptimized) {
                 sum.MarkAsOptimized();
                 v.MarkAsOptimized();
@@ -1016,6 +1016,118 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                 IMPLEMENT
                             }
                             auto cb = bracketsmap[to];
+void Valuable::optimize()
+{
+    static const int MAX_RECURSION_DEPTH = 1000;
+    static thread_local int recursion_depth = 0;
+
+    if (recursion_depth > MAX_RECURSION_DEPTH) {
+        BOOST_LOG_TRIVIAL(error) << "Max recursion depth exceeded in optimize()";
+        return;
+    }
+
+    BOOST_LOG_TRIVIAL(info) << "Entering optimize() with recursion depth: " << recursion_depth;
+    recursion_depth++;
+
+    if (exp) {
+        if (optimizations) {
+            std::unordered_set<const Valuable*> visited;
+            while (exp->exp) {
+                if (visited.find(exp.get()) != visited.end()) {
+                    BOOST_LOG_TRIVIAL(error) << "Cycle detected in exp chain";
+                    return;
+                }
+                visited.insert(exp.get());
+                BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain: " << exp;
+                exp = exp->exp;
+            }
+            BOOST_LOG_TRIVIAL(info) << "Calling optimize on: " << exp;
+            exp->optimize();
+            while (exp->exp) {
+                BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain after optimize: " << exp;
+                exp = exp->exp;
+            }
+        }
+    }
+
+    recursion_depth--;
+    BOOST_LOG_TRIVIAL(info) << "Exiting optimize() with recursion depth: " << recursion_depth;
+}
+
+Valuable& Valuable::Become(Valuable&& i)
+{
+    BOOST_LOG_TRIVIAL(info) << "Entering Become() with Valuable: " << i;
+
+    if (Same(i))
+        return *this;
+    auto newWasView = GetView(); // TODO: fix it, supervise all View usages
+    i.SetView(newWasView);
+    auto h = i.Hash();
+    auto e = i.exp;
+    if(e)
+    {
+        while (e->exp) {
+            BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain in Become: " << e;
+            e = e->exp;
+        }
+
+        if(exp)
+        {
+            exp = e;
+            if (Hash() != h) {
+                IMPLEMENT
+            }
+        }
+        else
+        {
+            Become(std::move(*e));
+        }
+
+        e.reset();
+    }
+    else
+    {
+        auto sizeWas = getAllocSize();
+        auto newSize = i.getTypeSize();
+
+        if (newSize <= sizeWas) {
+            assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
+            char buf[DefaultAllocSize];
+            i.New(buf, std::move(i));
+            Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
+            this->~Valuable();
+            bufv.New(this, std::move(bufv));
+            setAllocSize(sizeWas);
+            if (Hash() != h) {
+                IMPLEMENT
+            }
+            SetView(newWasView);
+            optimize();
+        }
+        else if(exp && exp->getAllocSize() >= newSize)
+        {
+            exp->Become(std::move(i));
+        }
+        else
+        {
+            auto moved = i.Move();
+            this->~Valuable();
+            new(this) Valuable(moved);
+            setAllocSize(sizeWas);
+            if (Hash() != h) {
+                IMPLEMENT
+            }
+            optimize();
+        }
+    }
+    if(GetView() != newWasView){
+        SetView(newWasView);
+        IMPLEMENT
+    }
+
+    BOOST_LOG_TRIVIAL(info) << "Exiting Become() with Valuable: " << *this;
+    return *this;
+}
                             if (id == "sqrt"sv) {
                                 auto next = to + 1;
                                 o(PrincipalSurd{Valuable(s.substr(next, cb - next), h, itIsOptimized)});
