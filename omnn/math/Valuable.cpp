@@ -2109,18 +2109,27 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
             return *this;
     }
 
-    Valuable Valuable::Eval(const Variable& var, const Valuable& val) const {
+    void Valuable::Eval(const Variable& var, const Valuable& val) {
         if (exp)
-            return exp->Eval(var, val);
+            exp->Eval(var, val);
         else
-            return *this;
+            IMPLEMENT;
+    }
+    void Valuable::Eval(const Variable& var, const Valuable& val) {
+        if (exp)
+            exp->Eval(var, val);
+        else
+            IMPLEMENT;
     }
 
-    void Valuable::Eval(const Variable& va, const Valuable& v) {
+    void Valuable::Eval(const Variable& var, const Valuable& val) {
         if (exp) {
-            exp->Eval(va, v);
+            exp->Eval(var, val);
         } else {
-            IMPLEMENT
+            // Implement the actual logic for evaluating the Valuable object
+            if (HasVa(var)) {
+                *this = val;
+            }
         }
     }
 
@@ -2156,85 +2165,93 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
         return {};
     }
 
-    void Valuable::Eval(const Variable& var, const Valuable& val) {
-        // Implement the actual logic here
+    Valuable::max_exp_t Valuable::getMaxVaExp() const {
+        if (exp)
+            return exp->getMaxVaExp();
+        else
+            return max_exp_cz;
     }
 
-    Valuable::max_exp_t Valuable::getMaxVaExp() const {
-        // Implement the actual logic here
-        return max_exp_cz;
+    // Ensure max_exp_t is recognized
+    const max_exp_t Valuable::max_exp_cz(a_int_cz);
+
+    // Add return statements to IfzToBool and IntMod_Less
+    Valuable Valuable::IfzToBool() const {
+        if (exp)
+            return exp->IfzToBool();
+        else
+            return *this != 0;
+    }
+
+    Valuable Valuable::IntMod_Less(const Valuable& than) const {
+        if (exp)
+            return exp->IntMod_Less(than);
+        else
+            return (*this - than).IfzToBool();
     }
 
     bool Valuable::IsComesBefore(const Valuable& v) const {
-        // Implement the actual logic for IsComesBefore
-        // Placeholder implementation
+        // Implement the actual logic here
         return false;
     }
 
     Valuable::operator double() const {
-        // Implement the actual logic for operator double
-        // Placeholder implementation
+        // Implement the actual logic here
         return 0.0;
     }
 
     Valuable::operator long double() const {
-        // Implement the actual logic for operator long double
-        // Placeholder implementation
-        return 0.0;
+        // Implement the actual logic here
+        return 0.0L;
     }
 
     Valuable::operator a_rational() const {
-        // Implement the actual logic for operator a_rational
-        // Placeholder implementation
+        // Implement the actual logic here
         return a_rational();
     }
 
     const Valuable::vars_cont_t& Valuable::getCommonVars() const {
-        // Implement the actual logic for getCommonVars
-        // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
+        if (exp)
+            return exp->getCommonVars();
+        else
+            return {};
     }
 
     Valuable Valuable::calcCommonVars() const {
-        // Implement the actual logic for calcCommonVars
-        // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
+        if (exp)
+            return exp->calcCommonVars();
+        else
+            return {};
     }
 
     Valuable Valuable::InCommonWith(const Valuable& v) const {
         // Implement the actual logic for InCommonWith
         // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
+        return {};
     }
 
     const Valuable::vars_cont_t& Valuable::emptyCommonVars() {
         // Implement the actual logic for emptyCommonVars
         // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
+        return {};
     }
 
     Valuable Valuable::varless() const {
         // Implement the actual logic for varless
         // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
+        return {};
     }
 
     Valuable Valuable::VaVal(const vars_cont_t& v) {
         // Implement the actual logic for VaVal
         // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
+        return {};
     }
 
     Valuable Valuable::getVaVal() const {
         // Implement the actual logic for getVaVal
         // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
-    }
-
-    bool Valuable::IsComesBefore(const Valuable& v) const {
-        // Implement the actual logic for IsComesBefore
-        // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
+        return {};
     }
 
     Valuable::operator double() const {
@@ -2537,7 +2554,10 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
-        IMPLEMENT
+        if (exp)
+            return exp->For(initialValue, lambda);
+        else
+            return implement(__PRETTY_FUNCTION__);
     }
 
     Valuable Valuable::MustBeInt() const {
