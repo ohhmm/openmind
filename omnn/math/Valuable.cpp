@@ -452,7 +452,7 @@ namespace math {
             LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
 #endif
         }
-        
+
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(s.size() > 1){
             auto distinct = Distinct();
@@ -773,7 +773,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             else
                 ok = {};
         }
-		
+
         if (!ok)
         {
             Valuable sum = Sum{};
@@ -1016,26 +1016,25 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                 IMPLEMENT
                             }
                             auto cb = bracketsmap[to];
-                             auto cb = bracketsmap[to];
-                             if (id == "sqrt"sv) {
-                                 auto next = to + 1;
-                                 o(PrincipalSurd{Valuable(s.substr(next, cb - next), h, itIsOptimized)});
-                             }
-                             i = cb;
-                             continue;
-                         }
-                     }
-                     Valuable val(h->Host(id));
-                     if (mulByNeg) {
-                         val *= -1;
-                         mulByNeg = {};
-                     }
-                     o(std::move(val));
-                     i = to - 1;
-                 } else {
-                     LOG_AND_IMPLEMENT("Unexpected char " << c << " in " << s << " position " << i);
-                 }
-             }
+                            if (id == "sqrt"sv) {
+                                auto next = to + 1;
+                                o(PrincipalSurd{Valuable(s.substr(next, cb - next), h, itIsOptimized)});
+                            }
+							i = cb;
+                            continue;
+                        }
+                    }
+                    Valuable val(h->Host(id));
+                    if (mulByNeg) {
+                        val *= -1;
+                        mulByNeg = {};
+                    }
+                    o(std::move(val));
+                    i = to - 1;
+                } else {
+                    LOG_AND_IMPLEMENT("Unexpected char " << c << " in " << s << " position " << i);
+                }
+            }
 
              o_sum(std::move(v));
              Become(std::move(sum));
@@ -1092,104 +1091,6 @@ void Valuable::optimize()
     BOOST_LOG_TRIVIAL(info) << "Exiting optimize() with recursion depth: " << recursion_depth;
 }
 
-Valuable& Valuable::Become(Valuable&& i)
-{
-    BOOST_LOG_TRIVIAL(info) << "Entering Become() with Valuable: " << i;
-
-    if (Same(i))
-        return *this;
-    auto newWasView = GetView(); // TODO: fix it, supervise all View usages
-    i.SetView(newWasView);
-    auto h = i.Hash();
-    auto e = i.exp;
-    if(e)
-    {
-        while (e->exp) {
-            BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain in Become: " << e;
-            e = e->exp;
-        }
-
-        if(exp)
-        {
-            exp = e;
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-        }
-        else
-        {
-            Become(std::move(*e));
-        }
-
-        e.reset();
-    }
-    else
-    {
-        auto sizeWas = getAllocSize();
-        auto newSize = i.getTypeSize();
-
-        if (newSize <= sizeWas) {
-            assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
-            char buf[DefaultAllocSize];
-            i.New(buf, std::move(i));
-            Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
-            this->~Valuable();
-            bufv.New(this, std::move(bufv));
-            setAllocSize(sizeWas);
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-            SetView(newWasView);
-            optimize();
-        }
-        else if(exp && exp->getAllocSize() >= newSize)
-        {
-            exp->Become(std::move(i));
-        }
-        else
-        {
-            auto moved = i.Move();
-            this->~Valuable();
-            new(this) Valuable(moved);
-            setAllocSize(sizeWas);
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-            optimize();
-        }
-    }
-    if(GetView() != newWasView){
-        SetView(newWasView);
-        IMPLEMENT
-    }
-
-    BOOST_LOG_TRIVIAL(info) << "Exiting Become() with Valuable: " << *this;
-    return *this;
-}
-                            if (id == "sqrt"sv) {
-                                auto next = to + 1;
-                                o(PrincipalSurd{Valuable(s.substr(next, cb - next), h, itIsOptimized)});
-                            }
-							i = cb;
-                            continue;
-                        }
-                    }
-                    Valuable val(h->Host(id));
-                    if (mulByNeg) {
-                        val *= -1;
-                        mulByNeg = {};
-                    }
-                    o(std::move(val));
-                    i = to - 1;
-                } else {
-                    LOG_AND_IMPLEMENT("Unexpected char " << c << " in " << s << " position " << i);
-                }
-            }
-
-            o_sum(std::move(v));
-            Become(std::move(sum));
-        }
-
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (!SerializedStrEqual(s)) {
             LOG_AND_IMPLEMENT(
@@ -1202,6 +1103,10 @@ Valuable& Valuable::Become(Valuable&& i)
         }
 #endif // !NDEBUG
     }
+    }
+
+    namespace omnn {
+    namespace math {
 
     Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     :Valuable(std::string_view(str), vaNames, itIsOptimized)
@@ -2148,6 +2053,9 @@ Valuable& Valuable::Become(Valuable&& i)
         }
         else
             LOG_AND_IMPLEMENT("Implement optimize() for " << *this);
+    }
+
+    }
     }
 
 	Valuable Valuable::Cos() const {
