@@ -385,6 +385,127 @@ Valuable& Valuable::Become(Valuable&& i)
 } // namespace math
 } // namespace omnn
 
+// Removed duplicate definition of the Become method
+
+class StateProxyComparator
+{
+public:
+    using tokens_collection_t =
+        ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
+
+private:
+    const Valuable* val;
+    static thread_local const Valuable* state;
+
+public:
+    StateProxyComparator() { val = state; }
+
+    StateProxyComparator(const Valuable* v) {
+        state = v;
+        val = state;
+    }
+
+    StateProxyComparator(const Valuable& v) {
+        state = &v;
+        val = state;
+    }
+
+    ~StateProxyComparator() { state = val; }
+
+    [[nodiscard]] bool operator()(const std::string_view& str1, const std::string_view& str2) const {
+        auto s = val->str();
+        if (s != str1) {
+            if (s == str2) {
+                return val->SerializedStrEqual(str1);
+            } else {
+                auto s1 = str1;
+                OmitOuterBrackets(s1);
+                auto s2 = str2;
+                OmitOuterBrackets(s2);
+                return s1 == s2;
+            }
+        } else
+            return val->SerializedStrEqual(str2);
+    }
+
+    auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
+        return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
+    }
+};
+thread_local const Valuable* StateProxyComparator::state = {};
+
+namespace omnn {
+namespace math {
+
+Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
+{
+    Valuable merged;
+    if(_1 == _2)
+        merged = _1;
+    else if (_1 == -_2)
+    {
+        merged = _1 * constants::plus_minus_1;
+    }
+    else
+    {
+        // a = 1;
+        auto s = _1 + _2;
+        if(s.IsZero())
+        {
+            merged = (!_1.IsProduct() ? _1 : _2) * constants::plus_minus_1;
+        }
+        else
+        {
+            OptimizeOff oo;
+            // b = -s;
+            auto c = _1 * _2;
+            auto d = s.Sq() + c * -4;
+            if (_1.IsMultival() == YesNoMaybe::No && _2.IsMultival() == YesNoMaybe::No) {
+                merged = (Exponentiation(d, constants::half) + s) / constants::two;
+            } else {
+                auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
+                dist.merge(_2.Distinct());
+                auto grade = dist.size();
+                auto targetGrade = constants::one.Shl(bits_in_use(grade));
+                merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
+            }
+        }
+    }
+    {
+        OptimizeOn oo;
+        merged.optimize();
+    }
+    return merged;
+}
+
+Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
+    // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
+    return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
+}
+
+Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
+    auto _1 = MergeOr(v1, v2);
+    auto _2 = MergeOr(v3, v4);
+#ifndef NDEBUG
+    if(_1.IsMultival() != YesNoMaybe::Yes || _2.IsMultival() != YesNoMaybe::Yes) {
+        LOG_AND_IMPLEMENT(v1 << 'v' << v2 << 'v' << v3 << 'v' << v4 << " - emerging difficulty: "
+                              << v1 << 'v' << v2 << '=' << _1 << ", " << v3 << 'v' << v4 << '=' << _2);
+    }
+#endif
+    return MergeOr(_1, _2);
+}
+
+Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
+{
+    return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
+}
+
+} // namespace math
+} // namespace omnn
+
+namespace omnn {
+namespace math {
+
 Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
 Valuable::Valuable(Valuable* v) : exp(v) {}
 Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
@@ -394,6 +515,9 @@ Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::mov
 Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
 Valuable::Valuable(const a_rational& r) : exp(std::move(std::make_shared<Fraction>(r))) { exp->optimize(); }
 Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(std::move(r)))) { exp->optimize(); }
+
+} // namespace math
+} // namespace omnn
 
     namespace{
         template<typename T>
