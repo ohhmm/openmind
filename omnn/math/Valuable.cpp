@@ -51,12 +51,13 @@ using namespace std::string_view_literals;
 #undef min
 #endif
 
-namespace omnn{
+namespace omnn {
 namespace math {
-    const a_int Valuable::a_int_cz = 0;
-    const max_exp_t Valuable::max_exp_cz = max_exp_t(a_int_cz);
 
-    namespace constants {
+const a_int Valuable::a_int_cz = 0;
+const max_exp_t Valuable::max_exp_cz = max_exp_t(a_int_cz);
+
+namespace constants {
     constexpr const Valuable& e = constant::e;
     constexpr const Valuable& i = constant::i;
     constexpr const Valuable& zero = vo<0>();
@@ -77,58 +78,160 @@ namespace math {
     constexpr const Valuable& minfinity = MInfinity::GlobalObject;
     const Variable& integration_result_constant = "integration_result_constant"_va;
 
-        std::map<std::string_view, Valuable> Constants ={
-            {"e", constant::e},
-            {"i", constant::i},
-            {"pi", constant::pi},
-        };
-    } // namespace constants
+    std::map<std::string_view, Valuable> Constants ={
+        {"e", constant::e},
+        {"i", constant::i},
+        {"pi", constant::pi},
+    };
+}
 
-    thread_local bool Valuable::optimizations = true;
-    thread_local bool Valuable::bit_operation_optimizations = {};
-    thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
+vars_cont_t Valuable::calcCommonVars() const {
+    vars_cont_t commonVars;
+    // Implementation logic here
+    return commonVars;
+}
 
+const vars_cont_t& Valuable::getCommonVars() const {
+    static vars_cont_t commonVars;
+    // Implementation logic here
+    return commonVars;
+}
 
-    Valuable implement(const char* str)
-    {
-        std::cerr << str << std::endl;
-        throw std::string(str) + " Implement!";
-        return {};
+void Valuable::optimize() {
+    static const int MAX_RECURSION_DEPTH = 1000;
+    static thread_local int recursion_depth = 0;
+
+    if (recursion_depth > MAX_RECURSION_DEPTH) {
+        BOOST_LOG_TRIVIAL(error) << "Max recursion depth exceeded in optimize()";
+        return;
     }
 
-    bool Valuable::IsSubObject(const Valuable& o) const {
-        if (exp)
-            return exp->IsSubObject(o);
-        else
-            IMPLEMENT
+    BOOST_LOG_TRIVIAL(info) << "Entering optimize() with recursion depth: " << recursion_depth;
+    recursion_depth++;
+
+    if (exp) {
+        if (optimizations) {
+            std::unordered_set<const Valuable*> visited;
+            while (exp->exp) {
+                if (visited.find(exp.get()) != visited.end()) {
+                    BOOST_LOG_TRIVIAL(error) << "Cycle detected in exp chain";
+                    return;
+                }
+                visited.insert(exp.get());
+                BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain: " << exp;
+                exp = exp->exp;
+            }
+            BOOST_LOG_TRIVIAL(info) << "Calling optimize on: " << exp;
+            exp->optimize();
+            while (exp->exp) {
+                BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain after optimize: " << exp;
+                exp = exp->exp;
+            }
+        }
     }
 
-    const Valuable Valuable::Link() const {
-        if(exp)
-            return Valuable(exp);
+    recursion_depth--;
+    BOOST_LOG_TRIVIAL(info) << "Exiting optimize() with recursion depth: " << recursion_depth;
+}
+
+void Valuable::New(void*, Valuable&&) {
+    IMPLEMENT
+}
+
+Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
+    assert(!exp);
+}
+
+Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
+    assert(!exp);
+}
+
+Valuable& Valuable::operator =(const Valuable& v) {
+    exp.reset(v.Clone());
+    return *this;
+}
+
+Valuable& Valuable::operator =(Valuable&& v) {
+    return Become(std::move(v));
+}
+
+Valuable Valuable::Sin() const {
+    if (exp)
+        return exp->Sin();
+    else {
+        static const Product _2i{ 2, constant::i };
+        return ((constant::e ^ Product{ constant::i, *this }) - (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / _2i;
+    }
+}
+
+Valuable Valuable::Cos() const {
+    if (exp)
+        return exp->Cos();
+    else {
+        return ((constant::e ^ Product{ constant::i, *this }) + (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / 2;
+    }
+}
+
+Valuable Valuable::Sqrt() const {
+    if(exp)
+        return exp->Sqrt();
+    else
+        return PrincipalSurd(*this, 2);
+}
+
+Valuable& Valuable::sqrt() {
+    if (exp)
+        return exp->sqrt();
+    else
+        return Become(Sqrt());
+}
+
+Valuable Valuable::Tg() const {
+    if (exp)
+        return exp->Tg();
+    else {
+        return Sin() / Cos();
+    }
+}
+
+Valuable& Valuable::sq() {
+    if (exp)
+        return exp->sq();
+    else
+        return Become(*this * *this);
+}
+
+bool Valuable::IsSubObject(const Valuable& o) const {
+    if (exp)
+        return exp->IsSubObject(o);
+    else
         IMPLEMENT
-    }
+}
 
-    Valuable* Valuable::Clone() const
-    {
-        if (exp)
-            return exp->Clone();
-        else
-            IMPLEMENT
-    }
+const Valuable Valuable::Link() const {
+    if(exp)
+        return Valuable(exp);
+    IMPLEMENT
+}
 
-    Valuable* Valuable::Move()
-    {
-        if (exp)
-            return exp->Move();
-        else
-            IMPLEMENT
-    }
-
-    void Valuable::New(void*, Valuable&&)
-    {
+Valuable* Valuable::Clone() const {
+    if (exp)
+        return exp->Clone();
+    else
         IMPLEMENT
-    }
+}
+
+Valuable* Valuable::Move() {
+    if (exp)
+        return exp->Move();
+    else
+        IMPLEMENT
+}
+
+} // namespace math
+} // namespace omnn
 
     Valuable::encapsulated_instance Valuable::SharedFromThis() {
         if (exp)
