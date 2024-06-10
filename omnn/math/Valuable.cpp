@@ -54,7 +54,7 @@ using namespace std::string_view_literals;
 namespace omnn{
 namespace math {
     const a_int Valuable::a_int_cz = 0;
-    const max_exp_t Valuable::max_exp_cz(a_int_cz);
+    const max_exp_t Valuable::max_exp_cz = max_exp_t(a_int_cz);
 
     namespace constants {
     constexpr const Valuable& e = constant::e;
