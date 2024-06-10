@@ -1016,6 +1016,44 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                 IMPLEMENT
                             }
                             auto cb = bracketsmap[to];
+                             auto cb = bracketsmap[to];
+                             if (id == "sqrt"sv) {
+                                 auto next = to + 1;
+                                 o(PrincipalSurd{Valuable(s.substr(next, cb - next), h, itIsOptimized)});
+                             }
+                             i = cb;
+                             continue;
+                         }
+                     }
+                     Valuable val(h->Host(id));
+                     if (mulByNeg) {
+                         val *= -1;
+                         mulByNeg = {};
+                     }
+                     o(std::move(val));
+                     i = to - 1;
+                 } else {
+                     LOG_AND_IMPLEMENT("Unexpected char " << c << " in " << s << " position " << i);
+                 }
+             }
+
+             o_sum(std::move(v));
+             Become(std::move(sum));
+         }
+
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+         if (!SerializedStrEqual(s)) {
+             LOG_AND_IMPLEMENT(
+                 "Deserialization check failed. "
+                 " potential reasons:\n"
+                 "  text expression ordering differs from this software expression building ordering"
+                 "  var host type is changed between integer-type and string-type var host"
+                 "  this software code changed expression building ordering or other changes that could be a cause "
+                 "for this deserialization check error message (optimization changes for example)");
+         }
+#endif // !NDEBUG
+     }
+
 void Valuable::optimize()
 {
     static const int MAX_RECURSION_DEPTH = 1000;
