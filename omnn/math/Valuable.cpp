@@ -224,9 +224,6 @@ Valuable Valuable::Tg() const {
     }
 }
 
-namespace omnn {
-namespace math {
-
 Valuable& Valuable::Become(Valuable&& i)
 {
     if (Same(i))
@@ -305,9 +302,6 @@ Valuable& Valuable::operator =(const Valuable& v)
     exp.reset(v.Clone());
     return *this;
 }
-
-} // namespace math
-} // namespace omnn
 
 std::type_index Valuable::Type() const
 {
