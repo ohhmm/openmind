@@ -2110,13 +2110,6 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
     }
 
     void Valuable::Eval(const Variable& var, const Valuable& val) {
-        if (exp)
-            exp->Eval(var, val);
-        else
-            IMPLEMENT;
-    }
-
-    void Valuable::Eval(const Variable& var, const Valuable& val) {
         if (exp) {
             exp->Eval(var, val);
         } else {
@@ -2127,43 +2120,29 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
         }
     }
 
-    bool Valuable::OfSameType(const Valuable& v) const
-    {
-        const Valuable& v1 = get();
-        const Valuable& v2 = v.get();
-        return typeid(v1) == typeid(v2);
-    }
-
-    bool Valuable::Same(const Valuable& v) const
-    {
-        return Hash()==v.Hash() && OfSameType(v) && operator==(v);
-    }
-
-    bool Valuable::HasSameVars(const Valuable& v) const
-    {
-        std::set<Variable> thisVa, vVa;
-        CollectVa(thisVa);
-        v.CollectVa(vVa);
-        return thisVa == vVa;
-    }
-
-    bool Valuable::IsMonic() const {
-        // Implement the actual logic for IsMonic
-        // Placeholder implementation
-        return false;
-    }
-
-    Valuable::vars_cont_t Valuable::GetVaExps() const {
-        // Implement the actual logic for GetVaExps
-        // Placeholder implementation
-        return {};
-    }
-
     Valuable::max_exp_t Valuable::getMaxVaExp() const {
         if (exp)
             return exp->getMaxVaExp();
         else
             return max_exp_cz;
+    }
+
+    bool Valuable::OfSameType(const Valuable& v) const {
+        const Valuable& v1 = get();
+        const Valuable& v2 = v.get();
+        return typeid(v1) == typeid(v2);
+    }
+
+    bool Valuable::Same(const Valuable& v) const {
+        return OfSameType(v) && Hash() == v.Hash();
+    }
+
+    bool Valuable::HasSameVars(const Valuable& v) const {
+        return getCommonVars() == v.getCommonVars();
+    }
+
+    bool Valuable::IsMonic() const {
+        return getMaxVaExp() == 1;
     }
 
     // Ensure max_exp_t is recognized
