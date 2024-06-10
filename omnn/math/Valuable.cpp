@@ -2072,7 +2072,7 @@ namespace math {
 } // namespace omnn
 
 Valuable Valuable::Sq() const {
-    return implement(__PRETTY_FUNCTION__);
+    return *this * *this;
 }
 
 Valuable Valuable::Gamma() const {
@@ -2142,35 +2142,6 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
         std::set<Variable> thisVa, vVa;
     }
 
-    Valuable Valuable::Eval(const vars_cont_t& with) const {
-        // Implement the actual logic for Eval
-        // Placeholder implementation
-        return *this;
-    }
-
-    void Valuable::Eval(const Variable& va, const Valuable& v) {
-        // Implement the actual logic for Eval
-        // Placeholder implementation
-    }
-
-    bool Valuable::OfSameType(const Valuable& v) const {
-        // Implement the actual logic for OfSameType
-        // Placeholder implementation
-        return false;
-    }
-
-    bool Valuable::Same(const Valuable& v) const {
-        // Implement the actual logic for Same
-        // Placeholder implementation
-        return false;
-    }
-
-    bool Valuable::HasSameVars(const Valuable& v) const {
-        // Implement the actual logic for HasSameVars
-        // Placeholder implementation
-        return false;
-    }
-
     bool Valuable::IsMonic() const {
         // Implement the actual logic for IsMonic
         // Placeholder implementation
@@ -2214,31 +2185,52 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
     }
 
     Valuable Valuable::Eval(const vars_cont_t& with) const {
-        // Implement the actual logic for Eval
-        Valuable result = *this;
-        for (const auto& var : with) {
-            result = result.Eval(var.first, var.second);
+        if (exp) {
+            return exp->Eval(with);
+        } else {
+            Valuable result = *this;
+            for (const auto& [var, val] : with) {
+                result = result.Eval(var, val);
+            }
+            return result;
         }
-        return result;
     }
 
     void Valuable::Eval(const Variable& va, const Valuable& v) {
-        // Implement the actual logic for Eval
         if (exp) {
             exp->Eval(va, v);
         } else {
-            IMPLEMENT
+            *this = *this == va ? v : *this;
         }
     }
 
     bool Valuable::OfSameType(const Valuable& v) const {
-        // Implement the actual logic for OfSameType
-        return typeid(*this) == typeid(v);
+        if (exp) {
+            return exp->OfSameType(v);
+        } else {
+            return typeid(*this) == typeid(v);
+        }
     }
 
     bool Valuable::Same(const Valuable& v) const {
-        // Implement the actual logic for Same
-        return *this == v;
+        if (exp) {
+            return exp->Same(v);
+        } else {
+            return *this == v;
+        }
+    }
+
+    bool Valuable::HasSameVars(const Valuable& v) const {
+        if (exp) {
+            return exp->HasSameVars(v);
+        } else {
+            return Vars() == v.Vars();
+        }
+    }
+
+    bool Valuable::HasSameVars(const Valuable& v) const {
+        // Implement the actual logic here
+        return implement(__PRETTY_FUNCTION__);
     }
 
     bool Valuable::HasSameVars(const Valuable& v) const {
@@ -2636,31 +2628,8 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
         }
 	}
 
-    Valuable Valuable::IfzToBool() const {
-        return Ifz(constants::one, constants::zero);
-    }
-
-    Valuable Valuable::IntMod_Less(const Valuable& than) const
-	{
-        if (exp)
-            return exp->IntMod_Less(than);
-        else {
-            //return //(than - *this).IntMod_IsPositive(); // evaluated to
-                   //(-1*(Y^2)-1*(X^2)+(Y^2)*((-1*X+Y)%(-1*X+Y-1))+(X^2)*((-1*X+Y)%(-1*X+Y-1))-2*Y*X*((-1*X+Y)%(-1*X+Y-1))+2*Y*X+3*X*((-1*X+Y)%(-1*X+Y-1))-3*Y*((-1*X+Y)%(-1*X+Y-1))+3*Y-3*X+2*((-1*X+Y)%(-1*X+Y-1))-2)
-			// https://www.wolframalpha.com/input?i=%28-1*%28Y%5E2%29-1*%28X%5E2%29%2B%28Y%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B%28X%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2*Y*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B2*Y*X%2B3*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-3*Y*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B3*Y-3*X%2B2*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2%29
-            OptimizeOff oo;
-            Product less;
-            less.MarkAsOptimized();
-            less.Add(*this - than + constants::one);
-            less.Add(*this - than + constants::two);
-            less.Add(((than - *this) % (than - *this - constants::one)) - constants::one);
-            return less;
-        }
-			//
-			// ChatGPT simplified to:
-			// X^2 - Y^2 - X + Y + 1
-			// which seem less valid but lets check
-	}
+    // Removed duplicate definitions of IfzToBool and IntMod_Less
+}
 
     Valuable Valuable::Less(const Valuable& than) const
     {
