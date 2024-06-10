@@ -2103,26 +2103,23 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
     }
 
     Valuable Valuable::Eval(const vars_cont_t& with) const {
-        auto evaluate = *this;
-        evaluate.eval(with);
-        return evaluate;
+        if (exp) {
+            return exp->Eval(with);
+        } else {
+            Valuable result = *this;
+            for (const auto& [var, val] : with) {
+                result = result.Eval(var, val);
+            }
+            return result;
+        }
     }
 
-    void Valuable::Eval(const Variable& va, const Valuable& v)
-    {
+    void Valuable::Eval(const Variable& va, const Valuable& v) {
         if (exp) {
-            if (v.HasVa(va)) {
-                Variable t(va.getVaHost());
-                Eval(va, t);
-                Eval(t, v);
-            } else
-                exp->Eval(va, v);
-            while (exp->exp) {
-                exp = exp->exp;
-            }
-            return;
+            exp->Eval(va, v);
+        } else {
+            IMPLEMENT
         }
-        IMPLEMENT
     }
 
     bool Valuable::OfSameType(const Valuable& v) const
@@ -2182,26 +2179,6 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
         // Implement the actual logic for operator a_rational
         // Placeholder implementation
         return a_rational();
-    }
-
-    Valuable Valuable::Eval(const vars_cont_t& with) const {
-        if (exp) {
-            return exp->Eval(with);
-        } else {
-            Valuable result = *this;
-            for (const auto& [var, val] : with) {
-                result = result.Eval(var, val);
-            }
-            return result;
-        }
-    }
-
-    void Valuable::Eval(const Variable& va, const Valuable& v) {
-        if (exp) {
-            exp->Eval(va, v);
-        } else {
-            *this = *this == va ? v : *this;
-        }
     }
 
     bool Valuable::OfSameType(const Valuable& v) const {
@@ -2328,18 +2305,6 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
 
     operator a_rational() const {
         return implement(__PRETTY_FUNCTION__);
-    }
-
-    Valuable Valuable::Eval(const vars_cont_t& with) const {
-        // Implement the actual logic for Eval
-        // Placeholder implementation
-        return implement(__PRETTY_FUNCTION__);
-    }
-
-    void Valuable::Eval(const Variable& va, const Valuable& v) {
-        // Implement the actual logic for Eval
-        // Placeholder implementation
-        implement(__PRETTY_FUNCTION__);
     }
 
     bool Valuable::OfSameType(const Valuable& v) const {
