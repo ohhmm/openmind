@@ -407,17 +407,6 @@ Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(st
 } // namespace math
 } // namespace omnn
 
-    Valuable& Valuable::operator =(Valuable&& v)
-    {
-        return Become(std::move(v));
-    }
-
-    Valuable& Valuable::operator =(const Valuable& v)
-    {
-        exp.reset(v.Clone());
-        return *this;
-    }
-
     namespace{
         template<typename T>
         constexpr T bits_in_use(T v) {
