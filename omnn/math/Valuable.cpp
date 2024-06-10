@@ -2103,15 +2103,17 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
     }
 
     Valuable Valuable::Eval(const vars_cont_t& with) const {
-        if (exp) {
+        if (exp)
             return exp->Eval(with);
-        } else {
-            Valuable result = *this;
-            for (const auto& [var, val] : with) {
-                result = result.Eval(var, val);
-            }
-            return result;
-        }
+        else
+            return *this;
+    }
+
+    Valuable Valuable::Eval(const Variable& var, const Valuable& val) const {
+        if (exp)
+            return exp->Eval(var, val);
+        else
+            return *this;
     }
 
     void Valuable::Eval(const Variable& va, const Valuable& v) {
@@ -2154,9 +2156,10 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
     }
 
     Valuable::max_exp_t Valuable::getMaxVaExp() const {
-        // Implement the actual logic for getMaxVaExp
-        // Placeholder implementation
-        return max_exp_t(); // Placeholder return statement
+        if (exp)
+            return exp->getMaxVaExp();
+        else
+            return max_exp_cz;
     }
 
     bool Valuable::IsComesBefore(const Valuable& v) const {
