@@ -233,35 +233,40 @@ Valuable* Valuable::Move() {
 } // namespace math
 } // namespace omnn
 
-    Valuable::encapsulated_instance Valuable::SharedFromThis() {
-        if (exp)
-            return exp;
-        else
-            IMPLEMENT;
-    }
+// Move the following method definitions inside the omnn::math namespace
 
-    Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
+namespace omnn {
+namespace math {
+
+Valuable::encapsulated_instance Valuable::SharedFromThis() {
+    if (exp)
+        return exp;
+    else
+        IMPLEMENT;
+}
+
+Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-    {
-        assert(!exp);
-    }
+{
+    assert(!exp);
+}
 
-    Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
+Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-    {
-        assert(!exp);
-    }
+{
+    assert(!exp);
+}
 
-    std::type_index Valuable::Type() const
-    {
-    	if (exp)
-    		return exp->Type();
+std::type_index Valuable::Type() const
+{
+    if (exp)
+        return exp->Type();
 #ifdef __APPLE__
-        LOG_AND_IMPLEMENT(" Implement Type() ");
+    LOG_AND_IMPLEMENT(" Implement Type() ");
 #else
-        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
+    LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
 #endif
-    }
+}
 
     Valuable& Valuable::Become(Valuable&& i)
     {
