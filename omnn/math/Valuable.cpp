@@ -320,8 +320,8 @@ std::type_index Valuable::Type() const
 #endif
 }
 
-namespace omnn {
-namespace math {
+Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
+Valuable::Valuable(Valuable* v) : exp(v) {}
 
 Valuable& Valuable::Become(Valuable&& i)
 {
@@ -394,79 +394,6 @@ Valuable& Valuable::Become(Valuable&& i)
 namespace omnn {
 namespace math {
 
-Valuable& Valuable::operator =(Valuable&& v)
-    return Become(std::move(v));
-}
-
-Valuable& Valuable::operator =(const Valuable& v) {
-Valuable& Valuable::operator =(const Valuable& v)
-    return *this;
-}
-
-Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
-Valuable::Valuable(Valuable* v) : exp(v) {}
-
-    Valuable& Valuable::Become(Valuable&& i)
-    {
-        if (Same(i))
-            return *this;
-        auto newWasView = GetView(); // TODO: fix it, supervise all View usages
-        i.SetView(newWasView);
-        auto h = i.Hash();
-        auto e = i.exp;
-        if(e)
-        {
-            while (e->exp) {
-                BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain in Become: " << e;
-                e = e->exp;
-            }
-
-            if(exp)
-            {
-                exp = e;
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-            }
-            else
-            {
-                Become(std::move(*e));
-            }
-
-            e.reset();
-        }
-        else
-        {
-            auto sizeWas = getAllocSize();
-            auto newSize = i.getTypeSize();
-
-            if (newSize <= sizeWas) {
-                assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
-                char buf[DefaultAllocSize];
-                i.New(buf, std::move(i));
-                Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
-                this->~Valuable();
-                bufv.New(this, std::move(bufv));
-                setAllocSize(sizeWas);
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-                SetView(newWasView);
-            }
-            optimize();
-        }
-    }
-    if(GetView() != newWasView){
-        SetView(newWasView);
-        IMPLEMENT
-    }
-
-    return *this;
-}
-
-namespace omnn {
-namespace math {
-
 Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
 Valuable::Valuable(Valuable* v) : exp(v) {}
 Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
@@ -479,31 +406,6 @@ Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(st
 
 } // namespace math
 } // namespace omnn
-                optimize();
-            }
-            else if(exp && exp->getAllocSize() >= newSize)
-            {
-                exp->Become(std::move(i));
-            }
-            else
-            {
-                auto moved = i.Move();
-                this->~Valuable();
-                new(this) Valuable(moved);
-                setAllocSize(sizeWas);
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-                optimize();
-            }
-        }
-        if(GetView() != newWasView){
-            SetView(newWasView);
-            IMPLEMENT
-        }
-
-        return *this;
-    }
 
     Valuable& Valuable::operator =(Valuable&& v)
     {
