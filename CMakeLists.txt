@@ -141,7 +141,7 @@ if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
 endif()
 
-option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
+option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCl_FOUND})
 if(OPENMIND_USE_OPENCL)
 	find_package(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
@@ -154,7 +154,7 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.85.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.83.0 CACHE STRING "Boost library version to use")
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
@@ -221,8 +221,8 @@ elseif(OPENMIND_USE_CONAN)
 endif()
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-    PATHS /usr/local/boost_1_85_0
-    COMPONENTS ${BOOST_USED_COMPONENTS}
+    PATHS /usr/local/boost_1_83_0
+    COMPONENTS ${BOOST_USED_COMPONENTS} log log_setup
     REQUIRED
 )
 if(Boost_FOUND)

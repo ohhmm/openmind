@@ -177,10 +177,14 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
     BOOST_TEST(oX.size() == oY.size());
     auto SZ = oX.size();
 
+    // Declare variables
+    std::vector<SymmetricDouble> oCoeff;
+    std::vector<SymmetricDouble> oFittedY;
+
     // polynomial fitting
     try {
-        auto oCoeff = polyfit(oX, oY, SZ);
-        auto oFittedY = polyval(oCoeff, oX);
+        oCoeff = polyfit(oX, oY, SZ);
+        oFittedY = polyval(oCoeff, oX);
         for (unsigned int i = 0; i < SZ; i++) {
             BOOST_TEST(oY[i] == oFittedY[i]);
         }

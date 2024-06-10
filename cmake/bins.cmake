@@ -130,7 +130,7 @@ function(apply_target_commons this_target)
 	)
 	if(OPENMIND_USE_OPENCL_INTEL_SYCL)
 		target_compile_options(${this_target} PUBLIC ${SYCL_FLAGS})
-		target_include_directories(${this_target} PUBLIC 
+		target_include_directories(${this_target} PUBLIC
 			"${IntelSYCL_DIR}/../../../include"
 			"${IntelSYCL_DIR}/../../../include/sycl"
 		)
@@ -292,6 +292,8 @@ function(test)
 		set_target_properties(${TEST_NAME} PROPERTIES
 			FOLDER "test"
 		)
+		message("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+		message("CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
 		target_compile_definitions(${TEST_NAME} PUBLIC
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
@@ -322,64 +324,75 @@ macro(lib)
     set(${this_target}_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE FILEPATH "${this_target} include path")
     project(${this_target})
     message("\nCreating Library: ${this_target}")
-	check_dep_file()
-	glob_source_files()
+    check_dep_file()
+    glob_source_files()
+
+    # Manually add source files for Valuable class and its descendants
+    list(APPEND src
+        ${CMAKE_CURRENT_SOURCE_DIR}/../math/Valuable.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../math/Variable.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../math/Integer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../math/Exponentiation.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../math/Fraction.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../math/Sum.cpp
+    )
+
     add_library(${this_target} ${USE_SHARED} ${src} ${headers})
-	APPLY_TARGET_COMMONS(${this_target})
-	if(CMAKE_CXX_STANDARD)
-		set_target_properties(${this_target} PROPERTIES CXX_STANDARD ${CMAKE_CXX_STANDARD})
-	endif(CMAKE_CXX_STANDARD)
+    APPLY_TARGET_COMMONS(${this_target})
+    if(CMAKE_CXX_STANDARD)
+        set_target_properties(${this_target} PROPERTIES CXX_STANDARD ${CMAKE_CXX_STANDARD})
+    endif(CMAKE_CXX_STANDARD)
     set_target_properties(${this_target} PROPERTIES
-		FOLDER "libs"
-		PUBLIC_HEADER "${headers}"
-		)	
+        FOLDER "libs"
+        PUBLIC_HEADER "${headers}"
+    )
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
-        )
+    )
     #add_dependencies(${this_target} prerequisites)
-	message("add_library(${this_target} ${src})")
-	if(Boost_FOUND)
-		if(NOT MSVC OR OPENMIND_USE_CONAN)
-			foreach (boostlibtarget ${BOOST_LINK_LIBS})
-				if(TARGET ${boostlibtarget})
-					message("linking boostlibtarget: ${boostlibtarget}")
-					target_link_libraries(${this_target} PUBLIC ${boostlibtarget})
-				else()
-					message("skipping linking ${boostlibtarget}, the target not found")
-				endif()
-			endforeach()
-			foreach (boostcomponent ${BOOST_ADDITIONAL_COMPONENTS})
-				if(TARGET Boost::${boostcomponent})
-					message("linking boostlibtarget: Boost::${boostcomponent}")
-					target_link_libraries(${this_target} PUBLIC Boost::${boostcomponent})
-				else()
-					string(TOUPPER ${boostcomponent} boostcomponent)
-					message("include ${boostcomponent}: ${Boost_${boostcomponent}_INCLUDE_DIR}")
-					target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_INCLUDE_DIR})
-					message("linking ${boostcomponent}: ${Boost_${boostcomponent}_LIBRARY}")
-					target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_LIBRARY})
-				endif()
-			endforeach()
-		endif()
-	endif()
-	#message("target_link_libraries(${this_target} PUBLIC ${deps})")
+    message("add_library(${this_target} ${src})")
+    if(Boost_FOUND)
+        if(NOT MSVC OR OPENMIND_USE_CONAN)
+            foreach (boostlibtarget ${BOOST_LINK_LIBS})
+                if(TARGET ${boostlibtarget})
+                    message("linking boostlibtarget: ${boostlibtarget}")
+                    target_link_libraries(${this_target} PUBLIC ${boostlibtarget})
+                else()
+                    message("skipping linking ${boostlibtarget}, the target not found")
+                endif()
+            endforeach()
+            foreach (boostcomponent ${BOOST_ADDITIONAL_COMPONENTS})
+                if(TARGET Boost::${boostcomponent})
+                    message("linking boostlibtarget: Boost::${boostcomponent}")
+                    target_link_libraries(${this_target} PUBLIC Boost::${boostcomponent})
+                else()
+                    string(TOUPPER ${boostcomponent} boostcomponent)
+                    message("include ${boostcomponent}: ${Boost_${boostcomponent}_INCLUDE_DIR}")
+                    target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_INCLUDE_DIR})
+                    message("linking ${boostcomponent}: ${Boost_${boostcomponent}_LIBRARY}")
+                    target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_LIBRARY})
+                endif()
+            endforeach()
+        endif()
+    endif()
+    #message("target_link_libraries(${this_target} PUBLIC ${deps})")
     deps(${TEST_DEPS} ${deps})
 
     install(TARGETS ${this_target})
 
     if (OPENMIND_BUILD_TESTS OR BUILD_TESTS)
-		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
-        	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
-    	elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Test)
-        	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
-		elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-        	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
-		elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Tests)
-        	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Tests)
-		endif ()
-	endif ()
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
+            add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
+        elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Test)
+            add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
+        elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+            add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+        elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Tests)
+            add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Tests)
+        endif ()
+    endif ()
 
     if (OPENMIND_BUILD_3RD_PARTY_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rdPartyTests)
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdPartyTests)

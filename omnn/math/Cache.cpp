@@ -2,6 +2,7 @@
 // Created by Sergej Krivonos on 31.12.2019.
 //
 #include "Cache.h"
+#include "Valuable.h"
 
 #include <chrono>
 #include <iostream>

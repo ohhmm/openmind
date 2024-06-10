@@ -39,6 +39,7 @@
 #ifndef __APPLE__
 #include <boost/stacktrace.hpp>
 #endif
+#include <boost/log/trivial.hpp>
 
 using namespace std::string_view_literals;
 
@@ -170,6 +171,7 @@ namespace math {
         if(e)
         {
             while (e->exp) {
+                BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain in Become: " << e;
                 e = e->exp;
             }
 
@@ -1222,6 +1224,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 			#if 0
             std::cout << *this << std::endl;
 			#endif
+        // Ensure Cache destructor is called
+        if (auto cache = dynamic_cast<Cache*>(exp.get())) {
+            delete cache;
+        }
             rt::GC::DispatchDispose(std::move(exp));
         }
 #endif
@@ -1961,12 +1967,16 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp) {
             if (optimizations) {
                 while (exp->exp) {
+                    BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain: " << exp;
                     exp = exp->exp;
                 }
+                BOOST_LOG_TRIVIAL(info) << "Calling optimize on: " << exp;
                 exp->optimize();
                 while (exp->exp) {
+                    BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain after optimize: " << exp;
                     exp = exp->exp;
                 }
+                BOOST_LOG_TRIVIAL(info) << "Finished optimize";
                 return;
             }
         }

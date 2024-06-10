@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>
 #include <fann.h>
 
-
+#define TEST_SRC_DIR "."
 
 BOOST_AUTO_TEST_CASE(FANN_test_simple)
 {
