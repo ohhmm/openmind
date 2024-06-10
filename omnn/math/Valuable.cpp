@@ -2137,6 +2137,8 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
     bool Valuable::HasSameVars(const Valuable& v) const
     {
         std::set<Variable> thisVa, vVa;
+        // Add appropriate logic here
+        return false; // Placeholder return statement
     }
 
     bool Valuable::IsMonic() const {
@@ -2154,7 +2156,7 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
     Valuable::max_exp_t Valuable::getMaxVaExp() const {
         // Implement the actual logic for getMaxVaExp
         // Placeholder implementation
-        return {};
+        return max_exp_t(); // Placeholder return statement
     }
 
     bool Valuable::IsComesBefore(const Valuable& v) const {
