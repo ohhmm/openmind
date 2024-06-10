@@ -426,24 +426,6 @@ Valuable::Valuable(a_rational&& r)
         return *this;
     }
 
-    Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
-    Valuable::Valuable(Valuable* v) : exp(v) {}
-    Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
-    Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
-    Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
-    Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
-    Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
-
-    Valuable::Valuable(const a_rational& r)
-    : exp(std::move(std::make_shared<Fraction>(r)))
-    {
-        exp->optimize();
-    }
-
-    Valuable::Valuable(a_rational&& r)
-    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
-    { exp->optimize(); }
-
     namespace{
         template<typename T>
         constexpr T bits_in_use(T v) {
