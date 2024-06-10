@@ -54,6 +54,8 @@ using namespace std::string_view_literals;
 namespace omnn {
 namespace math {
 
+using vars_cont_t = std::map<Variable, Valuable>;
+
 const a_int Valuable::a_int_cz = 0;
 const max_exp_t Valuable::max_exp_cz = max_exp_t(a_int_cz);
 
@@ -84,8 +86,6 @@ namespace constants {
         {"pi", constant::pi},
     };
 }
-
-namespace omnn::math {
 
 vars_cont_t Valuable::calcCommonVars() const {
     vars_cont_t commonVars;
@@ -171,10 +171,6 @@ max_exp_t Valuable::getMaxVaExp() const {
         return maxVaExp;
 }
 
-} // namespace omnn::math
-
-namespace omnn::math {
-
 void Valuable::New(void*, Valuable&&) {
     IMPLEMENT
 }
@@ -189,8 +185,6 @@ Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
     assert(!exp);
 }
 
-namespace omnn::math {
-namespace omnn::math {
 Valuable Valuable::Sin() const {
     if (exp)
         return exp->Sin();
@@ -201,88 +195,6 @@ Valuable Valuable::Sin() const {
 }
 
 Valuable Valuable::Cos() const {
-    if (exp)
-        return exp->Cos();
-    else {
-        return ((constant::e ^ Product{ constant::i, *this }) + (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / 2;
-    }
-}
-Valuable Valuable::Sin() const {
-Valuable Valuable::Sqrt() const {
-    if(exp)
-        return exp->Sqrt();
-    else
-        return PrincipalSurd(*this, 2);
-    }
-}
-    if (exp)
-Valuable& Valuable::sqrt() {
-    if (exp)
-        return exp->sqrt();
-    else
-        return Become(Sqrt());
-    }
-}
-        return exp->Sin();
-Valuable Valuable::Tg() const {
-    if (exp)
-        return exp->Tg();
-    else {
-        return Sin() / Cos();
-    }
-}
-    else {
-Valuable& Valuable::sq() {
-    if (exp)
-        return exp->sq();
-    else
-        return Become(*this * *this);
-}
-        static const Product _2i{ 2, constant::i };
-bool Valuable::IsSubObject(const Valuable& o) const {
-    if (exp)
-        return exp->IsSubObject(o);
-    else
-        IMPLEMENT
-}
-        return ((constant::e ^ Product{ constant::i, *this }) - (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / _2i;
-const Valuable Valuable::Link() const {
-    if(exp)
-        return Valuable(exp);
-    IMPLEMENT
-}
-    }
-Valuable* Valuable::Clone() const {
-    if (exp)
-        return exp->Clone();
-    else
-        IMPLEMENT
-}
-}
-Valuable* Valuable::Move() {
-    if (exp)
-        return exp->Move();
-    else
-        IMPLEMENT
-}
-
-Valuable::encapsulated_instance Valuable::SharedFromThis() {
-    if (exp)
-        return exp;
-    else
-        IMPLEMENT;
-}
-Valuable Valuable::Cos() const {
-std::type_index Valuable::Type() const
-{
-    if (exp)
-        return exp->Type();
-#ifdef __APPLE__
-    LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
-    LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
-}
     if (exp)
         return exp->Cos();
     else {
@@ -310,62 +222,15 @@ Valuable Valuable::Tg() const {
     else {
         return Sin() / Cos();
     }
-}
-
-Valuable& Valuable::sq() {
-    if (exp)
-        return exp->sq();
-    else
-        return Become(*this * *this);
-}
-
-} // namespace omnn::math
-
-bool Valuable::IsSubObject(const Valuable& o) const {
-    if (exp)
-        return exp->IsSubObject(o);
-    else
-        IMPLEMENT
-}
-
-const Valuable Valuable::Link() const {
-    if(exp)
-        return Valuable(exp);
-    IMPLEMENT
-}
-
-Valuable* Valuable::Clone() const {
-    if (exp)
-        return exp->Clone();
-    else
-        IMPLEMENT
-}
-
-Valuable* Valuable::Move() {
-    if (exp)
-        return exp->Move();
-    else
-        IMPLEMENT
-}
-
-} // namespace math
-} // namespace omnn
-
-// Move the following method definitions inside the omnn::math namespace
-
-namespace omnn {
-namespace math {
-
-Valuable::encapsulated_instance Valuable::SharedFromThis() {
-    if (exp)
-        return exp;
-    else
-        IMPLEMENT;
 }
 
 Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-{
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
+    assert(!exp);
+}
+
+Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
     assert(!exp);
 }
 
