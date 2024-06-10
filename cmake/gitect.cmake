@@ -22,6 +22,7 @@ if(GIT_EXECUTABLE)
 	add_custom_target(rebase-main
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(rebase-main PROPERTIES
 		EXCLUDE_FROM_ALL 1

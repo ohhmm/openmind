@@ -83,14 +83,12 @@ BOOST_AUTO_TEST_CASE(FractionSimplification_tests
 ){
 	auto _1 = (25_v / 5) ^ Fraction{constants::minus_1,constants::two};
 	auto _2 = (1_v / 5)*(1_v^(1_v/2));
-	auto c = _1 == _2;
-	BOOST_TEST(c);
+	BOOST_TEST(_1 == _2);
 	
 	DECL_VA(x);
 	_1 =(-1_v)^x;
 	_2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
-	c = _1 != _2;
-	BOOST_TEST(c);
+    BOOST_TEST(_1 != _2);
 }
 
 BOOST_AUTO_TEST_CASE(Fraction_optimization_no_hang_test

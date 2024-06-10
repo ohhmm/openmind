@@ -955,7 +955,7 @@ namespace math {
             return *this;
         }
         else if (v.IsSimple() ) {
-            if (v == 1_v) {
+            if (v == constants::one) {
                 return *this;
             } else if (v.IsConstant()) {
                 auto it = std::find(begin(), end(), v);
@@ -1130,25 +1130,25 @@ namespace math {
         auto sameHash = (Valuable::hash & ~Hash1) == (v.Hash() & ~Hash1); // ignore multiplication by 1
         auto same = v.Is<Product>() && sameHash;
         auto& c1 = GetConstCont();
-        auto sz1 = c1.size();
+        auto n1 = c1.size();
         if (same) {
             auto& vp = v.as<Product>();
             auto& c2 = vp.GetConstCont();
-            auto sz2 = c2.size();
-            auto sameSizes = sz1 == sz2;
+            auto n2 = c2.size();
+            auto sameSizes = n1 == n2;
             if(sameSizes) {
                 same = c1 == c2;                
-            } else if (sz1-sz2==1 || sz2-sz1==1) {
+            } else if (n1-n2==1 || n2-n1==1) {
                 auto it1 = c1.begin(), it2 = c2.begin();
                 auto e1 = c1.end(), e2 = c2.end();                    
                 for(same = true;
                     same && it1 != e1 && it2 != e2;
                     ++it1, ++it2)
                 {
-                    if(it1->Same(1_v)){
+                    if(it1->Same(constants::one)){
                         ++it1;
                     }
-                    if(it2->Same(1_v)){
+                    if(it2->Same(constants::one)){
                         ++it2;
                     }
                     
@@ -1164,29 +1164,36 @@ namespace math {
             }
         }
         else if (sameHash
-                 && (sz1 == 1
-                     || (sz1 == 2 && c1.begin()->Same(1_v) )))
+                 && (n1 == 1
+                     || (n1 == 2 && c1.begin()->Same(constants::one) )))
         {
             same = c1.rbegin()->operator==(v);
         } else if (members.empty()) {
             same = v == 1;
-        } else if (v.IsExponentiation() && Has(v)) {
-            auto n = members.size();
-            same = n == 1;
-            if (!same) {
-                auto& e = v.as<Exponentiation>();
-                same = e.IsMultiSign() && n == 2 && Has(constants::minus_1);
-                if (!same && Has(constants::i)) {
-                    auto& ee = e.getExponentiation();
-                    if (ee.IsFraction()) {
-                        auto& eef = ee.as<Fraction>();
-                        auto& eefdn = eef.getDenominator();
-                        same = eefdn >= 4 || eefdn <= -4;
-                    } else {
-                        LOG_AND_IMPLEMENT("Examine new multisign form: " << *this << " == " << e);
+        } else if (v.IsExponentiation()) {
+            if (Has(v)) {
+                same = n1 == 1;
+                if (!same) {
+                    auto& e = v.as<Exponentiation>();
+                    same = e.IsMultiSign() && n1 == 2 && Has(constants::minus_1);
+                    if (!same && Has(constants::i)) {
+                        auto& ee = e.getExponentiation();
+                        if (ee.IsFraction()) {
+                            auto& eef = ee.as<Fraction>();
+                            auto& eefdn = eef.getDenominator();
+                            same = eefdn >= 4 || eefdn <= -4;
+                        } else {
+                            LOG_AND_IMPLEMENT("Examine new multisign form: " << *this << " == " << e);
+                        }
                     }
                 }
             }
+            else {
+                auto& e = v.as<Exponentiation>();
+                auto& ee = e.getExponentiation();
+                same = ee.IsSimple() && ee < constants::zero
+                    && operator==(e.getBase().Reciprocal() ^ -ee);
+			}
         } else if (v.IsProduct()
             && IsMultival() == YesNoMaybe::Yes
             && v.IsMultival() == YesNoMaybe::Yes)
@@ -1235,7 +1242,7 @@ namespace math {
             auto it = coVa.find(va);
             if (it != coVa.end()) {
                 if (it->second < 0) {
-                    s = ((*this / (it->first ^ it->second)) / augmentation) ^ (1_v / -it->second);
+                    s = ((*this / (it->first ^ it->second)) / augmentation) ^ (-it->second).Reciprocal();
                 }
                 else
                 {
