@@ -2347,6 +2347,60 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
         return result;
     }
 
+    Valuable::max_exp_t Valuable::getMaxVaExp() const {
+        return maxVaExp;
+    }
+
+    bool Valuable::OfSameType(const Valuable& v) const {
+        return typeid(*this) == typeid(v);
+    }
+
+    bool Valuable::Same(const Valuable& v) const {
+        return *this == v;
+    }
+
+    bool Valuable::HasSameVars(const Valuable& v) const {
+        std::set<Variable> thisVa, vVa;
+        CollectVa(thisVa);
+        v.CollectVa(vVa);
+        return thisVa == vVa;
+    }
+
+    Valuable Valuable::Eval(const vars_cont_t& vars) const {
+        Valuable result = *this;
+        for (const auto& [var, val] : vars) {
+            result = result.Eval(var, val);
+        }
+        return result;
+    }
+
+    bool Valuable::HasSameVars(const Valuable& v) const {
+        std::set<Variable> thisVa, vVa;
+        CollectVa(thisVa);
+        v.CollectVa(vVa);
+        return thisVa == vVa;
+    }
+
+    Valuable::max_exp_t Valuable::getMaxVaExp() const {
+        return maxVaExp;
+    }
+
+    bool Valuable::OfSameType(const Valuable& v) const {
+        return typeid(*this) == typeid(v);
+    }
+
+    bool Valuable::Same(const Valuable& v) const {
+        return *this == v;
+    }
+
+    Valuable Valuable::Eval(const vars_cont_t& vars) const {
+        Valuable result = *this;
+        for (const auto& [var, val] : vars) {
+            result = result.Eval(var, val);
+        }
+        return result;
+    }
+
     bool Valuable::HasSameVars(const Valuable& v) const {
         std::set<Variable> thisVa, vVa;
         CollectVa(thisVa);
