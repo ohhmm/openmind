@@ -317,6 +317,9 @@ std::type_index Valuable::Type() const
 Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
 Valuable::Valuable(Valuable* v) : exp(v) {}
 
+namespace omnn {
+namespace math {
+
 Valuable& Valuable::Become(Valuable&& i)
 {
     if (Same(i))
@@ -384,9 +387,6 @@ Valuable& Valuable::Become(Valuable&& i)
 
     return *this;
 }
-
-namespace omnn {
-namespace math {
 
 Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
 Valuable::Valuable(Valuable* v) : exp(v) {}
