@@ -85,6 +85,8 @@ namespace constants {
     };
 }
 
+namespace omnn::math {
+
 vars_cont_t Valuable::calcCommonVars() const {
     vars_cont_t commonVars;
     // Implementation logic here
@@ -134,6 +136,45 @@ void Valuable::optimize() {
     BOOST_LOG_TRIVIAL(info) << "Exiting optimize() with recursion depth: " << recursion_depth;
 }
 
+Valuable Valuable::Eval(const vars_cont_t& with) const {
+    if (exp)
+        return exp->Eval(with);
+    else
+        return *this;
+}
+
+bool Valuable::OfSameType(const Valuable& v) const {
+    if (exp)
+        return exp->OfSameType(v);
+    else
+        return typeid(*this) == typeid(v);
+}
+
+bool Valuable::Same(const Valuable& v) const {
+    if (exp)
+        return exp->Same(v);
+    else
+        return *this == v;
+}
+
+bool Valuable::HasSameVars(const Valuable& v) const {
+    if (exp)
+        return exp->HasSameVars(v);
+    else
+        return getCommonVars() == v.getCommonVars();
+}
+
+max_exp_t Valuable::getMaxVaExp() const {
+    if (exp)
+        return exp->getMaxVaExp();
+    else
+        return maxVaExp;
+}
+
+} // namespace omnn::math
+
+namespace omnn::math {
+
 void Valuable::New(void*, Valuable&&) {
     IMPLEMENT
 }
@@ -148,15 +189,8 @@ Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
     assert(!exp);
 }
 
-Valuable& Valuable::operator =(const Valuable& v) {
-    exp.reset(v.Clone());
-    return *this;
-}
-
-Valuable& Valuable::operator =(Valuable&& v) {
-    return Become(std::move(v));
-}
-
+namespace omnn::math {
+namespace omnn::math {
 Valuable Valuable::Sin() const {
     if (exp)
         return exp->Sin();
@@ -167,6 +201,88 @@ Valuable Valuable::Sin() const {
 }
 
 Valuable Valuable::Cos() const {
+    if (exp)
+        return exp->Cos();
+    else {
+        return ((constant::e ^ Product{ constant::i, *this }) + (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / 2;
+    }
+}
+Valuable Valuable::Sin() const {
+Valuable Valuable::Sqrt() const {
+    if(exp)
+        return exp->Sqrt();
+    else
+        return PrincipalSurd(*this, 2);
+    }
+}
+    if (exp)
+Valuable& Valuable::sqrt() {
+    if (exp)
+        return exp->sqrt();
+    else
+        return Become(Sqrt());
+    }
+}
+        return exp->Sin();
+Valuable Valuable::Tg() const {
+    if (exp)
+        return exp->Tg();
+    else {
+        return Sin() / Cos();
+    }
+}
+    else {
+Valuable& Valuable::sq() {
+    if (exp)
+        return exp->sq();
+    else
+        return Become(*this * *this);
+}
+        static const Product _2i{ 2, constant::i };
+bool Valuable::IsSubObject(const Valuable& o) const {
+    if (exp)
+        return exp->IsSubObject(o);
+    else
+        IMPLEMENT
+}
+        return ((constant::e ^ Product{ constant::i, *this }) - (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / _2i;
+const Valuable Valuable::Link() const {
+    if(exp)
+        return Valuable(exp);
+    IMPLEMENT
+}
+    }
+Valuable* Valuable::Clone() const {
+    if (exp)
+        return exp->Clone();
+    else
+        IMPLEMENT
+}
+}
+Valuable* Valuable::Move() {
+    if (exp)
+        return exp->Move();
+    else
+        IMPLEMENT
+}
+
+Valuable::encapsulated_instance Valuable::SharedFromThis() {
+    if (exp)
+        return exp;
+    else
+        IMPLEMENT;
+}
+Valuable Valuable::Cos() const {
+std::type_index Valuable::Type() const
+{
+    if (exp)
+        return exp->Type();
+#ifdef __APPLE__
+    LOG_AND_IMPLEMENT(" Implement Type() ");
+#else
+    LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
+#endif
+}
     if (exp)
         return exp->Cos();
     else {
@@ -202,6 +318,8 @@ Valuable& Valuable::sq() {
     else
         return Become(*this * *this);
 }
+
+} // namespace omnn::math
 
 bool Valuable::IsSubObject(const Valuable& o) const {
     if (exp)
@@ -315,13 +433,9 @@ Valuable& Valuable::Become(Valuable&& i)
             }
             SetView(newWasView);
             optimize();
-        }
-        else if(exp && exp->getAllocSize() >= newSize)
-        {
+        } else if(exp && exp->getAllocSize() >= newSize) {
             exp->Become(std::move(i));
-        }
-        else
-        {
+        } else {
             auto moved = i.Move();
             this->~Valuable();
             new(this) Valuable(moved);
@@ -340,13 +454,11 @@ Valuable& Valuable::Become(Valuable&& i)
     return *this;
 }
 
-Valuable& Valuable::operator =(Valuable&& v)
-{
+Valuable& Valuable::operator =(Valuable&& v) {
     return Become(std::move(v));
 }
 
-Valuable& Valuable::operator =(const Valuable& v)
-{
+Valuable& Valuable::operator =(const Valuable& v) {
     exp.reset(v.Clone());
     return *this;
 }
@@ -1529,6 +1641,45 @@ Valuable& Valuable::sq() {
 
         Valuable::optimizations = optimizationsWas;
     }
+
+namespace omnn::math {
+
+Valuable Valuable::IntMod_Sign() const {
+    if (exp)
+        return exp->IntMod_Sign();
+    else
+        return *this < 0 ? -1 : (*this > 0 ? 1 : 0);
+}
+
+Valuable Valuable::IntMod_IsPositive() const {
+    if (exp)
+        return exp->IntMod_IsPositive();
+    else
+        return *this > 0;
+}
+
+Valuable Valuable::ToBool() const {
+    if (exp)
+        return exp->ToBool();
+    else
+        return *this != 0;
+}
+
+Valuable Valuable::IfzToBool() const {
+    if (exp)
+        return exp->IfzToBool();
+    else
+        return *this == 0 ? 1 : 0;
+}
+
+Valuable Valuable::IntMod_Less(const Valuable& than) const {
+    if (exp)
+        return exp->IntMod_Less(than);
+    else
+        return *this < than;
+}
+
+} // namespace omnn::math
 
     Valuable::~Valuable()
     {
