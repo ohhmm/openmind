@@ -234,12 +234,6 @@ Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
     assert(!exp);
 }
 
-Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-{
-    assert(!exp);
-}
-
 std::type_index Valuable::Type() const
 {
     if (exp)
