@@ -314,9 +314,6 @@ std::type_index Valuable::Type() const
 #endif
 }
 
-namespace omnn {
-namespace math {
-
 Valuable& Valuable::Become(Valuable&& i)
 {
     if (Same(i))
@@ -385,6 +382,9 @@ Valuable& Valuable::Become(Valuable&& i)
     return *this;
 }
 
+} // namespace math
+} // namespace omnn
+
 Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
 Valuable::Valuable(Valuable* v) : exp(v) {}
 Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
@@ -394,9 +394,6 @@ Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::mov
 Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
 Valuable::Valuable(const a_rational& r) : exp(std::move(std::make_shared<Fraction>(r))) { exp->optimize(); }
 Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(std::move(r)))) { exp->optimize(); }
-
-} // namespace math
-} // namespace omnn
 
     namespace{
         template<typename T>
