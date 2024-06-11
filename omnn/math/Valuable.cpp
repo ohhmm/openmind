@@ -317,13 +317,44 @@ std::type_index Valuable::Type() const
 namespace omnn {
 namespace math {
 
+auto BracketsMap(const std::string_view& s){
+    auto l = s.length();
+    using index_t = decltype(l);
+    std::stack <index_t> st;
+    std::map<index_t, index_t> bracketsmap;
+    decltype(l) c = 0;
+    while (c < l)
+    {
+        if (s[c] == '(')
+            st.push(c);
+        else if (s[c] == ')')
+        {
+            if (st.empty()) {
+                throw "parentneses relation missmatch";
+            }
+            bracketsmap.emplace(st.top(), c);
+            st.pop();
+        }
+        ++c;
+    }
+    if (!st.empty())
+        throw "parentneses relation missmatch";
+    return bracketsmap;
+}
+
+constexpr std::string_view& Trim(std::string_view& s) {
+    s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
+    s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
+    return s;
+}
+
 auto OmitOuterBrackets(std::string_view& s) {
-    decltype(omnn::math::BracketsMap({})) bracketsmap;
+    decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do{
         outerBracketsDetected = {};
-        omnn::math::Trim(s);
-        bracketsmap = omnn::math::BracketsMap(s);
+        Trim(s);
+        bracketsmap = BracketsMap(s);
         auto l = s.length();
         auto first = bracketsmap.find(0);
         outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
