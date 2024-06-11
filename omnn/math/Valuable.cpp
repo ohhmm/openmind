@@ -713,6 +713,8 @@ constexpr std::string_view& Trim(std::string_view& s) {
 
 #include "Valuable.h"
 
+namespace omnn::math {
+
 auto OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
@@ -728,6 +730,10 @@ auto OmitOuterBrackets(std::string_view& s) {
     } while(outerBracketsDetected);
     return bracketsmap;
 }
+
+// Other functions and code within the namespace
+
+} // namespace omnn::math
 
 namespace {
     // Other code in the unnamed namespace
