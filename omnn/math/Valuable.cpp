@@ -319,10 +319,26 @@ struct HashStrOmitOuterBrackets
 {
     [[nodiscard]] size_t operator()(const std::string_view& s) const {
         auto str = s;
-        OmitOuterBrackets(str);
+        omnn::math::OmitOuterBrackets(str);
         return std::hash<std::string_view>::operator()(str);
     }
 };
+
+[[nodiscard]] bool operator()(const std::string_view& str1, const std::string_view& str2) const {
+    auto s = val->str();
+    if (s != str1) {
+        if (s == str2) {
+            return val->SerializedStrEqual(str1);
+        } else {
+            auto s1 = str1;
+            omnn::math::OmitOuterBrackets(s1);
+            auto s2 = str2;
+            omnn::math::OmitOuterBrackets(s2);
+            return s1 == s2;
+        }
+    } else
+        return val->SerializedStrEqual(str2);
+}
 
 } // namespace math
 } // namespace omnn
