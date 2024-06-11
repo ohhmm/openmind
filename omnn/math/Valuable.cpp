@@ -324,28 +324,6 @@ struct HashStrOmitOuterBrackets
     }
 };
 
-[[nodiscard]] bool StateProxyComparator::operator()(const std::string_view& str1, const std::string_view& str2) const {
-    auto s = val->str();
-    if (s != str1) {
-        if (s == str2) {
-            return val->SerializedStrEqual(str1);
-        } else {
-            auto s1 = str1;
-            omnn::math::OmitOuterBrackets(s1);
-            auto s2 = str2;
-            omnn::math::OmitOuterBrackets(s2);
-            return s1 == s2;
-        }
-    } else
-        return val->SerializedStrEqual(str2);
-}
-
-} // namespace math
-} // namespace omnn
-
-namespace omnn {
-namespace math {
-
 class StateProxyComparator
 {
 public:
@@ -355,6 +333,40 @@ public:
 private:
     const Valuable* val;
     static thread_local const Valuable* state;
+
+    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str,
+                                                                               char delimiter) {
+        tokens_collection_t tokens;
+        ::std::stack<char> braceStack;
+        size_t start = 0;
+
+        for (size_t i = 0; i < str.size(); ++i) {
+            char c = str[i];
+
+            // Push opening braces onto the stack
+            if (c == '(' || c == '{' || c == '[') {
+                braceStack.push(c);
+            }
+            // Pop matching opening braces from the stack
+            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
+                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
+                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
+                braceStack.pop();
+            }
+            // Tokenize at delimiter if not within braces
+            else if (c == delimiter && braceStack.empty()) {
+                tokens.emplace(str.data() + start, i - start);
+                start = i + 1;
+            }
+        }
+
+        // Add the last token after the final delimiter if it's not at the end of the string
+        if (start < str.size()) {
+            tokens.emplace(str.data() + start, str.size() - start);
+        }
+
+        return tokens;
+    }
 
 public:
     StateProxyComparator() { val = state; }
@@ -391,10 +403,7 @@ public:
         return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
     }
 };
-thread_local const Valuable* StateProxyComparator::state = {};
 
-} // namespace math
-} // namespace omnn
 thread_local const Valuable* StateProxyComparator::state = {};
 
 namespace omnn {
