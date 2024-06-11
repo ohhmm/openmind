@@ -709,6 +709,8 @@ constexpr std::string_view& Trim(std::string_view& s) {
     return s;
 }
 
+#include "Valuable.h"
+
 auto OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
@@ -723,6 +725,10 @@ auto OmitOuterBrackets(std::string_view& s) {
             s = s.substr(1,l-2);
     } while(outerBracketsDetected);
     return bracketsmap;
+}
+
+namespace {
+    // Other code in the unnamed namespace
 }
 
 std::string Solid(std::string s) {
