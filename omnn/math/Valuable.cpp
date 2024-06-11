@@ -378,9 +378,9 @@ public:
                 return val->SerializedStrEqual(str1);
             } else {
                 auto s1 = str1;
-                OmitOuterBrackets(s1);
+                omnn::math::OmitOuterBrackets(s1);
                 auto s2 = str2;
-                OmitOuterBrackets(s2);
+                omnn::math::OmitOuterBrackets(s2);
                 return s1 == s2;
             }
         } else
@@ -839,9 +839,9 @@ public:
                 return val->SerializedStrEqual(str1);
             } else {
                 auto s1 = str1;
-                OmitOuterBrackets(s1);
+                omnn::math::OmitOuterBrackets(s1);
                 auto s2 = str2;
-                OmitOuterBrackets(s2);
+                omnn::math::OmitOuterBrackets(s2);
                 return s1 == s2;
             }
         } else
