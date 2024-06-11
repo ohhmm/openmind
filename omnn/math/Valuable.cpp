@@ -54,268 +54,10 @@ using namespace std::string_view_literals;
 namespace omnn {
 namespace math {
 
-using vars_cont_t = std::map<Variable, Valuable>;
-
-const a_int Valuable::a_int_cz = 0;
-const max_exp_t Valuable::max_exp_cz = max_exp_t(a_int_cz);
-
-namespace constants {
-    constexpr const Valuable& e = constant::e;
-    constexpr const Valuable& i = constant::i;
-    constexpr const Valuable& zero = vo<0>();
-    constexpr const Valuable& one = vo<1>();
-    constexpr const Valuable& two = vo<2>();
-    const Fraction Half{1_v, 2_v};
-    constexpr const Valuable& half = Half;
-    const Fraction Quarter {1, 4};
-    constexpr const Valuable& quarter = Quarter;
-    constexpr const Valuable& minus_1 = vo<-1>();
-
-    const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-    const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
-    const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
-    const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
-    constexpr const Valuable& pi = constant::pi;
-    constexpr const Valuable& infinity = Infinity::GlobalObject;
-    constexpr const Valuable& minfinity = MInfinity::GlobalObject;
-    const Variable& integration_result_constant = "integration_result_constant"_va;
-
-    std::map<std::string_view, Valuable> Constants ={
-        {"e", constant::e},
-        {"i", constant::i},
-        {"pi", constant::pi},
-    };
+std::string Solid(std::string s) {
+    s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
+    return s;
 }
-
-vars_cont_t Valuable::calcCommonVars() const {
-    vars_cont_t commonVars;
-    // Implementation logic here
-    return commonVars;
-}
-
-const vars_cont_t& Valuable::getCommonVars() const {
-    static vars_cont_t commonVars;
-    // Implementation logic here
-    return commonVars;
-}
-
-void Valuable::optimize() {
-    static const int MAX_RECURSION_DEPTH = 1000;
-    static thread_local int recursion_depth = 0;
-
-    if (recursion_depth > MAX_RECURSION_DEPTH) {
-        BOOST_LOG_TRIVIAL(error) << "Max recursion depth exceeded in optimize()";
-        return;
-    }
-
-    BOOST_LOG_TRIVIAL(info) << "Entering optimize() with recursion depth: " << recursion_depth;
-    recursion_depth++;
-
-    if (exp) {
-        if (optimizations) {
-            std::unordered_set<const Valuable*> visited;
-            while (exp->exp) {
-                if (visited.find(exp.get()) != visited.end()) {
-                    BOOST_LOG_TRIVIAL(error) << "Cycle detected in exp chain";
-                    return;
-                }
-                visited.insert(exp.get());
-                BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain: " << exp;
-                exp = exp->exp;
-            }
-            BOOST_LOG_TRIVIAL(info) << "Calling optimize on: " << exp;
-            exp->optimize();
-            while (exp->exp) {
-                BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain after optimize: " << exp;
-                exp = exp->exp;
-            }
-        }
-    }
-
-    recursion_depth--;
-    BOOST_LOG_TRIVIAL(info) << "Exiting optimize() with recursion depth: " << recursion_depth;
-}
-
-Valuable Valuable::Eval(const vars_cont_t& with) const {
-    if (exp)
-        return exp->Eval(with);
-    else
-        return *this;
-}
-
-bool Valuable::OfSameType(const Valuable& v) const {
-    if (exp)
-        return exp->OfSameType(v);
-    else
-        return typeid(*this) == typeid(v);
-}
-
-bool Valuable::Same(const Valuable& v) const {
-    if (exp)
-        return exp->Same(v);
-    else
-        return *this == v;
-}
-
-bool Valuable::HasSameVars(const Valuable& v) const {
-    if (exp)
-        return exp->HasSameVars(v);
-    else
-        return getCommonVars() == v.getCommonVars();
-}
-
-max_exp_t Valuable::getMaxVaExp() const {
-    if (exp)
-        return exp->getMaxVaExp();
-    else
-        return maxVaExp;
-}
-
-void Valuable::New(void*, Valuable&&) {
-    IMPLEMENT
-}
-
-Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
-    assert(!exp);
-}
-
-Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
-    assert(!exp);
-}
-
-Valuable Valuable::Sin() const {
-    if (exp)
-        return exp->Sin();
-    else {
-        static const Product _2i{ 2, constant::i };
-        return ((constant::e ^ Product{ constant::i, *this }) - (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / _2i;
-    }
-}
-
-Valuable Valuable::Cos() const {
-    if (exp)
-        return exp->Cos();
-    else {
-        return ((constant::e ^ Product{ constant::i, *this }) + (constant::e ^ Product{ constants::minus_1, constant::i, *this })) / 2;
-    }
-}
-
-Valuable Valuable::Sqrt() const {
-    if(exp)
-        return exp->Sqrt();
-    else
-        return PrincipalSurd(*this, 2);
-}
-
-Valuable& Valuable::sqrt() {
-    if (exp)
-        return exp->sqrt();
-    else
-        return Become(Sqrt());
-}
-
-Valuable Valuable::Tg() const {
-    if (exp)
-        return exp->Tg();
-    else {
-        return Sin() / Cos();
-    }
-}
-
-Valuable& Valuable::Become(Valuable&& i)
-{
-    if (Same(i))
-        return *this;
-    auto newWasView = GetView(); // TODO: fix it, supervise all View usages
-    i.SetView(newWasView);
-    auto h = i.Hash();
-    auto e = i.exp;
-    if(e)
-    {
-        while (e->exp) {
-            BOOST_LOG_TRIVIAL(info) << "Iterating through exp chain in Become: " << e;
-            e = e->exp;
-        }
-
-        if(exp)
-        {
-            exp = e;
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-        }
-        else
-        {
-            Become(std::move(*e));
-        }
-
-        e.reset();
-    }
-    else
-    {
-        auto sizeWas = getAllocSize();
-        auto newSize = i.getTypeSize();
-
-        if (newSize <= sizeWas) {
-            assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
-            char buf[DefaultAllocSize];
-            i.New(buf, std::move(i));
-            Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
-            this->~Valuable();
-            bufv.New(this, std::move(bufv));
-            setAllocSize(sizeWas);
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-            SetView(newWasView);
-            optimize();
-        } else if(exp && exp->getAllocSize() >= newSize) {
-            exp->Become(std::move(i));
-        } else {
-            auto moved = i.Move();
-            this->~Valuable();
-            new(this) Valuable(moved);
-            setAllocSize(sizeWas);
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-            optimize();
-        }
-    }
-    if(GetView() != newWasView){
-        SetView(newWasView);
-        IMPLEMENT
-    }
-
-    return *this;
-}
-
-Valuable& Valuable::operator =(Valuable&& v)
-{
-    return Become(std::move(v));
-}
-
-Valuable& Valuable::operator =(const Valuable& v)
-{
-    exp.reset(v.Clone());
-    return *this;
-}
-
-std::type_index Valuable::Type() const
-{
-    if (exp)
-        return exp->Type();
-#ifdef __APPLE__
-    LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
-    LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
-}
-
-namespace omnn {
-namespace math {
 
 auto BracketsMap(const std::string_view& s){
     auto l = s.length();
@@ -348,7 +90,7 @@ constexpr std::string_view& Trim(std::string_view& s) {
     return s;
 }
 
-auto OmitOuterBrackets(std::string_view& s) {
+void OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do{
@@ -361,7 +103,6 @@ auto OmitOuterBrackets(std::string_view& s) {
         if (outerBracketsDetected)
             s = s.substr(1,l-2);
     } while(outerBracketsDetected);
-    return bracketsmap;
 }
 
 template<typename T>
@@ -432,111 +173,19 @@ Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuabl
     return MergeOr(_1, _2);
 }
 
-Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
-{
-    return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
+void Optimize(Valuable::solutions_t& s) {
+    Valuable::solutions_t distinct;
+    Valuable::OptimizeOn enable;
+    while (s.size()) {
+        auto it = s.begin();
+        auto v = std::move(s.extract(it).value());
+        v.optimize();
+        distinct.emplace(std::move(v));
+    }
+    std::swap(s, distinct);
 }
 
-Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
-Valuable::Valuable(Valuable* v) : exp(v) {}
-Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
-Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
-Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
-Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
-Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
-Valuable::Valuable(const a_rational& r) : exp(std::move(std::make_shared<Fraction>(r))) { exp->optimize(); }
-Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(std::move(r)))) { exp->optimize(); }
-
-bool Valuable::SerializedStrEqual(const std::string_view& s) const {
-    auto _ = str();
-    auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
-    if (!same) {
-        auto _1 = Solid(_), _2 = Solid(std::string(s));
-        same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
-        if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
-            _2 = a_int(s).str();
-            same = _1 == _2;
-        }
-        if (!same) {
-            boost::replace_all(_1, "+-", "-");
-            boost::replace_all(_2, "+-", "-");
-            same = _1 == _2;
-        }
-        while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
-            _1 = _1.substr(1, _1.length() - 2);
-            same = _1 == _2;
-        }
-        if (!same) {
-            std::map<char, a_int> m1, m2;
-            for (char c : _1)
-                if (c != '+')
-                        ++m1[c];
-            for (char c : _2)
-                if (c != '+')
-                        ++m2[c];
-            same = m1 == m2;
-        }
-
-        while (!same && _1.front() == '(' && _1.back() == ')') {
-            auto _1len = _1.length();
-            auto _2len = _2.length();
-            auto diff = _1len - _2len;
-            auto dhalf = diff >> 1;
-            if (diff > 0 && !(diff & 1) && _1.substr(dhalf, _1len - diff) == _2) {
-                _1 = _1.substr(1, _1.length() - 2);
-                same = _1 == _2;
-            } else {
-                break;
-            }
-        }
-        if (!same) {
-            auto str2set = [this](auto& str) {
-                StateProxyComparator strCmpPassthrough(this);
-                auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(str, '+');
-                std::unordered_multiset<decltype(sumItemsSubstrings), hash_tokens_collection_t> sets;
-                for (auto& s : sumItemsSubstrings) {
-                    sets.insert(strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(s, '*'));
-                }
-                return sets;
-            };
-            auto svSet1 = str2set(_1);
-            auto svSet2 = str2set(_2);
-            same = svSet1 == svSet2;
-        }
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if (!same) {
-            std::cout << "SerializedStrEqual: " << _ << " != " << s << std::endl
-                      << _1 << "\n !=\n"
-                      << _2 << std::endl;
-            Valuable v(s, getVaHost(), is_optimized());
-            same = operator==(v);
-            if(same) {
-				std::cout << " operator==(" << s << ") == true" << std::endl;
-			}
-        }
-#endif // !NDEBUG
-    }
-    return same;
-}
-
-} // namespace math
-} // namespace omnn
-
-namespace {
-    void Optimize(Valuable::solutions_t& s) {
-        Valuable::solutions_t distinct;
-        Valuable::OptimizeOn enable;
-        while (s.size()) {
-            auto it = s.begin();
-            auto v = std::move(s.extract(it).value());
-            v.optimize();
-            distinct.emplace(std::move(v));
-        }
-        std::swap(s, distinct);
-    }
-} // namespace
-Valuable::Valuable(solutions_t&& s)
-{
+Valuable::Valuable(solutions_t&& s) {
     if (!optimizations
         || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
     ) {
@@ -642,265 +291,6 @@ Valuable::Valuable(solutions_t&& s)
     }
 }
 
-
-    namespace{
-        //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, constants::half)-b)/(a*2));
-        //    auto aMergeOrF = MergeOrF(a);
-        //    auto bMergeOrF = MergeOrF(b);
-        //    auto cMergeOrF = MergeOrF(c);
-    }
-    namespace {
-    void Optimize(Valuable::solutions_t& s) {
-        Valuable::solutions_t distinct;
-        Valuable::OptimizeOn enable;
-        while (s.size()) {
-            auto it = s.begin();
-            auto v = std::move(s.extract(it).value());
-            v.optimize();
-            distinct.emplace(std::move(v));
-        }
-        std::swap(s, distinct);
-    }
-    } // namespace
-    Valuable::Valuable(solutions_t&& s)
-    {
-        if (!optimizations
-            || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
-        ) {
-            Optimize(s);
-        }
-
-        auto it = s.begin();
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        std::cout << " Merging [ ";
-        for(auto& item: s){
-            std::cout << item << ' ';
-        }
-        std::cout << ']' << std::endl;
-#endif
-        switch (s.size()) {
-        case 0: IMPLEMENT; break;
-        case 1: operator=(*it); break;
-        case 2: {
-            auto& _1 = *it++;
-            auto& _2 = *it;
-            operator=(MergeOr(_1, _2));
-            break;
-        }
-        case 3: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it;
-            operator=(MergeOr(_1, _2, _3));
-            break;
-        }
-        case 4: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it++;
-            auto& _4 = *it;
-            operator=(MergeOr(_1, _2, _3, _4));
-            break;
-        }
-        default:
-            solutions_t pairs;
-            for (; it != s.end();) {
-                auto it2 = it;
-                ++it2;
-                auto neg = -*it;
-                bool found = {};
-                for (; it2 != s.end();) {
-                    found = it2->operator==(neg);
-                    if (found) {
-                        pairs.emplace(MergeOr(*it, neg));
-                        s.erase(it2);
-                        s.erase(it++);
-                        break;
-                    } else {
-                        ++it2;
-                    }
-                }
-                if (!found) {
-                    ++it;
-                }
-            }
-            if (!s.size()) {
-                s = std::move(pairs);
-            }
-
-            if (pairs.size()) {
-                operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
-            } else {
-                while(s.size() > 1){
-                    solutions_t ss;
-                    while(s.size() >= 4){
-                        auto it = s.begin();
-                        auto& _1 = *it++;
-                        auto& _2 = *it++;
-                        auto& _3 = *it++;
-                        auto& _4 = *it++;
-                        ss.emplace(MergeOr(_1, _2, _3, _4));
-                    }
-                    if(s.size()){
-                        ss.emplace(std::move(s));
-                    }
-                    s = std::move(ss);
-                }
-                operator=(std::move(s.extract(s.begin()).value()));
-            }
-
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            if(s.size() > 1){
-                auto distinct = Distinct();
-                if (distinct != s) {
-                    std::stringstream ss;
-                    ss << '(';
-                    for (auto& v : s)
-                        ss << ' ' << v;
-                    ss << " ) <> (";
-                    for (auto& v : distinct)
-                        ss << ' ' << v;
-                    ss << " )";
-                    std::cout << ss.str();
-                    LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
-                }
-            }
-#endif
-        }
-    }
-
-    namespace {
-    void Optimize(Valuable::solutions_t& s) {
-        Valuable::solutions_t distinct;
-        Valuable::OptimizeOn enable;
-        while (s.size()) {
-			auto it = s.begin();
-			auto v = std::move(s.extract(it).value());
-            v.optimize();
-            distinct.emplace(std::move(v));
-		}
-		std::swap(s, distinct);
-    }
-    } // namespace
-    Valuable::Valuable(solutions_t&& s)
-    {
-        if (!optimizations
-            || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
-        ) {
-            Optimize(s);
-        }
-
-        auto it = s.begin();
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-		std::cout << " Merging [ ";
-        for(auto& item: s){
-            std::cout << item << ' ';
-        }
-        std::cout << ']' << std::endl;
-#endif
-        switch (s.size()) {
-        case 0: IMPLEMENT; break;
-        case 1: operator=(*it); break;
-        case 2: {
-            auto& _1 = *it++;
-            auto& _2 = *it;
-            operator=(MergeOr(_1, _2));
-            break;
-        }
-        case 3: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it;
-            operator=(MergeOr(_1, _2, _3));
-            break;
-        }
-        case 4: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it++;
-            auto& _4 = *it;
-            operator=(MergeOr(_1, _2, _3, _4));
-            break;
-        }
-        default:
-            solutions_t pairs;
-            for (; it != s.end();) {
-                auto it2 = it;
-                ++it2;
-                auto neg = -*it;
-                bool found = {};
-                for (; it2 != s.end();) {
-                    found = it2->operator==(neg);
-                    if (found) {
-                        pairs.emplace(MergeOr(*it, neg));
-                        s.erase(it2);
-                        s.erase(it++);
-                        break;
-                    } else {
-                        ++it2;
-                    }
-                }
-                if (!found) {
-                    ++it;
-                }
-            }
-            if (s.size() == 0) {
-                s = std::move(pairs);
-            }
-
-            if (pairs.size()) {
-                operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
-            } else {
-                while(s.size() > 1){
-                    solutions_t ss;
-				    while(s.size() >= 4){
-					    auto it = s.begin();
-					    auto& _1 = *it++;
-					    auto& _2 = *it++;
-                        auto& _3 = *it++;
-                        auto& _4 = *it++;
-                        ss.emplace(MergeOr(_1, _2, _3, _4));
-				    }
-                    if(s.size()){
-					    ss.emplace(std::move(s));
-                    }
-                    s = std::move(ss);
-                }
-                operator=(std::move(s.extract(s.begin()).value()));
-			}
-
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            std::stringstream ss;
-            ss << '(';
-            for (auto& v : s)
-                ss << ' ' << v;
-            ss << " )";
-            std::cout << ss.str();
-            LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << s.size() << " items " << ss.str());
-#else
-            LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
-#endif
-        }
-
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if(s.size() > 1){
-            auto distinct = Distinct();
-            if (distinct != s) {
-                std::stringstream ss;
-                ss << '(';
-                for (auto& v : s)
-                    ss << ' ' << v;
-                ss << " ) <> (";
-                for (auto& v : distinct)
-                    ss << ' ' << v;
-                ss << " )";
-                std::cout << ss.str();
-                LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
-            }
-        }
-#endif
-    }
-
 struct HashStrOmitOuterBrackets
     : public std::hash<std::string_view>
 {
@@ -993,10 +383,204 @@ public:
 
 thread_local const Valuable* StateProxyComparator::state = {};
 
-namespace omnn {
-namespace math {
+void Optimize(Valuable::solutions_t& s) {
+    Valuable::solutions_t distinct;
+    Valuable::OptimizeOn enable;
+    while (s.size()) {
+        auto it = s.begin();
+        auto v = std::move(s.extract(it).value());
+        v.optimize();
+        distinct.emplace(std::move(v));
+    }
+    std::swap(s, distinct);
+}
 
-// Other functions and code within the namespace
+Valuable::Valuable(solutions_t&& s) {
+    if (!optimizations
+        || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
+    ) {
+        Optimize(s);
+    }
+
+    auto it = s.begin();
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+    std::cout << " Merging [ ";
+    for(auto& item: s){
+        std::cout << item << ' ';
+    }
+    std::cout << ']' << std::endl;
+#endif
+    switch (s.size()) {
+    case 0: IMPLEMENT; break;
+    case 1: operator=(*it); break;
+    case 2: {
+        auto& _1 = *it++;
+        auto& _2 = *it;
+        operator=(MergeOr(_1, _2));
+        break;
+    }
+    case 3: {
+        auto& _1 = *it++;
+        auto& _2 = *it++;
+        auto& _3 = *it;
+        operator=(MergeOr(_1, _2, _3));
+        break;
+    }
+    case 4: {
+        auto& _1 = *it++;
+        auto& _2 = *it++;
+        auto& _3 = *it++;
+        auto& _4 = *it;
+        operator=(MergeOr(_1, _2, _3, _4));
+        break;
+    }
+    default:
+        solutions_t pairs;
+        for (; it != s.end();) {
+            auto it2 = it;
+            ++it2;
+            auto neg = -*it;
+            bool found = {};
+            for (; it2 != s.end();) {
+                found = it2->operator==(neg);
+                if (found) {
+                    pairs.emplace(MergeOr(*it, neg));
+                    s.erase(it2);
+                    s.erase(it++);
+                    break;
+                } else {
+                    ++it2;
+                }
+            }
+            if (!found) {
+                ++it;
+            }
+        }
+        if (!s.size()) {
+            s = std::move(pairs);
+        }
+
+        if (pairs.size()) {
+            operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
+        } else {
+            while(s.size() > 1){
+                solutions_t ss;
+                while(s.size() >= 4){
+                    auto it = s.begin();
+                    auto& _1 = *it++;
+                    auto& _2 = *it++;
+                    auto& _3 = *it++;
+                    auto& _4 = *it++;
+                    ss.emplace(MergeOr(_1, _2, _3, _4));
+                }
+                if(s.size()){
+                    ss.emplace(std::move(s));
+                }
+                s = std::move(ss);
+            }
+            operator=(std::move(s.extract(s.begin()).value()));
+        }
+
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if(s.size() > 1){
+            auto distinct = Distinct();
+            if (distinct != s) {
+                std::stringstream ss;
+                ss << '(';
+                for (auto& v : s)
+                    ss << ' ' << v;
+                ss << " ) <> (";
+                for (auto& v : distinct)
+                    ss << ' ' << v;
+                ss << " )";
+                std::cout << ss.str();
+                LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+            }
+        }
+#endif
+    }
+}
+
+class StateProxyComparator {
+public:
+    using tokens_collection_t =
+        ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
+
+private:
+    const Valuable* val;
+    static thread_local const Valuable* state;
+
+    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str,
+                                                                               char delimiter) {
+        tokens_collection_t tokens;
+        ::std::stack<char> braceStack;
+        size_t start = 0;
+
+        for (size_t i = 0; i < str.size(); ++i) {
+            char c = str[i];
+
+            // Push opening braces onto the stack
+            if (c == '(' || c == '{' || c == '[') {
+                braceStack.push(c);
+            }
+            // Pop matching opening braces from the stack
+            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
+                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
+                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
+                braceStack.pop();
+            }
+            // Tokenize at delimiter if not within braces
+            else if (c == delimiter && braceStack.empty()) {
+                tokens.emplace(str.data() + start, i - start);
+                start = i + 1;
+            }
+        }
+
+        // Add the last token after the final delimiter if it's not at the end of the string
+        if (start < str.size()) {
+            tokens.emplace(str.data() + start, str.size() - start);
+        }
+
+        return tokens;
+    }
+
+public:
+    StateProxyComparator() { val = state; }
+
+    StateProxyComparator(const Valuable* v) {
+        state = v;
+        val = state;
+    }
+
+    StateProxyComparator(const Valuable& v) {
+        state = &v;
+        val = state;
+    }
+
+    ~StateProxyComparator() { state = val; }
+
+    [[nodiscard]] bool operator()(const std::string_view& str1, const std::string_view& str2) const {
+        auto s = val->str();
+        if (s != str1) {
+            if (s == str2) {
+                return val->SerializedStrEqual(str1);
+            } else {
+                auto s1 = str1;
+                omnn::math::OmitOuterBrackets(s1);
+                auto s2 = str2;
+                omnn::math::OmitOuterBrackets(s2);
+                return s1 == s2;
+            }
+        } else
+            return val->SerializedStrEqual(str2);
+    }
+
+    auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
+        return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
+    }
+};
+
+thread_local const Valuable* StateProxyComparator::state = {};
 
 } // namespace math
 } // namespace omnn
