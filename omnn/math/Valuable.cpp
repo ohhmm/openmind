@@ -382,6 +382,16 @@ Valuable& Valuable::Become(Valuable&& i)
     return *this;
 }
 
+struct HashStrOmitOuterBrackets
+    : public std::hash<std::string_view>
+{
+    [[nodiscard]] size_t operator()(const std::string_view& s) const {
+        auto str = s;
+        OmitOuterBrackets(str);
+        return std::hash<std::string_view>::operator()(str);
+    }
+};
+
 } // namespace math
 } // namespace omnn
 
