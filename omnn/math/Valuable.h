@@ -44,6 +44,7 @@ class Exponentiation;
 class Fraction;
 class Sum;
 size_t hash_value(const omnn::math::Valuable& v);
+void OmitOuterBrackets(std::string_view& s);
 } // namespace math
 } // namespace omnn
 

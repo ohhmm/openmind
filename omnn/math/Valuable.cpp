@@ -314,6 +314,38 @@ std::type_index Valuable::Type() const
 #endif
 }
 
+namespace omnn {
+namespace math {
+
+auto OmitOuterBrackets(std::string_view& s) {
+    decltype(BracketsMap({})) bracketsmap;
+    bool outerBracketsDetected;
+    do{
+        outerBracketsDetected = {};
+        Trim(s);
+        bracketsmap = BracketsMap(s);
+        auto l = s.length();
+        auto first = bracketsmap.find(0);
+        outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
+        if (outerBracketsDetected)
+            s = s.substr(1,l-2);
+    } while(outerBracketsDetected);
+    return bracketsmap;
+}
+
+template<typename T>
+constexpr T bits_in_use(T v) {
+    T bits = 0;
+    while (v) {
+        ++bits;
+        v = v >> 1;
+    }
+    return bits;
+}
+
+} // namespace math
+} // namespace omnn
+
 struct HashStrOmitOuterBrackets
     : public std::hash<std::string_view>
 {
@@ -409,6 +441,15 @@ thread_local const Valuable* StateProxyComparator::state = {};
 namespace omnn {
 namespace math {
 
+} // namespace math
+} // namespace omnn
+
+namespace omnn {
+namespace math {
+
+namespace omnn {
+namespace math {
+
 Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
 {
     Valuable merged;
@@ -472,12 +513,6 @@ Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
     return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
 }
 
-} // namespace math
-} // namespace omnn
-
-namespace omnn {
-namespace math {
-
 Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
 Valuable::Valuable(Valuable* v) : exp(v) {}
 Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
@@ -492,82 +527,129 @@ Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(st
 } // namespace omnn
 
     namespace{
-        template<typename T>
-        constexpr T bits_in_use(T v) {
-            T bits = 0;
-            while (v) {
-                ++bits;
-                v = v >> 1;
-            }
-            return bits;
-        }
-
         //    auto MergeOrF = x.Equals((Exponentiation((b ^ 2) - 4_v * a * c, constants::half)-b)/(a*2));
         //    auto aMergeOrF = MergeOrF(a);
         //    auto bMergeOrF = MergeOrF(b);
         //    auto cMergeOrF = MergeOrF(c);
     }
-    Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
-    {
-        Valuable merged;
-        if(_1 == _2)
-            merged = _1;
-        else if (_1 == -_2)
-        {
-            merged = _1 * constants::plus_minus_1;
+    namespace {
+    void Optimize(Valuable::solutions_t& s) {
+        Valuable::solutions_t distinct;
+        Valuable::OptimizeOn enable;
+        while (s.size()) {
+            auto it = s.begin();
+            auto v = std::move(s.extract(it).value());
+            v.optimize();
+            distinct.emplace(std::move(v));
         }
-        else
-        {
-            // a = 1;
-            auto s = _1 + _2;
-            if(s.IsZero())
-            {
-                merged = (!_1.IsProduct() ? _1 : _2) * constants::plus_minus_1;
-            }
-            else
-            {
-                OptimizeOff oo;
-                // b = -s;
-                auto c = _1 * _2;
-                auto d = s.Sq() + c * -4;
-                if (_1.IsMultival() == YesNoMaybe::No && _2.IsMultival() == YesNoMaybe::No) {
-                    merged = (Exponentiation(d, constants::half) + s) / constants::two;
-                } else {
-                    auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
-                    dist.merge(_2.Distinct());
-                    auto grade = dist.size();
-                    auto targetGrade = constants::one.Shl(bits_in_use(grade));
-                    merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
+        std::swap(s, distinct);
+    }
+    } // namespace
+    Valuable::Valuable(solutions_t&& s)
+    {
+        if (!optimizations
+            || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
+        ) {
+            Optimize(s);
+        }
+
+        auto it = s.begin();
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        std::cout << " Merging [ ";
+        for(auto& item: s){
+            std::cout << item << ' ';
+        }
+        std::cout << ']' << std::endl;
+#endif
+        switch (s.size()) {
+        case 0: IMPLEMENT; break;
+        case 1: operator=(*it); break;
+        case 2: {
+            auto& _1 = *it++;
+            auto& _2 = *it;
+            operator=(MergeOr(_1, _2));
+            break;
+        }
+        case 3: {
+            auto& _1 = *it++;
+            auto& _2 = *it++;
+            auto& _3 = *it;
+            operator=(MergeOr(_1, _2, _3));
+            break;
+        }
+        case 4: {
+            auto& _1 = *it++;
+            auto& _2 = *it++;
+            auto& _3 = *it++;
+            auto& _4 = *it;
+            operator=(MergeOr(_1, _2, _3, _4));
+            break;
+        }
+        default:
+            solutions_t pairs;
+            for (; it != s.end();) {
+                auto it2 = it;
+                ++it2;
+                auto neg = -*it;
+                bool found = {};
+                for (; it2 != s.end();) {
+                    found = it2->operator==(neg);
+                    if (found) {
+                        pairs.emplace(MergeOr(*it, neg));
+                        s.erase(it2);
+                        s.erase(it++);
+                        break;
+                    } else {
+                        ++it2;
+                    }
+                }
+                if (!found) {
+                    ++it;
                 }
             }
-        }
-        {
-            OptimizeOn oo;
-			merged.optimize();
-		}
-        return merged;
-    }
+            if (!s.size()) {
+                s = std::move(pairs);
+            }
 
-	Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
-        // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
-        return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
-    }
+            if (pairs.size()) {
+                operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
+            } else {
+                while(s.size() > 1){
+                    solutions_t ss;
+                    while(s.size() >= 4){
+                        auto it = s.begin();
+                        auto& _1 = *it++;
+                        auto& _2 = *it++;
+                        auto& _3 = *it++;
+                        auto& _4 = *it++;
+                        ss.emplace(MergeOr(_1, _2, _3, _4));
+                    }
+                    if(s.size()){
+                        ss.emplace(std::move(s));
+                    }
+                    s = std::move(ss);
+                }
+                operator=(std::move(s.extract(s.begin()).value()));
+            }
 
-    Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
-        auto _1 = MergeOr(v1, v2);
-        auto _2 = MergeOr(v3, v4);
-#ifndef NDEBUG
-        if(_1.IsMultival() != YesNoMaybe::Yes || _2.IsMultival() != YesNoMaybe::Yes) {
-            LOG_AND_IMPLEMENT(v1 << 'v' << v2 << 'v' << v3 << 'v' << v4 << " - emerging difficulty: "
-                              << v1 << 'v' << v2 << '=' << _1 << ", " << v3 << 'v' << v4 << '=' << _2);
-        }
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            if(s.size() > 1){
+                auto distinct = Distinct();
+                if (distinct != s) {
+                    std::stringstream ss;
+                    ss << '(';
+                    for (auto& v : s)
+                        ss << ' ' << v;
+                    ss << " ) <> (";
+                    for (auto& v : distinct)
+                        ss << ' ' << v;
+                    ss << " )";
+                    std::cout << ss.str();
+                    LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+                }
+            }
 #endif
-        return MergeOr(_1, _2);
-    }
-
-    Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
-    {
-        return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
+        }
     }
 
     namespace {
@@ -702,7 +784,9 @@ Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(st
 #endif
     }
 
-namespace{
+namespace omnn {
+namespace math {
+
 auto BracketsMap(const std::string_view& s){
     auto l = s.length();
     using index_t = decltype(l);
@@ -734,12 +818,6 @@ constexpr std::string_view& Trim(std::string_view& s) {
     return s;
 }
 
-#include "Valuable.h"
-
-#include "Valuable.h"
-
-namespace omnn::math {
-
 auto OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
@@ -755,6 +833,92 @@ auto OmitOuterBrackets(std::string_view& s) {
     } while(outerBracketsDetected);
     return bracketsmap;
 }
+
+template<typename T>
+constexpr T bits_in_use(T v) {
+    T bits = 0;
+    while (v) {
+        ++bits;
+        v = v >> 1;
+    }
+    return bits;
+}
+
+Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
+{
+    Valuable merged;
+    if(_1 == _2)
+        merged = _1;
+    else if (_1 == -_2)
+    {
+        merged = _1 * constants::plus_minus_1;
+    }
+    else
+    {
+        // a = 1;
+        auto s = _1 + _2;
+        if(s.IsZero())
+        {
+            merged = (!_1.IsProduct() ? _1 : _2) * constants::plus_minus_1;
+        }
+        else
+        {
+            OptimizeOff oo;
+            // b = -s;
+            auto c = _1 * _2;
+            auto d = s.Sq() + c * -4;
+            if (_1.IsMultival() == YesNoMaybe::No && _2.IsMultival() == YesNoMaybe::No) {
+                merged = (Exponentiation(d, constants::half) + s) / constants::two;
+            } else {
+                auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
+                dist.merge(_2.Distinct());
+                auto grade = dist.size();
+                auto targetGrade = constants::one.Shl(omnn::math::bits_in_use(grade));
+                merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
+            }
+        }
+    }
+    {
+        OptimizeOn oo;
+        merged.optimize();
+    }
+    return merged;
+}
+
+Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
+    // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
+    return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
+}
+
+Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
+    auto _1 = MergeOr(v1, v2);
+    auto _2 = MergeOr(v3, v4);
+#ifndef NDEBUG
+    if(_1.IsMultival() != YesNoMaybe::Yes || _2.IsMultival() != YesNoMaybe::Yes) {
+        LOG_AND_IMPLEMENT(v1 << 'v' << v2 << 'v' << v3 << 'v' << v4 << " - emerging difficulty: "
+                              << v1 << 'v' << v2 << '=' << _1 << ", " << v3 << 'v' << v4 << '=' << _2);
+    }
+#endif
+    return MergeOr(_1, _2);
+}
+
+Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
+{
+    return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
+}
+
+Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
+Valuable::Valuable(Valuable* v) : exp(v) {}
+Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
+Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
+Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
+Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
+Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
+Valuable::Valuable(const a_rational& r) : exp(std::move(std::make_shared<Fraction>(r))) { exp->optimize(); }
+Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(std::move(r)))) { exp->optimize(); }
+
+} // namespace math
+} // namespace omnn
 
 // Other functions and code within the namespace
 
