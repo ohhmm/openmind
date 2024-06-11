@@ -711,6 +711,8 @@ constexpr std::string_view& Trim(std::string_view& s) {
 
 #include "Valuable.h"
 
+#include "Valuable.h"
+
 auto OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
