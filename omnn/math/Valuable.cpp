@@ -318,12 +318,12 @@ namespace omnn {
 namespace math {
 
 auto OmitOuterBrackets(std::string_view& s) {
-    decltype(BracketsMap({})) bracketsmap;
+    decltype(omnn::math::BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do{
         outerBracketsDetected = {};
-        Trim(s);
-        bracketsmap = BracketsMap(s);
+        omnn::math::Trim(s);
+        bracketsmap = omnn::math::BracketsMap(s);
         auto l = s.length();
         auto first = bracketsmap.find(0);
         outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
@@ -441,15 +441,6 @@ thread_local const Valuable* StateProxyComparator::state = {};
 namespace omnn {
 namespace math {
 
-} // namespace math
-} // namespace omnn
-
-namespace omnn {
-namespace math {
-
-namespace omnn {
-namespace math {
-
 Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
 {
     Valuable merged;
@@ -479,7 +470,7 @@ Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
                 auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
                 dist.merge(_2.Distinct());
                 auto grade = dist.size();
-                auto targetGrade = constants::one.Shl(bits_in_use(grade));
+                auto targetGrade = constants::one.Shl(omnn::math::bits_in_use(grade));
                 merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
             }
         }
