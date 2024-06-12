@@ -179,6 +179,221 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     return same;
 }
 
+Valuable::~Valuable()
+{
+#ifdef OPENMIND_BUILD_GC
+    if (exp) {
+        #if 0
+        std::cout << *this << std::endl;
+        #endif
+        // Ensure Cache destructor is called
+        if (auto cache = dynamic_cast<Cache*>(exp.get())) {
+            delete cache;
+        }
+        rt::GC::DispatchDispose(std::move(exp));
+    }
+#endif
+}
+
+Valuable Valuable::operator -() const
+{
+    if(exp)
+        return exp->operator-();
+    else
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator +=(const Valuable& v) {
+    if(exp) {
+        Valuable& o = exp->operator+=(v);
+        if (o.exp) {
+            exp = o.exp;
+            return *this;
+        }
+        return o;
+    }
+    else
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator +=(int v)
+{
+    if(exp) {
+        Valuable& o = exp->operator+=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator *=(const Valuable& v)
+{
+    if (operator==(v)) {
+        sq();
+    }
+    else if (IsMultival() == YesNoMaybe::Yes && v.IsMultival() == YesNoMaybe::Yes) {
+        solutions_t s;
+        for (auto& m : Distinct())
+            for (auto& item : v.Distinct())
+                s.emplace(m * item);
+        Become(Valuable(std::move(s)));
+    }
+    else if (exp) {
+        auto& o = exp->operator*=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+    }
+    else
+        LOG_AND_IMPLEMENT(*this << " *= " << v);
+    return *this;
+}
+
+a_int Valuable::Complexity() const
+{
+    if(exp)
+        return exp->Complexity();
+    IMPLEMENT
+}
+
+bool Valuable::MultiplyIfSimplifiable(const Valuable& v)
+{
+    if(exp)
+        return exp->MultiplyIfSimplifiable(v);
+    else {
+        auto is = IsMultiplicationSimplifiable(v);
+        if (is.first)
+            Become(std::move(is.second));
+        return is.first;
+    }
+}
+
+std::pair<bool,Valuable> Valuable::IsMultiplicationSimplifiable(const Valuable& v) const
+{
+    if (!optimizations)
+        return {};
+    else if (exp)
+        return exp->IsMultiplicationSimplifiable(v);
+    else {
+        LOG_AND_IMPLEMENT(str() << "  *  " << v);
+        auto m = *this * v;
+        return { m.Complexity() < Complexity() + v.Complexity(), m };
+    }
+}
+
+bool Valuable::SumIfSimplifiable(const Valuable& v)
+{
+    if(exp)
+        return exp->SumIfSimplifiable(v);
+    IMPLEMENT
+}
+
+std::pair<bool,Valuable> Valuable::IsSummationSimplifiable(const Valuable& v) const
+{
+    if (!optimizations)
+        return {};
+    else if(exp)
+        return exp->IsSummationSimplifiable(v);
+    else {
+        LOG_AND_IMPLEMENT(str() << " IsSummationSimplifiable " << v);
+        auto m = *this + v;
+        return { m.Complexity() < Complexity() + v.Complexity(), m };
+    }
+}
+
+Valuable& Valuable::operator /=(const Valuable& v)
+{
+    if(exp) {
+        Valuable& o = exp->operator/=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+        IMPLEMENT
+}
+Valuable& Valuable::operator %=(const Valuable& v)
+{
+    if(exp) {
+        Valuable& o = exp->operator%=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else // a - (n * int(a/n))
+        IMPLEMENT // https://math.stackexchange.com/a/2027475/118612
+}
+
+Valuable& Valuable::operator--()
+{
+    if(exp) {
+        Valuable& o = exp->operator--();
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator++()
+{
+    if(exp) {
+        Valuable& o = exp->operator++();
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator^=(const Valuable& v)
+{
+    if(exp) {
+        Valuable& o = exp->operator^=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else
+        IMPLEMENT
+}
+
+Valuable Valuable::GCD(const Valuable& v) const {
+    if (exp) {
+        return exp->GCD(v);
+    }
+    auto isEqual = operator==(v);
+    auto thisMoreComplex = !isEqual && Complexity() >= v.Complexity();
+    Valuable a = isEqual || thisMoreComplex ? *this : v.GCD(*this);
+    if (thisMoreComplex) {
+        Valuable b = v;
+        while (b != 0) {
+            Valuable temp = b;
+            b = a % b;
+            if (b.IsModulo()) {
+                b = std::move(b.as<Modulo>().get1());
+                if (b == a) {
+                    a = IsSum() ? as<Sum>().GCDofMembers() : constants::one;
+                    if (a != constants::one && v.IsSum())
+                        a.gcd(v.as<Sum>().GCDofMembers());
+                    break;
+                }
+            }
+            a = temp;
+        }
+    }
+    return a;
+}
+
 Valuable Valuable::IntMod_Sign() const {
     if (exp)
         return exp->IntMod_Sign();
