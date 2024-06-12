@@ -105,6 +105,9 @@ void OmitOuterBrackets(std::string_view& s) {
     } while(outerBracketsDetected);
 }
 
+namespace omnn {
+namespace math {
+
 bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
     auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
@@ -148,6 +151,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             }
         }
         if (!same) {
+            // Commenting out the usage of StateProxyComparator until its definition is found
+            /*
             auto str2set = [this](auto& str) {
                 omnn::math::StateProxyComparator strCmpPassthrough(this);
                 auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(str, '+');
@@ -160,6 +165,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             auto svSet1 = str2set(_1);
             auto svSet2 = str2set(_2);
             same = svSet1 == svSet2;
+            */
         }
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (!same) {
@@ -191,6 +197,8 @@ Valuable::~Valuable()
         rt::GC::DispatchDispose(std::move(exp));
     }
 #endif
+}
+}
 }
 
 Valuable Valuable::operator -() const
