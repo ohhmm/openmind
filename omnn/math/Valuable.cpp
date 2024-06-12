@@ -92,12 +92,11 @@ constexpr std::string_view& Trim(std::string_view& s) {
 }
 
 void OmitOuterBrackets(std::string_view& s) {
-    decltype(omnn::math::BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do {
         outerBracketsDetected = {};
         omnn::math::Trim(s);
-        bracketsmap = omnn::math::BracketsMap(s);
+        auto bracketsmap = omnn::math::BracketsMap(s);
         auto l = s.length();
         auto first = bracketsmap.find(0);
         outerBracketsDetected = first != bracketsmap.end() && first->second == l - 1;
@@ -1098,7 +1097,7 @@ Valuable& Valuable::sq() {
 		auto optimizationsWas = Valuable::optimizations;
 		Valuable::optimizations = !itIsOptimized && optimizationsWas;
 
-        auto bracketsmap = OmitOuterBrackets(s);
+        OmitOuterBrackets(s);
 
         //        if (bracketsmap.empty())
         {
@@ -1214,20 +1213,37 @@ Valuable& Valuable::sq() {
                         if (itIsOptimized)
                             v.MarkAsOptimized();
                         Become(std::move(v));
-                    }
-                    else {
-                        auto it = constants::Constants.find(s);
-                        if (it != constants::Constants.end()) {
-                            Valuable v(it->second);
-                            if (itIsOptimized)
-                                v.MarkAsOptimized();
-                            Become(std::move(v));
-                        } else if (vaNames.empty()) {
-                            Valuable varless(s, nullptr, itIsOptimized);
-                            Become(std::move(varless));
-                        } else {
-                            Become(Valuable(s, vaNames.begin()->second.getVaHost(), itIsOptimized));
-                        }
+                    } else if (s == "e") {
+                        Become(constants::e);
+                    } else if (s == "i") {
+                        Become(constants::i);
+                    } else if (s == "zero") {
+                        Become(constants::zero);
+                    } else if (s == "one") {
+                        Become(constants::one);
+                    } else if (s == "two") {
+                        Become(constants::two);
+                    } else if (s == "half") {
+                        Become(constants::half);
+                    } else if (s == "quarter") {
+                        Become(constants::quarter);
+                    } else if (s == "minus_1") {
+                        Become(constants::minus_1);
+                    } else if (s == "plus_minus_1") {
+                        Become(constants::plus_minus_1);
+                    } else if (s == "zero_or_1") {
+                        Become(constants::zero_or_1);
+                    } else if (s == "infinity") {
+                        Become(constants::infinity);
+                    } else if (s == "minfinity") {
+                        Become(constants::minfinity);
+                    } else if (s == "pi") {
+                        Become(constants::pi);
+                    } else if (vaNames.empty()) {
+                        Valuable varless(s, nullptr, itIsOptimized);
+                        Become(std::move(varless));
+                    } else {
+                        Become(Valuable(s, vaNames.begin()->second.getVaHost(), itIsOptimized));
                     }
                 }
             }
