@@ -436,31 +436,31 @@ Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool
     // Constructor implementation
 
     if (s == "e") {
-        Become(constants::e);
+        Become(std::move(Valuable(constants::e)));
     } else if (s == "i") {
-        Become(constants::i);
+        Become(std::move(Valuable(constants::i)));
     } else if (s == "zero") {
-        Become(constants::zero);
+        Become(std::move(Valuable(constants::zero)));
     } else if (s == "one") {
-        Become(constants::one);
+        Become(std::move(Valuable(constants::one)));
     } else if (s == "two") {
-        Become(constants::two);
+        Become(std::move(Valuable(constants::two)));
     } else if (s == "half") {
-        Become(constants::half);
+        Become(std::move(Valuable(constants::half)));
     } else if (s == "quarter") {
-        Become(constants::quarter);
+        Become(std::move(Valuable(constants::quarter)));
     } else if (s == "minus_1") {
-        Become(constants::minus_1);
+        Become(std::move(Valuable(constants::minus_1)));
     } else if (s == "plus_minus_1") {
-        Become(constants::plus_minus_1);
+        Become(std::move(Valuable(constants::plus_minus_1)));
     } else if (s == "zero_or_1") {
-        Become(constants::zero_or_1);
+        Become(std::move(Valuable(constants::zero_or_1)));
     } else if (s == "infinity") {
-        Become(constants::infinity);
+        Become(std::move(Valuable(constants::infinity)));
     } else if (s == "minfinity") {
-        Become(constants::minfinity);
+        Become(std::move(Valuable(constants::minfinity)));
     } else if (s == "pi") {
-        Become(constants::pi);
+        Become(std::move(Valuable(constants::pi)));
     }
 }
 
