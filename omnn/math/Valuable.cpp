@@ -301,6 +301,9 @@ struct HashStrOmitOuterBrackets
     }
 };
 
+namespace omnn {
+namespace math {
+
 class StateProxyComparator
 {
 public:
@@ -367,9 +370,9 @@ public:
                 return val->SerializedStrEqual(str1);
             } else {
                 auto s1 = str1;
-                omnn::math::OmitOuterBrackets(s1);
+                OmitOuterBrackets(s1);
                 auto s2 = str2;
-                omnn::math::OmitOuterBrackets(s2);
+                OmitOuterBrackets(s2);
                 return s1 == s2;
             }
         } else
@@ -378,128 +381,6 @@ public:
 
     auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
         return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
-    }
-};
-
-thread_local const Valuable* StateProxyComparator::state = {};
-
-void Optimize(Valuable::solutions_t& s) {
-    Valuable::solutions_t distinct;
-    Valuable::OptimizeOn enable;
-    while (s.size()) {
-        auto it = s.begin();
-        auto v = std::move(s.extract(it).value());
-        v.optimize();
-        distinct.emplace(std::move(v));
-    }
-    std::swap(s, distinct);
-}
-
-class StateProxyComparator {
-public:
-    using tokens_collection_t =
-        ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
-
-private:
-    const Valuable* val;
-    static thread_local const Valuable* state;
-
-    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str,
-                                                                               char delimiter) {
-        tokens_collection_t tokens;
-        ::std::stack<char> braceStack;
-        size_t start = 0;
-
-        for (size_t i = 0; i < str.size(); ++i) {
-            char c = str[i];
-
-            // Push opening braces onto the stack
-            if (c == '(' || c == '{' || c == '[') {
-                braceStack.push(c);
-            }
-            // Pop matching opening braces from the stack
-            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
-                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
-                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
-                braceStack.pop();
-            }
-            // Tokenize at delimiter if not within braces
-            else if (c == delimiter && braceStack.empty()) {
-                tokens.emplace(str.data() + start, i - start);
-                start = i + 1;
-            }
-        }
-
-        // Add the last token after the final delimiter if it's not at the end of the string
-        if (start < str.size()) {
-            tokens.emplace(str.data() + start, str.size() - start);
-        }
-
-        return tokens;
-    }
-
-public:
-    StateProxyComparator() { val = state; }
-
-    StateProxyComparator(const Valuable* v) {
-        state = v;
-        val = state;
-    }
-
-    StateProxyComparator(const Valuable& v) {
-        state = &v;
-        val = state;
-    }
-
-    ~StateProxyComparator() { state = val; }
-
-    [[nodiscard]] bool operator()(const std::string_view& str1, const std::string_view& str2) const {
-        auto s = val->str();
-        if (s != str1) {
-            if (s == str2) {
-                return val->SerializedStrEqual(str1);
-            } else {
-                auto s1 = str1;
-                omnn::math::OmitOuterBrackets(s1);
-                auto s2 = str2;
-                omnn::math::OmitOuterBrackets(s2);
-                return s1 == s2;
-            }
-        } else
-            return val->SerializedStrEqual(str2);
-    }
-
-    auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
-        return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
-    }
-};
-
-thread_local const Valuable* StateProxyComparator::state = {};
-
-} // namespace math
-} // namespace omnn
-
-namespace {
-    // Other code in the unnamed namespace
-}
-
-std::string Solid(std::string s) {
-    s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
-    return s;
-}
-
-} // namespace
-
-struct hash_tokens_collection_t {
-    static constexpr ::omnn::math::HashStrOmitOuterBrackets hasher = {};
-    static size_t reduce(size_t s, std::string_view str) {
-        auto strhash = hasher(str);
-        return s ^ strhash;
-    }
-    size_t operator()(const ::omnn::math::StateProxyComparator::tokens_collection_t& c) const {
-        size_t hash = 0;
-        hash = std::accumulate(c.begin(), c.end(), hash, &hash_tokens_collection_t::reduce);
-        return hash;
     }
 };
 
@@ -526,10 +407,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             std::map<char, a_int> m1, m2;
             for (char c : _1)
                 if (c != '+')
-                        ++m1[c];
+                    ++m1[c];
             for (char c : _2)
                 if (c != '+')
-                        ++m2[c];
+                    ++m2[c];
             same = m1 == m2;
         }
 
@@ -567,13 +448,101 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             Valuable v(s, getVaHost(), is_optimized());
             same = operator==(v);
             if(same) {
-				std::cout << " operator==(" << s << ") == true" << std::endl;
-			}
+                std::cout << " operator==(" << s << ") == true" << std::endl;
+            }
         }
 #endif // !NDEBUG
     }
     return same;
 }
+
+thread_local const Valuable* StateProxyComparator::state = {};
+
+} // namespace math
+} // namespace omnn
+
+namespace omnn {
+namespace math {
+
+std::string Solid(std::string s) {
+    s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
+    return s;
+}
+
+bool Valuable::SerializedStrEqual(const std::string_view& s) const {
+    auto _ = str();
+    auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
+    if (!same) {
+        auto _1 = Solid(_), _2 = Solid(std::string(s));
+        same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
+        if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
+            _2 = a_int(s).str();
+            same = _1 == _2;
+        }
+        if (!same) {
+            boost::replace_all(_1, "+-", "-");
+            boost::replace_all(_2, "+-", "-");
+            same = _1 == _2;
+        }
+        while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
+            _1 = _1.substr(1, _1.length() - 2);
+            same = _1 == _2;
+        }
+        if (!same) {
+            std::map<char, a_int> m1, m2;
+            for (char c : _1)
+                if (c != '+')
+                    ++m1[c];
+            for (char c : _2)
+                if (c != '+')
+                    ++m2[c];
+            same = m1 == m2;
+        }
+
+        while (!same && _1.front() == '(' && _1.back() == ')') {
+            auto _1len = _1.length();
+            auto _2len = _2.length();
+            auto diff = _1len - _2len;
+            auto dhalf = diff >> 1;
+            if (diff > 0 && !(diff & 1) && _1.substr(dhalf, _1len - diff) == _2) {
+                _1 = _1.substr(1, _1.length() - 2);
+                same = _1 == _2;
+            } else {
+                break;
+            }
+        }
+        if (!same) {
+            auto str2set = [this](auto& str) {
+                StateProxyComparator strCmpPassthrough(this);
+                auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(str, '+');
+                std::unordered_multiset<decltype(sumItemsSubstrings), hash_tokens_collection_t> sets;
+                for (auto& s : sumItemsSubstrings) {
+                    sets.insert(strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(s, '*'));
+                }
+                return sets;
+            };
+            auto svSet1 = str2set(_1);
+            auto svSet2 = str2set(_2);
+            same = svSet1 == svSet2;
+        }
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if (!same) {
+            std::cout << "SerializedStrEqual: " << _ << " != " << s << std::endl
+                      << _1 << "\n !=\n"
+                      << _2 << std::endl;
+            Valuable v(s, getVaHost(), is_optimized());
+            same = operator==(v);
+            if(same) {
+                std::cout << " operator==(" << s << ") == true" << std::endl;
+            }
+        }
+#endif // !NDEBUG
+    }
+    return same;
+}
+
+} // namespace math
+} // namespace omnn
 
 	namespace {
 	constexpr char SupportedOps[] = " */%+-^()";
