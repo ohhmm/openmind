@@ -889,7 +889,7 @@ thread_local const Valuable* state = {};
                         }
                         auto beforedot = ss.substr(0, dot);
                         auto afterdot = ss.substr(dot + 1);
-                        auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
+                        auto f = Integer(beforedot) + Integer(afterdot) / (operator""_v("10", 2) ^ afterdot.length());
                         o(std::move(f));
                     } else {
                         Valuable integer = hasSpace
@@ -1229,58 +1229,6 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l) {
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
-
-    Valuable& Valuable::operator %=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator%=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else // a - (n * int(a/n))
-            IMPLEMENT // https://math.stackexchange.com/a/2027475/118612
-    }
-
-    Valuable& Valuable::operator--()
-    {
-        if(exp) {
-            Valuable& o = exp->operator--();
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else
-            IMPLEMENT
-    }
-
-    Valuable& Valuable::operator++()
-    {
-        if(exp) {
-            Valuable& o = exp->operator++();
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else
-            IMPLEMENT
-    }
-
-    Valuable& Valuable::gcd(const Valuable& v) {
-        return Become(GCD(v));
-    }
-
-    Valuable Valuable::LCM(const Valuable& v) const {
-        if (exp) {
-            return exp->LCM(v);
-        } else {
-            LOG_AND_IMPLEMENT(*this << " LCM " << v);
-        }
-    }
-
 
     Valuable& Valuable::gcd(const Valuable& v) {
         return Become(GCD(v));
