@@ -1026,8 +1026,8 @@ void OmitOuterBrackets(std::string_view& s) {
     bool outerBracketsDetected;
     do {
         outerBracketsDetected = {};
-        Trim(s);
-        bracketsmap = BracketsMap(s);
+        omnn::math::Trim(s);
+        bracketsmap = omnn::math::BracketsMap(s);
         auto l = s.length();
         auto first = bracketsmap.find(0);
         outerBracketsDetected = first != bracketsmap.end() && first->second == l - 1;
@@ -1035,24 +1035,14 @@ void OmitOuterBrackets(std::string_view& s) {
             s = s.substr(1, l - 2);
     } while (outerBracketsDetected);
 }
-auto bracketsmap = BracketsMap(s);
-auto FindSkippingParentheses = [&](char symbol) {
-    auto offs = 0;
-    while ((offs = s.find_first_of(symbol, offs)) != std::string_view::npos) {
-        if (s[offs] == '(') {
-            offs = bracketsmap[offs];
-        } else {
-            break;
-        }
-    }
-    return offs;
-};
+
 Valuable Valuable::IntMod_Less(const Valuable& than) const {
     if (exp)
         return exp->IntMod_Less(than);
     else
         return *this < than;
 }
+
 Valuable Valuable::IfzToBool() const {
     if (exp)
         return exp->IfzToBool();
