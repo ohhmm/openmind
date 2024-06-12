@@ -180,6 +180,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     return same;
 }
 
+void Valuable::CleanupExp() {
     if (exp) {
         #if 0
         std::cout << *this << std::endl;
@@ -190,7 +191,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
         rt::GC::DispatchDispose(std::move(exp));
     }
-#endif
 }
 
 Valuable& Valuable::operator +=(const Valuable& v) {
@@ -1250,7 +1250,6 @@ Valuable& Valuable::sq() {
         }
         rt::GC::DispatchDispose(std::move(exp));
     }
-#endif
 }
 
 Valuable& Valuable::operator +=(const Valuable& v) {
