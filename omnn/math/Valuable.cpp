@@ -1109,10 +1109,12 @@ size_t FindSkippingParentneses(const std::string_view& s, const std::map<size_t,
 
 void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNames, bool itIsOptimized) {
     std::string_view lpart, rpart;
+    auto bracketsmap = BracketsMap(s);
+    size_t search_start = 0;
     auto found = FindSkippingParentneses(s, bracketsmap, "+", search_start);
     if (found != std::string::npos) {
-        lpart = s.substr(search_start, found-search_start);
-        rpart = s.substr(found + 1, s.length() - (found + 1) - (search_start*2));
+        lpart = s.substr(search_start, found - search_start);
+        rpart = s.substr(found + 1, s.length() - (found + 1) - (search_start * 2));
         auto l = Valuable(lpart, vaNames, itIsOptimized);
         if (itIsOptimized)
             l.MarkAsOptimized();
@@ -1124,11 +1126,10 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
             sum.MarkAsOptimized();
         Become(std::move(sum));
     } else if ((found = FindSkippingParentneses(s, bracketsmap, "-", search_start)) != std::string::npos
-            && (found == 0 || s[found-1] != '*')
-            && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
-            && !lpart.ends_with("*/^"))
-    {
-        rpart = s.substr(found, s.length() - found - search_start*2);
+               && (found == 0 || s[found - 1] != '*')
+               && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
+               && !lpart.ends_with("*/^")) {
+        rpart = s.substr(found, s.length() - found - search_start * 2);
         Valuable l(lpart, vaNames, itIsOptimized);
         Valuable r(rpart, vaNames, itIsOptimized);
         auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
@@ -1161,7 +1162,7 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
         if (itIsOptimized)
             devided.MarkAsOptimized();
         Become(std::move(devided));
-    } else if((found = FindSkippingParentneses(s, bracketsmap, "^", search_start)) != std::string::npos) {
+    } else if ((found = FindSkippingParentneses(s, bracketsmap, "^", search_start)) != std::string::npos) {
         lpart = s.substr(0, found);
         rpart = s.substr(found + 1, s.length() - found);
         auto l = Valuable(lpart, vaNames, itIsOptimized);
@@ -1174,9 +1175,7 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
         if (itIsOptimized)
             exp.MarkAsOptimized();
         Become(std::move(exp));
-    }
-    else
-    {
+    } else {
         size_t offs = 0;
         while (s[offs] == ' ')
             ++offs;
@@ -1186,12 +1185,10 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
         if (found == std::string::npos) {
             Trim(s);
             auto integer = s.find(' ') == std::string::npos
-                ? Integer(s)
-                : Integer(Solid(std::string(s)));
+                           ? Integer(s)
+                           : Integer(Solid(std::string(s)));
             Become(std::move(integer));
-        }
-        else
-        {
+        } else {
             auto it = vaNames.find(s);
             if (it != vaNames.end()) {
                 Valuable v(it->second);
