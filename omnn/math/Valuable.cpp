@@ -180,9 +180,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     return same;
 }
 
-Valuable::~Valuable()
-{
-#ifdef OPENMIND_BUILD_GC
     if (exp) {
         #if 0
         std::cout << *this << std::endl;
@@ -432,27 +429,6 @@ constexpr T bits_in_use(T v) {
     return bits;
 }
 
-Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized) {
-    // Constructor implementation
-
-    if (s == "e") {
-        Become(std::move(Valuable(constants::e)));
-    } else if (s == "i") {
-        Become(std::move(Valuable(constants::i)));
-    } else if (s == "zero") {
-        Become(std::move(Valuable(constants::zero)));
-    } else if (s == "one") {
-        Become(std::move(Valuable(constants::one)));
-    } else if (s == "two") {
-        Become(std::move(Valuable(constants::two)));
-    } else if (s == "half") {
-        Become(std::move(Valuable(constants::half)));
-    } else if (s == "quarter") {
-        Become(std::move(Valuable(constants::quarter)));
-    } else if (s == "minus_1") {
-        Become(std::move(Valuable(constants::minus_1)));
-    } else if (s == "plus_minus_1") {
-        Become(std::move(Valuable(constants::plus_minus_1)));
     } else if (s == "zero_or_1") {
         Become(std::move(Valuable(constants::zero_or_1)));
     } else if (s == "infinity") {
@@ -1118,27 +1094,6 @@ Valuable& Valuable::sq() {
         return Become(*this * *this);
 }
 
-    Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized)
-    {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-      if (s.empty()) {
-        IMPLEMENT
-      }
-#endif // NOOMDEBUG
-
-		auto optimizationsWas = Valuable::optimizations;
-		Valuable::optimizations = !itIsOptimized && optimizationsWas;
-
-        OmitOuterBrackets(s);
-
-        //        if (bracketsmap.empty())
-        {
-            size_t search_start = 0;
-            auto FindSkippingParentneses = [&](char symbol){
-                // skip '(' for searching top level operations
-                auto offs = search_start;
-                char matches[] = { '(', symbol, 0 };
-                auto bracketsmap = omnn::math::BracketsMap(s);
                 while((offs = s.find_first_of(matches, offs)) != std::string_view::npos){
                     if(s[offs]=='('){
                         auto match = bracketsmap[offs];
@@ -1285,9 +1240,6 @@ Valuable& Valuable::sq() {
         Valuable::optimizations = optimizationsWas;
     }
 
-Valuable::~Valuable()
-{
-#ifdef OPENMIND_BUILD_GC
     if (exp) {
         #if 0
         std::cout << *this << std::endl;
