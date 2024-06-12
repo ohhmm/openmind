@@ -1216,19 +1216,17 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
                 Become(Valuable(constants::minus_1));
             } else if (s == "plus_minus_1") {
                 Become(Valuable(constants::plus_minus_1));
-            } else if (s == "zero
-    if (exp) {
-        #if 0
-        std::cout << *this << std::endl;
-        #endif
-        // Ensure Cache destructor is called
-        if (auto cache = dynamic_cast<Cache*>(exp.get())) {
-            delete cache;
+            }
         }
-        rt::GC::DispatchDispose(std::move(exp));
     }
 }
 
+::omnn::math::Valuable operator"" _v(const char* v, std::size_t l) {
+    return ::omnn::math::Valuable(v, l);
+}
+const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l) {
+    return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
+}
 Valuable& Valuable::operator +=(const Valuable& v) {
     if(exp) {
         Valuable& o = exp->operator+=(v);
