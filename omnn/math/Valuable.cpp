@@ -1199,8 +1199,24 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
                     v.MarkAsOptimized();
                 Become(std::move(v));
             } else if (s == "e") {
-                Become(Valuable(constants
-
+                Become(Valuable(constants::e));
+            } else if (s == "i") {
+                Become(Valuable(constants::i));
+            } else if (s == "zero") {
+                Become(Valuable(constants::zero));
+            } else if (s == "one") {
+                Become(Valuable(constants::one));
+            } else if (s == "two") {
+                Become(Valuable(constants::two));
+            } else if (s == "half") {
+                Become(Valuable(constants::half));
+            } else if (s == "quarter") {
+                Become(Valuable(constants::quarter));
+            } else if (s == "minus_1") {
+                Become(Valuable(constants::minus_1));
+            } else if (s == "plus_minus_1") {
+                Become(Valuable(constants::plus_minus_1));
+            } else if (s == "zero
     if (exp) {
         #if 0
         std::cout << *this << std::endl;
