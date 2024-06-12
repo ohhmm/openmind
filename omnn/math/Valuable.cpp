@@ -1269,45 +1269,6 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l) {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator^=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator^=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else
-            IMPLEMENT
-    }
-
-    Valuable Valuable::GCD(const Valuable& v) const {
-        if (exp) {
-            return exp->GCD(v);
-        }
-        auto isEqual = operator==(v);
-        auto thisMoreComplex = !isEqual && Complexity() >= v.Complexity();
-        Valuable a = isEqual || thisMoreComplex ? *this : v.GCD(*this);
-        if (thisMoreComplex) {
-            Valuable b = v;
-            while (b != 0) {
-                Valuable temp = b;
-                b = a % b;
-                if (b.IsModulo()) {
-                    b = std::move(b.as<Modulo>().get1());
-                    if (b == a) {
-                        a = IsSum() ? as<Sum>().GCDofMembers() : constants::one;
-                        if (a != constants::one && v.IsSum())
-                            a.gcd(v.as<Sum>().GCDofMembers());
-                        break;
-                    }
-                }
-                a = temp;
-            }
-        }
-        return a;
-    }
 
     Valuable& Valuable::gcd(const Valuable& v) {
         return Become(GCD(v));
