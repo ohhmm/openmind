@@ -422,6 +422,24 @@ Valuable Valuable::IntMod_Less(const Valuable& than) const {
         return *this < than;
 }
 
+Become(constants::e);
+} else if (s == "i") {
+    Become(constants::i);
+} else if (s == "zero") {
+    Become(constants::zero);
+} else if (s == "one") {
+    Become(constants::one);
+} else if (s == "two") {
+    Become(constants::two);
+} else if (s == "half") {
+    Become(constants::half);
+} else if (s == "quarter") {
+    Become(constants::quarter);
+} else if (s == "minus_1") {
+    Become(constants::minus_1);
+} else if (s == "plus_minus_1") {
+    Become(constants::plus_minus_1);
+
 template<typename T>
 constexpr T bits_in_use(T v) {
     T bits = 0;
