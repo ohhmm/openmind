@@ -223,12 +223,12 @@ public:
             // Yes = 1, Maybe = 10, No = 100
             {},              // 000 bug
             omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
-            omnn::math::Valuable::YesNoMaybe::Maybe, // 010 maybe
-            omnn::math::Valuable::YesNoMaybe::Maybe,   // 011  yes, maybe
-            omnn::math::Valuable::YesNoMaybe::No, // 100 no
-            omnn::math::Valuable::YesNoMaybe::No, // 101 yes,no
-            omnn::math::Valuable::YesNoMaybe::No, // 110 maybe,no
-            omnn::math::Valuable::YesNoMaybe::No, // 111 yes,maybe,no
+            omnn::math::Valuable::Maybe, // 010 maybe
+            omnn::math::Valuable::Maybe,   // 011  yes, maybe
+            omnn::math::Valuable::No, // 100 no
+            omnn::math::Valuable::No, // 101 yes,no
+            omnn::math::Valuable::No, // 110 maybe,no
+            omnn::math::Valuable::No, // 111 yes,maybe,no
         };
         return AndMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
     }
@@ -748,11 +748,7 @@ thread_local std::unordered_set<ValueT> OptimizationLoopDetect<ValueT>::LoopDete
 
 namespace std {
 
-template <class T>
-    requires std::derived_from<T, ::omnn::math::Valuable>
-struct hash<T> {
-    constexpr size_t operator()(const T& v) const { return static_cast<const omnn::math::Valuable&>(v).Hash(); }
-};
+// Removed conflicting template specialization for std::hash for derived types of omnn::math::Valuable
 
 } // namespace std
 
