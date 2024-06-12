@@ -1021,34 +1021,6 @@ void Valuable::optimize()
 #endif // !NDEBUG
     }
 
-void OmitOuterBrackets(std::string_view& s) {
-    std::map<size_t, size_t> bracketsmap;
-    bool outerBracketsDetected;
-    do {
-        outerBracketsDetected = {};
-        omnn::math::Trim(s);
-        bracketsmap = omnn::math::BracketsMap(s);
-        auto l = s.length();
-        auto first = bracketsmap.find(0);
-        outerBracketsDetected = first != bracketsmap.end() && first->second == l - 1;
-        if (outerBracketsDetected)
-            s = s.substr(1, l - 2);
-    } while (outerBracketsDetected);
-}
-
-Valuable Valuable::IntMod_Less(const Valuable& than) const {
-    if (exp)
-        return exp->IntMod_Less(than);
-    else
-        return *this < than;
-}
-
-Valuable Valuable::IfzToBool() const {
-    if (exp)
-        return exp->IfzToBool();
-    else
-        return *this == 0 ? 1 : 0;
-}
     }
 
     namespace omnn {
