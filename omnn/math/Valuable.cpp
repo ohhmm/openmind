@@ -1188,90 +1188,18 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
             auto integer = s.find(' ') == std::string::npos
                 ? Integer(s)
                 : Integer(Solid(std::string(s)));
-        Become(std::move(integer));
-    }
-    else
-    {
-        auto it = vaNames.find(s);
-        if (it != vaNames.end()) {
-            Valuable v(it->second);
-            if (itIsOptimized)
-                v.MarkAsOptimized();
-            Become(std::move(v));
-        } else if (s == "e") {
-            Become(Valuable(constants::e));
-        } else if (s == "i") {
-            Become(Valuable(constants::i));
-        } else if (s == "zero") {
-            Become(Valuable(constants::zero));
-        } else if (s == "one") {
-            Become(Valuable(constants::one));
-        } else if (s == "two") {
-            Become(Valuable(constants::two));
-        } else if (s == "half") {
-            Become(Valuable(constants::half));
-        } else if (s == "quarter") {
-            Become(Valuable(constants::quarter));
-        } else if (s == "minus_1") {
-            Become(Valuable(constants::minus_1));
-        } else if (s == "plus_minus_1") {
-            Become(Valuable(constants::plus_minus_1));
-        } else if (s == "zero_or_1") {
-            Become(Valuable(constants::zero_or_1));
-        } else if (s == "infinity") {
-            Become(Valuable(constants::infinity));
-        } else if (s == "minfinity") {
-            Become(Valuable(constants::minfinity));
-        } else if (s == "pi") {
-            Become(
-                    Become(std::move(integer));
-                }
-                else
-                {
-                    auto it = vaNames.find(s);
-                    if (it != vaNames.end()) {
-                        Valuable v(it->second);
-                        if (itIsOptimized)
-                            v.MarkAsOptimized();
-                        Become(std::move(v));
-                    } else if (s == "e") {
-                        Become(Valuable(constants::e));
-                    } else if (s == "i") {
-                        Become(Valuable(constants::i));
-                    } else if (s == "zero") {
-                        Become(Valuable(constants::zero));
-                    } else if (s == "one") {
-                        Become(Valuable(constants::one));
-                    } else if (s == "two") {
-                        Become(Valuable(constants::two));
-                    } else if (s == "half") {
-                        Become(Valuable(constants::half));
-                    } else if (s == "quarter") {
-                        Become(Valuable(constants::quarter));
-                    } else if (s == "minus_1") {
-                        Become(Valuable(constants::minus_1));
-                    } else if (s == "plus_minus_1") {
-                        Become(Valuable(constants::plus_minus_1));
-                    } else if (s == "zero_or_1") {
-                        Become(Valuable(constants::zero_or_1));
-                    } else if (s == "infinity") {
-                        Become(Valuable(constants::infinity));
-                    } else if (s == "minfinity") {
-                        Become(Valuable(constants::minfinity));
-                    } else if (s == "pi") {
-                        Become(Valuable(constants::pi));
-                    } else if (vaNames.empty()) {
-                        Valuable varless(s, nullptr, itIsOptimized);
-                        Become(std::move(varless));
-                    } else {
-                        Become(Valuable(s, vaNames.begin()->second.getVaHost(), itIsOptimized));
-                    }
-                }
-            }
+            Become(std::move(integer));
         }
-
-        Valuable::optimizations = optimizationsWas;
-    }
+        else
+        {
+            auto it = vaNames.find(s);
+            if (it != vaNames.end()) {
+                Valuable v(it->second);
+                if (itIsOptimized)
+                    v.MarkAsOptimized();
+                Become(std::move(v));
+            } else if (s == "e") {
+                Become(Valuable(constants
 
     if (exp) {
         #if 0
