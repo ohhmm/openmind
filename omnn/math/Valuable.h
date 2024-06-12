@@ -23,6 +23,8 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/serialization.hpp>
 
+#include "VarHost.h"
+
 #define _NUM2STR(x) #x
 #define NUM2STR(x) _NUM2STR(x)
 #define LINE_NUMBER_STR NUM2STR(__LINE__)
