@@ -423,6 +423,10 @@ Valuable Valuable::IntMod_Less(const Valuable& than) const {
         return *this < than;
 }
 
+::omnn::math::Valuable operator"" _v(const char* v, std::size_t l) {
+    return ::omnn::math::Valuable(std::string_view(v, l), omnn::math::VarHost::Global<std::string>().VaNames(), false);
+}
+
 template<typename T>
 constexpr T bits_in_use(T v) {
     T bits = 0;
@@ -1219,7 +1223,7 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
 }
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l) {
-    return ::omnn::math::Valuable(std::string_view(v, l), std::make_shared<omnn::math::VarHost>(), false);
+    return ::omnn::math::Valuable(std::string_view(v, l), omnn::math::VarHost::Global<std::string>().VaNames(), false);
 }
 
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l) {
