@@ -1106,6 +1106,7 @@ Valuable& Valuable::sq() {
                 // skip '(' for searching top level operations
                 auto offs = search_start;
                 char matches[] = { '(', symbol, 0 };
+                auto bracketsmap = omnn::math::BracketsMap(s);
                 while((offs = s.find_first_of(matches, offs)) != std::string_view::npos){
                     if(s[offs]=='('){
                         auto match = bracketsmap[offs];
