@@ -105,9 +105,6 @@ void OmitOuterBrackets(std::string_view& s) {
     } while(outerBracketsDetected);
 }
 
-namespace omnn {
-namespace math {
-
 bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
     auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
@@ -214,9 +211,6 @@ Valuable Valuable::IntMod_Less(const Valuable& than) const {
     else
         return *this < than;
 }
-
-} // namespace math
-} // namespace omnn
 
 template<typename T>
 constexpr T bits_in_use(T v) {
