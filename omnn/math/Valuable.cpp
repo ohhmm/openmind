@@ -92,18 +92,18 @@ constexpr std::string_view& Trim(std::string_view& s) {
 }
 
 void OmitOuterBrackets(std::string_view& s) {
-    decltype(BracketsMap({})) bracketsmap;
+    decltype(omnn::math::BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
-    do{
+    do {
         outerBracketsDetected = {};
-        Trim(s);
-        bracketsmap = BracketsMap(s);
+        omnn::math::Trim(s);
+        bracketsmap = omnn::math::BracketsMap(s);
         auto l = s.length();
         auto first = bracketsmap.find(0);
-        outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
+        outerBracketsDetected = first != bracketsmap.end() && first->second == l - 1;
         if (outerBracketsDetected)
-            s = s.substr(1,l-2);
-    } while(outerBracketsDetected);
+            s = s.substr(1, l - 2);
+    } while (outerBracketsDetected);
 }
 
 bool Valuable::SerializedStrEqual(const std::string_view& s) const {
@@ -1268,78 +1268,130 @@ Valuable::~Valuable()
 {
 #ifdef OPENMIND_BUILD_GC
     if (exp) {
-			#if 0
-            std::cout << *this << std::endl;
-			#endif
+        #if 0
+        std::cout << *this << std::endl;
+        #endif
         // Ensure Cache destructor is called
         if (auto cache = dynamic_cast<Cache*>(exp.get())) {
             delete cache;
         }
-            rt::GC::DispatchDispose(std::move(exp));
-        }
+        rt::GC::DispatchDispose(std::move(exp));
+    }
 #endif
-    }
+}
 
-    Valuable Valuable::operator -() const
-    {
-        if(exp)
-            return exp->operator-();
-        else
-            IMPLEMENT
-    }
-
-    Valuable& Valuable::operator +=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator+=(v);
-            if (o.exp) {
-                exp = o.exp;
-                return *this;
-            }
-            return o;
-        }
-        else
-            IMPLEMENT
-    }
-
-    Valuable& Valuable::operator +=(int v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator+=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
+Valuable& Valuable::operator +=(const Valuable& v) {
+    if(exp) {
+        Valuable& o = exp->operator+=(v);
+        if (o.exp) {
+            exp = o.exp;
             return *this;
         }
-        else
-            IMPLEMENT
+        return o;
     }
+    else
+        IMPLEMENT
+}
 
-    Valuable& Valuable::operator *=(const Valuable& v)
-    {
-        if (operator==(v))
-        {
-            sq();
+Valuable& Valuable::operator +=(int v)
+{
+    if(exp) {
+        Valuable& o = exp->operator+=(v);
+        if (o.exp) {
+            exp = o.exp;
         }
-        else if (IsMultival() == YesNoMaybe::Yes && v.IsMultival() == YesNoMaybe::Yes)
-        {
-            solutions_t s;
-            for (auto& m : Distinct())
-                for (auto& item : v.Distinct())
-                    s.emplace(m * item);
-            Become(Valuable(std::move(s)));
-        }
-        else if (exp)
-        {
-            auto& o = exp->operator*=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-        }
-        else
-            LOG_AND_IMPLEMENT(*this << " *= " << v);
         return *this;
     }
+    else
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator *=(const Valuable& v)
+{
+    if (operator==(v)) {
+        sq();
+    }
+    else if (IsMultival() == YesNoMaybe::Yes && v.IsMultival() == YesNoMaybe::Yes) {
+        solutions_t s;
+        for (auto& m : Distinct())
+            for (auto& item : v.Distinct())
+                s.emplace(m * item);
+        Become(Valuable(std::move(s)));
+    }
+    else if (exp) {
+        auto& o = exp->operator*=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+    }
+    else
+        LOG_AND_IMPLEMENT(*this << " *= " << v);
+    return *this;
+}
+
+Valuable& Valuable::operator /=(const Valuable& v)
+{
+    if(exp) {
+        Valuable& o = exp->operator/=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator %=(const Valuable& v)
+{
+    if(exp) {
+        Valuable& o = exp->operator%=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else // a - (n * int(a/n))
+        IMPLEMENT // https://math.stackexchange.com/a/2027475/118612
+}
+
+Valuable& Valuable::operator--()
+{
+    if(exp) {
+        Valuable& o = exp->operator--();
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator++()
+{
+    if(exp) {
+        Valuable& o = exp->operator++();
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else
+        IMPLEMENT
+}
+
+Valuable& Valuable::operator^=(const Valuable& v)
+{
+    if(exp) {
+        Valuable& o = exp->operator^=(v);
+        if (o.exp) {
+            exp = o.exp;
+        }
+        return *this;
+    }
+    else
+        IMPLEMENT
+}
 
     a_int Valuable::Complexity() const
     {
