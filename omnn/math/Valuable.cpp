@@ -1230,35 +1230,12 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l) {
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
 
-    Valuable& Valuable::gcd(const Valuable& v) {
-        return Become(GCD(v));
-    }
-
     Valuable Valuable::LCM(const Valuable& v) const {
         if (exp) {
             return exp->LCM(v);
         } else {
             LOG_AND_IMPLEMENT(*this << " LCM " << v);
         }
-    }
-
-    Valuable& Valuable::lcm(const Valuable& v) {
-        if (exp) {
-            Valuable& o = exp->lcm(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-        } else if (IsZero() || v.IsZero()) {
-        } else if (operator==(v)) {
-            Become(0);
-        } else {
-            auto gcd = GCD(v);
-            operator*=(v);
-            sq();
-            sqrt();
-            operator/=(gcd);
-        }
-        return *this;
     }
 
     Valuable& Valuable::d(const Variable& x)
