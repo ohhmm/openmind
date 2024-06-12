@@ -654,6 +654,8 @@ public:
 
     [[nodiscard]] virtual bool is_optimized() const;
 
+    void CleanupExp();
+
 private:
     friend class boost::serialization::access;
 

@@ -433,17 +433,6 @@ constexpr T bits_in_use(T v) {
     return bits;
 }
 
-Valuable::Valuable(std::string_view s) {
-    if (s == "zero_or_1") {
-        Become(std::move(Valuable(constants::zero_or_1)));
-    } else if (s == "infinity") {
-        Become(std::move(Valuable(constants::infinity)));
-    } else if (s == "minfinity") {
-        Become(std::move(Valuable(constants::minfinity)));
-    } else if (s == "pi") {
-        Become(std::move(Valuable(constants::pi)));
-    }
-}
 
 Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
 {
