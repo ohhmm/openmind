@@ -756,11 +756,7 @@ struct hash<T> {
 
 } // namespace std
 
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t l) {
-    return ::omnn::math::Valuable(std::string_view(v, l), omnn::math::VarHost::Global<std::string>().VaNames(), false);
-}
-const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
-//constexpr
-::omnn::math::Valuable operator"" _v(unsigned long long v);
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
-::omnn::math::Valuable operator"" _v(long double v);
+extern ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l);
+extern const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l);
+extern ::omnn::math::Valuable operator"" _v(unsigned long long v);
+extern ::omnn::math::Valuable operator"" _v(long double v);
