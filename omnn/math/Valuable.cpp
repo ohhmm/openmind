@@ -212,7 +212,6 @@ Valuable& Valuable::operator +=(const Valuable& v) {
         IMPLEMENT
 }
 }
-}
 
 Valuable& Valuable::operator +=(int v)
 {
