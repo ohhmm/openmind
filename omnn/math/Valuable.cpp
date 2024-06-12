@@ -2130,13 +2130,6 @@ std::shared_ptr<VarHost> Valuable::getVaHost() const {
         if (exp)
             return exp->IntMod_Less(than);
         else
-            return (*this - 1) % *this < than;
-    }
-
-    Valuable Valuable::IntMod_Less(const Valuable& than) const {
-        if (exp)
-            return exp->IntMod_Less(than);
-        else
             return (*this - than).IfzToBool();
     }
 
