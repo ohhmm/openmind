@@ -106,9 +106,6 @@ void OmitOuterBrackets(std::string_view& s) {
     } while(outerBracketsDetected);
 }
 
-namespace omnn {
-namespace math {
-
 bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
     auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
