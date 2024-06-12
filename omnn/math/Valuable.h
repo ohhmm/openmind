@@ -5,7 +5,8 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
-#pragma once
+#ifndef OMNN_MATH_VALUABLE_H
+#define OMNN_MATH_VALUABLE_H
 #include "OpenOps.h"
 
 #include <deque>
@@ -219,16 +220,16 @@ public:
         return OrMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
     }
     friend constexpr YesNoMaybe operator&&(YesNoMaybe _1, YesNoMaybe _2){
-        constexpr omnn::math::Valuable::YesNoMaybe AndMap[] = {
+        constexpr YesNoMaybe AndMap[] = {
             // Yes = 1, Maybe = 10, No = 100
             {},              // 000 bug
-            omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
-            omnn::math::Valuable::Maybe, // 010 maybe
-            omnn::math::Valuable::Maybe,   // 011  yes, maybe
-            omnn::math::Valuable::No, // 100 no
-            omnn::math::Valuable::No, // 101 yes,no
-            omnn::math::Valuable::No, // 110 maybe,no
-            omnn::math::Valuable::No, // 111 yes,maybe,no
+            YesNoMaybe::Yes, // 001 yes
+            YesNoMaybe::Maybe, // 010 maybe
+            YesNoMaybe::Maybe,   // 011  yes, maybe
+            YesNoMaybe::No, // 100 no
+            YesNoMaybe::No, // 101 yes,no
+            YesNoMaybe::No, // 110 maybe,no
+            YesNoMaybe::No, // 111 yes,maybe,no
         };
         return AndMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
     }
@@ -756,3 +757,5 @@ extern ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l);
 extern const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l);
 extern ::omnn::math::Valuable operator"" _v(unsigned long long v);
 extern ::omnn::math::Valuable operator"" _v(long double v);
+
+#endif // OMNN_MATH_VALUABLE_H
