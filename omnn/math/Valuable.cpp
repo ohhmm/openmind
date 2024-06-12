@@ -1088,103 +1088,140 @@ Valuable& Valuable::sq() {
         return Become(*this * *this);
 }
 
-                while((offs = s.find_first_of(matches, offs)) != std::string_view::npos){
-                    if(s[offs]=='('){
-                        auto match = bracketsmap[offs];
-                        if (match == s.length()-1 && offs==0) {
-                            ++offs;
-                            ++search_start;
-                        } else
-                            offs = match;
-                    } else if (offs) {
-                        break;
-                    } else {
-                        ++offs;
-                    }
-                }
-                return offs;
-            };
+size_t offs = 0;
+while((offs = s.find_first_of(matches, offs)) != std::string_view::npos){
+    if(s[offs]=='('){
+        auto match = bracketsmap[offs];
+        if (match == s.length()-1 && offs==0) {
+            ++offs;
+            ++search_start;
+        } else
+            offs = match;
+    } else if (offs) {
+        break;
+    } else {
+        ++offs;
+    }
+}
+return offs;
+}
 
-            std::string_view lpart, rpart;
-            auto found = FindSkippingParentneses('+');
-            if (found != std::string::npos) {
-                lpart = s.substr(search_start, found-search_start);
-                rpart = s.substr(found + 1, s.length() - (found + 1) - (search_start*2));
-                auto l = Valuable(lpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    l.MarkAsOptimized();
-                auto r = Valuable(rpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    r.MarkAsOptimized();
-                auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
-                if (itIsOptimized)
-                    sum.MarkAsOptimized();
-                Become(std::move(sum));
-            } else if ((found = FindSkippingParentneses('-')) != std::string::npos
-					&& (found == 0 || s[found-1] != '*')
-                    && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
-                    && !lpart.ends_with("*/^"))
-			{
-                rpart = s.substr(found, s.length() - found - search_start*2);
-                Valuable l(lpart, vaNames, itIsOptimized);
-                Valuable r(rpart, vaNames, itIsOptimized);
-                auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
-                if (itIsOptimized)
-                    sum.MarkAsOptimized();
-                Become(std::move(sum));
-            } else if ((found = FindSkippingParentneses('*')) != std::string::npos) {
-                lpart = s.substr(0, found);
-                rpart = s.substr(found + 1, s.length() - found);
-                auto l = Valuable(lpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    l.MarkAsOptimized();
-                auto r = Valuable(rpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    r.MarkAsOptimized();
-                auto product = itIsOptimized ? Valuable(Product{l, r}) : l * r;
-                if (itIsOptimized)
-                    product.MarkAsOptimized();
-                Become(std::move(product));
-            } else if ((found = FindSkippingParentneses('/')) != std::string::npos) {
-                lpart = s.substr(0, found);
-                rpart = s.substr(found + 1, s.length() - found);
-                auto l = Valuable(lpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    l.MarkAsOptimized();
-                auto r = Valuable(rpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    r.MarkAsOptimized();
-                auto devided = itIsOptimized ? Valuable(Fraction{l, r}) : l / r;
-                if (itIsOptimized)
-                    devided.MarkAsOptimized();
-                Become(std::move(devided));
-            } else if((found = FindSkippingParentneses('^')) != std::string::npos) {
-                lpart = s.substr(0, found);
-                rpart = s.substr(found + 1, s.length() - found);
-                auto l = Valuable(lpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    l.MarkAsOptimized();
-                auto r = Valuable(rpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    r.MarkAsOptimized();
-                Exponentiation exp{l, r};
-                if (itIsOptimized)
-                    exp.MarkAsOptimized();
-                Become(std::move(exp));
-            }
-            else
-            {
-                size_t offs = 0;
-                while (s[offs] == ' ')
-                    ++offs;
-                if (s[offs] == '-')
-                    ++offs;
-                found = s.find_first_not_of(" 0123456789", offs);
-                if (found == std::string::npos) {
-                    Trim(s);
-                    auto integer = s.find(' ') == std::string::npos
-						? Integer(s)
-						: Integer(Solid(std::string(s)));
+std::string_view lpart, rpart;
+auto found = FindSkippingParentneses('+');
+if (found != std::string::npos) {
+    lpart = s.substr(search_start, found-search_start);
+    rpart = s.substr(found + 1, s.length() - (found + 1) - (search_start*2));
+    auto l = Valuable(lpart, vaNames, itIsOptimized);
+    if (itIsOptimized)
+        l.MarkAsOptimized();
+    auto r = Valuable(rpart, vaNames, itIsOptimized);
+    if (itIsOptimized)
+        r.MarkAsOptimized();
+    auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
+    if (itIsOptimized)
+        sum.MarkAsOptimized();
+    Become(std::move(sum));
+} else if ((found = FindSkippingParentneses('-')) != std::string::npos
+        && (found == 0 || s[found-1] != '*')
+        && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
+        && !lpart.ends_with("*/^"))
+{
+    rpart = s.substr(found, s.length() - found - search_start*2);
+    Valuable l(lpart, vaNames, itIsOptimized);
+    Valuable r(rpart, vaNames, itIsOptimized);
+    auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
+    if (itIsOptimized)
+        sum.MarkAsOptimized();
+    Become(std::move(sum));
+} else if ((found = FindSkippingParentneses('*')) != std::string::npos) {
+    lpart = s.substr(0, found);
+    rpart = s.substr(found + 1, s.length() - found);
+    auto l = Valuable(lpart, vaNames, itIsOptimized);
+    if (itIsOptimized)
+        l.MarkAsOptimized();
+    auto r = Valuable(rpart, vaNames, itIsOptimized);
+    if (itIsOptimized)
+        r.MarkAsOptimized();
+    auto product = itIsOptimized ? Valuable(Product{l, r}) : l * r;
+    if (itIsOptimized)
+        product.MarkAsOptimized();
+    Become(std::move(product));
+} else if ((found = FindSkippingParentneses('/')) != std::string::npos) {
+    lpart = s.substr(0, found);
+    rpart = s.substr(found + 1, s.length() - found);
+    auto l = Valuable(lpart, vaNames, itIsOptimized);
+    if (itIsOptimized)
+        l.MarkAsOptimized();
+    auto r = Valuable(rpart, vaNames, itIsOptimized);
+    if (itIsOptimized)
+        r.MarkAsOptimized();
+    auto devided = itIsOptimized ? Valuable(Fraction{l, r}) : l / r;
+    if (itIsOptimized)
+        devided.MarkAsOptimized();
+    Become(std::move(devided));
+} else if((found = FindSkippingParentneses('^')) != std::string::npos) {
+    lpart = s.substr(0, found);
+    rpart = s.substr(found + 1, s.length() - found);
+    auto l = Valuable(lpart, vaNames, itIsOptimized);
+    if (itIsOptimized)
+        l.MarkAsOptimized();
+    auto r = Valuable(rpart, vaNames, itIsOptimized);
+    if (itIsOptimized)
+        r.MarkAsOptimized();
+    Exponentiation exp{l, r};
+    if (itIsOptimized)
+        exp.MarkAsOptimized();
+    Become(std::move(exp));
+}
+else
+{
+    size_t offs = 0;
+    while (s[offs] == ' ')
+        ++offs;
+    if (s[offs] == '-')
+        ++offs;
+    found = s.find_first_not_of(" 0123456789", offs);
+    if (found == std::string::npos) {
+        Trim(s);
+        auto integer = s.find(' ') == std::string::npos
+            ? Integer(s)
+            : Integer(Solid(std::string(s)));
+        Become(std::move(integer));
+    }
+    else
+    {
+        auto it = vaNames.find(s);
+        if (it != vaNames.end()) {
+            Valuable v(it->second);
+            if (itIsOptimized)
+                v.MarkAsOptimized();
+            Become(std::move(v));
+        } else if (s == "e") {
+            Become(Valuable(constants::e));
+        } else if (s == "i") {
+            Become(Valuable(constants::i));
+        } else if (s == "zero") {
+            Become(Valuable(constants::zero));
+        } else if (s == "one") {
+            Become(Valuable(constants::one));
+        } else if (s == "two") {
+            Become(Valuable(constants::two));
+        } else if (s == "half") {
+            Become(Valuable(constants::half));
+        } else if (s == "quarter") {
+            Become(Valuable(constants::quarter));
+        } else if (s == "minus_1") {
+            Become(Valuable(constants::minus_1));
+        } else if (s == "plus_minus_1") {
+            Become(Valuable(constants::plus_minus_1));
+        } else if (s == "zero_or_1") {
+            Become(Valuable(constants::zero_or_1));
+        } else if (s == "infinity") {
+            Become(Valuable(constants::infinity));
+        } else if (s == "minfinity") {
+            Become(Valuable(constants::minfinity));
+        } else if (s == "pi") {
+            Become(
                     Become(std::move(integer));
                 }
                 else
