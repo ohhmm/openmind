@@ -24,6 +24,9 @@
 namespace omnn {
 namespace math {
 
+class Valuable; // Forward declaration
+using va_names_t = std::map<std::string_view, Variable>; // Type alias
+
     template<class T>
     class TypedVarHost;
 
