@@ -198,8 +198,6 @@ Valuable::~Valuable()
     }
 #endif
 }
-}
-}
 
 Valuable Valuable::operator -() const
 {
@@ -207,6 +205,9 @@ Valuable Valuable::operator -() const
         return exp->operator-();
     else
         IMPLEMENT
+}
+
+}
 }
 
 Valuable& Valuable::operator +=(const Valuable& v) {
