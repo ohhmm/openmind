@@ -625,9 +625,6 @@ struct HashStrOmitOuterBrackets
     }
 };
 
-namespace omnn {
-namespace math {
-
 class StateProxyComparator
 {
 public:
@@ -709,9 +706,6 @@ public:
 };
 
 thread_local const Valuable* StateProxyComparator::state = {};
-
-} // namespace math
-} // namespace omnn
 
 	namespace {
 	constexpr char SupportedOps[] = " */%+-^()";
@@ -1327,12 +1321,10 @@ Valuable& Valuable::sq() {
         Valuable::optimizations = optimizationsWas;
     }
 
-namespace omnn::math {
-
-    Valuable::~Valuable()
-    {
+Valuable::~Valuable()
+{
 #ifdef OPENMIND_BUILD_GC
-        if (exp) {
+    if (exp) {
 			#if 0
             std::cout << *this << std::endl;
 			#endif
