@@ -27,7 +27,8 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/serialization.hpp>
 
-#include "VarHost.h"
+// Add forward declaration for VarHost class
+class VarHost;
 
 #define _NUM2STR(x) #x
 #define NUM2STR(x) _NUM2STR(x)
