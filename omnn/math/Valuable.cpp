@@ -199,17 +199,6 @@ Valuable::~Valuable()
 #endif
 }
 
-Valuable Valuable::operator -() const
-{
-    if(exp)
-        return exp->operator-();
-    else
-        IMPLEMENT
-}
-
-}
-}
-
 Valuable& Valuable::operator +=(const Valuable& v) {
     if(exp) {
         Valuable& o = exp->operator+=(v);
@@ -221,6 +210,8 @@ Valuable& Valuable::operator +=(const Valuable& v) {
     }
     else
         IMPLEMENT
+}
+}
 }
 
 Valuable& Valuable::operator +=(int v)
