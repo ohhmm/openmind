@@ -89,7 +89,7 @@ auto BracketsMap(const std::string_view& s){
     return bracketsmap;
 }
 
-constexpr std::string_view& Trim(std::string_view& s) {
+constexpr std::string_view Trim(std::string_view s) {
     s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
     s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
     return s;
@@ -99,7 +99,7 @@ void OmitOuterBrackets(std::string_view& s) {
     bool outerBracketsDetected;
     do {
         outerBracketsDetected = {};
-        omnn::math::Trim(s);
+        s = omnn::math::Trim(s);
         auto bracketsmap = omnn::math::BracketsMap(s);
         auto l = s.length();
         auto first = bracketsmap.find(0);
@@ -1219,7 +1219,7 @@ void Valuable::ParseExpression(const std::string_view& s, const va_names_t& vaNa
 }
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l) {
-    return ::omnn::math::Valuable(v, l);
+    return ::omnn::math::Valuable(std::string_view(v, l), omnn::math::VarHost::Global<std::string>(), false);
 }
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l) {
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
