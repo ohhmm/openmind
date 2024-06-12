@@ -1,8 +1,13 @@
+#define OPENMIND_BUILD_GC
+
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Valuable.h"
 
+// Forward declaration for Cache class
+class Cache;
+#include "Cache.h"
 #include "e.h"
 #include "i.h"
 #include "Infinity.h"
@@ -53,7 +58,6 @@ using namespace std::string_view_literals;
 
 namespace omnn {
 namespace math {
-
 
 std::string Solid(std::string s) {
     s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
@@ -263,7 +267,7 @@ bool Valuable::MultiplyIfSimplifiable(const Valuable& v)
 
 std::pair<bool,Valuable> Valuable::IsMultiplicationSimplifiable(const Valuable& v) const
 {
-    if (!optimizations)
+    if (!Valuable::optimizations)
         return {};
     else if (exp)
         return exp->IsMultiplicationSimplifiable(v);
@@ -429,7 +433,8 @@ constexpr T bits_in_use(T v) {
     return bits;
 }
 
-    } else if (s == "zero_or_1") {
+Valuable::Valuable(std::string_view s) {
+    if (s == "zero_or_1") {
         Become(std::move(Valuable(constants::zero_or_1)));
     } else if (s == "infinity") {
         Become(std::move(Valuable(constants::infinity)));
@@ -991,7 +996,7 @@ void Valuable::optimize()
     recursion_depth++;
 
     if (exp) {
-        if (optimizations) {
+        if (Valuable::optimizations) {
             std::unordered_set<const Valuable*> visited;
             while (exp->exp) {
                 if (visited.find(exp.get()) != visited.end()) {
@@ -1310,7 +1315,7 @@ Valuable& Valuable::operator /=(const Valuable& v)
         }
         return *this;
     }
-        IMPLEMENT
+    IMPLEMENT
 }
 
 Valuable& Valuable::operator %=(const Valuable& v)
