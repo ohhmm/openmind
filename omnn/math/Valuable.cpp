@@ -1247,31 +1247,31 @@ Valuable& Valuable::sq() {
                             v.MarkAsOptimized();
                         Become(std::move(v));
                     } else if (s == "e") {
-                        Become(constants::e);
+                        Become(Valuable(constants::e));
                     } else if (s == "i") {
-                        Become(constants::i);
+                        Become(Valuable(constants::i));
                     } else if (s == "zero") {
-                        Become(constants::zero);
+                        Become(Valuable(constants::zero));
                     } else if (s == "one") {
-                        Become(constants::one);
+                        Become(Valuable(constants::one));
                     } else if (s == "two") {
-                        Become(constants::two);
+                        Become(Valuable(constants::two));
                     } else if (s == "half") {
-                        Become(constants::half);
+                        Become(Valuable(constants::half));
                     } else if (s == "quarter") {
-                        Become(constants::quarter);
+                        Become(Valuable(constants::quarter));
                     } else if (s == "minus_1") {
-                        Become(constants::minus_1);
+                        Become(Valuable(constants::minus_1));
                     } else if (s == "plus_minus_1") {
-                        Become(constants::plus_minus_1);
+                        Become(Valuable(constants::plus_minus_1));
                     } else if (s == "zero_or_1") {
-                        Become(constants::zero_or_1);
+                        Become(Valuable(constants::zero_or_1));
                     } else if (s == "infinity") {
-                        Become(constants::infinity);
+                        Become(Valuable(constants::infinity));
                     } else if (s == "minfinity") {
-                        Become(constants::minfinity);
+                        Become(Valuable(constants::minfinity));
                     } else if (s == "pi") {
-                        Become(constants::pi);
+                        Become(Valuable(constants::pi));
                     } else if (vaNames.empty()) {
                         Valuable varless(s, nullptr, itIsOptimized);
                         Become(std::move(varless));
