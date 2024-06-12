@@ -104,7 +104,7 @@ namespace math {
         bool TestRootConsistencyWithNonZeroLog(const Variable& variable, const Valuable& value) const;
         bool TestRootConsistencyWithNonZeroLog(const Valuable::vars_cont_t&) const;
 
-        va_names_t VaNames() const override {
+        va_names_t VaNames() const {
             va_names_t names;
             CollectVaNames(names);
             return names;

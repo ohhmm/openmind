@@ -4,6 +4,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Valuable.h"
+#include "VarHost.h"
 
 // Forward declaration for Cache class
 class Cache;
@@ -15,7 +16,6 @@ class Cache;
 #include "Fraction.h"
 #include "Modulo.h"
 #include "Integer.h"
-#include "VarHost.h"
 #include "Sum.h"
 #include "PrincipalSurd.h"
 
