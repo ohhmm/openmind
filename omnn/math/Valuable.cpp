@@ -1215,23 +1215,23 @@ Valuable& Valuable::sq() {
                             v.MarkAsOptimized();
                         Become(std::move(v));
                     } else if (s == "e") {
-                        Become(constants::e);
+                        Become(std::move(constants::e));
                     } else if (s == "i") {
-                        Become(constants::i);
+                        Become(std::move(constants::i));
                     } else if (s == "zero") {
-                        Become(constants::zero);
+                        Become(std::move(constants::zero));
                     } else if (s == "one") {
-                        Become(constants::one);
+                        Become(std::move(constants::one));
                     } else if (s == "two") {
-                        Become(constants::two);
+                        Become(std::move(constants::two));
                     } else if (s == "half") {
-                        Become(constants::half);
+                        Become(std::move(constants::half));
                     } else if (s == "quarter") {
-                        Become(constants::quarter);
+                        Become(std::move(constants::quarter));
                     } else if (s == "minus_1") {
-                        Become(constants::minus_1);
+                        Become(std::move(constants::minus_1));
                     } else if (s == "plus_minus_1") {
-                        Become(constants::plus_minus_1);
+                        Become(std::move(constants::plus_minus_1));
                     } else if (s == "zero_or_1") {
                         Become(constants::zero_or_1);
                     } else if (s == "infinity") {
