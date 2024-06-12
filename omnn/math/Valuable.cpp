@@ -1269,6 +1269,18 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l) {
             IMPLEMENT
     }
 
+    Valuable& Valuable::gcd(const Valuable& v) {
+        return Become(GCD(v));
+    }
+
+    Valuable Valuable::LCM(const Valuable& v) const {
+        if (exp) {
+            return exp->LCM(v);
+        } else {
+            LOG_AND_IMPLEMENT(*this << " LCM " << v);
+        }
+    }
+
 
     Valuable& Valuable::gcd(const Valuable& v) {
         return Become(GCD(v));
