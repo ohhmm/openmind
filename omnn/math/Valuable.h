@@ -478,6 +478,7 @@ public:
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
     Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
+    void ParseExpression(const std::string_view& s, const va_names_t& vaNames, bool itIsOptimized);
 
 	Valuable operator!() const;
     explicit operator bool() const;
@@ -748,7 +749,9 @@ struct hash<T> {
 
 } // namespace std
 
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
+::omnn::math::Valuable operator"" _v(const char* v, std::size_t l) {
+    return ::omnn::math::Valuable(std::string_view(v, l), omnn::math::VarHost::Global<std::string>().VaNames(), false);
+}
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
 //constexpr
 ::omnn::math::Valuable operator"" _v(unsigned long long v);
