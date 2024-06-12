@@ -422,38 +422,6 @@ Valuable Valuable::IntMod_Less(const Valuable& than) const {
         return *this < than;
 }
 
-if (s == "e") {
-    Become(constants::e);
-} else if (s == "i") {
-    Become(constants::i);
-} else if (s == "zero") {
-    Become(constants::zero);
-} else if (s == "one") {
-    Become(constants::one);
-} else if (s == "two") {
-    Become(constants::two);
-} else if (s == "half") {
-    Become(constants::half);
-} else if (s == "quarter") {
-    Become(constants::quarter);
-} else if (s == "minus_1") {
-    Become(constants::minus_1);
-} else if (s == "plus_minus_1") {
-    Become(constants::plus_minus_1);
-    Become(constants::zero);
-} else if (s == "one") {
-    Become(constants::one);
-} else if (s == "two") {
-    Become(constants::two);
-} else if (s == "half") {
-    Become(constants::half);
-} else if (s == "quarter") {
-    Become(constants::quarter);
-} else if (s == "minus_1") {
-    Become(constants::minus_1);
-} else if (s == "plus_minus_1") {
-    Become(constants::plus_minus_1);
-
 template<typename T>
 constexpr T bits_in_use(T v) {
     T bits = 0;
@@ -462,6 +430,38 @@ constexpr T bits_in_use(T v) {
         v = v >> 1;
     }
     return bits;
+}
+
+Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized) {
+    // Constructor implementation
+
+    if (s == "e") {
+        Become(constants::e);
+    } else if (s == "i") {
+        Become(constants::i);
+    } else if (s == "zero") {
+        Become(constants::zero);
+    } else if (s == "one") {
+        Become(constants::one);
+    } else if (s == "two") {
+        Become(constants::two);
+    } else if (s == "half") {
+        Become(constants::half);
+    } else if (s == "quarter") {
+        Become(constants::quarter);
+    } else if (s == "minus_1") {
+        Become(constants::minus_1);
+    } else if (s == "plus_minus_1") {
+        Become(constants::plus_minus_1);
+    } else if (s == "zero_or_1") {
+        Become(constants::zero_or_1);
+    } else if (s == "infinity") {
+        Become(constants::infinity);
+    } else if (s == "minfinity") {
+        Become(constants::minfinity);
+    } else if (s == "pi") {
+        Become(constants::pi);
+    }
 }
 
 Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
