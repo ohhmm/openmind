@@ -1230,31 +1230,6 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l) {
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
 
-    std::pair<bool,Valuable> Valuable::IsSummationSimplifiable(const Valuable& v) const
-    {
-        if (!optimizations)
-            return {};
-        else if(exp)
-            return exp->IsSummationSimplifiable(v);
-        else {
-            LOG_AND_IMPLEMENT(str() << " IsSummationSimplifiable " << v);
-            auto m = *this + v;
-            return { m.Complexity() < Complexity() + v.Complexity(), m };
-        }
-    }
-
-    Valuable& Valuable::operator /=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator/=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-            IMPLEMENT
-    }
-
     Valuable& Valuable::operator %=(const Valuable& v)
     {
         if(exp) {
