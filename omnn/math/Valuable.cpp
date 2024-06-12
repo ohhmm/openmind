@@ -149,9 +149,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
         if (!same) {
             auto str2set = [this](auto& str) {
-                StateProxyComparator strCmpPassthrough(this);
+                omnn::math::StateProxyComparator strCmpPassthrough(this);
                 auto sumItemsSubstrings = strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(str, '+');
-                std::unordered_multiset<std::string_view, StateProxyComparator::tokens_collection_t> sets;
+                std::unordered_multiset<std::string_view, omnn::math::StateProxyComparator::tokens_collection_t> sets;
                 for (auto& s : sumItemsSubstrings) {
                     sets.insert(strCmpPassthrough.TokenizeStringViewToMultisetKeepBraces(s, '*'));
                 }
