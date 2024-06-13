@@ -26,3 +26,12 @@ target_link_libraries(test_tanh PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 # Add the test to CTest
 add_test(NAME TanhTest COMMAND test_tanh)
+
+# Add the executable for the GELU test
+add_executable(test_gelu gelu.cpp)
+
+# Link the test executable with necessary libraries
+target_link_libraries(test_gelu PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+# Add the test to CTest
+add_test(NAME GELUTest COMMAND test_gelu)
