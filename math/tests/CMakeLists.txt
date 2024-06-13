@@ -17,3 +17,12 @@ target_link_libraries(test_relu PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 # Add the test to CTest
 add_test(NAME ReLUTest COMMAND test_relu)
+
+# Add the executable for the Tanh test
+add_executable(test_tanh tanh.cpp)
+
+# Link the test executable with necessary libraries
+target_link_libraries(test_tanh PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+# Add the test to CTest
+add_test(NAME TanhTest COMMAND test_tanh)
