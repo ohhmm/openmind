@@ -24,3 +24,15 @@ CMakeLists.txt.user.*
 /enc_temp_folder/
 
 *.cpp.gch
+
+# Exclude Boost library files
+boost_*
+
+# Exclude CMake files
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+
+# Exclude ONNX Runtime build files
+onnxruntime/build/
+onnxruntime/install/
