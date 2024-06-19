@@ -14,8 +14,8 @@
 #include "Sum.h"
 #include "PrincipalSurd.h"
 
-#include <rt/GC.h>
-#include <rt/tasq.h>
+#include "/home/ubuntu/openmind/omnn/rt/GC.h"
+#include "/home/ubuntu/openmind/omnn/rt/tasq.h"
 
 #include <algorithm>
 #include <functional>
@@ -124,16 +124,43 @@ namespace math {
             IMPLEMENT
     }
 
-    void Valuable::New(void*, Valuable&&)
-    {
-        IMPLEMENT
+    void Valuable::LoadONNXModel(const std::string& model_path) {
+        // Initialize the ONNX Runtime environment
+        Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ValuableONNX");
+
+        // Create an ONNX Runtime session options object
+        Ort::SessionOptions session_options;
+        session_options.SetIntraOpNumThreads(1);
+        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+
+        // Load the ONNX model
+        Ort::Session session(env, model_path.c_str(), session_options);
+
+        // Store the session in the Valuable object
+        this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
     }
 
-    Valuable::encapsulated_instance Valuable::SharedFromThis() {
-        if (exp)
-            return exp;
-        else
-            IMPLEMENT;
+    std::vector<float> Valuable::RunONNXInference(const std::vector<float>& input_data) {
+        // Ensure the ONNX model is loaded
+        if (!onnx_session) {
+            throw std::runtime_error("ONNX model is not loaded.");
+        }
+
+        // Create input tensor
+        Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+        std::vector<int64_t> input_shape = {1, static_cast<int64_t>(input_data.size())};
+        Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, const_cast<float*>(input_data.data()), input_data.size(), input_shape.data(), input_shape.size());
+
+        // Run the inference
+        const char* input_names[] = {"input"};
+        const char* output_names[] = {"output"};
+        auto output_tensors = onnx_session->Run(Ort::RunOptions{nullptr}, input_names, &input_tensor, 1, output_names, 1);
+
+        // Extract the output data
+        float* output_data = output_tensors.front().GetTensorMutableData<float>();
+        std::vector<float> output(output_data, output_data + output_tensors.front().GetTensorTypeAndShapeInfo().GetElementCount());
+
+        return output;
     }
 
     Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)

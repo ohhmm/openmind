@@ -1,4 +1,7 @@
+include_directories(/home/ubuntu/openmind/omnn/rt)
+
 cmake_minimum_required(VERSION 3.14)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /home/ubuntu/onnxruntime/build/Linux/Release/lib/cmake/onnxruntime)
 
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
@@ -128,14 +131,19 @@ if(NOT OpenCL_FOUND)
 	find_package(OpenCL)
 endif()
 
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL 
-	AND NOT EXISTS OpenCL_INCLUDE_DIR
+set(ONNXRuntime_DIR "/home/ubuntu/onnxruntime/install/lib/cmake/onnxruntime")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${ONNXRuntime_DIR})
+include_directories(${ONNXRuntime_DIR}/../../../../include)
+include_directories(/home/ubuntu/openmind/omnn/rt)
+include("/home/ubuntu/onnxruntime/install/lib/cmake/onnxruntime/onnxruntimeTargets.cmake")
+
+if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
+	AND NOT EXISTS OpenCl_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
 	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
 endif()
-
-option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
+option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCl_FOUND})
 if(OPENMIND_USE_OPENCL)
 	find_package(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
@@ -215,17 +223,14 @@ elseif(OPENMIND_USE_CONAN)
 endif()
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-	CONFIG
-	HINTS C:/Boost
-	COMPONENTS ${BOOST_USED_COMPONENTS}
-	)
-if(NOT Boost_FOUND)
-	find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
-		CONFIG
-		HINTS C:/Boost
-		COMPONENTS ${BOOST_USED_COMPONENTS}
-		)
+    PATHS /usr/local/boost_1_85_0
+    COMPONENTS ${BOOST_USED_COMPONENTS}
+    REQUIRED
+)
+if(Boost_FOUND)
+    set(Boost_ADDITIONAL_VERSIONS ${OPENMIND_PREFERRED_BOOST_VERSION})
 endif()
+
 add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
 
@@ -419,6 +424,15 @@ function(_openmind_hook_end_of_configure)
 	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
 	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT
 	)
 endfunction()
+
+# Define the Valuable target as a library
+add_library(Valuable omnn/math/Valuable.cpp)
+
+# Include the omnn/rt directory for the Valuable target
+target_include_directories(Valuable PUBLIC /home/ubuntu/openmind/omnn/rt)
+
+# Link ONNX Runtime library with Valuable target
+target_link_libraries(Valuable PRIVATE onnxruntime)
