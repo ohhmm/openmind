@@ -3,6 +3,11 @@ include_directories(/home/ubuntu/openmind/omnn/rt)
 cmake_minimum_required(VERSION 3.14)
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /home/ubuntu/onnxruntime/build/Linux/Release/lib/cmake/onnxruntime)
 
+# Include vcpkg toolchain if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+endif()
+
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
@@ -124,7 +129,11 @@ if(NOT IntelSYCL_FOUND)
 		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
 	endif()
 endif()
-find_optional_pkg(IntelDPCPP)
+find_optional_pkg(
+	IntelDPCPP
+	CUDAToolkit
+	OpenCL
+)
 
 find_package(CUDAToolkit)
 if(NOT OpenCL_FOUND)
@@ -141,11 +150,11 @@ if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCl_INCLUDE_DIR
 	AND EXISTS IntelSYCL_DIR
 )
-	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
+	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCl" FORCE)
 endif()
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCl_FOUND})
 if(OPENMIND_USE_OPENCL)
-	find_package(OpenGL)
+	find_optional_pkg(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
 endif()
 
@@ -291,20 +300,26 @@ elseif(OPENMIND_BUILD_BOOST)
 
     set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared --disable-icu ${BOOST_BUILD_PARAMS}")
     if(WIN32)
-    	if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "MinGW")
+    	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+			separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat clang")
+			separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} toolset=clang install")
+    	elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "MinGW")
         	separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat gcc")
 	        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} toolset=gcc install")
-    	else()
+		else()
 	        set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
 	        separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
 	        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} install")
 		endif()
     else()
-        set(BOOST_EXT_CONFIGURE ./bootstrap.sh)
+		if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+			set(BOOST_TOOLSET clang)
+		endif()
 		if(APPLE)
 			set(BOOST_BUILD_APPLE_ARGS "-address-model=64 architecture=arm+x86 -s NO_LZMA=1 -s NO_ZSTD=1")
 		endif()
-        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND}")
+		separate_arguments(BOOST_EXT_CONFIGURE UNIX_COMMAND "./bootstrap.sh ${BOOST_TOOLSET}")
+        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} --cxx=${CMAKE_CXX_COMPILER}")
         separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
     endif()
 
