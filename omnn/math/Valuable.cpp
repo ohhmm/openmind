@@ -5566,47 +5566,27 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable Valuable::NotEquals(const Valuable& v) const {
-        //return Equals(v) ^ -1;
-		return IfEq(v, 1, 0);
+        return !operator==(v);
     }
 
-    // TODO: constexpr
-    Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l)
-    {
-        Product a;
-        for(auto& item : l)
-            a.Add(item.Equals(x));
-        return Valuable(a.Move());
+    Valuable Valuable::Abet(const Variable& x, std::initializer_list<Valuable> l) {
+        return Sum{l}.Substitute(x, *this);
     }
 
-//    Valuable Valuable::NE(const Valuable& to, const Valuable& abet) const
-//    {
-//        return abet / (*this-to);
-//    }
-//
-//    Valuable Valuable::NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const
-//    {
-//        return Abet(x, abet)/(*this-to);
-//    }
-
-    Valuable Valuable::LogicAnd(const Valuable& v) const
-    {
-        return Sq()+v.Sq();
+    Valuable Valuable::LogicAnd(const Valuable& v) const {
+        return operator&&(v);
     }
 
-    Valuable& Valuable::logic_and(const Valuable& v)
-    {
-        return sq()+=v.Sq();
+    Valuable& Valuable::logic_and(const Valuable& v) {
+        return operator&=(v);
     }
 
-    Valuable& Valuable::logic_or(const Valuable& v)
-    {
-        return operator*=(v);
+    Valuable& Valuable::logic_or(const Valuable& v) {
+        return operator|=(v);
     }
 
-    Valuable Valuable::LogicOr(const Valuable& v) const
-    {
-        return *this * v;
+    Valuable Valuable::LogicOr(const Valuable& v) const {
+        return operator||(v);
     }
 
     //    distinctZeros
