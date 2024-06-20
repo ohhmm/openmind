@@ -40,6 +40,8 @@
 #include <boost/stacktrace.hpp>
 #endif
 
+#include <onnxruntime/core/session/onnxruntime_cxx_api.h>
+
 using namespace std::string_view_literals;
 
 #ifdef max
@@ -81,225 +83,336 @@ namespace math {
             {"i", constant::i},
             {"pi", constant::pi},
         };
-    } // namespace constants
 
-    Valuable implement(const char* str)
+Valuable implement(const char* str)
+{
+    std::cerr << str << std::endl;
+    throw std::string(str) + " Implement!";
+    return {};
+}
+
+namespace omnn {
+namespace math {
+
+bool omnn::math::Valuable::IsSubObject(const Valuable& o) const {
+    if (exp)
+        return exp->IsSubObject(o);
+    else
+        IMPLEMENT
+}
+
+const omnn::math::Valuable omnn::math::Valuable::Link() const {
+    if(exp)
+        return Valuable(exp);
+    IMPLEMENT
+}
+
+omnn::math::Valuable* omnn::math::Valuable::Clone() const
+{
+    if (exp)
+        return exp->Clone();
+    else
+        IMPLEMENT
+}
+
+omnn::math::Valuable* omnn::math::Valuable::Move()
+{
+    if (exp)
+        return exp->Move();
+    else
+        IMPLEMENT
+}
+
+void omnn::math::Valuable::LoadONNXModel(const std::string& model_path) {
+    // Initialize the ONNX Runtime environment
+    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ValuableONNX");
+
+    // Create an ONNX Runtime session options object
+    Ort::SessionOptions session_options;
+    session_options.SetIntraOpNumThreads(1);
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+
+    // Load the ONNX model
+    Ort::Session session(env, model_path.c_str(), session_options);
+
+    // Store the session in the Valuable object
+    this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
+}
+
+std::vector<float> omnn::math::Valuable::RunONNXInference(const std::vector<float>& input_data) {
+    // Ensure the ONNX model is loaded
+    if (!onnx_session) {
+        throw std::runtime_error("ONNX model is not loaded.");
+    }
+
+    // Create input tensor
+    Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+    std::vector<int64_t> input_shape = {1, static_cast<int64_t>(input_data.size())};
+    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, const_cast<float*>(input_data.data()), input_data.size(), input_shape.data(), input_shape.size());
+
+    // Run the inference
+    const char* input_names[] = {"input"};
+    const char* output_names[] = {"output"};
+    auto output_tensors = onnx_session->Run(Ort::RunOptions{nullptr}, input_names, &input_tensor, 1, output_names, 1);
+
+    // Extract the output data
+    float* output_data = output_tensors.front().GetTensorMutableData<float>();
+    std::vector<float> output(output_data, output_data + output_tensors.front().GetTensorTypeAndShapeInfo().GetElementCount());
+
+    return output;
+}
+
+void omnn::math::Valuable::add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+    // Example implementation for converting a convolution operation
+    Valuable conv_expression;
+    // Assuming inputs[0] is the input tensor, inputs[1] is the weights, and inputs[2] is the bias
+    // conv_expression = inputs[0] * inputs[1] + inputs[2]
+    conv_expression = Valuable(std::string(inputs[0])) * Valuable(std::string(inputs[1])) + Valuable(std::string(inputs[2]));
+    *this += conv_expression;
+}
+
+void omnn::math::Valuable::add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+    // Example implementation for converting a ReLU activation function
+    Valuable relu_expression;
+    // Assuming inputs[0] is the input tensor
+    // relu_expression = max(0, inputs[0])
+    relu_expression = std::max(Valuable(0), Valuable(std::string(inputs[0])));
+    *this += relu_expression;
+}
+
+void omnn::math::Valuable::add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+    // Example implementation for converting an addition operation
+    Valuable add_expression;
+    // Assuming inputs[0] and inputs[1] are the input tensors
+    // add_expression = inputs[0] + inputs[1]
+    add_expression = Valuable(std::string(inputs[0])) + Valuable(std::string(inputs[1]));
+    *this += add_expression;
+}
+
+omnn::math::Valuable::Valuable(const std::string& s) {
+    // Parse the string and create a Valuable object representing the mathematical expression
+    std::string_view sv(s);
+    auto bracketsmap = OmitOuterBrackets(sv);
+    if (bracketsmap.empty()) {
+        // Handle simple cases like integers or variables
+        if (std::all_of(sv.begin(), sv.end(), ::isdigit)) {
+            exp = std::make_shared<Integer>(sv);
+        } else {
+            exp = std::make_shared<Variable>(sv);
+        }
+    } else {
+        // Handle more complex expressions
+        Valuable sum = Sum{};
+        Valuable v;
+        auto mulByNeg = false;
+        using op_t = std::function<void(Valuable &&)>;
+        op_t o_mov = [&](Valuable&& val) {
+            v = std::move(val);
+            if (mulByNeg) {
+                v *= -1;
+                mulByNeg = {};
+            }
+        };
+        op_t o_sum, o_mul, o_div, o_exp;
+        o_sum = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            sum += std::move(val);
+        };
+        o_mul = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v *= std::move(val);
+        };
+        o_div = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v /= std::move(val);
+        };
+        o_exp = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v ^= std::move(val);
+        };
+        auto o = std::ref(o_mov);
+        for (size_t i = 0; i < sv.length(); ++i) {
+            auto c = sv[i];
+            if (c == '(') {
+                auto cb = bracketsmap[i];
+                auto next = i + 1;
+                o(Valuable(std::string(sv.substr(next, cb - next))));
+                i = cb;
+            } else if (c == '-') {
+                o_sum(std::move(v));
+                v = 0;
+                o = o_mov;
+                mulByNeg ^= true;
+            } else if ((c >= '0' && c <= '9') || c == '.') {
+                auto next = sv.find_first_not_of("0123456789.", i + 1);
+                auto ss = sv.substr(i, next - i);
+                i = next - 1;
+                if (ss.find('.') != std::string::npos) {
+                    auto beforedot = ss.substr(0, ss.find('.'));
+                    auto afterdot = ss.substr(ss.find('.') + 1);
+                    auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
+                    o(std::move(f));
+                } else {
+                    o(Integer(ss));
+                }
+            } else if (c == '+') {
+                o_sum(std::move(v));
+                v = 0;
+                o = o_mov;
+            } else if (c == '*') {
+                o = o_mul;
+            } else if (c == '/') {
+                o = o_div;
+            } else if (c == '^') {
+                o = o_exp;
+            } else if (std::isalpha(c)) {
+                auto to = sv.find_first_of(" */%+-^()", i + 1);
+                auto id = std::string(sv.substr(i, to - i));
+                o(Valuable(id));
+                i = to - 1;
+            } else {
+                throw std::runtime_error("Unexpected character in expression");
+            }
+        }
+        o_sum(std::move(v));
+        Become(std::move(sum));
+    }
+}
+
+} // namespace math
+} // namespace omnn
+
+Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
+: hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
+{
+    assert(!exp);
+}
+
+Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
+: hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
+{
+    assert(!exp);
+}
+
+Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
+Valuable::Valuable(Valuable* v) : exp(v) {}
+Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
+Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
+Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
+Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
+Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
+Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
+
+std::type_index Valuable::Type() const
+{
+    if (exp)
+        return exp->Type();
+#ifdef __APPLE__
+    LOG_AND_IMPLEMENT(" Implement Type() ");
+#else
+    LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
+#endif
+}
+
+namespace omnn {
+namespace math {
+
+Valuable& Valuable::Become(Valuable&& i)
+{
+    if (Same(i))
+        return *this;
+    auto newWasView = GetView(); // TODO: fix it, supervise all View usages
+    i.SetView(newWasView);
+    auto h = i.Hash();
+    auto e = i.exp;
+    if(e)
     {
-        std::cerr << str << std::endl;
-        throw std::string(str) + " Implement!";
-        return {};
-    }
+        while (e->exp) {
+            e = e->exp;
+        }
 
-    bool Valuable::IsSubObject(const Valuable& o) const {
-        if (exp)
-            return exp->IsSubObject(o);
-        else
-            IMPLEMENT
-    }
-
-    const Valuable Valuable::Link() const {
         if(exp)
-            return Valuable(exp);
+        {
+            exp = e;
+            if (Hash() != h) {
+                IMPLEMENT
+            }
+        }
+        else
+        {
+            Become(std::move(*e));
+        }
+
+        e.reset();
+    }
+    else
+    {
+        auto sizeWas = getAllocSize();
+        auto newSize = i.getTypeSize();
+
+        if (newSize <= sizeWas) {
+            assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
+            char buf[DefaultAllocSize];
+            i.New(buf, std::move(i));
+            Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
+            this->~Valuable();
+            bufv.New(this, std::move(bufv));
+            setAllocSize(sizeWas);
+            if (Hash() != h) {
+                IMPLEMENT
+            }
+            SetView(newWasView);
+            optimize();
+        }
+        else if(exp && exp->getAllocSize() >= newSize)
+        {
+            exp->Become(std::move(i));
+        }
+        else
+        {
+            auto moved = i.Move();
+            this->~Valuable();
+            new(this) Valuable(moved);
+            setAllocSize(sizeWas);
+            if (Hash() != h) {
+                IMPLEMENT
+            }
+            optimize();
+        }
+    }
+    if(GetView() != newWasView){
+        SetView(newWasView);
         IMPLEMENT
     }
 
-    Valuable* Valuable::Clone() const
-    {
-        if (exp)
-            return exp->Clone();
-        else
-            IMPLEMENT
-    }
+    return *this;
+}
 
-    Valuable* Valuable::Move()
-    {
-        if (exp)
-            return exp->Move();
-        else
-            IMPLEMENT
-    }
+Valuable& Valuable::operator =(Valuable&& v)
+{
+    return Become(std::move(v));
+}
 
-    void Valuable::LoadONNXModel(const std::string& model_path) {
-        // Initialize the ONNX Runtime environment
-        Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ValuableONNX");
+Valuable& Valuable::operator =(const Valuable& v)
+{
+    exp.reset(v.Clone());
+    return *this;
+}
 
-        // Create an ONNX Runtime session options object
-        Ort::SessionOptions session_options;
-        session_options.SetIntraOpNumThreads(1);
-        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-
-        // Load the ONNX model
-        Ort::Session session(env, model_path.c_str(), session_options);
-
-        // Store the session in the Valuable object
-        this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
-    }
-
-    std::vector<float> Valuable::RunONNXInference(const std::vector<float>& input_data) {
-        // Ensure the ONNX model is loaded
-        if (!onnx_session) {
-            throw std::runtime_error("ONNX model is not loaded.");
-        }
-
-        // Create input tensor
-        Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-        std::vector<int64_t> input_shape = {1, static_cast<int64_t>(input_data.size())};
-        Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, const_cast<float*>(input_data.data()), input_data.size(), input_shape.data(), input_shape.size());
-
-        // Run the inference
-        const char* input_names[] = {"input"};
-        const char* output_names[] = {"output"};
-        auto output_tensors = onnx_session->Run(Ort::RunOptions{nullptr}, input_names, &input_tensor, 1, output_names, 1);
-
-        // Extract the output data
-        float* output_data = output_tensors.front().GetTensorMutableData<float>();
-        std::vector<float> output(output_data, output_data + output_tensors.front().GetTensorTypeAndShapeInfo().GetElementCount());
-
-        return output;
-    }
-
-    Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-    {
-        assert(!exp);
-    }
-
-    void Valuable::add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
-        // Example implementation for converting a convolution operation
-        // This is a placeholder and should be replaced with the actual logic
-        Valuable conv_expression;
-        // Add logic to create the convolution expression using inputs and outputs
-        // For example, conv_expression = inputs[0] * weights + bias
-        // Add the convolution expression to the Valuable object
-        *this += conv_expression;
-    }
-
-    void Valuable::add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
-        // Example implementation for converting a ReLU activation function
-        // This is a placeholder and should be replaced with the actual logic
-        Valuable relu_expression;
-        // Add logic to create the ReLU expression using inputs and outputs
-        // For example, relu_expression = max(0, inputs[0])
-        // Add the ReLU expression to the Valuable object
-        *this += relu_expression;
-    }
-
-    void Valuable::add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
-        // Example implementation for converting an addition operation
-        // This is a placeholder and should be replaced with the actual logic
-        Valuable add_expression;
-        // Add logic to create the addition expression using inputs and outputs
-        // For example, add_expression = inputs[0] + inputs[1]
-        // Add the addition expression to the Valuable object
-        *this += add_expression;
-    }
-
-    Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-    {
-        assert(!exp);
-    }
-
-    Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
-    Valuable::Valuable(Valuable* v) : exp(v) {}
-    Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
-    Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
-    Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
-    Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
-    Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
-
-    std::type_index Valuable::Type() const
-    {
-    	if (exp)
-    		return exp->Type();
-#ifdef __APPLE__
-        LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
-        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
-    }
-
-    Valuable& Valuable::Become(Valuable&& i)
-    {
-        if (Same(i))
-            return *this;
-        auto newWasView = GetView(); // TODO: fix it, supervise all View usages
-        i.SetView(newWasView);
-        auto h = i.Hash();
-        auto e = i.exp;
-        if(e)
-        {
-            while (e->exp) {
-                e = e->exp;
-            }
-
-            if(exp)
-            {
-                exp = e;
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-            }
-            else
-            {
-                Become(std::move(*e));
-            }
-
-            e.reset();
-        }
-        else
-        {
-            auto sizeWas = getAllocSize();
-            auto newSize = i.getTypeSize();
-
-            if (newSize <= sizeWas) {
-                assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
-                char buf[DefaultAllocSize];
-                i.New(buf, std::move(i));
-                Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
-                this->~Valuable();
-                bufv.New(this, std::move(bufv));
-                setAllocSize(sizeWas);
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-                SetView(newWasView);
-                optimize();
-            }
-            else if(exp && exp->getAllocSize() >= newSize)
-            {
-                exp->Become(std::move(i));
-            }
-            else
-            {
-                auto moved = i.Move();
-                this->~Valuable();
-                new(this) Valuable(moved);
-                setAllocSize(sizeWas);
-                if (Hash() != h) {
-                    IMPLEMENT
-                }
-                optimize();
-            }
-        }
-        if(GetView() != newWasView){
-            SetView(newWasView);
-            IMPLEMENT
-        }
-
-        return *this;
-    }
-
-    Valuable& Valuable::operator =(Valuable&& v)
-    {
-        return Become(std::move(v));
-    }
-
-    Valuable& Valuable::operator =(const Valuable& v)
-    {
-        exp.reset(v.Clone());
-        return *this;
-    }
+} // namespace math
+} // namespace omnn
 
     namespace{
         template<typename T>
@@ -492,7 +605,7 @@ namespace math {
             LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
 #endif
         }
-        
+
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(s.size() > 1){
             auto distinct = Distinct();
@@ -544,7 +657,7 @@ constexpr std::string_view& Trim(std::string_view& s) {
     return s;
 }
 
-auto OmitOuterBrackets(std::string_view& s) {
+std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do{
@@ -560,12 +673,28 @@ auto OmitOuterBrackets(std::string_view& s) {
     return bracketsmap;
 }
 
+// Other code...
+
+namespace {
+    // Other code...
+
+    // The function OmitOuterBrackets was here before, but now it has been moved outside the unnamed namespace.
+
+    // Other code...
+}
+
 std::string Solid(std::string s) {
     s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
     return s;
 }
 
 } // namespace
+
+namespace omnn {
+namespace math {
+
+namespace omnn {
+namespace math {
 
 struct HashStrOmitOuterBrackets
     : public std::hash<std::string_view>
@@ -649,6 +778,7 @@ public:
         return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
     }
 };
+
 thread_local const Valuable* StateProxyComparator::state = {};
 
 struct hash_tokens_collection_t {
@@ -663,6 +793,36 @@ struct hash_tokens_collection_t {
         return hash;
     }
 };
+struct hash_tokens_collection_t {
+    static constexpr ::omnn::math::HashStrOmitOuterBrackets hasher = {};
+    static size_t reduce(size_t s, std::string_view str) {
+        auto strhash = hasher(str);
+        return s ^ strhash;
+    }
+    size_t operator()(const ::omnn::math::StateProxyComparator::tokens_collection_t& c) const {
+        size_t hash = 0;
+        hash = std::accumulate(c.begin(), c.end(), hash, &hash_tokens_collection_t::reduce);
+        return hash;
+    }
+};
+
+} // namespace math
+} // namespace omnn
+struct hash_tokens_collection_t {
+    static constexpr ::omnn::math::HashStrOmitOuterBrackets hasher = {};
+    static size_t reduce(size_t s, std::string_view str) {
+        auto strhash = hasher(str);
+        return s ^ strhash;
+    }
+    size_t operator()(const ::omnn::math::StateProxyComparator::tokens_collection_t& c) const {
+        size_t hash = 0;
+        hash = std::accumulate(c.begin(), c.end(), hash, &hash_tokens_collection_t::reduce);
+        return hash;
+    }
+};
+
+namespace omnn {
+namespace math {
 
 bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
@@ -687,10 +847,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             std::map<char, a_int> m1, m2;
             for (char c : _1)
                 if (c != '+')
-                        ++m1[c];
+                    ++m1[c];
             for (char c : _2)
                 if (c != '+')
-                        ++m2[c];
+                    ++m2[c];
             same = m1 == m2;
         }
 
@@ -728,13 +888,16 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             Valuable v(s, getVaHost(), is_optimized());
             same = operator==(v);
             if(same) {
-				std::cout << " operator==(" << s << ") == true" << std::endl;
-			}
+                std::cout << " operator==(" << s << ") == true" << std::endl;
+            }
         }
 #endif // !NDEBUG
     }
     return same;
 }
+
+} // namespace math
+} // namespace omnn
 
 	namespace {
 	constexpr char SupportedOps[] = " */%+-^()";

@@ -294,6 +294,7 @@ public:
     using NewVaFn_t = std::function<Valuable(const std::string&)>;
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized = false);
+    Valuable(const std::string& s);
 
     //constexpr
 	virtual ~Valuable()//{}
