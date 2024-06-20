@@ -614,7 +614,7 @@ public:
 
     ~StateProxyComparator() { state = val; }
 
-    [[nodiscard]] bool operator()(const std::string_view& str1, const std::string_view& str2) const {
+    bool operator()(const std::string_view& str1, const std::string_view& str2) const {
         auto s = val->str();
         if (s != str1) {
             if (s == str2) {
