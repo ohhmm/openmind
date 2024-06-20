@@ -2,7 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
-#include <omnn/math/Variable.h>
+#include "omnn/math/Variable.h"
 #include <omnn/math/DuoValDescendant.h>
 
 namespace omnn::math {
@@ -76,7 +76,7 @@ public:
         InitVars();
         optimized = {};
     }
-    
+
     static max_exp_t getMaxVaExp(const Valuable& b, const Valuable& e);
     max_exp_t getMaxVaExp() const override;
 
@@ -93,10 +93,10 @@ public:
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable& integral(const Variable& x, const Variable& C) override;
-    
+
     bool operator <(const Valuable& v) const override;
     void optimize() override;
-    
+
     Valuable varless() const override;
     const vars_cont_t& getCommonVars() const override;
     vars_cont_t GetVaExps() const override;
