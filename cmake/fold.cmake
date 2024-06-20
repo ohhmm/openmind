@@ -40,7 +40,7 @@ macro(check_dep_file)
 					OUTPUT_STRIP_TRAILING_WHITESPACE
 					COMMAND_ECHO STDOUT
 					)
-						
+
 				string(REGEX MATCH "WARNING\: The script.+ installed in '(.+)' which is not on PATH\." warnBinPath "${pipConanError}")
 				if(warnBinPath)
 					message("${warnBinPath}")
@@ -50,7 +50,7 @@ macro(check_dep_file)
 					message("pip output: ${pipConanOutput}")
 					unset(warnBinPath)
 				endif()
-				find_program(CONAN_EXECUTABLE 
+				find_program(CONAN_EXECUTABLE
 					NAMES conan
 					PATHS
 						$ENV{USERPROFILE}$ENV{HOME}/.local/bin
@@ -134,18 +134,16 @@ macro(fold)
     foreach(item ${items})
         IF(IS_DIRECTORY ${item} AND EXISTS ${item}/CMakeLists.txt)
 			get_filename_component(name ${item} NAME)
-			IF(NOT ${name} STREQUAL tests)
-	            message("${item} is dir with CMakeLists.txt")
-    	        get_filename_component(name ${item} NAME)
-				#platform_specific_iteration(${name})
-				IF((name STREQUAL "windows" AND NOT WIN32)
-					OR (name STREQUAL "apple" AND NOT APPLE)
-					OR (name STREQUAL "linux" AND (WIN32 OR APPLE))
-				)
-					CONTINUE()
-				ENDIF()
-				add_subdirectory(${item})
-			endif()
+            message("${item} is dir with CMakeLists.txt")
+            get_filename_component(name ${item} NAME)
+			#platform_specific_iteration(${name})
+			IF((name STREQUAL "windows" AND NOT WIN32)
+				OR (name STREQUAL "apple" AND NOT APPLE)
+				OR (name STREQUAL "linux" AND (WIN32 OR APPLE))
+			)
+				CONTINUE()
+			ENDIF()
+			add_subdirectory(${item})
 		endif()
     endforeach()
 
