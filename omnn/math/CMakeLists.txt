@@ -9,6 +9,15 @@ endif(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
 
 lib(storage)
 
+# Define the Valuable target as a library
+add_library(Valuable Valuable.cpp)
+
+# Include the omnn/rt directory
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../rt)
+
+# Ensure Valuable target can find rt/GC.h
+target_include_directories(Valuable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../rt)
+
 if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
     if(OPENMIND_MATH_USE_LEVELDB_CACHE)
         target_compile_definitions(Valuable PUBLIC OPENMIND_MATH_USE_LEVELDB_CACHE)
@@ -23,12 +32,3 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
         target_compile_definitions(Valuable PUBLIC ALLOW_CACHE_UPGRADE)
     endif()
 endif()
-
-# Define the Valuable target as a library
-add_library(Valuable omnn/math/Valuable.cpp)
-
-# Include the omnn/rt directory
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../rt)
-
-# Ensure Valuable target can find rt/GC.h
-target_include_directories(Valuable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../rt)
