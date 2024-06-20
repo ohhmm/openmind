@@ -83,11 +83,6 @@ namespace math {
         };
     } // namespace constants
 
-    thread_local bool Valuable::optimizations = true;
-    thread_local bool Valuable::bit_operation_optimizations = {};
-    thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
-
-
     Valuable implement(const char* str)
     {
         std::cerr << str << std::endl;
@@ -167,6 +162,36 @@ namespace math {
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
     {
         assert(!exp);
+    }
+
+    void Valuable::add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+        // Example implementation for converting a convolution operation
+        // This is a placeholder and should be replaced with the actual logic
+        Valuable conv_expression;
+        // Add logic to create the convolution expression using inputs and outputs
+        // For example, conv_expression = inputs[0] * weights + bias
+        // Add the convolution expression to the Valuable object
+        *this += conv_expression;
+    }
+
+    void Valuable::add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+        // Example implementation for converting a ReLU activation function
+        // This is a placeholder and should be replaced with the actual logic
+        Valuable relu_expression;
+        // Add logic to create the ReLU expression using inputs and outputs
+        // For example, relu_expression = max(0, inputs[0])
+        // Add the ReLU expression to the Valuable object
+        *this += relu_expression;
+    }
+
+    void Valuable::add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+        // Example implementation for converting an addition operation
+        // This is a placeholder and should be replaced with the actual logic
+        Valuable add_expression;
+        // Add logic to create the addition expression using inputs and outputs
+        // For example, add_expression = inputs[0] + inputs[1]
+        // Add the addition expression to the Valuable object
+        *this += add_expression;
     }
 
     Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
@@ -1983,16 +2008,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             LOG_AND_IMPLEMENT("Implement optimize() for " << *this);
     }
 
-    Valuable& Valuable::operator =(Valuable&& v)
-    {
-        return Become(std::move(v));
-    }
-
-    Valuable& Valuable::operator =(const Valuable& v)
-    {
-        exp.reset(v.Clone());
-        return *this;
-    }
+    // Removed duplicate definitions
 
 	Valuable Valuable::Cos() const {
 		if (exp)
@@ -3187,9 +3203,6 @@ using namespace std::string_view_literals;
 
 namespace omnn{
 namespace math {
-    const a_int Valuable::a_int_cz = 0;
-    const max_exp_t Valuable::max_exp_cz(a_int_cz);
-
     namespace constants {
     constexpr const Valuable& e = constant::e;
     constexpr const Valuable& i = constant::i;
@@ -3381,16 +3394,9 @@ namespace math {
     Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
     Valuable::Valuable(Valuable* v) : exp(v) {}
     Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
-    Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
-
-    Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-    {
-        assert(!exp);
-    }
 
     Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
@@ -6249,9 +6255,6 @@ using namespace std::string_view_literals;
 
 namespace omnn{
 namespace math {
-    const a_int Valuable::a_int_cz = 0;
-    const max_exp_t Valuable::max_exp_cz(a_int_cz);
-
     namespace constants {
     constexpr const Valuable& e = constant::e;
     constexpr const Valuable& i = constant::i;
@@ -6441,7 +6444,6 @@ namespace math {
     Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
     Valuable::Valuable(Valuable* v) : exp(v) {}
     Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
-    Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
@@ -9571,7 +9573,6 @@ namespace math {
     Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
     Valuable::Valuable(Valuable* v) : exp(v) {}
     Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
-    Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
@@ -9581,6 +9582,10 @@ namespace math {
     {
         exp->optimize();
     }
+
+    Valuable::Valuable(a_rational&& r)
+    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
+    { exp->optimize(); }
 
     Valuable::Valuable(a_rational&& r)
     : exp(std::move(std::make_shared<Fraction>(std::move(r))))
