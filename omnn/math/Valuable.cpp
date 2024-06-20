@@ -3384,10 +3384,6 @@ namespace math {
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
 
-    Valuable::Valuable(a_rational&& r)
-    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
-    { exp->optimize(); }
-
     Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
     {
