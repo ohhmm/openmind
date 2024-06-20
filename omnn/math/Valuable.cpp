@@ -115,7 +115,7 @@ omnn::math::Valuable* omnn::math::Valuable::Clone() const
         IMPLEMENT
 }
 
-omnn::math::Valuable* omnn::math::Valuable::Move()
+Valuable* Valuable::Move()
 {
     if (exp)
         return exp->Move();
@@ -123,7 +123,7 @@ omnn::math::Valuable* omnn::math::Valuable::Move()
         IMPLEMENT
 }
 
-void omnn::math::Valuable::LoadONNXModel(const std::string& model_path) {
+void Valuable::LoadONNXModel(const std::string& model_path) {
     // Initialize the ONNX Runtime environment
     Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ValuableONNX");
 
@@ -139,7 +139,7 @@ void omnn::math::Valuable::LoadONNXModel(const std::string& model_path) {
     this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
 }
 
-std::vector<float> omnn::math::Valuable::RunONNXInference(const std::vector<float>& input_data) {
+std::vector<float> Valuable::RunONNXInference(const std::vector<float>& input_data) {
     // Ensure the ONNX model is loaded
     if (!onnx_session) {
         throw std::runtime_error("ONNX model is not loaded.");
@@ -162,7 +162,7 @@ std::vector<float> omnn::math::Valuable::RunONNXInference(const std::vector<floa
     return output;
 }
 
-void omnn::math::Valuable::add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+void Valuable::add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
     // Example implementation for converting a convolution operation
     Valuable conv_expression;
     // Assuming inputs[0] is the input tensor, inputs[1] is the weights, and inputs[2] is the bias
@@ -171,7 +171,7 @@ void omnn::math::Valuable::add_conv(const std::vector<std::string>& inputs, cons
     *this += conv_expression;
 }
 
-void omnn::math::Valuable::add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+void Valuable::add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
     // Example implementation for converting a ReLU activation function
     Valuable relu_expression;
     // Assuming inputs[0] is the input tensor
@@ -180,7 +180,7 @@ void omnn::math::Valuable::add_relu(const std::vector<std::string>& inputs, cons
     *this += relu_expression;
 }
 
-void omnn::math::Valuable::add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
+void Valuable::add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
     // Example implementation for converting an addition operation
     Valuable add_expression;
     // Assuming inputs[0] and inputs[1] are the input tensors
@@ -189,7 +189,7 @@ void omnn::math::Valuable::add_add(const std::vector<std::string>& inputs, const
     *this += add_expression;
 }
 
-omnn::math::Valuable::Valuable(const std::string& s) {
+Valuable::Valuable(const std::string& s) {
     // Parse the string and create a Valuable object representing the mathematical expression
     std::string_view sv(s);
     auto bracketsmap = OmitOuterBrackets(sv);
@@ -696,6 +696,9 @@ namespace math {
 namespace omnn {
 namespace math {
 
+namespace omnn {
+namespace math {
+
 struct HashStrOmitOuterBrackets
     : public std::hash<std::string_view>
 {
@@ -793,33 +796,9 @@ struct hash_tokens_collection_t {
         return hash;
     }
 };
-struct hash_tokens_collection_t {
-    static constexpr ::omnn::math::HashStrOmitOuterBrackets hasher = {};
-    static size_t reduce(size_t s, std::string_view str) {
-        auto strhash = hasher(str);
-        return s ^ strhash;
-    }
-    size_t operator()(const ::omnn::math::StateProxyComparator::tokens_collection_t& c) const {
-        size_t hash = 0;
-        hash = std::accumulate(c.begin(), c.end(), hash, &hash_tokens_collection_t::reduce);
-        return hash;
-    }
-};
 
 } // namespace math
 } // namespace omnn
-struct hash_tokens_collection_t {
-    static constexpr ::omnn::math::HashStrOmitOuterBrackets hasher = {};
-    static size_t reduce(size_t s, std::string_view str) {
-        auto strhash = hasher(str);
-        return s ^ strhash;
-    }
-    size_t operator()(const ::omnn::math::StateProxyComparator::tokens_collection_t& c) const {
-        size_t hash = 0;
-        hash = std::accumulate(c.begin(), c.end(), hash, &hash_tokens_collection_t::reduce);
-        return hash;
-    }
-};
 
 namespace omnn {
 namespace math {
