@@ -2,7 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
-#include <omnn/math/Exponentiation.h>
+#include "Exponentiation.h"
 #include <omnn/math/Product.h>
 
 namespace omnn{

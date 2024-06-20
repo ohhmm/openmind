@@ -443,11 +443,4 @@ function(_openmind_hook_end_of_configure)
 	)
 endfunction()
 
-# Define the Valuable target as a library
-add_library(Valuable omnn/math/Valuable.cpp)
-
-# Include the omnn/rt directory for the Valuable target
-target_include_directories(Valuable PUBLIC /home/ubuntu/openmind/omnn/rt)
-
-# Link ONNX Runtime library with Valuable target
-target_link_libraries(Valuable PRIVATE onnxruntime)
+# Removed duplicate definition of Valuable target
