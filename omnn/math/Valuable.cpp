@@ -3229,6 +3229,8 @@ namespace math {
         throw std::string(str) + " Implement!";
         return {};
     }
+}
+}
 
     bool Valuable::IsSubObject(const Valuable& o) const {
         if (exp)
