@@ -131,13 +131,13 @@ if(NOT IntelSYCL_FOUND)
 endif()
 find_optional_pkg(
 	IntelDPCPP
-	CUDAToolkit
+	# CUDAToolkit
 	OpenCL
 )
 
-find_package(CUDAToolkit)
+# find_package(CUDAToolkit)
 if(NOT OpenCL_FOUND)
-	find_package(OpenCL)
+    find_package(OpenCL)
 endif()
 
 set(ONNXRuntime_DIR "/home/ubuntu/onnxruntime/install/lib/cmake/onnxruntime")
@@ -152,7 +152,7 @@ if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 )
 	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCl" FORCE)
 endif()
-option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCl_FOUND})
+option(OPENMIND_USE_OPENCL "Use OpenCl calculations" OFF)
 if(OPENMIND_USE_OPENCL)
 	find_optional_pkg(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})

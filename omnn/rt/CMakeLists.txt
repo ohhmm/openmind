@@ -1,4 +1,3 @@
-
 set(DEPENDENCIES boost)
 if(Boost_FOUND)
     if(NOT MSVC OR OPENMIND_USE_CONAN)
@@ -13,7 +12,9 @@ if(Boost_FOUND)
 endif()
 
 if(OPENMIND_USE_OPENCL)
-	set(DEPENDENCIES ${DEPENDENCIES} OpenCL)
+    set(DEPENDENCIES ${DEPENDENCIES} OpenCL)
 endif()
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 lib(${DEPENDENCIES})

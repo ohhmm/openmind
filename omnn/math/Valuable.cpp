@@ -14,8 +14,8 @@
 #include "Sum.h"
 #include "PrincipalSurd.h"
 
-#include "/home/ubuntu/openmind/omnn/rt/GC.h"
-#include "/home/ubuntu/openmind/omnn/rt/tasq.h"
+#include "rt/GC.h"
+#include "rt/tasq.h"
 
 #include <algorithm>
 #include <functional>
