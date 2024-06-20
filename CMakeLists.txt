@@ -8,6 +8,11 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 endif()
 
+# Include vcpkg toolchain if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+endif()
+
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
@@ -131,12 +136,12 @@ if(NOT IntelSYCL_FOUND)
 endif()
 find_optional_pkg(
 	IntelDPCPP
-	# CUDAToolkit
+	CUDAToolkit
 	OpenCL
 )
 
-# find_package(CUDAToolkit)
-if(NOT OpenCL_FOUND)
+find_package(CUDAToolkit)
+if(NOT OpenCl_FOUND)
     find_package(OpenCL)
 endif()
 
