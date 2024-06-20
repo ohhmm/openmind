@@ -16,7 +16,7 @@ add_library(Valuable Valuable.cpp)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../rt)
 
 # Ensure Valuable target can find rt/GC.h
-target_include_directories(Valuable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../rt)
+target_include_directories(Valuable PUBLIC ${CMAKE_SOURCE_DIR}/rt)
 
 if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
     if(OPENMIND_MATH_USE_LEVELDB_CACHE)
