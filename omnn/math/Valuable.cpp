@@ -182,8 +182,6 @@ namespace math {
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
-    Valuable::Valuable(const a_rational& r) : exp(std::move(std::make_shared<Fraction>(r))) { exp->optimize(); }
-    Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(std::move(r)))) { exp->optimize(); }
 
     std::type_index Valuable::Type() const
     {
@@ -600,34 +598,26 @@ private:
     }
 
 public:
-    StateProxyComparator() { val = state; }
+    StateProxyComparator() { state = val; }
 
     StateProxyComparator(const Valuable* v) {
-        val = state;
-        state = v;
+        state = val;
+        val = v;
     }
 
     StateProxyComparator(const Valuable& v) {
-        val = state;
-        state = &v;
+        state = val;
+        val = &v;
     }
 
-    ~StateProxyComparator() { state = val; }
+    ~StateProxyComparator() { val = state; }
 
     bool operator()(const std::string_view& str1, const std::string_view& str2) const {
-        auto s = val->str();
-        if (s != str1) {
-            if (s == str2) {
-                return val->SerializedStrEqual(str1);
-            } else {
-                auto s1 = str1;
-                OmitOuterBrackets(s1);
-                auto s2 = str2;
-                OmitOuterBrackets(s2);
-                return s1 == s2;
-            }
-        } else
-            return val->SerializedStrEqual(str2);
+        auto s1 = str1;
+        auto s2 = str2;
+        OmitOuterBrackets(s1);
+        OmitOuterBrackets(s2);
+        return s1 == s2;
     }
 
     auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
@@ -2012,16 +2002,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
 
-    Valuable::Valuable(const a_rational& r)
-    : exp(std::move(std::make_shared<Fraction>(r)))
-    {
-        exp->optimize();
-    }
-
-    Valuable::Valuable(a_rational&& r)
-    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
-    { exp->optimize(); }
-
 	Valuable Valuable::Cos() const {
 		if (exp)
 			return exp->Cos();
@@ -3160,7 +3140,7 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
 {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
-||||||| f7621d27d
+
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
@@ -3412,10 +3392,20 @@ namespace math {
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
 
-    Valuable::Valuable(const a_rational& r)
-    : exp(std::move(std::make_shared<Fraction>(r)))
+    Valuable::Valuable(a_rational&& r)
+    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
+    { exp->optimize(); }
+
+    Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
     {
-        exp->optimize();
+        assert(!exp);
+    }
+
+    Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
+    {
+        assert(!exp);
     }
 
     Valuable::Valuable(a_rational&& r)
@@ -9335,10 +9325,7 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
 {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
-||||||| f7621d27d
-//
-// Created by Сергей Кривонос on 01.09.17.
-//
+
 #include "Valuable.h"
 
 #include "e.h"
@@ -12450,7 +12437,6 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
 {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
-=======
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
@@ -15590,4 +15576,3 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
 {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
->>>>>>> 17149d79853639f88344d483931e820879a5d04c
