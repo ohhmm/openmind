@@ -275,16 +275,8 @@ namespace math {
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
     Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
-
-    Valuable::Valuable(const a_rational& r)
-    : exp(std::move(std::make_shared<Fraction>(r)))
-    {
-        exp->optimize();
-    }
-
-    Valuable::Valuable(a_rational&& r)
-    : exp(std::move(std::make_shared<Fraction>(std::move(r))))
-    { exp->optimize(); }
+    Valuable::Valuable(const a_rational& r) : exp(std::move(std::make_shared<Fraction>(r))) { exp->optimize(); }
+    Valuable::Valuable(a_rational&& r) : exp(std::move(std::make_shared<Fraction>(std::move(r)))) { exp->optimize(); }
 
     namespace{
         template<typename T>
