@@ -3,7 +3,7 @@
 //
 #pragma once
 #include "Exponentiation.h"
-#include <omnn/math/Product.h>
+#include "Product.h"
 
 namespace omnn{
 namespace math {

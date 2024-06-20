@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <omnn/math/DuoValDescendant.h>
+#include "DuoValDescendant.h"
 
 namespace omnn::math
 {
@@ -27,9 +27,9 @@ public:
     std::ostream& print_sign(std::ostream& out) const override;
     std::ostream& code_sign(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override;
-    
+
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
-    
+
     void optimize() override;
 
 	Valuable operator-() const override;

@@ -5,8 +5,8 @@
 #pragma once
 #include <boost/multiprecision/detail/number_base.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
-#include <omnn/math/Variable.h>
-#include <omnn/math/DuoValDescendant.h>
+#include "Variable.h"
+#include "DuoValDescendant.h"
 
 namespace omnn{
 namespace math {
@@ -78,7 +78,7 @@ namespace math {
         Fraction(double d)
         : Fraction(boost::multiprecision::cpp_dec_float_100(d))
         { }
-        
+
 		Fraction(const Valuable& n)
 		: base(n, constants::one)
 		{

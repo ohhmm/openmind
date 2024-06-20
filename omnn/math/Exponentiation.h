@@ -1,16 +1,17 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
+
 #pragma once
-#include "omnn/math/Variable.h"
-#include <omnn/math/DuoValDescendant.h>
+#include "Variable.h"
+#include "DuoValDescendant.h"
 
 namespace omnn::math {
 
 class Exponentiation
         : public DuoValDescendant<Exponentiation>
 {
-	using base = DuoValDescendant<Exponentiation>;
+    using base = DuoValDescendant<Exponentiation>;
     vars_cont_t v;
     void InitVars();
 
@@ -22,20 +23,20 @@ public:
     std::ostream& code(std::ostream& out) const override;
 
     // DONT: overrides behaviour (calls InitVars)
-	// using base::base;
+    // using base::base;
 
-	template <class BaseT, class ExponentiationT>
+    template <class BaseT, class ExponentiationT>
     Exponentiation(BaseT&& b, ExponentiationT&& e)
         : base(std::forward<BaseT>(b), std::forward<ExponentiationT>(e))
-	{
+    {
         InitVars();
     }
 
     bool IsExponentiation() const override { return true; }
     bool IsVaExp() const override { return ebase().IsVa(); }
     bool IsSimple() const override {
-		return !FindVa() && eexp().IsInt();
-	}
+        return !FindVa() && eexp().IsInt();
+    }
     bool IsZero() const override { return _1.IsZero() && !_2.IsZero(); }
 
 
@@ -48,31 +49,31 @@ public:
     template<class T>
     void setBase(T&& b)
     {
-		set1(::std::forward<T>(b));
+        set1(::std::forward<T>(b));
         InitVars();
         optimized = {};
-	}
+    }
     template<class T>
     void updateBase(T&& b)
     {
-		update1(std::forward<T>(b));
+        update1(std::forward<T>(b));
         InitVars();
         optimized = {};
-	}
+    }
 
     const Valuable& eexp() const { return _2; }
     const Valuable& getExponentiation() const { return _2; }
     template<class T>
     void setExponentiation(T&& exponentiation)
     {
-		set2(std::forward<T>(exponentiation));
+        set2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
-	}
+    }
     template<class T>
     void updateExponentiation(T&& exponentiation)
     {
-		update2(std::forward<T>(exponentiation));
+        update2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
     }

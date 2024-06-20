@@ -15,6 +15,9 @@ add_library(Valuable Valuable.cpp)
 # Include the omnn/rt directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../rt)
 
+# Include the current directory
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 # Ensure Valuable target can find rt/GC.h
 target_include_directories(Valuable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../rt)
 
