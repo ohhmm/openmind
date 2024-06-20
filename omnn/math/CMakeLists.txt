@@ -24,6 +24,9 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
     endif()
 endif()
 
+# Define the Valuable target as a library
+add_library(Valuable omnn/math/Valuable.cpp)
+
 # Include the omnn/rt directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../rt)
 
