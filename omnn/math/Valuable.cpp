@@ -3408,6 +3408,18 @@ namespace math {
         assert(!exp);
     }
 
+    Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
+    {
+        assert(!exp);
+    }
+
+    Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
+    {
+        assert(!exp);
+    }
+
     Valuable::Valuable(a_rational&& r)
     : exp(std::move(std::make_shared<Fraction>(std::move(r))))
     { exp->optimize(); }
