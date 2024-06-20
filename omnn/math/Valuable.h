@@ -661,6 +661,11 @@ public:
     // Method to run inference with the loaded ONNX model
     std::vector<float> RunONNXInference(const std::vector<float>& input_data);
 
+    // Methods to add ONNX operations as mathematical expressions
+    void add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+    void add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+    void add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs);
+
 protected:
     View view = View::Flat;
     bool optimized = false;
