@@ -6189,8 +6189,6 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 
     size_t hash_value(const Valuable& v) { return v.Hash(); }
 
-}}
-
 namespace std
 {
     ::omnn::math::Valuable abs(const ::omnn::math::Valuable& v)
