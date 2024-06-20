@@ -1994,6 +1994,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return *this;
     }
 
+    const a_int Valuable::a_int_cz = 0;
+    const max_exp_t Valuable::max_exp_cz(a_int_cz);
+
 	Valuable Valuable::Cos() const {
 		if (exp)
 			return exp->Cos();
