@@ -654,21 +654,6 @@ Valuable implement(const char* str)
 
 namespace omnn::math {
 
-Valuable::Valuable() : exp(new Integer(Valuable::a_int_cz)) {}
-Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
-Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
-Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
-
-std::type_index Valuable::Type() const
-{
-    if (exp)
-        return exp->Type();
-#ifdef __APPLE__
-    LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
-    LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
-}
 
 } // namespace omnn::math
 
@@ -17376,7 +17361,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
         return ((((((state[0].And(32,-1).Shl(32) + state[1].And(32,-1)).Shl(32) + state[2].And(32,-1)).Shl(32) + state[3].And(32,-1)).Shl(32) + state[4].And(32,-1)).Shl(32) + state[5].And(32,-1)).Shl(32) + state[6].And(32,-1)).Shl(32) + state[7].And(32,-1);
         
         
-//        Пояснения:
+//        Пояснен??я:
 //        Все переменные беззнаковые, имеют размер 32 бита и ??ри вычислениях суммируются по модулю 232
 //        message — исходное двоичное сообщение
 //        m — преобразованное сообщение
@@ -20673,7 +20658,6 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
 {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
->>>>>>> origin/onnx-integration
 
 } // namespace math
 } // namespace omnn
