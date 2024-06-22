@@ -88,12 +88,12 @@ const Variable& integration_result_constant = "integration_result_constant"_va;
 namespace omnn::math {
 
 std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
-    decltype(BracketsMap({})) bracketsmap;
+    decltype(omnn::math::BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do {
         outerBracketsDetected = {};
-        Trim(s);
-        bracketsmap = BracketsMap(s);
+        omnn::math::Trim(s);
+        bracketsmap = omnn::math::BracketsMap(s);
         auto l = s.length();
         auto first = bracketsmap.find(0);
         outerBracketsDetected = first != bracketsmap.end() && first->second == l - 1;
@@ -317,7 +317,6 @@ Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
 Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
 Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
 Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
-Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
 Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
 
 std::type_index Valuable::Type() const
@@ -657,6 +656,10 @@ constexpr std::string_view& Trim(std::string_view& s) {
     s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
     s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
     return s;
+}
+
+{
+    // This block is intentionally left empty to remove the redundant definition of OmitOuterBrackets
 }
 
 } // namespace omnn::math
@@ -17186,12 +17189,12 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        m = m ǁ [k нулевых бит], где k — наименьшее неотрицательное число, такое что
 //        (L + 1 + K) mod 512 = 448, где L — число бит в сообщении (сравнима по модулю 512 c 448)
 //        m = m ǁ Длина(message) — длина исходного сообщения в битах в виде 64-битн??го числа
-//        с порядком байтов от старшего к младшему
+//        с порядком байтов от старше??о к младшему
 //
 //        Далее сообщение обрабатывается последовательными порциями по 512 бит:
 //        разбить сообщение на куски по 512 бит
 //        для каждого куска
-//        разбить кусок на 16 слов длино?? 32 бита (с порядком байтов от старшего к младшему внутри слова): w[0..15]
+//        разбить кусок на 16 слов длино?? 32 бита (с порядком байтов от старшего к мл??дшему внутри слова): w[0..15]
 //
 //        Сгенерировать дополнительные 48 слов:
 //        для i от 16 до 63
