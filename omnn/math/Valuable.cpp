@@ -653,6 +653,8 @@ Valuable implement(const char* str)
 
 } // namespace omnn::math
 
+namespace omnn::math {
+
 Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
     : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
     assert(!exp);
@@ -665,6 +667,8 @@ Valuable::Valuable() : exp(new Integer(Valuable::a_int_cz)) {}
 Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
 Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
 Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
+
+} // namespace omnn::math
 
 std::type_index Valuable::Type() const
 {
@@ -17581,7 +17585,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        h6 = h6 + g
 //        h7 = h7 + h
 //
-//        Получить итоговое значение хеша:
+//        По??учить итоговое значение хеша:
 //        digest = hash = h0 ǁ h1 ǁ h2 ǁ h3 ǁ h4 ǁ h5 ǁ h6 ǁ h7
     }
     
