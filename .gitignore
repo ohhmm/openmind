@@ -36,3 +36,10 @@ cmake_install.cmake
 # Exclude ONNX Runtime build files
 onnxruntime/build/
 onnxruntime/install/
+
+# Exclude conflict resolution scripts
+/full_outputs/
+split_conflicts.sh
+find_conflicts_in_cmakelists.sh
+extract_conflict_sections.sh
+apply_resolved_conflicts.sh
