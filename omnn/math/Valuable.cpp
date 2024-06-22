@@ -185,12 +185,16 @@ private:
 
 namespace omnn::math {
 
+namespace omnn::math {
+
 Valuable implement(const char* str)
 {
     std::cerr << str << std::endl;
     throw std::string(str) + " Implement!";
     return {};
 }
+
+namespace omnn::math {
 
 bool Valuable::IsSubObject(const Valuable& o) const {
     if (exp)
@@ -201,7 +205,7 @@ bool Valuable::IsSubObject(const Valuable& o) const {
 
 const Valuable Valuable::Link() const {
     if(exp)
-        return Valuable(exp);
+        return Valuable(*exp);
     IMPLEMENT
 }
 
@@ -330,6 +334,8 @@ Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOpt
         Become(std::move(sum));
     }
 }
+
+} // namespace omnn::math
 
 Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
 : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
