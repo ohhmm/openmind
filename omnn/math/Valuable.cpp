@@ -192,9 +192,6 @@ Valuable implement(const char* str)
     return {};
 }
 
-namespace omnn {
-namespace math {
-
 bool Valuable::IsSubObject(const Valuable& o) const {
     if (exp)
         return exp->IsSubObject(o);
@@ -230,9 +227,6 @@ void Valuable::LoadONNXModel(const std::string& model_path) {
     Ort::Session session(env, model_path.c_str(), session_options);
     this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
 }
-
-} // namespace math
-} // namespace omnn
 
 Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized)
 : Valuable(std::string_view(s), vaNames, itIsOptimized) {
@@ -17226,7 +17220,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        Далее сообщение обрабатывается последовательными порциями по 512 бит:
 //        разбить сообщение на куски по 512 бит
 //        для каждого куска
-//        разбить кусок на 16 слов длино?? 32 бита (с порядком байтов от старшего к мл??дшему внутри слова): w[0..15]
+//        разбить ??усок на 16 слов длино?? 32 бита (с порядком байтов от старшего к мл??дшему внутри слова): w[0..15]
 //
 //        Сгенерировать дополнительные 48 слов:
 //        для i от 16 до 63
