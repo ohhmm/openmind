@@ -238,7 +238,7 @@ Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOpt
         if (std::all_of(sv.begin(), sv.end(), ::isdigit)) {
             exp = std::make_shared<Integer>(sv);
         } else {
-            exp = std::make_shared<Variable>(sv);
+            exp = std::make_shared<Variable>(std::string(sv));
         }
     } else {
         // Handle more complex expressions
