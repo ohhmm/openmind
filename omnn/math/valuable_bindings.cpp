@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include "Valuable.h"
+#include "Variable.h"
 
 namespace py = pybind11;
 
@@ -20,8 +21,8 @@ PYBIND11_MODULE(valuable_bindings, m) {
         .def("LCM", &omnn::math::Valuable::LCM)
         .def("integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Variable&>(&omnn::math::Valuable::integral))
         .def("integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Valuable&, const omnn::math::Valuable&, const omnn::math::Variable&>(&omnn::math::Valuable::integral))
-        .def("Integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Variable&>(&omnn::math::Valuable::Integral))
-        .def("Integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Valuable&, const omnn::math::Valuable&, const omnn::math::Variable&>(&omnn::math::Valuable::Integral))
+        .def("Integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Variable&>(&omnn::math::Valuable::Integral, py::const_))
+        .def("Integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Valuable&, const omnn::math::Valuable&, const omnn::math::Variable&>(&omnn::math::Valuable::Integral, py::const_))
         .def("operator=", py::overload_cast<const omnn::math::Valuable&>(&omnn::math::Valuable::operator=))
-        .def("operator=", py::overload_cast<omnn::math::Valuable&&>(&omnn::math::Valuable::operator=));
+        .def("operator=", [](omnn::math::Valuable& self, omnn::math::Valuable other) { return self = std::move(other); });
 }

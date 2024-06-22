@@ -454,19 +454,20 @@ Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
     return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
 }
 
-namespace {
-void Optimize(Valuable::solutions_t& s) {
-    Valuable::solutions_t distinct;
-    Valuable::OptimizeOn enable;
-    while (s.size()) {
-        auto it = s.begin();
-        auto v = std::move(s.extract(it).value());
-        v.optimize();
-        distinct.emplace(std::move(v));
+namespace omnn::math {
+    void Optimize(Valuable::solutions_t& s) {
+        Valuable::solutions_t distinct;
+        Valuable::OptimizeOn enable;
+        while (s.size()) {
+            auto it = s.begin();
+            auto v = std::move(s.extract(it).value());
+            v.optimize();
+            distinct.emplace(std::move(v));
+        }
+        std::swap(s, distinct);
     }
-    std::swap(s, distinct);
-}
-} // namespace
+} // namespace omnn::math
+
 Valuable::Valuable(solutions_t&& s)
 {
     if (!optimizations
@@ -701,69 +702,6 @@ namespace omnn::math {
         //    auto cMergeOrF = MergeOrF(c);
     }
     namespace omnn::math {
-
-    Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
-    {
-        Valuable merged;
-        if(_1 == _2)
-            merged = _1;
-        else if (_1 == -_2)
-        {
-            merged = _1 * constants::plus_minus_1;
-        }
-        else
-        {
-            // a = 1;
-            auto s = _1 + _2;
-            if(s.IsZero())
-            {
-                merged = (!_1.IsProduct() ? _1 : _2) * constants::plus_minus_1;
-            }
-            else
-            {
-                OptimizeOff oo;
-                // b = -s;
-                auto c = _1 * _2;
-                auto d = s.Sq() + c * -4;
-                if (_1.IsMultival() == YesNoMaybe::No && _2.IsMultival() == YesNoMaybe::No) {
-                    merged = (Exponentiation(d, constants::half) + s) / constants::two;
-                } else {
-                    auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
-                    dist.merge(_2.Distinct());
-                    auto grade = dist.size();
-                    auto targetGrade = constants::one.Shl(bits_in_use(grade));
-                    merged = (Exponentiation(d, targetGrade.Reciprocal()) + s) / targetGrade;
-                }
-            }
-        }
-        {
-            OptimizeOn oo;
-            merged.optimize();
-        }
-        return merged;
-    }
-
-    Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
-        // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
-        return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
-    }
-
-    Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
-        auto _1 = MergeOr(v1, v2);
-        auto _2 = MergeOr(v3, v4);
-    #ifndef NDEBUG
-        if(_1.IsMultival() != YesNoMaybe::Yes || _2.IsMultival() != YesNoMaybe::Yes) {
-            LOG_AND_IMPLEMENT(v1 << 'v' << v2 << 'v' << v3 << 'v' << v4 << " - emerging difficulty: "
-                                  << v1 << 'v' << v2 << '=' << _1 << ", " << v3 << 'v' << v4 << '=' << _2);
-        }
-    #endif
-        return MergeOr(_1, _2);
-    }
-
-    Valuable Valuable::MergeAnd(const Valuable& v1, const Valuable& v2)
-    {
-        return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
-    }
 
     } // namespace omnn::math
 
@@ -3422,131 +3360,19 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return v;
 }
 
-::omnn::math::Valuable operator"" _v(unsigned long long v)
-{
-    using namespace ::omnn::math;
-    const auto va = ull2cppint(v);
-    return Valuable(Integer(va));
-}
+// Commented out duplicate definition of operator"" _v
+// ::omnn::math::Valuable operator"" _v(unsigned long long v)
+// {
+//     using namespace ::omnn::math;
+//     const auto va = ull2cppint(v);
+//     return Valuable(Integer(va));
+// }
 
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v)
-//{
-//    return ::omnn::math::vo<v>();
-//}
-
-::omnn::math::Valuable operator"" _v(long double v)
-{
-    return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
-}
-
-//
-// Created by Сергей Кривонос on 01.09.17.
-//
-#include "Valuable.h"
-
-#include "e.h"
-#include "i.h"
-#include "Infinity.h"
-#include "pi.h"
-#include "Fraction.h"
-#include "Modulo.h"
-#include "Integer.h"
-#include "VarHost.h"
-#include "Sum.h"
-#include "PrincipalSurd.h"
-
-#include <rt/GC.h>
-#include <rt/tasq.h>
-
-#include <algorithm>
-#include <functional>
-#include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <numeric>
-#include <sstream>
-#include <string>
-#include <string_view>
-#include <stack>
-#include <map>
-#include <type_traits>
-#include <unordered_set>
-
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/core/demangle.hpp>
-#include <boost/numeric/conversion/converter.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
-#ifndef __APPLE__
-#include <boost/stacktrace.hpp>
-#endif
-
-using namespace std::string_view_literals;
-
-#ifdef max
-#undef max
-#endif
-
-#ifdef min
-#undef min
-#endif
-
-namespace omnn{
-namespace math {
-    namespace constants {
-    constexpr const Valuable& e = constant::e;
-    constexpr const Valuable& i = constant::i;
-    constexpr const Valuable& zero = vo<0>();
-    constexpr const Valuable& one = vo<1>();
-    constexpr const Valuable& two = vo<2>();
-    const Fraction Half{1_v, 2_v};
-    constexpr const Valuable& half = Half;
-    const Fraction Quarter {1, 4};
-    constexpr const Valuable& quarter = Quarter;
-    constexpr const Valuable& minus_1 = vo<-1>();
-
-    const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-    const Valuable& plus_minus_1 = PlusMinusOne;                          // ??1
-    const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
-    const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
-    constexpr const Valuable& pi = constant::pi;
-    constexpr const Valuable& infinity = Infinity::GlobalObject;
-    constexpr const Valuable& minfinity = MInfinity::GlobalObject;
-    const Variable& integration_result_constant = "integration_result_constant"_va;
-
-        std::map<std::string_view, Valuable> Constants ={
-            {"e", constant::e},
-            {"i", constant::i},
-            {"pi", constant::pi},
-        };
-    } // namespace constants
-
-    thread_local bool Valuable::optimizations = true;
-    thread_local bool Valuable::bit_operation_optimizations = {};
-    thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
-
-
-    Valuable implement(const char* str)
-    {
-        std::cerr << str << std::endl;
-        throw std::string(str) + " Implement!";
-        return {};
-    }
-}
-}
-
-    bool Valuable::IsSubObject(const Valuable& o) const {
-        if (exp)
-            return exp->IsSubObject(o);
-        else
-            IMPLEMENT
-    }
-
-    const Valuable Valuable::Link() const {
-        if(exp)
-            return Valuable(exp);
-        IMPLEMENT
-    }
+// Commented out duplicate definition of operator"" _v
+// ::omnn::math::Valuable operator"" _v(long double v)
+// {
+//     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
+// }
 
     Valuable* Valuable::Clone() const
     {
@@ -17344,7 +17170,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        Предварительная обработка:
 //        auto m = Shl(1) + 1;
 //        m = m ǁ [k нулевых бит], где k — наименьшее неотрицательное число, такое что
-//        (L + 1 + K) mod 512 = 448, где L — число бит в сообщении (сравнима по модулю 512 c 448)
+//        (L + 1 + K) mod 512 = 448, где L — число бит в сообщении (сравнима п?? модулю 512 c 448)
 //        m = m ǁ Длина(message) — длина исходного сообщения в битах в виде 64-битн??го числа
 //        с порядком байтов от старше??о к младшему
 //
