@@ -274,7 +274,6 @@ Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
 {
     assert(!exp);
 }
-
 Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
 Valuable::Valuable(Valuable* v) : exp(v) {}
 Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
@@ -655,14 +654,6 @@ Valuable implement(const char* str)
 
 namespace omnn::math {
 
-Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
-    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
-    assert(!exp);
-}
-
-Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
-Valuable::Valuable(Valuable* v) : exp(v) {}
-Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
 Valuable::Valuable() : exp(new Integer(Valuable::a_int_cz)) {}
 Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
 Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
@@ -677,88 +668,6 @@ std::type_index Valuable::Type() const
 #else
     LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
 #endif
-}
-
-Valuable& Valuable::Become(Valuable&& i)
-{
-    if (Same(i))
-        return *this;
-    auto newWasView = GetView(); // TODO: fix it, supervise all View usages
-    i.SetView(newWasView);
-    auto h = i.Hash();
-    auto e = i.exp;
-    if(e)
-    {
-        while (e->exp) {
-            e = e->exp;
-        }
-
-        if(exp)
-        {
-            exp = e;
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-        }
-        else
-        {
-            Become(std::move(*e));
-        }
-
-        e.reset();
-    }
-    else
-    {
-        auto sizeWas = getAllocSize();
-        auto newSize = i.getTypeSize();
-
-        if (newSize <= sizeWas) {
-            assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
-            char buf[DefaultAllocSize];
-            i.New(buf, std::move(i));
-            Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
-            this->~Valuable();
-            bufv.New(this, std::move(bufv));
-            setAllocSize(sizeWas);
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-            SetView(newWasView);
-            optimize();
-        }
-        else if(exp && exp->getAllocSize() >= newSize)
-        {
-            exp->Become(std::move(i));
-        }
-        else
-        {
-            auto moved = i.Move();
-            this->~Valuable();
-            new(this) Valuable(moved);
-            setAllocSize(sizeWas);
-            if (Hash() != h) {
-                IMPLEMENT
-            }
-            optimize();
-        }
-    }
-    if(GetView() != newWasView){
-        SetView(newWasView);
-        IMPLEMENT
-    }
-
-    return *this;
-}
-
-Valuable& Valuable::operator =(Valuable&& v)
-{
-    return Become(std::move(v));
-}
-
-Valuable& Valuable::operator =(const Valuable& v)
-{
-    exp.reset(v.Clone());
-    return *this;
 }
 
 } // namespace omnn::math
@@ -981,37 +890,6 @@ Valuable& Valuable::operator =(const Valuable& v)
     }
 
 namespace omnn::math {
-
-auto BracketsMap(const std::string_view& s) {
-    auto l = s.length();
-    using index_t = decltype(l);
-    std::stack<index_t> st;
-    std::map<index_t, index_t> bracketsmap;
-    decltype(l) c = 0;
-    while (c < l) {
-        if (s[c] == '(')
-            st.push(c);
-        else if (s[c] == ')') {
-            if (st.empty()) {
-                throw "parentheses relation mismatch";
-            }
-            bracketsmap.emplace(st.top(), c);
-            st.pop();
-        }
-        ++c;
-    }
-    if (!st.empty())
-        throw "parentheses relation mismatch";
-    return bracketsmap;
-}
-
-constexpr std::string_view& Trim(std::string_view& s) {
-    s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
-    s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
-    return s;
-}
-
-} // namespace omnn::math
 
 // Other code...
 
@@ -18429,7 +18307,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             else
                 ok = {};
         }
-		
+
         if (!ok)
         {
             Valuable sum = Sum{};
@@ -18444,8 +18322,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
 			};
             op_t o_sum, o_mul, o_div, o_exp;
-            op_t o_mod; 
-            op_t o_pSurd; 
+            op_t o_mod;
+            op_t o_pSurd;
             if (itIsOptimized) {
                 sum.MarkAsOptimized();
                 v.MarkAsOptimized();
@@ -19693,7 +19571,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             //Integral({});
         }
     }
-	
+
 	Valuable Valuable::Gamma() const {
         if (exp)
             return exp->Gamma();
@@ -19712,7 +19590,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
         return *this;
     }
-    
+
 	Valuable Valuable::Factorial() const {
         if (exp)
             return exp->Factorial();
@@ -20354,7 +20232,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
         // simplified to formula:
         // (Y + X -sqrt(Y^2 + X^2 -2YX))/2
-        // expressed through Abs: 
+        // expressed through Abs:
         // (Y + X -sqrt((Y-X)^2))/2 = (X+Y-|X-Y|)/2
         return ((second + *this) - (second - *this).abs()) / constants::two;
     }
