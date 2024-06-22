@@ -473,7 +473,7 @@ Valuable::Valuable(solutions_t&& s)
     if (!optimizations
         || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
     ) {
-        Optimize(s);
+        omnn::math::Optimize(s);
     }
 
     auto it = s.begin();
@@ -706,17 +706,6 @@ namespace omnn::math {
     } // namespace omnn::math
 
     namespace {
-    void Optimize(Valuable::solutions_t& s) {
-        Valuable::solutions_t distinct;
-        Valuable::OptimizeOn enable;
-        while (s.size()) {
-			auto it = s.begin();
-			auto v = std::move(s.extract(it).value());
-            v.optimize();
-            distinct.emplace(std::move(v));
-		}
-		std::swap(s, distinct);
-    }
     } // namespace
     Valuable::Valuable(solutions_t&& s)
     {
@@ -868,7 +857,9 @@ namespace math {
 } // namespace math
 } // namespace omnn
 
-thread_local const Valuable* StateProxyComparator::state = {};
+namespace omnn::math {
+    thread_local const Valuable* StateProxyComparator::state = {};
+} // namespace omnn::math
 
 struct hash_tokens_collection_t {
     static constexpr ::omnn::math::HashStrOmitOuterBrackets hasher = {};
