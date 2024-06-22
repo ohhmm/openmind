@@ -47,3 +47,8 @@ apply_resolved_conflicts.sh
 # Exclude large files
 omnn/math/resnet50-v1-7.onnx
 boost_1_85_0.tar.gz
+
+# Exclude untracked files
+conflict_resolution_script_1.sh
+conflict_resolution_script_2.sh
+conflict_resolution_script_3.sh
