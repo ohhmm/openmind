@@ -673,6 +673,8 @@ namespace omnn::math {
         //    auto bMergeOrF = MergeOrF(b);
         //    auto cMergeOrF = MergeOrF(c);
     }
+    namespace omnn::math {
+
     Valuable Valuable::MergeOr(const Valuable& _1, const Valuable& _2)
     {
         Valuable merged;
@@ -709,12 +711,12 @@ namespace omnn::math {
         }
         {
             OptimizeOn oo;
-			merged.optimize();
-		}
+            merged.optimize();
+        }
         return merged;
     }
 
-	Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
+    Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3) {
         // 1,2,3:  1 + (1 or 2) * (1 or 0)   =>   1st + ((2nd or 3rd) - 1st) * (0 or 1)
         return Sum{Product{constants::zero_or_1, MergeOr(v3 - v1, v2 - v1)}, v1};
     }
@@ -722,12 +724,12 @@ namespace omnn::math {
     Valuable Valuable::MergeOr(const Valuable& v1, const Valuable& v2, const Valuable& v3, const Valuable& v4) {
         auto _1 = MergeOr(v1, v2);
         auto _2 = MergeOr(v3, v4);
-#ifndef NDEBUG
+    #ifndef NDEBUG
         if(_1.IsMultival() != YesNoMaybe::Yes || _2.IsMultival() != YesNoMaybe::Yes) {
             LOG_AND_IMPLEMENT(v1 << 'v' << v2 << 'v' << v3 << 'v' << v4 << " - emerging difficulty: "
-                              << v1 << 'v' << v2 << '=' << _1 << ", " << v3 << 'v' << v4 << '=' << _2);
+                                  << v1 << 'v' << v2 << '=' << _1 << ", " << v3 << 'v' << v4 << '=' << _2);
         }
-#endif
+    #endif
         return MergeOr(_1, _2);
     }
 
@@ -735,6 +737,8 @@ namespace omnn::math {
     {
         return ((v1+v2)+(constants::minus_1^constants::half)*(v1-v2))/2;
     }
+
+    } // namespace omnn::math
 
     namespace {
     void Optimize(Valuable::solutions_t& s) {
