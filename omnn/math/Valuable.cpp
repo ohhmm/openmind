@@ -54,37 +54,6 @@ using namespace std::string_view_literals;
 
 namespace omnn::math {
 
-const a_int Valuable::a_int_cz = 0;
-const max_exp_t Valuable::max_exp_cz(a_int_cz);
-
-namespace constants {
-constexpr const Valuable& e = constant::e;
-constexpr const Valuable& i = constant::i;
-constexpr const Valuable& zero = vo<0>();
-constexpr const Valuable& one = vo<1>();
-constexpr const Valuable& two = vo<2>();
-const Fraction Half{1_v, 2_v};
-constexpr const Valuable& half = Half;
-const Fraction Quarter {1, 4};
-constexpr const Valuable& quarter = Quarter;
-constexpr const Valuable& minus_1 = vo<-1>();
-
-const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
-const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
-const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
-constexpr const Valuable& pi = constant::pi;
-constexpr const Valuable& infinity = Infinity::GlobalObject;
-constexpr const Valuable& minfinity = MInfinity::GlobalObject;
-const Variable& integration_result_constant = "integration_result_constant"_va;
-
-    std::map<std::string_view, Valuable> Constants ={
-        {"e", constant::e},
-        {"i", constant::i},
-        {"pi", constant::pi},
-    };
-}
-
 auto BracketsMap(const std::string_view& s) {
     auto l = s.length();
     using index_t = decltype(l);
@@ -128,6 +97,37 @@ std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
             s = s.substr(1, l - 2);
     } while (outerBracketsDetected);
     return bracketsmap;
+}
+
+const a_int Valuable::a_int_cz = 0;
+const max_exp_t Valuable::max_exp_cz(a_int_cz);
+
+namespace constants {
+constexpr const Valuable& e = constant::e;
+constexpr const Valuable& i = constant::i;
+constexpr const Valuable& zero = vo<0>();
+constexpr const Valuable& one = vo<1>();
+constexpr const Valuable& two = vo<2>();
+const Fraction Half{1_v, 2_v};
+constexpr const Valuable& half = Half;
+const Fraction Quarter {1, 4};
+constexpr const Valuable& quarter = Quarter;
+constexpr const Valuable& minus_1 = vo<-1>();
+
+const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
+const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
+const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
+const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
+constexpr const Valuable& pi = constant::pi;
+constexpr const Valuable& infinity = Infinity::GlobalObject;
+constexpr const Valuable& minfinity = MInfinity::GlobalObject;
+const Variable& integration_result_constant = "integration_result_constant"_va;
+
+    std::map<std::string_view, Valuable> Constants ={
+        {"e", constant::e},
+        {"i", constant::i},
+        {"pi", constant::pi},
+    };
 }
 
 } // namespace omnn::math
