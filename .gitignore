@@ -49,6 +49,16 @@ omnn/math/resnet50-v1-7.onnx
 boost_1_85_0.tar.gz
 
 # Exclude untracked files
-conflict_resolution_script_1.sh
-conflict_resolution_script_2.sh
-conflict_resolution_script_3.sh
+CMakeLists.txt.bak
+analyze_large_file.sh
+analyze_log.sh
+check_conflicts.sh
+check_valuable_conflicts.sh
+identify_conflicts.sh
+process_conflicts.sh
+process_large_conflict_file.sh
+remove_large_files_history.sh
+resolve_conflicts.sh
+resolve_valuable_conflicts.sh
+search_conflicts_in_chunks.sh
+search_conflicts_in_sections.sh
