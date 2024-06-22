@@ -1,4 +1,5 @@
-include_directories(/home/ubuntu/openmind/omnn/rt)
+include_directories(${CMAKE_SOURCE_DIR}/omnn/rt)
+include_directories(${CMAKE_SOURCE_DIR}/omnn/math)
 
 cmake_minimum_required(VERSION 3.14)
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /home/ubuntu/onnxruntime/build/Linux/Release/lib/cmake/onnxruntime)
@@ -408,8 +409,8 @@ if(Python_FOUND)
     link_directories(${Python_LIBRARIES})
 endif()
 
-set(Python_INCLUDE_DIRS /usr/include/python3.10)
-set(Python_LIBRARIES /usr/lib/x86_64-linux-gnu/libpython3.10.so)
+# set(Python_INCLUDE_DIRS /usr/include/python3.10)
+# set(Python_LIBRARIES /usr/lib/x86_64-linux-gnu/libpython3.10.so)
 
 if (OPENMIND_BUILD_TESTS)
 	if(NOT MSVC)
