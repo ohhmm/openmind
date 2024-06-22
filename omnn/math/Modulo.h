@@ -20,7 +20,7 @@ class Modulo : public DuoValDescendant<Modulo>
 public:
     using base::base;
 
-	bool IsModulo() const override { return true; }
+    bool IsModulo() const override { return true; }
     auto& getDividend() const { return get1(); }
     auto& getDevisor() const { return get2(); }
 
@@ -32,17 +32,17 @@ public:
 
     void optimize() override;
 
-	Valuable operator-() const override;
+    Valuable operator-() const override;
 
     Valuable& sq() override;
 
-	std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
+    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
     Valuable InCommonWith(const Valuable& v) const override { return 1; }
     const vars_cont_t& getCommonVars() const override { return VarsForCommoning; }
 
-	bool IsComesBefore(const Valuable& v) const override;
-	omnn::math::Valuable::vars_cont_t GetVaExps() const override;
+    bool IsComesBefore(const Valuable& v) const override;
+    omnn::math::Valuable::vars_cont_t GetVaExps() const override;
 };
 
 } /* namespace omnn::math */

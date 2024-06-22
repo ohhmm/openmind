@@ -5,7 +5,7 @@
  *      Author: sergejkrivonos
  */
 #pragma once
-#include "ValuableDescendantContract.h"
+#include <omnn/math/ValuableDescendantContract.h>
 #include <utility>
 
 namespace omnn::math {
@@ -184,7 +184,6 @@ namespace omnn::math {
                 }
 
                 // TODO: multival caching (inspect all optimized and optimization transisions)
-
 
                 Valuable::solutions_t vals, thisValues;
                 _1.Values([&](auto& thisVal){

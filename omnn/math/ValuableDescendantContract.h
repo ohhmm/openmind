@@ -77,8 +77,7 @@ namespace math {
             return reinterpret_cast<Chld*>(this);
         }
 
-        constexpr Valuable* Clone() const override
-        {
+        constexpr Valuable* Clone() const override {
             return new Chld(*CPtr());
         }
 

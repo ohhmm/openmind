@@ -276,9 +276,8 @@ public:
     : exp(t.Move())
     { }
 
-    Valuable(Valuable&&) = default;
+    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
     Valuable();
-
     Valuable(double d);
 
     template<class T,
@@ -294,7 +293,6 @@ public:
     using NewVaFn_t = std::function<Valuable(const std::string&)>;
     Valuable(const std::string& s, NewVaFn_t newVa);
     Valuable(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized = false);
-    Valuable(const std::string& s);
 
     //constexpr
 	virtual ~Valuable()//{}
@@ -342,7 +340,7 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
     void SetView(View v);
-    bool IsEquation() const {
+    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
 

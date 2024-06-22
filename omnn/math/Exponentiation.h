@@ -18,6 +18,8 @@ class Exponentiation
 protected:
     Valuable& ebase() { return base::_1; }
     Valuable& eexp() { return base::_2; }
+    const Valuable& getBase() const { return _1; }
+    const Valuable& getExponentiation() const { return _2; }
     std::ostream& print_sign(std::ostream& out) const override;
 public:
     std::ostream& code(std::ostream& out) const override;
@@ -44,7 +46,6 @@ public:
     bool IsMultiSign() const;
     YesNoMaybe IsMultival() const override;
     void Values(const std::function<bool(const Valuable&)>&) const override;
-    const Valuable& getBase() const { return _1; }
     const Valuable& ebase() const { return _1; }
     template<class T>
     void setBase(T&& b)
@@ -62,7 +63,6 @@ public:
     }
 
     const Valuable& eexp() const { return _2; }
-    const Valuable& getExponentiation() const { return _2; }
     template<class T>
     void setExponentiation(T&& exponentiation)
     {
@@ -74,6 +74,14 @@ public:
     void updateExponentiation(T&& exponentiation)
     {
         update2(std::forward<T>(exponentiation));
+        InitVars();
+        optimized = {};
+        InitVars();
+    const Valuable& getExponentiation() const { return _2; }
+=======
+    std::ostream& print_sign(std::ostream& out) const override;
+    {
+		update2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
     }
@@ -99,6 +107,7 @@ public:
     void optimize() override;
 
     Valuable varless() const override;
+
     const vars_cont_t& getCommonVars() const override;
     vars_cont_t GetVaExps() const override;
     Valuable InCommonWith(const Valuable& v) const override;

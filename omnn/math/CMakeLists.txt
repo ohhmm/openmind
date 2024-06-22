@@ -35,3 +35,7 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
         target_compile_definitions(Valuable PUBLIC ALLOW_CACHE_UPGRADE)
     endif()
 endif()
+
+if (${OPENMIND_BUILD_3RD_PARTY_TESTS})
+    add_subdirectory(3rdPartyTests)
+endif ()

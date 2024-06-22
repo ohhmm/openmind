@@ -7,7 +7,7 @@
 #include <future>
 #include <iterator>
 
-#include "../rt/tasq.h"
+#include <omnn/rt/tasq.h>
 
 namespace omnn{
 namespace math {
