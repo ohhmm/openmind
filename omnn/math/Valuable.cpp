@@ -132,10 +132,11 @@ std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
 
 } // namespace omnn::math
 
+namespace omnn::math {
 struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
     [[nodiscard]] size_t operator()(const std::string_view& s) const {
         auto str = s;
-        OmitOuterBrackets(str);
+        omnn::math::OmitOuterBrackets(str);
         return std::hash<std::string_view>::operator()(str);
     }
 };
@@ -145,8 +146,8 @@ public:
     using tokens_collection_t = ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
 
 private:
-    const Valuable* val;
-    static thread_local const Valuable* state;
+    const omnn::math::Valuable* val;
+    static thread_local const omnn::math::Valuable* state;
 
     static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str, char delimiter) {
         tokens_collection_t tokens;
@@ -181,6 +182,8 @@ private:
         return tokens;
     }
 };
+
+namespace omnn::math {
 
 Valuable implement(const char* str)
 {
@@ -224,6 +227,8 @@ void Valuable::LoadONNXModel(const std::string& model_path) {
     Ort::Session session(env, model_path.c_str(), session_options);
     this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
 }
+
+} // namespace omnn::math
 
 Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized)
 : Valuable(std::string_view(s), vaNames, itIsOptimized) {
