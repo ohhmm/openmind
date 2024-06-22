@@ -1170,12 +1170,6 @@ std::string Solid(std::string s) {
 namespace omnn {
 namespace math {
 
-namespace omnn {
-namespace math {
-
-namespace omnn {
-namespace math {
-
 struct HashStrOmitOuterBrackets
     : public std::hash<std::string_view>
 {
