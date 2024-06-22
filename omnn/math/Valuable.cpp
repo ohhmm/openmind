@@ -650,157 +650,18 @@ Valuable implement(const char* str)
     return {};
 }
 
-bool Valuable::IsSubObject(const Valuable& o) const {
-    if (exp)
-        return exp->IsSubObject(o);
-    else
-        IMPLEMENT
-}
-
-const Valuable Valuable::Link() const {
-    if(exp)
-        return Valuable(*exp);
-    IMPLEMENT
-}
-
-Valuable* Valuable::Clone() const {
-    if (exp)
-        return exp->Clone();
-    else
-        IMPLEMENT
-}
-
-Valuable* Valuable::Move() {
-    if (exp)
-        return exp->Move();
-    else
-        IMPLEMENT
-}
-
-void Valuable::LoadONNXModel(const std::string& model_path) {
-    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ValuableONNX");
-    Ort::SessionOptions session_options;
-    session_options.SetIntraOpNumThreads(1);
-    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-    Ort::Session session(env, model_path.c_str(), session_options);
-    this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
-}
-
-Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized)
-: Valuable(std::string_view(s), vaNames, itIsOptimized) {
-    // Parse the string and create a Valuable object representing the mathematical expression
-    std::string_view sv(s);
-    auto bracketsmap = OmitOuterBrackets(sv);
-    if (bracketsmap.empty()) {
-        // Handle simple cases like integers or variables
-        if (std::all_of(sv.begin(), sv.end(), ::isdigit)) {
-            exp = std::make_shared<Integer>(sv);
-        } else {
-            exp = std::make_shared<Variable>(std::string(sv));
-        }
-    } else {
-        // Handle more complex expressions
-        Valuable sum = Sum{};
-        Valuable v;
-        auto mulByNeg = false;
-        using op_t = std::function<void(Valuable &&)>;
-        op_t o_mov = [&](Valuable&& val) {
-            v = std::move(val);
-            if (mulByNeg) {
-                v *= -1;
-                mulByNeg = {};
-            }
-        };
-        op_t o_sum, o_mul, o_div, o_exp;
-        o_sum = [&](Valuable&& val) {
-            if (mulByNeg) {
-                val *= -1;
-                mulByNeg = {};
-            }
-            sum += std::move(val);
-        };
-        o_mul = [&](Valuable&& val) {
-            if (mulByNeg) {
-                val *= -1;
-                mulByNeg = {};
-            }
-            v *= std::move(val);
-        };
-        o_div = [&](Valuable&& val) {
-            if (mulByNeg) {
-                val *= -1;
-                mulByNeg = {};
-            }
-            v /= std::move(val);
-        };
-        o_exp = [&](Valuable&& val) {
-            if (mulByNeg) {
-                val *= -1;
-                mulByNeg = {};
-            }
-            v ^= std::move(val);
-        };
-        auto o = std::ref(o_mov);
-        for (size_t i = 0; i < sv.length(); ++i) {
-            auto c = sv[i];
-            if (c == '(') {
-                auto cb = bracketsmap[i];
-                auto next = i + 1;
-                o(Valuable(std::string(sv.substr(next, cb - next)), vaNames, itIsOptimized));
-                i = cb;
-            } else if (c == '-') {
-                o_sum(std::move(v));
-                v = 0;
-                o = o_mov;
-                mulByNeg ^= true;
-            } else if ((c >= '0' && c <= '9') || c == '.') {
-                auto next = sv.find_first_not_of("0123456789.", i + 1);
-                auto ss = sv.substr(i, next - i);
-                i = next - 1;
-                if (ss.find('.') != std::string::npos) {
-                    auto beforedot = ss.substr(0, ss.find('.'));
-                    auto afterdot = ss.substr(ss.find('.') + 1);
-                    auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
-                    o(std::move(f));
-                } else {
-                    o(Integer(ss));
-                }
-            } else if (c == '+') {
-                o_sum(std::move(v));
-                v = 0;
-                o = o_mov;
-            } else if (c == '*') {
-                o = o_mul;
-            } else if (c == '/') {
-                o = o_div;
-            } else if (c == '^') {
-                o = o_exp;
-            } else if (std::isalpha(c)) {
-                auto to = sv.find_first_of(" */%+-^()", i + 1);
-                auto id = std::string(sv.substr(i, to - i));
-                o(Valuable(id, vaNames, itIsOptimized));
-                i = to - 1;
-            } else {
-                throw std::runtime_error("Unexpected character in expression");
-            }
-        }
-        o_sum(std::move(v));
-        Become(std::move(sum));
-    }
-}
 
 } // namespace omnn::math
 
 Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
-: hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-{
+    : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized) {
     assert(!exp);
 }
 
 Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
 Valuable::Valuable(Valuable* v) : exp(v) {}
 Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
-Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
+Valuable::Valuable() : exp(new Integer(Valuable::a_int_cz)) {}
 Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
 Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
 Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
