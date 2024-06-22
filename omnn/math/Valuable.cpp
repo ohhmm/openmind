@@ -85,8 +85,6 @@ const Variable& integration_result_constant = "integration_result_constant"_va;
     };
 }
 
-namespace omnn::math {
-
 auto BracketsMap(const std::string_view& s) {
     auto l = s.length();
     using index_t = decltype(l);
@@ -184,43 +182,97 @@ private:
     }
 };
 
-auto BracketsMap(const std::string_view& s) {
-    auto l = s.length();
-    using index_t = decltype(l);
-    std::stack<index_t> st;
-    std::map<index_t, index_t> bracketsmap;
-    decltype(l) c = 0;
-    while (c < l) {
-        if (s[c] == '(')
-            st.push(c);
-        else if (s[c] == ')') {
-            if (st.empty()) {
-                throw "parentheses relation mismatch";
-            }
-            bracketsmap.emplace(st.top(), c);
-            st.pop();
-        }
-        ++c;
-    }
-    if (!st.empty())
-        throw "parentheses relation mismatch";
-    return bracketsmap;
-}
-
-constexpr std::string_view& Trim(std::string_view& s) {
-    s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
-    s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
-    return s;
-}
-
-} // namespace omnn::math
-
 Valuable implement(const char* str)
 {
     std::cerr << str << std::endl;
     throw std::string(str) + " Implement!";
     return {};
 }
+
+bool Valuable::IsSubObject(const Valuable& o) const {
+    if (exp)
+        return exp->IsSubObject(o);
+    else
+        IMPLEMENT
+}
+
+const Valuable Valuable::Link() const {
+    if(exp)
+        return Valuable(exp);
+    IMPLEMENT
+}
+
+Valuable* Valuable::Clone() const {
+    if (exp)
+        return exp->Clone();
+    else
+        IMPLEMENT
+}
+
+Valuable* Valuable::Move() {
+    if (exp)
+        return exp->Move();
+    else
+        IMPLEMENT
+}
+
+void Valuable::LoadONNXModel(const std::string& model_path) {
+    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ValuableONNX");
+    Ort::SessionOptions session_options;
+    session_options.SetIntraOpNumThreads(1);
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    Ort::Session session(env, model_path.c_str(), session_options);
+    this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
+}
+
+Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized)
+: Valuable(std::string_view(s), vaNames, itIsOptimized) {
+    // Parse the string and create a Valuable object representing the mathematical expression
+    std::string_view sv(s);
+    auto bracketsmap = OmitOuterBrackets(sv);
+    if (bracketsmap.empty()) {
+        // Handle simple cases like integers or variables
+        if (std::all_of(sv.begin(), sv.end(), ::isdigit)) {
+            exp = std::make_shared<Integer>(sv);
+        } else {
+            exp = std::make_shared<Variable>(sv);
+        }
+    } else {
+        // Handle more complex expressions
+        Valuable sum = Sum{};
+        Valuable v;
+        auto mulByNeg = false;
+        using op_t = std::function<void(Valuable &&)>;
+        op_t o_mov = [&](Valuable&& val) {
+            v = std::move(val);
+            if (mulByNeg) {
+                v *= -1;
+                mulByNeg = {};
+            }
+        };
+        op_t o_sum, o_mul, o_div, o_exp;
+        o_sum = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            sum += std::move(val);
+        };
+        o_mul = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v *= std::move(val);
+        };
+        o_div = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v /= std::move(val);
+        };
+        o
 
 bool Valuable::IsSubObject(const Valuable& o) const {
     if (exp)
