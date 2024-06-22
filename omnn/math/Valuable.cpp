@@ -640,6 +640,33 @@ private:
 
         return tokens;
     }
+
+public:
+    StateProxyComparator() { state = val; }
+
+    StateProxyComparator(const Valuable* v) {
+        state = val;
+        val = v;
+    }
+
+    StateProxyComparator(const Valuable& v) {
+        state = val;
+        val = &v;
+    }
+
+    ~StateProxyComparator() { val = state; }
+
+    bool operator()(const std::string_view& str1, const std::string_view& str2) const {
+        auto s1 = str1;
+        auto s2 = str2;
+        OmitOuterBrackets(s1);
+        OmitOuterBrackets(s2);
+        return s1 == s2;
+    }
+
+    auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
+        return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
+    }
 };
 
 Valuable implement(const char* str)
