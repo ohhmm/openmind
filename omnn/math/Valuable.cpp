@@ -85,15 +85,16 @@ const Variable& integration_result_constant = "integration_result_constant"_va;
     };
 }
 
-namespace omnn::math {
+namespace omnn {
+namespace math {
 
 std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
-    decltype(omnn::math::BracketsMap({})) bracketsmap;
+    decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do {
         outerBracketsDetected = {};
-        omnn::math::Trim(s);
-        bracketsmap = omnn::math::BracketsMap(s);
+        Trim(s);
+        bracketsmap = BracketsMap(s);
         auto l = s.length();
         auto first = bracketsmap.find(0);
         outerBracketsDetected = first != bracketsmap.end() && first->second == l - 1;
@@ -102,7 +103,9 @@ std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
     } while (outerBracketsDetected);
     return bracketsmap;
 }
-} // namespace omnn::math
+
+} // namespace math
+} // namespace omnn
 
 struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
     [[nodiscard]] size_t operator()(const std::string_view& s) const {
@@ -153,6 +156,35 @@ private:
         return tokens;
     }
 };
+
+auto BracketsMap(const std::string_view& s) {
+    auto l = s.length();
+    using index_t = decltype(l);
+    std::stack<index_t> st;
+    std::map<index_t, index_t> bracketsmap;
+    decltype(l) c = 0;
+    while (c < l) {
+        if (s[c] == '(')
+            st.push(c);
+        else if (s[c] == ')') {
+            if (st.empty()) {
+                throw "parentheses relation mismatch";
+            }
+            bracketsmap.emplace(st.top(), c);
+            st.pop();
+        }
+        ++c;
+    }
+    if (!st.empty())
+        throw "parentheses relation mismatch";
+    return bracketsmap;
+}
+
+constexpr std::string_view& Trim(std::string_view& s) {
+    s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
+    s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
+    return s;
+}
 
 } // namespace omnn::math
 
@@ -596,15 +628,21 @@ Valuable& Valuable::operator =(const Valuable& v)
 			}
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            std::stringstream ss;
-            ss << '(';
-            for (auto& v : s)
-                ss << ' ' << v;
-            ss << " )";
-            std::cout << ss.str();
-            LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << s.size() << " items " << ss.str());
-#else
-            LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
+            if(s.size() > 1){
+                auto distinct = Distinct();
+                if (distinct != s) {
+                    std::stringstream ss;
+                    ss << '(';
+                    for (auto& v : s)
+                        ss << ' ' << v;
+                    ss << " ) <> (";
+                    for (auto& v : distinct)
+                        ss << ' ' << v;
+                    ss << " )";
+                    std::cout << ss.str();
+                    LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+                }
+            }
 #endif
         }
 
@@ -656,10 +694,6 @@ constexpr std::string_view& Trim(std::string_view& s) {
     s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
     s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
     return s;
-}
-
-{
-    // This block is intentionally left empty to remove the redundant definition of OmitOuterBrackets
 }
 
 } // namespace omnn::math
