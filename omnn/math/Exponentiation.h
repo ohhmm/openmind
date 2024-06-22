@@ -15,13 +15,12 @@ class Exponentiation
     vars_cont_t v;
     void InitVars();
 
-protected:
+public:
     Valuable& ebase() { return base::_1; }
     Valuable& eexp() { return base::_2; }
     const Valuable& getBase() const { return _1; }
     const Valuable& getExponentiation() const { return _2; }
     std::ostream& print_sign(std::ostream& out) const override;
-public:
     std::ostream& code(std::ostream& out) const override;
 
     // DONT: overrides behaviour (calls InitVars)
@@ -74,14 +73,6 @@ public:
     void updateExponentiation(T&& exponentiation)
     {
         update2(std::forward<T>(exponentiation));
-        InitVars();
-        optimized = {};
-        InitVars();
-    const Valuable& getExponentiation() const { return _2; }
-=======
-    std::ostream& print_sign(std::ostream& out) const override;
-    {
-		update2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
     }

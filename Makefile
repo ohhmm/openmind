@@ -328,6 +328,19 @@ disable_openmind_tests/fast:
 .PHONY : disable_openmind_tests/fast
 
 #=============================================================================
+# Target rules for targets named valuable_bindings
+
+# Build rule for target.
+valuable_bindings: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 valuable_bindings
+.PHONY : valuable_bindings
+
+# fast build rule for target.
+valuable_bindings/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/valuable_bindings.dir/build.make CMakeFiles/valuable_bindings.dir/build
+.PHONY : valuable_bindings/fast
+
+#=============================================================================
 # Target rules for targets named rt
 
 # Build rule for target.
@@ -743,6 +756,30 @@ OpenMind/fast:
 	$(MAKE) $(MAKESILENT) -f OpenMind/CMakeFiles/OpenMind.dir/build.make OpenMind/CMakeFiles/OpenMind.dir/build
 .PHONY : OpenMind/fast
 
+omnn/math/valuable_bindings.o: omnn/math/valuable_bindings.cpp.o
+.PHONY : omnn/math/valuable_bindings.o
+
+# target to build an object file
+omnn/math/valuable_bindings.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/valuable_bindings.dir/build.make CMakeFiles/valuable_bindings.dir/omnn/math/valuable_bindings.cpp.o
+.PHONY : omnn/math/valuable_bindings.cpp.o
+
+omnn/math/valuable_bindings.i: omnn/math/valuable_bindings.cpp.i
+.PHONY : omnn/math/valuable_bindings.i
+
+# target to preprocess a source file
+omnn/math/valuable_bindings.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/valuable_bindings.dir/build.make CMakeFiles/valuable_bindings.dir/omnn/math/valuable_bindings.cpp.i
+.PHONY : omnn/math/valuable_bindings.cpp.i
+
+omnn/math/valuable_bindings.s: omnn/math/valuable_bindings.cpp.s
+.PHONY : omnn/math/valuable_bindings.s
+
+# target to generate assembly for a file
+omnn/math/valuable_bindings.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/valuable_bindings.dir/build.make CMakeFiles/valuable_bindings.dir/omnn/math/valuable_bindings.cpp.s
+.PHONY : omnn/math/valuable_bindings.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -800,6 +837,10 @@ help:
 	@echo "... test_08_System"
 	@echo "... test_extrapolator"
 	@echo "... ts"
+	@echo "... valuable_bindings"
+	@echo "... omnn/math/valuable_bindings.o"
+	@echo "... omnn/math/valuable_bindings.i"
+	@echo "... omnn/math/valuable_bindings.s"
 .PHONY : help
 
 

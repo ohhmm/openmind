@@ -5,7 +5,7 @@
  *      Author: sergejkrivonos
  */
 #pragma once
-#include <omnn/math/ValuableDescendantContract.h>
+#include "ValuableDescendantContract.h"
 #include <utility>
 
 namespace omnn::math {

@@ -276,7 +276,7 @@ public:
     : exp(t.Move())
     { }
 
-    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
+    Valuable(Valuable&&) = default;
     Valuable();
     Valuable(double d);
 
@@ -340,7 +340,7 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
     void SetView(View v);
-    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
+    bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
 

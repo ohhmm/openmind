@@ -102,7 +102,6 @@ std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
     } while (outerBracketsDetected);
     return bracketsmap;
 }
-
 } // namespace omnn::math
 
 struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
@@ -305,63 +304,6 @@ Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOpt
 
 namespace omnn::math {
 
-struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
-    [[nodiscard]] size_t operator()(const std::string_view& s) const {
-        auto str = s;
-        OmitOuterBrackets(str);
-        return std::hash<std::string_view>::operator()(str);
-    }
-};
-
-class StateProxyComparator {
-public:
-    using tokens_collection_t = ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
-
-private:
-    const Valuable* val;
-    static thread_local const Valuable* state;
-
-    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str, char delimiter) {
-        tokens_collection_t tokens;
-        ::std::stack<char> braceStack;
-        size_t start = 0;
-
-        for (size_t i = 0; i < str.size(); ++i) {
-            char c = str[i];
-
-            // Push opening braces onto the stack
-            if (c == '(' || c == '{' || c == '[') {
-                braceStack.push(c);
-            }
-            // Pop matching opening braces from the stack
-            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
-                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
-                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
-                braceStack.pop();
-            }
-            // Tokenize at delimiter if not within braces
-            else if (c == delimiter && braceStack.empty()) {
-                tokens.emplace(str.data() + start, i - start);
-                start = i + 1;
-            }
-        }
-
-        // Add the last token after the final delimiter if it's not at the end of the string
-        if (start < str.size()) {
-            tokens.emplace(str.data() + start, str.size() - start);
-        }
-
-        return tokens;
-    }
-};
-
-} // namespace omnn::math
-
-Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
-: hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-{
-    assert(!exp);
-}
 
 Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
 : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
@@ -3404,7 +3346,7 @@ namespace math {
     constexpr const Valuable& minus_1 = vo<-1>();
 
     const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-    const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
+    const Valuable& plus_minus_1 = PlusMinusOne;                          // ??1
     const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
     const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
     constexpr const Valuable& pi = constant::pi;

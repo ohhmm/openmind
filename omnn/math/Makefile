@@ -826,6 +826,30 @@ pi.cpp.s:
 	cd /home/ubuntu/openmind && $(MAKE) $(MAKESILENT) -f omnn/math/CMakeFiles/math.dir/build.make omnn/math/CMakeFiles/math.dir/pi.cpp.s
 .PHONY : pi.cpp.s
 
+valuable_bindings.o: valuable_bindings.cpp.o
+.PHONY : valuable_bindings.o
+
+# target to build an object file
+valuable_bindings.cpp.o:
+	cd /home/ubuntu/openmind && $(MAKE) $(MAKESILENT) -f omnn/math/CMakeFiles/math.dir/build.make omnn/math/CMakeFiles/math.dir/valuable_bindings.cpp.o
+.PHONY : valuable_bindings.cpp.o
+
+valuable_bindings.i: valuable_bindings.cpp.i
+.PHONY : valuable_bindings.i
+
+# target to preprocess a source file
+valuable_bindings.cpp.i:
+	cd /home/ubuntu/openmind && $(MAKE) $(MAKESILENT) -f omnn/math/CMakeFiles/math.dir/build.make omnn/math/CMakeFiles/math.dir/valuable_bindings.cpp.i
+.PHONY : valuable_bindings.cpp.i
+
+valuable_bindings.s: valuable_bindings.cpp.s
+.PHONY : valuable_bindings.s
+
+# target to generate assembly for a file
+valuable_bindings.cpp.s:
+	cd /home/ubuntu/openmind && $(MAKE) $(MAKESILENT) -f omnn/math/CMakeFiles/math.dir/build.make omnn/math/CMakeFiles/math.dir/valuable_bindings.cpp.s
+.PHONY : valuable_bindings.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -919,6 +943,9 @@ help:
 	@echo "... pi.o"
 	@echo "... pi.i"
 	@echo "... pi.s"
+	@echo "... valuable_bindings.o"
+	@echo "... valuable_bindings.i"
+	@echo "... valuable_bindings.s"
 .PHONY : help
 
 

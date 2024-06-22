@@ -404,8 +404,12 @@ endif()
 if(Python_FOUND)
     message(STATUS "Python found: ${Python_EXECUTABLE}")
     message(STATUS "Python version: ${Python_VERSION}")
+    include_directories(${Python_INCLUDE_DIRS})
+    link_directories(${Python_LIBRARIES})
 endif()
 
+set(Python_INCLUDE_DIRS /usr/include/python3.10)
+set(Python_LIBRARIES /usr/lib/x86_64-linux-gnu/libpython3.10.so)
 
 if (OPENMIND_BUILD_TESTS)
 	if(NOT MSVC)
@@ -454,6 +458,7 @@ endfunction()
 
 # Add pybind11 package
 find_package(pybind11 REQUIRED)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /usr/lib/python3/dist-packages/pybind11/share/cmake/pybind11)
 
 # Add valuable_bindings.cpp to the list of source files
 set(SOURCE_FILES
@@ -462,5 +467,5 @@ set(SOURCE_FILES
 )
 
 # Create Python module for Valuable class bindings
-pybind11_add_module(valuable_bindings ${CMAKE_CURRENT_SOURCE_DIR}/omnn/math/valuable_bindings.cpp)
-# Removed duplicate definition of Valuable target
+add_library(valuable_bindings MODULE ${CMAKE_CURRENT_SOURCE_DIR}/omnn/math/valuable_bindings.cpp)
+target_link_libraries(valuable_bindings PRIVATE pybind11::module pybind11::headers)
