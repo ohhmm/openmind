@@ -52,37 +52,110 @@ using namespace std::string_view_literals;
 #undef min
 #endif
 
-namespace omnn{
-namespace math {
-    const a_int Valuable::a_int_cz = 0;
-    const max_exp_t Valuable::max_exp_cz(a_int_cz);
+namespace omnn::math {
 
-    namespace constants {
-    constexpr const Valuable& e = constant::e;
-    constexpr const Valuable& i = constant::i;
-    constexpr const Valuable& zero = vo<0>();
-    constexpr const Valuable& one = vo<1>();
-    constexpr const Valuable& two = vo<2>();
-    const Fraction Half{1_v, 2_v};
-    constexpr const Valuable& half = Half;
-    const Fraction Quarter {1, 4};
-    constexpr const Valuable& quarter = Quarter;
-    constexpr const Valuable& minus_1 = vo<-1>();
+const a_int Valuable::a_int_cz = 0;
+const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
-    const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-    const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
-    const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
-    const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
-    constexpr const Valuable& pi = constant::pi;
-    constexpr const Valuable& infinity = Infinity::GlobalObject;
-    constexpr const Valuable& minfinity = MInfinity::GlobalObject;
-    const Variable& integration_result_constant = "integration_result_constant"_va;
+namespace constants {
+constexpr const Valuable& e = constant::e;
+constexpr const Valuable& i = constant::i;
+constexpr const Valuable& zero = vo<0>();
+constexpr const Valuable& one = vo<1>();
+constexpr const Valuable& two = vo<2>();
+const Fraction Half{1_v, 2_v};
+constexpr const Valuable& half = Half;
+const Fraction Quarter {1, 4};
+constexpr const Valuable& quarter = Quarter;
+constexpr const Valuable& minus_1 = vo<-1>();
 
-        std::map<std::string_view, Valuable> Constants ={
-            {"e", constant::e},
-            {"i", constant::i},
-            {"pi", constant::pi},
-        };
+const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
+const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
+const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
+const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
+constexpr const Valuable& pi = constant::pi;
+constexpr const Valuable& infinity = Infinity::GlobalObject;
+constexpr const Valuable& minfinity = MInfinity::GlobalObject;
+const Variable& integration_result_constant = "integration_result_constant"_va;
+
+    std::map<std::string_view, Valuable> Constants ={
+        {"e", constant::e},
+        {"i", constant::i},
+        {"pi", constant::pi},
+    };
+}
+
+namespace omnn::math {
+
+std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
+    decltype(BracketsMap({})) bracketsmap;
+    bool outerBracketsDetected;
+    do {
+        outerBracketsDetected = {};
+        Trim(s);
+        bracketsmap = BracketsMap(s);
+        auto l = s.length();
+        auto first = bracketsmap.find(0);
+        outerBracketsDetected = first != bracketsmap.end() && first->second == l - 1;
+        if (outerBracketsDetected)
+            s = s.substr(1, l - 2);
+    } while (outerBracketsDetected);
+    return bracketsmap;
+}
+
+} // namespace omnn::math
+
+struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
+    [[nodiscard]] size_t operator()(const std::string_view& s) const {
+        auto str = s;
+        OmitOuterBrackets(str);
+        return std::hash<std::string_view>::operator()(str);
+    }
+};
+
+class StateProxyComparator {
+public:
+    using tokens_collection_t = ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
+
+private:
+    const Valuable* val;
+    static thread_local const Valuable* state;
+
+    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str, char delimiter) {
+        tokens_collection_t tokens;
+        ::std::stack<char> braceStack;
+        size_t start = 0;
+
+        for (size_t i = 0; i < str.size(); ++i) {
+            char c = str[i];
+
+            // Push opening braces onto the stack
+            if (c == '(' || c == '{' || c == '[') {
+                braceStack.push(c);
+            }
+            // Pop matching opening braces from the stack
+            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
+                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
+                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
+                braceStack.pop();
+            }
+            // Tokenize at delimiter if not within braces
+            else if (c == delimiter && braceStack.empty()) {
+                tokens.emplace(str.data() + start, i - start);
+                start = i + 1;
+            }
+        }
+
+        // Add the last token after the final delimiter if it's not at the end of the string
+        if (start < str.size()) {
+            tokens.emplace(str.data() + start, str.size() - start);
+        }
+
+        return tokens;
+    }
+};
+
+} // namespace omnn::math
 
 Valuable implement(const char* str)
 {
@@ -91,32 +164,27 @@ Valuable implement(const char* str)
     return {};
 }
 
-namespace omnn {
-namespace math {
-
-bool omnn::math::Valuable::IsSubObject(const Valuable& o) const {
+bool Valuable::IsSubObject(const Valuable& o) const {
     if (exp)
         return exp->IsSubObject(o);
     else
         IMPLEMENT
 }
 
-const omnn::math::Valuable omnn::math::Valuable::Link() const {
+const Valuable Valuable::Link() const {
     if(exp)
         return Valuable(exp);
     IMPLEMENT
 }
 
-omnn::math::Valuable* omnn::math::Valuable::Clone() const
-{
+Valuable* Valuable::Clone() const {
     if (exp)
         return exp->Clone();
     else
         IMPLEMENT
 }
 
-Valuable* Valuable::Move()
-{
+Valuable* Valuable::Move() {
     if (exp)
         return exp->Move();
     else
@@ -124,72 +192,16 @@ Valuable* Valuable::Move()
 }
 
 void Valuable::LoadONNXModel(const std::string& model_path) {
-    // Initialize the ONNX Runtime environment
     Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ValuableONNX");
-
-    // Create an ONNX Runtime session options object
     Ort::SessionOptions session_options;
     session_options.SetIntraOpNumThreads(1);
     session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-
-    // Load the ONNX model
     Ort::Session session(env, model_path.c_str(), session_options);
-
-    // Store the session in the Valuable object
     this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
 }
 
-std::vector<float> Valuable::RunONNXInference(const std::vector<float>& input_data) {
-    // Ensure the ONNX model is loaded
-    if (!onnx_session) {
-        throw std::runtime_error("ONNX model is not loaded.");
-    }
-
-    // Create input tensor
-    Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-    std::vector<int64_t> input_shape = {1, static_cast<int64_t>(input_data.size())};
-    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, const_cast<float*>(input_data.data()), input_data.size(), input_shape.data(), input_shape.size());
-
-    // Run the inference
-    const char* input_names[] = {"input"};
-    const char* output_names[] = {"output"};
-    auto output_tensors = onnx_session->Run(Ort::RunOptions{nullptr}, input_names, &input_tensor, 1, output_names, 1);
-
-    // Extract the output data
-    float* output_data = output_tensors.front().GetTensorMutableData<float>();
-    std::vector<float> output(output_data, output_data + output_tensors.front().GetTensorTypeAndShapeInfo().GetElementCount());
-
-    return output;
-}
-
-void Valuable::add_conv(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
-    // Example implementation for converting a convolution operation
-    Valuable conv_expression;
-    // Assuming inputs[0] is the input tensor, inputs[1] is the weights, and inputs[2] is the bias
-    // conv_expression = inputs[0] * inputs[1] + inputs[2]
-    conv_expression = Valuable(std::string(inputs[0])) * Valuable(std::string(inputs[1])) + Valuable(std::string(inputs[2]));
-    *this += conv_expression;
-}
-
-void Valuable::add_relu(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
-    // Example implementation for converting a ReLU activation function
-    Valuable relu_expression;
-    // Assuming inputs[0] is the input tensor
-    // relu_expression = max(0, inputs[0])
-    relu_expression = std::max(Valuable(0), Valuable(std::string(inputs[0])));
-    *this += relu_expression;
-}
-
-void Valuable::add_add(const std::vector<std::string>& inputs, const std::vector<std::string>& outputs) {
-    // Example implementation for converting an addition operation
-    Valuable add_expression;
-    // Assuming inputs[0] and inputs[1] are the input tensors
-    // add_expression = inputs[0] + inputs[1]
-    add_expression = Valuable(std::string(inputs[0])) + Valuable(std::string(inputs[1]));
-    *this += add_expression;
-}
-
-Valuable::Valuable(const std::string& s) {
+Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized)
+: Valuable(std::string_view(s), vaNames, itIsOptimized) {
     // Parse the string and create a Valuable object representing the mathematical expression
     std::string_view sv(s);
     auto bracketsmap = OmitOuterBrackets(sv);
@@ -248,7 +260,7 @@ Valuable::Valuable(const std::string& s) {
             if (c == '(') {
                 auto cb = bracketsmap[i];
                 auto next = i + 1;
-                o(Valuable(std::string(sv.substr(next, cb - next))));
+                o(Valuable(std::string(sv.substr(next, cb - next)), vaNames, itIsOptimized));
                 i = cb;
             } else if (c == '-') {
                 o_sum(std::move(v));
@@ -280,7 +292,7 @@ Valuable::Valuable(const std::string& s) {
             } else if (std::isalpha(c)) {
                 auto to = sv.find_first_of(" */%+-^()", i + 1);
                 auto id = std::string(sv.substr(i, to - i));
-                o(Valuable(id));
+                o(Valuable(id, vaNames, itIsOptimized));
                 i = to - 1;
             } else {
                 throw std::runtime_error("Unexpected character in expression");
@@ -291,8 +303,59 @@ Valuable::Valuable(const std::string& s) {
     }
 }
 
-} // namespace math
-} // namespace omnn
+namespace omnn::math {
+
+struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
+    [[nodiscard]] size_t operator()(const std::string_view& s) const {
+        auto str = s;
+        OmitOuterBrackets(str);
+        return std::hash<std::string_view>::operator()(str);
+    }
+};
+
+class StateProxyComparator {
+public:
+    using tokens_collection_t = ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
+
+private:
+    const Valuable* val;
+    static thread_local const Valuable* state;
+
+    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str, char delimiter) {
+        tokens_collection_t tokens;
+        ::std::stack<char> braceStack;
+        size_t start = 0;
+
+        for (size_t i = 0; i < str.size(); ++i) {
+            char c = str[i];
+
+            // Push opening braces onto the stack
+            if (c == '(' || c == '{' || c == '[') {
+                braceStack.push(c);
+            }
+            // Pop matching opening braces from the stack
+            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
+                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
+                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
+                braceStack.pop();
+            }
+            // Tokenize at delimiter if not within braces
+            else if (c == delimiter && braceStack.empty()) {
+                tokens.emplace(str.data() + start, i - start);
+                start = i + 1;
+            }
+        }
+
+        // Add the last token after the final delimiter if it's not at the end of the string
+        if (start < str.size()) {
+            tokens.emplace(str.data() + start, str.size() - start);
+        }
+
+        return tokens;
+    }
+};
+
+} // namespace omnn::math
 
 Valuable::Valuable(Valuable&& v, ValuableDescendantMarker)
 : hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
@@ -326,8 +389,7 @@ std::type_index Valuable::Type() const
 #endif
 }
 
-namespace omnn {
-namespace math {
+namespace omnn::math {
 
 Valuable& Valuable::Become(Valuable&& i)
 {
@@ -411,8 +473,7 @@ Valuable& Valuable::operator =(const Valuable& v)
     return *this;
 }
 
-} // namespace math
-} // namespace omnn
+} // namespace omnn::math
 
     namespace{
         template<typename T>
@@ -625,21 +686,20 @@ Valuable& Valuable::operator =(const Valuable& v)
 #endif
     }
 
-namespace{
-auto BracketsMap(const std::string_view& s){
+namespace omnn::math {
+
+auto BracketsMap(const std::string_view& s) {
     auto l = s.length();
     using index_t = decltype(l);
-    std::stack <index_t> st;
+    std::stack<index_t> st;
     std::map<index_t, index_t> bracketsmap;
     decltype(l) c = 0;
-    while (c < l)
-    {
+    while (c < l) {
         if (s[c] == '(')
             st.push(c);
-        else if (s[c] == ')')
-        {
+        else if (s[c] == ')') {
             if (st.empty()) {
-                throw "parentneses relation missmatch";
+                throw "parentheses relation mismatch";
             }
             bracketsmap.emplace(st.top(), c);
             st.pop();
@@ -647,7 +707,7 @@ auto BracketsMap(const std::string_view& s){
         ++c;
     }
     if (!st.empty())
-        throw "parentneses relation missmatch";
+        throw "parentheses relation mismatch";
     return bracketsmap;
 }
 
@@ -657,21 +717,7 @@ constexpr std::string_view& Trim(std::string_view& s) {
     return s;
 }
 
-std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
-    decltype(BracketsMap({})) bracketsmap;
-    bool outerBracketsDetected;
-    do{
-        outerBracketsDetected = {};
-        Trim(s);
-        bracketsmap = BracketsMap(s);
-        auto l = s.length();
-        auto first = bracketsmap.find(0);
-        outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
-        if (outerBracketsDetected)
-            s = s.substr(1,l-2);
-    } while(outerBracketsDetected);
-    return bracketsmap;
-}
+} // namespace omnn::math
 
 // Other code...
 
@@ -17165,7 +17211,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
         
         
 //        Пояснения:
-//        Все переменные беззнаковые, имеют размер 32 бита и при вычислениях суммируются по модулю 232
+//        Все переменные беззнаковые, имеют размер 32 бита и ??ри вычислениях суммируются по модулю 232
 //        message — исходное двоичное сообщение
 //        m — преобразованное сообщение
 //
@@ -17197,13 +17243,13 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        auto m = Shl(1) + 1;
 //        m = m ǁ [k нулевых бит], где k — наименьшее неотрицательное число, такое что
 //        (L + 1 + K) mod 512 = 448, где L — число бит в сообщении (сравнима по модулю 512 c 448)
-//        m = m ǁ Длина(message) — длина исходного сообщения в битах в виде 64-битного числа
+//        m = m ǁ Длина(message) — длина исходного сообщения в битах в виде 64-битн??го числа
 //        с порядком байтов от старшего к младшему
 //
 //        Далее сообщение обрабатывается последовательными порциями по 512 бит:
 //        разбить сообщение на куски по 512 бит
 //        для каждого куска
-//        разбить кусок на 16 слов длиной 32 бита (с порядком байтов от старшего к младшему внутри слова): w[0..15]
+//        разбить кусок на 16 слов длино?? 32 бита (с порядком байтов от старшего к младшему внутри слова): w[0..15]
 //
 //        Сгенерировать дополнительные 48 слов:
 //        для i от 16 до 63
@@ -20462,3 +20508,6 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
 >>>>>>> origin/onnx-integration
+
+} // namespace math
+} // namespace omnn
