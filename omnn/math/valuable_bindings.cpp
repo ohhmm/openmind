@@ -12,5 +12,16 @@ PYBIND11_MODULE(valuable_bindings, m) {
         .def("RunONNXInference", &omnn::math::Valuable::RunONNXInference)
         .def("add_conv", &omnn::math::Valuable::add_conv)
         .def("add_relu", &omnn::math::Valuable::add_relu)
-        .def("add_add", &omnn::math::Valuable::add_add);
+        .def("add_add", &omnn::math::Valuable::add_add)
+        .def("Type", &omnn::math::Valuable::Type)
+        .def("Link", &omnn::math::Valuable::Link)
+        .def("SerializedStrEqual", &omnn::math::Valuable::SerializedStrEqual)
+        .def("GCD", &omnn::math::Valuable::GCD)
+        .def("LCM", &omnn::math::Valuable::LCM)
+        .def("integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Variable&>(&omnn::math::Valuable::integral))
+        .def("integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Valuable&, const omnn::math::Valuable&, const omnn::math::Variable&>(&omnn::math::Valuable::integral))
+        .def("Integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Variable&>(&omnn::math::Valuable::Integral))
+        .def("Integral", py::overload_cast<const omnn::math::Variable&, const omnn::math::Valuable&, const omnn::math::Valuable&, const omnn::math::Variable&>(&omnn::math::Valuable::Integral))
+        .def("operator=", py::overload_cast<const omnn::math::Valuable&>(&omnn::math::Valuable::operator=))
+        .def("operator=", py::overload_cast<omnn::math::Valuable&&>(&omnn::math::Valuable::operator=));
 }
