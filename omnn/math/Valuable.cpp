@@ -85,8 +85,7 @@ const Variable& integration_result_constant = "integration_result_constant"_va;
     };
 }
 
-namespace omnn {
-namespace math {
+namespace omnn::math {
 
 std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
@@ -104,8 +103,7 @@ std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
     return bracketsmap;
 }
 
-} // namespace math
-} // namespace omnn
+} // namespace omnn::math
 
 struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
     [[nodiscard]] size_t operator()(const std::string_view& s) const {
