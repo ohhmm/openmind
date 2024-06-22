@@ -99,35 +99,112 @@ std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
     return bracketsmap;
 }
 
-const a_int Valuable::a_int_cz = 0;
-const max_exp_t Valuable::max_exp_cz(a_int_cz);
+void Optimize(Valuable::solutions_t& s) {
+    Valuable::solutions_t distinct;
+    Valuable::OptimizeOn enable;
+    while (s.size()) {
+        auto it = s.begin();
+        auto v = std::move(s.extract(it).value());
+        v.optimize();
+        distinct.emplace(std::move(v));
+    }
+    std::swap(s, distinct);
+}
 
-namespace constants {
-constexpr const Valuable& e = constant::e;
-constexpr const Valuable& i = constant::i;
-constexpr const Valuable& zero = vo<0>();
-constexpr const Valuable& one = vo<1>();
-constexpr const Valuable& two = vo<2>();
-const Fraction Half{1_v, 2_v};
-constexpr const Valuable& half = Half;
-const Fraction Quarter {1, 4};
-constexpr const Valuable& quarter = Quarter;
-constexpr const Valuable& minus_1 = vo<-1>();
+struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
+    [[nodiscard]] size_t operator()(const std::string_view& s) const {
+        auto str = s;
+        omnn::math::OmitOuterBrackets(str);
+        return std::hash<std::string_view>::operator()(str);
+    }
+};
 
-const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
-const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
-const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
-constexpr const Valuable& pi = constant::pi;
-constexpr const Valuable& infinity = Infinity::GlobalObject;
-constexpr const Valuable& minfinity = MInfinity::GlobalObject;
-const Variable& integration_result_constant = "integration_result_constant"_va;
+class StateProxyComparator {
+public:
+    using tokens_collection_t = ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
 
-    std::map<std::string_view, Valuable> Constants ={
-        {"e", constant::e},
-        {"i", constant::i},
-        {"pi", constant::pi},
-    };
+private:
+    const omnn::math::Valuable* val;
+    static thread_local const omnn::math::Valuable* state;
+
+public:
+    StateProxyComparator() { state = val; }
+    StateProxyComparator(const Valuable* v) { state = val; val = v; }
+    StateProxyComparator(const Valuable& v) { state = val; val = &v; }
+    ~StateProxyComparator() { val = state; }
+
+    bool operator()(const std::string_view& str1, const std::string_view& str2) const {
+        auto s1 = str1;
+        auto s2 = str2;
+        OmitOuterBrackets(s1);
+        OmitOuterBrackets(s2);
+        return s1 == s2;
+    }
+
+    auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
+        return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
+    }
+
+private:
+    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str, char delimiter) {
+        tokens_collection_t tokens;
+        ::std::stack<char> braceStack;
+        size_t start = 0;
+
+        for (size_t i = 0; i < str.size(); ++i) {
+            char c = str[i];
+
+            // Push opening braces onto the stack
+            if (c == '(' || c == '{' || c == '[') {
+                braceStack.push(c);
+            }
+            // Pop matching opening braces from the stack
+            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
+                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
+                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
+                braceStack.pop();
+            }
+            // Tokenize at delimiter if not within braces
+            else if (c == delimiter && braceStack.empty()) {
+                tokens.emplace(str.data() + start, i - start);
+                start = i + 1;
+            }
+        }
+
+        // Add the last token after the final delimiter if it's not at the end of the string
+        if (start < str.size()) {
+            tokens.emplace(str.data() + start, str.size() - start);
+        }
+
+        return tokens;
+    }
+};
+
+thread_local const Valuable* StateProxyComparator::state = {};
+
+const omnn::math::a_int Valuable::a_int_cz = 0;
+const omnn::math::max_exp_t Valuable::max_exp_cz(a_int_cz);
+
+namespace omnn::math::constants {
+    constexpr const Valuable& e = constant::e;
+    constexpr const Valuable& i = constant::i;
+    constexpr const Valuable& zero = vo<0>();
+    constexpr const Valuable& one = vo<1>();
+    constexpr const Valuable& two = vo<2>();
+    const Fraction Half{1_v, 2_v};
+    constexpr const Valuable& half = Half;
+    const Fraction Quarter {1, 4};
+    constexpr const Valuable& quarter = Quarter;
+    constexpr const Valuable& minus_1 = vo<-1>();
+
+    const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
+    const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
+    const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
+    const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
+    constexpr const Valuable& pi = constant::pi;
+    constexpr const Valuable& infinity = Infinity::GlobalObject;
+    constexpr const Valuable& minfinity = MInfinity::GlobalObject;
+    const Variable& integration_result_constant = "integration_result_constant"_va;
 }
 
 bool Valuable::IsSubObject(const Valuable& o) const {
@@ -682,6 +759,144 @@ Valuable implement(const char* str)
 
 namespace omnn::math {
 
+    void Optimize(Valuable::solutions_t& s) {
+        Valuable::solutions_t distinct;
+        Valuable::OptimizeOn enable;
+        while (s.size()) {
+            auto it = s.begin();
+            auto v = std::move(s.extract(it).value());
+            v.optimize();
+            distinct.emplace(std::move(v));
+        }
+        std::swap(s, distinct);
+    }
+
+    thread_local const Valuable* StateProxyComparator::state = {};
+
+    Valuable::Valuable(solutions_t&& s)
+    {
+        if (!optimizations
+            || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
+        ) {
+            Optimize(s);
+        }
+
+        auto it = s.begin();
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        std::cout << " Merging [ ";
+        for(auto& item: s){
+            std::cout << item << ' ';
+        }
+        std::cout << ']' << std::endl;
+#endif
+        switch (s.size()) {
+        case 0: IMPLEMENT; break;
+        case 1: operator=(*it); break;
+        case 2: {
+            auto& _1 = *it++;
+            auto& _2 = *it;
+            operator=(MergeOr(_1, _2));
+            break;
+        }
+        case 3: {
+            auto& _1 = *it++;
+            auto& _2 = *it++;
+            auto& _3 = *it;
+            operator=(MergeOr(_1, _2, _3));
+            break;
+        }
+        case 4: {
+            auto& _1 = *it++;
+            auto& _2 = *it++;
+            auto& _3 = *it++;
+            auto& _4 = *it;
+            operator=(MergeOr(_1, _2, _3, _4));
+            break;
+        }
+        default:
+            solutions_t pairs;
+            for (; it != s.end();) {
+                auto it2 = it;
+                ++it2;
+                auto neg = -*it;
+                bool found = {};
+                for (; it2 != s.end();) {
+                    found = it2->operator==(neg);
+                    if (found) {
+                        pairs.emplace(MergeOr(*it, neg));
+                        s.erase(it2);
+                        s.erase(it++);
+                        break;
+                    } else {
+                        ++it2;
+                    }
+                }
+                if (!found) {
+                    ++it;
+                }
+            }
+            if (s.size() == 0) {
+                s = std::move(pairs);
+            }
+
+            if (pairs.size()) {
+                operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
+            } else {
+                while(s.size() > 1){
+                    solutions_t ss;
+                    while(s.size() >= 4){
+                        auto it = s.begin();
+                        auto& _1 = *it++;
+                        auto& _2 = *it++;
+                        auto& _3 = *it++;
+                        auto& _4 = *it++;
+                        ss.emplace(MergeOr(_1, _2, _3, _4));
+                    }
+                    if(s.size()){
+                        ss.emplace(std::move(s));
+                    }
+                    s = std::move(ss);
+                }
+                operator=(std::move(s.extract(s.begin()).value()));
+            }
+
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            if(s.size() > 1){
+                auto distinct = Distinct();
+                if (distinct != s) {
+                    std::stringstream ss;
+                    ss << '(';
+                    for (auto& v : s)
+                        ss << ' ' << v;
+                    ss << " ) <> (";
+                    for (auto& v : distinct)
+                        ss << ' ' << v;
+                    ss << " )";
+                    std::cout << ss.str();
+                    LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+                }
+            }
+#endif
+        }
+
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if(s.size() > 1){
+            auto distinct = Distinct();
+            if (distinct != s) {
+                std::stringstream ss;
+                ss << '(';
+                for (auto& v : s)
+                    ss << ' ' << v;
+                ss << " ) <> (";
+                for (auto& v : distinct)
+                    ss << ' ' << v;
+                ss << " )";
+                std::cout << ss.str();
+                LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+            }
+        }
+#endif
+    }
 
 } // namespace omnn::math
 
