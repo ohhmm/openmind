@@ -43,3 +43,7 @@ split_conflicts.sh
 find_conflicts_in_cmakelists.sh
 extract_conflict_sections.sh
 apply_resolved_conflicts.sh
+
+# Exclude large files
+omnn/math/resnet50-v1-7.onnx
+boost_1_85_0.tar.gz
