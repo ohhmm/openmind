@@ -99,7 +99,7 @@ std::map<size_t, size_t> OmitOuterBrackets(std::string_view& s) {
     return bracketsmap;
 }
 
-void Optimize(Valuable::solutions_t& s) {
+void omnn::math::Optimize(Valuable::solutions_t& s) {
     Valuable::solutions_t distinct;
     Valuable::OptimizeOn enable;
     while (s.size()) {
@@ -110,6 +110,14 @@ void Optimize(Valuable::solutions_t& s) {
     }
     std::swap(s, distinct);
 }
+
+struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
+    [[nodiscard]] size_t operator()(const std::string_view& s) const {
+        auto str = s;
+        omnn::math::OmitOuterBrackets(str);
+        return std::hash<std::string_view>::operator()(str);
+    }
+};
 
 struct HashStrOmitOuterBrackets : public std::hash<std::string_view> {
     [[nodiscard]] size_t operator()(const std::string_view& s) const {
@@ -180,7 +188,7 @@ private:
     }
 };
 
-thread_local const Valuable* StateProxyComparator::state = {};
+thread_local const omnn::math::Valuable* omnn::math::StateProxyComparator::state = {};
 
 const omnn::math::a_int Valuable::a_int_cz = 0;
 const omnn::math::max_exp_t Valuable::max_exp_cz(a_int_cz);
