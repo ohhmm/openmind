@@ -676,9 +676,10 @@ namespace omnn::math {
 }
 
 namespace omnn::math {
-    std::string Solid(std::string s) {
-        s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
-        return s;
+    std::string Solid(std::string_view s) {
+        std::string result(s);
+        result.erase(std::remove(result.begin(), result.end(), ' '), result.end());
+        return result;
     }
 }
 
@@ -686,7 +687,7 @@ bool omnn::math::Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
     auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
     if (!same) {
-        auto _1 = Solid(std::string(_)), _2 = Solid(std::string(s));
+        auto _1 = Solid(_), _2 = Solid(s);
         same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
         if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
             _2 = a_int(s).str();
