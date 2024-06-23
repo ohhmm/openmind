@@ -743,12 +743,113 @@ namespace math {
 	namespace {
 	constexpr char SupportedOps[] = " */%+-^()";
 	}
+    Valuable(const std::string_view& s, std::shared_ptr<omnn::math::VarHost> h, bool itIsOptimized = false)
+    : exp(nullptr), hash(0), sz(sizeof(Valuable)), maxVaExp(0), view(View::Flat), optimized(itIsOptimized) {
+        // Constructor implementation here
+        auto bracketsmap = OmitOuterBrackets(s);
+        if (bracketsmap.empty()) {
+            if (std::all_of(s.begin(), s.end(), ::isdigit)) {
+                exp = std::make_shared<Integer>(s);
+            } else {
+                exp = std::make_shared<Variable>(h);
+            }
+        } else {
+            // Handle more complex expressions
+            Valuable sum = Sum{};
+            Valuable v;
+            auto mulByNeg = false;
+            using op_t = std::function<void(Valuable &&)>;
+            op_t o_mov = [&](Valuable&& val) {
+                v = std::move(val);
+                if (mulByNeg) {
+                    v *= -1;
+                    mulByNeg = {};
+                }
+            };
+            op_t o_sum, o_mul, o_div, o_exp;
+            o_sum = [&](Valuable&& val) {
+                if (mulByNeg) {
+                    val *= -1;
+                    mulByNeg = {};
+                }
+                sum += std::move(val);
+            };
+            o_mul = [&](Valuable&& val) {
+                if (mulByNeg) {
+                    val *= -1;
+                    mulByNeg = {};
+                }
+                v *= std::move(val);
+            };
+            o_div = [&](Valuable&& val) {
+                if (mulByNeg) {
+                    val *= -1;
+                    mulByNeg = {};
+                }
+                v /= std::move(val);
+            };
+            o_exp = [&](Valuable&& val) {
+                if (mulByNeg) {
+                    val *= -1;
+                    mulByNeg = {};
+                }
+                v ^= std::move(val);
+            };
+            auto o = std::ref(o_mov);
+            for (size_t i = 0; i < s.length(); ++i) {
+                auto c = s[i];
+                if (c == '(') {
+                    auto cb = bracketsmap[i];
+                    auto next = i + 1;
+                    o(Valuable(s.substr(next, cb - next), h, itIsOptimized));
+                    i = cb;
+                } else if (c == '-') {
+                    o_sum(std::move(v));
+                    v = 0;
+                    o = o_mov;
+                    mulByNeg ^= true;
+                } else if ((c >= '0' && c <= '9') || c == '.') {
+                    auto next = s.find_first_not_of("0123456789.", i + 1);
+                    auto ss = s.substr(i, next - i);
+                    i = next - 1;
+                    if (ss.find('.') != std::string::npos) {
+                        auto beforedot = ss.substr(0, ss.find('.'));
+                        auto afterdot = ss.substr(ss.find('.') + 1);
+                        auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
+                        o(std::move(f));
+                    } else {
+                        o(Integer(ss));
+                    }
+                } else if (c == '+') {
+                    o_sum(std::move(v));
+                    v = 0;
+                    o = o_mov;
+                } else if (c == '*') {
+                    o = o_mul;
+                } else if (c == '/') {
+                    o = o_div;
+                } else if (c == '^') {
+                    o = o_exp;
+                } else if (std::isalpha(c)) {
+                    auto to = s.find_first_of(" */%+-^()", i + 1);
+                    auto id = std::string(s.substr(i, to - i));
+                    o(Valuable(id, h, itIsOptimized));
+                    i = to - 1;
+                } else {
+                    throw std::runtime_error("Unexpected character in expression");
+                }
+            }
+            o_sum(std::move(v));
+            Become(std::move(sum));
+        }
+    }
+
+    std::shared_ptr<omnn::math::VarHost> Valuable::getVaHost() const {
+        return std::dynamic_pointer_cast<omnn::math::VarHost>(exp);
+    }
+
     Valuable(const std::string_view& s, std::shared_ptr<omnn::math::VarHost> h, bool itIsOptimized // = false
 	) {
-```
-
-```cpp
-std::shared_ptr<omnn::math::VarHost> Valuable::getVaHost() const {
         auto l = s.length();
         using index_t = decltype(l);
         std::stack <index_t> st;
