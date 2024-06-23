@@ -793,162 +793,156 @@ void Valuable::CheckDeserialization(const std::string_view& s) {
 }
 #endif // !NDEBUG
 
-Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
-:Valuable(std::string_view(str), vaNames.begin()->second.getVaHost(), itIsOptimized)
-{
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-#ifndef ALLOW_CACHE_UPGRADE
-  auto _ = this->str();
-//      if ((_.front() == '(' && _.back() == ')') && !(s.front() == '(' && s.back() == ')') )
-//        _ = _.substr(1, _.length()-2);
-//      _.erase(remove_if(_.begin(), _.end(), isspace), _.end());
-  if (str != _)
-    IMPLEMENT;
-#endif
-#endif
-}
+namespace omnn::math {
+    Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
+        :Valuable(std::string_view(str), vaNames.begin()->second.getVaHost(), itIsOptimized)
+    {
+    #if !defined(NDEBUG) && !defined(NOOMDEBUG)
+    #ifndef ALLOW_CACHE_UPGRADE
+        auto _ = this->str();
+        if (str != _)
+            IMPLEMENT;
+    #endif
+    #endif
+    }
 
     Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-      if (s.empty()) {
-        IMPLEMENT
-      }
-#endif // NOOMDEBUG
+    #if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if (s.empty()) {
+            IMPLEMENT
+        }
+    #endif // NOOMDEBUG
 
         auto optimizationsWas = Valuable::optimizations;
         Valuable::optimizations = !itIsOptimized && optimizationsWas;
 
         auto bracketsmap = OmitOuterBrackets(s);
 
-        //        if (bracketsmap.empty())
-        {
-            size_t search_start = 0;
-            auto FindSkippingParentneses = [&](char symbol){
-                // skip '(' for searching top level operations
-                auto offs = search_start;
-                char matches[] = { '(', symbol, 0 };
-                while((offs = s.find_first_of(matches, offs)) != std::string_view::npos){
-                    if(s[offs]=='('){
-                        auto match = bracketsmap[offs];
-                        if (match == s.length()-1 && offs==0) {
-                            ++offs;
-                            ++search_start;
-                        } else
-                            offs = match;
-                    } else if (offs) {
-                        break;
-                    } else {
+        size_t search_start = 0;
+        auto FindSkippingParentneses = [&](char symbol){
+            auto offs = search_start;
+            char matches[] = { '(', symbol, 0 };
+            while((offs = s.find_first_of(matches, offs)) != std::string_view::npos){
+                if(s[offs]=='('){
+                    auto match = bracketsmap[offs];
+                    if (match == s.length()-1 && offs==0) {
                         ++offs;
-                    }
+                        ++search_start;
+                    } else
+                        offs = match;
+                } else if (offs) {
+                    break;
+                } else {
+                    ++offs;
                 }
-                return offs;
-            };
+            }
+            return offs;
+        };
 
-            std::string_view lpart, rpart;
-            auto found = FindSkippingParentneses('+');
-            if (found != std::string::npos) {
-                lpart = s.substr(search_start, found-search_start);
-                rpart = s.substr(found + 1, s.length() - (found + 1) - (search_start*2));
-                auto l = Valuable(lpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    l.MarkAsOptimized();
-                auto r = Valuable(rpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    r.MarkAsOptimized();
-                auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
-                if (itIsOptimized)
-                    sum.MarkAsOptimized();
-                Become(std::move(sum));
-            } else if ((found = FindSkippingParentneses('-')) != std::string::npos
-                    && (found == 0 || s[found-1] != '*')
-                    && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
-                    && !lpart.ends_with("*/^"))
-            {
-                rpart = s.substr(found, s.length() - found - search_start*2);
-                Valuable l(lpart, vaNames, itIsOptimized);
-                Valuable r(rpart, vaNames, itIsOptimized);
-                auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
-                if (itIsOptimized)
-                    sum.MarkAsOptimized();
-                Become(std::move(sum));
-            } else if ((found = FindSkippingParentneses('*')) != std::string::npos) {
-                lpart = s.substr(0, found);
-                rpart = s.substr(found + 1, s.length() - found);
-                auto l = Valuable(lpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    l.MarkAsOptimized();
-                auto r = Valuable(rpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    r.MarkAsOptimized();
-                auto product = itIsOptimized ? Valuable(Product{l, r}) : l * r;
-                if (itIsOptimized)
-                    product.MarkAsOptimized();
-                Become(std::move(product));
-            } else if ((found = FindSkippingParentneses('/')) != std::string::npos) {
-                lpart = s.substr(0, found);
-                rpart = s.substr(found + 1, s.length() - found);
-                auto l = Valuable(lpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    l.MarkAsOptimized();
-                auto r = Valuable(rpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    r.MarkAsOptimized();
-                auto devided = itIsOptimized ? Valuable(Fraction{l, r}) : l / r;
-                if (itIsOptimized)
-                    devided.MarkAsOptimized();
-                Become(std::move(devided));
-            } else if((found = FindSkippingParentneses('^')) != std::string::npos) {
-                lpart = s.substr(0, found);
-                rpart = s.substr(found + 1, s.length() - found);
-                auto l = Valuable(lpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    l.MarkAsOptimized();
-                auto r = Valuable(rpart, vaNames, itIsOptimized);
-                if (itIsOptimized)
-                    r.MarkAsOptimized();
-                Exponentiation exp{l, r};
-                if (itIsOptimized)
-                    exp.MarkAsOptimized();
-                Become(std::move(exp));
+        std::string_view lpart, rpart;
+        auto found = FindSkippingParentneses('+');
+        if (found != std::string::npos) {
+            lpart = s.substr(search_start, found-search_start);
+            rpart = s.substr(found + 1, s.length() - (found + 1) - (search_start*2));
+            auto l = Valuable(lpart, vaNames, itIsOptimized);
+            if (itIsOptimized)
+                l.MarkAsOptimized();
+            auto r = Valuable(rpart, vaNames, itIsOptimized);
+            if (itIsOptimized)
+                r.MarkAsOptimized();
+            auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
+            if (itIsOptimized)
+                sum.MarkAsOptimized();
+            Become(std::move(sum));
+        } else if ((found = FindSkippingParentneses('-')) != std::string::npos
+                && (found == 0 || s[found-1] != '*')
+                && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
+                && !lpart.ends_with("*/^"))
+        {
+            rpart = s.substr(found, s.length() - found - search_start*2);
+            Valuable l(lpart, vaNames, itIsOptimized);
+            Valuable r(rpart, vaNames, itIsOptimized);
+            auto sum = itIsOptimized ? Valuable(Sum{l, r}) : l + r;
+            if (itIsOptimized)
+                sum.MarkAsOptimized();
+            Become(std::move(sum));
+        } else if ((found = FindSkippingParentneses('*')) != std::string::npos) {
+            lpart = s.substr(0, found);
+            rpart = s.substr(found + 1, s.length() - found);
+            auto l = Valuable(lpart, vaNames, itIsOptimized);
+            if (itIsOptimized)
+                l.MarkAsOptimized();
+            auto r = Valuable(rpart, vaNames, itIsOptimized);
+            if (itIsOptimized)
+                r.MarkAsOptimized();
+            auto product = itIsOptimized ? Valuable(Product{l, r}) : l * r;
+            if (itIsOptimized)
+                product.MarkAsOptimized();
+            Become(std::move(product));
+        } else if ((found = FindSkippingParentneses('/')) != std::string::npos) {
+            lpart = s.substr(0, found);
+            rpart = s.substr(found + 1, s.length() - found);
+            auto l = Valuable(lpart, vaNames, itIsOptimized);
+            if (itIsOptimized)
+                l.MarkAsOptimized();
+            auto r = Valuable(rpart, vaNames, itIsOptimized);
+            if (itIsOptimized)
+                r.MarkAsOptimized();
+            auto devided = itIsOptimized ? Valuable(Fraction{l, r}) : l / r;
+            if (itIsOptimized)
+                devided.MarkAsOptimized();
+            Become(std::move(devided));
+        } else if((found = FindSkippingParentneses('^')) != std::string::npos) {
+            lpart = s.substr(0, found);
+            rpart = s.substr(found + 1, s.length() - found);
+            auto l = Valuable(lpart, vaNames, itIsOptimized);
+            if (itIsOptimized)
+                l.MarkAsOptimized();
+            auto r = Valuable(rpart, vaNames, itIsOptimized);
+            if (itIsOptimized)
+                r.MarkAsOptimized();
+            Exponentiation exp{l, r};
+            if (itIsOptimized)
+                exp.MarkAsOptimized();
+            Become(std::move(exp));
+        }
+        else
+        {
+            size_t offs = 0;
+            while (s[offs] == ' ')
+                ++offs;
+            if (s[offs] == '-')
+                ++offs;
+            found = s.find_first_not_of(" 0123456789", offs);
+            if (found == std::string::npos) {
+                Trim(s);
+                auto integer = s.find(' ') == std::string::npos
+                    ? Integer(s)
+                    : Integer(Solid(std::string(s)));
+                Become(std::move(integer));
             }
             else
             {
-                size_t offs = 0;
-                while (s[offs] == ' ')
-                    ++offs;
-                if (s[offs] == '-')
-                    ++offs;
-                found = s.find_first_not_of(" 0123456789", offs);
-                if (found == std::string::npos) {
-                    Trim(s);
-                    auto integer = s.find(' ') == std::string::npos
-                        ? Integer(s)
-                        : Integer(Solid(std::string(s)));
-                    Become(std::move(integer));
+                auto it = vaNames.find(s);
+                if (it != vaNames.end()) {
+                    Valuable v(it->second);
+                    if (itIsOptimized)
+                        v.MarkAsOptimized();
+                    Become(std::move(v));
                 }
-                else
-                {
-                    auto it = vaNames.find(s);
-                    if (it != vaNames.end()) {
+                else {
+                    auto it = constants::Constants.find(s);
+                    if (it != constants::Constants.end()) {
                         Valuable v(it->second);
                         if (itIsOptimized)
                             v.MarkAsOptimized();
                         Become(std::move(v));
-                    }
-                    else {
-                        auto it = constants::Constants.find(s);
-                        if (it != constants::Constants.end()) {
-                            Valuable v(it->second);
-                            if (itIsOptimized)
-                                v.MarkAsOptimized();
-                            Become(std::move(v));
-                        } else if (vaNames.empty()) {
-                            Valuable varless(s, nullptr, itIsOptimized);
-                            Become(std::move(varless));
-                        } else {
-                            Become(Valuable(s, vaNames.begin()->second.getVaHost(), itIsOptimized));
-                        }
+                    } else if (vaNames.empty()) {
+                        Valuable varless(s, nullptr, itIsOptimized);
+                        Become(std::move(varless));
+                    } else {
+                        Become(Valuable(s, vaNames.begin()->second.getVaHost(), itIsOptimized));
                     }
                 }
             }
@@ -956,6 +950,7 @@ Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, 
 
         Valuable::optimizations = optimizationsWas;
     }
+} // namespace omnn::math
 
     Valuable::~Valuable()
     {
