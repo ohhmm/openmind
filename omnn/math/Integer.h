@@ -28,10 +28,10 @@ public:
 
 	using base::base;
 
-    MSVC_CONSTEXPR Integer(const Integer&)=default;
-    MSVC_CONSTEXPR Integer(Integer&&)=default;
-    MSVC_CONSTEXPR Integer& operator=(const Integer&) = default;
-    MSVC_CONSTEXPR Integer& operator=(Integer&&) = default;
+    Integer(const Integer&)=default;
+    Integer(Integer&&)=default;
+    Integer& operator=(const Integer&) = default;
+    Integer& operator=(Integer&&) = default;
 
     template<typename IntT>
     constexpr Integer(IntT&& i = 0)

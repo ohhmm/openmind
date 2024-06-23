@@ -1,6 +1,6 @@
 #pragma once
-#include <omnn/math/Variable.h>
-#include <omnn/math/DuoValDescendant.h>
+#include "/home/ubuntu/openmind/omnn/math/Variable.h"
+#include "/home/ubuntu/openmind/omnn/math/DuoValDescendant.h"
 
 namespace omnn::math {
 

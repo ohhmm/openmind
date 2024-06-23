@@ -409,8 +409,8 @@ if(Python_FOUND)
     link_directories(${Python_LIBRARIES})
 endif()
 
-# set(Python_INCLUDE_DIRS /usr/include/python3.10)
-# set(Python_LIBRARIES /usr/lib/x86_64-linux-gnu/libpython3.10.so)
+set(Python_INCLUDE_DIRS /usr/include/python3.10)
+set(Python_LIBRARIES /usr/lib/x86_64-linux-gnu/libpython3.10.so)
 
 if (OPENMIND_BUILD_TESTS)
 	if(NOT MSVC)
