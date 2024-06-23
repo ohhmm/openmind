@@ -669,6 +669,11 @@ namespace omnn::math {
 // Other code...
 
 namespace {
+    std::string Solid(std::string s) {
+        s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
+        return s;
+    }
+
     // Other code...
 
     // The function OmitOuterBrackets was here before, but now it has been moved outside the unnamed namespace.
@@ -678,16 +683,11 @@ namespace {
 
 namespace omnn::math {
 
-std::string Solid(std::string s) {
-    s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
-    return s;
-}
-
 bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
     auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
     if (!same) {
-        auto _1 = omnn::math::Solid(_), _2 = omnn::math::Solid(std::string(s));
+        auto _1 = Solid(_), _2 = Solid(std::string(s));
         same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
         if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
             _2 = a_int(s).str();
@@ -715,20 +715,21 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
     return same;
 }
+
 struct hash_tokens_collection_t {
-    static HashStrOmitOuterBrackets hasher;
+    static omnn::math::HashStrOmitOuterBrackets hasher;
     static size_t reduce(size_t s, std::string_view str) {
         auto strhash = hasher(str);
         return s ^ strhash;
     }
-    size_t operator()(const StateProxyComparator::tokens_collection_t& c) const {
+    size_t operator()(const omnn::math::StateProxyComparator::tokens_collection_t& c) const {
         size_t hash = 0;
         hash = std::accumulate(c.begin(), c.end(), hash, &hash_tokens_collection_t::reduce);
         return hash;
     }
 };
 
-HashStrOmitOuterBrackets hash_tokens_collection_t::hasher;
+omnn::math::HashStrOmitOuterBrackets hash_tokens_collection_t::hasher;
 
 } // namespace math
 } // namespace omnn
@@ -808,7 +809,7 @@ namespace math {
             else
                 ok = {};
         }
-		
+
         if (!ok)
         {
             Valuable sum = Sum{};
@@ -823,8 +824,8 @@ namespace math {
                 }
 			};
             op_t o_sum, o_mul, o_div, o_exp;
-            op_t o_mod; 
-            op_t o_pSurd; 
+            op_t o_mod;
+            op_t o_pSurd;
             if (itIsOptimized) {
                 sum.MarkAsOptimized();
                 v.MarkAsOptimized();
@@ -2074,7 +2075,7 @@ namespace math {
             //Integral({});
         }
     }
-	
+
 	Valuable Valuable::Gamma() const {
         if (exp)
             return exp->Gamma();
@@ -2093,7 +2094,7 @@ namespace math {
         }
         return *this;
     }
-    
+
 	Valuable Valuable::Factorial() const {
         if (exp)
             return exp->Factorial();
@@ -2705,7 +2706,7 @@ namespace math {
 
         // simplified to formula:
         // (Y + X -sqrt(Y^2 + X^2 -2YX))/2
-        // expressed through Abs: 
+        // expressed through Abs:
         // (Y + X -sqrt((Y-X)^2))/2 = (X+Y-|X-Y|)/2
         return ((second + *this) - (second - *this).abs()) / constants::two;
     }
