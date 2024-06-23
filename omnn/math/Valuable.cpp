@@ -743,8 +743,12 @@ namespace math {
 	namespace {
 	constexpr char SupportedOps[] = " */%+-^()";
 	}
-    Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
+    Valuable(const std::string_view& s, std::shared_ptr<omnn::math::VarHost> h, bool itIsOptimized // = false
 	) {
+```
+
+```cpp
+std::shared_ptr<omnn::math::VarHost> Valuable::getVaHost() const {
         auto l = s.length();
         using index_t = decltype(l);
         std::stack <index_t> st;
