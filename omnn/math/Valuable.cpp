@@ -102,8 +102,6 @@ std::map<size_t, size_t> OmitOuterBrackets(const std::string_view& s) {
 
 } // namespace omnn::math
 
-namespace omnn::math {
-
 const a_int Valuable::a_int_cz = 0;
 const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
@@ -142,6 +140,8 @@ void Valuable::LoadONNXModel(const std::string& model_path) {
     Ort::Session session(env, model_path.c_str(), session_options);
     this->onnx_session = std::make_shared<Ort::Session>(std::move(session));
 }
+
+namespace omnn::math {
 
 Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized)
 : Valuable(std::string_view(s), vaNames.begin()->second.getVaHost(), itIsOptimized) {
@@ -246,29 +246,9 @@ Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOpt
     }
 }
 
-Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
-: hash(v.Hash()), maxVaExp(v.getMaxVaExp()), view(v.view), optimized(v.optimized)
-{
-    assert(!exp);
-}
-Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
-Valuable::Valuable(Valuable* v) : exp(v) {}
-Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
-Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
-Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
-Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
-Valuable::Valuable(const a_int& i) : exp(new Integer(i)) {}
+} // namespace omnn::math
 
-std::type_index Valuable::Type() const
-{
-    if (exp)
-        return exp->Type();
-#ifdef __APPLE__
-    LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
-    LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
-}
+} // namespace omnn::math
 
 Valuable& Valuable::Become(Valuable&& i)
 {
@@ -794,18 +774,6 @@ void Valuable::CheckDeserialization(const std::string_view& s) {
 #endif // !NDEBUG
 
 namespace omnn::math {
-    Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
-        :Valuable(std::string_view(str), vaNames.begin()->second.getVaHost(), itIsOptimized)
-    {
-    #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-    #ifndef ALLOW_CACHE_UPGRADE
-        auto _ = this->str();
-        if (str != _)
-            IMPLEMENT;
-    #endif
-    #endif
-    }
-
     Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     {
     #if !defined(NDEBUG) && !defined(NOOMDEBUG)
@@ -16611,7 +16579,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        Далее сообщение обрабатывается последовательными порциями по 512 бит:
 //        разбить сообщение на куски по 512 бит
 //        для каждого куска
-//        разбит?? ??усок на 16 слов длино?? 32 бита (с порядком байтов о?? старшего к мл??дшему внутри слова): w[0..15]
+//        разбит?? ??усок на 16 слов длино?? 32 бита (с порядком байтов о?? старшег?? к мл??дшему внутри слова): w[0..15]
 //
 //        Сгенерировать дополнительные 48 слов:
 //        для i от 16 до 63
