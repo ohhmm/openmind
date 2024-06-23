@@ -677,49 +677,44 @@ namespace {
 }
 
 namespace omnn::math {
-    std::string Solid(std::string s) {
-        s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
-        return s;
-    }
 
-    bool Valuable::SerializedStrEqual(const std::string_view& s) const {
-        auto _ = str();
-        auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
-        if (!same) {
-            auto _1 = Solid(_), _2 = Solid(std::string(s));
-            same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
-            if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
-                _2 = a_int(s).str();
-                same = _1 == _2;
-            }
-            if (!same) {
-                boost::replace_all(_1, "+-", "-");
-                boost::replace_all(_2, "+-", "-");
-                same = _1 == _2;
-            }
-            while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
-                _1 = _1.substr(1, _1.length() - 2);
-                same = _1 == _2;
-            }
-            if (!same) {
-                std::map<char, a_int> m1, m2;
-                for (char c : _1)
-                    if (c != '+')
-                        ++m1[c];
-                for (char c : _2)
-                    if (c != '+')
-                        ++m2[c];
-                same = m1 == m2;
-            }
+std::string Solid(std::string s) {
+    s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
+    return s;
+}
+
+bool Valuable::SerializedStrEqual(const std::string_view& s) const {
+    auto _ = str();
+    auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
+    if (!same) {
+        auto _1 = omnn::math::Solid(_), _2 = omnn::math::Solid(std::string(s));
+        same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
+        if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
+            _2 = a_int(s).str();
+            same = _1 == _2;
         }
-        return same;
+        if (!same) {
+            boost::replace_all(_1, "+-", "-");
+            boost::replace_all(_2, "+-", "-");
+            same = _1 == _2;
+        }
+        while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
+            _1 = _1.substr(1, _1.length() - 2);
+            same = _1 == _2;
+        }
+        if (!same) {
+            std::map<char, a_int> m1, m2;
+            for (char c : _1)
+                if (c != '+')
+                    ++m1[c];
+            for (char c : _2)
+                if (c != '+')
+                    ++m2[c];
+            same = m1 == m2;
+        }
     }
-} // namespace omnn::math
-
-} // namespace
-
-namespace omnn {
-namespace math {
+    return same;
+}
 struct hash_tokens_collection_t {
     static HashStrOmitOuterBrackets hasher;
     static size_t reduce(size_t s, std::string_view str) {
@@ -16928,7 +16923,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        Далее сообщение обрабатывается последовательными порциями по 512 бит:
 //        разбить сообщение на куски по 512 бит
 //        для каждого куска
-//        разбить ??усок на 16 слов длино?? 32 бита (с порядком байтов о?? старшего к мл??дшему внутри слова): w[0..15]
+//        разбит?? ??усок на 16 слов длино?? 32 бита (с порядком байтов о?? старшего к мл??дшему внутри слова): w[0..15]
 //
 //        Сгенерировать дополнительные 48 слов:
 //        для i от 16 до 63
