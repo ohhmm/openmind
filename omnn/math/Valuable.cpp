@@ -675,8 +675,6 @@ namespace omnn::math {
     // Other code...
 }
 
-namespace omnn::math {
-
 namespace {
     std::string Solid(std::string_view s) {
         std::string result(s);
@@ -745,7 +743,7 @@ namespace math {
 	namespace {
 	constexpr char SupportedOps[] = " */%+-^()";
 	}
-    Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
+    Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
 	) {
         auto l = s.length();
         using index_t = decltype(l);
@@ -1091,7 +1089,7 @@ namespace math {
 #endif // !NDEBUG
     }
 
-    Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
+    Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     :Valuable(std::string_view(str), vaNames, itIsOptimized)
     {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
@@ -1106,7 +1104,7 @@ namespace math {
 #endif
     }
 
-    Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized)
+    Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
       if (s.empty()) {
@@ -1255,7 +1253,7 @@ namespace math {
         Valuable::optimizations = optimizationsWas;
     }
 
-    Valuable::~Valuable()
+    ~Valuable()
     {
 #ifdef OPENMIND_BUILD_GC
         if (exp) {
@@ -1267,7 +1265,7 @@ namespace math {
 #endif
     }
 
-    Valuable Valuable::operator -() const
+    Valuable operator -() const
     {
         if(exp)
             return exp->operator-();
@@ -1275,7 +1273,7 @@ namespace math {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator +=(const Valuable& v)
+    Valuable& operator +=(const Valuable& v)
     {
         if(exp) {
             Valuable& o = exp->operator+=(v);
@@ -1289,7 +1287,7 @@ namespace math {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator +=(int v)
+    Valuable& operator +=(int v)
     {
         if(exp) {
             Valuable& o = exp->operator+=(v);
@@ -1302,7 +1300,7 @@ namespace math {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator *=(const Valuable& v)
+    Valuable& operator *=(const Valuable& v)
     {
         if (operator==(v))
         {
@@ -6081,22 +6079,10 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return v;
 }
 
-::omnn::math::Valuable operator"" _v(unsigned long long v)
-{
-    using namespace ::omnn::math;
-    const auto va = ull2cppint(v);
-    return Valuable(Integer(va));
-}
-
 //constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v)
 //{
 //    return ::omnn::math::vo<v>();
 //}
-
-::omnn::math::Valuable operator"" _v(long double v)
-{
-    return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
-}
 #include <unordered_set>
 
 #include <boost/algorithm/string/replace.hpp>
@@ -20163,10 +20149,12 @@ const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l)
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
 
-//APPLE_CONSTEXPR
 const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return v;
 }
+
+namespace omnn {
+namespace math {
 
 ::omnn::math::Valuable operator"" _v(unsigned long long v)
 {
@@ -20175,15 +20163,13 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return Valuable(Integer(va));
 }
 
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v)
-//{
-//    return ::omnn::math::vo<v>();
-//}
-
 ::omnn::math::Valuable operator"" _v(long double v)
 {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
 
+} // namespace math
+} // namespace omnn
+} // namespace omnn
 } // namespace math
 } // namespace omnn
