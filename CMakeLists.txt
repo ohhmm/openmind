@@ -411,6 +411,8 @@ endif()
 
 set(Python_INCLUDE_DIRS /usr/include/python3.10)
 set(Python_LIBRARIES /usr/lib/x86_64-linux-gnu/libpython3.10.so)
+include_directories(${Python_INCLUDE_DIRS})
+link_directories(${Python_LIBRARIES})
 
 if (OPENMIND_BUILD_TESTS)
 	if(NOT MSVC)
