@@ -681,13 +681,45 @@ namespace omnn::math {
         s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
         return s;
     }
+
+    bool Valuable::SerializedStrEqual(const std::string_view& s) const {
+        auto _ = str();
+        auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
+        if (!same) {
+            auto _1 = Solid(_), _2 = Solid(std::string(s));
+            same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
+            if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
+                _2 = a_int(s).str();
+                same = _1 == _2;
+            }
+            if (!same) {
+                boost::replace_all(_1, "+-", "-");
+                boost::replace_all(_2, "+-", "-");
+                same = _1 == _2;
+            }
+            while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
+                _1 = _1.substr(1, _1.length() - 2);
+                same = _1 == _2;
+            }
+            if (!same) {
+                std::map<char, a_int> m1, m2;
+                for (char c : _1)
+                    if (c != '+')
+                        ++m1[c];
+                for (char c : _2)
+                    if (c != '+')
+                        ++m2[c];
+                same = m1 == m2;
+            }
+        }
+        return same;
+    }
 } // namespace omnn::math
 
 } // namespace
 
 namespace omnn {
 namespace math {
-
 struct hash_tokens_collection_t {
     static HashStrOmitOuterBrackets hasher;
     static size_t reduce(size_t s, std::string_view str) {
@@ -708,42 +740,6 @@ HashStrOmitOuterBrackets hash_tokens_collection_t::hasher;
 
 namespace omnn {
 namespace math {
-
-bool Valuable::SerializedStrEqual(const std::string_view& s) const {
-    auto _ = str();
-    auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
-    if (!same) {
-        auto _1 = Solid(_), _2 = Solid(std::string(s));
-        same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
-        if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
-            _2 = a_int(s).str();
-            same = _1 == _2;
-        }
-        if (!same) {
-            boost::replace_all(_1, "+-", "-");
-            boost::replace_all(_2, "+-", "-");
-            same = _1 == _2;
-        }
-        while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
-            _1 = _1.substr(1, _1.length() - 2);
-            same = _1 == _2;
-        }
-        if (!same) {
-            std::map<char, a_int> m1, m2;
-            for (char c : _1)
-                if (c != '+')
-                    ++m1[c];
-            for (char c : _2)
-                if (c != '+')
-                    ++m2[c];
-            same = m1 == m2;
-        }
-    }
-    return same;
-}
-
-} // namespace math
-} // namespace omnn
 
 } // namespace math
 } // namespace omnn
