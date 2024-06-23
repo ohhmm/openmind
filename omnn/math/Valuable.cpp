@@ -734,18 +734,115 @@ omnn::math::HashStrOmitOuterBrackets hash_tokens_collection_t::hasher;
 } // namespace math
 } // namespace omnn::math
 
-namespace omnn {
-namespace math {
+namespace omnn::math {
 
-} // namespace math
-} // namespace omnn
+Valuable::Valuable(const std::string_view& s, std::shared_ptr<omnn::math::VarHost> h, bool itIsOptimized)
+    : exp(nullptr), hash(0), sz(0), maxVaExp(0), view(View::Flat), optimized(itIsOptimized) {
+    // Constructor implementation here
+    auto bracketsmap = OmitOuterBrackets(s);
+    if (bracketsmap.empty()) {
+        if (std::all_of(s.begin(), s.end(), ::isdigit)) {
+            exp = std::make_shared<Integer>(s);
+        } else {
+            exp = std::make_shared<Variable>(h);
+        }
+    } else {
+        // Handle more complex expressions
+        Valuable sum = Sum{};
+        Valuable v;
+        auto mulByNeg = false;
+        using op_t = std::function<void(Valuable &&)>;
+        op_t o_mov = [&](Valuable&& val) {
+            v = std::move(val);
+            if (mulByNeg) {
+                v *= -1;
+                mulByNeg = {};
+            }
+        };
+        op_t o_sum, o_mul, o_div, o_exp;
+        o_sum = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            sum += std::move(val);
+        };
+        o_mul = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v *= std::move(val);
+        };
+        o_div = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v /= std::move(val);
+        };
+        o_exp = [&](Valuable&& val) {
+            if (mulByNeg) {
+                val *= -1;
+                mulByNeg = {};
+            }
+            v ^= std::move(val);
+        };
+        auto o = std::ref(o_mov);
+        for (size_t i = 0; i < s.length(); ++i) {
+            auto c = s[i];
+            if (c == '(') {
+                auto cb = bracketsmap[i];
+                auto next = i + 1;
+                o(Valuable(s.substr(next, cb - next), h, itIsOptimized));
+                i = cb;
+            } else if (c == '-') {
+                o_sum(std::move(v));
+                v = 0;
+                o = o_mov;
+                mulByNeg ^= true;
+            } else if ((c >= '0' && c <= '9') || c == '.') {
+                auto next = s.find_first_not_of("0123456789.", i + 1);
+                auto ss = s.substr(i, next - i);
+                i = next - 1;
+                if (ss.find('.') != std::string::npos) {
+                    auto beforedot = ss.substr(0, ss.find('.'));
+                    auto afterdot = ss.substr(ss.find('.') + 1);
+                    auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
+                    o(std::move(f));
+                } else {
+                    o(Integer(ss));
+                }
+            } else if (c == '+') {
+                o_sum(std::move(v));
+                v = 0;
+                o = o_mov;
+            } else if (c == '*') {
+                o = o_mul;
+            } else if (c == '/') {
+                o = o_div;
+            } else if (c == '^') {
+                o = o_exp;
+            } else if (std::isalpha(c)) {
+                auto to = s.find_first_of(" */%+-^()", i + 1);
+                auto id = std::string(s.substr(i, to - i));
+                o(Valuable(id, h, itIsOptimized));
+                i = to - 1;
+            } else {
+                throw std::runtime_error("Unexpected character in expression");
+            }
+        }
+        o_sum(std::move(v));
+        Become(std::move(sum));
+    }
+}
 
-	namespace {
-	constexpr char SupportedOps[] = " */%+-^()";
-	}
-    Valuable(const std::string_view& s, std::shared_ptr<omnn::math::VarHost> h, bool itIsOptimized = false)
-    : exp(nullptr), hash(0), sz(sizeof(Valuable)), maxVaExp(0), view(View::Flat), optimized(itIsOptimized) {
-        // Constructor implementation here
+    std::shared_ptr<omnn::math::VarHost> Valuable::getVaHost() const {
+        return std::dynamic_pointer_cast<omnn::math::VarHost>(exp);
+    }
+
+    Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized)
+    : exp(nullptr), hash(0), sz(0), maxVaExp(0), view(View::Flat), optimized(itIsOptimized) {
         auto bracketsmap = OmitOuterBrackets(s);
         if (bracketsmap.empty()) {
             if (std::all_of(s.begin(), s.end(), ::isdigit)) {
@@ -844,10 +941,6 @@ namespace math {
         }
     }
 
-    std::shared_ptr<omnn::math::VarHost> Valuable::getVaHost() const {
-        return std::dynamic_pointer_cast<omnn::math::VarHost>(exp);
-    }
-
     Valuable(const std::string_view& s, std::shared_ptr<omnn::math::VarHost> h, bool itIsOptimized // = false
 	) {
         auto l = s.length();
@@ -928,6 +1021,8 @@ namespace math {
                     mulByNeg = {};
                 }
             };
+        }
+    }
             op_t o_sum, o_mul, o_div, o_exp;
             op_t o_mod;
             op_t o_pSurd;
@@ -17007,7 +17102,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        "0x748F82EE"_v, "0x78A5636F"_v, "0x84C87814"_v, "0x8CC70208"_v, "0x90BEFFFA"_v, "0xA4506CEB"_v, "0xBEF9A3F7"_v, "0xC67178F2"_v};
 //
         // ǁ - concat
-//        Предварительная обработка:
+//        Предварительная обработ??а:
 //        auto m = Shl(1) + 1;
 //        m = m ǁ [k нулевых бит], где k — наименьшее неотрицательное число, такое что
 //        (L + 1 + K) mod 512 = 448, где L — число бит в сообщении (с??авнима п?? модулю 512 c 448)
