@@ -476,7 +476,7 @@ public:
     bool IsMonic() const;
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
-    Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
+    void CheckDeserialization(const std::string_view& s);
 
 	Valuable operator!() const;
     explicit operator bool() const;

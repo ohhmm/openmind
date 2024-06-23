@@ -144,7 +144,7 @@ void Valuable::LoadONNXModel(const std::string& model_path) {
 }
 
 Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized)
-: exp(nullptr), hash(0), sz(0), maxVaExp(0), view(View::Flat), optimized(itIsOptimized) {
+: Valuable(std::string_view(s), vaNames.begin()->second.getVaHost(), itIsOptimized) {
     // Parse the string and create a Valuable object representing the mathematical expression
     std::string_view sv(s);
     auto bracketsmap = OmitOuterBrackets(sv);
@@ -780,19 +780,21 @@ namespace omnn::math {
 } // namespace omnn::math
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-if (!SerializedStrEqual(s)) {
-    LOG_AND_IMPLEMENT(
-        "Deserialization check failed. "
-        " potential reasons:\n"
-        "  text expression ordering differs from this software expression building ordering"
-        "  var host type is changed between integer-type and string-type var host"
-        "  this software code changed expression building ordering or other changes that could be a cause "
-        "for this deserialization check error message (optimization changes for example)");
+void Valuable::CheckDeserialization(const std::string_view& s) {
+    if (!SerializedStrEqual(s)) {
+        LOG_AND_IMPLEMENT(
+            "Deserialization check failed. "
+            " potential reasons:\n"
+            "  text expression ordering differs from this software expression building ordering"
+            "  var host type is changed between integer-type and string-type var host"
+            "  this software code changed expression building ordering or other changes that could be a cause "
+            "for this deserialization check error message (optimization changes for example)");
+    }
 }
 #endif // !NDEBUG
 
-Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
-:Valuable(std::string_view(str), vaNames, itIsOptimized)
+Valuable::Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsOptimized)
+:Valuable(std::string_view(str), vaNames.begin()->second.getVaHost(), itIsOptimized)
 {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
 #ifndef ALLOW_CACHE_UPGRADE
@@ -806,7 +808,7 @@ Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsO
 #endif
 }
 
-    Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized)
+    Valuable::Valuable(std::string_view s, const Valuable::va_names_t& vaNames, bool itIsOptimized)
     {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
       if (s.empty()) {
@@ -955,7 +957,7 @@ Valuable(const std::string& str, const Valuable::va_names_t& vaNames, bool itIsO
         Valuable::optimizations = optimizationsWas;
     }
 
-    ~Valuable()
+    Valuable::~Valuable()
     {
 #ifdef OPENMIND_BUILD_GC
         if (exp) {
