@@ -152,7 +152,7 @@ Valuable::Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOpt
         if (std::all_of(sv.begin(), sv.end(), ::isdigit)) {
             exp = std::make_shared<Integer>(sv);
         } else {
-            exp = std::make_shared<Variable>(std::string(sv));
+            exp = std::make_shared<Variable>(std::make_shared<VarHost>());
         }
     } else {
         // Handle more complex expressions
@@ -686,7 +686,7 @@ bool omnn::math::Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
     auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
     if (!same) {
-        auto _1 = Solid(_), _2 = Solid(std::string(s));
+        auto _1 = Solid(std::string(_)), _2 = Solid(std::string(s));
         same = _1 == _2 || (_1.front() == '(' && _1.back() == ')' && _2 == _1.substr(1, _1.length() - 2));
         if (!same && IsInt() && s.length() > 2 && (s[1] == 'x' || s[1] == 'X')) {
             _2 = a_int(s).str();
@@ -16916,7 +16916,7 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 //        Предварительная обработка:
 //        auto m = Shl(1) + 1;
 //        m = m ǁ [k нулевых бит], где k — наименьшее неотрицательное число, такое что
-//        (L + 1 + K) mod 512 = 448, где L — число бит в сообщении (сравнима п?? модулю 512 c 448)
+//        (L + 1 + K) mod 512 = 448, где L — число бит в сообщении (с??авнима п?? модулю 512 c 448)
 //        m = m ǁ Длина(message) — длина исходного сообщения в битах в виде 64-б??тн??го числа
 //        с порядком байтов от старше??о к младшему
 //
