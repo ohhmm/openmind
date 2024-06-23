@@ -676,6 +676,8 @@ namespace omnn::math {
 }
 
 namespace omnn::math {
+
+namespace {
     std::string Solid(std::string_view s) {
         std::string result(s);
         result.erase(std::remove(result.begin(), result.end(), ' '), result.end());
@@ -683,7 +685,7 @@ namespace omnn::math {
     }
 }
 
-bool omnn::math::Valuable::SerializedStrEqual(const std::string_view& s) const {
+bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
     auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
     if (!same) {
@@ -732,7 +734,7 @@ struct hash_tokens_collection_t {
 omnn::math::HashStrOmitOuterBrackets hash_tokens_collection_t::hasher;
 
 } // namespace math
-} // namespace omnn
+} // namespace omnn::math
 
 namespace omnn {
 namespace math {
@@ -793,9 +795,9 @@ namespace math {
             }
             else if (s[0] == 'v' && s.size() > 1 && h->IsIntegerId()
                 && std::all_of(s.begin() + 1, s.end(),
-					[](auto ch) { return std::isdigit(ch); }
-					)
-				)
+                    [](auto ch) { return std::isdigit(ch); }
+                    )
+                )
                 Become(Valuable(h->Host(Valuable(a_int(s.substr(1))))));
             else if (s.length() > 2
                 && s[0] == '0'
@@ -817,12 +819,12 @@ namespace math {
             auto mulByNeg = false;
             using op_t = std::function<void(Valuable &&)>;
             op_t o_mov = [&](Valuable&& val) {
-				v = std::move(val);
+                v = std::move(val);
                 if (mulByNeg) {
                     v *= -1;
                     mulByNeg = {};
                 }
-			};
+            };
             op_t o_sum, o_mul, o_div, o_exp;
             op_t o_mod;
             op_t o_pSurd;
@@ -915,8 +917,8 @@ namespace math {
                         val *= -1;
                         mulByNeg = {};
                     }
-					v *= std::move(val);
-				};
+                    v *= std::move(val);
+                };
                 o_div = [&](Valuable&& val) {
                     if (mulByNeg) {
                         val *= -1;
@@ -1056,7 +1058,7 @@ namespace math {
                                 auto next = to + 1;
                                 o(PrincipalSurd{Valuable(s.substr(next, cb - next), h, itIsOptimized)});
                             }
-							i = cb;
+                            i = cb;
                             continue;
                         }
                     }
@@ -1112,8 +1114,8 @@ namespace math {
       }
 #endif // NOOMDEBUG
 
-		auto optimizationsWas = Valuable::optimizations;
-		Valuable::optimizations = !itIsOptimized && optimizationsWas;
+        auto optimizationsWas = Valuable::optimizations;
+        Valuable::optimizations = !itIsOptimized && optimizationsWas;
 
         auto bracketsmap = OmitOuterBrackets(s);
 
@@ -1157,10 +1159,10 @@ namespace math {
                     sum.MarkAsOptimized();
                 Become(std::move(sum));
             } else if ((found = FindSkippingParentneses('-')) != std::string::npos
-					&& (found == 0 || s[found-1] != '*')
+                    && (found == 0 || s[found-1] != '*')
                     && !Trim(lpart = s.substr(search_start, found - search_start)).empty()
                     && !lpart.ends_with("*/^"))
-			{
+            {
                 rpart = s.substr(found, s.length() - found - search_start*2);
                 Valuable l(lpart, vaNames, itIsOptimized);
                 Valuable r(rpart, vaNames, itIsOptimized);
@@ -1219,8 +1221,8 @@ namespace math {
                 if (found == std::string::npos) {
                     Trim(s);
                     auto integer = s.find(' ') == std::string::npos
-						? Integer(s)
-						: Integer(Solid(std::string(s)));
+                        ? Integer(s)
+                        : Integer(Solid(std::string(s)));
                     Become(std::move(integer));
                 }
                 else
@@ -1257,9 +1259,9 @@ namespace math {
     {
 #ifdef OPENMIND_BUILD_GC
         if (exp) {
-			#if 0
+            #if 0
             std::cout << *this << std::endl;
-			#endif
+            #endif
             rt::GC::DispatchDispose(std::move(exp));
         }
 #endif
