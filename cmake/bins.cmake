@@ -130,7 +130,7 @@ function(apply_target_commons this_target)
 	)
 	if(OPENMIND_USE_OPENCL_INTEL_SYCL)
 		target_compile_options(${this_target} PUBLIC ${SYCL_FLAGS})
-		target_include_directories(${this_target} PUBLIC 
+		target_include_directories(${this_target} PUBLIC
 			"${IntelSYCL_DIR}/../../../include"
 			"${IntelSYCL_DIR}/../../../include/sycl"
 		)
@@ -332,7 +332,7 @@ macro(lib)
     set_target_properties(${this_target} PROPERTIES
 		FOLDER "libs"
 		PUBLIC_HEADER "${headers}"
-		)	
+		)
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -370,16 +370,30 @@ macro(lib)
     install(TARGETS ${this_target})
 
     if (OPENMIND_BUILD_TESTS OR BUILD_TESTS)
-		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
-        	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
-    	elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Test)
-        	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
-		elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-        	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
-		elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Tests)
-        	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Tests)
-		endif ()
-	endif ()
+        if(NOT DEFINED TEST_SUBDIRECTORY_ADDED)
+            if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
+                if(NOT TARGET test)
+                    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
+                    set(TEST_SUBDIRECTORY_ADDED TRUE)
+                endif()
+            elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Test)
+                if(NOT TARGET Test)
+                    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Test)
+                    set(TEST_SUBDIRECTORY_ADDED TRUE)
+                endif()
+            elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+                if(NOT TARGET tests)
+                    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+                    set(TEST_SUBDIRECTORY_ADDED TRUE)
+                endif()
+            elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Tests)
+                if(NOT TARGET Tests)
+                    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Tests)
+                    set(TEST_SUBDIRECTORY_ADDED TRUE)
+                endif()
+            endif()
+        endif()
+    endif()
 
     if (OPENMIND_BUILD_3RD_PARTY_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rdPartyTests)
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdPartyTests)
