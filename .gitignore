@@ -38,3 +38,12 @@ CMakeLists.txt.user.*
 /*/Makefile
 /*/cmake_install.cmake
 /vcpkg_installed/
+
+# Exclude build directories and generated files
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/Makefile
+/*.cmake
+/*.ninja
+/compile_commands.json
