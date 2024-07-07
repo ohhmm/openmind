@@ -217,14 +217,18 @@ endif()
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
     PATHS /usr/local/boost_1_85_0
           C:/Boost
-          $ENV{ProgramFiles}/Boost
-          $ENV{ProgramFiles(x86)}/Boost
           $ENV{BOOST_ROOT}
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
 )
-if(Boost_FOUND)
-    set(Boost_ADDITIONAL_VERSIONS ${OPENMIND_PREFERRED_BOOST_VERSION})
+
+if(WIN32)
+    find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
+        PATHS $ENV{ProgramFiles}/Boost
+              $ENV{ProgramFiles\(x86\)}/Boost
+        COMPONENTS ${BOOST_USED_COMPONENTS}
+        REQUIRED
+    )
 endif()
 
 add_custom_target(prerequisites)
