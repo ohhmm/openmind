@@ -219,12 +219,19 @@ find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
           C:/Boost
           $ENV{BOOST_ROOT}
           $ENV{ProgramFiles}/Boost
-          $ENV{ProgramFiles(x86)}/Boost
-          $ENV{ProgramFiles}/boost_1_83_0
-          $ENV{ProgramFiles(x86)}/boost_1_83_0
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
 )
+
+if(WIN32)
+    find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
+        PATHS $ENV{ProgramFiles\(x86\)}/Boost
+              $ENV{ProgramFiles}/boost_1_83_0
+              $ENV{ProgramFiles\(x86\)}/boost_1_83_0
+        COMPONENTS ${BOOST_USED_COMPONENTS}
+        REQUIRED
+    )
+endif()
 
 # Removed redundant Windows-specific find_package block
 
