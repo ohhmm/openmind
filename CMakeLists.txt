@@ -148,7 +148,7 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.84.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.83.0 CACHE STRING "Boost library version to use")
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
@@ -215,7 +215,7 @@ elseif(OPENMIND_USE_CONAN)
 endif()
 
 find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-    PATHS /usr/local/boost_1_84_0
+    PATHS /usr/local/boost_1_83_0
           C:/Boost
           $ENV{BOOST_ROOT}
     COMPONENTS ${BOOST_USED_COMPONENTS}
@@ -310,7 +310,7 @@ elseif(OPENMIND_BUILD_BOOST)
 
     message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
     ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
-        GIT_TAG boost-1.84.0
+        GIT_TAG boost-1.83.0
         GIT_SHALLOW ON
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE} --without-icu
