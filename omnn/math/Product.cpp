@@ -253,6 +253,13 @@ namespace math {
         if (!optimizations || optimized)
             return;
         MarkAsOptimized();
+        OptimizationLoopDetect<Product> antilooper(*this);
+        if (antilooper.isLoopDetected()) {
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            LOG_AND_IMPLEMENT("Loop of optimizating detected in " << *this);
+#endif
+            return;
+        }
 
         auto isPlusMinus = YesNoMaybe::Maybe;
         auto IsPlusMinus = [&] {
