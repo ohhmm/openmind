@@ -228,6 +228,10 @@ if(WIN32)
         PATHS $ENV{ProgramFiles\(x86\)}/Boost
               $ENV{ProgramFiles}/boost_1_83_0
               $ENV{ProgramFiles\(x86\)}/boost_1_83_0
+              $ENV{ProgramFiles}/Boost
+              $ENV{ProgramFiles\(x86\)}/Boost
+              C:/local/boost_1_83_0
+              C:/Boost
         COMPONENTS ${BOOST_USED_COMPONENTS}
         REQUIRED
     )
