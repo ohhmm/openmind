@@ -135,7 +135,7 @@ if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
 endif()
 
-option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
+option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCl_FOUND})
 if(OPENMIND_USE_OPENCL)
 	find_package(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
@@ -218,18 +218,15 @@ find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
     PATHS /usr/local/boost_1_83_0
           C:/Boost
           $ENV{BOOST_ROOT}
+          $ENV{ProgramFiles}/Boost
+          $ENV{ProgramFiles(x86)}/Boost
+          $ENV{ProgramFiles}/boost_1_83_0
+          $ENV{ProgramFiles(x86)}/boost_1_83_0
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
 )
 
-if(WIN32)
-    find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-        PATHS $ENV{ProgramFiles}/Boost
-              $ENV{ProgramFiles\(x86\)}/Boost
-        COMPONENTS ${BOOST_USED_COMPONENTS}
-        REQUIRED
-    )
-endif()
+# Removed redundant Windows-specific find_package block
 
 add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
