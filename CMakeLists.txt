@@ -219,17 +219,22 @@ find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
           C:/Boost
           $ENV{BOOST_ROOT}
           $ENV{ProgramFiles}/Boost
+          $ENV{ProgramFiles}/boost_1_83_0
+          $ENV{ProgramFiles(x86)}/Boost
+          $ENV{ProgramFiles(x86)}/boost_1_83_0
+          C:/local/boost_1_83_0
     COMPONENTS ${BOOST_USED_COMPONENTS}
     REQUIRED
 )
 
 if(WIN32)
+    set(Boost_DIR "C:/local/boost_1_83_0" CACHE PATH "Boost library directory")
     find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-        PATHS $ENV{ProgramFiles\(x86\)}/Boost
+        PATHS $ENV{ProgramFiles(x86)}/Boost
               $ENV{ProgramFiles}/boost_1_83_0
-              $ENV{ProgramFiles\(x86\)}/boost_1_83_0
+              $ENV{ProgramFiles(x86)}/boost_1_83_0
               $ENV{ProgramFiles}/Boost
-              $ENV{ProgramFiles\(x86\)}/Boost
+              $ENV{ProgramFiles(x86)}/Boost
               C:/local/boost_1_83_0
               C:/Boost
         COMPONENTS ${BOOST_USED_COMPONENTS}
