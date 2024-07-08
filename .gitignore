@@ -24,3 +24,12 @@ CMakeLists.txt.user.*
 /enc_temp_folder/
 
 *.cpp.gch
+
+# Exclude build directories and generated files
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/Makefile
+/*.cmake
+/*.ninja
+/compile_commands.json
