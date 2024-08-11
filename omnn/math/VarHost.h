@@ -31,7 +31,7 @@ namespace math {
         : public std::enable_shared_from_this<VarHost>
     {
         using base = std::enable_shared_from_this<VarHost>;
-        using non_zero_log_t = std::map<Valuable::var_set_t, Valuable::solutions_t>;
+        using non_zero_log_t = std::map<Valuable::var_set_t, Valuable::solutions_t>; // or "known that not" equations
         non_zero_log_t nonZeroItems;
         static thread_local bool add_non_zero_mode_on;
 
@@ -61,10 +61,10 @@ namespace math {
                 LOG_AND_IMPLEMENT("wrong id type");
             }
 #endif
-                Variable v(shared_from_this());
-                v.SetId(id);
-                return v;
-            }
+            Variable v(shared_from_this());
+            v.SetId(id);
+            return v;
+        }
 
 		Variable New();
 
@@ -85,13 +85,14 @@ namespace math {
 
         template<class T = int>
         static ptr make(){
-            return ptr(static_cast<VarHost*>(new TypedVarHost<T>()));
+            return static_pointer_cast<VarHost>(std::make_shared<TypedVarHost<T>>());
         }
+
         template<class T = Valuable>
         static VarHost& Global(){
-            static auto host = make<T>();
-            return *host;
+            return TypedVarHost<T>::Global();
         }
+
         template<class T>
         static void inc(T&);
         virtual bool IsIntegerId() const = 0;
@@ -120,23 +121,29 @@ namespace math {
     /**
      * ensures variable id uniquness in a space of variables
      */
-    template<class T>
+    template<class VarIdT>
     class TypedVarHost : public VarHost
     {
-        using self_t = TypedVarHost<T>;
+        using self_t = TypedVarHost<VarIdT>;
 
-        std::set<T> varIds;
-        std::map<T, hosted_storage_t> hosted;
+        std::set<VarIdT> varIds;
+        std::map<VarIdT, hosted_storage_t> hosted;
         friend class VarHost;
-        constexpr TypedVarHost()=default;
 
     protected:
+        static ptr host;
+        static VarHost& Global() {
+            if (!host) {
+                host = make<VarIdT>();
+            }
+            return *host;
+        }
 
         void AddNewId(const void* id) override {
-            if (sizeof(void*) >= sizeof(T))
-                varIds.insert(*reinterpret_cast<T*>(reinterpret_cast<void*>(&id)));
-            else if (std::is_class<T>::value) {
-                auto varId = static_cast<const T*>(id);
+            if (sizeof(void*) >= sizeof(VarIdT))
+                varIds.insert(*reinterpret_cast<VarIdT*>(reinterpret_cast<void*>(&id)));
+            else if (std::is_class<VarIdT>::value) {
+                auto varId = static_cast<const VarIdT*>(id);
                 if (varId)
                 {
                     varIds.insert(*varId);
@@ -150,25 +157,28 @@ namespace math {
             }
         }
 
-        const T& GetId(const Variable& va) const {
+        const VarIdT& GetId(const Variable& va) const {
             auto& id = VarHost::GetId(va);
-            auto idTp = ::std::any_cast<T>(&id);
+            auto idTp = ::std::any_cast<VarIdT>(&id);
             return *idTp;
         }
 
     public:
+        constexpr TypedVarHost() = default;
 
-        static constexpr bool IsArithmeticId = std::is_integral<T>::value
-            || std::is_arithmetic<T>::value
-            || std::is_same<T, Valuable>::value
-            || std::is_same<T, Integer>::value
-            || std::is_same<boost::multiprecision::cpp_int, T>::value;
+        static constexpr bool IsArithmeticId = std::is_integral<VarIdT>::value
+            || std::is_arithmetic<VarIdT>::value
+            || std::is_same<VarIdT, Valuable>::value
+            || std::is_same<VarIdT, Integer>::value
+            || std::is_same<boost::multiprecision::cpp_int, VarIdT>::value;
+
+        ~TypedVarHost() override = default;
 
         ::std::any NewVarId() override {
 
-            T t = {};
+            VarIdT t = {};
             const auto& last = varIds.size() ? *varIds.rbegin() : t;
-            if constexpr (std::is_same<std::string, T>::value) {
+            if constexpr (std::is_same<std::string, VarIdT>::value) {
                 return self_t::NewVarId();
             } else if constexpr (IsArithmeticId) {
                 auto n = last;
@@ -193,40 +203,63 @@ namespace math {
         }
 
         bool Has(const ::std::any& id) const override {
-            IMPLEMENT
-            return varIds.find(::std::any_cast<T>(id)) != varIds.end();
+            bool hasId = {};
+            using namespace std::string_literals;
+
+            const VarIdT* idTp = ::std::any_cast<VarIdT>(&id);
+
+            auto it = hosted.end();
+            if constexpr (std::is_same<VarIdT, std::string>::value) {
+                if (!idTp) { // try other string types
+                    const std::string_view* sv = ::std::any_cast<std::string_view>(&id);
+                    if (sv) {
+                        VarIdT id(*sv);
+                        it = hosted.find(id);
+                        hasId = it != hosted.end();
+                    } else {
+                        LOG_AND_IMPLEMENT("Function VarHost::Has not implemented for std::string specialization.");
+                    }
+                }
+            }
+            else if (it == hosted.end()) {
+                const VarIdT& idT = *idTp;
+                it = hosted.find(idT);
+                hasId = it != hosted.end();
+            }
+
+            return hasId;
         }
 
         size_t Hash(const ::std::any& id) const override {
-            return std::hash<T>()(::std::any_cast<T>(id));
+            return std::hash<VarIdT>()(::std::any_cast<VarIdT>(id));
         }
 
         bool CompareIdsLess(const ::std::any& a, const ::std::any& b) const override {
-            return ::std::any_cast<T>(a) < ::std::any_cast<T>(b);
+            return ::std::any_cast<VarIdT>(a) < ::std::any_cast<VarIdT>(b);
         }
 
         bool CompareIdsEqual(const ::std::any& a, const ::std::any& b) const override {
-            auto& ca = ::std::any_cast<const T&>(a);
-            auto& cb = ::std::any_cast<const T&>(b);
+            auto& ca = ::std::any_cast<const VarIdT&>(a);
+            auto& cb = ::std::any_cast<const VarIdT&>(b);
             return ca == cb;
         }
 
         std::string_view GetName(const ::std::any& v) const override {
-            LOG_AND_IMPLEMENT("Implement TypedVarHost<" << typeid(T).name() << ">::GetName specialization");
+            LOG_AND_IMPLEMENT("Implement TypedVarHost<" << typeid(VarIdT).name() << ">::GetName specialization");
             return {};
         }
 
         hosted_storage_t& HostedStorage(const ::std::any& id) override {
             using namespace std::string_literals;
 
-            const T* idTp = ::std::any_cast<T>(&id);
+            const VarIdT* idTp = ::std::any_cast<VarIdT>(&id);
 
             auto it = hosted.end();
-            if constexpr (std::is_same<T, std::string>::value) {
+            if constexpr (std::is_same<VarIdT, std::string>::value) {
                 if (!idTp) { // try other string types
                     const std::string_view* sv = ::std::any_cast<std::string_view>(&id);
                     if (sv) {
-                        T id(*sv);
+                        VarIdT id(*sv);
                         it = hosted.find(id);
                         if (it == hosted.end()) {
                             it = hosted.emplace(id, hosted_storage_t{New(id), ""s}).first;
@@ -237,7 +270,7 @@ namespace math {
                 }
             }
             if (it == hosted.end()) {
-                const T& idT = *idTp;
+                const VarIdT& idT = *idTp;
                 it = hosted.find(idT);
                 if (it == hosted.end()) {
                     it = hosted.emplace(idT, hosted_storage_t{New(id), ""s}).first;
@@ -255,6 +288,9 @@ namespace math {
             return a_int(hosted.size());
         }
     };
+
+    template<class T>
+    VarHost::ptr TypedVarHost<T>::host = {};
 
     template<>
     void VarHost::inc<>(std::string&);
