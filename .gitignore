@@ -22,7 +22,7 @@ build*
 /CMakeSettings.json
 CMakeLists.txt.user.*
 /enc_temp_folder/
-
+/third_party/
 *.cpp.gch
 
 # Add CMake build directories to .gitignore
