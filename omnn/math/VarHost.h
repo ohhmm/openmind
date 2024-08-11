@@ -192,17 +192,28 @@ namespace math {
             return IsArithmeticId;
         }
 
-        bool Has(const ::std::any& id) const override {
-            IMPLEMENT
-            return varIds.find(::std::any_cast<T>(id)) != varIds.end();
+        bool Has(const std::any& id) const override {
+            try {
+                return varIds.find(std::any_cast<T>(id)) != varIds.end();
+            } catch (const std::bad_any_cast&) {
+                // Handle the error, e.g., log it or return a default value
+                // For now, we'll return false to indicate the id was not found
+                return false;
+            }
         }
-
-        size_t Hash(const ::std::any& id) const override {
-            return std::hash<T>()(::std::any_cast<T>(id));
+        
+        size_t Hash(const std::any& id) const override {
+            return std::hash<T>()(std::any_cast<T>(id));
         }
-
-        bool CompareIdsLess(const ::std::any& a, const ::std::any& b) const override {
-            return ::std::any_cast<T>(a) < ::std::any_cast<T>(b);
+        
+        bool CompareIdsLess(const std::any& a, const std::any& b) const override {
+            try {
+                return std::any_cast<T>(a) < std::any_cast<T>(b);
+            } catch (const std::bad_any_cast&) {
+                // Handle the error, e.g., log it or return a default value
+                // For now, we'll return false to indicate the comparison failed
+                return false;
+            }
         }
 
         bool CompareIdsEqual(const ::std::any& a, const ::std::any& b) const override {
