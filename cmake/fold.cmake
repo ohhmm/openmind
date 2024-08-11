@@ -1,8 +1,6 @@
+include(pytect)
 
 macro(check_dep_file)
-	if(NOT Python_FOUND)
-		find_package(Python)
-	endif()
 	if(Python_EXECUTABLE AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt)
 		add_custom_target(Install_${this_target}_Dependencies
 			COMMAND ${Python_EXECUTABLE} -m pip install --user -r requirements.txt

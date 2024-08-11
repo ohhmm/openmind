@@ -38,6 +38,15 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
 
+	add_custom_target(offline-rebase-origin-main-interactive
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} rebase -i --autostash origin/main
+	)
+	set_target_properties(offline-rebase-origin-main-interactive PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
+
 	add_custom_target(update
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash
