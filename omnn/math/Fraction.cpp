@@ -4,6 +4,7 @@
 #include "Fraction.h"
 #include "Infinity.h"
 #include "Integer.h"
+#include "Modulo.h"
 #include "Sum.h"
 #include "Product.h"
 #include "PrincipalSurd.h"
@@ -508,8 +509,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
 
     Valuable& Fraction::operator %=(const Valuable& v)
     {
-        Integer d(*this / v);
-		return *this -= d * v;
+        return Become(Modulo(*this, v));
     }
 
     Valuable& Fraction::operator^=(const Valuable& v)
