@@ -1,5 +1,5 @@
 include(find_local_package)
-
+include(vcpkg)
 
 function(ext_configure_args name args)
 
