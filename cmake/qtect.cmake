@@ -4,14 +4,14 @@ macro(qtect)
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
     set(CMAKE_AUTOUIC ON)
-    set(QT_COMPONENTS
-        Core
-        Gui
-        Network
-        Qml
-        CACHE STRING "Required Qt Components"
-        )
     if(NOT QT_FOUND)
+        set(QT_COMPONENTS
+            Core
+            Gui
+            Network
+            Qml
+            CACHE STRING "Required Qt Components"
+            )
         dep_find_package(Qt)
         if(NOT Qt_FOUND)
             dep_find_package(Qt6)
