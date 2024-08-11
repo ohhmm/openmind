@@ -156,7 +156,6 @@ BOOST_AUTO_TEST_CASE(Less_operator_test
                      , *disabled() // FIXME:
 ) {
     DECL_VARS(X, Y);
-    Valuable::OptimizeOff oo;
     auto Less = X.Less(Y);
     std::cout << "X<Y : " << Less << std::endl;
     for (auto x = 10; x--> -10;) {

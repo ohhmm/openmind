@@ -1151,7 +1151,7 @@ namespace omnn::math {
         } else if (getExponentiation().IsVa()) {
         } else if (getExponentiation().IsModulo()) {
         } else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT(*this << " InCommonWith " << v);
         }
         return c;
     }
