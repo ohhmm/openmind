@@ -312,10 +312,8 @@ BOOST_AUTO_TEST_CASE(Integer_FirstFactor_LastFactor_tests)
 
     // Test FirstFactor and LastFactor with number one
     Integer one = 1;
-    BOOST_TEST(one.FirstFactor() == 0); // Assuming 0 is returned for no factors
-    BOOST_TEST(one.LastFactor() == 0); // Assuming 0 is returned for no factors
-
-    // Additional tests can be added here as needed
+    BOOST_TEST(one.FirstFactor() == 1);
+    BOOST_TEST(one.LastFactor() == 1);
 }
 
 BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
