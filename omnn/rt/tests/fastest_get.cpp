@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE Fastest test
 #include <boost/test/unit_test.hpp>
 #include "fastest.hpp"
-
+#include <atomic>
 
 using namespace omnn::rt;
 
