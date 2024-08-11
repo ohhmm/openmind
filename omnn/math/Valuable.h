@@ -186,6 +186,7 @@ public:
         return Is<T>() ? as<T>() : nullptr;
     }
 
+    [[nodiscard]]
     virtual encapsulated_instance SharedFromThis();
 
     //    friend constexpr operator bool(YesNoMaybe _) { return _==YesNoMaybe::Yes; }

@@ -2,6 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Fraction.h"
+#include "Infinity.h"
 #include "Integer.h"
 #include "Sum.h"
 #include "Product.h"
@@ -126,9 +127,10 @@ namespace math {
             reoptimize_the_fraction = {};
 
             if (denominator() == numerator() && IsMultival() != YesNoMaybe::Yes) {
-                if (denominator().IsZero())
-					throw "NaN";
-                else {
+                if (denominator().IsZero()) {
+                    Become(NaN());
+                    return;
+                } else {
                     auto variable = denominator().FindVa();
                     if (variable)
                         variable->getVaHost()->LogNotZero(denominator());

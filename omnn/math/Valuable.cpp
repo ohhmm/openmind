@@ -450,7 +450,7 @@ namespace math {
             LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
 #endif
         }
-        
+
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(s.size() > 1){
             auto distinct = Distinct();
@@ -771,7 +771,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             else
                 ok = {};
         }
-		
+
         if (!ok)
         {
             Valuable sum = Sum{};
@@ -786,8 +786,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
 			};
             op_t o_sum, o_mul, o_div, o_exp;
-            op_t o_mod; 
-            op_t o_pSurd; 
+            op_t o_mod;
+            op_t o_pSurd;
             if (itIsOptimized) {
                 sum.MarkAsOptimized();
                 v.MarkAsOptimized();
@@ -1415,7 +1415,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         Valuable a = isEqual || thisMoreComplex ? *this : v.GCD(*this);
         if (thisMoreComplex) {
             Valuable b = v;
-            while (b != 0) {
+            while (!b.IsZero()) {
                 Valuable temp = b;
                 b = a % b;
                 if (b.IsModulo()) {
@@ -2035,7 +2035,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             //Integral({});
         }
     }
-	
+
 	Valuable Valuable::Gamma() const {
         if (exp)
             return exp->Gamma();
@@ -2054,7 +2054,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
         return *this;
     }
-    
+
 	Valuable Valuable::Factorial() const {
         if (exp)
             return exp->Factorial();
@@ -2616,21 +2616,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::Less(const Valuable& than) const
     {
-        if (exp)
-            return exp->Less(than);
-        else {
-            auto alreadyKnownToBeEqual = operator==(than);
-            return alreadyKnownToBeEqual
-                ? constants::one                       // any non-zero value works here
-                : Equals(than).Ifz(
-                    Equals(than + constants::one), // thouse are equal: return 'false'
-                    LessOrEqual(than)); // else, since a!=b, a<=b is applicable
-        }
+        return LessOrEqual(than) / Equals(than);
     }
 
     Valuable Valuable::LessOrEqual(const Valuable& than) const
     {
-        return Minimum(than) - *this;
+        auto lessOrEqual = Minimum(than) - *this;
+        lessOrEqual.SetView(View::Equation);
+        return lessOrEqual;
     }
 
     Valuable Valuable::GreaterOrEqual(const Valuable& than) const
@@ -2696,7 +2689,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
         // simplified to formula:
         // (Y + X -sqrt(Y^2 + X^2 -2YX))/2
-        // expressed through Abs: 
+        // expressed through Abs:
         // (Y + X -sqrt((Y-X)^2))/2 = (X+Y-|X-Y|)/2
         return ((second + *this) - (second - *this).abs()) / constants::two;
     }

@@ -98,7 +98,7 @@ namespace math {
             auto& c = GetCont();
             this->optimized = {};
             if (&item.get() == &item) {
-                item.SharedFromThis();
+                (void) item.SharedFromThis();
             }
             auto it = hint == c.end()
                 ? getit(c.emplace(std::move(item)))
