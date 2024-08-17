@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "builtin-baseline": "1de2026f28ead93ff1773e6e680387643e914ea1",
+  "name": "openmind",
+  "version": "1.0.0",
+  "description": "OpenMind",
+  "dependencies": [
+    "boost",
+    "boost-test",
+    "boost-chrono",
+    "boost-date-time",
+    "boost-filesystem",
+    "boost-iostreams",
+    "boost-locale",
+    "boost-serialization",
+    "boost-system",
+    "boost-thread",
+    "leveldb",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
