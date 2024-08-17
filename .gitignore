@@ -37,3 +37,4 @@ CMakeLists.txt.user.*
 /*/CTestTestfile.cmake
 /*/Makefile
 /*/cmake_install.cmake
+/vcpkg_installed/
