@@ -156,6 +156,13 @@ namespace math {
                 break;
 			}
 
+            if (numerator().IsFraction()) {
+                auto& num = numerator().as<Fraction>();
+                num.numerator() *= denominator();
+                Become(std::move(numerator()));
+                break;
+            }
+
             auto gcd = numerator().GCD(denominator());
             reoptimize_the_fraction = !gcd.IsZero() && gcd != 1;
             if (reoptimize_the_fraction) {
