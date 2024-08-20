@@ -41,13 +41,14 @@ auto ComputeUnitsWinner = []() -> boost::compute::device {
 #endif // OPENMIND_USE_OPENGL
                     }
                     std::cout << std::endl;
-                    //<< cu << "cu x " << widm << " = " << cu * widm
-                    if (cu > cuwinner.compute_units()
+
+                    bool betterDevice = cu > cuwinner.compute_units();
 #ifdef OPENMIND_USE_OPENGL
-                        && glSharing
+                    betterDevice = betterDevice && glSharing;
 #endif
-                    )
+                    if (betterDevice) {
                         cuwinner = d;
+                    }
                 }
             }
 
