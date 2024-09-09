@@ -1,11 +1,14 @@
+if(NOT GIT_EXECUTABLE)
+	find_package(Git QUIET)
+endif()
 
-find_package(Git QUIET)
 if(NOT GIT_EXECUTABLE AND WIN32)
 	find_program(GIT_EXECUTABLE git PATHS 
 		"$ENV{ProgramFiles}/Microsoft Visual Studio/*/*/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/Git/cmd/"
 		)
 	find_package(Git)
 endif()
+
 if(GIT_EXECUTABLE)
 	message("GIT_EXECUTABLE: ${GIT_EXECUTABLE}")
 
@@ -87,6 +90,23 @@ if(GIT_EXECUTABLE)
 			COMMAND ${GIT_EXECUTABLE} fetch --all
 		)
 		set_target_properties(force-push-openmind-develop PROPERTIES
+			EXCLUDE_FROM_ALL 1
+			EXCLUDE_FROM_DEFAULT_BUILD 1
+			FOLDER "util/git")
+	else()
+		if(WIN32)
+			set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -d $$_.Line.Trim() }")
+			add_custom_target(delete-merged-branches
+				COMMAND powershell -Command "${PS_GIT_CMD}"
+				COMMENT "Deleting branches that already are in main..."
+			)
+		else(WIN32)
+			add_custom_target(delete-merged-branches
+				COMMAND ${GIT_EXECUTABLE} branch --merged main | grep -v "^* main" | xargs -n 1 -r ${GIT_EXECUTABLE} branch -d
+				COMMENT "Deleting branches that already are in main..."
+			)
+		endif(WIN32)
+		set_target_properties(delete-merged-branches PROPERTIES
 			EXCLUDE_FROM_ALL 1
 			EXCLUDE_FROM_DEFAULT_BUILD 1
 			FOLDER "util/git")
