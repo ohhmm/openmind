@@ -2013,6 +2013,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 		}
 	}
 
+    Valuable Valuable::Tanh() const {
+        if (exp)
+            return exp->Tanh();
+        else {
+            return constants::one - constants::two / ((constants::e ^ Shl()) + constants::minus_1);
+        }
+    }
+
 	Valuable& Valuable::sq() {
         if (exp)
             return exp->sq();
@@ -2885,6 +2893,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             : operator+=(-bit(constants::zero)).operator/=(constants::two);
     }
 
+    Valuable Valuable::Shl() const
+    {
+        return exp
+            ? exp->Shl()
+            : *this * constants::two;
+    }
+
     Valuable Valuable::Shl(const Valuable& n) const
     {
         return exp && n.IsInt()
@@ -3095,7 +3110,10 @@ namespace std
     {
         return v.Sqrt();
     }
-
+    ::omnn::math::Valuable tanh(const ::omnn::math::Valuable& value)
+    {
+        return value.Tanh();
+    }
 }
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)

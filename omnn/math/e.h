@@ -21,7 +21,10 @@ namespace omnn::math {
         bool operator==(const Valuable& v) const override
         { return v.Is_e(); }
         
+        explicit
         constexpr operator double() const override { return std::numbers::e_v<double>; }
+
+        explicit
         constexpr operator long double() const override { return std::numbers::e_v<long double>; }
 
         Valuable& sq() override;
