@@ -48,6 +48,7 @@ size_t hash_value(const omnn::math::Valuable& v);
 namespace std {
 omnn::math::Valuable abs(const omnn::math::Valuable& v);
 omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
+omnn::math::Valuable tanh(const omnn::math::Valuable&);
 
 template <>
 struct hash<omnn::math::Valuable> {
@@ -388,11 +389,12 @@ public:
     virtual Valuable Sq() const;
     virtual Valuable Sign() const;
     virtual Valuable abs() const;
-	virtual Valuable Cos() const;
-	virtual Valuable Sin() const;
-	virtual Valuable Sqrt() const;
+    virtual Valuable Cos() const;
+    virtual Valuable Sin() const;
+    virtual Valuable Sqrt() const;
     virtual Valuable& sqrt();
-	virtual Valuable Tg() const;
+    virtual Valuable Tg() const;
+    virtual Valuable Tanh() const;
     virtual void gamma(); // https://en.wikipedia.org/wiki/Gamma_function
     virtual Valuable Gamma() const;
     virtual Valuable& factorial();
@@ -504,6 +506,7 @@ public:
     virtual Valuable& shl(const Valuable& n);
     virtual Valuable& shr(const Valuable& n);
     virtual Valuable& shr();
+    virtual Valuable Shl() const;
     virtual Valuable Shl(const Valuable& n) const;
     virtual Valuable Shr(const Valuable& n) const;
     virtual Valuable Shr() const;

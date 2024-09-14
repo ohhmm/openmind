@@ -98,12 +98,12 @@ if(GIT_EXECUTABLE)
 			set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -d $$_.Line.Trim() }")
 			add_custom_target(delete-merged-branches
 				COMMAND powershell -Command "${PS_GIT_CMD}"
-				COMMENT "Deleting branches that already are in main..."
+				COMMENT "Deleting branches that already are in main using powershell."
 			)
 		else(WIN32)
 			add_custom_target(delete-merged-branches
 				COMMAND ${GIT_EXECUTABLE} branch --merged main | grep -v "^* main" | xargs -n 1 -r ${GIT_EXECUTABLE} branch -d
-				COMMENT "Deleting branches that already are in main..."
+				COMMENT "Deleting branches that already are in main using bash."
 			)
 		endif(WIN32)
 		set_target_properties(delete-merged-branches PROPERTIES
