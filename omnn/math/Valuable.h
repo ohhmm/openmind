@@ -379,6 +379,7 @@ public:
                       const Variable& C = constants::integration_result_constant) const;
 
     virtual bool operator<(const Valuable&) const;
+    virtual bool operator<(double) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
