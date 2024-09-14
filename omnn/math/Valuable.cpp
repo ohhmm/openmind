@@ -1789,6 +1789,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
+    bool Valuable::operator<(double value) const {
+        if (exp) {
+            return exp->operator<(value);
+        } else {
+            return operator double() < value;
+        }
+    }
+
     bool Valuable::operator==(const Valuable& v) const
     {
         if(exp)
