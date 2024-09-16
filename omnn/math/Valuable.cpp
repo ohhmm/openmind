@@ -1967,6 +1967,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return Sq().Sqrt();
     }
 
+    Valuable Valuable::Abs() const
+    {
+        if(exp)
+            return exp->Abs();
+        else
+            return Sq().Sqrt();
+    }
+
     Valuable::View Valuable::GetView() const
     {
         return exp ? exp->GetView() : view;
@@ -2589,6 +2597,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return IntMod_Sign().sq();
 	}
 
+    Valuable Valuable::IntMod_IsNegativeOrZero() const {
+        if (exp)
+            return exp->IntMod_IsNegativeOrZero();
+        else
+            return Equals(0) || ((*this - 1) % *this).Equals(-1);
+    }
+
     Valuable Valuable::IntMod_Negative() const
 	{
         if (exp)
@@ -2652,6 +2667,24 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 			// X^2 - Y^2 - X + Y + 1
 			// which seem less valid but lets check
 	}
+
+    Valuable Valuable::NegativeOrZero() const
+    {
+        if (exp)
+            return exp->NegativeOrZero();
+        else {
+            return Equals(Minimum(constants::zero));
+        }
+    }
+
+    Valuable Valuable::Negative() const
+    {
+        if (exp)
+            return exp->Negative();
+        else {
+            return (operator-()-Abs()) / Shl();
+        }
+    }
 
     Valuable Valuable::Less(const Valuable& than) const
     {
