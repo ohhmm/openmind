@@ -71,7 +71,7 @@ macro(fetch_vcpkg)
                 RESULT_VARIABLE GIT_RESULT
             )
             if(NOT GIT_RESULT EQUAL 0)
-                message(FATAL_ERROR "Failed to clone vcpkg repository")
+                message(WARNING "Failed to clone vcpkg repository")
             endif()
         endif()
         execute_process(
