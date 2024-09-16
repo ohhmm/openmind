@@ -1,66 +1,88 @@
-
 macro(find_vcpkg)
     if(NOT EXISTS ${CMAKE_TOOLCHAIN_FILE})
         if(NOT EXISTS ${VCPKG_EXECUTABLE})
-	        find_program(VCPKG_EXECUTABLE vcpkg PATHS
-		        "$ENV{ProgramFiles}/Microsoft Visual Studio/*/*/VC/vcpkg/"
-		        "$ENV{USERPROFILE}$ENV{HOME}/vcpkg/"
-	        )
+            find_program(VCPKG_EXECUTABLE vcpkg PATHS
+                "$ENV{VCPKG_ROOT}"
+                "${VCPKG_ROOT}"
+                "$ENV{ProgramFiles}/Microsoft Visual Studio/*/*/VC/vcpkg/"
+                "$ENV{USERPROFILE}$ENV{HOME}/vcpkg/"
+                "$ENV{USERPROFILE}$ENV{HOME}/.vcpkg-clion/"
+            )
         endif()
-		if (EXISTS ${VCPKG_EXECUTABLE})
-			get_filename_component(dir ${VCPKG_EXECUTABLE} DIRECTORY)
-			set(CMAKE_TOOLCHAIN_FILE "${dir}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
-		endif ()
-        if(EXISTS ${CMAKE_TOOLCHAIN_FILE})
-            set(VCPKG_FOUND TRUE CACHE BOOL "VCPKG toolchain file found ${CMAKE_TOOLCHAIN_FILE}")
-			list(APPEND CMAKE_PROJECT_TOP_LEVEL_INCLUDES "${CMAKE_TOOLCHAIN_FILE}")
-			list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES CMAKE_PROJECT_TOP_LEVEL_INCLUDES)
+        if (EXISTS ${VCPKG_EXECUTABLE})
+            get_filename_component(VCPKG_ROOT ${VCPKG_EXECUTABLE} DIRECTORY)
+            set(VCPKG_ROOT "${VCPKG_ROOT}" CACHE PATH "Path to vcpkg installation" FORCE)
+            set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file" FORCE)
         endif()
+    endif()
+
+    if(EXISTS ${CMAKE_TOOLCHAIN_FILE})
+        set(VCPKG_FOUND TRUE CACHE BOOL "VCPKG toolchain file found ${CMAKE_TOOLCHAIN_FILE}" FORCE)
+        list(APPEND CMAKE_PROJECT_TOP_LEVEL_INCLUDES "${CMAKE_TOOLCHAIN_FILE}")
+        list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES CMAKE_PROJECT_TOP_LEVEL_INCLUDES)
+    else()
+        set(VCPKG_FOUND FALSE CACHE BOOL "VCPKG not found" FORCE)
     endif()
 endmacro()
 
 macro(fetch_vcpkg)
-	include(gitect)
-	include(FetchContent)
-	FetchContent_Populate(	VCPKG
-		GIT_REPOSITORY https://github.com/microsoft/vcpkg.git
-		GIT_TAG        703a8113f42e794534df5dfc5cece5dabcb949d0
-		SOURCE_DIR     "$ENV{USERPROFILE}$ENV{HOME}/vcpkg"
-	)
+    include(gitect)
+    include(FetchContent)
+    FetchContent_Populate(	VCPKG
+        GIT_REPOSITORY https://github.com/microsoft/vcpkg.git
+        GIT_TAG        2024.08.23
+        SOURCE_DIR     "$ENV{USERPROFILE}$ENV{HOME}/vcpkg"
+    )
 
-	# if(GIT_EXECUTABLE)
-	# 	execute_process(
-	# 		COMMAND ${GIT_EXECUTABLE} clone https://github.com/microsoft/vcpkg
-	# 			WORKING_DIRECTORY $ENV{USERPROFILE}$ENV{HOME}
-	# 		)
-	# 	execute_process(
-	# 		COMMAND ${CMAKE_COMMAND} --build .
-	# 		WORKING_DIRECTORY ${vcpkg_SOURCE_DIR}
-	# 	)
-	# endif()
+    if(GIT_EXECUTABLE)
+        set(VCPKG_ROOT "$ENV{USERPROFILE}$ENV{HOME}/vcpkg" CACHE PATH "Path to vcpkg installation")
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT}
+            RESULT_VARIABLE GIT_RESULT
+        )
+        if(NOT GIT_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed to clone vcpkg repository")
+        endif()
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E chdir ${VCPKG_ROOT} ${VCPKG_ROOT}/bootstrap-vcpkg.sh
+            RESULT_VARIABLE BOOTSTRAP_RESULT
+        )
+        if(NOT BOOTSTRAP_RESULT EQUAL 0)
+            message(WARNING "Failed to bootstrap vcpkg")
+        endif()
+        set(VCPKG_EXECUTABLE "${VCPKG_ROOT}/vcpkg" CACHE FILEPATH "Path to vcpkg executable" FORCE)
+        set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file" FORCE)
+        set(VCPKG_FOUND TRUE CACHE BOOL "VCPKG found" FORCE)
+    endif()
 endmacro()
 
 if(NOT VCPKG_FOUND)
-	find_vcpkg()
+    find_vcpkg()
 endif()
 
 option(OPENMIND_USE_VCPKG "Use vcpkg" ${VCPKG_FOUND})
 
 if(OPENMIND_USE_VCPKG)
-    if(NOT ${VCPKG_FOUND})
-		find_vcpkg()
-	endif()
-    if(NOT ${VCPKG_FOUND})
-		fetch_vcpkg()
-		find_vcpkg()
-	endif()
-    if(NOT ${VCPKG_FOUND})
-		message(FATAL_ERROR "VCPKG is required but not found")
-	endif()
-	if(VCPKG_EXECUTABLE)
-		execute_process(
-			COMMAND ${VCPKG_EXECUTABLE} install
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		)
-	endif()
-endif (OPENMIND_USE_VCPKG)
+    if(NOT VCPKG_FOUND)
+        find_vcpkg()
+        if(NOT VCPKG_FOUND)
+            fetch_vcpkg()
+            if(NOT VCPKG_FOUND)
+                find_vcpkg()
+            endif()
+        endif()
+    endif()
+    if(NOT VCPKG_FOUND)
+        message(WARNING "Vcpkg not found")
+    endif()
+    if(VCPKG_EXECUTABLE)
+        execute_process(
+            COMMAND ${VCPKG_EXECUTABLE} install
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            RESULT_VARIABLE VCPKG_RESULT
+        )
+        if(NOT VCPKG_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed to install dependencies using vcpkg")
+        endif()
+    endif()
+endif()

@@ -360,8 +360,8 @@ if(TARGET boost)
 endif()
 
 set(BOOST_LINK_LIBS
-	Boost::chrono
-	Boost::filesystem
+    Boost::chrono
+    Boost::filesystem
     Boost::serialization
     Boost::system
     )
@@ -372,16 +372,20 @@ endif()
 set(BOOST_TEST_LINK_LIBS
     ${BOOST_LINK_LIBS}
     Boost::test_exec_monitor
-	Boost::unit_test_framework
+    Boost::unit_test_framework
     )
 
 IF (Boost_FOUND)
-    message("Boost_FOUND")
-    message("Boost_DIR: ${Boost_DIR}")
-    message("Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
-    message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
-    message("Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
-    message("Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
+    message(STATUS "Boost found:")
+    message(STATUS "  Boost_DIR: ${Boost_DIR}")
+    message(STATUS "  Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
+    message(STATUS "  EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
+    message(STATUS "  Boost_LIBRARY_DIR: ${Boost_LIBRARY_DIR}")
+    message(STATUS "  Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
+    message(STATUS "  Boost_VERSION: ${Boost_VERSION}")
+    message(STATUS "  Boost_LIBRARIES: ${Boost_LIBRARIES}")
+ELSE()
+    message(WARNING "Boost not found. Build 'prerequisites' target first.")
 ENDIF()
 
 
