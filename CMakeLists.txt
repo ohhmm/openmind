@@ -236,18 +236,32 @@ elseif(OPENMIND_USE_CONAN)
 	endif()
 endif()
 
-find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-	CONFIG
-	HINTS C:/Boost
-	COMPONENTS ${BOOST_USED_COMPONENTS}
-	)
-if(NOT Boost_FOUND)
-	find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
-		CONFIG
-		HINTS C:/Boost
-		COMPONENTS ${BOOST_USED_COMPONENTS}
-		)
+find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+    COMPONENTS ${BOOST_USED_COMPONENTS}
+    REQUIRED
+)
+
+if(Boost_FOUND)
+    set(Boost_USE_DEBUG_LIBS ON)
+    set(Boost_USE_RELEASE_LIBS ON)
+    message(STATUS "Boost found: ${Boost_VERSION}")
+    message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIRS}")
+    message(STATUS "Boost library dirs: ${Boost_LIBRARY_DIRS}")
+
+    if(Boost_VERSION VERSION_LESS ${OPENMIND_PREFERRED_BOOST_VERSION})
+        message(WARNING "Found Boost version ${Boost_VERSION} is older than preferred version ${OPENMIND_PREFERRED_BOOST_VERSION}")
+    endif()
+else()
+    message(FATAL_ERROR "Boost not found. Please install Boost ${OPENMIND_REQUIRED_BOOST_VERSION} or later, or check your configuration.")
 endif()
+
+if(NOT TARGET Boost::boost)
+    add_library(Boost::boost INTERFACE IMPORTED)
+    set_target_properties(Boost::boost PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    )
+endif()
+
 add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
 
@@ -390,9 +404,29 @@ if(OPENMIND_USE_VCPKG)
 		)
 else()
 	set(BOOST_TEST_LINK_LIBS ${BOOST_LINK_LIBS}
-		Boost::test_exec_monitor
 		Boost::unit_test_framework
-		)
+    )
+endif()
+
+# Search for libboost_test_exec_monitor.a in various possible locations
+set(BOOST_TEST_EXEC_MONITOR_PATHS
+    "${Boost_LIBRARY_DIR_RELEASE}/manual-link/libboost_test_exec_monitor.a"
+    "${Boost_LIBRARY_DIR_DEBUG}/manual-link/libboost_test_exec_monitor.a"
+    "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/lib/manual-link/libboost_test_exec_monitor.a"
+    "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/debug/lib/manual-link/libboost_test_exec_monitor.a"
+)
+
+set(BOOST_TEST_EXEC_MONITOR_FOUND FALSE)
+foreach(TEST_EXEC_MONITOR_PATH ${BOOST_TEST_EXEC_MONITOR_PATHS})
+    if(EXISTS "${TEST_EXEC_MONITOR_PATH}")
+        set(BOOST_TEST_LINK_LIBS ${BOOST_TEST_LINK_LIBS} "${TEST_EXEC_MONITOR_PATH}")
+        set(BOOST_TEST_EXEC_MONITOR_FOUND TRUE)
+        break()
+    endif()
+endforeach()
+
+if(NOT BOOST_TEST_EXEC_MONITOR_FOUND)
+    message(WARNING "libboost_test_exec_monitor.a not found in any of the searched directories")
 endif()
 
 IF (Boost_FOUND)

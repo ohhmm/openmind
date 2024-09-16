@@ -1,0 +1,80 @@
+name: OpenMind CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        vcpkg_triplet: [x64-linux, x64-windows, x64-osx]
+        boost_version: [1.83.0, 1.82.0]
+        opencl: [ON, OFF]
+        include:
+          - os: ubuntu-latest
+            vcpkg_triplet: x64-linux
+          - os: windows-latest
+            vcpkg_triplet: x64-windows
+          - os: macos-latest
+            vcpkg_triplet: x64-osx
+        exclude:
+          - os: macos-latest
+            opencl: ON
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Cache vcpkg
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ github.workspace }}/vcpkg
+          !${{ github.workspace }}/vcpkg/buildtrees
+          !${{ github.workspace }}/vcpkg/packages
+          !${{ github.workspace }}/vcpkg/downloads
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}-${{ matrix.boost_version }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
+
+    - name: Install vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '3508985146f1b1d248c67ead13f8f54be5b4f5da'
+        vcpkgArguments: 'install'
+        vcpkgTriplet: ${{ matrix.vcpkg_triplet }}
+
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo add-apt-repository -y ppa:mhier/libboost-latest
+        sudo apt update
+        sudo apt install -y libboost${{ matrix.boost_version }}-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
+
+    - name: Configure CMake
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DOPENMIND_USE_VCPKG=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=${{ matrix.opencl }} -DBOOST_ROOT=${{ env.BOOST_ROOT_1_83_0 }} -G "Ninja Multi-Config"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j $(nproc)
+
+    - name: Run tests
+      working-directory: ${{github.workspace}}/build
+      run: ctest -C ${{env.BUILD_TYPE}} -j $(nproc) -E "image_codec_test|ts|Polyfit_test" --rerun-failed --output-on-failure
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts-${{ matrix.os }}-boost${{ matrix.boost_version }}-opencl${{ matrix.opencl }}
+        path: ${{github.workspace}}/build
