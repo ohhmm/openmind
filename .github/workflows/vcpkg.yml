@@ -2,6 +2,9 @@ name: Vcpkg CI
 
 on: [push]
 
+env:
+  BUILD_TYPE: Release
+
 jobs:
   build:
     strategy:
@@ -9,21 +12,29 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         config: [RelWithDebInfo]
+        vcpkg_triplet: [x64-linux, x64-windows, x64-osx]
+        boost_version: [1.83.0, 1.85.0]
+        opencl: [ON, OFF]
         include:
           - os: ubuntu-latest
             suffix: linux-x64
-            name: Linux Build
-          - os: macos-latest
-            suffix: macos-x64
-            name: macOS Build
+            vcpkg_triplet: x64-linux
           - os: windows-latest
+            suffix: macos-x64
+            vcpkg_triplet: x64-windows
+          - os: macos-latest
             suffix: windows-x64
-            name: Windows Build
+            vcpkg_triplet: x64-osx
+        exclude:
+          - os: macos-latest
+            opencl: ON
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Cache vcpkg
       uses: actions/cache@v4
@@ -34,7 +45,7 @@ jobs:
           !${{github.workspace}}/vcpkg/packages
           !${{github.workspace}}/vcpkg/downloads
           ${{ github.workspace }}/build/bin/Db*.solutions
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}-${{ matrix.boost_version }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-
 
@@ -47,10 +58,11 @@ jobs:
         command: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive
-          cmake --version
-          ninja --version
-          gcc --version
-          g++ --version
+          sudo apt install -y libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
+        cmake --version
+        ninja --version
+        gcc --version
+        g++ --version
 
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
@@ -85,13 +97,15 @@ jobs:
       with:
         vcpkgGitCommitId: 'c82f74667287d3dc386bce81e44964370c91a289'
         vcpkgJsonGlob: '**/vcpkg.json'
+        vcpkgTriplet: ${{ matrix.vcpkg_triplet }}
 
     - name: Configure CMake
       uses: nick-fields/retry@v2
       with:
         timeout_minutes: 10
         max_attempts: 3
-        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        command: |
+        cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DOPENMIND_USE_OPENCL=${{ matrix.opencl }} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install || cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DOPENMIND_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DOPENMIND_USE_OPENCL=${{ matrix.opencl }} -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
@@ -141,8 +155,8 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Release-${{ matrix.os }}-${{ matrix.config }}
-        path: release
+        name: build-${{ matrix.os }}-${{ matrix.config }}-boost${{ matrix.boost_version }}-opencl${{ matrix.opencl }}
+        path: ${{github.workspace}}/build
 
     - name: Create Changelog
       id: create_changelog
