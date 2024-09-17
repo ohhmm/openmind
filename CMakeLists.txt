@@ -42,7 +42,13 @@ endif()
 
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
 
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default to Release)" FORCE)
+if(NOT CMAKE_CONFIGURATION_TYPES)
+  # Only set CMAKE_BUILD_TYPE for single-configuration generators
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type for single-configuration generators" FORCE)
+else()
+  # For multi-configuration generators, set the available configuration types
+  set(CMAKE_CONFIGURATION_TYPES "Debug;Release;MinSizeRel;RelWithDebInfo" CACHE STRING "Configuration types" FORCE)
+endif()
 
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 	set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} CACHE PATH "hint for find_package")
