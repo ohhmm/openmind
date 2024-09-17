@@ -42,7 +42,8 @@ endif()
 
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
 
-if(NOT CMAKE_CONFIGURATION_TYPES)
+get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT ${is_multi_config})
   # Only set CMAKE_BUILD_TYPE for single-configuration generators
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type for single-configuration generators" FORCE)
 else()
