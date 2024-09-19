@@ -6,42 +6,17 @@
   "description": "OpenMind",
   "dependencies": [
     "boost",
-    {
-      "name": "boost-test",
-      "version>=": "1.85.0#1"
-    },
-    {
-      "name": "boost-chrono",
-      "version>=": "1.85.0#1"
-    },
-    {
-      "name": "boost-date-time",
-      "version>=": "1.85.0#1"
-    },
-    {
-      "name": "boost-filesystem",
-      "version>=": "1.85.0#1"
-    },
-    {
-      "name": "boost-iostreams",
-      "version>=": "1.85.0#1"
-    },
-    {
-      "name": "boost-locale",
-      "version>=": "1.85.0#1"
-    },
-    {
-      "name": "boost-serialization",
-      "version>=": "1.85.0#1"
-    },
-    {
-      "name": "boost-system",
-      "version>=": "1.85.0#1"
-    },
-    {
-      "name": "boost-thread",
-      "version>=": "1.85.0#1"
-    },
+    "boost-chrono",
+    "boost-compute",
+    "boost-date-time",
+    "boost-filesystem",
+    "boost-iostreams",
+    "boost-locale",
+    "boost-multiprecision",
+    "boost-serialization",
+    "boost-system",
+    "boost-test",
+    "boost-thread",
     "leveldb",
     {
       "name": "vcpkg-cmake",

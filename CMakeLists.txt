@@ -186,13 +186,25 @@ set(_BOOST_USED_COMPONENTS
 	system
 	thread
 	CACHE STRING "Components" FORCE)
-
+if(OPENMIND_USE_VCPKG)
+	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
+		boost
+		compute
+		multiprecision
+		CACHE STRING "Components" FORCE)
+endif(OPENMIND_USE_VCPKG)
 if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
     enable_testing()
-    set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
-        unit_test_framework
-        test_exec_monitor
-		CACHE STRING "Components" FORCE)
+	if(OPENMIND_USE_VCPKG)
+		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
+			unit_test_framework
+			CACHE STRING "Components" FORCE)
+	else(OPENMIND_USE_VCPKG)
+		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
+			unit_test_framework
+			test_exec_monitor
+			CACHE STRING "Components" FORCE)
+	endif(OPENMIND_USE_VCPKG)
 endif()
 list(REMOVE_DUPLICATES _BOOST_USED_COMPONENTS)
 set(BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS} CACHE STRING "Components" FORCE)
@@ -240,7 +252,10 @@ add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
 
 
-if(NOT Boost_FOUND AND NOT OPENMIND_USE_CONAN)
+if(NOT Boost_FOUND
+	AND NOT OPENMIND_USE_CONAN
+	AND NOT OPENMIND_USE_VCPKG
+	)
     message("Building Boost ${OPENMIND_PREFERRED_BOOST_VERSION}")
     set(OM_BUILD_BOOST True)
 else()
@@ -369,11 +384,19 @@ if(NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0)
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
         Boost::thread)
 endif()
-set(BOOST_TEST_LINK_LIBS
-    ${BOOST_LINK_LIBS}
-    Boost::test_exec_monitor
-    Boost::unit_test_framework
-    )
+if(OPENMIND_USE_VCPKG)
+	set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
+		Boost::headers
+		)
+	set(BOOST_TEST_LINK_LIBS ${BOOST_LINK_LIBS}
+		Boost::test
+		)
+else()
+	set(BOOST_TEST_LINK_LIBS ${BOOST_LINK_LIBS}
+		Boost::test_exec_monitor
+		Boost::unit_test_framework
+		)
+endif()
 
 IF (Boost_FOUND)
     message(STATUS "Boost found:")

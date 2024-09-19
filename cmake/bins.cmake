@@ -148,7 +148,7 @@ function(apply_target_commons this_target)
 			$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_STATIC_LINK>
 			$<$<CONFIG:MinSizeRel>:BOOST_ALL_STATIC_LINK>
 			)
-		if(OPENMIND_USE_CONAN)
+		if(OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
 			target_compile_definitions(${this_target} PUBLIC
 				BOOST_ALL_NO_LIB
 				)
