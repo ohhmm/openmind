@@ -11,7 +11,14 @@ if (OPENMIND_USE_VCPKG)
 else ()
     set(DEPENDENCIES boost)
     if(Boost_FOUND)
-        if(NOT MSVC OR OPENMIND_USE_CONAN)
+        if(OPENMIND_USE_VCPKG)
+            set(DEPENDENCIES ${DEPENDENCIES}
+                Boost::compute
+                Boost::headers
+                Boost::filesystem
+                Boost::multiprecision
+            )
+        elseif(NOT MSVC OR OPENMIND_USE_CONAN)
             list(APPEND DEPENDENCIES Boost::filesystem)
             if(OPENMIND_BUILD_TESTS)
                 list(APPEND DEPENDENCIES
