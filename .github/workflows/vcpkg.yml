@@ -9,6 +9,17 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         config: [RelWithDebInfo, Debug]
+        include:
+          - os: ubuntu-latest
+            suffix: linux-x64
+            name: Linux Build
+          - os: macos-latest
+            suffix: macos-x64
+            name: macOS Build
+          - os: windows-latest
+            suffix: windows-x64
+            name: Windows Build
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -72,7 +83,7 @@ jobs:
       with:
         timeout_minutes: 10
         max_attempts: 3
-        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
@@ -87,3 +98,67 @@ jobs:
     - name: Check
       working-directory: ${{github.workspace}}/build
       run: ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" --rerun-failed --output-on-failure
+
+    - name: List runtime dependencies
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          ldd ./install/bin/openmind || echo "Failed to check Linux dependencies"
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          otool -L ./install/bin/openmind || echo "Failed to check macOS dependencies"
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          # dumpbin is available after VS dev tools are set up
+          "$VCINSTALLDIR/bin/Hostx64/x64/dumpbin.exe" /dependents ./install/bin/openmind.exe || echo "Failed to check Windows dependencies"
+        fi
+
+    - name: Package
+      id: create_artifact
+      shell: bash
+      run: |
+        mkdir -p release
+        if [ ! -d "./install" ]; then
+          echo "Error: Install directory not found"
+          exit 1
+        fi
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          7z a -r openmind.zip ./install/* || exit 1
+        else
+          (cd ./install && zip -r ../openmind.zip *) || exit 1
+        fi
+        name=openmind-${{ matrix.suffix }}-$(git describe --always).zip
+        mv -v ./openmind.zip release/${name} || exit 1
+        echo "name=${name}" >> $GITHUB_OUTPUT
+        echo "path=release/${name}" >> $GITHUB_OUTPUT
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Release-${{ matrix.os }}-${{ matrix.config }}
+        path: release
+
+    - name: Create Changelog
+      id: create_changelog
+      if: startsWith(github.ref, 'refs/tags/v')
+      shell: bash
+      run: |
+        last_tag=$(git describe --tags --abbrev=0 @^ || true)
+        if [ -z "$last_tag" ]; then
+        git log --oneline --format="%C(auto) %h %s" > changelog.txt
+        else
+        git log --oneline --format="%C(auto) %h %s" ${last_tag}..@ > changelog.txt
+        fi
+        cat changelog.txt
+
+    - name: Release
+      uses: ncipollo/release-action@v1
+      if: startsWith(github.ref, 'refs/tags/v')
+      with:
+        artifacts: ${{ steps.create_artifact.outputs.path }}
+        allowUpdates: true
+        artifactContentType: application/zip
+        bodyFile: changelog.txt
+        draft: false
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        prerelease: false
+        token: ${{ secrets.GITHUB_TOKEN }}
