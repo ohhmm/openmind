@@ -1,0 +1,186 @@
+name: build
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - 'master'
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 'Windows x64'
+            os: windows-latest
+            triplet: x64-windows
+            vcpkg_dir: 'C:\vcpkg'
+            suffix: 'windows-win32'
+            generator: 'Visual Studio 17 2022'
+            arch: '-A x64'
+          - name: 'Windows x86'
+            os: windows-latest
+            triplet: x86-windows
+            vcpkg_dir: 'C:\vcpkg'
+            suffix: 'windows-win64'
+            generator: 'Visual Studio 17 2022'
+            arch: '-A Win32'
+          - name: 'Linux x64'
+            os: ubuntu-latest
+            triplet: x64-linux
+            suffix: 'linux-x86_64'
+            vcpkg_dir: '/usr/local/share/vcpkg'
+            generator: 'Unix Makefiles'
+            arch: ''
+          - name: 'Mac OSX x64'
+            os: macos-latest
+            triplet: x64-osx
+            suffix: 'osx-x86_64'
+            vcpkg_dir: '/usr/local/share/vcpkg'
+            generator: 'Unix Makefiles'
+            arch: ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+#      # Enable this if you want specific version of vcpkg
+#      # For openmind tag "2020.06"
+#      - name: Configure Vcpkg
+#        shell: bash
+#        run: |
+#          cd ${{ matrix.vcpkg_dir }}
+#          git fetch origin --tags
+#          git reset --hard 2020.06
+#          if [ "$RUNNER_OS" == "Windows" ]; then
+#            ./bootstrap-vcpkg.bat
+#          else
+#            ./bootstrap-vcpkg.sh
+#          fi
+
+      - name: Cache vcpkg
+        uses: actions/cache@v2
+        with:
+          path: '${{ matrix.vcpkg_dir }}/installed'
+          key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg.txt') }}
+          restore-keys: |
+            vcpkg-${{ matrix.triplet }}-
+
+      - name: Install vcpkg packages
+        shell: bash
+        run: |
+          vcpkg install --triplet ${{ matrix.triplet }}
+
+      - name: Configure
+        shell: bash
+        run: |
+          mkdir build
+          mkdir install
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmake \
+              -B ./build \
+              -G "${{ matrix.generator }}" ${{ matrix.arch }} \
+              -DCMAKE_INSTALL_PREFIX=./install \
+              -DCMAKE_BUILD_TYPE=MinSizeRel \
+              -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON \
+              -DCMAKE_TOOLCHAIN_FILE=${{ matrix.vcpkg_dir }}/scripts/buildsystems/vcpkg.cmake \
+              .
+          else
+            if [ "$RUNNER_OS" == "Linux" ]; then
+              export CC=/usr/bin/gcc-9
+              export CXX=/usr/bin/g++-9
+            fi
+            cmake \
+              -B ./build \
+              -G "${{ matrix.generator }}" \
+              -DCMAKE_INSTALL_PREFIX=./install \
+              -DCMAKE_BUILD_TYPE=MinSizeRel \
+              -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON \
+              -DCMAKE_TOOLCHAIN_FILE=${{ matrix.vcpkg_dir }}/scripts/buildsystems/vcpkg.cmake \
+              .
+          fi
+
+      - name: Get number of CPU cores
+        uses: SimenB/github-actions-cpu-cores@v2
+        id: cpu-cores
+
+      - name: Compile
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmake --build ./build --target INSTALL --config MinSizeRel
+          else
+            cmake --build ./build --target install --config MinSizeRel
+          fi
+
+      - name: Tests
+        shell: bash
+        run: cd build && ctest --timeout 240 -C MinSizeRel --verbose -j ${{steps.cpu-cores.outputs.count}} -E "image_codec_test|ts|Polyfit_test"
+
+      - name: List runtime dependencies
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            ldd ./install/bin/openmind
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            otool -L ./install/bin/openmind
+          fi
+
+      - name: Package
+        id: create_artifact
+        shell: bash
+        run: |
+          mkdir release
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            ls ./install
+            7z a -r openmind.zip ./install/*
+          else
+            cd ./install
+            zip -r ./../openmind.zip *
+            cd ..
+          fi
+          name=openmind-${{ matrix.suffix }}-$(git describe --always).zip
+          mv -v ./openmind.zip release/${name}
+          echo "::set-output name=name::${name}"
+          echo "::set-output name=path::release/${name}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Release
+          path: release
+
+      - name: Create Changelog
+        id: create_changelog
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          last_tag=$(git describe --tags --abbrev=0 @^ || true)
+          if [ -z "$last_tag" ]; then
+            git log --oneline --format="%C(auto) %h %s" > changelog.txt
+          else
+            git log --oneline --format="%C(auto) %h %s" ${last_tag}..@ > changelog.txt
+          fi
+          cat changelog.txt
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          artifacts: ${{ steps.create_artifact.outputs.path }}
+          allowUpdates: true
+          artifactContentType: application/zip
+          bodyFile: changelog.txt
+          draft: false
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
