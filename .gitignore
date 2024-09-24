@@ -8,7 +8,7 @@ build*
 /.cache/
 /.vs/
 /.idea/
-/cmake-build-debug
+/cmake-build-*/
 /Testing
 *.user
 .DS_Store

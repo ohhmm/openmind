@@ -1,3 +1,13 @@
+
+function(prepend_toolchain_file)
+	if(EXISTS ${CMAKE_TOOLCHAIN_FILE})
+		list(PREPEND CMAKE_PROJECT_TOP_LEVEL_INCLUDES "${CMAKE_TOOLCHAIN_FILE}")
+		set(${CMAKE_PROJECT_TOP_LEVEL_INCLUDES} "${${CMAKE_PROJECT_TOP_LEVEL_INCLUDES}}" PARENT_SCOPE)
+		list(PREPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES CMAKE_PROJECT_TOP_LEVEL_INCLUDES)
+		set(${CMAKE_TRY_COMPILE_PLATFORM_VARIABLES} "${${CMAKE_TRY_COMPILE_PLATFORM_VARIABLES}}" PARENT_SCOPE)
+	endif()
+endfunction()
+
 macro(find_vcpkg)
     if(NOT EXISTS ${CMAKE_TOOLCHAIN_FILE})
         if(NOT EXISTS ${VCPKG_EXECUTABLE})
@@ -19,8 +29,7 @@ macro(find_vcpkg)
 
     if(EXISTS ${CMAKE_TOOLCHAIN_FILE})
         set(VCPKG_FOUND TRUE CACHE BOOL "VCPKG toolchain file found ${CMAKE_TOOLCHAIN_FILE}" FORCE)
-        list(PREPEND CMAKE_PROJECT_TOP_LEVEL_INCLUDES "${CMAKE_TOOLCHAIN_FILE}")
-        list(PREPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES CMAKE_PROJECT_TOP_LEVEL_INCLUDES)
+        #prepend_toolchain_file()
     else()
         set(VCPKG_FOUND FALSE CACHE BOOL "VCPKG not found" FORCE)
     endif()
@@ -59,6 +68,8 @@ endmacro()
 
 if(NOT VCPKG_FOUND)
     find_vcpkg()
+else()
+    #prepend_toolchain_file()
 endif()
 
 option(OPENMIND_USE_VCPKG "Use vcpkg" ${VCPKG_FOUND})
@@ -75,15 +86,5 @@ if(OPENMIND_USE_VCPKG)
     endif()
     if(NOT VCPKG_FOUND)
         message(WARNING "Vcpkg not found")
-    endif()
-    if(VCPKG_EXECUTABLE)
-        execute_process(
-            COMMAND ${VCPKG_EXECUTABLE} install
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            RESULT_VARIABLE VCPKG_RESULT
-        )
-        if(NOT VCPKG_RESULT EQUAL 0)
-            message(FATAL_ERROR "Failed to install dependencies using vcpkg")
-        endif()
     endif()
 endif()
