@@ -4,20 +4,11 @@ if (OPENMIND_USE_VCPKG)
             Boost::multiprecision
             Boost::system
     )
-    if(OPENMIND_BUILD_TESTS)
-        list(APPEND DEPENDENCIES Boost::unit_test_framework)
-    endif()
 else ()
     set(DEPENDENCIES boost)
     if(Boost_FOUND)
         if(NOT MSVC OR OPENMIND_USE_CONAN)
             list(APPEND DEPENDENCIES Boost::filesystem)
-            if(OPENMIND_BUILD_TESTS)
-                list(APPEND DEPENDENCIES
-                        Boost::test_exec_monitor
-                        Boost::unit_test_framework
-                )
-            endif()
         endif()
     endif()
 endif()
