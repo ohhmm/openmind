@@ -1,0 +1,49 @@
+name: Vcpkg CI
+
+on: [push]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Cache vcpkg
+      uses: actions/cache@v2
+      with:
+        path: |
+          ${{github.workspace}}/vcpkg
+          !${{github.workspace}}/vcpkg/buildtrees
+          !${{github.workspace}}/vcpkg/packages
+          !${{github.workspace}}/vcpkg/downloads
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
+
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Setup MSVC
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install CMake and Ninja (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        choco install cmake ninja
+        cmake --version
+        ninja --version
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '3508985146f1b1d248c67ead13f8f54be5b4f5da'
+        vcpkgJsonGlob: '**/vcpkg.json'
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake || cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
