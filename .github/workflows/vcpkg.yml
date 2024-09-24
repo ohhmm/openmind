@@ -53,7 +53,15 @@ jobs:
         vcpkgJsonGlob: '**/vcpkg.json'
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DOPENMIND_BUILD_TESTS=ON
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build
+
+    - name: Get number of CPU cores
+      uses: SimenB/github-actions-cpu-cores@v2
+      id: cpu-cores
+
+    - name: Check
+      working-directory: ${{github.workspace}}/build
+      run: ctest . -j ${{steps.cpu-cores.outputs.count}} -E "image_codec_test|ts|Polyfit_test" --rerun-failed --output-on-failure
