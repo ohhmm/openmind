@@ -385,11 +385,8 @@ if(NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0)
         Boost::thread)
 endif()
 if(OPENMIND_USE_VCPKG)
-	set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
-		Boost::headers
-		)
 	set(BOOST_TEST_LINK_LIBS ${BOOST_LINK_LIBS}
-		Boost::test
+		Boost::unit_test_framework
 		)
 else()
 	set(BOOST_TEST_LINK_LIBS ${BOOST_LINK_LIBS}

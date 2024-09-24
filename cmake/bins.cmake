@@ -539,7 +539,7 @@ macro(exe)
 			${BOOST_LINK_LIBS}
 			tbb
             )
-	elseif(OPENMIND_USE_CONAN)
+	elseif(OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
 		deps(${BOOST_LINK_LIBS})
     endif()
 
