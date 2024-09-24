@@ -4,7 +4,10 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v2
@@ -21,7 +24,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-vcpkg-
 
-    - name: Install dependencies
+    - name: Install dependencies (Ubuntu)
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive
@@ -29,6 +33,18 @@ jobs:
         ninja --version
         gcc --version
         g++ --version
+
+    - name: Install dependencies (macOS)
+      if: runner.os == 'macOS'
+      env:
+        VCPKG_PYTHON3: $(which python3)
+      run: |
+        echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
+        brew update
+        brew install cmake ninja autoconf automake autoconf-archive
+        cmake --version
+        ninja --version
+        clang --version
 
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
