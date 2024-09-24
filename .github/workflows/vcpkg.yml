@@ -46,6 +46,21 @@ jobs:
         ninja --version
         clang --version
 
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Setup MSVC
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install CMake and Ninja (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        choco install cmake ninja
+        cmake --version
+        ninja --version
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
