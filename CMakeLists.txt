@@ -188,23 +188,20 @@ set(_BOOST_USED_COMPONENTS
 	CACHE STRING "Components" FORCE)
 if(OPENMIND_USE_VCPKG)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
-		boost
 		compute
 		multiprecision
 		CACHE STRING "Components" FORCE)
 endif(OPENMIND_USE_VCPKG)
 if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
     enable_testing()
-	if(OPENMIND_USE_VCPKG)
+	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
+		unit_test_framework
+		CACHE STRING "Components" FORCE)
+	if(NOT OPENMIND_USE_VCPKG)
 		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
-			unit_test_framework
-			CACHE STRING "Components" FORCE)
-	else(OPENMIND_USE_VCPKG)
-		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
-			unit_test_framework
 			test_exec_monitor
 			CACHE STRING "Components" FORCE)
-	endif(OPENMIND_USE_VCPKG)
+	endif()
 endif()
 list(REMOVE_DUPLICATES _BOOST_USED_COMPONENTS)
 set(BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS} CACHE STRING "Components" FORCE)
@@ -236,18 +233,27 @@ elseif(OPENMIND_USE_CONAN)
 	endif()
 endif()
 
-find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
-	CONFIG
-	HINTS C:/Boost
-	COMPONENTS ${BOOST_USED_COMPONENTS}
-	)
-if(NOT Boost_FOUND)
-	find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
-		CONFIG
-		HINTS C:/Boost
-		COMPONENTS ${BOOST_USED_COMPONENTS}
+if (NOT Boost_FOUND)
+	if (OPENMIND_USE_VCPKG)
+		unset(Boost_DIR CACHE)
+		unset(Boost_INCLUDE_DIR CACHE)
+		message("BOOST_USED_COMPONENTS=${BOOST_USED_COMPONENTS}")
+		find_package(Boost CONFIG REQUIRED COMPONENTS ${BOOST_USED_COMPONENTS})
+	else()
+		find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
+				CONFIG
+				HINTS C:/Boost
+				COMPONENTS ${BOOST_USED_COMPONENTS}
 		)
-endif()
+		if(NOT Boost_FOUND)
+			find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+					CONFIG
+					HINTS C:/Boost
+					COMPONENTS ${BOOST_USED_COMPONENTS}
+			)
+		endif()
+	endif ()
+endif ()
 add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
 
@@ -289,7 +295,7 @@ find_package(OpenMP)
 #   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 #endif()
 
-if (Boost_FOUND OR OPENMIND_USE_CONAN)
+if (Boost_FOUND OR OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
 	if(NOT TARGET boost)
 		add_custom_target(boost)
 	endif()
@@ -384,15 +390,18 @@ if(NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0)
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
         Boost::thread)
 endif()
+
+set(BOOST_TEST_LINK_LIBS
+	${BOOST_LINK_LIBS}
+	Boost::unit_test_framework
+)
 if(OPENMIND_USE_VCPKG)
-	set(BOOST_TEST_LINK_LIBS ${BOOST_LINK_LIBS}
-		Boost::unit_test_framework
-		)
-else()
-	set(BOOST_TEST_LINK_LIBS ${BOOST_LINK_LIBS}
-		Boost::test_exec_monitor
-		Boost::unit_test_framework
-		)
+    list(APPEND BOOST_LINK_LIBS
+        Boost::headers
+    )
+endif()
+if(NOT MSVC AND NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)
+	list(APPEND BOOST_TEST_LINK_LIBS Boost::test_exec_monitor)
 endif()
 
 IF (Boost_FOUND)
