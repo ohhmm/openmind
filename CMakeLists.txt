@@ -13,6 +13,12 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 
+# Enable vcpkg integration
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      CACHE STRING "Vcpkg toolchain file")
+endif()
+
 message("BIN_DIR=${CMAKE_BINARY_DIR}")
 message("SRC_DIR=${CMAKE_SOURCE_DIR}")
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
@@ -185,6 +191,7 @@ set(_BOOST_USED_COMPONENTS
 	serialization
 	system
 	thread
+	multiprecision
 	CACHE STRING "Components" FORCE)
 if(OPENMIND_USE_VCPKG)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
