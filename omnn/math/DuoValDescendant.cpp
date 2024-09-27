@@ -7,6 +7,7 @@
 
 #include "DuoValDescendant.h"
 #include "Product.h"
+#include "ValuableDescendantContract.h"
 
 namespace omnn::math {
 

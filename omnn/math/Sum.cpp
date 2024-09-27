@@ -31,6 +31,7 @@
 #include <stack>
 #include <thread>
 #include <type_traits>
+#include <boost/log/trivial.hpp>
 
 
 namespace omnn::math {
@@ -44,7 +45,7 @@ namespace
     CACHE(DbSumSolutionsARootCache);
     CACHE(DbSumSqCache);
 
-        
+
         // inequality should cover all cases
         auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
         {
@@ -287,17 +288,23 @@ namespace
     
     void Sum::optimize()
     {
-        if (is_optimized() || !optimizations)
-            return;
+        BOOST_LOG_TRIVIAL(info) << "Starting optimization for Sum: " << *this;
 
-        if (isOptimizing)
+        if (is_optimized() || !optimizations) {
+            BOOST_LOG_TRIVIAL(info) << "Sum is already optimized or optimizations are disabled.";
             return;
+        }
+
+        if (isOptimizing) {
+            BOOST_LOG_TRIVIAL(info) << "Sum is currently being optimized.";
+            return;
+        }
 
         OptimizationLoopDetect<Sum> antilooper(*this);
         if (antilooper.isLoopDetected()) {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-			LOG_AND_IMPLEMENT("Loop of optimizating detected in " << *this);
-#endif
+    #if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            LOG_AND_IMPLEMENT("Loop of optimizing detected in " << *this);
+    #endif
             return;
         }
 
@@ -323,7 +330,7 @@ namespace
                 Become(checkCache);
                 return;
             }
-            
+
             if (members.size() == 0) {
                 Become(0_v);
                 return;
@@ -348,10 +355,10 @@ namespace
                     continue;
                 }
                 else if (it->IsZero()) {
-					Delete(it);
-					continue;
-				} else
-					++it;
+                    Delete(it);
+                    continue;
+                } else
+                    ++it;
             }
 
             //if (isBalancing)
@@ -368,13 +375,13 @@ namespace
                     Update(it, copy);
                 else
                     ++it;
-                
+
                 if (checkCache) {
                     Become(checkCache);
                     return;
                 }
             }
-            
+
             if (IsEquation()) {
                 auto e = members.end();
                 for (auto it = members.begin(); it != e;) {
@@ -384,9 +391,9 @@ namespace
                             auto next = it;
                             ++next;
                             is = std::none_of(next, e, [this](auto& m) { return VarSurdFactor(m); });
-						}
+                        }
                         return is;
-					};
+                    };
                     if (it->IsPrincipalSurd()) {
                         if (SurdIsReducable(it)) {
                             auto ps = Extract(it);
@@ -412,10 +419,10 @@ namespace
                             }
                             else {
                                 ++it;
-							}
+                            }
                         } else {
-							break;
-						}
+                            break;
+                        }
                     }
                     else
                         ++it;
@@ -434,12 +441,12 @@ namespace
                     }
                 }
             }
-            
+
             if (checkCache) {
                 Become(checkCache);
                 return;
             }
-            
+
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->IsSum()) {
@@ -450,36 +457,36 @@ namespace
                     Delete(it);
                     continue;
                 }
-                
+
                 auto it2 = it;
                 ++it2;
                 Valuable c = *it;
                 Valuable mc, inc;
-                
+
                 auto up = [&](){
                     mc = -c;
                 };
 
                 up();
-                
+
                 auto comVaEq = [&]() {
                     auto& ccv = c.getCommonVars();
                     auto ccvsz = ccv.size();
                     auto& itcv = it2->getCommonVars();
                     auto itcvsz = itcv.size();
                     return ccvsz
-                        && ccvsz == itcvsz 
+                        && ccvsz == itcvsz
                         && std::equal(//TODO:std::execution::par,
                             ccv.cbegin(), ccv.cend(), itcv.cbegin());
                 };
-                
+
                 for (; it2 != members.end();)
                 {
                     if (checkCache) {
                         Become(checkCache);
                         return;
                     }
-                    
+
                     if(c.IsSum()){
                         break;
                     }
@@ -510,7 +517,7 @@ namespace
                     else if(it2->Same(mc))
                     {
                         c = constants::zero;
-                        Delete(it2);
+                        Delete(it);
                         up();
                     }
                     else if ((inc = it2->InCommonWith(c)) != constants::one
@@ -552,37 +559,37 @@ namespace
                     return;
                 }
                 auto copy = *it;
-                
+
                 if (checkCache) {
                     Become(checkCache);
                     return;
                 }
                 copy.optimize();
-                
+
                 if (checkCache) {
                     Become(checkCache);
                     return;
                 }
-                
+
                 if (!it->Same(copy)) {
                     Update(it, copy);
                 }
                 else
                     ++it;
             }
-            
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-//            if (w!=*this) {
-//                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
-//            }
-#endif
+
+    #if !defined(NDEBUG) && !defined(NOOMDEBUG)
+    //            if (w!=*this) {
+    //                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
+    //            }
+    #endif
         } while (w != *this);
 
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+    #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (size() == 1) {
             LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << s << " to " << *this);
         }
-#endif
+    #endif
 
         if (isBalancing)
             balance();

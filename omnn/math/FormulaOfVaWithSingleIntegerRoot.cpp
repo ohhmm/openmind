@@ -7,6 +7,7 @@
 #include "Product.h"
 #include "Sum.h"
 #include <list>
+#include <boost/log/trivial.hpp>
 
 namespace omnn {
 namespace math {
@@ -16,11 +17,14 @@ namespace math {
     {
         Valuable singleIntegerRoot;
         bool haveMin = false;
+        BOOST_LOG_TRIVIAL(info) << "Before optimizing _";
         _.optimize();
+        BOOST_LOG_TRIVIAL(info) << "After optimizing _";
         if (!_.IsSum()) {
+            BOOST_LOG_TRIVIAL(error) << "Not a sum, implementation needed";
             IMPLEMENT
         }
-        
+
         std::vector<Valuable> coefficients;
 
         //auto isMultival = IsMultival()== Valuable::YesNoMaybe::Yes;
@@ -29,8 +33,10 @@ namespace math {
         if (g<3)
         {
             solutions_t solutions;
+            BOOST_LOG_TRIVIAL(info) << "Before solving sum";
             sum.solve(getVa(), solutions, coefficients, g);
-            
+            BOOST_LOG_TRIVIAL(info) << "After solving sum, solutions size: " << solutions.size();
+
             if(solutions.size() == 1)
             {
                 singleIntegerRoot = std::move(*solutions.begin());
@@ -38,26 +44,30 @@ namespace math {
             }
             else if(solutions.size())
                 IMPLEMENT
-                
+
         }
-        
+
         auto fx = [&](auto& x) {
             auto t = _;
             t.Eval(getVa(), x);
             t.optimize();
             return t;
         };
-        
-        auto knowNoZ = !(min.IsMInfinity() || max.IsInfinity()) ? fx(min)*fx(max) > 0 : 0; // strictly saying this may mean >1
+
+        BOOST_LOG_TRIVIAL(info) << "Before evaluating fx(min) and fx(max)";
+        auto knowNoZ = !(min.IsMInfinity() || max.IsInfinity()) ? fx(min)*fx(max) > 0 : 0;
+        BOOST_LOG_TRIVIAL(info) << "After evaluating fx(min) and fx(max), knowNoZ: " << knowNoZ;
         if (sum.size() > 2) {
             auto dx = _;
-
+            BOOST_LOG_TRIVIAL(info) << "Before differentiating dx";
             while (dx.as<Sum>().size()>2) {
                 dx.d(getVa());
             }
-            
+            BOOST_LOG_TRIVIAL(info) << "After differentiating dx";
+
             auto solution = dx.Solutions(getVa());
             if (solution.size() != 1) {
+                BOOST_LOG_TRIVIAL(error) << "Multiple solutions, implementation needed";
                 IMPLEMENT
             } else {
                 auto s = *solution.begin();
@@ -68,7 +78,7 @@ namespace math {
                 }
             }
         }
-        
+
         Valuable closest;
         auto closestY = fx(closest);
         auto finder = [&](const Integer* i) -> bool
@@ -78,7 +88,7 @@ namespace math {
                 c.optimize();
             auto cdx = c;
             cdx.d(getVa());
-            
+
             auto nwtn = c / cdx;
             auto& seq = getVaSequenceForOp();
             FormulaOfVaWithSingleIntegerRoot f(getVa(), cdx, &seq);
@@ -89,10 +99,9 @@ namespace math {
                 auto _ = c;
                 _.Eval(getVa(), i);
                 _.optimize();
-                
+
                 bool found = _.IsZero();
                 if (found) {
-//                    std::cout << "found " << i << std::endl;
                     singleIntegerRoot = i;
                 }
                 else
@@ -102,7 +111,7 @@ namespace math {
                     d_.Eval(getVa(), i);
                     d_.optimize();
 //                    std::cout << "trying " << i << " got " << _ << " f'(" << i << ")=" << d_ << std::endl;
-                    
+
 //                    if (mode == Newton && i!=0)
 //                    {
 //                        auto newton = i - _/d_; //_ - i / d_;
@@ -115,7 +124,7 @@ namespace math {
 //                        }
 //                        return  test(newton);
 //                    }
-                    
+
                     if(!haveMin || std::abs(_) < std::abs(closestY)) {
                         closest = i;
                         closestY = _;
@@ -131,13 +140,12 @@ namespace math {
                 }
                 return found;
             };
-            return i->Factorization(test, max
-//                                    ,zz
-                                    );
+            return i->Factorization(test, max);
         };
 
         auto freeMember = sum.begin()->IsExponentiation() ? *sum.rbegin() : _.calcFreeMember();
         if (freeMember.IsFraction()) {
+            BOOST_LOG_TRIVIAL(error) << "Free member is a fraction, implementation needed";
             IMPLEMENT
         } else if (!freeMember.IsInt()) {
             freeMember = 0_v;
@@ -145,11 +153,13 @@ namespace math {
         if(!freeMember.IsInt())
             IMPLEMENT
         auto& i = freeMember.as<Integer>();
-        
+
         if(mode!=Strict && haveMin)
             return closest;
 
+        BOOST_LOG_TRIVIAL(info) << "Before calling finder";
         if (finder(&i)) {
+            BOOST_LOG_TRIVIAL(info) << "Finder succeeded, singleIntegerRoot: " << singleIntegerRoot;
             return singleIntegerRoot;
         } else if (!min.IsMInfinity() && !max.IsInfinity()){
             for (auto i = min; i <= max; ++i) {
@@ -163,10 +173,11 @@ namespace math {
             }
             return closest;
         }
-        
+
+        BOOST_LOG_TRIVIAL(error) << "Implementation needed at the end of Solve method";
         IMPLEMENT
     }
-    
+
     std::ostream& FormulaOfVaWithSingleIntegerRoot::print(std::ostream& out) const
     {
         return out << "f(" << getVa() << ") = solve(" << getEx() << ")(x,y)";
