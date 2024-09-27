@@ -41,6 +41,10 @@ Compilation:
 
     sudo dnf install -y git-gui cmake-gui clang boost-devel boost-static leveldb-devel libxcb-devel libX11-devel libXScrnSaver-devel ocl-icd-devel
 
+  Vcpkg:
+
+    cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=path-to/vcpkg/scripts/buildsystems/vcpkg.cmake
+
   Windows VSCode:
 
     ![Screenshot](build.png)
