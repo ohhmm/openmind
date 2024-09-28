@@ -16,6 +16,7 @@ jobs:
       uses: lukka/run-vcpkg@v7
       with:
         vcpkgGitCommitId: 3508985146f1b1d248c67ead13f8f54be5b4f5da
+        vcpkgArguments: boost:x64-windows boost-multiprecision:x64-windows
     - name: Install Boost with vcpkg
       run: |
         vcpkg install boost:x64-windows boost-multiprecision:x64-windows
