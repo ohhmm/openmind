@@ -2707,7 +2707,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         // Create a vars_cont_t map with the initial value
         vars_cont_t variables;
-        variables[Variable("x")] = initialValue;  // Assuming 'x' as the variable name
+        variables["x"_va] = initialValue;  // Assuming 'x' as the variable name
         // Apply the lambda using the Eval function with the variables map
         return lambda.Eval(variables);
     }
