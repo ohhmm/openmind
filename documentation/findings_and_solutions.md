@@ -10,7 +10,7 @@ During the analysis of the GitHub Actions run, the following issues were identif
 
 ## Solutions
 To resolve the missing Boost header issue, the following solutions are proposed:
-- **Update CMakeLists.txt**: The `CMakeLists.txt` file was updated to include the `multiprecision` component in the `find_package` command for Boost. This ensures that all necessary Boost components are specified and available during the build process. Additionally, the Vcpkg configuration was reviewed to ensure Boost is correctly installed. Further investigation is needed to ensure the correct paths are set for Boost in the Windows environment.
+- **Update CMakeLists.txt**: The `CMakeLists.txt` file should be reviewed to ensure the `multiprecision` component is correctly specified in the `find_package` command for Boost. This ensures that all necessary Boost components are specified and available during the build process. Additionally, the Vcpkg configuration should be reviewed to ensure Boost is correctly installed. Further investigation is needed to ensure the correct paths are set for Boost in the Windows environment. Consider using the `vcpkg` command to install the `boost-multiprecision` package if it is not already included.
 - **Investigate Command Line Warning**: The command line warning D9025 should be further investigated to ensure it does not impact the build process. This may involve reviewing the compiler flags and ensuring they are set correctly. Adjustments to the CMake configuration may be necessary to resolve this warning.
 
 ## Conclusion
