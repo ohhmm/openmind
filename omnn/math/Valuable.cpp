@@ -2705,8 +2705,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
-        // Directly apply the lambda to the initial value
-        return lambda.Eval(initialValue);
+        // Create a vars_cont_t map with the initial value
+        vars_cont_t variables;
+        variables[Variable("x")] = initialValue;  // Assuming 'x' as the variable name
+        // Apply the lambda using the Eval function with the variables map
+        return lambda.Eval(variables);
     }
 
     Valuable Valuable::MustBeInt() const {
