@@ -188,9 +188,14 @@ set(_BOOST_USED_COMPONENTS
 	CACHE STRING "Components" FORCE)
 if(OPENMIND_USE_VCPKG)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
-		compute
-		multiprecision
-		CACHE STRING "Components" FORCE)
+			headers
+			multiprecision
+			CACHE STRING "Components" FORCE)
+	if(OPENMIND_USE_OPENCL AND OpenCL_FOUND)
+		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
+			compute
+			CACHE STRING "Components" FORCE)
+	endif ()
 endif(OPENMIND_USE_VCPKG)
 if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
     enable_testing()
