@@ -240,7 +240,7 @@ function(test)
 	message("test_libs ${test_libs}")
 	set(libs ${test_libs} ${TEST_DEPS})#pthread
 	if(Boost_FOUND)
-		if(NOT MSVC OR OPENMIND_USE_CONAN)
+		if(NOT MSVC OR OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
 			set(libs ${libs} ${BOOST_TEST_LINK_LIBS})
 		endif()
 	endif()

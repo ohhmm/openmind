@@ -190,6 +190,11 @@ set(_BOOST_USED_COMPONENTS
 	thread
 	CACHE STRING "Components" FORCE)
 if(OPENMIND_USE_VCPKG)
+#	set(Boost_USE_STATIC_LIBS        ON)
+#	set(Boost_USE_DEBUG_LIBS        OFF)
+#	set(Boost_USE_RELEASE_LIBS       ON)
+#	set(Boost_USE_MULTITHREADED      ON)
+#	set(Boost_USE_STATIC_RUNTIME     ON)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 		compute
 		multiprecision
