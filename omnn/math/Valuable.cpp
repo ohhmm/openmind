@@ -2705,10 +2705,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
-        std::function<Valuable(const Valuable&)> wrappedLambda = [&lambda](const Valuable& value) {
-            return lambda.Eval(value);
-        };
-        return wrappedLambda(initialValue);
+        // Directly apply the lambda to the initial value
+        return lambda.Eval(initialValue);
     }
 
     Valuable Valuable::MustBeInt() const {
