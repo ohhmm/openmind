@@ -7,9 +7,11 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
     option(OPENMIND_MATH_CACHE_VOLATILE "Clean cache each start (for debugging purposes)" ${OPENMIND_STORAGE_VOLATILE})
 endif(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
 
-lib(storage)
-
-add_library(OpenMind::math ALIAS math)
+set(DEPENDENCIES storage)
+if(WIN32 AND OPENMIND_USE_VCPKG)
+	list(APPEND DEPENDENCIES bcrypt) # workaround boost-uuid vcpkg bug
+endif()
+lib(${DEPENDENCIES})
 
 if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
 	if(OPENMIND_MATH_USE_LEVELDB_CACHE)
@@ -25,3 +27,5 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
         target_compile_definitions(${this_target} PUBLIC ALLOW_CACHE_UPGRADE)
     endif()
 endif()
+
+#add_library(OpenMind::math ALIAS math)
