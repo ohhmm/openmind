@@ -52,6 +52,25 @@ else()
   endif()
 endif()
 
+list(APPEND CMAKE_MODULE_PATH
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
+	"${CMAKE_BINARY_DIR}/lib/cmake"
+	"${CMAKE_SOURCE_DIR}/cmake"
+)
+if(OPENMIND_USE_CONAN)
+	list(PREPEND CMAKE_MODULE_PATH
+		"${CMAKE_CURRENT_SOURCE_DIR}"
+		"${CMAKE_CURRENT_BINARY_DIR}"
+	)
+	list(APPEND CMAKE_PREFIX_PATH ${CMAKE_MODULE_PATH})
+endif()
+
+include(bins)
+
+message("address_model: ${address_model}")
+
+
 if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 	set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} CACHE PATH "hint for find_package")
 	set(_IS_DEBUG TRUE)
@@ -77,25 +96,7 @@ else()
 		endif()
 	endif()
 endif()
-
 set(OPENMIND_PRIME_TABLE_OPTIONS Boost Bundled)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
-	"${CMAKE_BINARY_DIR}/lib/cmake"
-	"${CMAKE_SOURCE_DIR}/cmake"
-	)
-if(OPENMIND_USE_CONAN)
-	set(CMAKE_MODULE_PATH
-		"${CMAKE_CURRENT_SOURCE_DIR}"
-		"${CMAKE_CURRENT_BINARY_DIR}"
-		${CMAKE_MODULE_PATH}
-		)
-	set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_MODULE_PATH})
-endif()
-include(bins)
-message("address_model: ${address_model}")
 
 if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 	set(initTestsEnabled ON)
@@ -192,6 +193,7 @@ if(OPENMIND_USE_VCPKG)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 		compute
 		multiprecision
+		uuid
 		CACHE STRING "Components" FORCE)
 endif(OPENMIND_USE_VCPKG)
 if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
