@@ -453,6 +453,7 @@ namespace math {
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(s.size() > 1){
+            OptimizeOn oo;
             auto distinct = Distinct();
             if (distinct != s) {
                 std::stringstream ss;
@@ -2103,7 +2104,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->reciprocal();
         else {
-            return Become(Exponentiation{std::move(*this), constants::minus_1});
+            return Become(Exponentiation{Move(), constants::minus_1});
         }
     }
 
