@@ -895,8 +895,8 @@ namespace math {
         }
         else if (v.IsExponentiation())
         {
-            auto& e = v.as<Exponentiation>();
-            auto& vExpBase = e.getBase();
+            auto& exponentiation = v.as<Exponentiation>();
+            auto& vExpBase = exponentiation.getBase();
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->IsExponentiation() &&
@@ -907,7 +907,7 @@ namespace math {
                 }
                 else if (vExpBase == *it)
                 {
-                    Update(it, vExpBase ^ (e.getExponentiation() + 1));
+                    Update(it, vExpBase ^ (exponentiation.getExponentiation() + 1));
                     goto yes;
                 }
                 else
