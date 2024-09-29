@@ -25,6 +25,7 @@ if(GIT_EXECUTABLE)
 	add_custom_target(rebase-main
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(rebase-main PROPERTIES
 		EXCLUDE_FROM_ALL 1
@@ -114,7 +115,7 @@ if(GIT_EXECUTABLE)
 
 	add_custom_target(push-to-develop
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD:develop
+		COMMAND ${GIT_EXECUTABLE} push origin HEAD:develop || ${GIT_EXECUTABLE} push origin HEAD:refs/heads/develop
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(push-to-develop PROPERTIES
@@ -122,9 +123,19 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
 
+	add_custom_target(force-push-head
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} push -f
+		COMMAND ${GIT_EXECUTABLE} fetch --all
+	)
+	set_target_properties(force-push-head PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
+
 	add_custom_target(force-push-head-to-develop
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD:develop -f
+		COMMAND ${GIT_EXECUTABLE} push origin HEAD:develop -f || ${GIT_EXECUTABLE} push origin HEAD:refs/heads/develop
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(force-push-head-to-develop PROPERTIES
@@ -134,7 +145,7 @@ if(GIT_EXECUTABLE)
 
 	add_custom_target(force-push-head1-to-develop
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD~1:develop -f
+		COMMAND ${GIT_EXECUTABLE} push origin HEAD~1:develop -f || ${GIT_EXECUTABLE} push origin HEAD~1:refs/heads/develop
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(force-push-head1-to-develop PROPERTIES
@@ -144,7 +155,7 @@ if(GIT_EXECUTABLE)
 
 	add_custom_target(force-push-head2-to-develop
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD~2:develop -f
+		COMMAND ${GIT_EXECUTABLE} push origin HEAD~2:develop -f || ${GIT_EXECUTABLE} push origin HEAD~2:refs/heads/develop
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(force-push-head2-to-develop PROPERTIES
@@ -154,7 +165,7 @@ if(GIT_EXECUTABLE)
 
 	add_custom_target(force-push-head3-to-develop
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD~3:develop -f
+		COMMAND ${GIT_EXECUTABLE} push origin HEAD~3:develop -f || ${GIT_EXECUTABLE} push origin HEAD~3:refs/heads/develop
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(force-push-head3-to-develop PROPERTIES
