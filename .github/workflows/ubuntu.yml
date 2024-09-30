@@ -15,6 +15,7 @@ jobs:
         path: |
           /var/cache/apt
           /var/lib/apt/lists
+          ${{ github.workspace }}/build/bin/Db*.solutions
         key: ${{ runner.os }}-apt-${{ hashFiles('**/ubuntu.yml') }}
         restore-keys: |
           ${{ runner.os }}-apt-

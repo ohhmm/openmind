@@ -27,7 +27,7 @@ jobs:
           pip install conan && conan profile detect
 
           echo "[requires]" > ${{github.workspace}}/conanfile.txt
-          echo boost/1.84.0 >> ${{github.workspace}}/conanfile.txt
+          echo boost/1.86.0 >> ${{github.workspace}}/conanfile.txt
           echo leveldb/1.23 >> ${{github.workspace}}/conanfile.txt
 
           echo "[generators]" >> ${{github.workspace}}/conanfile.txt
