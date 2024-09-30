@@ -1,8 +1,15 @@
 #pragma once
 #if __has_include(<execution>)
 #include <execution>
+#define SEQ std::execution::seq,
+#define PAR std::execution::par,
 #elif __has_include(<experimental/execution>)
 #include <experimental/execution>
+#define SEQ std::execution::seq,
+#define PAR std::execution::par,
+#else
+#define SEQ
+#define PAR
 #endif
 
 #include "tasq.h"
@@ -15,7 +22,7 @@ void peach(T&& c, F&& f) {
     auto b = std::begin(c), e = std::end(c);
     std::for_each(
 #ifndef __APPLE__
-        std::execution::par,
+        PAR
 #endif
         b, e, f);
 #endif

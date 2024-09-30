@@ -13,8 +13,13 @@
 #include "pi.h"
 #include "PrincipalSurd.h"
 #include "VarHost.h"
+
+#include <rt/antiloop.hpp>
+
 #include <type_traits>
+
 #include <boost/multiprecision/cpp_int.hpp>
+
 
 namespace omnn{
 namespace math {
@@ -253,13 +258,7 @@ namespace math {
         if (!optimizations || optimized)
             return;
         MarkAsOptimized();
-        OptimizationLoopDetect<Product> antilooper(*this);
-        if (antilooper.isLoopDetected()) {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            LOG_AND_IMPLEMENT("Loop of optimizating detected in " << *this);
-#endif
-            return;
-        }
+        ANTILOOP(Product)
 
         auto isPlusMinus = YesNoMaybe::Maybe;
         auto IsPlusMinus = [&] {

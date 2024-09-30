@@ -10,6 +10,9 @@
 #include "PrincipalSurd.h"
 #include "i.h"
 #include "VarHost.h"
+
+#include <rt/antiloop.hpp>
+
 #include <utility>
 
 #include <boost/lexical_cast.hpp>
@@ -116,13 +119,7 @@ namespace math {
             return;
         }
 
-        OptimizationLoopDetect<Fraction> antilooper(*this);
-        if (antilooper.isLoopDetected()) {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            LOG_AND_IMPLEMENT("Loop of optimizating detected in " << *this);
-#endif
-            return;
-        }
+        ANTILOOP(Fraction)
 
         bool reoptimize_the_fraction;
         do {
