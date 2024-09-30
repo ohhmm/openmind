@@ -10,6 +10,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: ilammy/msvc-dev-cmd@v1
+    - name: Cache Boost dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ github.workspace }}/build/conan
+          ${{ github.workspace }}/build/CMakeFiles
+        key: ${{ runner.os }}-boost-${{ hashFiles('**/conanfile.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-boost-
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Use Conan
