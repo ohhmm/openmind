@@ -136,9 +136,7 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test
 }
 
 BOOST_AUTO_TEST_CASE(Sum_tests) {
-    DECL_VA(v1);
-    DECL_VA(v2);
-    DECL_VA(v3);
+    DECL_VARS(v1, v2, v3);
 
     auto _1 = (v1 + -1) * v1;
     auto _2 = (v1 ^ 2) + -1 * v1;
@@ -252,6 +250,14 @@ BOOST_AUTO_TEST_CASE(Sum_tests) {
     t.Eval(z, 4);
     t.optimize();
     BOOST_TEST(t == 0);
+}
+
+BOOST_AUTO_TEST_CASE(Sum_optimization_tests) {
+    DECL_VARS(v1, v2, v3);
+    auto value = (((v3 + -255) ^ 2) + ((v2 + 0) ^ 2) + ((v1 + -1) ^ 2)) *
+                 (((v3 + -255) ^ 2) + ((v2 + -1) ^ 2) + ((v1 + 0) ^ 2)) *
+                 (((v3 - 255) ^ 2) + ((v2 + -1) ^ 2) + ((v1 + -1) ^ 2));
+    value.optimize();
 }
 
 BOOST_AUTO_TEST_CASE(Sum_advanced_tests

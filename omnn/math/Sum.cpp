@@ -27,6 +27,7 @@
 #include <functional>
 #include <future>
 #include <map>
+#include <numeric>
 #include <stack>
 #include <thread>
 #include <type_traits>
@@ -218,6 +219,14 @@ namespace
     }
 
     Valuable Sum::GCDofMembers() const {
+        if (!is_optimized() && !isOptimizing) {
+            OptimizeOn on;
+            Valuable copy(Clone());
+            copy.optimize();
+            return copy.IsSum()
+                ? copy.as<Sum>().GCDofMembers()
+                : std::move(copy);
+        }
         auto b = members.begin();
         auto e = members.end();
         auto it = b;
@@ -228,6 +237,12 @@ namespace
             : b->GCD(*++it);
         if (size() > 1) {
             for (; gcd != constants::one && it != e; ++it) {
+                if (it->IsZero()) {
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+                    LOG_AND_IMPLEMENT("FIXME: GCD of members of non-optimized sums causes lesser GCD values: " << *this);
+#endif
+                    continue;
+                }
                 bool processed = false;
                 if (it->IsPrincipalSurd()) {
                     auto& surd = it->as<PrincipalSurd>();
@@ -247,7 +262,7 @@ namespace
                     }
                 }
                 if (!processed) {
-                    gcd = boost::gcd(gcd, it->varless());
+                    gcd.gcd(it->varless());
                 }
             }
         }
