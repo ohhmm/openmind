@@ -16,6 +16,7 @@ jobs:
         path: |
           ${{ github.workspace }}/build/conan
           ${{ github.workspace }}/build/CMakeFiles
+          C:/Boost
         key: ${{ runner.os }}-boost-${{ hashFiles('**/conanfile.txt') }}
         restore-keys: |
           ${{ runner.os }}-boost-
