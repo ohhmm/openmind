@@ -703,28 +703,6 @@ template <const double I>
 const Valuable vf<I>::val = I;
 #endif
 
-template <typename ValueT>
-class OptimizationLoopDetect {
-    static thread_local std::unordered_set<ValueT> LoopDetectionStack;
-    bool isLoop;
-    const ValueT* value;
-
-public:
-    OptimizationLoopDetect(const ValueT& value) {
-        auto emplaced = LoopDetectionStack.emplace(value);
-        this->value = &*emplaced.first;
-        isLoop = !emplaced.second;
-    }
-
-    ~OptimizationLoopDetect() {
-        if (!isLoop)
-            LoopDetectionStack.erase(*value);
-    }
-
-    auto isLoopDetected() const { return isLoop; }
-};
-template <typename ValueT>
-thread_local std::unordered_set<ValueT> OptimizationLoopDetect<ValueT>::LoopDetectionStack;
 
 } // namespace math
 } // namespace omnn

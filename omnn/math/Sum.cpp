@@ -16,15 +16,14 @@
 #include "VarHost.h"
 #include "Cache.h"
 
-#include "rt/cl.h"
+#include <rt/antiloop.hpp>
+#include <rt/cl.h>
+#include <rt/each.hpp>
 
 //TODO:
 //import std;
 #include <algorithm>
 #include <cmath>
-#if __has_include(<execution>)
-#include <execution>
-#endif
 #include <functional>
 #include <future>
 #include <map>
@@ -151,7 +150,7 @@ namespace
             if (members.size() > Thr)
                 it = std::find(
 #ifndef __APPLE__
-                               std::execution::par,
+                               PAR
 #endif
                                members.begin(), members.end(), item);
             else
@@ -293,13 +292,7 @@ namespace
         if (isOptimizing)
             return;
 
-        OptimizationLoopDetect<Sum> antilooper(*this);
-        if (antilooper.isLoopDetected()) {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-			LOG_AND_IMPLEMENT("Loop of optimizating detected in " << *this);
-#endif
-            return;
-        }
+        ANTILOOP(Sum)
 
         Optimizing o(*this);
 
