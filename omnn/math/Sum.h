@@ -59,6 +59,15 @@ protected:
 	constexpr cont& GetCont() override { return members; }
 	std::ostream& print(std::ostream& out) const override;
     
+    [[nodiscard]]
+    MSVC_CONSTEXPR
+    Sum* Clone() const override
+    {
+        auto sum = new Sum(*CPtr());
+        sum->isOptimizing = {};
+        return sum;
+    }
+
 	template <typename T>
 	const Sum::iterator SumAddImpl(T&& item, const iterator hint);
 
