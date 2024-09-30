@@ -362,6 +362,7 @@ namespace math {
                 ++it;
         }
 
+        const Valuable was(Clone());
         do
         {
             updated = {};
@@ -414,7 +415,7 @@ namespace math {
                     ++it;
                 }
             }
-        } while (updated);
+        } while (updated && !Same(was));
         
         // fraction optimizations
         auto f = GetFirstOccurence<Fraction>();
