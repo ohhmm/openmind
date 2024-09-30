@@ -16,6 +16,7 @@ jobs:
         path: |
           ${{ github.workspace }}/build/CMakeFiles
           C:/Boost
+          ${{ github.workspace }}/build/bin/Db*.solutions
         key: ${{ runner.os }}-boost-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-boost-
@@ -30,6 +31,7 @@ jobs:
 
     - name: Install prerequisites
       run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
+
     - name: Reconfigure to detect newly installed prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake .

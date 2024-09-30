@@ -20,6 +20,7 @@ jobs:
           !${{github.workspace}}/vcpkg/buildtrees
           !${{github.workspace}}/vcpkg/packages
           !${{github.workspace}}/vcpkg/downloads
+          ${{ github.workspace }}/build/bin/Db*.solutions
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-
