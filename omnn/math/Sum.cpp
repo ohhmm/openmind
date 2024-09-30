@@ -254,6 +254,14 @@ namespace
         return gcd;
     }
 
+    Valuable Sum::GCDofCoefficients(const Variable& va) const {
+        auto coefficients = Coefficients(va);
+        auto beg = std::begin(coefficients);
+        auto& init = coefficients.size() > 0 ? *beg++ : constants::zero;
+        return std::reduce(beg, coefficients.end(), init,
+            [](auto _1st, auto _2nd) { return _1st.GCD(_2nd); });
+    }
+
     Valuable Sum::GCD(const Valuable& v) const {
         if (v.IsInt())
             return v.GCD(GCDofMembers()); 
@@ -1486,6 +1494,12 @@ namespace
         return grade;
     }
     
+    std::vector<Valuable> Sum::Coefficients(const Variable& va) const {
+        std::vector<Valuable> coefficients;
+        auto grade = FillPolyCoeff(coefficients, va);
+        return coefficients;
+    }
+
     Valuable Sum::operator()(const Variable& va, const Valuable& augmentation) const
     {
         solutions_t solutions;

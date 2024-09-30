@@ -78,6 +78,7 @@ public:
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable GCDofMembers() const;
+    Valuable GCDofCoefficients(const Variable&) const;
     Valuable LCMofMemberFractionDenominators() const;
     Valuable GCD(const Valuable& v) const override;
 
@@ -126,6 +127,7 @@ public:
     bool IsBinomial() const;
     bool IsPolynomial(const Variable&) const override;
     size_t FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const;
+    std::vector<Valuable> Coefficients(const Variable&) const;
     Formula FormulaOfVa(const Variable& v) const;
 
     bool SumIfSimplifiable(const Valuable& v) override;
