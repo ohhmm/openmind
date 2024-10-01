@@ -77,6 +77,9 @@ namespace math {
             return reinterpret_cast<Chld*>(this);
         }
 
+        [[nodiscard]]
+        NO_APPLE_CONSTEXPR auto& Ref() noexcept { return *Ptr(); }
+
         NO_CLANG_CONSTEXPR Valuable* Clone() const override
         {
             return new Chld(*CPtr());
@@ -130,6 +133,12 @@ namespace math {
             auto ptr = std::make_shared<Chld>(std::move(as<Chld>()));
             exp = std::static_pointer_cast<Valuable>(ptr);
             return exp;
+        }
+
+        Chld& Reset() {
+            OptimizeOff off;
+            Become(Chld());
+            return Ref();
         }
     };
 }
