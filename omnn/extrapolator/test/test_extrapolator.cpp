@@ -98,9 +98,7 @@ BOOST_AUTO_TEST_CASE(Extrapolator_test
     //BOOST_TEST(e.Consistent());
 }
 
-BOOST_AUTO_TEST_CASE(ViewMatrix_test
-    , *disabled()
-)
+BOOST_AUTO_TEST_CASE(ViewMatrix_test)
 {
     Extrapolator e {{ {1, 2},
         {3, 4} }};
