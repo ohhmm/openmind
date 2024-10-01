@@ -1864,6 +1864,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
+    std::function<Valuable()> Valuable::CompileIntoLambda(const std::initializer_list<const Variable&>& params) const {
+        if (exp)
+            return exp->CompileIntoLambda(params);
+        else
+            IMPLEMENT
+    }
+
     std::string Valuable::OpenCLuint() const {
         return OpenCL("uint"sv);
     }

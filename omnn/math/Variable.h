@@ -12,7 +12,7 @@
 namespace omnn{
 namespace math {
 
-namespace any = std;
+namespace any = ::std;
 
 class VarHost;
 
