@@ -646,7 +646,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             boost::replace_all(_2, "+-", "-");
             same = _1 == _2;
         }
-        while (!same && _1.front() == '(' && _1.back() == ')' && (_2.front() != '(' || _2.back() != ')')) {
+        while (!same && !_1.empty()
+            &&  _1.front() == '(' && _1.back() == ')'
+            && (_2.front() != '(' || _2.back() != ')')
+            )
+        {
             _1 = _1.substr(1, _1.length() - 2);
             same = _1 == _2;
         }
@@ -661,7 +665,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             same = m1 == m2;
         }
 
-        while (!same && _1.front() == '(' && _1.back() == ')') {
+        while (!same && !_1.empty() && _1.front() == '(' && _1.back() == ')') {
             auto _1len = _1.length();
             auto _2len = _2.length();
             auto diff = _1len - _2len;
@@ -692,11 +696,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             std::cout << "SerializedStrEqual: " << _ << " != " << s << std::endl
                       << _1 << "\n !=\n"
                       << _2 << std::endl;
-            Valuable v(s, getVaHost(), is_optimized());
-            same = operator==(v);
-            if(same) {
-				std::cout << " operator==(" << s << ") == true" << std::endl;
-			}
+            if (!_1.empty()) {
+                Valuable v(s, getVaHost(), is_optimized());
+                same = operator==(v);
+                if (same) {
+                    std::cout << " operator==(" << s << ") == true" << std::endl;
+                }
+            }
         }
 #endif // !NDEBUG
     }
