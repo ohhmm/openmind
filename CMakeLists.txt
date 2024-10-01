@@ -37,7 +37,7 @@ if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
 endif()
 
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
-    message(FATAL_ERROR "CMake build should be run in a separate 'build' directory. Please create a 'build' directory and run 'cmake ..' from there.")
+    message(WARNING "CMake build should be run in a separate 'build' directory. Please create a 'build' directory and run 'cmake ..' from there.")
 endif()
 
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
@@ -394,7 +394,10 @@ set(BOOST_LINK_LIBS
     Boost::serialization
     Boost::system
     )
-if(NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0)
+if(NOT MSVC
+	OR Boost_VERSION VERSION_LESS 1.80.0
+	OR OPENMIND_USE_CONAN
+)
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
         Boost::thread)
 endif()

@@ -6,7 +6,6 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB)
     option(OPENMIND_STORAGE_ALLOW_UPGRADE "Update optimized cached values during fetch if new optimizations applied" ON)
     option(OPENMIND_STORAGE_VOLATILE "Clean cache each start (for debugging purposes)" OFF)
 
-
 	if(OPENMIND_STORAGE_LEVELDB)
 		find_package(Threads) # workaround leveldb config bug
 		list(APPEND DEPENDENCIES google/leveldb)
@@ -16,13 +15,8 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB)
 	endif()
 
 	if(OPENMIND_STORAGE_FOUNDATIONDB)
-		add_definitions(-DOPENMIND_STORAGE_FOUNDATIONDB)
 		list(APPEND DEPENDENCIES ohhmm/FoundationDB)
 	endif()
-
-	if(OPENMIND_STORAGE_ALLOW_UPGRADE)
-        add_definitions(-DALLOW_UPGRADE)
-    endif()
 
 endif(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB)
 
@@ -30,4 +24,10 @@ lib(${DEPENDENCIES})
 
 if(OPENMIND_STORAGE_LEVELDB)
 	target_compile_definitions(${this_target} PUBLIC OPENMIND_STORAGE_LEVELDB)
+endif()
+if(OPENMIND_STORAGE_FOUNDATIONDB)
+	target_compile_definitions(${this_target} PUBLIC OPENMIND_STORAGE_FOUNDATIONDB)
+endif()
+if(OPENMIND_STORAGE_ALLOW_UPGRADE)
+	target_compile_definitions(${this_target} PUBLIC ALLOW_UPGRADE OPENMIND_STORAGE_ALLOW_UPGRADE)
 endif()
