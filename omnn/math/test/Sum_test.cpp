@@ -26,15 +26,22 @@ void ohashes(const Valuable& v)
     }
 }
 
-BOOST_AUTO_TEST_CASE(SumCopy_test
-    , *disabled()
-) {
-    Sum s;
-    s += 1;
-    s += 2;
-    s += 3;
-    auto s2 = s;
-    BOOST_TEST(s == s2);
+BOOST_AUTO_TEST_CASE(SumCopy_test) {
+    Sum sum;
+    Valuable::OptimizeOff off; // ensure sum type not polimorphed into Integer
+    sum += 1; // Whence optimizations on, Sum just became Integer (polymorphic typisation in action)
+    sum += 2;
+    sum += 3;
+
+    Valuable s1 = sum; // Wraps morphed objects
+    BOOST_TEST(sum == s1);
+    BOOST_TEST(s1 == sum);
+
+    auto s2 = sum; // If optimizations on, Sum::operator= called passing Integer& instead of Sum&
+    BOOST_TEST(sum == s2);
+    BOOST_TEST(s2 == sum);
+
+    // sum.Reset(); // otherwise ~Sum would called on Integer object for optimizations on
 }
 
 BOOST_AUTO_TEST_CASE(SumOrderComparator_test
