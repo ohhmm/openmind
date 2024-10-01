@@ -238,7 +238,7 @@ function(test)
 	message("\nCreating Tests for ${parent_target}")
 	glob_source_files()
 	message("test_libs ${test_libs}")
-	set(libs ${test_libs} ${TEST_DEPS})#pthread
+	set(libs ${test_libs} ${TEST_DEPS})
 	if(Boost_FOUND)
 		if(NOT MSVC OR OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
 			set(libs ${libs} ${BOOST_TEST_LINK_LIBS})

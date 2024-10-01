@@ -157,9 +157,9 @@ public:
         Solving = 36, // Equation | 32
     };
 
-	friend std::ostream& operator<<(std::ostream& os, View v) {
-		return os << static_cast<uint8_t>(v);
-	}
+    friend std::ostream& operator<<(std::ostream& os, View v) {
+	return os << static_cast<uint8_t>(v);
+    }
 
     friend constexpr View operator&(View a, View b) {
         return View(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
@@ -652,6 +652,7 @@ public:
     virtual std::wstring save(const std::wstring&) const;
 
 	virtual std::ostream& code(std::ostream& out) const;
+    virtual std::function<Valuable()> CompileIntoLambda(const std::initializer_list<const Variable&>&) const;
     std::string OpenCL(const std::string_view& TypeName = "float") const;
     std::string OpenCLuint() const;
     va_names_t OpenCLparamVarNames() const;
