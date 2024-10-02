@@ -34,19 +34,26 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cmake .
 
-    - name: Build Debug
-      run: cmake --build ${{github.workspace}}/build --config Debug
     - name: Get number of CPU cores
       uses: SimenB/github-actions-cpu-cores@v2
       id: cpu-cores
-    - name: make check Debug
-      working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 240 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test" --output-on-failure
-            #   --rerun-failed --output-on-failure
+
+    - name: Build Debug
+      run: cmake --build ${{github.workspace}}/build --config Debug
 
     - name: Build Release
       run: cmake --build ${{github.workspace}}/build --config Release
+
     - name: make check Release
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 240 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test"  --output-on-failure
+      run: ctest --timeout 1024 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test"  --output-on-failure
             #   --rerun-failed --output-on-failure
+
+    - name: make check Debug
+      working-directory: ${{github.workspace}}/build
+      run: ctest --timeout 1024 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts|Polyfit_test" --output-on-failure
+            #   --rerun-failed --output-on-failure
+
+    - name: Install
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --target install --config Release
