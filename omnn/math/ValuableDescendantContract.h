@@ -32,12 +32,11 @@ namespace math {
         //void expand() override { }
         Valuable Sqrt() const override;
 
-        bool IsComesBefore(const Valuable& v) const override
-        {
-            return *this > v;
-        }
+        universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const override;
+
+        bool IsComesBefore(const Valuable& v) const override;
         
-        void Values(const std::function<bool(const Valuable&)> &fun) const override;
+        void Values(const std::function<bool(const Valuable&)> &) const override;
 
         Valuable Univariate() const override;
     };
