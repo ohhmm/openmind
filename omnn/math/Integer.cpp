@@ -367,6 +367,11 @@ namespace math {
         return Integer(~arbitrary);
     }
     
+    bool Integer::IsPositivePowerOf2() const {
+        return arbitrary > 0
+            && (arbitrary & (arbitrary - 1)) == 0;
+    }
+
     std::pair<Valuable,Valuable> Integer::GreatestCommonExp(const Valuable &e) const {
         // test : 50_v.GCE(2) == 5_v
         //        32_v.GCE(2) == 4_v
@@ -376,19 +381,27 @@ namespace math {
 
         auto xFactors = Facts();
         std::sort(xFactors.begin(), xFactors.end());
-        while(xFactors.size() > 1) {
+        while(xFactors.size() > 3) { // <3 is Prime (0,1,self)
             auto&& xFactor = std::move(xFactors.back());
-            if(xFactor > constants::one) {
-                if(e == constants::two){
-                    Valuable v = boost::multiprecision::sqrt(xFactor.ca());
-                    if ((v ^ e) == xFactor)
-                        return {std::move(v), std::move(xFactor)};
+            if(xFactor > constants::one)
+            {
+                if(e.IsInt() && e.as<Integer>().IsPositivePowerOf2())
+                {
+                    auto value = xFactor.ca();
+                    for (auto power = e; power > constants::one; ) {
+                        power.shr();
+                        value = boost::multiprecision::sqrt(value);
+                    }
+                    if ((value ^ e) == xFactor)
+                        return {std::move(value), std::move(xFactor)};
                 } else if (e < constants::zero) {
                     auto me = -e;
                     LOG_AND_IMPLEMENT(arbitrary << " GreatestCommonExp " << e);
                 } else {
                     IMPLEMENT
-//                    auto v = boost::multiprecision::pow(xFactor, 1/e);
+                    // auto v = boost::multiprecision::pow(boost::multiprecision::cpp_rational(xFactor.ca(),1), boost::multiprecision::cpp_rational{1, e.ca()});
+                    // if ((v ^ e) == xFactor)
+                    //     return {std::move(v), std::move(xFactor)};
                 }
             }
             xFactors.pop_back();
