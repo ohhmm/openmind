@@ -61,5 +61,13 @@ Valuable ValuableDescendantBase::Sqrt() const {
     LOG_AND_IMPLEMENT("Implement Sqrt method for " << *this);
 }
 
+bool ValuableDescendantBase::IsComesBefore(const Valuable& v) const {
+    return *this > v;
+}
+
+Valuable::universal_lambda_t ValuableDescendantBase::CompileIntoLambda(variables_for_lambda_t) const {
+    LOG_AND_IMPLEMENT("Implement CompileIntoLambda: " << *this);
+}
+
 } // namespace math
 } // namespace omnn

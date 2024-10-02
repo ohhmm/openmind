@@ -651,8 +651,11 @@ public:
     std::wstring wstr() const;
     virtual std::wstring save(const std::wstring&) const;
 
+    using variables_for_lambda_t = const std::initializer_list<const Variable&>&; // passed recoursively, should be ref
+    using universal_lambda_params_t = const std::initializer_list<const Valuable&>&;
+    using universal_lambda_t = std::function<Valuable(universal_lambda_params_t)>;
+    virtual universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const;
 	virtual std::ostream& code(std::ostream& out) const;
-    virtual std::function<Valuable()> CompileIntoLambda(const std::initializer_list<const Variable&>&) const;
     std::string OpenCL(const std::string_view& TypeName = "float") const;
     std::string OpenCLuint() const;
     va_names_t OpenCLparamVarNames() const;

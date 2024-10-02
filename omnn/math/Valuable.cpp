@@ -1878,9 +1878,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    std::function<Valuable()> Valuable::CompileIntoLambda(const std::initializer_list<const Variable&>& params) const {
+    Valuable::universal_lambda_t Valuable::CompileIntoLambda(variables_for_lambda_t variablesOfParams) const {
         if (exp)
-            return exp->CompileIntoLambda(params);
+            return exp->CompileIntoLambda(variablesOfParams);
         else
             IMPLEMENT
     }
