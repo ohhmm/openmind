@@ -759,7 +759,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             if (found == std::string::npos)
             {
                 exp = std::make_shared<Integer>(s);
-            }
+            } else if (s.size() > found + 1 && s[found] == 'r'
+                && std::all_of(s.begin(), s.begin() + found, [](auto ch) { return std::isdigit(ch); })
+                && std::all_of(s.begin() + found + 1, s.end(), [](auto ch) { return std::isdigit(ch); })
+                )
+                exp = std::make_shared<PrincipalSurd>(
+                    Integer(a_int(s.substr(found+1))),
+                    Integer(a_int(s.substr(0, found))));
             else if (s[0] == 'v' && s.size() > 1 && h->IsIntegerId()
                 && std::all_of(s.begin() + 1, s.end(),
 					[](auto ch) { return std::isdigit(ch); }
@@ -773,7 +779,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 && s.find_first_not_of("0123456789ABCDEFabcdef", 2) == std::string::npos
                 )
                 Become(Integer(s));
-            else if(std::all_of(s.begin(), s.end(), [](auto c){return std::isalnum(c);}))
+            else if (!isdigit(s[0])
+                && std::all_of(s.begin(), s.end(), [](auto c) { return std::isalnum(c); })
+                )
                 Become(Valuable(h->Host(s)));
             else
                 ok = {};
