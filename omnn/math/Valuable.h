@@ -655,7 +655,17 @@ public:
     using universal_lambda_params_t = const std::initializer_list<const Valuable&>&;
     using universal_lambda_t = std::function<Valuable(universal_lambda_params_t)>;
     virtual universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const;
-	virtual std::ostream& code(std::ostream& out) const;
+
+    template <typename... Fwd>
+        requires (std::derived_from<Fwd, ::omnn::math::Variable> &&...)
+    auto CompiLambda(Fwd&& ...variables) const {
+        auto lambda = CompileIntoLambda(std::forward<Fwd>(variables)...);
+        return [=](auto... args) {
+            return lambda(args...);
+        };
+    }
+
+    virtual std::ostream& code(std::ostream& out) const;
     std::string OpenCL(const std::string_view& TypeName = "float") const;
     std::string OpenCLuint() const;
     va_names_t OpenCLparamVarNames() const;
