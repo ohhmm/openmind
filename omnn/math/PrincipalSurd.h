@@ -52,6 +52,8 @@ public:
 
     std::ostream& code(std::ostream&) const override;
 
+    static constexpr auto GetBinaryOperationLambdaTemplate();
+
     explicit operator double() const override;
     explicit operator long double() const override;
 

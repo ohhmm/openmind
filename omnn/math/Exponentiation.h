@@ -31,6 +31,8 @@ public:
         InitVars();
     }
 
+    static constexpr auto GetBinaryOperationLambdaTemplate();
+
     bool IsExponentiation() const override { return true; }
     bool IsVaExp() const override { return ebase().IsVa(); }
     bool IsSimple() const override {

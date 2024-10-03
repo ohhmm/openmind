@@ -14,7 +14,16 @@ namespace omnn::math {
 	std::ostream& PrintCodeVal(std::ostream&, const Valuable&);
     Valuable Multiply(const Valuable&, const Valuable&);
 
+    template <typename Type>
+    concept BinaryOperationLambdaTemplateRequirement = requires(Type object) {
+        decltype(object)::GetBinaryOperationLambdaTemplate();
+        { decltype(object)::GetBinaryOperationLambdaTemplate()(constants::one, constants::one) } -> std::same_as<Valuable>;
+        { decltype(object)::GetBinaryOperationLambdaTemplate()(1, 1) } -> std::same_as<int>;
+        { decltype(object)::GetBinaryOperationLambdaTemplate()(1., 1.) } -> std::same_as<float>;
+    };
+
     template <class Chld>
+       //requires BinaryOperationLambdaTemplateRequirement<Chld>
     class DuoValDescendant
             : public ValuableDescendantContract<Chld>
     {

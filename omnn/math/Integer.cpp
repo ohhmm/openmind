@@ -367,7 +367,7 @@ namespace math {
         return Integer(~arbitrary);
     }
     
-    bool Integer::IsPositivePowerOf2() const {
+    constexpr bool Integer::IsPositivePowerOf2() const {
         return arbitrary > 0
             && (arbitrary & (arbitrary - 1)) == 0;
     }

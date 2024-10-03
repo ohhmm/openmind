@@ -63,7 +63,7 @@ public:
     }
 
     Valuable FirstFactor() const override;
-    bool IsPositivePowerOf2() const;
+    constexpr bool IsPositivePowerOf2() const;
     explicit operator int64_t() const;
 
     bool IsInt() const override { return true; }

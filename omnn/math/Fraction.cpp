@@ -617,6 +617,13 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         }
         return out;
     }
+
+    constexpr auto Fraction::GetBinaryOperationLambdaTemplate() {
+        return [](const auto& numerator, const auto& denominator) {
+            return numerator / denominator;
+        };
+    }
+
     const Valuable::vars_cont_t& Fraction::getCommonVars() const
     {
         vars = numerator().getCommonVars();
