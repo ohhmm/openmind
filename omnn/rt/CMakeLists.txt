@@ -1,6 +1,7 @@
 
 if (OPENMIND_USE_VCPKG)
     set(DEPENDENCIES
+            Boost::headers
             Boost::filesystem
             Boost::multiprecision
             Boost::system
