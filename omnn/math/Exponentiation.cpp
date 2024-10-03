@@ -972,6 +972,12 @@ namespace omnn::math {
         return out;
     }
     
+    constexpr auto Exponentiation::GetBinaryOperationLambdaTemplate() {
+        return [](const auto& base, const auto& exp) {
+            return ::std::pow(base, exp);
+        };
+    }
+
     bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
         auto mve = getMaxVaExp();

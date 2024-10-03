@@ -16,6 +16,12 @@ namespace math {
 		return out;
 	}
 
+	constexpr auto Logarithm::GetBinaryOperationLambdaTemplate() {
+        return [](const auto& base, const auto& target) {
+			return ::std::log(target) / ::std::log(base);
+		};
+	}
+
 	void Logarithm::optimize()
 	{
 		

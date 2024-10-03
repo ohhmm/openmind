@@ -27,7 +27,9 @@ public:
     std::ostream& print_sign(std::ostream& out) const override;
     std::ostream& code_sign(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override;
-    
+
+    static constexpr auto GetBinaryOperationLambdaTemplate();
+
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
     
     void optimize() override;

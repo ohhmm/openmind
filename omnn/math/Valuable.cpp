@@ -3136,6 +3136,11 @@ namespace std
     {
         return value.Tanh();
     }
+
+    ::omnn::math::Valuable pow(const ::omnn::math::Valuable& base, const ::omnn::math::Valuable& exp)
+    {
+        return base ^ exp;
+    }
 }
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)

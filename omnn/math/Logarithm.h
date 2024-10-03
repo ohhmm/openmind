@@ -32,6 +32,8 @@ public:
         //InitVars();
     }
 
+    static constexpr auto GetBinaryOperationLambdaTemplate();
+
     bool IsLogarithm() const override { return true; }
     void optimize() override;
 

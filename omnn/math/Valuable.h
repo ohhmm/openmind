@@ -47,6 +47,7 @@ size_t hash_value(const omnn::math::Valuable& v);
 
 namespace std {
 omnn::math::Valuable abs(const omnn::math::Valuable& v);
+omnn::math::Valuable pow(const omnn::math::Valuable&, const omnn::math::Valuable&);
 omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
 omnn::math::Valuable tanh(const omnn::math::Valuable&);
 
