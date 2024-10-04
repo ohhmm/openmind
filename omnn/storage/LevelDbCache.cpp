@@ -10,9 +10,10 @@
 using namespace omnn::rt::storage; 
 
 
-LevelDbCache::LevelDbCache(const std::string_view &path)
+LevelDbCache::LevelDbCache(const std::string_view& path)
+	: name(path)
 {
-    auto _status = leveldb::DB::Open(GetDbConnectionOptions(), static_cast<const std::string>(path), &_db);
+    auto _status = leveldb::DB::Open(GetDbConnectionOptions(), name, &_db);
 	if (!_status.ok())
 		throw std::runtime_error(_status.ToString());
 }

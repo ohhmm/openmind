@@ -1091,6 +1091,7 @@ namespace math {
         for(auto& m: members){
             memberSignsProduct.Add(m.Sign());
         }
+        OptimizeOn on;
         Valuable sign(std::move(memberSignsProduct));
         sign.optimize();
         return sign;
@@ -1107,8 +1108,12 @@ namespace math {
     }
 
     bool Product::operator<(const Valuable& v) const{
+        auto beg = begin();
+        if (members.size() == 1) {
+            return beg->operator<(v);
+        }
         // Bool is; // TODO: Implement Bool type which stores either bool or Valuable that calculates the bool when it is not yet deducible
-        auto noVars = std::all_of(begin(), end(), [&](auto& m){
+        auto noVars = std::all_of(beg, end(), [&](auto& m){
             return m.FindVa() == nullptr;
         });
         auto isLess = noVars;

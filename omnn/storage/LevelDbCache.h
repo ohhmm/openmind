@@ -13,6 +13,7 @@ class LevelDbCache
     : public CacheBase
 {
     leveldb::DB* _db = nullptr;
+    const std::string name;
 
 public:
     LevelDbCache(const std::string_view& path);
