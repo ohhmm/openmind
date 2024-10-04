@@ -651,8 +651,8 @@ public:
     std::wstring wstr() const;
     virtual std::wstring save(const std::wstring&) const;
 
-    using variables_for_lambda_t = const std::initializer_list<const Variable&>&; // passed recoursively, should be ref
-    using universal_lambda_params_t = const std::initializer_list<const Valuable&>&;
+    using variables_for_lambda_t = const std::initializer_list<const Variable>&; // passed recoursively, should be ref
+    using universal_lambda_params_t = const std::initializer_list<const Valuable>&;
     using universal_lambda_t = std::function<Valuable(universal_lambda_params_t)>;
     virtual universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const;
 
