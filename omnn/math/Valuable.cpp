@@ -503,6 +503,7 @@ constexpr std::string_view& Trim(std::string_view& s) {
     return s;
 }
 
+[[nodiscard]]
 auto OmitOuterBrackets(std::string_view& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
@@ -519,9 +520,14 @@ auto OmitOuterBrackets(std::string_view& s) {
     return bracketsmap;
 }
 
-std::string Solid(std::string s) {
-    s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
-    return s;
+[[nodiscard]]
+std::string Solid(std::string str) {
+    str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+    return str;
+}
+[[nodiscard]]
+std::string Solid(const std::string_view& str) {
+    return Solid(std::string(str));
 }
 
 } // namespace
@@ -531,7 +537,7 @@ struct HashStrOmitOuterBrackets
 {
     [[nodiscard]] size_t operator()(const std::string_view& s) const {
         auto str = s;
-        OmitOuterBrackets(str);
+        (void) OmitOuterBrackets(str);
         return std::hash<std::string_view>::operator()(str);
     }
 };
@@ -596,22 +602,24 @@ public:
 
     ~StateProxyComparator() { state = val; }
 
-    [[nodiscard]] bool operator()(const std::string_view& str1, const std::string_view& str2) const {
+    [[nodiscard]]
+    bool operator()(const std::string_view& str1, const std::string_view& str2) const {
         auto s = val->str();
         if (s != str1) {
             if (s == str2) {
                 return val->SerializedStrEqual(str1);
             } else {
                 auto s1 = str1;
-                OmitOuterBrackets(s1);
+                (void) OmitOuterBrackets(s1);
                 auto s2 = str2;
-                OmitOuterBrackets(s2);
+                (void) OmitOuterBrackets(s2);
                 return s1 == s2;
             }
         } else
             return val->SerializedStrEqual(str2);
     }
 
+    [[nodiscard]]
     auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
         return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
     }
@@ -709,9 +717,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     return same;
 }
 
-	namespace {
-	constexpr char SupportedOps[] = " */%+-^()";
-	}
+    namespace {
+        constexpr char SupportedOps[] = " */%+-^()";
+    }
     Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
 	) {
         auto l = s.length();
