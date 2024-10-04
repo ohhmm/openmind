@@ -95,7 +95,7 @@ Valuable& MInfinity::operator *=(const Valuable& v)
     else if (v < constants::zero)
         Become(Infinity());
     else if (v.IsZero())
-        IMPLEMENT
+        Become(NaN());
     return *this;
 }
 

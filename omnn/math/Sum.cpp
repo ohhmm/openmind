@@ -50,6 +50,7 @@ namespace
         {
 			using namespace std;
             static type_index order[] = {
+                typeid(NaN),
                 typeid(MInfinity),
                 typeid(Sum),
                 typeid(Product),

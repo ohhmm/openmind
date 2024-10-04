@@ -89,7 +89,7 @@ namespace omnn::math {
     thread_local bool Valuable::bit_operation_optimizations = {};
     thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
 
-
+//    [[noreturn]]
     Valuable implement(const char* str)
     {
         std::cerr << str << std::endl;
