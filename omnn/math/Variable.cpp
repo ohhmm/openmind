@@ -198,12 +198,12 @@ namespace math {
 
     bool Variable::operator ==(const Valuable& v) const
     {
-		return v.IsVa()
-			&& operator==(v.as<Variable>());
-	}
+        return v.IsVa()
+            && operator==(v.as<Variable>());
+    }
 
-	bool Variable::operator==(const Variable& v) const
-	{
+    bool Variable::operator==(const Variable& v) const
+    {
         if (varSetHost != v.varSetHost) {
             throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
         }
@@ -215,7 +215,24 @@ namespace math {
     {
         return varSetHost->print(out, varId);
     }
-    
+
+    Valuable::universal_lambda_t Variable::CompileIntoLambda(variables_for_lambda_t variables) const
+    {
+        auto beg = std::begin(variables);
+        auto end = std::end(variables);
+        auto it = std::find(beg, end, *this);
+        if(it == end) {
+            return [ref=std::cref(varSetHost->Host(varId))](universal_lambda_params_t) {
+                return ref.get();
+            };
+        } else {
+            auto idx = it - beg;
+            return [idx](universal_lambda_params_t params) {
+                return *(std::begin(params) + idx);
+            };
+        }
+    }
+
     bool Variable::IsComesBefore(const Valuable& v) const
     {
         auto mve = getMaxVaExp();
