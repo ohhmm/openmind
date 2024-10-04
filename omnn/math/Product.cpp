@@ -805,7 +805,11 @@ namespace math {
            }
        } else if (v.IsSimple()) {
        } else if (v.IsModulo()) {
-       } else if (v.IsSum() || v.IsPrincipalSurd()) {
+       } else if (v.IsSum()
+               || v.IsPrincipalSurd()
+               || v.IsNaN()
+                 )
+       {
            is = v.IsSummationSimplifiable(*this);
        } else if (v.IsProduct()
                   || v.IsVa()
@@ -1110,7 +1114,11 @@ namespace math {
     }
 
     bool Product::operator<(const Product& v) const {
-        LOG_AND_IMPLEMENT(*this << "   <   " << v);
+        auto gcd = GCD(v);
+        if (gcd == constants::one) {
+            LOG_AND_IMPLEMENT(*this << "   <   " << v);
+        }
+        return *this / gcd < v / gcd;
     }
 
     bool Product::operator<(const Valuable& v) const{

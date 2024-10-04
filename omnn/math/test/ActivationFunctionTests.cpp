@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE TestRelu test
+#define BOOST_TEST_MODULE ActivationFunctionTests test
 #include <boost/test/unit_test.hpp>
 
 #include <omnn/math/pi.h>
