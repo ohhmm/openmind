@@ -47,6 +47,7 @@ size_t hash_value(const omnn::math::Valuable& v);
 
 namespace std {
 omnn::math::Valuable abs(const omnn::math::Valuable& v);
+omnn::math::Valuable log(const omnn::math::Valuable&);
 omnn::math::Valuable pow(const omnn::math::Valuable&, const omnn::math::Valuable&);
 omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
 omnn::math::Valuable tanh(const omnn::math::Valuable&);
@@ -658,9 +659,11 @@ public:
     virtual universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const;
 
     template <typename... Fwd>
-        requires (std::derived_from<Fwd, ::omnn::math::Variable> &&...)
+        requires((std::same_as<std::remove_cvref_t<Fwd>, ::omnn::math::Variable> ||
+                  std::derived_from<std::remove_cvref_t<Fwd>, ::omnn::math::Variable>) &&
+                 ...) 
     auto CompiLambda(Fwd&& ...variables) const {
-        auto lambda = CompileIntoLambda(std::forward<Fwd>(variables)...);
+        auto lambda = CompileIntoLambda(variables_for_lambda_t{std::forward<Fwd>(variables)...});
         return [=](auto... args) {
             return lambda(args...);
         };

@@ -28,7 +28,11 @@ public:
     std::ostream& code_sign(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override;
 
-    static constexpr auto GetBinaryOperationLambdaTemplate();
+    static constexpr auto GetBinaryOperationLambdaTemplate() {
+        return [](const auto& numerator, const auto& denominator) {
+            return numerator % denominator;
+        };
+    }
 
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
     

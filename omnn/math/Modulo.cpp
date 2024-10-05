@@ -45,12 +45,6 @@ std::ostream& Modulo::code(std::ostream& out) const {
     return out;
 }
 
-constexpr auto Modulo::GetBinaryOperationLambdaTemplate() {
-    return [](const auto& numerator, const auto& denominator) {
-        return numerator % denominator;
-    };
-}
-
 max_exp_t Modulo::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
 	return _1.getMaxVaExp();
 }

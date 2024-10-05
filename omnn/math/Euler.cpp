@@ -2,7 +2,7 @@
 // Created by Sergej Krivonos on 5/26/18.
 //
 
-#include "e.h"
+#include "Euler.h"
 
 using namespace omnn::math;
 

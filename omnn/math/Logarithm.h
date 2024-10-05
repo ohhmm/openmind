@@ -32,7 +32,11 @@ public:
         //InitVars();
     }
 
-    static constexpr auto GetBinaryOperationLambdaTemplate();
+    static constexpr auto GetBinaryOperationLambdaTemplate() {
+        return [](const auto& base, const auto& target) {
+            return ::std::log(target) / ::std::log(base);
+        };
+    }
 
     bool IsLogarithm() const override { return true; }
     void optimize() override;
@@ -72,9 +76,8 @@ public:
     std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
     bool SumIfSimplifiable(const Valuable& v) override;
     std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
-    Valuable& operator /=(const Valuable& v) override;
+    Valuable& operator /=(const Valuable&) override;
     Valuable& operator ^=(const Valuable&) override;
-    bool operator ==(const Valuable&) const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable& integral(const Variable& x, const Variable& C) override;

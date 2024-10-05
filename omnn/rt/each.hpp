@@ -12,7 +12,7 @@
 #define PAR
 #endif
 
-#include "tasq.h"
+#include <omnn/rt/tasq.h>
 
 template <class T, class F>
 void peach(T&& c, F&& f) {

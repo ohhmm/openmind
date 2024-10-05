@@ -31,7 +31,9 @@ public:
         InitVars();
     }
 
-    static constexpr auto GetBinaryOperationLambdaTemplate();
+    static constexpr auto GetBinaryOperationLambdaTemplate() {
+        return [](const auto& base, const auto& exp) { return ::std::pow(base, exp); };
+    }
 
     bool IsExponentiation() const override { return true; }
     bool IsVaExp() const override { return ebase().IsVa(); }
