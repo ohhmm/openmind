@@ -151,6 +151,7 @@ public:
 
     std::wstring save(const std::wstring&) const override;
     std::ostream& code(std::ostream&) const override;
+    universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const override;
 
     static const ranges_t empty_zero_zone;
 

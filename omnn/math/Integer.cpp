@@ -758,6 +758,10 @@ namespace math {
         return print(out);
     }
 
+    Valuable::universal_lambda_t Integer::CompileIntoLambda(variables_for_lambda_t variables) const {
+        return [=](universal_lambda_params_t) { return *this; };
+    }
+
     Valuable Integer::calcFreeMember() const
     {
         return *this;
