@@ -6,8 +6,10 @@
 #include <algorithm>
 #include <future>
 #include <iterator>
+#include <ranges>
 
-#include <omnn/rt/tasq.h>
+#include <omnn/rt/each.hpp>
+//#include <omnn/rt/iterator_transforming_wrapper.hpp>
 
 namespace omnn{
 namespace math {
@@ -20,6 +22,7 @@ namespace math {
     protected:
         using cont = ContT;
         virtual cont& GetCont() = 0;
+        [[nodiscard]]
         bool IsSubObject(const Valuable& o) const override {
             auto is = this == &o.get();
             if (!is) {
@@ -378,6 +381,27 @@ namespace math {
         virtual void Update(iterator& it) {
             auto e = this->Extract(it++);
             it = Add(e, it);
+        }
+
+        [[nodiscard]]
+        Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t vars) const override {
+            auto range = GetConstCont()
+                | std::ranges::views::transform([&](auto& value){return value.CompileIntoLambda(vars);});
+            static Valuable::universal_lambda_t getInitialValue = [](Valuable::universal_lambda_params_t) {
+                return Valuable(ChildT());
+            };
+            return std::reduce(PAR
+                range.begin(), range.end(), getInitialValue,
+                [&]<typename LambdaFwd1, typename LambdaFwd2>(LambdaFwd1&& item1, LambdaFwd2&& item2) {
+                    return [
+                        lambda1 = std::forward<LambdaFwd1>(item1),
+                        lambda2 = std::forward<LambdaFwd2>(item2)
+                    ]
+                    (auto params) -> Valuable
+                    {
+                        return ChildT::GetBinaryOperationLambdaTemplate()(lambda1(params), lambda2(params));
+                    };
+                });
         }
     };
 }}

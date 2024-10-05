@@ -150,9 +150,7 @@ namespace
 #if __has_include(<execution>)
             if (members.size() > Thr)
                 it = std::find(
-#ifndef __APPLE__
                                PAR
-#endif
                                members.begin(), members.end(), item);
             else
 #endif

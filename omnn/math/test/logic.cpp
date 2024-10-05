@@ -53,6 +53,7 @@ BOOST_AUTO_TEST_CASE(Min_operator_test) {
 BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
     DECL_VARS(X, Y);
     auto LE = X.LessOrEqual(Y);
+    auto lessOrEqual = LE.CompiLambda(X, Y);
     std::cout << "X<=Y : " << LE << std::endl;
     for (auto x = 10; x--> -10;) {
         for (auto y = 10; y--> -10;) {
