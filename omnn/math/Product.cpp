@@ -8,7 +8,7 @@
 #include "Infinity.h"
 #include "Integer.h"
 #include "Sum.h"
-#include "e.h"
+#include "Euler.h"
 #include "i.h"
 #include "pi.h"
 #include "PrincipalSurd.h"

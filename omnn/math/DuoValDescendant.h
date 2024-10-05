@@ -171,6 +171,17 @@ namespace omnn::math {
             Valuable::hash = _1.Hash() ^ _2.Hash();
         }
 
+        Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t vars) const override {
+            return [
+                lambda1 = _1.CompileIntoLambda(vars),
+                lambda2 = _2.CompileIntoLambda(vars)
+                ]
+                (auto params)
+                {
+                    return Chld::GetBinaryOperationLambdaTemplate()(lambda1(params), lambda2(params));
+                };
+        }
+
         max_exp_t getMaxVaExp()  const override {
             return Chld::getMaxVaExp(_1, _2);
         }

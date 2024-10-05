@@ -3,7 +3,7 @@
 //
 #include "Exponentiation.h"
 
-#include "e.h"
+#include "Euler.h"
 #include "i.h"
 #include "Infinity.h"
 #include "pi.h"
@@ -970,12 +970,6 @@ namespace omnn::math {
             getExponentiation().code(out) << ')';
         }       
         return out;
-    }
-    
-    constexpr auto Exponentiation::GetBinaryOperationLambdaTemplate() {
-        return [](const auto& base, const auto& exp) {
-            return ::std::pow(base, exp);
-        };
     }
 
     bool Exponentiation::IsComesBefore(const Valuable& v) const

@@ -3,7 +3,7 @@
 //
 #include "Valuable.h"
 
-#include "e.h"
+#include "Euler.h"
 #include "i.h"
 #include "Infinity.h"
 #include "pi.h"
@@ -13,6 +13,7 @@
 #include "VarHost.h"
 #include "Sum.h"
 #include "PrincipalSurd.h"
+#include "Logarithm.h"
 
 #include <rt/GC.h>
 #include <rt/tasq.h>
@@ -3136,10 +3137,17 @@ namespace std
     {
         return v.abs();
     }
+
+    ::omnn::math::Valuable log(const ::omnn::math::Valuable& value)
+    {
+        return ::omnn::math::Logarithm(::omnn::math::constant::e, value);
+    }
+
     ::omnn::math::Valuable sqrt(const ::omnn::math::Valuable& v)
     {
         return v.Sqrt();
     }
+
     ::omnn::math::Valuable tanh(const ::omnn::math::Valuable& value)
     {
         return value.Tanh();

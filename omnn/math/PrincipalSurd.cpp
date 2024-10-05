@@ -26,14 +26,6 @@ std::ostream& PrincipalSurd::code(std::ostream& out) const {
     return out;
 }
 
-
-constexpr auto PrincipalSurd::GetBinaryOperationLambdaTemplate() {
-    return [](const auto& radicand, const auto& index) {
-        return ::std::pow(radicand, 1/index);
-    };
-}
-
-
 std::pair<bool, Valuable> PrincipalSurd::IsSummationSimplifiable(const Valuable& v) const {
     std::pair<bool, Valuable> is;
     is.first = operator==(v);

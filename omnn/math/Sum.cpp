@@ -2,7 +2,7 @@
 // Created by Сергей Кривонос on 25.09.17.
 //
 #include "Sum.h"
-#include "e.h"
+#include "Euler.h"
 #include "Formula.h"
 #include "Fraction.h"
 #include "i.h"

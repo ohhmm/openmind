@@ -52,7 +52,11 @@ public:
 
     std::ostream& code(std::ostream&) const override;
 
-    static constexpr auto GetBinaryOperationLambdaTemplate();
+    static constexpr auto GetBinaryOperationLambdaTemplate() {
+        return [](const auto& radicand, const auto& index) {
+            return ::std::pow(radicand, 1 / index);
+        };
+    }
 
     explicit operator double() const override;
     explicit operator long double() const override;

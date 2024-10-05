@@ -27,7 +27,9 @@ namespace math {
 
     public:
         std::ostream& code(std::ostream& out) const override;
-        static constexpr auto GetBinaryOperationLambdaTemplate();
+        static constexpr auto GetBinaryOperationLambdaTemplate() {
+            return [](const auto& numerator, const auto& denominator) { return numerator / denominator; };
+        }
 
         constexpr const Valuable& numerator() const { return _1; }
         template<class T>
