@@ -56,6 +56,11 @@ template <class Chld>
         }
         void Eval(const Variable& va, const Valuable& v) override
         { }
+        Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
+            return [](Valuable::universal_lambda_params_t) -> Valuable {
+                return GlobalObject;
+            };
+        }
 
         Valuable& operator *=(const Valuable& v) override {
             if(v.IsProduct())
