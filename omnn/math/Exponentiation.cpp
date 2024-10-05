@@ -91,7 +91,7 @@ namespace omnn::math {
             Become(std::move(ebase()));
             return;
         }
-        
+
         if (eexp().IsSum())
         {
             auto& s = eexp().as<Sum>();
@@ -203,7 +203,7 @@ namespace omnn::math {
 //                }
 //            }
 //        }
-        
+
         if (ebase().IsFraction() && eexp().IsMultival()==YesNoMaybe::No) {
             auto& f = ebase().as<Fraction>();
             auto _ = (f.getNumerator() ^ eexp()) / (f.getDenominator() ^ eexp());
@@ -232,7 +232,7 @@ namespace omnn::math {
                 if (p.Has(constants::pi) &&
                     p.Has(constants::i)) { // TODO : sequence does matter :
 																 // e^(i*pi) =?= e^(pi*i)
-																 // https://en.wikipedia.org/wiki/Commutative_property#Division,_subtraction,_and_exponentiation 
+																 // https://en.wikipedia.org/wiki/Commutative_property#Division,_subtraction,_and_exponentiation
 																 // what about Commutativity on irrationals product?
 																 // lets assume yes for this particular expression, but there are some doubts, need a prove
 
