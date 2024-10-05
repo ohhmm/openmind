@@ -71,13 +71,8 @@ bool System::Has(const Valuable& e) const
         }
     }
     return e.IsZero() ||
-#ifndef __APPLE__
-           std::find(std::execution::par, std::begin(equs), std::end(equs), e) != equs.end() ||
-           std::find(std::execution::par, std::begin(equs), std::end(equs), -e) != equs.end();
-#else
-           std::find(std::begin(equs), std::end(equs), e) != equs.end() ||
-           std::find(std::begin(equs), std::end(equs), -e) != equs.end();
-#endif
+           std::find(PAR std::begin(equs), std::end(equs), e) != equs.end() ||
+           std::find(PAR std::begin(equs), std::end(equs), -e) != equs.end();
 }
 
 bool System::Add(const Valuable& v)

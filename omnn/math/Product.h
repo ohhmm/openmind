@@ -99,6 +99,11 @@ public:
     Valuable::solutions_t Distinct() const override;
     
     std::ostream& code(std::ostream& out) const override;
+
+    static constexpr auto GetBinaryOperationLambdaTemplate() {
+        return [](const auto& _1st, const auto& _2nd) { return _1st * _2nd; };
+    }
+
 	vars_cont_t GetVaExps() const override;
 
 protected:

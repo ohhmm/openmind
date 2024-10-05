@@ -73,6 +73,11 @@ protected:
 
 public:
     std::ostream& code(std::ostream& out) const override;
+
+    static constexpr auto GetBinaryOperationLambdaTemplate() {
+        return [](const auto& _1st, const auto& _2nd) { return _1st + _2nd; };
+    }
+
 	const cont& GetConstCont() const override { return members; }
     bool IsSum() const override { return true; }
     bool IsZero() const override;

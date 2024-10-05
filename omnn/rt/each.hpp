@@ -1,5 +1,8 @@
 #pragma once
-#if __has_include(<execution>)
+#ifdef __APPLE__
+#define SEQ
+#define PAR
+#elif __has_include(<execution>)
 #include <execution>
 #define SEQ std::execution::seq,
 #define PAR std::execution::par,
@@ -19,12 +22,8 @@ void peach(T&& c, F&& f) {
 #ifdef __APPLE__
     omnn::rt::StoringTasksQueue().AddTasks(std::forward<T>(c), std::forward<F>(f));
 #else
-    auto b = std::begin(c), e = std::end(c);
-    std::for_each(
-#ifndef __APPLE__
-        PAR
-#endif
-        b, e, f);
+    std::for_each(PAR
+        std::begin(c), std::end(c), f);
 #endif
 }
 
@@ -33,7 +32,6 @@ void each(T&& t, F&& f) {
     if (std::size(t) > 100)
         peach(std::forward<T>(t), std::forward<F>(f));
     else {
-        auto b = std::begin(t), e = std::end(t);
-        std::for_each(b, e, f);
+        std::for_each(std::begin(t), std::end(t), f);
     }
 }

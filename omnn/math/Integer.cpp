@@ -759,7 +759,7 @@ namespace math {
     }
 
     Valuable::universal_lambda_t Integer::CompileIntoLambda(variables_for_lambda_t variables) const {
-        return [=](universal_lambda_params_t) { return *this; };
+        return [copy=Valuable(Clone())](universal_lambda_params_t) { return copy; };
     }
 
     Valuable Integer::calcFreeMember() const

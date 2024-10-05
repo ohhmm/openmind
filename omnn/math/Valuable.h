@@ -661,11 +661,14 @@ public:
     template <typename... Fwd>
         requires((std::same_as<std::remove_cvref_t<Fwd>, ::omnn::math::Variable> ||
                   std::derived_from<std::remove_cvref_t<Fwd>, ::omnn::math::Variable>) &&
-                 ...) 
+                 ...)
+    [[nodiscard]]
     auto CompiLambda(Fwd&& ...variables) const {
-        auto lambda = CompileIntoLambda(variables_for_lambda_t{std::forward<Fwd>(variables)...});
-        return [=](auto... args) {
-            return lambda(args...);
+        return [
+            lambda = CompileIntoLambda(variables_for_lambda_t{std::forward<Fwd>(variables)...})
+        ] (auto... args) {
+            OptimizeOn on;
+            return lambda({args...});
         };
     }
 
