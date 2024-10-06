@@ -22,12 +22,12 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
 
-	add_custom_target(rebase-main
+	add_custom_target(rebase-origin-main
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
-	set_target_properties(rebase-main PROPERTIES
+	set_target_properties(rebase-origin-main PROPERTIES
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
@@ -129,6 +129,16 @@ if(GIT_EXECUTABLE)
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 	)
 	set_target_properties(force-push-head PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
+
+	add_custom_target(force-push-origin
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} push -f origin
+		COMMAND ${GIT_EXECUTABLE} fetch --all
+	)
+	set_target_properties(force-push-origin PROPERTIES
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
