@@ -77,6 +77,7 @@ public:
     Valuable& operator ^=(const Valuable& v) override;
     bool operator ==(const Product& v) const;
     bool operator ==(const Valuable& v) const override;
+    bool operator<(const Product& v) const;
     bool operator<(const Valuable& v) const override;
     Valuable Sign() const override;
     Valuable ToBool() const override;

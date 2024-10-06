@@ -1107,6 +1107,10 @@ namespace math {
         }
     }
 
+    bool Product::operator<(const Product& v) const {
+        LOG_AND_IMPLEMENT(*this << "   <   " << v);
+    }
+
     bool Product::operator<(const Valuable& v) const{
         auto beg = begin();
         if (members.size() == 1) {
@@ -1124,7 +1128,13 @@ namespace math {
             if(!isLess){
                 if (sign > vSign) {
                 } else { // same signs
-                    LOG_AND_IMPLEMENT(*this << "   <   " << v);
+                    if (v.IsProduct()) {
+                        isLess = operator<(v.as<Product>());
+                    } else if (Has(v)) {
+                        isLess = *this / v < constants::one;
+                    } else {
+                        LOG_AND_IMPLEMENT(*this << "   <   " << v);
+                    }
                 }
             }
         } else {
