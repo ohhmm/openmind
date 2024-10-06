@@ -15,6 +15,7 @@
 #include "VarHost.h"
 
 #include <rt/antiloop.hpp>
+#include <rt/find.hpp>
 
 #include <type_traits>
 
@@ -1107,6 +1108,10 @@ namespace math {
         }
     }
 
+    bool Product::operator<(const Product& v) const {
+        LOG_AND_IMPLEMENT(*this << "   <   " << v);
+    }
+
     bool Product::operator<(const Valuable& v) const{
         auto beg = begin();
         if (members.size() == 1) {
@@ -1122,9 +1127,29 @@ namespace math {
             auto vSign = v.Sign();
             isLess = sign < vSign;
             if(!isLess){
-                if (sign > vSign) {
+                if (sign > vSign || operator==(v)) {
                 } else { // same signs
-                    LOG_AND_IMPLEMENT(*this << "   <   " << v);
+                    if (v.IsProduct()) {
+                        isLess = operator<(v.as<Product>());
+                    } else if (Has(v)) {
+                        isLess = *this / v < constants::one;
+                    } else {
+                        auto bigger = rt::find_if(members, 
+                            [&](auto& item) {
+                                return v.operator<(item);
+                            });
+                        auto found = bigger != members.end(); 
+                        if (found) {
+                            auto rest = *this / *bigger;
+                            if (rest >= constants::one) {
+                                isLess = {};
+                            } else {
+                                LOG_AND_IMPLEMENT(*this << "   <   " << v);
+                            }
+                        } else {
+                            LOG_AND_IMPLEMENT(*this << "   <   " << v);
+                        }
+                    }
                 }
             }
         } else {
