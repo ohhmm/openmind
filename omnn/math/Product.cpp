@@ -1252,6 +1252,17 @@ namespace math {
                     }
                 }
             }
+            else {
+                auto& e = v.as<Exponentiation>();
+                auto& ee = e.getExponentiation();
+                if (ee.IsSimple() && ee < constants::zero) {
+                    OptimizeOn on;
+                    auto potentiallyAlternativeForm = e.getBase().Reciprocal() ^ -ee;
+                    if (!potentiallyAlternativeForm.Same(v)) {
+                        same = operator==(potentiallyAlternativeForm);
+                    }
+                }
+            }
         } else if (v.IsProduct()
             && IsMultival() == YesNoMaybe::Yes
             && v.IsMultival() == YesNoMaybe::Yes)
