@@ -176,8 +176,13 @@ namespace math {
         }
 
         bool Has(const any::any& id) const override {
-            IMPLEMENT
-            return varIds.find(any::any_cast<T>(id)) != varIds.end();
+            try {
+                return varIds.find(any::any_cast<T>(id)) != varIds.end();
+            } catch (const any::bad_any_cast&) {
+                // Handle the error, e.g., log it or return a default value
+                // For now, we'll return false to indicate the id was not found
+                return false;
+            }
         }
         
         size_t Hash(const any::any& id) const override {
@@ -185,7 +190,13 @@ namespace math {
         }
         
         bool CompareIdsLess(const any::any& a, const any::any& b) const override {
-            return any::any_cast<T>(a) < any::any_cast<T>(b);
+            try {
+                return any::any_cast<T>(a) < any::any_cast<T>(b);
+            } catch (const any::bad_any_cast&) {
+                // Handle the error, e.g., log it or return a default value
+                // For now, we'll return false to indicate the comparison failed
+                return false;
+            }
         }
         
         bool CompareIdsEqual(const any::any& a, const any::any& b) const override {
@@ -215,8 +226,9 @@ namespace math {
                             it = hosted.emplace(id, hosted_storage_t{New(id), ""s}).first;
                         }
                     } else {
-						IMPLEMENT
-					}
+                        // Handle unsupported string types
+                        throw std::runtime_error("Unsupported string type for id");
+                    }
                 }
             }
             if (it == hosted.end()) {
