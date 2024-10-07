@@ -212,6 +212,7 @@ public:
     /// </summary>
     /// <returns></returns>
     Valuable IntMod_IsNegativeOrZero() const override { return ca() <= 0 ? 0 : 1; }
+    Valuable NegativeOrZero() const override { return IntMod_IsNegativeOrZero(); }
 
     /// <summary>
     /// Operator 'less' then value to which a param expression is to be evaluated
