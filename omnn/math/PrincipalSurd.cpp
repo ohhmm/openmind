@@ -163,10 +163,13 @@ bool PrincipalSurd::operator <(const Valuable& other) const {
         } else {
             power = _2 * ps._2;
         }
+    } else if(_2 == constants::one) {
+        return other < _1;
     } else {
         power = _2;
     }
 
+    OptimizeOn on;
     return (*this ^ power) < (other ^ power);
 }
 
