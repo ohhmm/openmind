@@ -1286,21 +1286,28 @@ namespace
     Valuable& Sum::sq()
     {
         auto cached = DbSumSqCache.AsyncFetch(*this, true);
-        Sum s;
+        Sum sum;
         auto e = end();
         for (auto i = begin(); i != e; ++i)
         {
             if (cached)
                 return Become(cached);
-            s.Add(i->Sq());
+            sum.Add(i->Sq());
             for (auto j = i; ++j != e;)
             {
-                s.Add(*i * *j * 2);
+                sum.Add(*i * *j * 2);
             }
         }
         if (cached.NotInCache())
-            DbSumSqCache.AsyncSet(str(), s.str());
-        return Become(std::move(s));
+        {
+            auto key = str();
+            OptimizeOn on;
+            Become(std::move(sum));
+            DbSumSqCache.AsyncSet(std::move(key), str());
+        }
+        else
+            Become(std::move(sum));
+        return *this;
     }
 
     Valuable Sum::calcFreeMember() const
