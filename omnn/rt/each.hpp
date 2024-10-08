@@ -19,6 +19,8 @@
 
 namespace omnn::rt {
 
+static constexpr auto USE_PAR_GAUGE = 100;
+
 template <class T, class F>
 void peach(T&& c, F&& f) {
 #ifdef __APPLE__
@@ -31,7 +33,7 @@ void peach(T&& c, F&& f) {
 
 template <class T, class F>
 void each(T&& t, F&& f) {
-    if (std::size(t) > 100)
+    if (std::size(t) > USE_PAR_GAUGE)
         peach(std::forward<T>(t), std::forward<F>(f));
     else {
         std::for_each(std::begin(t), std::end(t), f);
