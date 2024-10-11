@@ -566,8 +566,9 @@ namespace math {
             else
                 for(auto&m:members){
                     auto c = m.InCommonWith(with);
-                    if (c!=1_v)
-                        _*=c;
+                    if (c != constants::one) {
+                        _ *= c;
+                    }
                 }
         };
 
