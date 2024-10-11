@@ -570,9 +570,7 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     BOOST_TEST(7_v % 3 == p);
 }
 
-BOOST_AUTO_TEST_CASE(_1_2_3_
-    , *disabled()
-) {
+BOOST_AUTO_TEST_CASE(_1_2_3_) {
     DECL_VA(x);
     auto expr = x.Equals(1) || x.Equals(2) || x.Equals(3);
     std::cout
