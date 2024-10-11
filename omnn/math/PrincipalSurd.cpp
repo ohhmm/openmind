@@ -193,22 +193,33 @@ bool PrincipalSurd::IsComesBefore(const Valuable& v) const {
     }
 }
 
+Valuable PrincipalSurd::InCommonWith(const PrincipalSurd& surd) const {
+    if (_2 == surd._2) {
+        auto ic = _1.InCommonWith(surd._1);
+        if (ic.IsInt()) {
+            if (ic == 1)
+                return 1;
+            else
+                return PrincipalSurd{ic, _2};
+        } else {
+            return PrincipalSurd{ic, _2};
+        }
+    } else if (_1 == surd._1) {
+        auto& mindex = std::min(_2, surd._2);
+        auto& maxdex = std::max(_2, surd._2);
+        if ((maxdex / mindex).IsInt()) {
+            return PrincipalSurd{_1, maxdex};
+        }
+    }
+    else {
+        LOG_AND_IMPLEMENT(*this << " InCommonWith " << surd);
+    }
+    return constants::one;
+}
+
 Valuable PrincipalSurd::InCommonWith(const Valuable& v) const {
     if(v.IsPrincipalSurd()) {
-        auto& ps = v.as<PrincipalSurd>();
-        if (_2 == ps._2) {
-            auto ic = _1.InCommonWith(ps._1);
-            if(ic.IsInt()) {
-                if(ic == 1)
-                    return 1;
-                else
-                    return PrincipalSurd{ic, _2};
-            } else {
-                return PrincipalSurd{ic, _2};
-            }
-        } else {
-            LOG_AND_IMPLEMENT(*this << " InCommonWith " << v);
-        }
+        return InCommonWith(v.as<PrincipalSurd>());
     } else if(v.Is_i()) {
         return _2.IsEven() == YesNoMaybe::Yes && _1.Sign() != constants::one
             ? v
