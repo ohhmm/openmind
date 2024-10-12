@@ -113,8 +113,14 @@ BOOST_AUTO_TEST_CASE(System_tests
     }
 }
 
+#if defined(WIN32)
+#define BALANCING_SYSTEM_TEST_PLATFORM_SPECIFIC_ENABLE
+#else
+#define BALANCING_SYSTEM_TEST_PLATFORM_SPECIFIC_ENABLE *disabled()
+#endif
 BOOST_AUTO_TEST_CASE(Balancing_system_no_hang_test
-    , *timeout(2) * disabled()
+    , *timeout(20)
+    BALANCING_SYSTEM_TEST_PLATFORM_SPECIFIC_ENABLE
 ) {
     DECL_VARS(x,y,z);
     System() << (constants::minus_1 / 4)*((-16*(y^2)+160*y-8*x-200) ^ constants::half) + z -35;
