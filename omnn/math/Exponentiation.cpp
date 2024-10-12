@@ -469,8 +469,16 @@ namespace omnn::math {
                         Become(std::move(ebase()));
                     break;
                 }
-                default:
-                	LOG_AND_IMPLEMENT(*this << " mode is " << static_cast<int>(view));
+                case View::Fraction: {
+                    if (eexp().IsSimple() && eexp() < constants::zero) {
+                        updateExponentiation(-eexp());
+                        Become(Fraction{constants::one, std::move(ebase().reciprocal())});
+                    }
+                    break;
+                }
+                default: {
+                    LOG_AND_IMPLEMENT(*this << " mode is " << static_cast<int>(view));
+                }
             }
         }
 
