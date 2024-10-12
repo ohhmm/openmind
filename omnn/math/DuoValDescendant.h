@@ -6,7 +6,11 @@
  */
 #pragma once
 #include <omnn/math/ValuableDescendantContract.h>
+
+#include <rt/antiloop.hpp>
+
 #include <utility>
+
 
 namespace omnn::math {
 
@@ -30,6 +34,7 @@ namespace omnn::math {
         using base = ValuableDescendantContract<Chld>;
 
     protected:
+        using type = Chld;
         Valuable _1, _2;
 
         bool IsSubObject(const Valuable& o) const override {
@@ -108,6 +113,8 @@ namespace omnn::math {
             Valuable::hash ^= _2.Hash();
             Valuable::optimized = {};
         }
+        constexpr auto extract1() { return std::move(_1); }
+        constexpr auto extract2() { return std::move(_2); }
 
         using base::base;
 
@@ -126,7 +133,7 @@ namespace omnn::math {
             return Valuable::hash == other.Hash()
                 && _1 == other._1
                 && _2 == other._2;
-            }
+        }
 
         bool operator==(const Valuable& other) const override {
             return (other.Is<Chld>() && operator==(other.as<Chld>()))
@@ -241,3 +248,29 @@ namespace omnn::math {
         }
     };
 }
+
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+#define DUO_OPT_PFX                                                                                                    \
+    if (!optimizations && !IsSimple()) {                                                                               \
+        hash = _1.Hash() ^ _2.Hash();                                                                                  \
+        return;                                                                                                        \
+    }                                                                                                                  \
+    if (optimized) {                                                                                                   \
+        auto h = _1.Hash() ^ _2.Hash();                                                                                \
+        if (h != hash) {                                                                                               \
+            LOG_AND_IMPLEMENT("Fix hash updating for " << *this);                                                      \
+        }                                                                                                              \
+        return;                                                                                                        \
+    }                                                                                                                  \
+    ANTILOOP(base::type)
+#else
+#define DUO_OPT_PFX                                                                                                    \
+    if (!optimizations && !IsSimple()) {                                                                               \
+        hash = _1.Hash() ^ _2.Hash();                                                                                  \
+        return;                                                                                                        \
+    }                                                                                                                  \
+    if (optimized) {                                                                                                   \
+        return;                                                                                                        \
+    }                                                                                                                  \
+    ANTILOOP(base::type)
+#endif
