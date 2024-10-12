@@ -120,6 +120,45 @@ void Modulo::optimize() {
 
     CHECK_OPTIMIZATION_CACHE
     if (IsModulo()) {
+        Fraction frac{_1, _2};
+        Valuable copy = frac;
+        {
+            CHECK_OPTIMIZATION_CACHE
+            copy.SetView(View::Fraction);
+            OptimizeOn on;
+            copy.optimize();
+        }
+        if (copy != frac) {
+            if (copy.IsFraction()) {
+                CHECK_OPTIMIZATION_CACHE
+                auto& simplified = copy.as<Fraction>();
+                auto numerator = simplified.extract1();
+                auto denominator = simplified.extract2();
+                CHECK_OPTIMIZATION_CACHE
+                auto changeDenominatorSign = denominator.IsInt() && denominator < constants::zero;
+                if (changeDenominatorSign) {
+                    numerator = -numerator;
+                    denominator = -denominator;
+                }
+                CHECK_OPTIMIZATION_CACHE
+                auto gcd = _1 / numerator; 
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+                if(gcd != _2/denominator)
+                {
+                    LOG_AND_IMPLEMENT("Unexpected GCD of numerator and denominator of modulo : " << *this << " => " << gcd << "*(" << numerator << '%' << denominator << ')');
+                }
+#endif
+                CHECK_OPTIMIZATION_CACHE
+                Become(Product{std::move(gcd), Modulo{std::move(numerator), std::move(denominator)}});
+            }
+            else
+            {
+                copy = 0;
+                Become(std::move(copy));
+            }
+        }
+    }
+    if (IsModulo()) {
         hash = _1.Hash() ^ _2.Hash();
         MarkAsOptimized();
         STORE_TO_CACHE
