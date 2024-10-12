@@ -122,16 +122,15 @@ namespace omnn::math {
 
         Valuable operator-() const override { return Multiply(-1, *this); }
 
-        bool operator ==(const Valuable& v) const override{
-            auto eq = v.Is<Chld>() && Valuable::hash == v.Hash();
-            if (eq) {
-                auto& ch = v.as<Chld>();
-                eq = _1.Hash() == ch._1.Hash()
-                    && _2.Hash() == ch._2.Hash()
-                    && _1 == ch._1
-                    && _2 == ch._2;
+        bool operator==(const Chld& other) const {
+            return Valuable::hash == other.Hash()
+                && _1 == other._1
+                && _2 == other._2;
             }
-            return eq;
+
+        bool operator==(const Valuable& other) const override {
+            return (other.Is<Chld>() && operator==(other.as<Chld>()))
+                || ((other.IsSum() || other.IsProduct()) && other.operator==(*this));
         }
 
         const Variable* FindVa() const override {
