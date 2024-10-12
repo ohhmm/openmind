@@ -124,6 +124,22 @@ void Modulo::optimize() {
         }
     }
 
+    if (IsModulo()) {
+        if (!_1.IsInt() || !_2.IsInt()) {
+            if (_1.IsRational() == YesNoMaybe::Yes && _2.IsRational() == YesNoMaybe::Yes) {
+                auto dividend = static_cast<a_rational>(_1);
+                auto divisor = static_cast<a_rational>(_2);
+                auto common_denominator = boost::lcm(boost::multiprecision::denominator(dividend),
+                                                     boost::multiprecision::denominator(divisor));
+                dividend *= common_denominator;
+                divisor *= common_denominator;
+                Valuable result = boost::multiprecision::numerator(dividend) % boost::multiprecision::numerator(divisor);
+                result /= Valuable(std::move(common_denominator));
+                Become(std::move(result));
+            }
+        }
+    }
+
     CHECK_OPTIMIZATION_CACHE
     if (IsModulo()) {
         hash = _1.Hash() ^ _2.Hash();

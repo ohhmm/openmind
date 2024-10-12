@@ -38,6 +38,10 @@ BOOST_AUTO_TEST_CASE(NegativeFractionModulo_test) {
     _2 = -700;
     mod = _1 % _2;
     BOOST_TEST(mod == _1);
+
+    _1 = "((-1) % ((2 / 3)))"_v.Optimized();
+    _2 = "-1/3"_v;
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(ModIntLess_comparator_test) {
