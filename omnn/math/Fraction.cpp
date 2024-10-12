@@ -11,8 +11,6 @@
 #include "i.h"
 #include "VarHost.h"
 
-#include <rt/antiloop.hpp>
-
 #include <utility>
 
 #include <boost/lexical_cast.hpp>
@@ -63,13 +61,8 @@ namespace math {
         return Fraction(-getNumerator(), getDenominator());
     }
 
-    bool Fraction::operator==(const Fraction& f) const {
-        return Hash() == f.Hash()
-            && getNumerator().Hash() == f.getNumerator().Hash()
-            && getDenominator().Hash() == f.getDenominator().Hash()
-            && getNumerator() == f.getNumerator()
-            && getDenominator() == f.getDenominator()
-            ;
+    bool Fraction::operator==(const Fraction& fraction) const {
+        return base::operator ==(fraction);
     }
 
     bool Fraction::operator ==(const Valuable& v) const
@@ -105,21 +98,7 @@ namespace math {
 
     void Fraction::optimize()
     {
-        if (!optimizations && !IsSimple()) {
-            hash = numerator().Hash() ^ denominator().Hash();
-            return;
-        }
-        if (optimized) {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            auto h = numerator().Hash() ^ denominator().Hash();
-            if (h != hash){
-                LOG_AND_IMPLEMENT("Fix hash updating for " << *this);
-            }
-#endif
-            return;
-        }
-
-        ANTILOOP(Fraction)
+        DUO_OPT_PFX
 
         bool reoptimize_the_fraction;
         do {

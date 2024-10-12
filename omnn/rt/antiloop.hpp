@@ -33,7 +33,7 @@ thread_local std::unordered_set<ValueT> OptimizationLoopDetect<ValueT>::LoopDete
 #define ANTILOOP(Type)                                                                                                 \
     ::omnn::rt::OptimizationLoopDetect<Type> antilooper(*this);                                                        \
     if (antilooper.isLoopDetected()) {                                                                                 \
-        std::cout << "Loop of optimizating detected in " << *this << std::endl;                                        \
+        std::cout << "Loop of optimizing detected in " << *this << std::endl;                                          \
         return;                                                                                                        \
     }
 #else
