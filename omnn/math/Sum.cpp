@@ -158,10 +158,11 @@ namespace
                 it = members.find(item);
 
             auto itemMaxVaExp = item.getMaxVaExp();
-            if(it==end())
+            if (it == end()) {
                 it = base::Add(std::move(item), hint);
-            else
+            } else {
                 Update(it, std::move(item.shl()));
+            }
 
             if(itemMaxVaExp > maxVaExp)
                 maxVaExp = itemMaxVaExp;
