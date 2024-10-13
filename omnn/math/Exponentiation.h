@@ -97,6 +97,7 @@ public:
     std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator ^=(const Valuable&) override;
+    bool operator==(const Exponentiation&) const;
     bool operator ==(const Valuable&) const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;

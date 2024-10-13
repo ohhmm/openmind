@@ -66,16 +66,7 @@ namespace omnn::math {
 
     void Exponentiation::optimize()
     {
-        if (optimized) {
-            return;
-        }
-
-        if (!optimizations)
-        {
-            hash = ebase().Hash() ^ eexp().Hash();
-            InitVars();
-            return;
-        }
+        DUO_OPT_PFX
 
         if (IsEquation()) {
             Become(std::move(ebase()));
@@ -819,21 +810,21 @@ namespace omnn::math {
         return *this;
     }
 
-    bool Exponentiation::operator ==(const Valuable& v) const
+    bool Exponentiation::operator==(const Exponentiation& other) const {
+        return base::operator ==(other);
+    }
+
+    bool Exponentiation::operator==(const Valuable& v) const
     {
-        auto eq = v.IsExponentiation() && Hash()==v.Hash();
+        auto eq = v.IsExponentiation();
         if(eq){
-            auto& e = v.as<Exponentiation>();
-            eq = _1.Hash() == e._1.Hash()
-                && _2.Hash() == e._2.Hash()
-                && _1 == e._1
-                && _2 == e._2;
+            eq = operator==(v.as<Exponentiation>());
         } else if (v.IsFraction()) {
             eq = (eexp().IsInt() || eexp().IsSimpleFraction())
                  && eexp() < 0
                  && ebase() == (v.Reciprocal() ^ (-eexp()));
-        } else if (v.IsProduct()) {
-            eq = v.as<Product>().operator==(*this);
+        } else if (v.IsProduct() || v.IsSum()) {
+            eq = v.operator==(*this);
         }
         return eq;
     }
