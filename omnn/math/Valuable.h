@@ -391,6 +391,7 @@ public:
     virtual Valuable Sq() const;
     virtual Valuable Sign() const;
     virtual Valuable abs() const;
+    virtual Valuable Abs() const;
     virtual Valuable Cos() const;
     virtual Valuable Sin() const;
     virtual Valuable Sqrt() const;
@@ -605,7 +606,7 @@ public:
 	/// (x-1)%x is x-1 for positive integers
     /// </summary>
     /// <returns></returns>
-    virtual Valuable IntMod_IsNegativeOrZero() const { return Equals(0) || ((*this - 1) % *this).Equals(-1); }
+    virtual Valuable IntMod_IsNegativeOrZero() const;
 
     /// <summary>
     /// Operator 'less' then value to which a param expression is to be evaluated
@@ -615,6 +616,18 @@ public:
     /// <param name="than">the param to compare that the object is less then the param</param>
     /// <returns>An expression that equals zero only when the object is less then param</returns>
     virtual Valuable IntMod_Less(const Valuable& than) const;
+
+    /// <summary>
+    /// (this < 0) - constraint negative
+    /// </summary>
+    /// <returns>constraint to negative values: expression that equals zero for given negative *this values</returns>
+    virtual Valuable Negative() const;
+
+    /// <summary>
+    /// (this <= 0) - constraint negative
+    /// </summary>
+    /// <returns>constraint values <= 0 : expression that equals zero for given negative or 0 *this values</returns>
+    virtual Valuable NegativeOrZero() const;
 
     /// <summary>
     /// Operator 'less' then value to which a param expression is to be evaluated

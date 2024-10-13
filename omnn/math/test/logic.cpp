@@ -3,6 +3,8 @@
 
 #include "Variable.h"
 
+#include <cmath>
+
 using namespace omnn::math;
 using namespace boost::unit_test;
 
@@ -46,6 +48,147 @@ BOOST_AUTO_TEST_CASE(Min_operator_test) {
             minimum.eval(evalMap);
             std::cout << " Minimum(" << x << ',' << y << ") = " << minimum << std::endl;
             BOOST_TEST(minimum == minOfTwo);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE(Sign_operator_test
+                     , *disabled()
+                     )
+{
+    DECL_VARS(X);
+    auto SignOperatorExpression = X.Sign();
+    std::cout << "X<0 : " << SignOperatorExpression << std::endl;
+    for (auto x = 10; x--> -10;) {
+        auto sign = std::signbit(x);
+        auto negativeOperatorInstantiation = SignOperatorExpression;
+        Valuable::vars_cont_t evalMap = {{X, x}};
+        std::cout << '\n' << x << "<0 = ";
+        negativeOperatorInstantiation.eval(evalMap);
+        std::cout << " expression that must be equal to zero when true: " << negativeOperatorInstantiation
+                  << std::endl;
+
+        negativeOperatorInstantiation.optimize();
+        std::cout << std::endl << "Is " << x << "<0 : " << negativeOperatorInstantiation << std::endl;
+        bool b = {};
+        auto boolLessOrEqualOp = negativeOperatorInstantiation.ToBool();
+        BOOST_TEST(boolLessOrEqualOp == sign);
+        boolLessOrEqualOp.eval(evalMap);
+        BOOST_TEST(boolLessOrEqualOp == sign);
+        if (boolLessOrEqualOp == true) {
+            BOOST_TEST(boolLessOrEqualOp.IsInt());
+            BOOST_TEST(negativeOperatorInstantiation.IsInt());
+            b = negativeOperatorInstantiation.IsInt() && negativeOperatorInstantiation.ca() == 0;
+            std::cout << std::endl << x << "<0 : " << b << std::endl;
+        } else if (boolLessOrEqualOp == false) {
+            BOOST_TEST(boolLessOrEqualOp.IsInt());
+            b = negativeOperatorInstantiation == 0;
+            std::cout << std::endl
+                      << x << "<0 : " << b << ' ' << negativeOperatorInstantiation << " != 0" << std::endl;
+        } else {
+            std::cout << std::endl << x << "<0 : " << boolLessOrEqualOp << std::endl;
+            BOOST_TEST(!"boolLessOp must have boolean value");
+        }
+        BOOST_TEST(boolLessOrEqualOp == b);
+
+        auto ok = b == sign;
+        if (!ok) {
+            std::cout << "X=" << x << " " << ok << " bool: " << b << std::endl;
+            BOOST_TEST(ok);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE(Negative_operator_test
+    , *disabled()
+    )
+{
+    DECL_VARS(X);
+    auto NegativeOperatorExpression = X.Negative();
+    std::cout << "X<0 : " << NegativeOperatorExpression << std::endl;
+    for (auto x = 10; x--> -10;) {
+        auto isLessEq = x < 0;
+        auto negativeOperatorInstantiation = NegativeOperatorExpression;
+        Valuable::vars_cont_t evalMap = {{X, x}};
+        std::cout << '\n' << x << "<0 = ";
+        negativeOperatorInstantiation.eval(evalMap);
+        std::cout << " expression that must be equal to zero when true: " << negativeOperatorInstantiation
+                  << std::endl;
+
+        negativeOperatorInstantiation.optimize();
+        std::cout << std::endl << "Is " << x << "<0 : " << negativeOperatorInstantiation << std::endl;
+        bool b = {};
+        auto boolLessOrEqualOp = negativeOperatorInstantiation.ToBool();
+        BOOST_TEST(boolLessOrEqualOp == isLessEq);
+        boolLessOrEqualOp.eval(evalMap);
+        BOOST_TEST(boolLessOrEqualOp == isLessEq);
+        if (boolLessOrEqualOp == true) {
+            BOOST_TEST(boolLessOrEqualOp.IsInt());
+            BOOST_TEST(negativeOperatorInstantiation.IsInt());
+            b = negativeOperatorInstantiation.IsInt() && negativeOperatorInstantiation.ca() == 0;
+            std::cout << std::endl << x << "<0 : " << b << std::endl;
+        } else if (boolLessOrEqualOp == false) {
+            BOOST_TEST(boolLessOrEqualOp.IsInt());
+            b = negativeOperatorInstantiation == 0;
+            std::cout << std::endl
+                      << x << "<0 : " << b << ' ' << negativeOperatorInstantiation << " != 0" << std::endl;
+        } else {
+            std::cout << std::endl << x << "<0 : " << boolLessOrEqualOp << std::endl;
+            BOOST_TEST(!"boolLessOp must have boolean value");
+        }
+        BOOST_TEST(boolLessOrEqualOp == b);
+
+        auto ok = b == isLessEq;
+        if (!ok) {
+            std::cout << "X=" << x << " " << ok << " bool: " << b << std::endl;
+            BOOST_TEST(ok);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE(NegativeOrZero_operator_test
+    , *disabled()
+    )
+{
+    DECL_VARS(X);
+    auto NegativeOrZeroOperatorExpression = X.NegativeOrZero();
+    std::cout << "X<=0 : " << NegativeOrZeroOperatorExpression << std::endl;
+    for (auto x = 10; x--> -10;) {
+        auto isLessEq = x <= 0;
+        auto negativeOrZeroOperatorInstantiation = NegativeOrZeroOperatorExpression;
+        Valuable::vars_cont_t evalMap = {{X, x}};
+        std::cout << '\n' << x << "<=0 = ";
+        negativeOrZeroOperatorInstantiation.eval(evalMap);
+        std::cout << " expression that must be equal to zero when true: " << negativeOrZeroOperatorInstantiation
+                  << std::endl;
+
+        negativeOrZeroOperatorInstantiation.optimize();
+        std::cout << std::endl << "Is " << x << "<=0 : " << negativeOrZeroOperatorInstantiation << std::endl;
+        bool b = {};
+        auto boolLessOrEqualOp = negativeOrZeroOperatorInstantiation.ToBool();
+        BOOST_TEST(boolLessOrEqualOp == isLessEq);
+        boolLessOrEqualOp.eval(evalMap);
+        BOOST_TEST(boolLessOrEqualOp == isLessEq);
+        if (boolLessOrEqualOp == true) {
+            BOOST_TEST(boolLessOrEqualOp.IsInt());
+            BOOST_TEST(negativeOrZeroOperatorInstantiation.IsInt());
+            b = negativeOrZeroOperatorInstantiation.IsInt() && negativeOrZeroOperatorInstantiation.ca() == 0;
+            std::cout << std::endl << x << "<=0 : " << b << std::endl;
+        } else if (boolLessOrEqualOp == false) {
+            BOOST_TEST(boolLessOrEqualOp.IsInt());
+            b = negativeOrZeroOperatorInstantiation == 0;
+            std::cout << std::endl
+                      << x << "<=0 : " << b << ' ' << negativeOrZeroOperatorInstantiation << " != 0" << std::endl;
+        } else {
+            std::cout << std::endl << x << "<=0 : " << boolLessOrEqualOp << std::endl;
+            BOOST_TEST(!"boolLessOp must have boolean value");
+        }
+        BOOST_TEST(boolLessOrEqualOp == b);
+
+        auto ok = b == isLessEq;
+        if (!ok) {
+            std::cout << "X=" << x << " Y=0 " << ok << " bool: " << b << std::endl;
+            BOOST_TEST(ok);
         }
     }
 }
