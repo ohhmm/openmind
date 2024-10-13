@@ -111,6 +111,8 @@ namespace math {
     template<class T>
     class TypedVarHost : public VarHost
     {
+        using self_t = TypedVarHost<T>;
+
         std::set<T> varIds;
         std::map<T, hosted_storage_t> hosted;
         friend class VarHost;
@@ -144,16 +146,19 @@ namespace math {
 
     public:
 
+        static constexpr bool IsArithmeticId = std::is_integral<T>::value
+            || std::is_arithmetic<T>::value
+            || std::is_same<T, Valuable>::value
+            || std::is_same<T, Integer>::value
+            || std::is_same<boost::multiprecision::cpp_int, T>::value;
+
         ::std::any NewVarId() override {
 
             T t = {};
             const auto& last = varIds.size() ? *varIds.rbegin() : t;
             if constexpr (std::is_same<std::string, T>::value) {
-                return TypedVarHost<T>::NewVarId();
-            } else if constexpr (std::is_arithmetic<T>::value
-                       || std::is_same<boost::multiprecision::cpp_int, T>::value
-                       || std::is_same<Integer, T>::value
-                       || std::is_same<Valuable, T>::value) {
+                return self_t::NewVarId();
+            } else if constexpr (IsArithmeticId) {
                 auto n = last;
                 typename decltype(varIds)::iterator inserted;
                 do {
@@ -172,7 +177,7 @@ namespace math {
         }
 
         bool IsIntegerId() const override {
-            return std::is_integral<T>::value || std::is_same<T, Integer>::value;
+            return IsArithmeticId;
         }
 
         bool Has(const ::std::any& id) const override {
