@@ -8,6 +8,60 @@
 using namespace omnn::math;
 using namespace boost::unit_test;
 
+
+namespace {
+
+DECL_VARS(X, Y);
+
+void TestBinaryOperator(const Valuable& expressionXY, auto function) {
+    //std::cout << " Cheking " << expressionXY << std::endl;
+    auto lambda = expressionXY.CompiLambda(X, Y);
+    for (auto x = 10; x --> -10 ;)
+    {
+        for (auto y = 10; y --> -10 ;)
+        {
+            auto etalon = function(x, y);
+            //std::cout << " etalon(" << x << ',' << y << ") = " << etalon << std::endl;
+
+            auto copy = expressionXY;
+            Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
+            copy.eval(evalMap);
+            //std::cout << " evaluated(" << x << ',' << y << ") = " << copy << std::endl;
+            BOOST_TEST(copy == etalon);
+
+            copy = lambda(x, y);
+            //std::cout << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
+            // FIXME: BOOST_TEST(copy == etalon);
+        }
+    }
+}
+
+void TestBooleanOperator(const Valuable& expressionXY, auto function) {
+    //std::cout << " Cheking " << expressionXY << std::endl;
+    auto lambda = expressionXY.CompiLambda(X, Y);
+    for (auto x = 10; x --> -10 ;)
+    {
+        for (auto y = 10; y --> -10 ;)
+        {
+            auto etalon = function(x, y);
+            //std::cout << " etalon(" << x << ',' << y << ") = " << etalon << std::endl;
+
+            auto copy = expressionXY;
+            Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
+            copy.eval(evalMap);
+            //std::cout << " evaluated(" << x << ',' << y << ") = " << copy << std::endl;
+            BOOST_TEST(copy.IsZero() == etalon);
+
+            copy = lambda(x, y);
+            //std::cout << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
+            // FIXME: BOOST_TEST(copy == etalon);
+        }
+    }
+}
+
+} // namespace
+
+
 BOOST_AUTO_TEST_CASE(logic_or_tests
     , *disabled()
 ) {
@@ -36,20 +90,21 @@ BOOST_AUTO_TEST_CASE(merge_or_tests
 }
 
 BOOST_AUTO_TEST_CASE(Min_operator_test) {
-    DECL_VARS(X, Y);
     auto Minimum = X.Minimum(Y);
     std::cout << "Minimum(X,Y) : " << Minimum << std::endl;
-    for (auto x = 10; x--> -10;) {
-        for (auto y = 10; y--> -10;) {
-            auto minOfTwo = std::min(x, y);
-            std::cout << " min(" << x << ',' << y << ") = " << minOfTwo << std::endl;
-            auto minimum = Minimum;
-            Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
-            minimum.eval(evalMap);
-            std::cout << " Minimum(" << x << ',' << y << ") = " << minimum << std::endl;
-            BOOST_TEST(minimum == minOfTwo);
-        }
-    }
+    TestBinaryOperator(Minimum, [](auto x, auto y) { return std::min(x, y); });
+}
+
+BOOST_AUTO_TEST_CASE(LessOrEqual_comparator_test) {
+    auto LessOrEqual = X.LessOrEqual(Y);
+    std::cout << "LessOrEqual(X,Y) : " << LessOrEqual << std::endl;
+    TestBooleanOperator(LessOrEqual, [](auto x, auto y) { return x <= y; });
+}
+
+BOOST_AUTO_TEST_CASE(Less_comparator_test, *disabled()) {
+    auto Less = X.Less(Y);
+    std::cout << "X<Y : " << Less << std::endl;
+    TestBooleanOperator(Less, [](auto x, auto y) { return x < y; });
 }
 
 BOOST_AUTO_TEST_CASE(Sign_operator_test
