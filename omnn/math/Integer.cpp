@@ -414,7 +414,7 @@ namespace math {
         if(arbitrary == 0 || (arbitrary == 1 && v.IsInt()))
         {
             if (v == 0) {
-                IMPLEMENT; //NaN
+                Become(NaN());
             }
             return *this;
         } else if ((arbitrary == 1 || arbitrary == -1) && v.IsSimpleFraction()) {
