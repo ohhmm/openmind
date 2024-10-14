@@ -18,18 +18,23 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/preprocessor.hpp>
 #include <boost/rational.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/serialization.hpp>
+
+// Add forward declaration for VarHost class
+class VarHost;
 
 #define _NUM2STR(x) #x
 #define NUM2STR(x) _NUM2STR(x)
 #define LINE_NUMBER_STR NUM2STR(__LINE__)
 
 #define IMPLEMENT {                                                                                                    \
-        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                                   \
-        throw;                                                                                                         \
+        throw std::logic_error(__FILE__ ":" LINE_NUMBER_STR " not implemented");                                       \
     }
-#define LOG_AND_IMPLEMENT(Param) { \
-    ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
-        throw;                                                                                                          \
+#define LOG_AND_IMPLEMENT(Param) {                                                                                     \
+        throw std::logic_error(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
     }
 
 
@@ -42,6 +47,7 @@ class Exponentiation;
 class Fraction;
 class Sum;
 size_t hash_value(const omnn::math::Valuable& v);
+void OmitOuterBrackets(std::string_view& s);
 } // namespace math
 } // namespace omnn
 
@@ -137,6 +143,10 @@ protected:
     static constexpr max_exp_t const& max_exp_z = max_exp_cz;
     max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
+    bool optimized = false;
+
+    void MarkAsOptimized();
+
 public:
 
     /// <summary>
@@ -212,16 +222,16 @@ public:
         return OrMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
     }
     friend constexpr YesNoMaybe operator&&(YesNoMaybe _1, YesNoMaybe _2){
-        constexpr omnn::math::Valuable::YesNoMaybe AndMap[] = {
+        constexpr YesNoMaybe AndMap[] = {
             // Yes = 1, Maybe = 10, No = 100
             {},              // 000 bug
-            omnn::math::Valuable::YesNoMaybe::Yes, // 001 yes
-            omnn::math::Valuable::YesNoMaybe::Maybe, // 010 maybe
-            omnn::math::Valuable::YesNoMaybe::Maybe,   // 011  yes, maybe
-            omnn::math::Valuable::YesNoMaybe::No, // 100 no
-            omnn::math::Valuable::YesNoMaybe::No, // 101 yes,no
-            omnn::math::Valuable::YesNoMaybe::No, // 110 maybe,no
-            omnn::math::Valuable::YesNoMaybe::No, // 111 yes,maybe,no
+            YesNoMaybe::Yes, // 001 yes
+            YesNoMaybe::Maybe, // 010 maybe
+            YesNoMaybe::Maybe,   // 011  yes, maybe
+            YesNoMaybe::No, // 100 no
+            YesNoMaybe::No, // 101 yes,no
+            YesNoMaybe::No, // 110 maybe,no
+            YesNoMaybe::No, // 111 yes,maybe,no
         };
         return AndMap[static_cast<uint8_t>(_1) | static_cast<uint8_t>(_2)];
     }
@@ -484,6 +494,7 @@ public:
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
     Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
+    void ParseExpression(const std::string_view& s, const va_names_t& vaNames, bool itIsOptimized);
 
 	Valuable operator!() const;
     explicit operator bool() const;
@@ -693,19 +704,32 @@ public:
 
     [[nodiscard]] virtual bool is_optimized() const;
 
-protected:
-    View view = View::Flat;
-    bool optimized = false;
-    void MarkAsOptimized();
+    void CleanupExp();
 
-    //   TODO : std::shared_ptr<std::vector<Valuable>> cachedValues;
+private:
+    friend class boost::serialization::access;
+
+    View view = View::Flat;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        ar & exp;
+        ar & hash;
+        ar & sz;
+        ar & maxVaExp;
+        ar & view;
+        ar & optimized;
+    }
+
 };
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(Valuable)
 
 template<class T>
 const T& Valuable::as() const {
     auto& the = get();
     if(!the.Is<T>()){
-        IMPLEMENT
+        throw std::runtime_error("Type mismatch in Valuable::as()");
     }
     return static_cast<const T&>(the);
 }
@@ -744,17 +768,11 @@ const Valuable vf<I>::val = I;
 
 namespace std {
 
-template <class T>
-    requires std::derived_from<T, ::omnn::math::Valuable>
-struct hash<T> {
-    constexpr size_t operator()(const T& v) const { return static_cast<const omnn::math::Valuable&>(v).Hash(); }
-};
+// Removed conflicting template specialization for std::hash for derived types of omnn::math::Valuable
 
 } // namespace std
 
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
-const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
-//constexpr
-::omnn::math::Valuable operator"" _v(unsigned long long v);
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
-::omnn::math::Valuable operator"" _v(long double v);
+extern ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l);
+extern const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l);
+extern ::omnn::math::Valuable operator"" _v(unsigned long long v);
+extern ::omnn::math::Valuable operator"" _v(long double v);
