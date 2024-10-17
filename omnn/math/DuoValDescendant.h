@@ -7,7 +7,7 @@
 #pragma once
 #include <omnn/math/ValuableDescendantContract.h>
 
-#include <rt/antiloop.hpp>
+#include <omnn/rt/antiloop.hpp>
 
 #include <utility>
 
