@@ -19,3 +19,13 @@ BOOST_AUTO_TEST_CASE(PrincipalSurd_test) {
     _2 = PrincipalSurd(6) * 2 * constants::i;
     BOOST_TEST(_1 == _2);
 }
+
+BOOST_AUTO_TEST_CASE(RadicalExpressions_noHang_test
+    , *timeout(2)
+    * disabled()
+    )
+{
+    Valuable _1("((sqrt(111))*((-6)/37) + ((-35)/((sqrt(111))*2)))");
+    Valuable _2("((-17)/111)*sqrt(111)");
+    auto _ = _1 + _2;
+}
