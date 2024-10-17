@@ -1143,11 +1143,11 @@ namespace math {
                     } else if (Has(v)) {
                         isLess = *this / v < constants::one;
                     } else {
-                        auto bigger = rt::find_if(members, 
+                        auto bigger = rt::find_if(members,
                             [&](auto& item) {
                                 return v.operator<(item);
                             });
-                        auto found = bigger != members.end(); 
+                        auto found = bigger != members.end();
                         if (found) {
                             auto rest = *this / *bigger;
                             if (rest >= constants::one) {
