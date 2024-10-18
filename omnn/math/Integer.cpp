@@ -1171,3 +1171,4 @@ namespace math {
 }
 }
 
+BOOST_CLASS_EXPORT(::omnn::math::Integer);

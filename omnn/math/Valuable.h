@@ -20,8 +20,10 @@
 #include <boost/rational.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/split_member.hpp>
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/split_member.hpp>
+
 
 #define _NUM2STR(x) #x
 #define NUM2STR(x) _NUM2STR(x)
@@ -708,12 +710,14 @@ protected:
 
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
-        ar & exp;
-        ar & hash;
-        ar & sz;
-        ar & maxVaExp;
-        ar & view;
-        ar & optimized;
+        if (exp) {
+            ar & exp;
+        } else {
+            ar & hash;
+            ar & maxVaExp;
+            ar & view;
+            ar & optimized;
+        }
     }
 
 };
