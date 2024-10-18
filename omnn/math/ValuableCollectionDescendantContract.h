@@ -412,9 +412,9 @@ namespace math {
         friend class boost::serialization::access;
 
         template<class Archive>
-        void serialize(Archive & ar, const unsigned int version) {
-            ar & boost::serialization::base_object<ValuableDescendantContract<ChildT>>(*this);
-            ar & GetCont();
+        void serialize(Archive & archive, const unsigned int version) {
+            archive & boost::serialization::base_object<base>(*this);
+            archive & GetCont();
         }
     };
 }}

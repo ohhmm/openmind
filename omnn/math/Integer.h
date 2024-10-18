@@ -3,11 +3,26 @@
 //
 
 #pragma once
-#include <omnn/math/ValuableDescendantContract.h>
-#include <type_traits>
 
-namespace omnn{
-namespace math {
+#include <omnn/math/ValuableDescendantContract.h>
+
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/polymorphic_text_oarchive.hpp>
+#include <boost/archive/polymorphic_text_iarchive.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+
+namespace omnn::math {
 
     class Fraction;
 
@@ -234,8 +249,14 @@ public:
 
 private:
 	base_int arbitrary = 0;
+
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void serialize(Archive& archive, const unsigned int version) {
+        archive & boost::serialization::base_object<Valuable>(*this);
+        archive & BOOST_SERIALIZATION_NVP(arbitrary);
+    }
 };
 
-
-}
 }

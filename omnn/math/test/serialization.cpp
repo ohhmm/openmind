@@ -118,3 +118,133 @@ BOOST_AUTO_TEST_CASE(BoostSerialization_test)
         std::cout << shape->draw() << std::endl;
     }
 }
+
+BOOST_AUTO_TEST_CASE(ValuableExpressionSerialization_Addition_test)
+{
+    // Create a Valuable expression for addition
+    Valuable a(5);
+    Valuable b(3);
+    Valuable sum = a + b;
+
+    // Serialize the expression
+    std::stringstream ss;
+    {
+        boost::archive::text_oarchive oa(ss);
+        oa << sum;
+    }
+
+    // Deserialize the expression
+    Valuable loaded_sum;
+    {
+        boost::archive::text_iarchive ia(ss);
+        ia >> loaded_sum;
+    }
+
+    // Verify the deserialized expression
+    BOOST_CHECK_EQUAL(loaded_sum, sum);
+    BOOST_CHECK_EQUAL(loaded_sum, 8);
+}
+
+BOOST_AUTO_TEST_CASE(ValuableExpressionSerialization_Subtraction_test)
+{
+    // Create a Valuable expression for subtraction
+    Valuable a(10);
+    Valuable b(4);
+    Valuable diff = a - b;
+
+    // Serialize the expression
+    std::stringstream ss;
+    {
+        boost::archive::text_oarchive oa(ss);
+        oa << diff;
+    }
+
+    // Deserialize the expression
+    Valuable loaded_diff;
+    {
+        boost::archive::text_iarchive ia(ss);
+        ia >> loaded_diff;
+    }
+
+    // Verify the deserialized expression
+    BOOST_CHECK_EQUAL(loaded_diff, diff);
+    BOOST_CHECK_EQUAL(loaded_diff, 6);
+}
+
+BOOST_AUTO_TEST_CASE(ValuableExpressionSerialization_Multiplication_test)
+{
+    // Create a Valuable expression for multiplication
+    Valuable a(6);
+    Valuable b(7);
+    Valuable product = a * b;
+
+    // Serialize the expression
+    std::stringstream ss;
+    {
+        boost::archive::text_oarchive oa(ss);
+        oa << product;
+    }
+
+    // Deserialize the expression
+    Valuable loaded_product;
+    {
+        boost::archive::text_iarchive ia(ss);
+        ia >> loaded_product;
+    }
+
+    // Verify the deserialized expression
+    BOOST_CHECK_EQUAL(loaded_product, product);
+    BOOST_CHECK_EQUAL(loaded_product, 42);
+}
+
+BOOST_AUTO_TEST_CASE(ValuableExpressionSerialization_Division_test)
+{
+    // Create a Valuable expression for division
+    Valuable a(20);
+    Valuable b(4);
+    Valuable quotient = a / b;
+
+    // Serialize the expression
+    std::stringstream ss;
+    {
+        boost::archive::text_oarchive oa(ss);
+        oa << quotient;
+    }
+
+    // Deserialize the expression
+    Valuable loaded_quotient;
+    {
+        boost::archive::text_iarchive ia(ss);
+        ia >> loaded_quotient;
+    }
+
+    // Verify the deserialized expression
+    BOOST_CHECK_EQUAL(loaded_quotient, quotient);
+    BOOST_CHECK_EQUAL(loaded_quotient, 5);
+}
+
+BOOST_AUTO_TEST_CASE(ValuableExpressionSerialization_Exponentiation_test)
+{
+    // Create a Valuable expression for exponentiation
+    Valuable base(2);
+    Valuable exponent(3);
+    Valuable power = base ^ exponent;
+
+    // Serialize the expression
+    std::stringstream ss;
+    {
+        boost::archive::text_oarchive oa(ss);
+        oa << power;
+    }
+
+    // Deserialize the expression
+    Valuable loaded_power;
+    {
+        boost::archive::text_iarchive ia(ss);
+        ia >> loaded_power;
+    }
+
+    // Verify the deserialized expression
+    BOOST_CHECK_EQUAL(loaded_power, power);
+    BOOST_CHECK_EQUAL(loaded_power, 8);
+}
