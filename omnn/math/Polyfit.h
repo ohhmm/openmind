@@ -58,17 +58,17 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     // more intuitive this way
     nDegree++;
 
-    auto nCount =  oX.size();
-    matrix_t oXMatrix( nCount, nDegree );
-    matrix_t oYMatrix( nCount, 1 );
+    auto nCount = oX.size();
+    matrix_t oXMatrix(nCount, nDegree);
+    matrix_t oYMatrix(nCount, 1);
     // copy y matrix
-    for ( size_t i = 0; i < nCount; i++ )
+    for (size_t i = 0; i < nCount; i++)
     {
         new (&oYMatrix(i, 0)) T(oY[i]);
     }
 
     // create the X matrix
-    for ( size_t nRow = 0; nRow < nCount; nRow++ )
+    for (size_t nRow = 0; nRow < nCount; nRow++)
     {
         T nVal = 1.0f;
         for (size_t nCol = 0; nCol < nDegree; nCol++)
@@ -79,30 +79,32 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     }
 
     // Scale input data
-    T xMean = std::accumulate(oX.begin(), oX.end(), T(0)) / oX.size();
-    T xStd = std::sqrt(std::inner_product(oX.begin(), oX.end(), oX.begin(), T(0)) / oX.size() - xMean * xMean);
-    T yMean = std::accumulate(oY.begin(), oY.end(), T(0)) / oY.size();
-    T yStd = std::sqrt(std::inner_product(oY.begin(), oY.end(), oY.begin(), T(0)) / oY.size() - yMean * yMean);
+    T xMean = std::accumulate(oX.begin(), oX.end(), T(0)) / T(nCount);
+    T xStd = std::sqrt(std::inner_product(oX.begin(), oX.end(), oX.begin(), T(0)) / T(nCount) - xMean * xMean);
+    T yMean = std::accumulate(oY.begin(), oY.end(), T(0)) / T(nCount);
+    T yStd = std::sqrt(std::inner_product(oY.begin(), oY.end(), oY.begin(), T(0)) / T(nCount) - yMean * yMean);
 
     std::cout << "Debug: xMean = " << xMean << ", xStd = " << xStd << ", yMean = " << yMean << ", yStd = " << yStd << std::endl;
 
+    // Apply scaling to X matrix and Y vector
     for (size_t i = 0; i < nCount; ++i) {
         for (size_t j = 0; j < nDegree; ++j) {
-            oXMatrix(i, j) = std::pow(oX[i] - xMean, j) / std::pow(xStd, j);
+            oXMatrix(i, j) = std::pow((oX[i] - xMean) / xStd, T(j));
         }
         oYMatrix(i, 0) = (oY[i] - yMean) / yStd;
     }
+
     // transpose X matrix
-    matrix_t oXtMatrix( trans(oXMatrix) );
+    matrix_t oXtMatrix(trans(oXMatrix));
     // multiply transposed X matrix with X matrix
-    matrix_t oXtXMatrix( prec_prod(oXtMatrix, oXMatrix) );
+    matrix_t oXtXMatrix(prec_prod(oXtMatrix, oXMatrix));
     // multiply transposed X matrix with Y matrix
-    matrix_t oXtYMatrix( prec_prod(oXtMatrix, oYMatrix) );
+    matrix_t oXtYMatrix(prec_prod(oXtMatrix, oYMatrix));
 
     // Add regularization to handle near-singular matrices
-    const T lambda = 1e-8; // Adjusted regularization parameter
+    const T lambda = T(1e-6); // Adjusted regularization parameter
     for (size_t i = 0; i < oXtXMatrix.size1(); ++i) {
-        oXtXMatrix(i, i) += lambda;
+        oXtXMatrix(i, i) += lambda * (T(1) + std::abs(oXtXMatrix(i, i)));
     }
 
     std::cout << "Debug: Regularization parameter lambda = " << lambda << std::endl;
@@ -119,11 +121,11 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     std::cout << std::endl;
 
     // Check for near-zero determinant
-    T det = 1;
+    T det = T(1);
     for (size_t i = 0; i < oXtXMatrix.size1(); ++i) {
         det *= oXtXMatrix(i, i);
     }
-    std::cout << "Debug: Determinant before LU decomposition: " << det << std::endl;
+    std::cout << "Debug: Determinant after regularization: " << det << std::endl;
 
     // Check for singularity after regularization
     det = 1;
