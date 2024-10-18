@@ -8,6 +8,9 @@
 #include <omnn/math/Modulo.h>
 #include <omnn/math/Variable.h>
 #include <omnn/math/Exponentiation.h>
+#include <omnn/math/Fraction.h>
+#include <omnn/math/Product.h>
+
 
 using namespace omnn::math;
 
@@ -49,7 +52,12 @@ max_exp_t Modulo::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
 	return _1.getMaxVaExp();
 }
 
+bool Modulo::operator==(const Modulo& modulo) const {
+    return base::operator ==(modulo);
+}
+
 void Modulo::optimize() {
+    DUO_OPT_PFX
     _1.optimize();
     _2.optimize();
     if (_1.IsModulo()) {
@@ -80,6 +88,16 @@ void Modulo::optimize() {
                 Become(0_v);
             else
                 Become(std::move(_1 %= _2));
+        }
+    }
+    if (IsModulo()) {
+        auto gcd = _1.GCD(_2);
+        if (gcd != constants::one) {
+            _1 /= gcd;
+            _2 /= gcd;
+            hash = _1.Hash() ^ _2.Hash();
+            Become(Product{std::move(gcd), std::move(*this)});
+            return;
         }
     }
     if (IsModulo()) {
