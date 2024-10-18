@@ -64,10 +64,10 @@ omnn::math::Cache::~Cache() {
 #endif
 }
 
-Cache::Cached Cache::AsyncFetch(const Valuable &v, bool itIsOptimized) {
+Cache::Cached Cache::AsyncFetch(const Valuable &value, bool itIsOptimized) {
   using self_t = std::remove_reference<decltype(*this)>::type;
-    auto&& task = std::async(std::launch::async, &self_t::GetOne,
-                             this, v.str(), v.VaNames(), itIsOptimized);
+  auto&& task = std::async(std::launch::async, &self_t::GetOneUsingVarHost,
+                           this, value.str(), value.getVaHost(), itIsOptimized);
 //    Cache::Cached cached(task);
   return std::move(task);
 }
