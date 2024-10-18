@@ -303,7 +303,7 @@ namespace omnn::math {
                 if (_1.IsMultival() == YesNoMaybe::No && _2.IsMultival() == YesNoMaybe::No) {
                     merged = (Exponentiation(d, constants::half) + s) / constants::two;
                 } else {
-                    auto dist = _1.Distinct(); // FIXME : not efficient branch, prefere better specializations
+                    auto dist = _1.Distinct(); // FIXME : not efficient branch, prefer better specializations
                     dist.merge(_2.Distinct());
                     auto grade = dist.size();
                     auto targetGrade = constants::one.Shl(bits_in_use(grade));
@@ -792,7 +792,19 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             else if (!isdigit(s[0])
                 && std::all_of(s.begin(), s.end(), [](auto c) { return std::isalnum(c); })
                 )
-                Become(Valuable(h->Host(s)));
+            {
+                auto it = constants::Constants.find(s);
+                if (it != constants::Constants.end()) {
+                    Valuable v(it->second);
+                    if (itIsOptimized)
+                        v.MarkAsOptimized();
+                    Become(std::move(v));
+                } else if (h != nullptr) {
+                    Become(Valuable(h->Host(s)));
+                } else {
+                    LOG_AND_IMPLEMENT("Parse " << s);
+                }
+            }
             else
                 ok = {};
         }
