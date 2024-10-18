@@ -762,14 +762,16 @@ namespace math {
         if(is.first)
         {
             is.second.optimize();
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
             if (is.first) {
-                is.first = is.second.Complexity() < Complexity() + v.Complexity()
+                auto complexityHasImproved = is.second.Complexity() < Complexity() + v.Complexity();
+                is.first = complexityHasImproved
 					|| is.second.IsSum() // checked in Sum::IsMultiplicationSimplifiable
+                    || is.second.str().length() < str().length() + v.str().length()
                     || (is.second.IsProduct() && is.second.as<Product>().members.size() < (members.size() + (v.IsProduct() ? v.as<Product>().members.size() : 1)));
                 if (!is.first) {
                     LOG_AND_IMPLEMENT("IsMultiplicationSimplifiable: "
-                                      << str() << '[' << Complexity() << "] + " << v.str() << '[' << v.Complexity()
+                                      << str() << '[' << Complexity() << "] * " << v.str() << '[' << v.Complexity()
                                       << "] = " << is.second.str() << '[' << is.second.Complexity() << ']');
                 }
             }
