@@ -455,11 +455,6 @@ namespace omnn::math {
 //                    IMPLEMENT
                     break;
                 }
-                case View::Equation: {
-                    if(eexp().IsSimple())
-                        Become(std::move(ebase()));
-                    break;
-                }
                 case View::Fraction: {
                     if (eexp().IsSimple() && eexp() < constants::zero) {
                         updateExponentiation(-eexp());
@@ -470,6 +465,10 @@ namespace omnn::math {
                 default: {
                     LOG_AND_IMPLEMENT(*this << " mode is " << static_cast<int>(view));
                 }
+            }
+            if (IsEquation()) {
+                if (eexp().IsSimple())
+                    Become(std::move(ebase()));
             }
         }
 
