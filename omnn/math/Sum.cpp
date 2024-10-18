@@ -16,7 +16,7 @@
 #include "VarHost.h"
 #include "Cache.h"
 
-#include <rt/antiloop.hpp>
+#include <omnn/rt/antiloop.hpp>
 #include <rt/cl.h>
 #include <rt/each.hpp>
 

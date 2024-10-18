@@ -9,7 +9,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include "SymmetricDouble.h"
-#include "Polyfit.h"
 #include "Variable.h"
 
 using namespace std;
