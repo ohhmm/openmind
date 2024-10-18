@@ -23,6 +23,8 @@ namespace omnn::math {
 		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
         std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
         bool MultiplyIfSimplifiable(const Valuable& v) override { return {}; }
+
+        explicit operator double() const override;
     };
 
     namespace constant {

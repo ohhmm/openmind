@@ -14,7 +14,7 @@
 #include "PrincipalSurd.h"
 #include "VarHost.h"
 
-#include <rt/antiloop.hpp>
+#include <omnn/rt/antiloop.hpp>
 #include <rt/find.hpp>
 
 #include <type_traits>

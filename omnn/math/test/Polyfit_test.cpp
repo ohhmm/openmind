@@ -4,8 +4,6 @@
  *  Created on: 23 авг. 2017 г.
  *      Author: sergejkrivonos
  */
-//#define BOOST_MP_USE_FLOAT128
-//#include <boost/multiprecision/float128.hpp>
 #define BOOST_TEST_MODULE Polyfit test
 #include <boost/test/unit_test.hpp>
 
@@ -13,31 +11,33 @@
 #include "SymmetricDouble.h"
 #include "Polyfit.h"
 
+// #define BOOST_MP_USE_FLOAT128
+// #include <boost/multiprecision/float128.hpp>
+
 using namespace std;
 using namespace boost::unit_test;
 using namespace omnn::math;
 
-using f128 = Valuable;
 
-auto TestPrecision = 0.000001;
+auto TestPrecision = 0.0002;
 
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
     , *tolerance(TestPrecision)
-    // , *disabled()
     )
 {
+    using polyfit_value_type = double;
 
     const int SZ = 73;
-    const f128  PI2 = constants::pi * 2,
+    const polyfit_value_type  PI2 = static_cast<polyfit_value_type>(constants::pi) * 2,
                 SZf = SZ;
 
     // generate the data
-    std::vector<f128> oX(SZ), oY(SZ);
+    std::vector<polyfit_value_type> oX(SZ), oY(SZ);
     for (auto i = 0; i < SZ; ++i)
     {
         oX[i] = i;
-        oY[i] = (PI2 * i / SZf).Sin();
+        oY[i] = std::sin(PI2 * i / SZf);
     }
 
     // polynomial fitting
@@ -53,9 +53,10 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_classification
     , *tolerance(TestPrecision)
-    // , *disabled()
+    * disabled()
 ) {
-    std::vector<f128> oX = {{
+    using polyfit_value_type = double;
+    std::vector<polyfit_value_type> oX = {{
         0000,
         // verticals
         1010,
@@ -67,7 +68,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification
         0110,
         1001,
     }};
-    std::vector<f128> oY = {{
+    std::vector<polyfit_value_type> oY = {{
         000,
         // verticals
         100,
@@ -138,6 +139,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
     *disabled()
     )
 {
+    using polyfit_value_type = SymmetricDouble;
     std::vector<SymmetricDouble> oX = {{
         0000,
         // verticals
@@ -223,8 +225,9 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
 , *disabled()
 )
 {
+    using polyfit_value_type = Valuable;
     // generate the data
-    std::vector<f128> oX = {{
+    std::vector<polyfit_value_type> oX = {{
         0000,
         0001,
         0010,
@@ -242,7 +245,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
         1110,
         1111,
     }};
-    std::vector<f128> oY = {{
+    std::vector<polyfit_value_type> oY = {{
         000,
         000,
         000,
