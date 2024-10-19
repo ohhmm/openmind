@@ -44,7 +44,7 @@ namespace
     CACHE(DbSumSolutionsARootCache);
     CACHE(DbSumSqCache);
 
-        
+
         // inequality should cover all cases
         auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
         {
@@ -280,8 +280,13 @@ namespace
         if (v.IsInt())
             return v.GCD(GCDofMembers()); 
         auto gcd = base::GCD(v);
-        if (gcd == constants::one)
-            gcd = v.GCD(GCDofMembers());
+        if (gcd == constants::one) {
+            auto gcdm = GCDofMembers();
+            gcd = v.GCD(gcdm);
+            if (gcd == constants::one && v.IsSum()) {
+                gcd = gcdm.gcd(v.as<Sum>().GCDofMembers());
+            }
+        }
         return gcd;
     }
 
@@ -363,10 +368,10 @@ namespace
                     continue;
                 }
                 else if (it->IsZero()) {
-					Delete(it);
-					continue;
-				} else
-					++it;
+                    Delete(it);
+                    continue;
+                } else
+                    ++it;
             }
 
             //if (isBalancing)
@@ -399,9 +404,9 @@ namespace
                             auto next = it;
                             ++next;
                             is = std::none_of(next, e, [this](auto& m) { return VarSurdFactor(m); });
-						}
+                        }
                         return is;
-					};
+                    };
                     if (it->IsPrincipalSurd()) {
                         if (SurdIsReducable(it)) {
                             auto ps = Extract(it);
@@ -427,10 +432,10 @@ namespace
                             }
                             else {
                                 ++it;
-							}
+                            }
                         } else {
-							break;
-						}
+                            break;
+                        }
                     }
                     else
                         ++it;
@@ -449,12 +454,12 @@ namespace
                     }
                 }
             }
-            
+
             if (checkCache) {
                 Become(checkCache);
                 return;
             }
-            
+
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->IsSum()) {
@@ -465,36 +470,36 @@ namespace
                     Delete(it);
                     continue;
                 }
-                
+
                 auto it2 = it;
                 ++it2;
                 Valuable c = *it;
                 Valuable mc, inc;
-                
+
                 auto up = [&](){
                     mc = -c;
                 };
 
                 up();
-                
+
                 auto comVaEq = [&]() {
                     auto& ccv = c.getCommonVars();
                     auto ccvsz = ccv.size();
                     auto& itcv = it2->getCommonVars();
                     auto itcvsz = itcv.size();
                     return ccvsz
-                        && ccvsz == itcvsz 
+                        && ccvsz == itcvsz
                         && std::equal(//TODO:std::execution::par,
                             ccv.cbegin(), ccv.cend(), itcv.cbegin());
                 };
-                
+
                 for (; it2 != members.end();)
                 {
                     if (checkCache) {
                         Become(checkCache);
                         return;
                     }
-                    
+
                     if(c.IsSum()){
                         break;
                     }
@@ -567,18 +572,18 @@ namespace
                     return;
                 }
                 auto copy = *it;
-                
+
                 if (checkCache) {
                     Become(checkCache);
                     return;
                 }
                 copy.optimize();
-                
+
                 if (checkCache) {
                     Become(checkCache);
                     return;
                 }
-                
+
                 if (!it->Same(copy)) {
                     Update(it, copy);
                 }
