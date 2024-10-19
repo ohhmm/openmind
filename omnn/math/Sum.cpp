@@ -44,6 +44,7 @@ namespace
     CACHE(DbSumSolutionsARootCache);
     CACHE(DbSumSqCache);
 
+    Cache::Cached NoCachedItem;
         
         // inequality should cover all cases
         auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
@@ -322,7 +323,7 @@ namespace
         auto doCheck = s.length() > 10;
         auto isBalancing = IsEquation();
         auto& db = isBalancing ? DbSumBalancingCache : DbSumOptimizationCache;
-        auto checkCache = doCheck ? db.AsyncFetch(*this, true) : Cache::Cached();
+        auto& checkCache = doCheck ? db.AsyncFetch(*this, true) : NoCachedItem;
 
         Valuable w;
         do
@@ -1286,7 +1287,7 @@ namespace
 
     Valuable& Sum::sq()
     {
-        auto cached = DbSumSqCache.AsyncFetch(*this, true);
+        auto& cached = DbSumSqCache.AsyncFetch(*this, true);
         Sum sum;
         auto e = end();
         for (auto i = begin(); i != e; ++i)
@@ -1680,9 +1681,9 @@ namespace
         }
         
         auto doCheck = grade > 2;
-        auto checkCached = doCheck
+        auto& checkCached = doCheck
                             ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true)
-                            : Cache::Cached();
+                            : NoCachedItem;
         if (grade == 2) {
             auto& a = coefficients[2];
             auto& b = coefficients[1];
@@ -1995,7 +1996,7 @@ namespace
                     solutions = asyncCheckAllRootsCached;
                     return;
                 }
-                auto asyncCheckAnyRootCached = DbSumSolutionsARootCache.AsyncFetch(*this, true);
+                auto& asyncCheckAnyRootCached = DbSumSolutionsARootCache.AsyncFetch(*this, true);
                 if(asyncCheckAllRootsCached){
                     solutions = asyncCheckAllRootsCached;
                     return;

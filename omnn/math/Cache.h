@@ -101,7 +101,7 @@ namespace fs = boost::filesystem;
         Cache(const path_str_t& path);
         ~Cache();
 
-        Cached AsyncFetch(const Valuable& v, bool itIsOptimized = false);
+        Cached& AsyncFetch(const Valuable& v, bool itIsOptimized = false);
         CheckCacheResult GetOneUsingVarHost(std::string&& key, VarHost::ptr host, bool itIsOptimized = false);
         CheckCacheResult GetOne(std::string&& key, Valuable::va_names_t&& vaNames, bool itIsOptimized = false);
         
