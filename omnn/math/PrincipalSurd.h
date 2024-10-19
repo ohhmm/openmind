@@ -72,6 +72,7 @@ public:
     Valuable InCommonWith(const Valuable&) const override;
     Valuable InCommonWith(const PrincipalSurd&) const;
     const Valuable::vars_cont_t& getCommonVars() const override;
+    Valuable varless() const override;
 
     void solve(const Variable&, solutions_t&) const override;
 };
