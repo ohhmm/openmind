@@ -212,6 +212,10 @@ Valuable PrincipalSurd::InCommonWith(const PrincipalSurd& surd) const {
         }
     }
     else {
+        auto gcdRadicands = Radicand().GCD(surd.Radicand());
+        if (gcdRadicands == constants::one) {
+            return gcdRadicands;
+        }
         LOG_AND_IMPLEMENT(*this << " InCommonWith " << surd);
     }
     return constants::one;
