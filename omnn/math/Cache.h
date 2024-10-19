@@ -13,6 +13,7 @@ class DB;
 
 #include <boost/filesystem.hpp>
 
+#include <rt/tasq.h>
 #include <storage/CacheBase.h>
 
 #include <omnn/math/VarHost.h>
@@ -28,10 +29,18 @@ namespace fs = boost::filesystem;
     public:
         using path_str_t = fs::path;
         using CheckCacheResult = std::pair<bool,Valuable>;
+        class Cached;
+        using cache_get_value_task_queue_t = ::omnn::rt::StoringTasksQueue<CheckCacheResult, Cached>;
+
+        static bool GlobalCacheCancel;
+        static Cached TaskNoCache;
+
 
         template <typename ResultT>
-        class CachedValueBase : public std::future<ResultT> {
-          using base = std::future<ResultT>;
+        class CachedValueBase
+            : public ::omnn::rt::StoringTasksQueue<ResultT>::task_type
+        {
+            using base = ::omnn::rt::StoringTasksQueue<ResultT>::task_type;
             ResultT result = {};
             bool extracted = {};
             void Extract() {

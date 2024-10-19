@@ -38,9 +38,8 @@ private:
     std::tuple<Args...> data;
 };
 
-using StoringTask = std::future<bool>;
 template <typename ResultT = bool,
-    typename TaskT = std::future<ResultT>,
+    typename TaskT = std::shared_future<ResultT>,
     typename BaseContainerT = std::queue<TaskT>,
     size_t Threads = 1024,
     size_t CleanUpGauge = Threads / 16
@@ -79,9 +78,16 @@ protected:
     }
 
 public:
+    using task_type = TaskT;
+
     StoringTasksQueue(bool autoCleanUp = true)
         : CleanUp(autoCleanUp)
     {}
+
+    ~StoringTasksQueue() {
+        while (!this->empty())
+            PopCurrentTask(); // delete chronologically rather then base implementation backward-chronological deletion
+    }
 
     template <class FnT, class ...ParamsT>
     auto& AddTask(FnT&& call, ParamsT&&... params) {

@@ -972,11 +972,14 @@ namespace omnn::math {
 
     bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
-        auto mve = getMaxVaExp();
-        auto vmve = v.getMaxVaExp();
-        auto is = mve > vmve;
-        if (mve != vmve)
+        auto is = v.IsSimple();
+        if (is)
         {}
+        else if (auto degreeDiff = getMaxVaExp() - v.getMaxVaExp();
+            degreeDiff != 0)
+        {
+            is = degreeDiff > 0;
+        }
         else if (v.IsExponentiation())
         {
             auto& e = v.as<Exponentiation>();
@@ -1011,7 +1014,7 @@ namespace omnn::math {
         {
             is = !(v.IsComesBefore(*this) || operator==(v));
         }
-        else if(v.IsInt())
+        else if(v.IsSimple())
             is = true;
 //        else if(v.IsFraction())
 //        {is=}

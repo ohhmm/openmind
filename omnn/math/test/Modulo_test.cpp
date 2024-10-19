@@ -5,12 +5,9 @@
  *      Author: sergejkrivonos
  */
 #define BOOST_TEST_MODULE Modulo test
-#include <boost/test/unit_test.hpp>
 #include <omnn/math/Modulo.h>
-#include <omnn/math/Variable.h>
+#include "generic.hpp"
 
-using namespace omnn::math;
-using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(Modulo_test)
 {
@@ -27,10 +24,16 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     BOOST_TEST(7_v % 3 == p);
 }
 
+BOOST_AUTO_TEST_CASE(ModIntLess_comparator_test, *disabled()) {
+    auto Less = X.IntMod_Less(Y);
+    std::cout << "X<Y : " << Less << std::endl;
+    TestBooleanOperator(Less, [](auto x, auto y) { return x < y; });
+}
+
 // According to ChatGPT:
 // sgn(x) = (x > 0) - (x < 0)
 // (x > 0) = (x % (x - 1)) * ((x - 1) % x)
-// wrong and division by zero was ignored, but its more insightful then missleading
+// wrong and division by zero was ignored, but its more insightful then misleading
 // thanks to the ChatGPT creators
 BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test) {
     DECL_VA(X);

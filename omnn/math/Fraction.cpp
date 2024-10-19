@@ -682,6 +682,8 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
             is = FindVa();
         else if(v.IsInt())
             is = true;
+        else if (IsSimple() && v.IsExponentiation())
+            is = {};
         else
             IMPLEMENT
 

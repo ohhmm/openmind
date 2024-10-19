@@ -6,7 +6,6 @@
 #include <iostream>
 #include <thread>
 
-#include <rt/tasq.h>
 #include <storage/LevelDbCache.h>
 
 #include <boost/tokenizer.hpp>
@@ -15,8 +14,12 @@
 using namespace omnn::math;
 using namespace omnn::rt;
 
-namespace {
 
+bool Cache::GlobalCacheCancel = {};
+Cache::Cached Cache::TaskNoCache;
+
+
+namespace {
 
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
 void DeleteDB(const Cache::path_str_t& path) {
@@ -24,7 +27,15 @@ void DeleteDB(const Cache::path_str_t& path) {
     fs::remove_all(path);
 }
 #endif
+
+auto CancelAtExit = []() -> nullptr_t {
+    atexit([]() {
+        Cache::GlobalCacheCancel = true;
+    });
+    return {};
+}();
 }
+
 
 void Cache::DbOpen() {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
@@ -60,7 +71,7 @@ Cache::Cache(const Cache::path_str_t &path) {
 omnn::math::Cache::~Cache() {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
   if(db)
-    delete db; // hopely it has overloaded operator delete inside its image
+    delete db;
 #endif
 }
 
