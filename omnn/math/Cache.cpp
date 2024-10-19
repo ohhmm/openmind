@@ -75,12 +75,17 @@ omnn::math::Cache::~Cache() {
 #endif
 }
 
-Cache::Cached Cache::AsyncFetch(const Valuable &v, bool itIsOptimized) {
+Cache::Cached Cache::AsyncFetch(const Valuable &value, bool itIsOptimized) {
   using self_t = std::remove_reference<decltype(*this)>::type;
-    auto&& task = std::async(std::launch::async, &self_t::GetOne,
-                             this, v.str(), v.VaNames(), itIsOptimized);
-//    Cache::Cached cached(task);
-  return std::move(task);
+  static cache_get_value_task_queue_t Tasks;
+  auto key = value.str();
+  auto host = value.getVaHost();
+  auto task = [=,this] () {
+      return Cache::GlobalCacheCancel
+        ? CheckCacheResult{}
+        : this->GetOneUsingVarHost(decltype(key)(key), std::move(host), itIsOptimized);
+  };
+  return Cache::GlobalCacheCancel ? TaskNoCache : Tasks.AddTask(std::move(task));
 }
 
 Cache::CheckCacheResult Cache::GetOneUsingVarHost(std::string&& key, VarHost::ptr host, bool itIsOptimized) {
