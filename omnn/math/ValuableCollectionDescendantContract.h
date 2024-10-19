@@ -97,12 +97,12 @@ namespace math {
 
         virtual const iterator Add(Valuable&& item, const iterator hint)
         {
-            Valuable::hash ^= item.Hash();
-            auto& c = GetCont();
             this->optimized = {};
             if (&item.get() == &item) {
                 (void) item.SharedFromThis();
             }
+            Valuable::hash ^= item.Hash();
+            auto& c = GetCont();
             auto it = hint == c.end()
                 ? getit(c.emplace(std::move(item)))
                 : getit(c.insert(hint, std::move(item)));
@@ -170,7 +170,7 @@ namespace math {
             auto foundSome = found != c.cend();
             auto has = foundSome && found->Same(v);
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            if(foundSome && !has){
+            if(foundSome && !has && this->is_optimized() && v.is_optimized()){
                 LOG_AND_IMPLEMENT("Bug in comparator or object type differs: " << this->str() << " has " << v);
             }
 #endif

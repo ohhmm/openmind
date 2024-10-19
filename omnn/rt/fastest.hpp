@@ -14,11 +14,11 @@ namespace omnn::rt {
 
 template <typename ResultType>
 class TheFastestResult {
-
-    static StoringTasksQueue<ResultType> storingTasksQueue;
+    using task_queue_t = StoringTasksQueue<ResultType>;
+    static task_queue_t storingTasksQueue;
 
 public:
-    using task_type = std::future<ResultType>;
+    using task_type = task_queue_t::task_type;
     using task_reference = std::reference_wrapper<task_type>;
 
     template <typename... Callables>
@@ -50,8 +50,8 @@ private:
 
     template <typename... Callables>
     void launch_tasks(std::initializer_list<std::function<ResultType()>> tasks) {
-        for (const auto& task : tasks) {
-            futures.push_back(storingTasksQueue.AddTask(task));
+        for (auto&& task : tasks) {
+            futures.push_back(storingTasksQueue.AddTask(std::move(task)));
         }
     }
 

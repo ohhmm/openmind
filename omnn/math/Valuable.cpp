@@ -544,6 +544,18 @@ struct HashStrOmitOuterBrackets
     }
 };
 
+struct HashStrIgnoringAnyParentheses
+{
+    [[nodiscard]] size_t operator()(const std::string_view& str) const {
+        size_t hash = 0; 
+        for (auto ch : str) {
+            if (ch != '(' && ch != ')')
+                hash ^= ch;
+        }
+        return hash;
+    }
+};
+
 class StateProxyComparator
 {
 public:
@@ -703,14 +715,25 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (!same) {
-            std::cout << "SerializedStrEqual: " << _ << " != " << s << std::endl
+            HashStrIgnoringAnyParentheses hasher;
+            if (hasher(_1) == hasher(_2)) {
+                std::cout << "Fix SerializedStrEqual: " << _ << " != " << s << std::endl
                       << _1 << "\n !=\n"
                       << _2 << std::endl;
-            if (!_1.empty()) {
-                Valuable v(s, getVaHost(), is_optimized());
-                same = operator==(v);
-                if (same) {
-                    std::cout << " operator==(" << s << ") == true" << std::endl;
+                same = true;
+            } else if (!_1.empty()) {
+                std::cout << "SerializedStrEqual detected deserialization issue: " << _ << " != " << s << std::endl
+                          << _1 << "\n !=\n"
+                          << _2 << std::endl;
+                ::omnn::rt::OptimizationLoopDetect<Valuable> antilooper(*this);                                                        
+                if (antilooper.isLoopDetected()) {                                                                                 
+                    std::cout << "Loop of optimizing detected in " << *this << std::endl;                                          
+                } else {
+                    Valuable v(s, getVaHost(), true);
+                    same = operator==(v);
+                    if (same) {
+                        std::cout << " operator==(" << s << ") == true" << std::endl;
+                    }
                 }
             }
         }
@@ -835,12 +858,15 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                             mulByNeg = {};
                         }
                         if (sum.IsSum())
+                        {
                             sum.as<Sum>().Add(std::move(val));
+                            sum.MarkAsOptimized();
+                        }
                         else {
                             Sum s;
-                            s.MarkAsOptimized();
                             s.Add(std::move(sum));
                             s.Add(std::move(val));
+                            s.MarkAsOptimized();
                             sum = std::move(s);
                         }
                     }
@@ -852,12 +878,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     }
                     if (v.IsProduct()) {
                         v.as<Product>().Add(std::move(val));
+                        v.MarkAsOptimized();
                     } else {
                         Product p({});
-                        if (itIsOptimized)
-                            p.MarkAsOptimized();
                         p.Add(std::move(v));
                         p.Add(std::move(val));
+                        p.MarkAsOptimized();
                         v = std::move(p);
                     }
                 };
@@ -867,8 +893,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         mulByNeg = {};
                     }
                     Fraction f{std::move(v), std::move(val)};
-                    if(itIsOptimized)
-                        f.MarkAsOptimized();
+                    f.MarkAsOptimized();
                     v = std::move(f);
                 };
                 o_mod = [&](Valuable&& val) {
@@ -877,8 +902,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         mulByNeg = {};
                     }
                     Modulo m{std::move(v), std::move(val)};
-                    if (itIsOptimized)
-                        m.MarkAsOptimized();
+                    m.MarkAsOptimized();
                     v = std::move(m);
                 };
                 o_pSurd = [&](Valuable&& val) {
@@ -887,8 +911,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         mulByNeg = {};
                     }
                     PrincipalSurd ps{std::move(v), std::move(val)};
-                    if (itIsOptimized)
-                        ps.MarkAsOptimized();
+                    ps.MarkAsOptimized();
                     v = std::move(ps);
                 };
                 o_exp = [&](Valuable&& val) {
@@ -897,8 +920,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         mulByNeg = {};
                     }
                     Exponentiation e{std::move(v), std::move(val)};
-                    if(itIsOptimized)
-                        e.MarkAsOptimized();
+                    e.MarkAsOptimized();
                     v = std::move(e);
                 };
             } else {
@@ -1073,6 +1095,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
             o_sum(std::move(v));
             Become(std::move(sum));
+            if(IsSum()){
+                auto& sum = as<Sum>();
+                if(sum.size()==1){
+                    Become(sum.Extract());
+                }
+            }
         }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
