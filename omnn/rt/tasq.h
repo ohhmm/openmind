@@ -39,30 +39,41 @@ private:
 };
 
 using StoringTask = std::future<bool>;
-template <typename ResultT = bool>
-class StoringTasksQueue : public std::queue<std::future<ResultT>> {
+template <typename ResultT = bool,
+    typename TaskT = std::future<ResultT>,
+    typename BaseContainerT = std::queue<TaskT>,
+    size_t Threads = 1024,
+    size_t CleanUpGauge = Threads / 16
+>
+class StoringTasksQueue
+    : public BaseContainerT
+{
     std::mutex queueMutEx;
-    static constexpr size_t MaxThreadsForCacheStoring = 1024;
     bool CleanUp;
+    std::mutex cleaning;
 
 protected:
     bool CleanupReadyTasks() {
-        if (CleanUp) {
-            bool overburdened = {};
-            do {
-                {
-                    std::lock_guard lg(queueMutEx);
-                    while (this->size()
-                        && this->front().valid()
-                        && this->front().wait_for(std::chrono::seconds(0)) == std::future_status::ready
-                        ) {
-                        this->pop();
+        if (CleanUp && this->size() > CleanUpGauge)
+        {
+            auto lock = std::unique_lock(cleaning, std::try_to_lock);
+            if (lock.owns_lock()) {
+                bool overburdened = {};
+                do {
+                    {
+                        std::lock_guard lg(queueMutEx);
+                        while (this->size()
+                            && this->front().valid()
+                            && this->front().wait_for(std::chrono::seconds(0)) == std::future_status::ready
+                            ) {
+                            this->pop();
+                        }
                     }
-                }
-                overburdened = this->size() >= MaxThreadsForCacheStoring;
-                if (overburdened)
-                    std::this_thread::yield();
-            } while (overburdened);
+                    overburdened = this->size() >= Threads;
+                    if (overburdened)
+                        std::this_thread::yield();
+                } while (overburdened);
+            }
         }
         return this->size() == 0;
     }
@@ -73,9 +84,9 @@ public:
     {}
 
     template <class FnT, class ...ParamsT>
-    auto& AddTask(FnT&& f, ParamsT&&... params) {
+    auto& AddTask(FnT&& call, ParamsT&&... params) {
         this->CleanupReadyTasks();
-        auto task = std::async(std::launch::async, std::bind(std::forward<FnT>(f), std::forward<ParamsT>(params)...));
+        auto task = std::async(std::launch::async, std::bind(std::forward<FnT>(call), std::forward<ParamsT>(params)...));
         std::lock_guard lg(queueMutEx);
         return this->emplace(std::move(task));
     }
