@@ -487,7 +487,7 @@ auto BracketsMap(const std::string_view& s){
         else if (s[c] == ')')
         {
             if (st.empty()) {
-                throw "parentneses relation missmatch";
+                throw "parentheses relation mismatch";
             }
             bracketsmap.emplace(st.top(), c);
             st.pop();
@@ -495,7 +495,7 @@ auto BracketsMap(const std::string_view& s){
         ++c;
     }
     if (!st.empty())
-        throw "parentneses relation missmatch";
+        throw "parentheses relation mismatch";
     return bracketsmap;
 }
 
@@ -505,8 +505,15 @@ constexpr std::string_view& Trim(std::string_view& s) {
     return s;
 }
 
+std::string_view Trim(std::string& str) {
+    auto view = std::string_view(str);
+    view = Trim(view);
+    str = view;
+    return str;
+}
+
 [[nodiscard]]
-auto OmitOuterBrackets(std::string_view& s) {
+auto OmitOuterBrackets(auto& s) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do{
@@ -525,6 +532,11 @@ auto OmitOuterBrackets(std::string_view& s) {
 [[nodiscard]]
 std::string Solid(std::string str) {
     str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+    (void)OmitOuterBrackets(str);
+    if (str.ends_with("+0")) {
+        str.resize(str.length() - 2);
+    (void)OmitOuterBrackets(str);
+    }
     return str;
 }
 [[nodiscard]]

@@ -633,6 +633,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
 
     bool Fraction::IsComesBefore(const Valuable& v) const
     {
+        auto is = !IsSimple() && v.IsSimple();
 //        auto va1 = FindVa();
 //        auto va2 = v.FindVa();
 //        return !va1 && !va2
@@ -640,15 +641,18 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
 //                : (va1 && va2
 //                   ? str().length() < v.str().length()
 //                   : va1!=nullptr );
-        auto mve = base::getMaxVaExp();
-        auto vmve = v.getMaxVaExp();
-        auto is = mve > vmve;
-        if (mve != vmve)
-        {}
+        if (is)
+        { }
+        else if (auto degreeDiff = base::getMaxVaExp() - v.getMaxVaExp();
+            degreeDiff != 0)
+        {
+            is = degreeDiff > 0;
+        }
         else if (v.IsFraction())
         {
-            if (IsSimple() && v.IsSimpleFraction())
-                is = *this < v;
+            if (IsSimple()) {
+                is = v.IsSimpleFraction() && *this < v;
+            }
             else
             {
                 auto& f = v.as<Fraction>();
