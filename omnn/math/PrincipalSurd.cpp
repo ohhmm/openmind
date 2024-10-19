@@ -264,6 +264,12 @@ const Valuable::vars_cont_t& PrincipalSurd::getCommonVars() const {
     return commonVars;
 }
 
+Valuable PrincipalSurd::varless() const {
+    return Radicand().IsVa()
+        ? constants::one
+        : Valuable(ptrs::make_shared<PrincipalSurd>(Radicand().varless(), Index()));
+}
+
 void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
     Radicand().solve(va, solutions);
 }

@@ -1406,6 +1406,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp) {
             return exp->GCD(v);
         }
+        if (v.IsInt() && FindVa() != nullptr) {
+            return varless().GCD(v);
+        }
         auto isEqual = operator==(v);
         auto thisMoreComplex = !isEqual && Complexity() >= v.Complexity();
         Valuable a = isEqual || thisMoreComplex ? *this : v.GCD(*this);
