@@ -24,6 +24,8 @@ public:
     auto& getDividend() const { return get1(); }
     auto& getDevisor() const { return get2(); }
 
+    bool operator==(const Modulo&) const;
+
     std::ostream& print_sign(std::ostream& out) const override;
     std::ostream& code_sign(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override;
