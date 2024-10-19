@@ -675,7 +675,9 @@ namespace math {
             auto& vAsP = v.as<Product>();
             Product thisHasNotCommonWithV, vHasNotInCommonWithThis;
             Product common;
-            for(auto&& item : GetCont()){
+            while(size())
+            {
+                auto item = Extract();
                 if(vAsP.Has(item))
                     common.Add(std::move(item));
                 else
