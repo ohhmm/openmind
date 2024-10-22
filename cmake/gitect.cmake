@@ -183,4 +183,13 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
 
+	add_custom_target(rebase-all-branches-to-main
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${CMAKE_SOURCE_DIR}/rebase_all_branches_to_main.sh ${CMAKE_SOURCE_DIR}
+	)
+	set_target_properties(rebase-all-branches-to-main PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
+
 endif()
