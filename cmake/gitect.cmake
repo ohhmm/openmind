@@ -15,7 +15,7 @@ macro(add_git_target_multiple_commands)
 	list(POP_FRONT args)
 	add_custom_target(${new_target}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		${ARGVN}
+		${args}
 	)
 	set_target_properties(${new_target} PROPERTIES
 		EXCLUDE_FROM_ALL 1
@@ -29,7 +29,7 @@ macro(add_git_target)
 	list(POP_FRONT args)
 	add_git_target_multiple_commands(${new_target}
 		COMMAND ${GIT_EXECUTABLE} fetch --all
-		COMMAND ${GIT_EXECUTABLE} ${ARGN}
+		COMMAND ${GIT_EXECUTABLE} ${args}
 		COMMAND ${GIT_EXECUTABLE} fetch --all
 		)
 endmacro()
@@ -43,7 +43,7 @@ macro(add_force_push_head_to_develop_target)
 	set_target_properties(${new_target} PROPERTIES
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
+		FOLDER "util/git/develop")
 endmacro()
 
 if(GIT_EXECUTABLE)
@@ -105,13 +105,29 @@ if(GIT_EXECUTABLE)
 	set_target_properties(push-to-develop PROPERTIES
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
+		FOLDER "util/git/develop")
 
 	add_git_target(force-push-head push -f)
 	add_git_target(force-push-origin push -f origin)
 
-		foreach(NUM RANGE 0 9)
-			add_force_push_head_to_develop_target(${NUM})
-		endforeach()
+	foreach(NUM RANGE 0 9)
+		add_force_push_head_to_develop_target(${NUM})
+	endforeach()
+
+	if(WIN32)
+		add_custom_target(rebase-all-branches-to-main
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			COMMAND powershell ${CMAKE_SOURCE_DIR}/rebase_all_branches_to_main.ps1 ${CMAKE_SOURCE_DIR}
+		)
+	else(WIN32)
+		add_custom_target(rebase-all-branches-to-main
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			COMMAND ${CMAKE_SOURCE_DIR}/rebase_all_branches_to_main.sh ${CMAKE_SOURCE_DIR}
+		)
+	endif()
+	set_target_properties(rebase-all-branches-to-main PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
 
 endif()
