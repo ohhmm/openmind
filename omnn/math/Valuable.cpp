@@ -680,14 +680,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             boost::replace_all(_2, "+-", "-");
             same = _1 == _2;
         }
-        while (!same && !_1.empty()
-            &&  _1.front() == '(' && _1.back() == ')'
-            && (_2.front() != '(' || _2.back() != ')')
-            )
-        {
-            _1 = _1.substr(1, _1.length() - 2);
-            same = _1 == _2;
-        }
+
         if (!same) {
             std::map<char, a_int> m1, m2;
             for (char c : _1)

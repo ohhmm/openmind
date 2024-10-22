@@ -189,9 +189,7 @@ BOOST_AUTO_TEST_CASE(Product_Multival_Exponentiation_Sign_Simplification)
     BOOST_TEST(_1 == _2);
 }
 
-BOOST_AUTO_TEST_CASE(Product_Serialization_test
-    , *disabled()
-)
+BOOST_AUTO_TEST_CASE(Product_Serialization_test)
 {
     DECL_VARS(x, y);
     auto _1 = "((Y^3))*sqrt(((Y^2)+(X^2)-2*Y*X))*X"_v;
