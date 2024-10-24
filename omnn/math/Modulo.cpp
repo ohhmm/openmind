@@ -91,6 +91,16 @@ void Modulo::optimize() {
         }
     }
     if (IsModulo()) {
+        auto gcd = _1.GCD(_2);
+        if (gcd != constants::one) {
+            _1 /= gcd;
+            _2 /= gcd;
+            hash = _1.Hash() ^ _2.Hash();
+            Become(Product{std::move(gcd), std::move(*this)});
+            return;
+        }
+    }
+    if (IsModulo()) {
         hash = _1.Hash() ^ _2.Hash();
     }
 }
