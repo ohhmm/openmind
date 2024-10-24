@@ -3,12 +3,13 @@
 //
 
 #pragma once
+#include <omnn/math/Variable.h>
+
 #include <functional>
 #include <initializer_list>
 #include <list>
 #include <map>
-#include "Product.h"
-#include "Variable.h"
+
 
 namespace omnn {
 namespace math {

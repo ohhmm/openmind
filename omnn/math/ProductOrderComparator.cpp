@@ -1,5 +1,7 @@
 #include "ProductOrderComparator.h"
 
+#include "Product.h"
+#include "Fraction.h"
 #include "Valuable.h"
 #include "Variable.h"
 #include "Integer.h"
@@ -49,7 +51,7 @@ ProductOrderComparator::index_t ProductOrderComparator::Order(const Valuable& va
     auto it = std::find(ob, oe, value.Type());
     if (it == oe)
         LOG_AND_IMPLEMENT("Introduce new type to Product ordering:" << value);
-    return it - ob;
+    return static_cast<ProductOrderComparator::index_t>(it - ob);
 }
 
 bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const {
