@@ -7,8 +7,8 @@
 #include <list>
 #include <map>
 
-#include "Sum.h"
-#include "Variable.h"
+#include "Product.h"
+
 
 namespace omnn {
 namespace math {
