@@ -3196,6 +3196,15 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
             : optimized;
     }
 
+    Valuable Valuable::Optimized() const {
+        Valuable copy(Clone());
+        if (!copy.is_optimized()) {
+            OptimizeOn on;
+            copy.optimize();
+        }
+        return copy;
+    }
+
     std::string Valuable::str() const
     {
         std::stringstream s;

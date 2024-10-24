@@ -93,7 +93,7 @@ namespace
         auto item = *it;
         std::cout << item.str();
         it = std::find(members.begin(), members.end(), item);
-        throw "Impossible! Check order comparator error.";
+        LOG_AND_IMPLEMENT("Impossible! Check order comparator error: " << item << " was in  " << *this);
         return it;
     }
 

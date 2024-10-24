@@ -96,7 +96,7 @@ else()
 		endif()
 	endif()
 endif()
-set(OPENMIND_PRIME_TABLE_OPTIONS Boost Bundled)
+set(OPENMIND_PRIME_TABLE_OPTIONS Boost;Bundled)
 
 if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 	set(initTestsEnabled ON)

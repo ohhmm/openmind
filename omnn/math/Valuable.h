@@ -702,6 +702,7 @@ public:
     va_names_t OpenCLparamVarNames() const;
 
     [[nodiscard]] virtual bool is_optimized() const;
+    [[nodiscard]] Valuable Optimized() const;
 
 protected:
     friend class boost::serialization::access;
