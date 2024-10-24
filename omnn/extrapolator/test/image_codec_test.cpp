@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <boost/atomic/atomic_ref.hpp>
 #include <boost/gil/extension/io/targa.hpp>
 
 #include <omnn/rt/tasq.h>
@@ -152,46 +153,67 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test)
     // inbound data deduce
     decltype(src) dst(src.dimensions());
     auto dv = view(dst);
+    {
+        omnn::rt::StoringTasksQueue<void> tasksInParallel(false);
+        for (auto i = rows; i--;) {     // raw
+            for (auto j = cols; j--;) { // column
+                auto& d = dv(i, j);
+                tasksInParallel.AddTask([&] {
+                    boost::atomic_ref(get_color(dv(i, j), alpha_t())) = static_cast<unsigned char>(afo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    boost::atomic_ref(get_color(dv(i, j), red_t())) = static_cast<unsigned char>(rfo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    boost::atomic_ref(get_color(dv(i, j), green_t())) = static_cast<unsigned char>(gfo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    boost::atomic_ref(get_color(dv(i, j), blue_t())) = static_cast<unsigned char>(bfo(i, j));
+                });
+            }
+        }
+    }
+    write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
     for (auto i = rows; i--;) { // raw
         for (auto j = cols; j--;) { // column
             auto& d = dv(i, j);
             auto& s = v(i,j);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
-
-            BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
-            BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
-            BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
-            BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
+            BOOST_TEST(unsigned(boost::atomic_ref(d[0]))==unsigned(s[0]));
+            BOOST_TEST(unsigned(boost::atomic_ref(d[1]))==unsigned(s[1]));
+            BOOST_TEST(unsigned(boost::atomic_ref(d[2]))==unsigned(s[2]));
+            BOOST_TEST(unsigned(boost::atomic_ref(d[3]))==unsigned(s[3]));
         }
     }
-    write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
-
-    // outband data deduce
+    // extrapolating
     afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    afo.SetMin(0); afo.SetMax(255);
     rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    rfo.SetMin(0); rfo.SetMax(255);
     gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    gfo.SetMin(0); gfo.SetMax(255);
     bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    bfo.SetMin(0); bfo.SetMax(255);
 
     const auto d = 1;
     cols+=d;rows+=d;
     dst = decltype(src)(rows+d, cols+d);
     dv = view(dst);
-    for (auto i = rows; --i>=-d;) { // raw
-        for (auto j = cols; --j>=-d;) { // column
-            auto c=j+d;
-            auto r = i+d;
-            auto& d = dv(r, c);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+    {
+        omnn::rt::StoringTasksQueue<void> tasksInParallel(false);
+        for (auto i = rows; --i >= -d;) {     // raw
+            for (auto j = cols; --j >= -d;) { // column
+                auto c = j + d;
+                auto r = i + d;
+                auto& d = dv(r, c);
+                tasksInParallel.AddTask([&] {
+                    boost::atomic_ref(get_color(dv(i, j), alpha_t())) = static_cast<unsigned char>(afo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    boost::atomic_ref(get_color(dv(i, j), red_t())) = static_cast<unsigned char>(rfo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    boost::atomic_ref(get_color(dv(i, j), green_t())) = static_cast<unsigned char>(gfo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    boost::atomic_ref(get_color(dv(i, j), blue_t())) = static_cast<unsigned char>(bfo(i, j));
+                });
+            }
         }
     }
     write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
