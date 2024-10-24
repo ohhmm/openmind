@@ -48,12 +48,12 @@ jobs:
 
     - name: make check Release
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 1024 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts"  --output-on-failure
+      run: ctest --timeout 1024 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "ts"  --output-on-failure
             #   --rerun-failed --output-on-failure
 
     - name: make check Debug
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "image_codec_test|ts" --output-on-failure
+      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "ts" --output-on-failure
             #   --rerun-failed --output-on-failure
 
     - name: Install
