@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "System.h"
-#include "VarHost.h"
+#include "Product.h"
 
 #include <future>
 #include <queue>

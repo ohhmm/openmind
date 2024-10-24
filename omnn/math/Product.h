@@ -4,20 +4,18 @@
 
 #pragma once
 
-#include <omnn/math/ValuableCollectionDescendantContract.h>
-#include <omnn/math/Integer.h>
-#include <omnn/math/Fraction.h>
+#include <omnn/math/Sum.h>
 #include <omnn/math/ProductOrderComparator.h>
-#include <omnn/math/Variable.h>
-
+#include <omnn/math/Formula.h>
 #include <set>
-#include <unordered_set>
+//#include <unordered_set>
 
 
 namespace omnn{
 namespace math {
     
-    
+    class Variable;
+
     using product_container =
         //std::multiset<Valuable, ProductOrderComparator>
         //std::unordered_multiset<Valuable>
@@ -31,7 +29,7 @@ class Product
     using base::cont;
     friend class Variable;
     cont members;
-    max_exp_t vaExpsSum;
+    Sum vaExpsSum;
 
 protected:
     void AddToVars(const Variable &item, const Valuable & exponentiation);

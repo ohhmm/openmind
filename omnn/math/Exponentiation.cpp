@@ -4,6 +4,7 @@
 #include "Exponentiation.h"
 
 #include "Euler.h"
+#include "Fraction.h"
 #include "i.h"
 #include "Infinity.h"
 #include "pi.h"
