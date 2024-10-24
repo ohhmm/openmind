@@ -3,11 +3,16 @@
 //
 #define BOOST_TEST_MODULE ImageCodec test
 #include <boost/test/unit_test.hpp>
+#include "Extrapolator.h"
+
+#include <atomic>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
 #include <boost/gil/extension/io/targa.hpp>
-#include "Extrapolator.h"
+
+#include <omnn/rt/tasq.h>
 
 
 using namespace omnn::math;
@@ -49,75 +54,111 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         }
     }
 
-    Variable x, y, z;
-    std::list<Variable> formulaParamSequence = { y, x };
+    DECL_VARS(x, y, z);
     auto fa = a.Factors(y, x, z);
-//    fa.SetView(Valuable::View::Flat);
-    fa.optimize();
-    std::cout << fa << std::endl;
     auto fr = r.Factors(y, x, z);
-//    fr.SetView(Valuable::View::Flat);
-    fr.optimize();
-    std::cout << fr << std::endl;
     auto fg = g.Factors(y, x, z);
-//    fg.SetView(Valuable::View::Flat);
-    fg.optimize();
-    std::cout << fg << std::endl;
     auto fb = b.Factors(y, x, z);
-//    fb.SetView(Valuable::View::Flat);
-    fb.optimize();
-    std::cout << fb << std::endl;
+    {
+        omnn::rt::StoringTasksQueue<void> tasksInParallel(false);
+        tasksInParallel.AddTask([&] {
+            fa.optimize();
+            std::cout << fa << std::endl;
+        });
+        tasksInParallel.AddTask([&] {
+            fr.optimize();
+            std::cout << fr << std::endl;
+        });
+        tasksInParallel.AddTask([&] {
+            fg.optimize();
+            std::cout << fg << std::endl;
+        });
+        tasksInParallel.AddTask([&] {
+            fb.optimize();
+            std::cout << fb << std::endl;
+        });
+    }
+    std::cout << "\n Input image formula of alpha-channel=" << fa;
+    std::cout << "\n  red = " << fr;
+    std::cout << "\n green= " << fg;
+    std::cout << "\n  blue= " << fb << std::endl;
 
     // Unification
+    std::list<Variable> formulaParamSequence = { y, x };
     FormulaOfVaWithSingleIntegerRoot
         afo(z, fa, &formulaParamSequence),
         rfo(z, fr, &formulaParamSequence),
         gfo(z, fg, &formulaParamSequence),
         bfo(z, fb, &formulaParamSequence);
+    afo.SetMin(0); afo.SetMax(255);
+    rfo.SetMin(0); rfo.SetMax(255);
+    gfo.SetMin(0); gfo.SetMax(255);
+    bfo.SetMin(0); bfo.SetMax(255);
 
     // inbound data deduce
     decltype(src) dst(src.dimensions());
     auto dv = view(dst);
+    {
+        omnn::rt::StoringTasksQueue<void> tasksInParallel(false);
+        for (auto i = rows; i--;) {     // raw
+            for (auto j = cols; j--;) { // column
+                auto& d = dv(i, j);
+                tasksInParallel.AddTask([&] {
+                    std::atomic_ref(get_color(dv(i, j), alpha_t())) = static_cast<unsigned char>(afo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    std::atomic_ref(get_color(dv(i, j), red_t())) = static_cast<unsigned char>(rfo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    std::atomic_ref(get_color(dv(i, j), green_t())) = static_cast<unsigned char>(gfo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    std::atomic_ref(get_color(dv(i, j), blue_t())) = static_cast<unsigned char>(bfo(i, j));
+                });
+            }
+        }
+    }
+    write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
     for (auto i = rows; i--;) { // raw
         for (auto j = cols; j--;) { // column
             auto& d = dv(i, j);
             auto& s = v(i,j);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
-
-            BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
-            BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
-            BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
-            BOOST_TEST(unsigned(d[3])==unsigned(s[3]));
+            BOOST_TEST(unsigned(std::atomic_ref(d[0]))==unsigned(s[0]));
+            BOOST_TEST(unsigned(std::atomic_ref(d[1]))==unsigned(s[1]));
+            BOOST_TEST(unsigned(std::atomic_ref(d[2]))==unsigned(s[2]));
+            BOOST_TEST(unsigned(std::atomic_ref(d[3]))==unsigned(s[3]));
         }
     }
-    write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
-    
-    // outband data deduce
+    // extrapolating
     afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    afo.SetMin(0); afo.SetMax(255);
     rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    rfo.SetMin(0); rfo.SetMax(255);
     gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    gfo.SetMin(0); gfo.SetMax(255);
     bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    bfo.SetMin(0); bfo.SetMax(255);
     
     const auto d = 2; // 5
     cols+=d;rows+=d;
     dst = decltype(src)(rows+d, cols+d);
     dv = view(dst);
-    for (auto i = rows; --i>=-d;) { // raw
-        for (auto j = cols; --j>=-d;) { // column
-            auto c=j+d;
-            auto r = i+d;
-            auto& d = dv(r, c);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+    {
+        omnn::rt::StoringTasksQueue<void> tasksInParallel(false);
+        for (auto i = rows; --i >= -d;) {     // raw
+            for (auto j = cols; --j >= -d;) { // column
+                auto c = j + d;
+                auto r = i + d;
+                auto& d = dv(r, c);
+                tasksInParallel.AddTask([&] {
+                    std::atomic_ref(get_color(dv(i, j), alpha_t())) = static_cast<unsigned char>(afo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    std::atomic_ref(get_color(dv(i, j), red_t())) = static_cast<unsigned char>(rfo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    std::atomic_ref(get_color(dv(i, j), green_t())) = static_cast<unsigned char>(gfo(i, j));
+                });
+                tasksInParallel.AddTask([&] {
+                    std::atomic_ref(get_color(dv(i, j), blue_t())) = static_cast<unsigned char>(bfo(i, j));
+                });
+            }
         }
     }
     write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
