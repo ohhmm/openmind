@@ -52,8 +52,7 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_sinus
 }
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_classification
-    , *tolerance(TestPrecision)
-    * disabled()
+    , *tolerance(.0014)
 ) {
     using polyfit_value_type = double;
     std::vector<polyfit_value_type> oX = {{
