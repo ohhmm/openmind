@@ -872,7 +872,9 @@ namespace
                     optimize();
                     return *this;
                 }
-                if (it->OfSameType(v) && it->getCommonVars() == v.getCommonVars())
+                if (it->OfSameType(v)
+                    && it->is_optimized() && v.is_optimized()
+                    && it->getCommonVars() == v.getCommonVars())
                 {
                     auto s = *it + v;
                     if (!s.IsSum()) {
