@@ -42,8 +42,7 @@ Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const V
     Product e;
     auto szy = size1();
     auto szx = size2();
-    auto optsWas = Valuable::optimizations;
-    Valuable::optimizations = {};
+    Valuable::OptimizeOff off;
     for (auto y = 0; y < szy; ++y) {
         for (auto x = 0; x < szx; ++x) {
             e.Add(((row-y)^2)
@@ -51,8 +50,7 @@ Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const V
                   +((val-(*this)(y,x))^2));
         }
     }
-    Valuable::optimizations = optsWas;
-    return Valuable(std::move(e));
+    return e;
 }
 
 Extrapolator::operator Formula() const

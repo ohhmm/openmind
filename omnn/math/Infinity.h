@@ -31,6 +31,8 @@ public:
     Valuable& operator^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
     bool operator <(const Valuable& v) const override;
+
+    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable&) const override;
 };
 
 class MInfinity
@@ -59,6 +61,7 @@ public:
     bool operator <(const Valuable& v) const override;
     
     bool IsComesBefore(const Valuable& v) const override { return true; }
+    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
 };
 
 class NaN : public Constant<NaN> {
@@ -87,7 +90,7 @@ public:
     Valuable Sqrt() const override { return *this; }
     bool IsComesBefore(const Valuable& v) const override { return true; }
 
-    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {true, *this}; }
+    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable&) const override { return {true, *this}; }
 };
 
 }}

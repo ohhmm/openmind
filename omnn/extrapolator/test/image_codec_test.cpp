@@ -3,11 +3,15 @@
 //
 #define BOOST_TEST_MODULE ImageCodec test
 #include <boost/test/unit_test.hpp>
+#include "Extrapolator.h"
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
 #include <boost/gil/extension/io/targa.hpp>
-#include "Extrapolator.h"
+
+#include <omnn/rt/tasq.h>
 
 
 using namespace omnn::math;
@@ -49,26 +53,37 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         }
     }
 
-    Variable x, y, z;
-    std::list<Variable> formulaParamSequence = { y, x };
+    DECL_VARS(x, y, z);
     auto fa = a.Factors(y, x, z);
-//    fa.SetView(Valuable::View::Flat);
-    fa.optimize();
-    std::cout << fa << std::endl;
     auto fr = r.Factors(y, x, z);
-//    fr.SetView(Valuable::View::Flat);
-    fr.optimize();
-    std::cout << fr << std::endl;
     auto fg = g.Factors(y, x, z);
-//    fg.SetView(Valuable::View::Flat);
-    fg.optimize();
-    std::cout << fg << std::endl;
     auto fb = b.Factors(y, x, z);
-//    fb.SetView(Valuable::View::Flat);
-    fb.optimize();
-    std::cout << fb << std::endl;
+    {
+        omnn::rt::StoringTasksQueue<void> tasksInParallel(false);
+        tasksInParallel.AddTask([&] {
+            fa.optimize();
+            std::cout << fa << std::endl;
+        });
+        tasksInParallel.AddTask([&] {
+            fr.optimize();
+            std::cout << fr << std::endl;
+        });
+        tasksInParallel.AddTask([&] {
+            fg.optimize();
+            std::cout << fg << std::endl;
+        });
+        tasksInParallel.AddTask([&] {
+            fb.optimize();
+            std::cout << fb << std::endl;
+        });
+    }
+    std::cout << "\n Input image formula of alpha-channel=" << fa;
+    std::cout << "\n  red = " << fr;
+    std::cout << "\n green= " << fg;
+    std::cout << "\n  blue= " << fb << std::endl;
 
     // Unification
+    std::list<Variable> formulaParamSequence = { y, x };
     FormulaOfVaWithSingleIntegerRoot
         afo(z, fa, &formulaParamSequence),
         rfo(z, fr, &formulaParamSequence),
@@ -94,7 +109,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         }
     }
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
-    
+
     // outband data deduce
     afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     afo.SetMin(0); afo.SetMax(255);
@@ -104,7 +119,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     gfo.SetMin(0); gfo.SetMax(255);
     bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     bfo.SetMin(0); bfo.SetMax(255);
-    
+
     const auto d = 2; // 5
     cols+=d;rows+=d;
     dst = decltype(src)(rows+d, cols+d);
