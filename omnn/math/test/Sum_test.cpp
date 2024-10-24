@@ -186,9 +186,9 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
         auto _2 = -6_v * (((va ^ 4) - 72 * (va ^ 2) + 240 * va + -144) ^ ((1_v / 2))) * (va ^ (-1));
         BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
     }
+    DECL_VA(v1);
     {
         Valuable::OptimizeOff off;
-        DECL_VA(v1);
         auto _1 =
             ((-8 *
                   ((-1) ^ ((1 / 4) * v1 + ((8 * ((-1) ^ ((1 / 2) * v1 + 5 + ((-1 * ((-1) ^ (v1 + 10)) + 1) / (-4)))) +
@@ -251,6 +251,20 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
               32 * ((-1) ^ (v1 + 10)) + -352) /
              (-128));
         BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
+    }
+    {
+        Valuable item("-4*(v1^4)");
+        Sum sum = {item,
+                   Valuable("((v1^4) + -4*(v1^3) + 6*(v1^2) + -4*v1 + 1)*((-1)/2)*(v1^2)"),
+                   Valuable("(v1^5)"),
+                   Valuable("6*(v1^3)"),
+                   Valuable("-4*(v1^2)"),
+                   Valuable("v1")};
+
+        auto end = std::end(sum);
+        auto it = std::find(std::begin(sum), end, item);
+        auto found = it != end;
+        BOOST_TEST(found);
     }
 }
 
