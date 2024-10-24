@@ -196,10 +196,10 @@ namespace math {
         return base::operator <(v);
     }
 
-    bool Variable::operator ==(const Valuable& v) const
+    bool Variable::operator==(const Valuable& value) const
     {
-        return v.IsVa()
-            && operator==(v.as<Variable>());
+        return (value.IsVa() && operator==(value.as<Variable>()))
+            || (Hash() == value.Hash() && value.operator==(*this));
     }
 
     bool Variable::operator==(const Variable& v) const

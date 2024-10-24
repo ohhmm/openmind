@@ -55,7 +55,11 @@ CMakeLists.txt.user.*
 /Makefile
 /cmake_install.cmake
 *.a
+*.dll
+*.exe
 *.o
+*.lib
+*.log
 *.so
 /bin/
 /lib/
