@@ -23,7 +23,16 @@ BOOST_AUTO_TEST_CASE(Product_comparision_test) {
     BOOST_TEST(!less);
     less = _2 < _1;
     BOOST_TEST(!less);
+
+    _1 = "((x)^2)*(z^2)"_v;
+    _2 = "((x)^2)*((z)^2)"_v;
+    BOOST_TEST(_1 == _2);
+    less = _1 < _2;
+    BOOST_TEST(!less);
+    less = _2 < _1;
+    BOOST_TEST(!less);
 }
+
 BOOST_AUTO_TEST_CASE(Product_tests)
 {
 	auto f = 1_v / 2;
