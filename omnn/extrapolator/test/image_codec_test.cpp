@@ -62,6 +62,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     write_view(TEST_BIN_DIR "was.tga", v, targa_tag());
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
+    DECL_VARS(x, y, z);
     std::list<Variable> formulaParamSequence = { y, x };
 
     auto get_color_formula = [&](auto tag) {
