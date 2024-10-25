@@ -38,6 +38,8 @@ namespace omnn::math {
 namespace
 {
     CACHE(DbSumBalancingCache);
+    CACHE(DbSumGCDCache);
+    CACHE(DbSumModCache);
     CACHE(DbSumOptimizationCache);
     CACHE(DbSumSolutionsOptimizedCache);
     CACHE(DbSumSolutionsAllRootsCache);
@@ -1026,6 +1028,9 @@ namespace
 
     Valuable& Sum::operator %=(const Valuable& v)
     {
+        auto doCheck = size() > 20;
+        auto cached = doCheck ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true) : Cache::TaskNoCache;
+
         Valuable s = constants::zero;
         if (v.IsSum())
         {
@@ -1033,6 +1038,8 @@ namespace
             if(!v.FindVa())
             {
                 for (auto& a : members) {
+                    if (cached)
+                        return Become(cached);
                     for (auto& b : i.members) {
                         s += a / b;
                     }
@@ -1040,13 +1047,17 @@ namespace
             }
             else
             {
+                if (cached)
+                    return Become(cached);
                 if (size() < i.size())
                 {
                     s = Modulo(*this, v);
                 }
                 else if (HasSameVars(v))
                 {
-                    auto b=i.begin();
+                    if (cached)
+                        return Become(cached);
+                    auto b = i.begin();
                     auto e = i.end();
                     size_t offs = 0;
                     std::deque<Valuable> hist {*this};
@@ -1054,7 +1065,9 @@ namespace
                     auto icnt = size() * 2;
                     while (!IsZero() && icnt--)
                     {
-                        if(IsSum())
+                        if (cached)
+                            return Become(cached);
+                        if (IsSum())
                         {
                             auto it = begin();
                             for (auto i=offs; it != end() && i--; ) {
@@ -1125,7 +1138,7 @@ namespace
                         }
                         else
                         {
-                            return Become(Modulo(*this, v));
+                            s = Modulo(*this, v);
                         }
                     }
                     if (!IsZero()) {
@@ -1145,7 +1158,17 @@ namespace
             }
             s = Modulo(s,v);
         }
-        return Become(std::move(s));
+
+        if (cached)
+            return Become(cached);
+        if (cached.NotInCache()) {
+            auto key = str();
+            OptimizeOn on;
+            Become(std::move(s));
+            DbSumSqCache.AsyncSet(std::move(key), str());
+        } else
+            Become(std::move(s));
+        return *this;
     }
 
     Sum::operator double() const
