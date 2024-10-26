@@ -126,3 +126,19 @@ namespace fs = boost::filesystem;
 #define CACHE(name) \
     auto cachename##name = std::string(#name) + ".solutions"; \
     Cache name(cachename##name);
+
+#define USE_CACHE(name) auto& cache = name ; \
+    auto cached = doCheck ? cache.AsyncFetch(*this, true) : Cache::TaskNoCache; \
+    auto s = str();
+
+#define CHECK_OPTIMIZATION_CACHE if (cached) { \
+    Become(cached); \
+    return; \
+}
+
+#define STORE_OPTIMIZATION_CACHE \
+    CHECK_OPTIMIZATION_CACHE \
+    if (doCheck && cached.NotInCache()) \
+        cache.AsyncSet(std::move(s), str());
+
+#define STORE_TO_CACHE CHECK_CACHE if (doCheck && cached.NotInCache()) cache.AsyncSet(std::move(s), str());

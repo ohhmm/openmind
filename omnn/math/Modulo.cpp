@@ -6,14 +6,18 @@
  */
 
 #include <omnn/math/Modulo.h>
-#include <omnn/math/Variable.h>
+
 #include <omnn/math/Exponentiation.h>
 #include <omnn/math/Fraction.h>
 #include <omnn/math/Product.h>
+#include <omnn/math/Variable.h>
 
 
 using namespace omnn::math;
 
+namespace {
+CACHE(DbModuloOptimizationCache);
+}
 
 Valuable::vars_cont_t Modulo::VarsForCommoning;
 
@@ -58,23 +62,30 @@ bool Modulo::operator==(const Modulo& modulo) const {
 
 void Modulo::optimize() {
     DUO_OPT_PFX
+    DUO_USE_CACHE(DbModuloOptimizationCache)
+    CHECK_OPTIMIZATION_CACHE
     _1.optimize();
+    CHECK_OPTIMIZATION_CACHE
     _2.optimize();
+    CHECK_OPTIMIZATION_CACHE
     if (_1.IsModulo()) {
         auto& m1 = _1.as<Modulo>();
         auto& m1devisor = m1.get2();
+        CHECK_OPTIMIZATION_CACHE
         if (m1devisor == _2)
 		{
+            CHECK_OPTIMIZATION_CACHE
             Become(std::move(_1));
-            return;
         } else if (m1devisor.IsInt() && _2.IsInt()) {
-            if (m1devisor < _2)
-				Become(std::move(_1));
-            else if (m1devisor > _2) {
+            if (m1devisor < _2) {
+                CHECK_OPTIMIZATION_CACHE
+                Become(std::move(_1));
+            } else if (m1devisor > _2) {
+                CHECK_OPTIMIZATION_CACHE
                 m1.update2(std::move(_2));
+                CHECK_OPTIMIZATION_CACHE
                 Become(std::move(_1));
             }
-            return;
         }
     } else if (_2.IsInt()) {
         if (_2.IsZero()) {
@@ -84,14 +95,21 @@ void Modulo::optimize() {
             Become(std::move(_1));
         }
         else if (_1.IsInt()) {
+            CHECK_OPTIMIZATION_CACHE
             if (_2 == constants::one)
                 Become(0_v);
-            else
+            else {
+                CHECK_OPTIMIZATION_CACHE
                 Become(std::move(_1 %= _2));
+            }
         }
     }
+
+    CHECK_OPTIMIZATION_CACHE
     if (IsModulo()) {
         hash = _1.Hash() ^ _2.Hash();
+        MarkAsOptimized();
+        STORE_OPTIMIZATION_CACHE
     }
 }
 

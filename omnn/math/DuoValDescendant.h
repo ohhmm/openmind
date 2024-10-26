@@ -7,6 +7,8 @@
 #pragma once
 #include <omnn/math/ValuableDescendantContract.h>
 
+#include <omnn/math/Cache.h>
+
 #include <omnn/rt/antiloop.hpp>
 
 #include <utility>
@@ -274,3 +276,5 @@ namespace omnn::math {
     }                                                                                                                  \
     ANTILOOP(base::type)
 #endif
+
+#define DUO_USE_CACHE(name) auto doCheck = _1.Complexity() + _2.Complexity() > 10; USE_CACHE(name);

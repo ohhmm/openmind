@@ -1029,7 +1029,7 @@ namespace
     Valuable& Sum::operator %=(const Valuable& v)
     {
         auto doCheck = size() > 20;
-        auto cached = doCheck ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true) : Cache::TaskNoCache;
+        auto cached = doCheck ? DbSumModCache.AsyncFetch(*this, true) : Cache::TaskNoCache;
 
         Valuable s = constants::zero;
         if (v.IsSum())
