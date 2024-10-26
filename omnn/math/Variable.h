@@ -2,10 +2,13 @@
 // Created by Сергей Кривонос on 25.09.17.
 //
 #pragma once
+#include <omnn/math/ValuableDescendantContract.h>
+
 #include <any>
 #include <memory>
+
 #include <boost/preprocessor/seq/for_each.hpp>
-#include "ValuableDescendantContract.h"
+
 
 namespace omnn{
 namespace math {
