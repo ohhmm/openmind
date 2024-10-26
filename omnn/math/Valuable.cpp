@@ -804,7 +804,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 exp = std::make_shared<PrincipalSurd>(
                     Integer(a_int(s.substr(found+1))),
                     Integer(a_int(s.substr(0, found))));
-            else if (s[0] == 'v' && s.size() > 1 && h->IsIntegerId()
+            else if (s[0] == 'v' && s.size() > 1 && h && h->IsIntegerId()
                 && std::all_of(s.begin() + 1, s.end(),
 					[](auto ch) { return std::isdigit(ch); }
 					)

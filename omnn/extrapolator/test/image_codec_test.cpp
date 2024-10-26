@@ -61,19 +61,19 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     {
         omnn::rt::StoringTasksQueue<void> tasksInParallel(false);
         tasksInParallel.AddTask([&] {
-            fa.optimize();
+            BOOST_CHECK_NO_THROW(fa.optimize());
             std::cout << fa << std::endl;
         });
         tasksInParallel.AddTask([&] {
-            fr.optimize();
+            BOOST_CHECK_NO_THROW(fr.optimize());
             std::cout << fr << std::endl;
         });
         tasksInParallel.AddTask([&] {
-            fg.optimize();
+            BOOST_CHECK_NO_THROW(fg.optimize());
             std::cout << fg << std::endl;
         });
         tasksInParallel.AddTask([&] {
-            fb.optimize();
+            BOOST_CHECK_NO_THROW(fb.optimize());
             std::cout << fb << std::endl;
         });
     }

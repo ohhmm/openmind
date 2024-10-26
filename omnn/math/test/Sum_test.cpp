@@ -136,10 +136,10 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test_pending, *disabled())
     BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
 }
 
-BOOST_AUTO_TEST_CASE(SumFindMember_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(SumFindMember_test) {
     auto _1 = "-4*(v1^4)"_v;
     auto _2 = "((v1^4) + -4*(v1^3) + 6*(v1^2) + -4*v1 + 1)*((-1)/2)*(v1^2)"_v;
-    Sum sum = {_1, _2, Valuable("(v1^5)"), Valuable("6*(v1^3)"), Valuable("-4*(v1^2)"), Valuable("v1")};
+    Sum sum = {_1, _2, "(v1^5)"_v, "6*(v1^3)"_v, "-4*(v1^2)"_v, "v1"_v};
 
     auto end = std::end(sum);
     auto it = std::find(std::begin(sum), end, _1);
