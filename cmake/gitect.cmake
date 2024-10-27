@@ -57,7 +57,7 @@ if(GIT_EXECUTABLE)
 	add_git_target(rebase-main-interactive rebase -i --autostash origin/main)
 	add_git_target(offline-rebase-origin-main-interactive rebase -i --autostash origin/main)
 	add_git_target(update pull --rebase --autostash)
-	
+
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
@@ -115,11 +115,11 @@ if(GIT_EXECUTABLE)
 	endforeach()
 
 	if(WIN32)
-        set(PS_REBASE_CMD "& { $$current = & '${GIT_EXECUTABLE}' rev-parse --abbrev-ref HEAD; & '${GIT_EXECUTABLE}' branch | ForEach-Object { $$branch = $$_.TrimStart('* '); if ($$branch -ne 'main') { & '${GIT_EXECUTABLE}' checkout $$branch; if (& '${GIT_EXECUTABLE}' rebase main) { Write-Host \\\"Rebased $$branch onto main\\\" } else { & '${GIT_EXECUTABLE}' rebase --abort; Write-Host \\\"Failed to rebase $$branch onto main\\\" } } }; & '${GIT_EXECUTABLE}' checkout $$current }")
+        set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch -a | Select-String -NotMatch '^\\s*remotes/' | ForEach-Object { $$branch = $$_.Trim; if ($$branch -ne 'main') { . '${GIT_EXECUTABLE}' checkout $$branch; if (.'${GIT_EXECUTABLE}' pull --rebase --autostash origin main) { Write-Host \\\"Rebased $$branch onto main\\\" } else { . '${GIT_EXECUTABLE}' rebase --abort; Write-Host \\\"Failed to rebase $$branch onto main\\\" } } }")
 		add_custom_target(rebase-all-branches-to-main
 				COMMAND ${GIT_EXECUTABLE} fetch --all
-				COMMAND powershell -NoProfile -NonInteractive -Command "${PS_REBASE_CMD}"
-				COMMENT "Rebasing all branches onto main using powershell."
+				COMMAND powershell -Command "${PS_GIT_CMD}"
+				COMMENT "Rebasing all branches onto origin/main using powershell."
 				WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
 	else(WIN32)
