@@ -115,9 +115,12 @@ if(GIT_EXECUTABLE)
 	endforeach()
 
 	if(WIN32)
+        set(PS_REBASE_CMD "& { $$current = & '${GIT_EXECUTABLE}' rev-parse --abbrev-ref HEAD; & '${GIT_EXECUTABLE}' branch | ForEach-Object { $$branch = $$_.TrimStart('* '); if ($$branch -ne 'main') { & '${GIT_EXECUTABLE}' checkout $$branch; if (& '${GIT_EXECUTABLE}' rebase main) { Write-Host \\\"Rebased $$branch onto main\\\" } else { & '${GIT_EXECUTABLE}' rebase --abort; Write-Host \\\"Failed to rebase $$branch onto main\\\" } } }; & '${GIT_EXECUTABLE}' checkout $$current }")
 		add_custom_target(rebase-all-branches-to-main
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-			COMMAND powershell ${CMAKE_SOURCE_DIR}/rebase_all_branches_to_main.ps1 ${CMAKE_SOURCE_DIR}
+				COMMAND ${GIT_EXECUTABLE} fetch --all
+				COMMAND powershell -NoProfile -NonInteractive -Command "${PS_REBASE_CMD}"
+				COMMENT "Rebasing all branches onto main using powershell."
+				WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
 	else(WIN32)
 		add_custom_target(rebase-all-branches-to-main
@@ -129,5 +132,4 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
-
 endif()
