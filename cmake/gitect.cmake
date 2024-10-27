@@ -9,58 +9,55 @@ if(NOT GIT_EXECUTABLE AND WIN32)
 	find_package(Git)
 endif()
 
+macro(add_git_target_multiple_commands)
+	set(args ${ARGN})
+	set(new_target ${ARGV0})
+	list(POP_FRONT args)
+	add_custom_target(${new_target}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		${ARGVN}
+	)
+	set_target_properties(${new_target} PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
+endmacro()
+
+macro(add_git_target)
+	set(args ${ARGN})
+	set(new_target ${ARGV0})
+	list(POP_FRONT args)
+	add_git_target_multiple_commands(${new_target}
+		COMMAND ${GIT_EXECUTABLE} fetch --all
+		COMMAND ${GIT_EXECUTABLE} ${ARGN}
+		COMMAND ${GIT_EXECUTABLE} fetch --all
+		)
+endmacro()
+
+macro(add_force_push_head_to_develop_target)
+	set(new_target force-push-head${ARGV0}-to-develop)
+	add_custom_target(${new_target}
+		COMMAND ${GIT_EXECUTABLE} push origin HEAD~${ARGV0}:develop -f || ${GIT_EXECUTABLE} push origin HEAD~${ARGV0}:refs/heads/develop
+		COMMAND ${GIT_EXECUTABLE} fetch --all
+		)
+	set_target_properties(${new_target} PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
+endmacro()
+
 if(GIT_EXECUTABLE)
 	message("GIT_EXECUTABLE: ${GIT_EXECUTABLE}")
 
-	add_custom_target(git-gui
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	add_git_target_multiple_commands(git-gui
 		COMMAND ${GIT_EXECUTABLE} gc
 		COMMAND ${GIT_EXECUTABLE} gui
 	)
-	set_target_properties(git-gui PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
-	add_custom_target(rebase-origin-main
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(rebase-origin-main PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
-	add_custom_target(rebase-main-interactive
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-		COMMAND ${GIT_EXECUTABLE} rebase -i --autostash origin/main
-	)
-	set_target_properties(rebase-main-interactive PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
-	add_custom_target(offline-rebase-origin-main-interactive
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} rebase -i --autostash origin/main
-	)
-	set_target_properties(offline-rebase-origin-main-interactive PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
-	add_custom_target(update
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(update PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
+	add_git_target(rebase-origin-main pull --rebase --autostash origin main)
+	add_git_target(rebase-main-interactive rebase -i --autostash origin/main)
+	add_git_target(offline-rebase-origin-main-interactive rebase -i --autostash origin/main)
+	add_git_target(update pull --rebase --autostash)
+	
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
 			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
@@ -75,35 +72,22 @@ if(GIT_EXECUTABLE)
 			FOLDER "util/git")
 		add_dependencies(update update-openmind)
 
-		add_custom_target(push-openmind-develop
-			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
-			COMMAND ${GIT_EXECUTABLE} push origin develop
-			COMMAND ${GIT_EXECUTABLE} fetch --all
-		)
-		set_target_properties(push-openmind-develop PROPERTIES
-			EXCLUDE_FROM_ALL 1
-			EXCLUDE_FROM_DEFAULT_BUILD 1
-			FOLDER "util/git")
-
-		add_custom_target(force-push-openmind-develop
-			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
-			COMMAND ${GIT_EXECUTABLE} push origin develop -f
-			COMMAND ${GIT_EXECUTABLE} fetch --all
-		)
-		set_target_properties(force-push-openmind-develop PROPERTIES
-			EXCLUDE_FROM_ALL 1
-			EXCLUDE_FROM_DEFAULT_BUILD 1
-			FOLDER "util/git")
+		add_git_target(push-openmind-develop push origin develop)
+		add_git_target(force-push-openmind-develop push origin develop -f)
 	else()
 		if(WIN32)
-			set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -d $$_.Line.Trim() }")
+			set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged origin/main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -d $$_.Line.Trim() }")
 			add_custom_target(delete-merged-branches
+				COMMAND ${GIT_EXECUTABLE} checkout main
+				COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
 				COMMAND powershell -Command "${PS_GIT_CMD}"
 				COMMENT "Deleting branches that already are in main using powershell."
 			)
 		else(WIN32)
-			add_custom_target(delete-merged-branches
-				COMMAND ${GIT_EXECUTABLE} branch --merged main | grep -v "^* main" | xargs -n 1 -r ${GIT_EXECUTABLE} branch -d
+		add_custom_target(delete-merged-branches
+				COMMAND ${GIT_EXECUTABLE} checkout main
+				COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+				COMMAND ${GIT_EXECUTABLE} branch --merged origin/main | grep -v "^* main" | xargs -n 1 -r ${GIT_EXECUTABLE} branch -d
 				COMMENT "Deleting branches that already are in main using bash."
 			)
 		endif(WIN32)
@@ -123,64 +107,11 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
 
-	add_custom_target(force-push-head
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push -f
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(force-push-head PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
+	add_git_target(force-push-head push -f)
+	add_git_target(force-push-origin push -f origin)
 
-	add_custom_target(force-push-origin
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push -f origin
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(force-push-origin PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
-	add_custom_target(force-push-head-to-develop
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD:develop -f || ${GIT_EXECUTABLE} push origin HEAD:refs/heads/develop
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(force-push-head-to-develop PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
-	add_custom_target(force-push-head1-to-develop
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD~1:develop -f || ${GIT_EXECUTABLE} push origin HEAD~1:refs/heads/develop
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(force-push-head1-to-develop PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
-	add_custom_target(force-push-head2-to-develop
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD~2:develop -f || ${GIT_EXECUTABLE} push origin HEAD~2:refs/heads/develop
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(force-push-head2-to-develop PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-
-	add_custom_target(force-push-head3-to-develop
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD~3:develop -f || ${GIT_EXECUTABLE} push origin HEAD~3:refs/heads/develop
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(force-push-head3-to-develop PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
+		foreach(NUM RANGE 0 9)
+			add_force_push_head_to_develop_target(${NUM})
+		endforeach()
 
 endif()
