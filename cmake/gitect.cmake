@@ -1,135 +1,14 @@
-if(NOT GIT_EXECUTABLE)
-	find_package(Git QUIET)
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/scripts/RebaseAllBranches.cmake)
 
-if(NOT GIT_EXECUTABLE AND WIN32)
-	find_program(GIT_EXECUTABLE git PATHS 
-		"$ENV{ProgramFiles}/Microsoft Visual Studio/*/*/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/Git/cmd/"
-		)
-	find_package(Git)
-endif()
-
-macro(add_git_target_multiple_commands)
-	set(args ${ARGN})
-	set(new_target ${ARGV0})
-	list(POP_FRONT args)
-	add_custom_target(${new_target}
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		${args}
-	)
-	set_target_properties(${new_target} PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
-endmacro()
-
-macro(add_git_target)
-	set(args ${ARGN})
-	set(new_target ${ARGV0})
-	list(POP_FRONT args)
-	add_git_target_multiple_commands(${new_target}
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-		COMMAND ${GIT_EXECUTABLE} ${args}
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-		)
-endmacro()
-
-macro(add_force_push_head_to_develop_target)
-	set(new_target force-push-head${ARGV0}-to-develop)
-	add_custom_target(${new_target}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD~${ARGV0}:develop -f || ${GIT_EXECUTABLE} push origin HEAD~${ARGV0}:refs/heads/develop
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-		)
-	set_target_properties(${new_target} PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git/develop")
-endmacro()
-
-if(GIT_EXECUTABLE)
-	message("GIT_EXECUTABLE: ${GIT_EXECUTABLE}")
-
-	add_git_target_multiple_commands(git-gui
-		COMMAND ${GIT_EXECUTABLE} gc
-		COMMAND ${GIT_EXECUTABLE} gui
-	)
-	add_git_target(rebase-origin-main pull --rebase --autostash origin main)
-	add_git_target(rebase-main-interactive rebase -i --autostash origin/main)
-	add_git_target(offline-rebase-origin-main-interactive rebase -i --autostash origin/main)
-	add_git_target(update pull --rebase --autostash)
-	
-	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-		add_custom_target(update-openmind
-			WORKING_DIRECTORY ${openmind_SOURCE_DIR}
-			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash || ${GIT_EXECUTABLE} pull --rebase --autostash origin HEAD
-			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin HEAD
-			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash https://github.com/ohhmm/openmind HEAD
-			COMMAND ${GIT_EXECUTABLE} fetch --all
-		)
-		set_target_properties(update-openmind PROPERTIES
-			EXCLUDE_FROM_ALL 1
-			EXCLUDE_FROM_DEFAULT_BUILD 1
-			FOLDER "util/git")
-		add_dependencies(update update-openmind)
-
-		add_git_target(push-openmind-develop push origin develop)
-		add_git_target(force-push-openmind-develop push origin develop -f)
-	else()
-		if(WIN32)
-			set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged origin/main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -d $$_.Line.Trim() }")
-			add_custom_target(delete-merged-branches
-				COMMAND ${GIT_EXECUTABLE} checkout main
-				COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
-				COMMAND powershell -Command "${PS_GIT_CMD}"
-				COMMENT "Deleting branches that already are in main using powershell."
-			)
-		else(WIN32)
-		add_custom_target(delete-merged-branches
-				COMMAND ${GIT_EXECUTABLE} checkout main
-				COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
-				COMMAND ${GIT_EXECUTABLE} branch --merged origin/main | grep -v "^* main" | xargs -n 1 -r ${GIT_EXECUTABLE} branch -d
-				COMMENT "Deleting branches that already are in main using bash."
-			)
-		endif(WIN32)
-		set_target_properties(delete-merged-branches PROPERTIES
-			EXCLUDE_FROM_ALL 1
-			EXCLUDE_FROM_DEFAULT_BUILD 1
-			FOLDER "util/git")
-	endif()
-
-	add_custom_target(push-to-develop
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		COMMAND ${GIT_EXECUTABLE} push origin HEAD:develop || ${GIT_EXECUTABLE} push origin HEAD:refs/heads/develop
-		COMMAND ${GIT_EXECUTABLE} fetch --all
-	)
-	set_target_properties(push-to-develop PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git/develop")
-
-	add_git_target(force-push-head push -f)
-	add_git_target(force-push-origin push -f origin)
-
-	foreach(NUM RANGE 0 9)
-		add_force_push_head_to_develop_target(${NUM})
-	endforeach()
-
-	if(WIN32)
-        set(PS_REBASE_CMD "& { $$current = & '${GIT_EXECUTABLE}' rev-parse --abbrev-ref HEAD; & '${GIT_EXECUTABLE}' branch | ForEach-Object { $$branch = $$_.TrimStart('* '); if ($$branch -ne 'main') { & '${GIT_EXECUTABLE}' checkout $$branch; if (& '${GIT_EXECUTABLE}' rebase main) { Write-Host \\\"Rebased $$branch onto main\\\" } else { & '${GIT_EXECUTABLE}' rebase --abort; Write-Host \\\"Failed to rebase $$branch onto main\\\" } } }; & '${GIT_EXECUTABLE}' checkout $$current }")
-		add_custom_target(rebase-all-branches-to-main
-				COMMAND ${GIT_EXECUTABLE} fetch --all
-				COMMAND powershell -NoProfile -NonInteractive -Command "${PS_REBASE_CMD}"
-				COMMENT "Rebasing all branches onto main using powershell."
-				WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		)
-	else(WIN32)
-		add_custom_target(rebase-all-branches-to-main
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-			COMMAND ${CMAKE_SOURCE_DIR}/rebase_all_branches_to_main.sh ${CMAKE_SOURCE_DIR}
-		)
-	endif()
-	set_target_properties(rebase-all-branches-to-main PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
+find_package(Git)
+if(GIT_FOUND)
+    if(WIN32)
+        add_rebase_all_branches_target()
+    else()
+        add_custom_target(rebase-all-branches-to-main
+            COMMAND ${CMAKE_CURRENT_LIST_DIR}/scripts/rebase_all_branches.sh
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Rebasing all branches onto main using shell script."
+        )
+    endif()
 endif()
