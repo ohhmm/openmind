@@ -20,7 +20,7 @@ using namespace boost::unit_test;
 using namespace boost::gil;
 
 namespace std {
-    
+
     auto& operator<<(auto& stream, alpha_t) {
         stream << "alpha";
         return stream;
@@ -57,11 +57,11 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     read_image(TEST_SRC_DIR "g.tga", src, targa_tag());
     auto& v = view(src);
     write_view(TEST_BIN_DIR "was.tga", v, targa_tag());
-    
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
     DECL_VARS(x, y, z);
     std::list<Variable> formulaParamSequence = { y, x };
+    std::mutex cout_mutex, formula_mutex;
 
     auto get_color_formula = [&](auto tag) {
         auto extrapolator = Extrapolator(rows, cols);
@@ -73,8 +73,10 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         }
         auto factors = extrapolator.Factors(y, x, z);
         BOOST_CHECK_NO_THROW(factors.optimize());
-        std::cout << "\n Input image formula for " << tag << " chennel: " << factors << std::endl;
-
+        {
+            std::lock_guard<std::mutex> lock(cout_mutex);
+            std::cout << "\n Input image formula for " << tag << " chennel: " << factors << std::endl;
+        }
         return FormulaOfVaWithSingleIntegerRoot(z, factors, &formulaParamSequence);
     };
 
@@ -83,7 +85,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     tasksInParallel.AddTask(get_color_formula, red_t());
     tasksInParallel.AddTask(get_color_formula, green_t());
     tasksInParallel.AddTask(get_color_formula, blue_t());
-    
+
     // Unification
     auto afo = tasksInParallel.PeekNextResult();
     auto rfo = tasksInParallel.PeekNextResult();
@@ -97,11 +99,13 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         for (auto j = cols; j--;) { // column
             auto& d = dv(i, j);
             auto& s = v(i,j);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
-
+            {
+                std::lock_guard<std::mutex> lock(formula_mutex);
+                get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
+                get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
+                get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
+                get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+            }
             BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
             BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
             BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
@@ -111,28 +115,35 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
 
     // outband data deduce
-    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    afo.SetMin(0); afo.SetMax(255);
-    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    rfo.SetMin(0); rfo.SetMax(255);
-    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    gfo.SetMin(0); gfo.SetMax(255);
-    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    bfo.SetMin(0); bfo.SetMax(255);
+    {
+        std::lock_guard<std::mutex> lock(formula_mutex);
+        afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        afo.SetMin(0); afo.SetMax(255);
+        rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        rfo.SetMin(0); rfo.SetMax(255);
+        gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        gfo.SetMin(0); gfo.SetMax(255);
+        bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        bfo.SetMin(0); bfo.SetMax(255);
+    }
 
     const auto d = 2; // 5
-    cols+=d;rows+=d;
-    dst = decltype(src)(rows+d, cols+d);
+    const auto new_rows = rows + d;
+    const auto new_cols = cols + d;
+    dst = decltype(src)(new_rows + d, new_cols + d);
     dv = view(dst);
-    for (auto i = rows; --i>=-d;) { // raw
-        for (auto j = cols; --j>=-d;) { // column
-            auto c=j+d;
-            auto r = i+d;
-            auto& d = dv(r, c);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+    for (auto i = new_rows; --i >= 0;) { // raw
+        for (auto j = new_cols; --j >= 0;) { // column
+            if (i >= d && j >= d) {
+                auto c = j;
+                auto r = i;
+                auto& pixel = dv(r, c);
+                std::lock_guard<std::mutex> lock(formula_mutex);
+                get_color(pixel,alpha_t()) = static_cast<unsigned char>(afo(i-d,j-d));
+                get_color(pixel,red_t()) = static_cast<unsigned char>(rfo(i-d,j-d));
+                get_color(pixel,green_t()) = static_cast<unsigned char>(gfo(i-d,j-d));
+                get_color(pixel,blue_t()) = static_cast<unsigned char>(bfo(i-d,j-d));
+            }
         }
     }
     write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
