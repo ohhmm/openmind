@@ -6,12 +6,10 @@
 #include "Integer.h"
 #include "Product.h"
 #include "Sum.h"
-#include <boost/multiprecision/cpp_int.hpp>
-#include <boost/multiprecision/cpp_rational.hpp>
+#include "Fraction.h"
 #include <list>
 #include <deque>
 
-namespace mp = boost::multiprecision;
 namespace omnn {
 namespace math {
 
@@ -160,9 +158,9 @@ namespace math {
         auto freeMember = sum.begin()->IsExponentiation() ? *sum.rbegin() : _.calcFreeMember();
         if (freeMember.IsFraction()) {
             // Convert fraction to integer by multiplying both sides
-            auto rational = static_cast<a_rational>(freeMember);
-            auto denom = mp::denominator(rational);
-            _ *= Valuable(denom);
+            const auto& fraction = dynamic_cast<const Fraction&>(freeMember);
+            auto denom = fraction.getDenominator();
+            _ *= denom;
             _.optimize();
             freeMember = freeMember * denom;
         } else if (!freeMember.IsInt()) {
