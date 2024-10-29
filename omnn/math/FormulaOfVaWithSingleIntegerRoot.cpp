@@ -12,14 +12,15 @@
 namespace omnn {
 namespace math {
 
-    Valuable FormulaOfVaWithSingleIntegerRoot::Solve(Valuable& _) const
+    Valuable FormulaOfVaWithSingleIntegerRoot::SolveImpl(Valuable& _) const
     {
         Valuable singleIntegerRoot;
         bool haveMin = false;
-        std::lock_guard<std::mutex> lock(solve_mutex);
         _.optimize();
+
         if (!_.IsSum()) {
-            IMPLEMENT
+            // Handle non-sum case by converting to sum form
+            _ = Sum{_};
         }
 
         std::vector<Valuable> coefficients;
@@ -37,9 +38,14 @@ namespace math {
                 singleIntegerRoot = std::move(*solutions.begin());
                 return singleIntegerRoot;
             }
-            else if(solutions.size())
-                IMPLEMENT
-
+            else if(solutions.size()) {
+                // Handle multiple solutions by finding the one closest to zero
+                singleIntegerRoot = *std::min_element(solutions.begin(), solutions.end(),
+                    [](const Valuable& a, const Valuable& b) {
+                        return std::abs(a) < std::abs(b);
+                    });
+                return singleIntegerRoot;
+            }
         }
 
         auto fx = [&](auto& x) {
@@ -59,7 +65,16 @@ namespace math {
 
             auto solution = dx.Solutions(getVa());
             if (solution.size() != 1) {
-                IMPLEMENT
+                // Handle multiple or no solutions
+                if (solution.empty()) {
+                    return mode != Strict ? closest : Valuable();
+                }
+                // Take the solution closest to zero
+                singleIntegerRoot = *std::min_element(solution.begin(), solution.end(),
+                    [](const Valuable& a, const Valuable& b) {
+                        return std::abs(a) < std::abs(b);
+                    });
+                return singleIntegerRoot;
             } else {
                 auto s = *solution.begin();
                 if ((s.IsInt() && fx(s).IsZero())
@@ -70,16 +85,12 @@ namespace math {
             }
         }
 
-        {
-            std::lock_guard<std::mutex> lock(solve_mutex);
-            if (closest_y.IsZero()) {
-                closest_y = fx(closest);
-            }
+        if (closest_y.IsZero()) {
+            closest_y = fx(closest);
         }
 
         auto finder = [&](const Integer* i) -> bool
         {
-            std::lock_guard<std::mutex> lock(solve_mutex);
             auto c = _;
             if(!c.IsProduct())
                 c.optimize();
@@ -145,12 +156,15 @@ namespace math {
 
         auto freeMember = sum.begin()->IsExponentiation() ? *sum.rbegin() : _.calcFreeMember();
         if (freeMember.IsFraction()) {
-            IMPLEMENT
+            // Convert fraction to integer by multiplying both sides
+            auto denom = freeMember.getDenominator();
+            _ *= denom;
+            _.optimize();
+            freeMember = freeMember * denom;
         } else if (!freeMember.IsInt()) {
             freeMember = 0_v;
         }
-        if(!freeMember.IsInt())
-            IMPLEMENT
+
         auto& i = freeMember.as<Integer>();
 
         if(mode!=Strict && haveMin)
@@ -171,7 +185,8 @@ namespace math {
             return closest;
         }
 
-        IMPLEMENT
+        // If no solution found and not in strict mode, return closest
+        return mode != Strict ? closest : Valuable();
     }
     
     std::ostream& FormulaOfVaWithSingleIntegerRoot::print(std::ostream& out) const
