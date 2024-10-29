@@ -7,8 +7,10 @@
 #include "Product.h"
 #include "Sum.h"
 #include "Fraction.h"
-#include <list>
 #include <deque>
+#include <list>
+#include <ranges>
+
 
 namespace omnn {
 namespace math {
@@ -41,7 +43,56 @@ namespace math {
                 return singleIntegerRoot;
             }
             else if(solutions.size()) {
-                // Handle multiple solutions by finding the one closest to zero
+                if (min.IsMInfinity() && max.IsInfinity()) {
+                    auto intSolutionsView = solutions | std::views::filter([](const auto& s) {
+                        return s.IsInt();
+                    });
+                    auto numIntSolutions = std::ranges::distance(intSolutionsView.begin(), intSolutionsView.end());
+                    if(numIntSolutions == 1) {
+                        singleIntegerRoot = *intSolutionsView.begin();
+                        return singleIntegerRoot;
+                    } else if(numIntSolutions) {
+                        singleIntegerRoot = *std::min_element(intSolutionsView.begin(), intSolutionsView.end(),
+                            [](const Valuable& a, const Valuable& b) {
+                                return std::abs(a) < std::abs(b);
+                            });
+                        return singleIntegerRoot;
+                    } else {
+                        IMPLEMENT
+                    }
+                }
+
+                // filter solutions >= min and <= max
+                for (auto idx = solutions.size()-1; idx-->0 ;)
+                { 
+                    auto itMin = std::min_element(solutions.begin(), solutions.end());
+                    auto itMax = std::max_element(solutions.begin(), solutions.end());
+                    if(itMin == itMax) {
+                        return *itMin;
+                    }
+
+                    if(itMin == solutions.end() || itMax == solutions.end()) {
+                        IMPLEMENT
+                    }
+
+                    auto minDistance = *itMin - min;
+                    auto maxDistance = max - *itMax;
+                    if(minDistance < 0 && maxDistance < 0) {
+                        if(minDistance < maxDistance) {
+                            solutions.erase(itMax);
+                        } else {
+                            solutions.erase(itMin);
+                        }
+                    } else if(minDistance < 0) {
+                        solutions.erase(itMin);
+                    } else if(maxDistance < 0) {
+                        solutions.erase(itMax);
+                    } else {
+                        break;
+                    }
+                } while(solutions.size() > 1);
+
+                // Handle multiple solutions by finding the one closest to zero, prefering positive value over negative with same distance to zero
                 singleIntegerRoot = *std::min_element(solutions.begin(), solutions.end(),
                     [](const Valuable& a, const Valuable& b) {
                         return std::abs(a) < std::abs(b);
