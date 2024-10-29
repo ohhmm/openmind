@@ -26,12 +26,16 @@ void TestBinaryOperator(const Valuable& expressionXY, auto function) {
             auto copy = expressionXY;
             Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
             copy.eval(evalMap);
+            copy.optimize();
             //std::cout << " evaluated(" << x << ',' << y << ") = " << copy << std::endl;
             BOOST_TEST(copy == etalon);
 
             copy = lambda(x, y);
             //std::cout << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
             // FIXME: BOOST_TEST(copy == etalon);
+            if(copy != etalon){
+                std::cout << "Expected " << etalon << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
+            }
         }
     }
 }
@@ -49,6 +53,7 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function) {
             auto copy = expressionXY;
             Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
             copy.eval(evalMap);
+            copy.optimize();
             //std::cout << " evaluated(" << x << ',' << y << ") = " << copy << std::endl;
             BOOST_TEST(copy.IsZero() == etalon);
 
@@ -57,7 +62,7 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function) {
 
             // FIXME: BOOST_TEST(copy.IsZero() == etalon);
             if(copy.IsZero() != etalon){
-                std::cout << "Expected " << etalon << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
+                std::cout << "Expected " << (etalon ? "true" : "false") << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
             }
         }
     }
