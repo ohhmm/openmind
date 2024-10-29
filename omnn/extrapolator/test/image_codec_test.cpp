@@ -122,6 +122,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test)
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
     std::list<Variable> formulaParamSequence = { y, x };
+    std::mutex cout_mutex, formula_mutex;
 
     auto get_color_formula = [&](auto tag) {
         auto extrapolator = Extrapolator(rows, cols);
@@ -132,9 +133,11 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test)
             }
         }
         auto factors = extrapolator.Factors(y, x, z);
-        //BOOST_CHECK_NO_THROW(factors.optimize()); //FIXME: uncomment
-        std::cout << "\n Input image formula for " << tag << " chennel: " << factors << std::endl;
-
+        BOOST_CHECK_NO_THROW(factors.optimize());
+        {
+            std::lock_guard<std::mutex> lock(cout_mutex);
+            std::cout << "\n Input image formula for " << tag << " chennel: " << factors << std::endl;
+        }
         return FormulaOfVaWithSingleIntegerRoot(z, factors, &formulaParamSequence);
     };
 
@@ -157,11 +160,13 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test)
         for (auto j = cols; j--;) { // column
             auto& d = dv(i, j);
             auto& s = v(i,j);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
-
+            {
+                std::lock_guard<std::mutex> lock(formula_mutex);
+                get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
+                get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
+                get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
+                get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+            }
             BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
             BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
             BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
@@ -171,14 +176,17 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test)
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
 
     // outband data deduce
-    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    afo.SetMin(0); afo.SetMax(255);
-    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    rfo.SetMin(0); rfo.SetMax(255);
-    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    gfo.SetMin(0); gfo.SetMax(255);
-    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    bfo.SetMin(0); bfo.SetMax(255);
+    {
+        std::lock_guard<std::mutex> lock(formula_mutex);
+        afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        afo.SetMin(0); afo.SetMax(255);
+        rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        rfo.SetMin(0); rfo.SetMax(255);
+        gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        gfo.SetMin(0); gfo.SetMax(255);
+        bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        bfo.SetMin(0); bfo.SetMax(255);
+    }
 
     const auto d = 1;
     cols+=d;rows+=d;
