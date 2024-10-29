@@ -6,9 +6,9 @@
 #include "Formula.h"
 #include "Infinity.h"
 #include <sstream>
-#include <boost/lockfree/queue.hpp>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 namespace omnn {
 namespace math {
@@ -18,14 +18,13 @@ class FormulaOfVaWithSingleIntegerRoot
         : public Formula
 {
     using base = Formula;
-    using flow = boost::lockfree::queue<Valuable>;
 
 protected:
     // Thread-safe evaluation cache and synchronization
-    thread_local static flow evaluation_cache;
-    thread_local static Valuable thread_closest;
-    thread_local static Valuable thread_closest_y;
     mutable std::mutex solve_mutex;
+    mutable std::vector<Valuable> evaluation_cache;
+    mutable Valuable closest;
+    mutable Valuable closest_y;
 
     size_t grade;
     Valuable Solve(Valuable& v) const override;
