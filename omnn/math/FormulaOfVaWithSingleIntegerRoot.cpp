@@ -15,11 +15,10 @@
 namespace omnn {
 namespace math {
 
-    Valuable FormulaOfVaWithSingleIntegerRoot::Solve(Valuable& _) const
+    Valuable FormulaOfVaWithSingleIntegerRoot::SolveImpl(Valuable& _) const
     {
         Valuable singleIntegerRoot;
         bool haveMin = false;
-        std::lock_guard<std::mutex> lock(solve_mutex);
         _.optimize();
 
         if (!_.IsSum()) {
@@ -138,16 +137,12 @@ namespace math {
             }
         }
 
-        {
-            std::lock_guard<std::mutex> lock(solve_mutex);
-            if (closest_y.IsZero()) {
-                closest_y = fx(closest);
-            }
+        if (closest_y.IsZero()) {
+            closest_y = fx(closest);
         }
 
         auto finder = [&](const Integer* i) -> bool
         {
-            std::lock_guard<std::mutex> lock(solve_mutex);
             auto c = _;
             if(!c.IsProduct())
                 c.optimize();
@@ -214,7 +209,7 @@ namespace math {
         auto freeMember = sum.begin()->IsExponentiation() ? *sum.rbegin() : _.calcFreeMember();
         if (freeMember.IsFraction()) {
             // Convert fraction to integer by multiplying both sides
-            const auto& fraction = dynamic_cast<const Fraction&>(freeMember);
+            const auto& fraction = freeMember.as<Fraction>();
             auto denom = fraction.getDenominator();
             _ *= denom;
             _.optimize();
