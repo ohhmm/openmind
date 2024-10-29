@@ -157,8 +157,9 @@ namespace math {
         auto freeMember = sum.begin()->IsExponentiation() ? *sum.rbegin() : _.calcFreeMember();
         if (freeMember.IsFraction()) {
             // Convert fraction to integer by multiplying both sides
-            auto denom = freeMember.getDenominator();
-            _ *= denom;
+            auto rational = static_cast<a_rational>(freeMember);
+            auto denom = rational.denominator();
+            _ *= Valuable(denom);
             _.optimize();
             freeMember = freeMember * denom;
         } else if (!freeMember.IsInt()) {
