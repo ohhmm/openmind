@@ -49,6 +49,7 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function) {
             auto copy = expressionXY;
             Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
             copy.eval(evalMap);
+            copy.optimize();  // Add optimization step before IsZero check
             //std::cout << " evaluated(" << x << ',' << y << ") = " << copy << std::endl;
             BOOST_TEST(copy.IsZero() == etalon);
 
