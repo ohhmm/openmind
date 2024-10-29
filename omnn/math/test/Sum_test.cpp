@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
     }
     {
         Valuable::OptimizeOff oo;
-        Variable v1;
+        DECL_VA(v1);
         auto _1 =
             ((-8 *
                   ((-1) ^ ((1 / 4) * v1 + ((8 * ((-1) ^ ((1 / 2) * v1 + 5 + ((-1 * ((-1) ^ (v1 + 10)) + 1) / (-4)))) +

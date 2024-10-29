@@ -325,8 +325,6 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
         auto sqroot=a;
         a *= a;
 
-        std::time_t result = std::time(nullptr);
-        std::cout << std::ctime(&result);
         int_t t;
         std::cout << omnn::measure::nanoseconds([&](){
             t = boost::multiprecision::sqrt(a.ca());

@@ -77,10 +77,10 @@ namespace
             assert(it2!=oe); // IMPLEMENT
             return it1 == it2 ? x > y : it1 < it2;
         };
-        
+
         constexpr SumOrderComparator soc;
     }
-    
+
     // store order operator
     bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
     {
