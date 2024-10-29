@@ -84,10 +84,35 @@ namespace
     // store order operator
     bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
     {
-        return v1.OfSameType(v2)
-            || (v1.IsProduct() && v2.IsExponentiation())
-            || (v2.IsProduct() && v1.IsExponentiation())
-            ? v1.IsComesBefore(v2) : toc(v1,v2);
+        if (v1 == v2) {
+            return false;  // Equal elements are never ordered before each other
+        }
+
+        // If types are different, use type ordering
+        if (v1.Type() != v2.Type()
+            && !((v1.IsProduct() && v2.IsExponentiation()) || (v2.IsProduct() && v1.IsExponentiation())))
+        {
+            return toc(v1, v2);
+        }
+
+        // For same types, delegate to IsComesBefore
+        // This maintains antisymmetry since IsComesBefore is designed for same-type comparison
+        if (v1.IsComesBefore(v2)) {
+            return true;
+        }
+        if (v2.IsComesBefore(v1)) {
+            return false;
+        }
+
+        // If neither comes before the other and they're not equal,
+        // use type-based ordering as a last resort to maintain strict weak ordering
+        auto result = toc(v1, v2);
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if (result == toc(v2, v1)) {
+            LOG_AND_IMPLEMENT("FIXME: SumOrderComparator failed for not equal values: " << v1 << " and " << v2);
+        }
+#endif
+        return result;
     }
 
     Sum::iterator Sum::Had(iterator it)
