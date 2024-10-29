@@ -126,14 +126,60 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(SumOrderComparator_test_pending, *disabled())
+BOOST_AUTO_TEST_CASE(SumOrderComparator_test_pending)
 {
     SumOrderComparator cmp;
     Valuable::OptimizeOff oo;
     DECL_VA(v1);
+
+    // Test 1: Simple expressions (known working)
+    auto simple1 = v1 + 2;
+    auto simple2 = v1 + 3;
+    std::cout << "\nTest 1 - Simple expressions:" << std::endl;
+    std::cout << "simple1: " << simple1 << std::endl;
+    std::cout << "simple2: " << simple2 << std::endl;
+    bool cmpSimple12 = cmp(simple1, simple2);
+    bool cmpSimple21 = cmp(simple2, simple1);
+    std::cout << "cmp(simple1, simple2) = " << cmpSimple12 << std::endl;
+    std::cout << "cmp(simple2, simple1) = " << cmpSimple21 << std::endl;
+    BOOST_TEST(cmpSimple12 != cmpSimple21);
+
+    // Test 2: Medium complexity with exponents
+    auto med1 = (v1 ^ 2) + 5;
+    auto med2 = (v1 ^ 2) + 7;
+    std::cout << "\nTest 2 - Medium complexity:" << std::endl;
+    std::cout << "med1: " << med1 << std::endl;
+    std::cout << "med2: " << med2 << std::endl;
+    bool cmpMed12 = cmp(med1, med2);
+    bool cmpMed21 = cmp(med2, med1);
+    std::cout << "cmp(med1, med2) = " << cmpMed12 << std::endl;
+    std::cout << "cmp(med2, med1) = " << cmpMed21 << std::endl;
+    BOOST_TEST(cmpMed12 != cmpMed21);
+
+    // Test 3: Higher complexity with fractions and exponents
+    auto high1 = (v1 ^ (1_v/2)) + ((v1 + 1) / 2);
+    auto high2 = (v1 ^ (1_v/2)) + ((v1 + 2) / 2);
+    std::cout << "\nTest 3 - Higher complexity:" << std::endl;
+    std::cout << "high1: " << high1 << std::endl;
+    std::cout << "high2: " << high2 << std::endl;
+    bool cmpHigh12 = cmp(high1, high2);
+    bool cmpHigh21 = cmp(high2, high1);
+    std::cout << "cmp(high1, high2) = " << cmpHigh12 << std::endl;
+    std::cout << "cmp(high2, high1) = " << cmpHigh21 << std::endl;
+    BOOST_TEST(cmpHigh12 != cmpHigh21);
+
+    // Original complex expressions
     auto _1 = "((-8*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 4*((-1)^(v1 + 10)) + 68)/32)))*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 4*((-1)^(v1 + 11)) + 76)/32))) + 8*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 4*((-1)^(v1 + 10)) + 68)/32))) + 8*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 4*((-1)^(v1 + 11)) + 76)/32))) + -8)/(-8))"_v;
     auto _2 = "((-32*((-1)^(v1 + 11))*((-1)^(v1 + 10)) + -64*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4))))*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + -256*((-1)^((1/8)*v1 + ((-8*((-1)^(v1 + 11)) + -16*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + -32*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 4*((-1)^(v1 + 11)) + 76)/32))) + -120)/(-128))))*((-1)^((1/8)*v1 + ((-8*((-1)^(v1 + 10)) + -16*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + -32*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 4*((-1)^(v1 + 10)) + 68)/32))) + -104)/(-128)))) + 256*((-1)^((1/8)*v1 + ((-8*((-1)^(v1 + 11)) + -16*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + -32*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 4*((-1)^(v1 + 11)) + 76)/32))) + -120)/(-128)))) + 256*((-1)^((1/8)*v1 + ((-8*((-1)^(v1 + 10)) + -16*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + -32*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 4*((-1)^(v1 + 10)) + 68)/32))) + -104)/(-128)))) + 64*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 64*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 32*((-1)^(v1 + 11)) + 32*((-1)^(v1 + 10)) + -352)/(-128))"_v;
-    BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
+
+    std::cout << "\nTest 4 - Original complex expressions:" << std::endl;
+    std::cout << "Type 1: " << _1.Type().name() << std::endl;
+    std::cout << "Type 2: " << _2.Type().name() << std::endl;
+    bool cmp12 = cmp(_1, _2);
+    bool cmp21 = cmp(_2, _1);
+    std::cout << "cmp(_1, _2) = " << cmp12 << std::endl;
+    std::cout << "cmp(_2, _1) = " << cmp21 << std::endl;
+    BOOST_TEST(cmp12 != cmp21);
 }
 
 BOOST_AUTO_TEST_CASE(SumFindMember_test) {

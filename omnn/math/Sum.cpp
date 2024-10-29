@@ -77,17 +77,35 @@ namespace
             assert(it2!=oe); // IMPLEMENT
             return it1 == it2 ? x > y : it1 < it2;
         };
-        
+
         constexpr SumOrderComparator soc;
     }
-    
+
     // store order operator
     bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
     {
-        return v1.OfSameType(v2)
-            || (v1.IsProduct() && v2.IsExponentiation())
-            || (v2.IsProduct() && v1.IsExponentiation())
-            ? v1.IsComesBefore(v2) : toc(v1,v2);
+        // If types are different, use type ordering
+        if (v1.Type() != v2.Type()) {
+            return toc(v1, v2);
+        }
+
+        // For same types, ensure consistent ordering
+        if (v1 == v2) {
+            return false;  // Equal elements are never ordered before each other
+        }
+
+        // For same types, delegate to IsComesBefore
+        // This maintains antisymmetry since IsComesBefore is designed for same-type comparison
+        if (v1.IsComesBefore(v2)) {
+            return true;
+        }
+        if (v2.IsComesBefore(v1)) {
+            return false;
+        }
+
+        // If neither comes before the other and they're not equal,
+        // use type-based ordering as a last resort to maintain strict weak ordering
+        return toc(v1, v2);
     }
 
     Sum::iterator Sum::Had(iterator it)
