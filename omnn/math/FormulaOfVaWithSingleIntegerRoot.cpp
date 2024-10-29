@@ -7,19 +7,15 @@
 #include "Product.h"
 #include "Sum.h"
 #include <list>
+#include <deque>
 
 namespace omnn {
 namespace math {
 
-// Define thread-local storage
-thread_local FormulaOfVaWithSingleIntegerRoot::flow FormulaOfVaWithSingleIntegerRoot::evaluation_cache;
-thread_local Valuable FormulaOfVaWithSingleIntegerRoot::thread_closest;
-thread_local Valuable FormulaOfVaWithSingleIntegerRoot::thread_closest_y;
-
     Valuable FormulaOfVaWithSingleIntegerRoot::Solve(Valuable& _) const
     {
-        thread_local Valuable singleIntegerRoot;
-        thread_local bool haveMin = false;
+        Valuable singleIntegerRoot;
+        bool haveMin = false;
         std::lock_guard<std::mutex> lock(solve_mutex);
         _.optimize();
         if (!_.IsSum()) {
@@ -74,9 +70,11 @@ thread_local Valuable FormulaOfVaWithSingleIntegerRoot::thread_closest_y;
             }
         }
 
-        // Initialize thread-local storage if needed
-        if (thread_closest_y.IsZero()) {
-            thread_closest_y = fx(thread_closest);
+        {
+            std::lock_guard<std::mutex> lock(solve_mutex);
+            if (closest_y.IsZero()) {
+                closest_y = fx(closest);
+            }
         }
 
         auto finder = [&](const Integer* i) -> bool
@@ -119,21 +117,21 @@ thread_local Valuable FormulaOfVaWithSingleIntegerRoot::thread_closest_y;
 //                            newton = static_cast<a_int>(newton);
 //                        if (newton == i) {
 //                            singleIntegerRoot = i;
-//                            thread_closest = i;
+//                            closest = i;
 //                            return true;
 //                        }
 //                        return  test(newton);
 //                    }
 
-                    if(!haveMin || std::abs(_) < std::abs(thread_closest_y)) {
-                        thread_closest = i;
-                        thread_closest_y = _;
+                    if(!haveMin || std::abs(_) < std::abs(closest_y)) {
+                        closest = i;
+                        closest_y = _;
                         haveMin = true;
                     }
                     else if(mode==FirstExtrenum)
                     {
                         if (haveMin) {
-                            singleIntegerRoot=thread_closest;
+                            singleIntegerRoot=closest;
                             return true;
                         }
                     }
@@ -156,7 +154,7 @@ thread_local Valuable FormulaOfVaWithSingleIntegerRoot::thread_closest_y;
         auto& i = freeMember.as<Integer>();
 
         if(mode!=Strict && haveMin)
-            return thread_closest;
+            return closest;
 
         if (finder(&i)) {
             return singleIntegerRoot;
@@ -165,12 +163,12 @@ thread_local Valuable FormulaOfVaWithSingleIntegerRoot::thread_closest_y;
                 auto y = fx(i);
                 if (y == 0) {
                     return i;
-                } else if (std::abs(y) < std::abs(thread_closest_y)) {
-                    thread_closest = i;
-                    thread_closest_y = y;
+                } else if (std::abs(y) < std::abs(closest_y)) {
+                    closest = i;
+                    closest_y = y;
                 }
             }
-            return thread_closest;
+            return closest;
         }
 
         IMPLEMENT
