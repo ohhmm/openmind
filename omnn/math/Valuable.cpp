@@ -52,8 +52,6 @@ using namespace std::string_view_literals;
 #endif
 
 namespace omnn::math {
-    class Valuable;
-
     const a_int Valuable::a_int_cz = 0;
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
@@ -89,7 +87,7 @@ namespace omnn::math {
     thread_local bool Valuable::bit_operation_optimizations = {};
     thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
 
-//    [[noreturn]]
+//    [[noreturn]] 'return' statement is useful for debugging purposes here
     Valuable implement(const char* str)
     {
         std::cerr << str << std::endl;

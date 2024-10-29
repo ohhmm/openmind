@@ -240,7 +240,7 @@ public:
     static thread_local bool bit_operation_optimizations;
     static thread_local bool enforce_solve_using_rational_root_test_only;
 
-    class OptimizeOn {
+    class [[maybe_unused]] OptimizeOn {
         bool opts;
     public:
         OptimizeOn() : opts(optimizations) {
@@ -251,7 +251,7 @@ public:
         }
     };
 
-    class OptimizeOff {
+    class [[maybe_unused]] OptimizeOff {
         bool opts;
     public:
         OptimizeOff() : opts(optimizations) {

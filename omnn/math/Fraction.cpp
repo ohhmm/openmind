@@ -631,6 +631,23 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         return c;
     }
 
+    bool Fraction::IsComesBefore(const Fraction& fraction) const {
+        bool is;
+        if(IsSimple()) {
+            is = fraction.IsSimple() && operator<(fraction);
+        } else {
+            if (numerator() == fraction.numerator()) {
+                is = denominator().IsComesBefore(fraction.denominator());
+            } else {
+                is = numerator().IsComesBefore(fraction.numerator());
+            }
+//            auto lhs = numerator() * fraction.denominator();
+//            auto rhs = fraction.numerator() * denominator();
+//            is = lhs != rhs && lhs.IsComesBefore(rhs);
+        }
+        return is;
+    }
+
     bool Fraction::IsComesBefore(const Valuable& v) const
     {
         auto is = !IsSimple() && v.IsSimple();
@@ -649,39 +666,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
             is = degreeDiff > 0;
         }
         else if (v.IsFraction())
-        {
-            if (IsSimple()) {
-                is = v.IsSimpleFraction() && *this < v;
-            }
-            else
-            {
-                auto& f = v.as<Fraction>();
-                if (numerator() == f.numerator()) {
-                    is = denominator().IsComesBefore(f.denominator());
-                } else {
-                    is = numerator().IsComesBefore(f.numerator());
-                }
-            }
-//            auto e = cast(v);
-//            bool numerator()IsVa = numerator().IsVa();
-//            bool vbaseIsVa = e->numerator().IsVa();
-//            if (numerator()IsVa && vbaseIsVa)
-//                is = denominator() == e->denominator() ? numerator().IsComesBefore(e->numerator()) : denominator() > e->denominator();
-//            else if(numerator()IsVa)
-//                is = false;
-//            else if(vbaseIsVa)
-//                is = true;
-//            else if(numerator() == e->numerator())
-//                is = denominator().IsComesBefore(e->denominator());
-//            else if(denominator() == e->denominator())
-//                is = numerator().IsComesBefore(e->numerator());
-//            else
-//            {
-//                auto expComesBefore = denominator().IsComesBefore(e->denominator());
-//                auto ebaseComesBefore = numerator().IsComesBefore(e->numerator());
-//                is = ebaseComesBefore || expComesBefore;//expComesBefore==ebaseComesBefore || str().length() > e->str().length();
-//            }
-        }
+            is = IsComesBefore(v.as<Fraction>());
         else if(v.IsProduct())
             is = Product{*this}.IsComesBefore(v);
         else if(v.IsSum())

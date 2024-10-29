@@ -67,6 +67,7 @@ namespace math {
         const vars_cont_t& getCommonVars() const override;
         vars_cont_t GetVaExps() const override;
         Valuable InCommonWith(const Valuable& v) const override;
+        bool IsComesBefore(const Fraction&) const;
         bool IsComesBefore(const Valuable& v) const override;
         bool IsFraction() const override { return true; }
         bool IsSimpleFraction() const override { return IsSimple(); }
