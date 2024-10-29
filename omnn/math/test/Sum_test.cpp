@@ -44,6 +44,39 @@ BOOST_AUTO_TEST_CASE(SumCopy_test) {
     // sum.Reset(); // otherwise ~Sum would called on Integer object for optimizations on
 }
 
+BOOST_AUTO_TEST_CASE(Simple_SumOrderComparator_test)
+{
+    SumOrderComparator cmp;
+    DECL_VA(v1);
+    auto simple1 = v1 + 2;
+    auto simple2 = v1 + 3;
+    bool cmpSimple12 = cmp(simple1, simple2);
+    bool cmpSimple21 = cmp(simple2, simple1);
+    BOOST_TEST(cmpSimple12 != cmpSimple21);
+}
+
+BOOST_AUTO_TEST_CASE(Exponentiations_SumOrderComparator_test)
+{
+    SumOrderComparator cmp;
+    DECL_VA(v1);
+    auto med1 = (v1 ^ 2) + 5;
+    auto med2 = (v1 ^ 2) + 7;
+    bool cmpMed12 = cmp(med1, med2);
+    bool cmpMed21 = cmp(med2, med1);
+    BOOST_TEST(cmpMed12 != cmpMed21);
+}
+
+BOOST_AUTO_TEST_CASE(Fractions_SumOrderComparator_test)
+{
+    SumOrderComparator cmp;
+    DECL_VA(v1);
+    auto high1 = (v1 ^ (1_v / 2)) + ((v1 + 1) / 2);
+    auto high2 = (v1 ^ (1_v / 2)) + ((v1 + 2) / 2);
+    bool cmpHigh12 = cmp(high1, high2);
+    bool cmpHigh21 = cmp(high2, high1);
+    BOOST_TEST(cmpHigh12 != cmpHigh21);
+}
+
 BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
     SumOrderComparator cmp;
     {
@@ -126,7 +159,7 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(SumOrderComparator_test_pending, *disabled())
+BOOST_AUTO_TEST_CASE(Mixed_SumOrderComparator_test)
 {
     SumOrderComparator cmp;
     Valuable::OptimizeOff oo;

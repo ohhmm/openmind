@@ -656,7 +656,11 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
             else
             {
                 auto& f = v.as<Fraction>();
-                is = numerator().IsComesBefore(f.numerator()) || denominator().IsComesBefore(f.denominator());
+                if (numerator() == f.numerator()) {
+                    is = denominator().IsComesBefore(f.denominator());
+                } else {
+                    is = numerator().IsComesBefore(f.numerator());
+                }
             }
 //            auto e = cast(v);
 //            bool numerator()IsVa = numerator().IsVa();
