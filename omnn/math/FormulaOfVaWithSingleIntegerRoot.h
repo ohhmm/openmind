@@ -7,6 +7,8 @@
 #include "Infinity.h"
 #include <sstream>
 #include <boost/lockfree/queue.hpp>
+#include <mutex>
+#include <thread>
 
 namespace omnn {
 namespace math {
@@ -17,9 +19,14 @@ class FormulaOfVaWithSingleIntegerRoot
 {
     using base = Formula;
     using flow = boost::lockfree::queue<Valuable>;
-    //flow extrenums, doubleDerivatives;
-    
+
 protected:
+    // Thread-safe evaluation cache and synchronization
+    thread_local static flow evaluation_cache;
+    thread_local static Valuable thread_closest;
+    thread_local static Valuable thread_closest_y;
+    mutable std::mutex solve_mutex;
+
     size_t grade;
     Valuable Solve(Valuable& v) const override;
     std::ostream& print(std::ostream& out) const override;
@@ -37,7 +44,7 @@ public:
     void SetMode(Mode m) { mode = m; }
     void SetMax(const Valuable& m) { max = m; }
     void SetMin(const Valuable& m) { min = m; }
-    
+
 private:
     Mode mode = Strict;
     Valuable max = Infinity();
