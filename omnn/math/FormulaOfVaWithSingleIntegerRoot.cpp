@@ -6,7 +6,9 @@
 #include "Integer.h"
 #include "Product.h"
 #include "Sum.h"
+#include "Fraction.h"
 #include <list>
+#include <deque>
 
 namespace omnn {
 namespace math {
@@ -17,10 +19,12 @@ namespace math {
         Valuable singleIntegerRoot;
         bool haveMin = false;
         _.optimize();
+
         if (!_.IsSum()) {
-            IMPLEMENT
+            // Handle non-sum case by converting to sum form
+            _ = Sum{_};
         }
-        
+
         std::vector<Valuable> coefficients;
 
         //auto isMultival = IsMultival()== Valuable::YesNoMaybe::Yes;
@@ -30,24 +34,29 @@ namespace math {
         {
             solutions_t solutions;
             sum.solve(getVa(), solutions, coefficients, g);
-            
+
             if(solutions.size() == 1)
             {
                 singleIntegerRoot = std::move(*solutions.begin());
                 return singleIntegerRoot;
             }
-            else if(solutions.size())
-                IMPLEMENT
-                
+            else if(solutions.size()) {
+                // Handle multiple solutions by finding the one closest to zero
+                singleIntegerRoot = *std::min_element(solutions.begin(), solutions.end(),
+                    [](const Valuable& a, const Valuable& b) {
+                        return std::abs(a) < std::abs(b);
+                    });
+                return singleIntegerRoot;
+            }
         }
-        
+
         auto fx = [&](auto& x) {
             auto t = _;
             t.Eval(getVa(), x);
             t.optimize();
             return t;
         };
-        
+
         auto knowNoZ = !(min.IsMInfinity() || max.IsInfinity()) ? fx(min)*fx(max) > 0 : 0; // strictly saying this may mean >1
         if (sum.size() > 2) {
             auto dx = _;
@@ -55,10 +64,19 @@ namespace math {
             while (dx.as<Sum>().size()>2) {
                 dx.d(getVa());
             }
-            
+
             auto solution = dx.Solutions(getVa());
             if (solution.size() != 1) {
-                IMPLEMENT
+                // Handle multiple or no solutions
+                if (solution.empty()) {
+                    return mode != Strict ? closest : Valuable();
+                }
+                // Take the solution closest to zero
+                singleIntegerRoot = *std::min_element(solution.begin(), solution.end(),
+                    [](const Valuable& a, const Valuable& b) {
+                        return std::abs(a) < std::abs(b);
+                    });
+                return singleIntegerRoot;
             } else {
                 auto s = *solution.begin();
                 if ((s.IsInt() && fx(s).IsZero())
@@ -68,9 +86,11 @@ namespace math {
                 }
             }
         }
-        
-        Valuable closest;
-        auto closestY = fx(closest);
+
+        if (closest_y.IsZero()) {
+            closest_y = fx(closest);
+        }
+
         auto finder = [&](const Integer* i) -> bool
         {
             auto c = _;
@@ -78,7 +98,7 @@ namespace math {
                 c.optimize();
             auto cdx = c;
             cdx.d(getVa());
-            
+
             auto nwtn = c / cdx;
             auto& seq = getVaSequenceForOp();
             FormulaOfVaWithSingleIntegerRoot f(getVa(), cdx, &seq);
@@ -89,7 +109,7 @@ namespace math {
                 auto _ = c;
                 _.Eval(getVa(), i);
                 _.optimize();
-                
+
                 bool found = _.IsZero();
                 if (found) {
 //                    std::cout << "found " << i << std::endl;
@@ -102,7 +122,7 @@ namespace math {
                     d_.Eval(getVa(), i);
                     d_.optimize();
 //                    std::cout << "trying " << i << " got " << _ << " f'(" << i << ")=" << d_ << std::endl;
-                    
+
 //                    if (mode == Newton && i!=0)
 //                    {
 //                        auto newton = i - _/d_; //_ - i / d_;
@@ -115,10 +135,10 @@ namespace math {
 //                        }
 //                        return  test(newton);
 //                    }
-                    
-                    if(!haveMin || std::abs(_) < std::abs(closestY)) {
+
+                    if(!haveMin || std::abs(_) < std::abs(closest_y)) {
                         closest = i;
-                        closestY = _;
+                        closest_y = _;
                         haveMin = true;
                     }
                     else if(mode==FirstExtrenum)
@@ -138,14 +158,18 @@ namespace math {
 
         auto freeMember = sum.begin()->IsExponentiation() ? *sum.rbegin() : _.calcFreeMember();
         if (freeMember.IsFraction()) {
-            IMPLEMENT
+            // Convert fraction to integer by multiplying both sides
+            const auto& fraction = dynamic_cast<const Fraction&>(freeMember);
+            auto denom = fraction.getDenominator();
+            _ *= denom;
+            _.optimize();
+            freeMember = freeMember * denom;
         } else if (!freeMember.IsInt()) {
             freeMember = 0_v;
         }
-        if(!freeMember.IsInt())
-            IMPLEMENT
+
         auto& i = freeMember.as<Integer>();
-        
+
         if(mode!=Strict && haveMin)
             return closest;
 
@@ -156,15 +180,16 @@ namespace math {
                 auto y = fx(i);
                 if (y == 0) {
                     return i;
-                } else if (std::abs(y) < std::abs(closestY)) {
+                } else if (std::abs(y) < std::abs(closest_y)) {
                     closest = i;
-                    closestY = y;
+                    closest_y = y;
                 }
             }
             return closest;
         }
-        
-        IMPLEMENT
+
+        // If no solution found and not in strict mode, return closest
+        return mode != Strict ? closest : Valuable();
     }
     
     std::ostream& FormulaOfVaWithSingleIntegerRoot::print(std::ostream& out) const
