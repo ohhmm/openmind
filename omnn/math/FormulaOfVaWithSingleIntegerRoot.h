@@ -27,7 +27,11 @@ protected:
     mutable Valuable closest_y;
 
     size_t grade;
-    Valuable Solve(Valuable& v) const override;
+    Valuable Solve(Valuable& v) const override {
+        std::lock_guard<std::mutex> lock(solve_mutex);
+        return SolveImpl(v);
+    }
+    Valuable SolveImpl(Valuable& v) const;
     std::ostream& print(std::ostream& out) const override;
 
 public:
@@ -40,11 +44,21 @@ public:
         Some
     };
 
-    void SetMode(Mode m) { mode = m; }
-    void SetMax(const Valuable& m) { max = m; }
-    void SetMin(const Valuable& m) { min = m; }
+    void SetMode(Mode m) {
+        std::lock_guard<std::mutex> lock(config_mutex);
+        mode = m;
+    }
+    void SetMax(const Valuable& m) {
+        std::lock_guard<std::mutex> lock(config_mutex);
+        max = m;
+    }
+    void SetMin(const Valuable& m) {
+        std::lock_guard<std::mutex> lock(config_mutex);
+        min = m;
+    }
 
 private:
+    mutable std::mutex config_mutex;
     Mode mode = Strict;
     Valuable max = Infinity();
     Valuable min = MInfinity();
