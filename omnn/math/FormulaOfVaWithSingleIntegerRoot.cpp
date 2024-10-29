@@ -7,6 +7,9 @@
 #include "Product.h"
 #include "Sum.h"
 #include "Fraction.h"
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/cpp_rational.hpp>
+#include <list>
 #include <deque>
 #include <list>
 #include <ranges>
