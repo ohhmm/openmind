@@ -22,7 +22,6 @@ BOOST_AUTO_TEST_CASE(PrincipalSurd_test) {
 
 BOOST_AUTO_TEST_CASE(RadicalExpressions_noHang_test
     , *timeout(2)
-    * disabled()
     )
 {
     Valuable _1("((sqrt(111))*((-6)/37) + ((-35)/((sqrt(111))*2)))");
