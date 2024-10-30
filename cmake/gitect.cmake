@@ -76,7 +76,7 @@ if(GIT_EXECUTABLE)
 		add_git_target(force-push-openmind-develop push origin develop -f)
 	else()
 		if(WIN32)
-			set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged origin/main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -d $$_.Line.Trim() }")
+			set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged origin/main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -D $$_.Line.Trim() }")
 			add_custom_target(delete-merged-branches
 				COMMAND ${GIT_EXECUTABLE} checkout main
 				COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
