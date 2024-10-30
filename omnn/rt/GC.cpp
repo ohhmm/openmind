@@ -8,11 +8,10 @@
 
 #include <cassert>
 #include <chrono>
+#include <mutex>
 #include <set>
+#include <stack>
 
-#include <boost/any.hpp>
-#include <boost/lockfree/queue.hpp>
-#include <boost/lockfree/stack.hpp>
 #include <boost/thread.hpp>
 
 #ifdef _WIN32
@@ -27,14 +26,17 @@ namespace omnn::rt {
 std::jthread GC::GCThread(GC::Routine); // TODO : multiple idle threads
 
 namespace {
-boost::lockfree::stack<std::shared_ptr<void>> Bin(0);
+std::mutex bin_mutex;
+std::stack<std::shared_ptr<void>> Bin;
 void Nop(std::shared_ptr<void> obj) { }
 
 } // namespace
 
 void GC::DispatchDispose(std::shared_ptr<void>&& obj) {
-    if (!GC::IsThreadGC() && !GC::GCThread.get_stop_token().stop_requested())
+    if (!GC::IsThreadGC() && !GC::GCThread.get_stop_token().stop_requested()) {
+        std::lock_guard<std::mutex> lock(bin_mutex);
         Bin.push(std::move(obj));
+    }
 }
 
 bool GC::IsThreadGC() {
@@ -54,7 +56,17 @@ void GC::Routine() {
     //sched_setscheduler(h, SCHED_IDLE, &sp);
 #endif
     while (!GC::GCThread.get_stop_token().stop_requested()) {
-        if (Bin.consume_all(Nop)) {
+        bool processed = false;
+        {
+            std::lock_guard<std::mutex> lock(bin_mutex);
+            while (!Bin.empty()) {
+                Nop(std::move(Bin.top()));
+                Bin.pop();
+                processed = true;
+            }
+        }
+
+        if (processed) {
             std::this_thread::yield();
         } else {
 #ifdef OPENMIND_PRIME_MINING

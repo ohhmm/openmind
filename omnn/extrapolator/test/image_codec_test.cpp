@@ -19,6 +19,27 @@ using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace boost::gil;
 
+namespace std {
+
+    auto& operator<<(auto& stream, alpha_t) {
+        stream << "alpha";
+        return stream;
+    }
+    auto& operator<<(auto& stream, red_t) {
+        stream << "red";
+        return stream;
+    }
+    auto& operator<<(auto& stream, green_t) {
+        stream << "green";
+        return stream;
+    }
+    auto& operator<<(auto& stream, blue_t) {
+        stream << "blue";
+        return stream;
+    }
+
+}
+
 using namespace std;
 
 
@@ -29,66 +50,47 @@ std::string l(const omnn::math::Valuable& v)
     return ss.str();
 }
 
+
 BOOST_AUTO_TEST_CASE(ImageCodec_test)
 {
     rgba8_image_t src;
     read_image(TEST_SRC_DIR "g.tga", src, targa_tag());
-    write_view(TEST_BIN_DIR "was.tga", view(src), targa_tag());
-    
+    auto& v = view(src);
+    write_view(TEST_BIN_DIR "was.tga", v, targa_tag());
     auto rows = src.dimensions().y;
     auto cols = src.dimensions().x;
-    Extrapolator a(rows, cols);
-    Extrapolator r(rows, cols);
-    Extrapolator g(rows, cols);
-    Extrapolator b(rows, cols);
-
-    auto& v = view(src);
-    for (auto i = rows; i--;) { // raw
-        for (auto j = cols; j--;) { // column
-            auto px = v(i,j);
-            a(i,j) = get_color(px,alpha_t());
-            r(i,j) = get_color(px,red_t());
-            g(i,j) = get_color(px,green_t());
-            b(i,j) = get_color(px,blue_t());
-        }
-    }
-
     DECL_VARS(x, y, z);
-    auto fa = a.Factors(y, x, z);
-    auto fr = r.Factors(y, x, z);
-    auto fg = g.Factors(y, x, z);
-    auto fb = b.Factors(y, x, z);
-    {
-        omnn::rt::StoringTasksQueue<void> tasksInParallel(false);
-        tasksInParallel.AddTask([&] {
-            BOOST_CHECK_NO_THROW(fa.optimize());
-            std::cout << fa << std::endl;
-        });
-        tasksInParallel.AddTask([&] {
-            BOOST_CHECK_NO_THROW(fr.optimize());
-            std::cout << fr << std::endl;
-        });
-        tasksInParallel.AddTask([&] {
-            BOOST_CHECK_NO_THROW(fg.optimize());
-            std::cout << fg << std::endl;
-        });
-        tasksInParallel.AddTask([&] {
-            BOOST_CHECK_NO_THROW(fb.optimize());
-            std::cout << fb << std::endl;
-        });
-    }
-    std::cout << "\n Input image formula of alpha-channel=" << fa;
-    std::cout << "\n  red = " << fr;
-    std::cout << "\n green= " << fg;
-    std::cout << "\n  blue= " << fb << std::endl;
+    std::list<Variable> formulaParamSequence = { y, x };
+    std::mutex cout_mutex, formula_mutex;
+
+    auto get_color_formula = [&](auto tag) {
+        auto extrapolator = Extrapolator(rows, cols);
+        for (auto i = rows; i--;) { // raw
+            for (auto j = cols; j--;) { // column
+                auto px = v(i,j);
+                extrapolator(i,j) = get_color(px, tag);
+            }
+        }
+        auto factors = extrapolator.Factors(y, x, z);
+        BOOST_CHECK_NO_THROW(factors.optimize());
+        {
+            std::lock_guard<std::mutex> lock(cout_mutex);
+            std::cout << "\n Input image formula for " << tag << " chennel: " << factors << std::endl;
+        }
+        return FormulaOfVaWithSingleIntegerRoot(z, factors, &formulaParamSequence);
+    };
+
+    omnn::rt::StoringTasksQueue<FormulaOfVaWithSingleIntegerRoot> tasksInParallel(false);
+    tasksInParallel.AddTask(get_color_formula, alpha_t());
+    tasksInParallel.AddTask(get_color_formula, red_t());
+    tasksInParallel.AddTask(get_color_formula, green_t());
+    tasksInParallel.AddTask(get_color_formula, blue_t());
 
     // Unification
-    std::list<Variable> formulaParamSequence = { y, x };
-    FormulaOfVaWithSingleIntegerRoot
-        afo(z, fa, &formulaParamSequence),
-        rfo(z, fr, &formulaParamSequence),
-        gfo(z, fg, &formulaParamSequence),
-        bfo(z, fb, &formulaParamSequence);
+    auto afo = tasksInParallel.PeekNextResult();
+    auto rfo = tasksInParallel.PeekNextResult();
+    auto gfo = tasksInParallel.PeekNextResult();
+    auto bfo = tasksInParallel.PeekNextResult();
 
     // inbound data deduce
     decltype(src) dst(src.dimensions());
@@ -97,11 +99,13 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
         for (auto j = cols; j--;) { // column
             auto& d = dv(i, j);
             auto& s = v(i,j);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
-
+            {
+                std::lock_guard<std::mutex> lock(formula_mutex);
+                get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
+                get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
+                get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
+                get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+            }
             BOOST_TEST(unsigned(d[0])==unsigned(s[0]));
             BOOST_TEST(unsigned(d[1])==unsigned(s[1]));
             BOOST_TEST(unsigned(d[2])==unsigned(s[2]));
@@ -111,28 +115,35 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     write_view(TEST_BIN_DIR "o.tga", dv, targa_tag());
 
     // outband data deduce
-    afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    afo.SetMin(0); afo.SetMax(255);
-    rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    rfo.SetMin(0); rfo.SetMax(255);
-    gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    gfo.SetMin(0); gfo.SetMax(255);
-    bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
-    bfo.SetMin(0); bfo.SetMax(255);
+    {
+        std::lock_guard<std::mutex> lock(formula_mutex);
+        afo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        afo.SetMin(0); afo.SetMax(255);
+        rfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        rfo.SetMin(0); rfo.SetMax(255);
+        gfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        gfo.SetMin(0); gfo.SetMax(255);
+        bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
+        bfo.SetMin(0); bfo.SetMax(255);
+    }
 
     const auto d = 2; // 5
-    cols+=d;rows+=d;
-    dst = decltype(src)(rows+d, cols+d);
+    const auto new_rows = rows + d;
+    const auto new_cols = cols + d;
+    dst = decltype(src)(new_rows + d, new_cols + d);
     dv = view(dst);
-    for (auto i = rows; --i>=-d;) { // raw
-        for (auto j = cols; --j>=-d;) { // column
-            auto c=j+d;
-            auto r = i+d;
-            auto& d = dv(r, c);
-            get_color(d,alpha_t()) = static_cast<unsigned char>(afo(i,j));
-            get_color(d,red_t()) = static_cast<unsigned char>(rfo(i,j));
-            get_color(d,green_t()) = static_cast<unsigned char>(gfo(i,j));
-            get_color(d,blue_t()) = static_cast<unsigned char>(bfo(i,j));
+    for (auto i = new_rows; --i >= 0;) { // raw
+        for (auto j = new_cols; --j >= 0;) { // column
+            if (i >= d && j >= d) {
+                auto c = j;
+                auto r = i;
+                auto& pixel = dv(r, c);
+                std::lock_guard<std::mutex> lock(formula_mutex);
+                get_color(pixel,alpha_t()) = static_cast<unsigned char>(afo(i-d,j-d));
+                get_color(pixel,red_t()) = static_cast<unsigned char>(rfo(i-d,j-d));
+                get_color(pixel,green_t()) = static_cast<unsigned char>(gfo(i-d,j-d));
+                get_color(pixel,blue_t()) = static_cast<unsigned char>(bfo(i-d,j-d));
+            }
         }
     }
     write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
