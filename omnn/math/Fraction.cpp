@@ -239,7 +239,7 @@ namespace math {
                         Become(-numerator());
                         break;
                     }
-                    auto d = boost::gcd(n, dn);
+                    auto d = boost::integer::gcd(n, dn);
                     if (d != 1) {
                         numerator() /= Integer(d);
                         denominator() /= Integer(d);

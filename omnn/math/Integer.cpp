@@ -613,10 +613,10 @@ namespace math {
         return v.GCD(*this);
     }
 
-    Valuable Integer::GCD(const Valuable& v) const {
-        return v.IsInt()
-            ? boost::gcd(v.ca(), ca())
-            : v.GCD(*this);
+    Valuable Integer::GCD(const Valuable& value) const {
+        return value.IsInt()
+            ? Valuable(std::static_pointer_cast<Valuable>(std::make_shared<Integer>(boost::integer::gcd(value.ca(), ca()))))
+            : value.GCD(*this);
     }
 
     Valuable Integer::LCM(const Valuable& v) const {

@@ -282,7 +282,7 @@ namespace
                         processed = !copy.FindVa();
                         if (processed) {
                             if (copy.IsInt())
-                                gcd = boost::gcd(gcd, copy);
+                                gcd = boost::integer::gcd(gcd, copy);
                             else
                                 gcd = copy.GCD(gcd);
                         }

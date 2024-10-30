@@ -243,7 +243,8 @@ namespace omnn::math {
 
     Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
     Valuable::Valuable(Valuable* v) : exp(v) {}
-    Valuable::Valuable(const encapsulated_instance& e) : exp(e) {}
+    Valuable::Valuable(encapsulated_instance&& enc) : exp(enc) {}
+    Valuable::Valuable(const encapsulated_instance& enc) : exp(enc) {}
     Valuable::Valuable(): exp(new Integer(Valuable::a_int_cz)) {}
     Valuable::Valuable(double d) : exp(new Fraction(d)) { exp->optimize(); }
     Valuable::Valuable(a_int&& i) : exp(std::move(std::make_shared<Integer>(std::move(i)))) {}
