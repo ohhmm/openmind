@@ -43,4 +43,4 @@ jobs:
       run: ctest . -j`nproc` -C Release -E "ts" --rerun-failed --output-on-failure
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest . -j`nproc` -C Debug -E "image_codec_test|ts" --rerun-failed --output-on-failure
+      run: ctest . -j`nproc` -C Debug -E "ts" --rerun-failed --output-on-failure
