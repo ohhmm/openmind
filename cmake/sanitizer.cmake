@@ -10,14 +10,26 @@ if(ENABLE_ASAN)
             -O1
         )
 
+        # Set up suppressions file path
+        set(ASAN_SUPPRESSIONS_FILE "${CMAKE_SOURCE_DIR}/cmake/leak_suppressions.txt")
+
+        # Common ASan options for all compilers
+        set(ASAN_OPTIONS_VALUE "detect_leaks=1:detect_stack_use_after_return=1:halt_on_error=1:suppressions=${ASAN_SUPPRESSIONS_FILE}")
+        set(LSAN_OPTIONS_VALUE "suppressions=${ASAN_SUPPRESSIONS_FILE}")
+
         function(target_enable_asan target)
             target_compile_options(${target} PRIVATE ${ASAN_FLAGS})
             target_link_options(${target} PRIVATE ${ASAN_FLAGS})
 
-            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-                target_compile_definitions(${target} PRIVATE
-                    ASAN_OPTIONS="detect_leaks=1:detect_stack_use_after_return=1"
-                )
+            # Set environment variables for test execution
+            if(TARGET ${target})
+                get_target_property(target_type ${target} TYPE)
+                if(target_type STREQUAL "EXECUTABLE")
+                    set_tests_properties(${target} PROPERTIES
+                        ENVIRONMENT
+                            "ASAN_OPTIONS=${ASAN_OPTIONS_VALUE};LSAN_OPTIONS=${LSAN_OPTIONS_VALUE}"
+                    )
+                endif()
             endif()
         endfunction()
     else()

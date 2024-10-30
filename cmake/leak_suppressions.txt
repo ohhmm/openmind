@@ -1,0 +1,3 @@
+# Suppress known leaks in Boost.Test framework
+leak:boost::unit_test
+leak:boost::detail
