@@ -518,18 +518,18 @@ std::string_view Trim(std::string& str) {
 }
 
 [[nodiscard]]
-auto OmitOuterBrackets(auto& s) {
+auto OmitOuterBrackets(auto& str) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do{
         outerBracketsDetected = {};
-        Trim(s);
-        bracketsmap = BracketsMap(s);
-        auto l = s.length();
+        Trim(str);
+        bracketsmap = BracketsMap(str);
+        auto l = str.length();
         auto first = bracketsmap.find(0);
         outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
         if (outerBracketsDetected)
-            s = s.substr(1,l-2);
+            str = str.substr(1,l-2);
     } while(outerBracketsDetected);
     return bracketsmap;
 }
@@ -573,8 +573,22 @@ struct HashStrIgnoringAnyParentheses
     }
 };
 
+struct OuterParenthesesIgnoringStringsComparator {
+    [[nodiscard]] constexpr bool operator()(std::string_view str1, std::string_view str2) const {
+        auto equal = str1 == str2;
+        if (!equal) {
+            (void)OmitOuterBrackets(str1);
+            (void)OmitOuterBrackets(str2);
+            equal = str1 == str2;
+        }
+        return equal;
+    }
+};
+
 class StateProxyComparator
+    : public OuterParenthesesIgnoringStringsComparator
 {
+    using base = OuterParenthesesIgnoringStringsComparator;
 public:
     using tokens_collection_t =
         ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
@@ -640,11 +654,7 @@ public:
             if (s == str2) {
                 return val->SerializedStrEqual(str1);
             } else {
-                auto s1 = str1;
-                (void) OmitOuterBrackets(s1);
-                auto s2 = str2;
-                (void) OmitOuterBrackets(s2);
-                return s1 == s2;
+                return base::operator()(str1, str2);
             }
         } else
             return val->SerializedStrEqual(str2);
@@ -697,17 +707,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             same = m1 == m2;
         }
 
-        while (!same && !_1.empty() && _1.front() == '(' && _1.back() == ')') {
-            auto _1len = _1.length();
-            auto _2len = _2.length();
-            auto diff = _1len - _2len;
-            auto dhalf = diff >> 1;
-            if (diff > 0 && !(diff & 1) && _1.substr(dhalf, _1len - diff) == _2) {
-                _1 = _1.substr(1, _1.length() - 2);
-                same = _1 == _2;
-            } else {
-                break;
-            }
+        if (!same) {
+            (void)OmitOuterBrackets(_1);
+            (void)OmitOuterBrackets(_2);
+            same = _1 == _2;
         }
         if (!same) {
             auto str2set = [this](auto& str) {
