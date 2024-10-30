@@ -1804,7 +1804,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->Sign();
         else {
-            return GreaterOrEqual(constants::zero).ToBool() - LessOrEqual(constants::zero).ToBool();
+            return *this / Abs();
+            //return GreaterOrEqual(constants::zero).ToBool() - LessOrEqual(constants::zero).ToBool();
             // sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt")
         }
 	}
@@ -2695,7 +2696,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->ToBool();
         else {
-            return constants::one - Sign().abs(); // https://math.stackexchange.com/a/2063238/118612
+            return constants::one - Sign().Abs(); // https://math.stackexchange.com/a/2063238/118612
         }
 	}
 
