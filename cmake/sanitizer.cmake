@@ -28,8 +28,8 @@ if(ENABLE_ASAN)
                     set_tests_properties(${target} PROPERTIES
                         ENVIRONMENT
                             "ASAN_OPTIONS=${ASAN_OPTIONS_VALUE};LSAN_OPTIONS=${LSAN_OPTIONS_VALUE}"
-                    )
-                endif()
+                )
+            endif()
             endif()
         endfunction()
     else()
