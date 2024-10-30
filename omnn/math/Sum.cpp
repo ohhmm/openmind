@@ -2661,7 +2661,7 @@ namespace
                 sum.Add(mIs.second);
             } else {
                 OptimizeOff oo;
-                sum.Add(Product{v,m});
+                sum.Add(Valuable(std::make_shared<Product>(std::initializer_list<Valuable>{v,m})));
             }
         }
         if (is.first) {
