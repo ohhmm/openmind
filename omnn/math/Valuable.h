@@ -263,7 +263,8 @@ public:
     };
 
     explicit Valuable(Valuable* v);
-    explicit Valuable(const encapsulated_instance& e);
+    explicit Valuable(encapsulated_instance&&);
+    explicit Valuable(const encapsulated_instance&);
     virtual std::type_index Type() const;
     const Valuable Link() const; // TODO : handle simulteneous values changes
 
