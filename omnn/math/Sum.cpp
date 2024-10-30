@@ -104,15 +104,14 @@ namespace
             return false;
         }
 
-        // If neither comes before the other and they're not equal,
-        // use type-based ordering as a last resort to maintain strict weak ordering
-        auto result = toc(v1, v2);
+        // If neither comes before the other and they're not equal, MSVC considering it as inconsistent ordering
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if (result == toc(v2, v1)) {
-            LOG_AND_IMPLEMENT("FIXME: SumOrderComparator failed for not equal values: " << v1 << " and " << v2);
-        }
+        //auto result = toc(v1, v2);
+        //if (result == toc(v2, v1)) {
+            LOG_AND_IMPLEMENT("FIXME: inconsistent ordering, SumOrderComparator failed for not equal values: " << v1 << " and " << v2);
+        //}
 #endif
-        return result;
+        return {};
     }
 
     Sum::iterator Sum::Had(iterator it)
