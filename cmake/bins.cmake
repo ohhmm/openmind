@@ -312,6 +312,12 @@ function(test)
 
         target_link_libraries(${TEST_NAME} PUBLIC ${parent_target})
 
+        # Enable AddressSanitizer for image_codec_test
+        if(${TEST_NAME} STREQUAL "image_codec_test" AND ENABLE_ASAN)
+            message("Enabling AddressSanitizer for ${TEST_NAME}")
+            target_enable_asan(${TEST_NAME})
+        endif()
+
         file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
         add_test(NAME ${TEST_NAME}
             COMMAND $<TARGET_FILE:${TEST_NAME}>

@@ -67,6 +67,7 @@ if(OPENMIND_USE_CONAN)
 endif()
 
 include(bins)
+include(sanitizer)
 
 message("address_model: ${address_model}")
 
