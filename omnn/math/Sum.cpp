@@ -90,7 +90,12 @@ namespace
 
         // If types are different, use type ordering
         if (v1.Type() != v2.Type()
-            && !((v1.IsProduct() && v2.IsExponentiation()) || (v2.IsProduct() && v1.IsExponentiation())))
+            && !((v1.IsProduct() && v2.IsExponentiation()) || (v2.IsProduct() && v1.IsExponentiation()))
+            && !(v1.IsSum() && v1.as<Sum>().size() == 1)
+            && !(v2.IsSum() && v2.as<Sum>().size() == 1)
+            && !(v1.IsProduct() && v1.as<Product>().size() == 1)
+            && !(v2.IsProduct() && v2.as<Product>().size() == 1)
+        )
         {
             return toc(v1, v2);
         }
@@ -1274,6 +1279,10 @@ namespace
                     return toc(*i1, *i2);
                 }
             }
+        }
+
+        if (size() == 1) {
+            return begin()->IsComesBefore(v);
         }
 
         return toc(*this, v);
