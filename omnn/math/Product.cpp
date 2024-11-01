@@ -46,7 +46,7 @@ namespace math {
         typeid(Variable),
         typeid(Modulo),
     };
-    
+
     auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
     {
         static auto ob = std::begin(order);
@@ -599,6 +599,10 @@ namespace math {
     // NOTE : inequality must cover all cases for bugless Sum::Add
     bool Product::IsComesBefore(const Valuable& v) const
     {
+        if (size() == 1 && !v.IsProduct()) {
+            return begin()->IsComesBefore(v);
+        }
+
         auto mae = getMaxVaExp();
         auto vme = v.getMaxVaExp();
         

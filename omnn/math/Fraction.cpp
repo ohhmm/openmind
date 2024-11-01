@@ -667,7 +667,9 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) co
         }
         else if (v.IsFraction())
             is = IsComesBefore(v.as<Fraction>());
-        else if(v.IsProduct())
+        else if (v.IsProduct() && v.as<Product>().size() == 1)
+            is = IsComesBefore(v.as<Product>().begin()->get());
+        else if (v.IsProduct())
             is = Product{*this}.IsComesBefore(v);
         else if(v.IsSum())
             is = Sum{*this}.IsComesBefore(v);
