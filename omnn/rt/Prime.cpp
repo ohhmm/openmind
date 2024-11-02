@@ -15,7 +15,7 @@
 #include <boost/tokenizer.hpp>
 #endif
 
-#include <rt/tasq.h>
+#include <omnn/rt/tasq.h>
 
 #define PRIME_LIST_FILENAME "Primes.inc"
 #ifdef OPENMIND_PRIME_TABLE_OM
