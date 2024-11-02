@@ -12,8 +12,8 @@
 #include "Product.h"
 #include "Sum.h"
 
-#include <rt/Prime.h>
-#include <rt/tasq.h>
+#include <omnn/rt/Prime.h>
+#include <omnn/rt/tasq.h>
 
 #include <algorithm>
 #include <cmath>

@@ -15,8 +15,8 @@
 #include "PrincipalSurd.h"
 #include "Logarithm.h"
 
-#include <rt/GC.h>
-#include <rt/tasq.h>
+#include <omnn/rt/GC.h>
+#include <omnn/rt/tasq.h>
 
 #include <algorithm>
 #include <functional>

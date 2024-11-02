@@ -13,8 +13,8 @@ class DB;
 
 #include <boost/filesystem.hpp>
 
-#include <rt/tasq.h>
-#include <storage/CacheBase.h>
+#include <omnn/rt/tasq.h>
+#include <omnn/storage/CacheBase.h>
 
 #include <omnn/math/VarHost.h>
 
