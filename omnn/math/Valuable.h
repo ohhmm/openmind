@@ -1,21 +1,21 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
-//
 #pragma once
 #include <omnn/math/OpenOps.h>
 #include <omnn/math/YesNoMaybe.h>
 
+#include <memory>
+#include <ranges>
+#include <string>
+#include <string_view>
+#include <map>
+#include <set>
 #include <deque>
 #include <functional>
 #include <list>
-#include <map>
-#include <memory>
-#include <set>
 #include <sstream>
-#include <string>
 #include <typeindex>
 #include <unordered_set>
-
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/preprocessor.hpp>
 #include <boost/rational.hpp>
@@ -25,20 +25,36 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/split_member.hpp>
 
+#include "ValuableWrapper.h"
+#include "OpenOps.h"
+
+#ifdef TBB_PREVIEW_PARTITIONER_1_0
+namespace tbb {
+namespace detail {
+namespace d1 {
+    class static_partition_type {
+    public:
+        size_t my_divisor;
+        size_t do_split(const static_partition_type& src, const proportional_split& split_obj) {
+            return split_obj.right();
+        }
+    };
+
+    class affinity_partition_type {
+    public:
+        size_t my_divisor;
+        size_t do_split(const affinity_partition_type& src, const proportional_split& split_obj) {
+            return split_obj.right();
+        }
+    };
+}}}
+#endif
 
 #define _NUM2STR(x) #x
 #define NUM2STR(x) _NUM2STR(x)
 #define LINE_NUMBER_STR NUM2STR(__LINE__)
-
-#define IMPLEMENT {                                                                                                    \
-        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                                   \
-        throw;                                                                                                         \
-    }
-#define LOG_AND_IMPLEMENT(Param) { \
-    ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
-        throw;                                                                                                          \
-    }
-
+#define IMPLEMENT = 0;
+#define LOG_AND_IMPLEMENT(Param) = 0;
 
 namespace omnn {
 namespace math {
@@ -53,58 +69,43 @@ size_t hash_value(const omnn::math::Valuable& v);
 } // namespace math
 } // namespace omnn
 
-namespace std {
-omnn::math::Valuable abs(const omnn::math::Valuable& v);
-omnn::math::Valuable log(const omnn::math::Valuable&);
-omnn::math::Valuable pow(const omnn::math::Valuable&, const omnn::math::Valuable&);
-omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
-omnn::math::Valuable tanh(const omnn::math::Valuable&);
+class Valuable;  // Forward declaration
 
-template <>
-struct hash<omnn::math::Valuable> {
-    size_t operator()(const omnn::math::Valuable& v) const { return hash_value(v); }
-};
-
-} // namespace std
-
-namespace omnn{
-namespace math {
+// Function declarations
+Valuable abs(const Valuable& v);
+Valuable log(const Valuable&);
+Valuable pow(const Valuable&, const Valuable&);
+Valuable sqrt(const Valuable& v);
+Valuable tanh(const Valuable&);
 
 namespace constants {
-extern const Valuable& e;
-extern const Valuable& i;
-extern const Valuable& zero;
-extern const Valuable& one;
-extern const Valuable& two;
-extern const Valuable& half;
-extern const Valuable& quarter;
-extern const Valuable& minus_1;
-extern const Valuable& plus_minus_1; // ±1
-extern const Valuable& zero_or_1;
-extern const Valuable& infinity;
-extern const Valuable& minfinity;
-extern const Valuable& pi;
-extern const Variable& integration_result_constant;
+    // Constants namespace
 }
 
-    using a_int = boost::multiprecision::cpp_int;
+using a_int = boost::multiprecision::cpp_int;
+using a_rational = boost::multiprecision::cpp_rational;
+using max_exp_t = a_rational;
+namespace ptrs = ::std;
 
-    using a_rational = boost::multiprecision::cpp_rational;
-    //using a_rational = boost::rational<a_int>;
+class VarHost;
+struct ValuableDescendantMarker {};
 
-    using max_exp_t = a_rational;
-    namespace ptrs = ::std;
+class Valuable : public std::enable_shared_from_this<Valuable>, public OpenOps<Valuable> {
+public:
+    // Move operations
+    virtual ~Valuable() noexcept = 0;
 
-    class VarHost;
-    struct ValuableDescendantMarker {};
-
-    Valuable implement(const char* str = "");
-
-
-class Valuable
-        : public OpenOps<Valuable>
-{
+public:
+    using ptr = std::shared_ptr<Valuable>;
+    using const_ptr = std::shared_ptr<const Valuable>;
     using self = Valuable;
+    using encapsulated_instance = std::shared_ptr<Valuable>;
+    using vars_cont_t = std::set<std::shared_ptr<Variable>>;
+    using va_names_t = std::set<std::string>;
+    using universal_lambda_t = std::function<Valuable(const std::vector<Valuable>&)>;
+    using universal_lambda_params_t = const std::vector<Valuable>&;
+    using variables_for_lambda_t = std::vector<Variable>;
+    using solutions_t = std::vector<ValuableWrapper>;
 
     static const a_int a_int_cz;
     static const max_exp_t max_exp_cz;
@@ -145,7 +146,7 @@ protected:
     size_t sz = sizeof(Valuable);
     static constexpr a_int const& a_int_z = a_int_cz;
     static constexpr max_exp_t const& max_exp_z = max_exp_cz;
-    max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
+    static constexpr size_t DefaultAllocSize = 768;
 
     bool optimized = false;
     void MarkAsOptimized();
@@ -271,11 +272,9 @@ public:
 
     Valuable(const Valuable& v);
 
-    template<class T,
-            typename = typename std::enable_if<std::is_convertible<T&, Valuable&>::value>::type>
-    Valuable(const T&& t)
-    : exp(t.Clone())
-    {
+    template<typename T>
+    T* As() noexcept {
+        return dynamic_cast<T*>(this);
     }
 
     template<class T,
@@ -333,21 +332,6 @@ public:
     virtual Valuable LCM(const Valuable& v) const;
     virtual Valuable& lcm(const Valuable& v);
 
-    virtual Valuable& d(const Variable& x);
-    struct IntegrationParams {
-        const Valuable& from = constants::minfinity;
-        const Valuable& to = constants::infinity;
-        const Variable& C = constants::integration_result_constant;
-    };
-    void integral(); // expects to be single-variable
-    virtual Valuable& integral(const Variable& x, const Variable& C);
-    Valuable& integral(const Variable& x) { return integral(x, constants::integration_result_constant); }
-    Valuable& integral(const Variable& x, const Valuable& from, const Valuable& to, const Variable& C);
-    Valuable Integral(const Variable& x, const Variable& C = constants::integration_result_constant) const;
-    Valuable Integral(const Variable& x,
-		const Valuable& from = constants::minfinity,
-		const Valuable& to = constants::infinity,
-                      const Variable& C = constants::integration_result_constant) const;
 
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
@@ -781,41 +765,32 @@ public:
     static const Valuable& get() { return val; }
 };
 
-template <const long long I>
-const Valuable vo<I>::val = I;
+    // Protected interface
+    void MarkAsOptimized() { optimized = true; }
+    Valuable& Become(Valuable&& i);
 
-#if defined(MSVC) || defined(__APPLE__)
-template <const double I>
-class vf {
-    static const Valuable val;
-public:
-    constexpr operator const Valuable& () const {
-        return val;
-    }
-    static const Valuable& get() { return val; }
+    // Protected constructors
+    Valuable(ValuableDescendantMarker) noexcept {}
+    Valuable(const Valuable& v, ValuableDescendantMarker) {}
+    Valuable(Valuable&& v, ValuableDescendantMarker) noexcept {}
 };
 
-template <const double I>
-const Valuable vf<I>::val = I;
-#endif
+// Friend functions
+std::ostream& operator<<(std::ostream& os, Valuable::View v) noexcept;
+constexpr Valuable::View operator&(Valuable::View a, Valuable::View b) noexcept;
+constexpr Valuable::View operator|(Valuable::View a, Valuable::View b) noexcept;
+constexpr bool operator!(Valuable::YesNoMaybe _) noexcept;
 
+// Literal operators
+Valuable operator"" _v(unsigned long long v);
+Valuable operator"" _v(long double v);
 
 } // namespace math
-} // namespace omnn
 
-namespace std {
-
-template <class T>
-    requires std::derived_from<T, ::omnn::math::Valuable>
-struct hash<T> {
-    constexpr size_t operator()(const T& v) const { return static_cast<const omnn::math::Valuable&>(v).Hash(); }
+// Hash specialization
+template<>
+struct std::hash<math::Valuable> {
+    size_t operator()(const math::Valuable& v) const noexcept;
 };
 
-} // namespace std
-
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
-const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
-//constexpr
-::omnn::math::Valuable operator"" _v(unsigned long long v);
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
-::omnn::math::Valuable operator"" _v(long double v);
+} // namespace omnn
