@@ -114,39 +114,7 @@ option(OPENMIND_PRIME_MINING "Extend primes table by appending to Primes.inc sou
 option(OPENMIND_UPDATE_EXTERNAL_DEPS "Update ExternalProject dependencies" FALSE)
 option(OPENMIND_USE_QT "Link Qt libs" OFF)
 
-if(NOT EXISTS INTEL_COMPILER_PATH)
-	find_program(INTEL_COMPILER_PATH icpx)
-	if(INTEL_COMPILER_PATH)
-		message("INTEL_COMPILER_PATH: ${INTEL_COMPILER_PATH}")
-		set(CMAKE_CXX_COMPILER ${INTEL_COMPILER_PATH} CACHE STRING "Intel compiler path" FORCE)
-	endif()
-endif()
-if(NOT IntelSYCL_FOUND)
-	if(NOT DEFINED OPENMIND_USE_OPENCL_INTEL_SYCL)
-		option(OPENMIND_USE_OPENCL_INTEL_SYCL "Use Intel SYCL" ${IntelSYCL_FOUND})
-		find_package(IntelSYCL)
-		if(IntelSYCL_FOUND)
-			set(OPENMIND_USE_OPENCL_INTEL_SYCL ON CACHE BOOL "OpenCL GPU calculations" FORCE)
-		endif()
-	endif()
-	if(IntelSYCL_FOUND)
-		message("IntelSYCL_FOUND: ${IntelSYCL_FOUND}")
-		message("SYCL_FLAGS: ${SYCL_FLAGS}")
-		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
-	endif()
-endif()
-find_optional_pkg(
-	IntelDPCPP
-	CUDAToolkit
-	OpenCL
-)
-
-if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
-	AND NOT EXISTS OpenCL_INCLUDE_DIR
-	AND EXISTS IntelSYCL_DIR
-)
-	set(OpenCL_INCLUDE_DIR "${IntelSYCL_DIR}/../../../include/sycl" CACHE PATH "IntelSYCL is used for OpenCL" FORCE)
-endif()
+include(intel)
 
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
 if(OPENMIND_USE_OPENCL)
