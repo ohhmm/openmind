@@ -776,7 +776,7 @@ namespace math {
             return {};
         else if(v.IsInfinity())
             return true;
-        else if (v.IsRational() == YesNoMaybe::Yes) 
+        else if (v.IsRational() == YesNoMaybe::Yes)
             return arbitrary < static_cast<a_rational>(v);
         else if (v.Is_pi())
             return arbitrary < 4;

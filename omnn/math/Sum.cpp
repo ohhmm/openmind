@@ -502,7 +502,7 @@ namespace
                 else
                     ++it;
             }
-            
+
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
 //            if (w!=*this) {
 //                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
