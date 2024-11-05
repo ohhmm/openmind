@@ -289,7 +289,7 @@ namespace math {
             if (it->Same(1) && size() > 1) {
                 Delete(it);
             }
-            
+
         }
 
         if (IsEquation()) {
@@ -326,7 +326,7 @@ namespace math {
             }
         } while (updated);
 
-        
+
         // optimize members, if found a sum then become the sum multiplied by other members
         for (auto it = members.begin(); it != members.end();)
         {
@@ -350,7 +350,7 @@ namespace math {
             else
                 ++it;
         }
-        
+
         // emerge inner products
         for (auto it = members.begin(); it != members.end();)
         {
@@ -417,7 +417,7 @@ namespace math {
                 }
             }
         } while (updated && !Same(was));
-        
+
         // fraction optimizations
         auto f = GetFirstOccurence<Fraction>();
         if (f != members.end()) {
@@ -430,7 +430,7 @@ namespace math {
                     if (it != f && pd.Has(*it)) {
                         fo *= *it;
                         Delete(it);
-                        
+
                         if (!fo.IsFraction() ||
                             !fo.as<Fraction>().getDenominator().IsProduct()
                             ) {
@@ -440,9 +440,9 @@ namespace math {
                     else  ++it;
                 }
             }
-            
+
             fo.optimize();
-            
+
             if (fo.IsFraction()) {
                 auto& dn = fo.as<Fraction>().getDenominator();
                 if (!dn.IsProduct()) {
@@ -461,13 +461,13 @@ namespace math {
                     }
                 }
             }
-            
+
             if(!f->Same(fo))
             {
                 Update(f,fo);
             }
         }
-        
+
         if(members.size()==0)
             Become(1_v);
         else if (members.size()==1)

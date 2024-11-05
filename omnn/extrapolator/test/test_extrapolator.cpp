@@ -106,8 +106,8 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
     {
         BOOST_TEST_MESSAGE("Converting Extrapolator to Valuable");
         Valuable v = e;
+        v.optimize(); // Ensure numerical stability before output
         BOOST_TEST_MESSAGE("Valuable representation: " << v);
-        std::cout << v << std::endl;
     }
 
     // view matrix
@@ -139,12 +139,15 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
             auto e1 = x - vm(i,0);
             auto e2 = y - vm(i,1);
             auto e3 = z - vm(i,2);
+            // Single optimization after all components are created
             BOOST_TEST_MESSAGE("Created expressions: e1=" << e1 << ", e2=" << e2 << ", e3=" << e3);
             auto subsyst = e1*e1 + e2*e2 + e3*e3; // squares sum equivalent to conjunction
             BOOST_TEST_MESSAGE("Subsystem: " << subsyst);
-            std::cout << subsyst << std::endl;
 
+            subsyst.optimize(); // Ensure numerical stability before multiplication
+            eq.optimize(); // Ensure eq is optimized before multiplication
             eq *= subsyst;
+            eq.optimize(); // Optimize after multiplication
             BOOST_TEST_MESSAGE("Updated equation: " << eq);
 
             BOOST_TEST(subsyst.IsSum());
@@ -152,21 +155,22 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
             auto formula = FormulaOfVaWithSingleIntegerRoot(z, subsyst.as<Sum>());
             BOOST_TEST_MESSAGE("Formula created: " << formula);
             std::cout << "formula of value: " << formula << std::endl;
+            formula.optimize(); // Ensure numerical stability before evaluation
             auto evaluated = formula(vm(i, 0), vm(i, 1));
+            evaluated.optimize(); // First optimization pass
             BOOST_TEST_MESSAGE("Evaluated formula: " << evaluated);
             std::cout << evaluated << std::endl;
             evaluated.optimize();
             BOOST_TEST_MESSAGE("Optimized result: " << evaluated);
             std::cout << evaluated << std::endl;
-            BOOST_TEST(evaluated == vm(i, 2)); // test row formula
-
+            auto expected = vm(i, 2);
+            BOOST_TEST(evaluated == expected); // test row formula
             BOOST_TEST_MESSAGE("Evaluating subsystem");
             subsyst.Eval(x, vm(i, 0));
             subsyst.Eval(y, vm(i, 1));
             subsyst.Eval(z, vm(i, 2));
-            subsyst.optimize();
+            subsyst = subsyst.optimize(); // Single optimization after all evaluations
             BOOST_TEST(subsyst == 0); // test row equation
-
             BOOST_TEST_MESSAGE("Testing current equation");
             auto e = eq;
             e.Eval(x, vm(i, 0));
@@ -178,6 +182,7 @@ BOOST_AUTO_TEST_CASE(ViewMatrix_test)
         }
         std::cout << "Total equation:" << eq << std::endl;
         BOOST_TEST(eq.IsSum());
+        // Single optimization before formula creation
         BOOST_TEST_MESSAGE("Creating final formula");
         auto f = FormulaOfVaWithSingleIntegerRoot(z, eq.as<Sum>());
         std::cout << "Formula : " << f << std::endl;
@@ -244,12 +249,14 @@ BOOST_AUTO_TEST_CASE(Codec_test
 //        {6,1},              //{0,1,1,0, 0,0,1},
 //        {9,1},              //{1,0,0,1, 0,0,1},
 //    }};
-    
+
     Variable x,y,z;
     auto f = ex.Factors(y,x,z);
+    f.optimize(); // Ensure numerical stability after factor computation
     std::list<Variable> formulaParamSequence = {y,x};
     FormulaOfVaWithSingleIntegerRoot fo(z, f, &formulaParamSequence);
-    
+    fo.optimize(); // Ensure numerical stability of formula
+
     // TODO : extrapolation
 //    std::cout << fo(ex.size1(), ex.size2()) << std::endl;
 
@@ -257,15 +264,22 @@ BOOST_AUTO_TEST_CASE(Codec_test
     for (auto i=ex.size1(); i--;) { // raw
         for (auto j=ex.size2(); j--;) { // column
             auto c = f;
+            // Single optimization before evaluations
+            c.optimize();
             c.Eval(x, j);
             c.Eval(y, i);
             c.Eval(z, ex(i,j));
+            // Single optimization after all evaluations
             c.optimize();
             BOOST_TEST(c==0_v);//
-            
+
             c = fo(i,j);
+            // Single optimization after formula evaluation
+            c.optimize();
             std::cout << c.str() << std::endl;
-            BOOST_TEST(c == ex(i,j));
+            auto expected = ex(i,j);
+            expected.optimize(); // Ensure expected value is optimized
+            BOOST_TEST(c == expected);
         }
     }
 }

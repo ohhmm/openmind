@@ -709,12 +709,15 @@ namespace math {
         else if(v.IsInfinity())
             return true;
         else if (!v.FindVa()) {
-            double _1 = boost::numeric_cast<double>(arbitrary);
-            double _2 = static_cast<double>(v);
-            if(_1 == _2) {
-                IMPLEMENT
+            // Use existing arbitrary-precision integer type for comparison
+            const auto& v_arb = v.ca();
+            // Convert both values to rational for precise comparison
+            auto ratio = boost::multiprecision::cpp_rational(arbitrary);
+            auto v_ratio = boost::multiprecision::cpp_rational(v_arb);
+            if(ratio == v_ratio) {
+                return false;  // Equal values are not less than each other
             }
-            return _1 < _2;
+            return ratio < v_ratio;
        } else
             return base::operator <(v);
     }

@@ -449,7 +449,7 @@ namespace
                                 operator^=(idx);
                                 p.operator^=(idx);
                                 operator-=(p);
-                                return;
+                                return *this;
                             }
                             else {
                                 ++it;
@@ -475,12 +475,12 @@ namespace
                     }
                 }
             }
-            
+
             if (checkCache) {
                 Become(checkCache);
                 return;
             }
-            
+
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->IsSum()) {
@@ -491,36 +491,36 @@ namespace
                     Delete(it);
                     continue;
                 }
-                
+
                 auto it2 = it;
                 ++it2;
                 Valuable c = *it;
                 Valuable mc, inc;
-                
+
                 auto up = [&](){
                     mc = -c;
                 };
 
                 up();
-                
+
                 auto comVaEq = [&]() {
                     auto& ccv = c.getCommonVars();
                     auto ccvsz = ccv.size();
                     auto& itcv = it2->getCommonVars();
                     auto itcvsz = itcv.size();
                     return ccvsz
-                        && ccvsz == itcvsz 
+                        && ccvsz == itcvsz
                         && std::equal(//TODO:std::execution::par,
                             ccv.cbegin(), ccv.cend(), itcv.cbegin());
                 };
-                
+
                 for (; it2 != members.end();)
                 {
                     if (checkCache) {
                         Become(checkCache);
                         return;
                     }
-                    
+
                     if(c.IsSum()){
                         break;
                     }
@@ -593,25 +593,25 @@ namespace
                     return;
                 }
                 auto copy = *it;
-                
+
                 if (checkCache) {
                     Become(checkCache);
                     return;
                 }
                 copy.optimize();
-                
+
                 if (checkCache) {
                     Become(checkCache);
                     return;
                 }
-                
+
                 if (!it->Same(copy)) {
                     Update(it, copy);
                 }
                 else
                     ++it;
             }
-            
+
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
 //            if (w!=*this) {
 //                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
