@@ -15,6 +15,15 @@ BOOST_AUTO_TEST_CASE(Product_operator_tests) {
 	auto p = std::move(Product{2, 4}); 
 }
 
+BOOST_AUTO_TEST_CASE(Product_comparision_test) {
+    auto _1 = "2*((v8)^2)"_v;
+    auto _2 = "2 * (v8 ^ 2)"_v;
+    BOOST_TEST(_1 == _2);
+    auto less = _1 < _2;
+    BOOST_TEST(!less);
+    less = _2 < _1;
+    BOOST_TEST(!less);
+}
 BOOST_AUTO_TEST_CASE(Product_tests)
 {
 	auto f = 1_v / 2;

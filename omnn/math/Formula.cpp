@@ -49,12 +49,11 @@ namespace math {
         bool is = {};
         if (_.IsExponentiation()) {
             auto& e = _.as<Exponentiation>();
-            static const Valuable z = 0_v;
             bool isSum = e.getBase().IsSum();
-            Valuable sum = Sum{e.getBase(), z};
+            Valuable sum = Sum{e.getBase(), constants::zero};
             auto& s = (isSum ? e.getBase() : sum).as<Sum>();
             if (s) {
-                if (s.size() != 2) {
+                if (s.size() > 2) {
                     IMPLEMENT
                 }
                 auto va = s.template GetFirstOccurence<Variable>();
@@ -68,13 +67,13 @@ namespace math {
                     if (va == s.begin())
                         ++va;
                     else --va;
-                    auto maxCoord = -*va;
+                    auto maxCoord = va != s.end() ? -*va : constants::zero;
                     if (isCoord) {
                         auto& vaVal = *it;
                         is = predicate(*vaVal.second, maxCoord);
                     }
                     else if (value) {
-                        *value = isSum ? &*va : &z;
+                        *value = isSum && s.size() != 1 ? &*va : &constants::zero;
                     }
                 }
                 else

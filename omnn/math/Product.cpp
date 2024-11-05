@@ -1124,6 +1124,9 @@ namespace math {
     }
 
     bool Product::operator<(const Valuable& v) const{
+        if (operator==(v)) {
+            return {};
+        }
         auto beg = begin();
         if (members.size() == 1) {
             return beg->operator<(v);

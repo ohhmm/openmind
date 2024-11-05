@@ -11,8 +11,7 @@
 #include <omnn/rt/each.hpp>
 //#include <omnn/rt/iterator_transforming_wrapper.hpp>
 
-namespace omnn{
-namespace math {
+namespace omnn::math {
 
     template <class ChildT, class ContT>
     class ValuableCollectionDescendantContract : public ValuableDescendantContract<ChildT>
@@ -417,4 +416,4 @@ namespace math {
             archive & GetCont();
         }
     };
-}}
+}

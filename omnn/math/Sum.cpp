@@ -106,10 +106,7 @@ namespace
 
         // If neither comes before the other and they're not equal, MSVC considering it as inconsistent ordering
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        //auto result = toc(v1, v2);
-        //if (result == toc(v2, v1)) {
-            LOG_AND_IMPLEMENT("FIXME: inconsistent ordering, SumOrderComparator failed for not equal values: " << v1 << " and " << v2);
-        //}
+        LOG_AND_IMPLEMENT("FIXME: inconsistent ordering, SumOrderComparator failed for not equal values: " << v1 << " and " << v2);
 #endif
         return {};
     }
@@ -140,7 +137,9 @@ namespace
     const Sum::iterator Sum::Add(Valuable&& item, const iterator hint)
     {
         iterator it = hint;
-        if (item.IsInt()) {
+        if (item.IsZero())
+            it = end();
+        else if (item.IsInt()) {
             it = GetFirstOccurence<Integer>();
             auto e = end();
             if (it == e) 
@@ -149,7 +148,7 @@ namespace
                 auto i = Extract(it++);
                 OptimizeOn oo;
                 i += item;
-                if (i != constants::zero)
+                if (!i.IsZero())
                     it = Add(std::move(i), it);
                 else
                     it = e;
@@ -163,7 +162,7 @@ namespace
             auto i = Extract(it++);
             OptimizeOn oo;
             i += item;
-            if (i != constants::zero)
+            if (!i.IsZero())
                 it = Add(std::move(i), it);
             else
                 it = end();
@@ -794,24 +793,22 @@ namespace
         return GCDofMembers().varless();
     }
 
-    Valuable& Sum::operator+=(const Sum& s) {
-        {
-            OptimizeOff oo;
-            for (auto& i : s) {
-                operator+=(i); // FIXME: operator+= -> Add
+    Valuable& Sum::operator+=(const Sum& sum) {
+        if (sum.size()) {
+            {
+                OptimizeOff oo;
+                for (auto &item: sum) {
+                    operator+=(item); // FIXME: operator+= -> Add
+                }
             }
-
-            if (s.size()) {
-                optimized = {};
-            }
+            optimize();
         }
-		optimize();
 		return *this;
 	}
 
     Valuable& Sum::operator +=(const Valuable& v)
     {
-        if (v.IsInt() && v == 0) {
+        if (v.IsZero()) {
             return *this;
         }
         if (v.IsSum()) {
@@ -848,9 +845,7 @@ namespace
                 }
             }
 
-            // add new member
             Add(v);
-            optimized={};
         }
 
         optimize();
@@ -1243,15 +1238,27 @@ namespace
             if (sz1 != sz2) {
                 return sz1 > sz2;
             }
-            
-            for (auto i1=begin(), i2=s.begin(); i1!=end(); ++i1, ++i2) {
+
+            auto beg = begin();
+            auto sbeg = s.begin();
+            for (auto i1 = beg, i2 = sbeg; i1 != end(); ++i1, ++i2) {
                 if (*i1 != *i2) {
-                    return i1->IsComesBefore(*i2);
+                    auto cmp12 = soc(*i1, *i2);
+                    auto cmp21 = soc(*i2, *i1);
+                    if (cmp12 == cmp21)
+                        continue;
+                    return cmp21;
+                }
+            }
+
+            for (auto i1 = beg, i2 = sbeg; i1 != end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    return toc(*i1, *i2);
                 }
             }
         }
-        
-        return {};
+
+        return toc(*this, v);
     }
 
 	std::ostream& Sum::print(std::ostream& out) const

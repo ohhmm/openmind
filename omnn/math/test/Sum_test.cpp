@@ -70,11 +70,17 @@ BOOST_AUTO_TEST_CASE(Fractions_SumOrderComparator_test)
 {
     SumOrderComparator cmp;
     DECL_VA(v1);
-    auto high1 = (v1 ^ (1_v / 2)) + ((v1 + 1) / 2);
-    auto high2 = (v1 ^ (1_v / 2)) + ((v1 + 2) / 2);
-    bool cmpHigh12 = cmp(high1, high2);
-    bool cmpHigh21 = cmp(high2, high1);
-    BOOST_TEST(cmpHigh12 != cmpHigh21);
+    auto _1 = (v1 ^ (1_v / 2)) + ((v1 + 1) / 2);
+    auto _2 = (v1 ^ (1_v / 2)) + ((v1 + 2) / 2);
+    bool cmp12 = cmp(_1, _2);
+    bool cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+
+    _1 = "((-1 * ((-1) ^ x) + 1) / (-4))"_v;
+    _2 = "((-1 * ((-1) ^ ((1 / 2) * x + ((-1 * ((-1) ^ x) + 1) / (-4)))) + 1) / (-2))"_v;
+    cmp12 = cmp(_1, _2);
+    cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
 }
 
 BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
