@@ -23,10 +23,12 @@
 #include <omnn/rt/tasq.h>
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <numeric>
 #include <regex>
 #include <sstream>
@@ -38,6 +40,8 @@
 #include <boost/core/demangle.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <boost/multiprecision/number.hpp>
 #ifndef __APPLE__
 #include <boost/stacktrace.hpp>
 #endif
