@@ -89,15 +89,40 @@ namespace
         }
 
         // If types are different, use type ordering
-        if (v1.Type() != v2.Type()
-            && !((v1.IsProduct() && v2.IsExponentiation()) || (v2.IsProduct() && v1.IsExponentiation()))
-            && !(v1.IsSum() && v1.as<Sum>().size() == 1)
-            && !(v2.IsSum() && v2.as<Sum>().size() == 1)
-            && !(v1.IsProduct() && v1.as<Product>().size() == 1)
-            && !(v2.IsProduct() && v2.as<Product>().size() == 1)
-        )
-        {
-            return toc(v1, v2);
+        if (v1.Type() != v2.Type()) {
+            if (v1.IsSum()) {
+                auto &sum1 = v1.as<Sum>();
+                if (sum1.size() == 1) {
+                    return operator()(sum1.begin()->get(), v2);
+                }
+            }
+
+            if (v2.IsSum()) {
+                auto &sum2 = v2.as<Sum>();
+                if (sum2.size() == 1) {
+                    return operator()(v1, sum2.begin()->get());
+                }
+            }
+
+            if (v1.IsProduct()) {
+                auto &prod1 = v1.as<Product>();
+                if (prod1.size() == 1) {
+                    return operator()(prod1.begin()->get(), v2);
+                }
+            }
+
+            if (v2.IsProduct()) {
+                auto &prod2 = v2.as<Product>();
+                if (prod2.size() == 1) {
+                    return operator()(v1, prod2.begin()->get());
+                }
+            }
+
+            if (!((v1.IsProduct() && v2.IsExponentiation())
+                  || (v2.IsProduct() && v1.IsExponentiation()))
+                    ) {
+                return toc(v1, v2);
+            }
         }
 
         // For same types, delegate to IsComesBefore
