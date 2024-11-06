@@ -854,49 +854,26 @@ namespace
 		return *this;
 	}
 
-    Valuable& Sum::operator +=(const Valuable& v)
+    Valuable& Sum::operator +=(const Valuable& add)
     {
-        if (v.IsZero()) {
-            return *this;
-        }
-        if (v.IsSum()) {
-            operator+=(v.as<Sum>());
-        }
-        else
+        if (optimizations)
         {
-            for (auto it = members.begin(); it != members.end(); ++it)
-            {
-                auto simplified = it->IsSummationSimplifiable(v);
-                if (simplified.first) {
-                    Update(it, std::move(simplified.second));
-                    optimize();
-                    return *this;
-                }
-                if (it->OfSameType(v) && it->getCommonVars() == v.getCommonVars())
-                {
-                    auto s = *it + v;
-                    if (!s.IsSum()) {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-                        if (optimizations) {
-                            std::cout << *it << " + " << v << " = " << s
-                                      << "\t\tIMPLEMENT: must be covered by IsSummationSimpifiable call" << std::endl;
-                            s = *it + v;
-                            simplified = it->IsSummationSimplifiable(v);
-                            // TODO: fix all these cases: LOG_AND_IMPLEMENT(*it << " + " << v << " = " << s << "\t\tmust
-                            // be covered by IsSummationSimpifiable call");
-                        }
-#endif
-                        Update(it, s);
-                        optimize();
-                        return *this;
-                    }
-                }
+            std::optional<Valuable> optimizedValue;
+            auto addOptimizedValue = add.is_optimized();
+            if (!addOptimizedValue) {
+                optimizedValue = add.Optimized();
             }
-
-            Add(v);
+            auto& value = addOptimizedValue ? add : *optimizedValue;
+            if (!value.IsZero()) {
+                if (addOptimizedValue)
+                    Add(value);
+                else
+                    Add(std::move(*optimizedValue));
+                optimize();
+            }
+        } else {
+            Add(add);
         }
-
-        optimize();
         return *this;
     }
 
