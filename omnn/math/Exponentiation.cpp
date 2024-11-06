@@ -706,6 +706,8 @@ namespace omnn::math {
             }else{
                 is=sum.IsMultiplicationSimplifiable(*this);
             }
+        } else if (v.IsNaN()) {
+            is = {true, v};
         } else {
 #ifndef NDEBUG
             std::cout << "IsMultiplication simplifiable?: " << str() << " * " << v.str() << std::endl;
