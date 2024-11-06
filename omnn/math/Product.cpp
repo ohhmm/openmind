@@ -47,6 +47,18 @@ namespace math {
         typeid(Modulo),
     };
     
+    auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
+    {
+        static auto ob = std::begin(order);
+        static auto oe = std::end(order);
+
+        auto it1 = std::find(ob, oe, x.Type());
+        assert(it1 != oe); // IMPLEMENT
+        auto it2 = std::find(ob, oe, y.Type());
+        assert(it2 != oe); // IMPLEMENT
+        return it1 == it2 ? x > y : it1 < it2;
+    };
+
     bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
     {
         static const auto ob = std::cbegin(order);
@@ -62,6 +74,8 @@ namespace math {
 
         return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
     }
+
+    static constexpr ProductOrderComparator poc;
 
     Product::Product(const std::initializer_list<Valuable> l)
     {
@@ -625,9 +639,9 @@ namespace math {
                 return members.size() > p->members.size();
             }
             
-            auto i1 = members.begin();
-            auto i2 = p->members.begin();
-            for (; i1 != members.end(); ++i1, ++i2) {
+            auto beg = begin();
+            auto pbeg = p->begin();
+            for (auto i1 = beg, i2 = pbeg; i1 != members.end(); ++i1, ++i2) {
                 static const auto ob = std::cbegin(order);
                 static const auto oe = std::cend(order);
 
@@ -639,13 +653,27 @@ namespace math {
                     return it1 < it2;
                 }
             }
-            // same types set, compare by value
-            i1 = members.begin();
-            i2 = p->members.begin();
-            for (; i1 != members.end(); ++i1, ++i2) {
-                if(*i1 != *i2)
-                {
+
+            for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    auto cmp12 = poc(*i1, *i2);
+                    auto cmp21 = poc(*i2, *i1);
+                    if (cmp12 == cmp21)
+                        continue;
+                    return cmp21;
+                }
+            }
+
+            for (auto i1 = beg, i2 = pbeg; i1 != members.end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
                     return i1->IsComesBefore(*i2);
+                }
+            }
+
+            // same types set, compare by value
+            for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    return toc(*i1, *i2);
                 }
             }
             

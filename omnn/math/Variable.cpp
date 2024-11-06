@@ -233,20 +233,15 @@ namespace math {
         }
     }
 
-    bool Variable::IsComesBefore(const Valuable& v) const
+    bool Variable::IsComesBefore(const Valuable& value) const
     {
-        auto mve = getMaxVaExp();
-        auto vmve = v.getMaxVaExp();
-        auto is = mve > vmve;
-        if (mve != vmve)
-        {}
-        else if (v.IsVa())
-            is = base::IsComesBefore(v);
-        else if (v.IsProduct())
-            is = Product{*this}.IsComesBefore(v);
-        else
-            is = !v.FindVa();
-        return is;
+        if (operator==(value)) {
+            return {};
+        } else if (value.IsVa())
+            return base::IsComesBefore(value);
+        else {
+            return !value.IsComesBefore(*this);
+        }
     }
     
     void Variable::CollectVa(std::set<Variable>& s) const
