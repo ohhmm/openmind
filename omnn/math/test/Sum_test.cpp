@@ -66,6 +66,27 @@ BOOST_AUTO_TEST_CASE(Exponentiations_SumOrderComparator_test)
     BOOST_TEST(cmpMed12 != cmpMed21);
 }
 
+BOOST_AUTO_TEST_CASE(Exponentiations_into_variable_SumOrderComparator_test, *disabled()) {
+    SumOrderComparator cmp;
+    DECL_VA(v1);
+    auto _1 = "((1/4)*((-1)^v1) + (19/4))"_v;
+    bool cmp12 = cmp(_1, v1);
+    bool cmp21 = cmp(v1, _1);
+    BOOST_TEST(cmp12 != cmp21);
+
+    _1 = "((-1) ^ ((1 / 4) * ((-1) ^ v1) + (19 / 4)))"_v;
+    auto _2 = -1^v1;
+    cmp12 = cmp(_1, _2);
+    cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+
+    _1 = "((-1) / 4) * ((-1) ^ ((1 / 4) * ((-1) ^ v1) + (19 / 4)))"_v;
+    _2 = "((-1)/4)*((-1)^v1)"_v;
+    cmp12 = cmp(_1, _2);
+    cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+}
+
 BOOST_AUTO_TEST_CASE(Fractions_SumOrderComparator_test)
 {
     SumOrderComparator cmp;
