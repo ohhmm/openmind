@@ -862,39 +862,58 @@ namespace
 		return *this;
 	}
 
-    Valuable& Sum::operator +=(const Valuable& v)
+    Valuable& Sum::operator +=(const Valuable& add)
     {
-        if (v.IsZero()) {
-            return *this;
+        if (add.IsZero()) {
         }
-        if (v.IsSum()) {
-            operator+=(v.as<Sum>());
+        else if (add.IsSum()) {
+            operator+=(add.as<Sum>());
         }
-        else
+        else if (optimizations)
         {
+            std::optional<Valuable> optimizedValue;
+            if (!add.is_optimized()) {
+                optimizedValue = add.Optimized();
+            }
+            auto& value = add.is_optimized() ? add : *optimizedValue;
+            if (value.IsZero()) {
+                return *this;
+            }
+            auto AddTheValue = [&,this]() -> Valuable& {
+                if (add.is_optimized())
+                    Add(value);
+                else
+                    Add(std::move(*optimizedValue));
+                optimize();
+                return *this;
+            };
+
+            if (value.IsSum()
+                || members.empty()
+                || !is_optimized()
+            )
+            {
+                return AddTheValue();
+            }
+            auto& addendCommonVars = value.getCommonVars();
             for (auto it = members.begin(); it != members.end(); ++it)
             {
-                auto simplified = it->IsSummationSimplifiable(v);
+                auto simplified = it->IsSummationSimplifiable(value);
                 if (simplified.first) {
                     Update(it, std::move(simplified.second));
                     optimize();
                     return *this;
                 }
-                if (it->OfSameType(v)
-                    && it->is_optimized() && v.is_optimized()
-                    && it->getCommonVars() == v.getCommonVars())
+                auto doAdditionalCheck = it->is_optimized()
+                                             ? (it->OfSameType(value) && it->getCommonVars() == addendCommonVars)
+                                             : it->GCD(value) != constants::one;
+                if (doAdditionalCheck)
                 {
-                    auto s = *it + v;
+                    auto s = *it + value;
                     if (!s.IsSum()) {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-                        if (optimizations) {
-                            std::cout << *it << " + " << v << " = " << s
-                                      << "\t\tIMPLEMENT: must be covered by IsSummationSimpifiable call" << std::endl;
-                            s = *it + v;
-                            simplified = it->IsSummationSimplifiable(v);
-                            // TODO: fix all these cases: LOG_AND_IMPLEMENT(*it << " + " << v << " = " << s << "\t\tmust
-                            // be covered by IsSummationSimpifiable call");
-                        }
+                        std::cout << *it << " + " << add << " = " << s
+                                    << "\t\tIMPLEMENT: must be covered by IsSummationSimpifiable call" << std::endl;
 #endif
                         Update(it, s);
                         optimize();
@@ -902,11 +921,11 @@ namespace
                     }
                 }
             }
-
-            Add(v);
+            AddTheValue();
+        } else {
+            Add(add);
         }
 
-        optimize();
         return *this;
     }
 
