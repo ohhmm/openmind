@@ -24,6 +24,12 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     BOOST_TEST(7_v % 3 == p);
 }
 
+BOOST_AUTO_TEST_CASE(NegativeFractionModulo_test, *disabled()) {
+    auto _1 = "((((-2165) / 4)) % (-770))"_v;
+    auto _2 = "-541.25"_v;
+    BOOST_TEST(_1 == _2);
+}
+
 BOOST_AUTO_TEST_CASE(ModIntLess_comparator_test, *disabled()) {
     auto Less = X.IntMod_Less(Y);
     std::cout << "X<Y : " << Less << std::endl;
@@ -36,8 +42,6 @@ BOOST_AUTO_TEST_CASE(ModIntLess_comparator_test, *disabled()) {
 // wrong and division by zero was ignored, but its more insightful then misleading
 // thanks to the ChatGPT creators
 BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test) {
-    DECL_VA(X);
-    DECL_VA(Y);
     auto d = Y - X;
     auto isZero = d / -d + 1;
 
