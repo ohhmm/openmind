@@ -146,10 +146,10 @@ function(apply_target_commons this_target)
 			)
 		if(NOT OPENMIND_USE_VCPKG)
 			target_compile_definitions(${this_target} PUBLIC
-				$<$<CONFIG:DEBUG>:BOOST_ALL_STATIC_LINK>
-				$<$<CONFIG:Release>:BOOST_ALL_STATIC_LINK>
-				$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_STATIC_LINK>
-				$<$<CONFIG:MinSizeRel>:BOOST_ALL_STATIC_LINK>
+				$<$<CONFIG:DEBUG>:BOOST_ALL_DYN_LINK>
+				$<$<CONFIG:Release>:BOOST_ALL_DYN_LINK>
+				$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_DYN_LINK>
+				$<$<CONFIG:MinSizeRel>:BOOST_ALL_DYN_LINK>
 				)
 		endif()
 		if(OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
