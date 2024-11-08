@@ -1306,15 +1306,19 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator +=(const Valuable& v)
+    Valuable& Valuable::operator +=(const Valuable& value)
     {
         if(exp) {
-            Valuable& o = exp->operator+=(v);
-            if (o.exp) {
-                exp = o.exp;
-                return *this;
+            auto& obj = exp->operator+=(value);
+            if (obj.exp) {
+                auto dispose = std::move(exp);
+                exp = obj.exp;
+                DispatchDispose(std::move(dispose));
             }
-            return o;
+            if (exp->getAllocSize() <= getAllocSize()) {
+                Become(std::move(*exp));
+            }
+            return *this;
         }
         else
             IMPLEMENT
