@@ -197,6 +197,24 @@ namespace
         return it;
     }
     
+    void Sum::Update(iterator& it, Valuable&& value)
+    {
+        if (value.IsZero()) {
+            Delete(it);
+        } else {
+            base::Update(it, std::move(value));
+        }
+    }
+
+    void Sum::Update(iterator& it, const Valuable& value)
+    {
+        if (value.IsZero()) {
+            Delete(it);
+        } else {
+            base::Update(it, value);
+        }
+    }
+
 	Valuable Sum::operator -() const
 	{
 		Sum s;
