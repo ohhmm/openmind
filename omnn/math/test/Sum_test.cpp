@@ -198,7 +198,32 @@ BOOST_AUTO_TEST_CASE(Mixed_SumOrderComparator_test)
     _2 = "(1/4)*((-1)^v1)"_v;
     BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
 }
+BOOST_AUTO_TEST_CASE(SumOrderComparator_InconsistentOrdering_Regression_test)
+{
+    // This test case specifically demonstrates the inconsistent ordering issue
+    // where SumOrderComparator fails to establish a consistent ordering between
+    // two expressions that should have a definite ordering relationship.
+    SumOrderComparator cmp;
+    Valuable::OptimizeOff oo;  // Prevent expression optimization during comparison
+    DECL_VA(v1);
 
+    // The two expressions from the FIXME message that demonstrate inconsistent ordering:
+    auto expr1 = "(8/32)*((-1)^(((-2)/(-8))*((-1)^(v1 + 11)) + ((-42)/(-8))))"_v;
+    auto expr2 = "(1/4)*((-1)^v1)"_v;
+
+    // Simplify the expressions to show they are different:
+    // expr1 = (1/4)*((-1)^(0.25*((-1)^(v1 + 11)) + 5.25))
+    // expr2 = (1/4)*((-1)^v1)
+
+    // Test that the comparison is inconsistent:
+    bool cmp12 = cmp(expr1, expr2);
+    bool cmp21 = cmp(expr2, expr1);
+
+    // The test fails because neither expression is considered to come before the other,
+    // even though they are not equal. This violates the antisymmetric property of ordering.
+    BOOST_TEST(expr1 != expr2);  // Verify expressions are different
+    BOOST_TEST(cmp12 != cmp21);  // Verify ordering is antisymmetric
+}
 BOOST_AUTO_TEST_CASE(SumFindMember_test) {
     auto _1 = "-4*(v1^4)"_v;
     auto _2 = "((v1^4) + -4*(v1^3) + 6*(v1^2) + -4*v1 + 1)*((-1)/2)*(v1^2)"_v;
