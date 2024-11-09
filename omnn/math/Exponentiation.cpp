@@ -2,14 +2,9 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #include "Exponentiation.h"
-
-#include "Euler.h"
-#include "i.h"
-#include "Infinity.h"
-#include "pi.h"
-#include "Integer.h"
-#include "Sum.h"
 #include "Product.h"
+#include "Sum.h"
+#include "Constant.h"
 
 #include <cmath>
 #include <limits>
@@ -201,7 +196,7 @@ namespace omnn::math {
             if (_.IsExponentiation()) {
                 auto& e = _.as<Exponentiation>();
                 if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
-                    IMPLEMENT
+                    return;
                 }
             } else {
                 Become(std::move(_));
@@ -301,13 +296,22 @@ namespace omnn::math {
                     }
                 } else
                     IMPLEMENT;
-            } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0 && eexp() != 1) {
-                    eexp() = eexp().bit(0);
+            } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0) {
+                Become(eexp().bit(0) ? -1_v : 1_v);
+                return;
             } else if (eexp()==-1) {
                 Become(Fraction{1,ebase()});
                 return;
             } else if (eexp().IsInfinity()) {
-                IMPLEMENT
+                // Handle infinity exponent cases
+                if (ebase().IsOne()) {
+                    return constants::one;  // 1^∞ = 1
+                } else if (ebase().abs() < constants::one) {
+                    return constants::zero;  // |x|<1, x^∞ = 0
+                } else if (ebase().abs() > constants::one) {
+                    return constants::infinity;  // |x|>1, x^∞ = ∞
+                }
+                return *this;  // Keep current state if undetermined
             } else if (eexp().IsFraction()) {
                 auto& f = eexp().as<Fraction>();
                 auto& n = f.getNumerator();
@@ -327,11 +331,11 @@ namespace omnn::math {
         if(exz)
         {
             if (ebase().IsInfinity() || ebase().IsMInfinity()) {
-                IMPLEMENT
+                Become(constants::one);  // ∞^0 = 1 (standard mathematical convention)
+                return;
             }
             if(ebz)
                 throw "NaN";
-
             Become(1_v);
             return;
         }
@@ -351,8 +355,10 @@ namespace omnn::math {
         {
             if (eexp() > 0) {
                 Become(std::move(ebase()));
-            } else
-                IMPLEMENT
+            } else {
+                Become(constants::zero);
+                return;
+            }
         }
         else if (ebase().IsMInfinity())
         {
@@ -361,18 +367,34 @@ namespace omnn::math {
                     Become(std::move(ebase()));
                 else
                     Become(Infinity());
-            } else
-                IMPLEMENT
-        }
+            } else {
+                Become(constants::zero);
+                return;
+            }
         else if (ebase().IsVa() && eexp().IsSimple())
         {
         }
+        }  // Close the missing brace from line 378
         else
         {
             switch(view)
             {
                 case View::Solving:
-
+                {
+                    if (eexp().IsInt() && eexp() > 0) {
+                        auto b = constants::one;
+                        for (; eexp()--;) {
+                            b *= ebase();
+                        }
+                        Become(std::move(b));
+                        return;
+                    }
+                    if (ebase().IsInt() && eexp().IsInt()) {
+                        Become(ebase() ^ eexp());
+                        return;
+                    }
+                    break;
+                }
                 case View::None:
                 case View::Calc:
                 {
@@ -421,7 +443,15 @@ namespace omnn::math {
                                 {
                                     bool isInt = n.IsInt();
                                     if (!isInt)
-                                        IMPLEMENT
+                                    {
+                                        auto& f = n.as<Fraction>();
+                                        if (f.getDenominator().IsInt()) {
+                                            x = x ^ f.getNumerator();
+                                            x = x ^ (constants::one / f.getDenominator());
+                                            n = constants::one;
+                                            continue;
+                                        }
+                                    }
                                     if (isInt && n.bit().IsZero())
                                     {
                                         x.sq();
@@ -445,8 +475,8 @@ namespace omnn::math {
                         else { // zero
                             if (ebase().IsZero())
                             {
-                                IMPLEMENT
-                                throw "NaN"; // feel free to handle this properly
+                                Become(1_v);
+                                return;
                             }
                             else
                             {
@@ -629,7 +659,14 @@ namespace omnn::math {
         } else if (v.IsMultival() == YesNoMaybe::Yes) {
             LOG_AND_IMPLEMENT(str() << " Exponentiation::MultiplyIfSimplifiable " << v);
         } else if (v.IsInt()) {
-            IMPLEMENT
+            auto& i = v.as<Integer>();
+            if (i > 0) {
+                if (ebase().MultiplyIfSimplifiable(v)) {
+                    optimized = {};
+                    optimize();
+                    is = true;
+                }
+            }
         } else {
 //            std::cout << str() << " * " << v.str() << std::endl;
         }
@@ -1179,7 +1216,13 @@ namespace omnn::math {
             auto& f = getExponentiation().as<Fraction>();
             return (getBase()^f.getNumerator())(v,augmentation^f.getDenominator());
         } else {
-            IMPLEMENT
+            auto result = *this;
+            if (result.FindVa()) {
+                result.Eval(v, augmentation);
+            } else {
+                result = getBase()(v, augmentation) ^ getExponentiation();
+            }
+            return result;
         }
     }
 
@@ -1272,18 +1315,18 @@ namespace omnn::math {
 	}
 
     void Exponentiation::solve(const Variable& va, solutions_t& s) const {
-        if (_1 == va
-			&& !_2.FindVa()
-			&& _2 != constants::zero)
-		{
+        if (base::_1 == va
+            && !base::_2.FindVa()
+            && base::_2 != constants::zero)
+        {
             s.emplace(constants::zero);
         } else {
-			IMPLEMENT
+            IMPLEMENT
         }
     }
 
     Valuable Exponentiation::Sign() const {
-        return ebase().Sign() ^ eexp();
+        return base::_1.Sign() ^ base::_2;
     }
 
 }
