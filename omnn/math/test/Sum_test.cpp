@@ -104,6 +104,21 @@ BOOST_AUTO_TEST_CASE(Fractions_SumOrderComparator_test)
     BOOST_TEST(cmp12 != cmp21);
 }
 
+BOOST_AUTO_TEST_CASE(AddMultipleEqual_SumOrderComparator_test)
+{
+    // test Sum move assignment operator:
+    Valuable::OptimizeOff off;
+    auto sum = std::move(Sum{2, 4});
+
+    // test adding equal by value values:
+    sum.Add(1_v / 2);
+    sum.Add(2_v / 4);
+
+    auto _1 = sum.Optimized();
+    auto _2 = 7_v;
+    BOOST_TEST(_1 == _2);
+}
+
 BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
     SumOrderComparator cmp;
     {
