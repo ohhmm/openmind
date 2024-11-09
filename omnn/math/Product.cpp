@@ -26,7 +26,7 @@
 
 
 using namespace omnn::math;
-    
+
     
     constexpr auto ValueOrderComparator = [](const Valuable& x, const Valuable& y)
     {
@@ -247,6 +247,35 @@ using namespace omnn::math;
         MarkAsOptimized();
         ANTILOOP(Product)
 
+        // First optimize all members
+        for (auto it = begin(); it != end(); ++it) {
+            it->optimize();
+        }
+
+        // Handle case where we have a number multiplied by an exponentiation with base 1
+        // This transformation must happen before any other optimizations
+        auto it_exp = std::find_if(begin(), end(), [](const Valuable& v) {
+            return v.IsExponentiation() && v.as<Exponentiation>().ebase() == constants::one;
+        });
+
+        if (it_exp != end()) {
+            // Found an exponentiation with base 1
+            auto it_num = std::find_if(begin(), end(), [](const Valuable& v) {
+                return v.IsInt() || v.IsSimpleFraction();
+            });
+
+            if (it_num != end()) {
+                // Transform n*(1^x) to (1/n)*(1^x)
+                auto& exp = it_exp->as<Exponentiation>();
+                auto newBase = Fraction(constants::one, *it_num);
+                exp.updateBase(std::move(newBase));
+                Delete(it_num);
+                optimized = {};
+                optimize();
+                return;
+            }
+        }
+
         auto isPlusMinus = YesNoMaybe::Maybe;
         auto IsPlusMinus = [&] {
             if (isPlusMinus == YesNoMaybe::Maybe) {
@@ -395,7 +424,9 @@ using namespace omnn::math;
                             if(cAsP.size() == 2 && cAsP.begin()->IsSimple()) {
                                 break;
                             } else {
-                                IMPLEMENT
+                                for (auto& m : cAsP) {
+                                    Add(m);
+                                }
                             }
                         }
                     }
@@ -727,7 +758,7 @@ using namespace omnn::math;
         }
         return *this;
     }
-    
+
     Valuable& Product::gcd(const Valuable& value) {
         VarHost::NonZeroLogOffScope off;
         if (value.IsProduct()) {
@@ -1063,7 +1094,7 @@ using namespace omnn::math;
         
         // add new member
         Add(v);
-        
+
         optimize();
         return *this;
     }
@@ -1314,7 +1345,7 @@ using namespace omnn::math;
         }
 
         // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
-        //if (!same 
+        //if (!same
         //    && IsMultival() == YesNoMaybe::Yes
         //    && value.IsMultival() == YesNoMaybe::Yes)
         //{
