@@ -364,6 +364,12 @@ namespace omnn::math {
                 Valuable::maxVaExp = this->Ptr()->findMaxVaExp(); // TODO: consider heap structure
         }
 
+        template<class PredFnT>
+        void Delete(PredFnT&& pred) {
+            auto delIt = std::remove_if(begin(), end(), std::forward<PredFnT>(pred));
+            Delete(delIt);
+        }
+
         virtual Valuable Extract(const iterator it)
         {
             Valuable::hash ^= it->Hash();
