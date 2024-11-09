@@ -95,6 +95,24 @@ namespace omnn::math {
         return {};
     }
 
+    #define VALUABLE_POLYMORPHIC_METHOD(method)                                                                        \
+        Valuable& Valuable::method(const Valuable& value) {                                                            \
+            if (exp) {                                                                                                 \
+                auto& obj = exp->method(value);                                                                        \
+                if (obj.exp) {                                                                                         \
+                    auto dispose = std::move(exp);                                                                     \
+                    exp = obj.exp;                                                                                     \
+                    DispatchDispose(std::move(dispose));                                                               \
+                }                                                                                                      \
+                if (exp->getAllocSize() <= getAllocSize()) {                                                           \
+                    Become(std::move(*exp));                                                                           \
+                }                                                                                                      \
+                return *this;                                                                                          \
+            } else {                                                                                                   \
+                LOG_AND_IMPLEMENT(#method " for " << *this);                                                           \
+            }                                                                                                          \
+        }
+
     bool Valuable::IsSubObject(const Valuable& o) const {
         if (exp)
             return exp->IsSubObject(o);
@@ -1306,23 +1324,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator +=(const Valuable& value)
-    {
-        if(exp) {
-            auto& obj = exp->operator+=(value);
-            if (obj.exp) {
-                auto dispose = std::move(exp);
-                exp = obj.exp;
-                DispatchDispose(std::move(dispose));
-            }
-            if (exp->getAllocSize() <= getAllocSize()) {
-                Become(std::move(*exp));
-            }
-            return *this;
-        }
-        else
-            IMPLEMENT
-    }
+    VALUABLE_POLYMORPHIC_METHOD(operator+=)
 
     Valuable& Valuable::operator +=(int v)
     {
@@ -1417,30 +1419,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
-    Valuable& Valuable::operator /=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator/=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-            IMPLEMENT
-    }
+    VALUABLE_POLYMORPHIC_METHOD(operator/=)
 
-    Valuable& Valuable::operator %=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator%=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else // a - (n * int(a/n))
-            IMPLEMENT // https://math.stackexchange.com/a/2027475/118612
-    }
+    VALUABLE_POLYMORPHIC_METHOD(operator%=) // a - (n * int(a/n)) https://math.stackexchange.com/a/2027475/118612
 
     Valuable& Valuable::operator--()
     {
@@ -1468,18 +1449,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator^=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator^=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else
-            IMPLEMENT
-    }
+    VALUABLE_POLYMORPHIC_METHOD(operator^=)
 
     Valuable Valuable::GCD(const Valuable& v) const {
         if (exp) {
