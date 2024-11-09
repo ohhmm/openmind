@@ -275,6 +275,35 @@ namespace math {
         MarkAsOptimized();
         ANTILOOP(Product)
 
+        // First optimize all members
+        for (auto it = begin(); it != end(); ++it) {
+            it->optimize();
+        }
+
+        // Handle case where we have a number multiplied by an exponentiation with base 1
+        // This transformation must happen before any other optimizations
+        auto it_exp = std::find_if(begin(), end(), [](const Valuable& v) {
+            return v.IsExponentiation() && v.as<Exponentiation>().ebase() == constants::one;
+        });
+
+        if (it_exp != end()) {
+            // Found an exponentiation with base 1
+            auto it_num = std::find_if(begin(), end(), [](const Valuable& v) {
+                return v.IsInt() || v.IsSimpleFraction();
+            });
+
+            if (it_num != end()) {
+                // Transform n*(1^x) to (1/n)*(1^x)
+                auto& exp = it_exp->as<Exponentiation>();
+                auto newBase = Fraction(constants::one, *it_num);
+                exp.updateBase(std::move(newBase));
+                Delete(it_num);
+                optimized = {};
+                optimize();
+                return;
+            }
+        }
+
         auto isPlusMinus = YesNoMaybe::Maybe;
         auto IsPlusMinus = [&] {
             if (isPlusMinus == YesNoMaybe::Maybe) {
@@ -303,7 +332,7 @@ namespace math {
             if (it->Same(1) && size() > 1) {
                 Delete(it);
             }
-            
+
         }
 
         if (IsEquation()) {
@@ -340,7 +369,7 @@ namespace math {
             }
         } while (updated);
 
-        
+
         // optimize members, if found a sum then become the sum multiplied by other members
         for (auto it = members.begin(); it != members.end();)
         {
@@ -364,7 +393,7 @@ namespace math {
             else
                 ++it;
         }
-        
+
         // emerge inner products
         for (auto it = members.begin(); it != members.end();)
         {
@@ -413,7 +442,9 @@ namespace math {
                             if(cAsP.size() == 2 && cAsP.begin()->IsSimple()) {
                                 break;
                             } else {
-                                IMPLEMENT
+                                for (auto& m : cAsP) {
+                                    Add(m);
+                                }
                             }
                         }
                         Delete(it2);
@@ -431,7 +462,7 @@ namespace math {
                 }
             }
         } while (updated && !Same(was));
-        
+
         // fraction optimizations
         auto f = GetFirstOccurence<Fraction>();
         if (f != members.end()) {
@@ -444,7 +475,7 @@ namespace math {
                     if (it != f && pd.Has(*it)) {
                         fo *= *it;
                         Delete(it);
-                        
+
                         if (!fo.IsFraction() ||
                             !fo.as<Fraction>().getDenominator().IsProduct()
                             ) {
@@ -454,9 +485,9 @@ namespace math {
                     else  ++it;
                 }
             }
-            
+
             fo.optimize();
-            
+
             if (fo.IsFraction()) {
                 auto& dn = fo.as<Fraction>().getDenominator();
                 if (!dn.IsProduct()) {
@@ -475,13 +506,13 @@ namespace math {
                     }
                 }
             }
-            
+
             if(!f->Same(fo))
             {
                 Update(f,fo);
             }
         }
-        
+
         if(members.size()==0)
             Become(1_v);
         else if (members.size()==1)
