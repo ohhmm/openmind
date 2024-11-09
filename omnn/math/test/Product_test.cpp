@@ -12,7 +12,16 @@ using namespace boost::unit_test;
 
 
 BOOST_AUTO_TEST_CASE(Product_operator_tests) {
+    Valuable::OptimizeOff off;
 	auto p = std::move(Product{2, 4}); 
+
+    // test adding equal by value values:
+    p.Add(1_v / 2);
+    p.Add(2_v / 4);
+
+    auto _1 = p.Optimized();
+    auto _2 = 2_v;
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Product_comparision_test) {
