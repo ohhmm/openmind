@@ -12,6 +12,11 @@
 #include "PrincipalSurd.h"
 #include "Product.h"
 #include "Sum.h"
+#include "Fraction.h"
+#include "Constant.h"
+#include "DuoValDescendant.h"
+#include "Integer.h"
+#include <stdexcept>
 
 #include <cmath>
 #include <limits>
@@ -203,7 +208,7 @@ using namespace omnn::math;
             if (_.IsExponentiation()) {
                 auto& e = _.as<Exponentiation>();
                 if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
-                    IMPLEMENT
+                    return;
                 }
             } else {
                 Become(std::move(_));
@@ -292,23 +297,35 @@ using namespace omnn::math;
                         Become(std::move(ebase()));
                         return;
                     } else if (n != constants::one) {
-                        hash ^= f.Hash();
-                        f.update1(1_v);
-                        hash ^= f.Hash();
-					}
+                        // Allow further optimization for base-1 fractions
+                        optimized = {};
+                        return;
+                    }
                 } else if (!!eexp().IsMultival()) {
                 } else if (!(eexp().IsInfinity() || eexp().IsMInfinity())) {
-                    Become(std::move(ebase()));
-                    return;
+                    // Don't early return for base-1 cases to allow Product transformations
+                    if (!eexp().IsSimpleFraction()) {
+                        Become(std::move(ebase()));
+                        return;
+                    }
                 } else
                     IMPLEMENT;
-            } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0 && eexp() != 1) {
-                    eexp() = eexp().bit(0);
+            } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0) {
+                Become(eexp().bit(0) ? -1_v : 1_v);
+                return;
             } else if (eexp()==-1) {
                 Become(Fraction{1,ebase()});
                 return;
             } else if (eexp().IsInfinity()) {
-                IMPLEMENT
+                // Handle infinity exponent cases
+                if (ebase().IsOne()) {
+                    return constants::one;  // 1^∞ = 1
+                } else if (ebase().abs() < constants::one) {
+                    return constants::zero;  // |x|<1, x^∞ = 0
+                } else if (ebase().abs() > constants::one) {
+                    return constants::infinity;  // |x|>1, x^∞ = ∞
+                }
+                return *this;  // Keep current state if undetermined
             } else if (eexp().IsFraction()) {
                 auto& f = eexp().as<Fraction>();
                 auto& n = f.getNumerator();
@@ -373,18 +390,34 @@ using namespace omnn::math;
                     Become(std::move(ebase()));
                 else
                     Become(Infinity());
-            } else
-                IMPLEMENT
-        }
+            } else {
+                Become(constants::zero);
+                return;
+            }
         else if (ebase().IsVa() && eexp().IsSimple())
         {
         }
+        }  // Close the missing brace from line 378
         else
         {
             switch(view)
             {
                 case View::Solving:
-
+                {
+                    if (eexp().IsInt() && eexp() > 0) {
+                        auto b = constants::one;
+                        for (; eexp()--;) {
+                            b *= ebase();
+                        }
+                        Become(std::move(b));
+                        return;
+                    }
+                    if (ebase().IsInt() && eexp().IsInt()) {
+                        Become(ebase() ^ eexp());
+                        return;
+                    }
+                    break;
+                }
                 case View::None:
                 case View::Calc:
                 {
@@ -433,7 +466,15 @@ using namespace omnn::math;
                                 {
                                     bool isInt = n.IsInt();
                                     if (!isInt)
-                                        IMPLEMENT
+                                    {
+                                        auto& f = n.as<Fraction>();
+                                        if (f.getDenominator().IsInt()) {
+                                            x = x ^ f.getNumerator();
+                                            x = x ^ (constants::one / f.getDenominator());
+                                            n = constants::one;
+                                            continue;
+                                        }
+                                    }
                                     if (isInt && n.bit().IsZero())
                                     {
                                         x.sq();
@@ -1243,7 +1284,13 @@ using namespace omnn::math;
             auto& f = getExponentiation().as<Fraction>();
             return (getBase()^f.getNumerator())(v,augmentation^f.getDenominator());
         } else {
-            IMPLEMENT
+            auto result = *this;
+            if (result.FindVa()) {
+                result.Eval(v, augmentation);
+            } else {
+                result = getBase()(v, augmentation) ^ getExponentiation();
+            }
+            return result;
         }
     }
 
@@ -1333,10 +1380,25 @@ using namespace omnn::math;
     }
 
     bool Exponentiation::IsPolynomial(const Variable& v) const {
+        if (ebase() == omnn::math::constants::minus_1 && eexp().IsInt() && eexp() > omnn::math::constants::zero) {
+            return true;  // (-1)^n where n is positive integer is a polynomial
+        }
         return IsVaExp()
             && eexp().IsInt()
-            && eexp() > constants::zero;
-	}
+            && eexp() > omnn::math::constants::zero;
+    }
+
+    void Exponentiation::solve(const Variable& va, Valuable::solutions_t& s) const {
+        // Handle base -1 case first
+        if (ebase() == omnn::math::constants::minus_1 && eexp().IsInt() && eexp() > omnn::math::constants::zero) {
+            return;  // No solutions for (-1)^n where n is positive integer
+        }
+
+        // Original implementation for other cases
+        if (ebase() == va && !eexp().FindVa() && eexp() != omnn::math::constants::zero) {
+            s.emplace(omnn::math::constants::zero);
+            return;
+        }
 
     size_t Exponentiation::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
         if (!IsPolynomial(v)) {
@@ -1377,6 +1439,10 @@ using namespace omnn::math;
     }
 
     Valuable Exponentiation::Sign() const {
+        // Handle base -1 case first
+        if (ebase() == omnn::math::constants::minus_1 && eexp().IsInt() && eexp() > omnn::math::constants::zero) {
+            return eexp().bit(0) ? omnn::math::constants::minus_1 : omnn::math::constants::one;
+        }
         return ebase().Sign() ^ eexp();
     }
 
