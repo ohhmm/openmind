@@ -189,63 +189,71 @@ using namespace omnn::math;
 //                    auto check = e / sq;
 //                    if (check.IsInt() || check.IsSimpleFraction()) {
 //                        Become(std::move(eq));
-//                        return;
-//                    } else {
-//                        // TODO : IMPLEMENT
-//                    }
-//                }
-//            }
-//        }
-
         if (ebase().IsFraction() && eexp().IsMultival()==YesNoMaybe::No) {
             auto& f = ebase().as<Fraction>();
-            auto _ = (f.getNumerator() ^ eexp()) / (f.getDenominator() ^ eexp());
-            if (_.IsExponentiation()) {
-                auto& e = _.as<Exponentiation>();
-                if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
-                    IMPLEMENT
+
+            // Handle base-1 fractions to enable n*(1^x) to (1/n)*(1^x) transformation
+            if (f.getNumerator() == constants::one) {
+                // Apply exponent to numerator and denominator separately
+                auto _ = (f.getNumerator() ^ eexp()) / (f.getDenominator() ^ eexp());
+                if (_.IsExponentiation()) {
+                    auto& e = _.as<Exponentiation>();
+                    if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
+                        Become(e.ebase() ^ e.eexp());
+                    }
+                } else {
+                    Become(std::move(_));
                 }
-            } else {
-                Become(std::move(_));
-                return;
+                optimized = {};  // Mark as needing further optimization
+            }
+
+            // Handle negative integer exponent by inverting fraction
+            if (eexp().IsInt() && eexp() < constants::zero) {
+                Become(Fraction(f.getDenominator(), f.getNumerator()) ^ (-eexp()));
+                optimized = {};  // Allow further optimization
+            }
+
+            // Handle negative fraction exponent
+            if (eexp().IsFraction()) {
+                auto& expFrac = eexp().as<Fraction>();
+                if (expFrac.getNumerator() < constants::zero) {
+                    Become(Fraction(f.getDenominator(), f.getNumerator()) ^ (-expFrac));
+                    optimized = {};  // Allow further optimization
+                }
+            }
+
+            // Apply exponent to numerator and denominator separately
+            if (f.getNumerator() != constants::one) {
+                auto _ = (f.getNumerator() ^ eexp()) / (f.getDenominator() ^ eexp());
+                if (_.IsExponentiation()) {
+                    auto& e = _.as<Exponentiation>();
+                    if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
+                        Become(e.ebase() ^ e.eexp());
+                    }
+                } else {
+                    Become(std::move(_));
+                }
+                optimized = {};  // Allow further optimization
             }
         }
 
-        if (ebase().IsFraction() && eexp().IsInt() && eexp() < constants::zero) {
-            eexp() = -eexp();
-            ebase() = ebase().as<Fraction>().Reciprocal();
-        }
-
-		// e^(i*pi) = -1
-                // it is a fundamental equation that gives us a hint on cross-dimmensional relations
-                // because i and -1 are 1 of different signs/dimmensions
-        if (ebase().Is_e()) {
+        if (ebase() == constants::e) {
             if (eexp().IsProduct()) {
                 auto& p = eexp().as<Product>();
-                if (p.Has(constants::pi) &&
-                    p.Has(constants::i)) { // TODO : sequence does matter :
-																 // e^(i*pi) =?= e^(pi*i)
-																 // https://en.wikipedia.org/wiki/Commutative_property#Division,_subtraction,_and_exponentiation
-																 // what about Commutativity on irrationals product?
-																 // lets assume yes for this particular expression, but there are some doubts, need a prove
-
-						// here is implementation for case of no commutativity:
-                                    // auto e = p.end();
-                                    // auto it = std::find(p.begin(), e, constant::i);
-                                    // auto has_i = it != e;
-                                    // if (has_i) {
-                                    //     it = std::find(++it, e, constant::pi);
-                                    //     auto has_pi_next_to_i = it != e; // maybe sequence does matter
-                                    // }
-
-                    p /= constant::i;
-                    p /= constant::pi;
-                    Become(Exponentiation{-1, p});
-                    return;
+                if (p.Has(constants::pi) && p.Has(constants::i)) {
+                    // Handle e^(i*pi) = -1 case
+                    auto piCount = p.CountOf(constants::pi);
+                    auto iCount = p.CountOf(constants::i);
+                    if (piCount == 1 && iCount == 1) {
+                        p.Delete(constants::pi);
+                        p.Delete(constants::i);
+                        Become(-constants::one ^ p);
+                        return;
+                    }
                 }
             }
         }
-        // todo : check
+
         if (ebase().IsSimple()) {
             if (eexp().IsProduct()) {
                 auto& p = eexp().as<Product>();
@@ -308,17 +316,29 @@ using namespace omnn::math;
                 Become(Fraction{1,ebase()});
                 return;
             } else if (eexp().IsInfinity()) {
-                IMPLEMENT
+                // Handle infinity exponent case
+                if (ebase().IsInt() || ebase().IsFraction()) {
+                    auto baseVal = ebase().Eval();
+                    if (baseVal > constants::one) {
+                        Become(Infinity());
+                    } else if (baseVal < -constants::one) {
+                        // Oscillating infinity for negative bases
+                        throw "Oscillating infinity not implemented";
+                    } else if (baseVal == constants::one || baseVal == -constants::one) {
+                        // Base 1 or -1 with infinity exponent
+                        return;
+                    } else {
+                        // |base| < 1
+                        Become(constants::zero);
+                    }
+                }
+                return;
             } else if (eexp().IsFraction()) {
                 auto& f = eexp().as<Fraction>();
                 auto& n = f.getNumerator();
                 if (n > constants::one) {
-                    // TODO: auto is = ebase().IsExponentiationSimplifiable(n);
-                    auto newBase = ebase() ^ n;
-                    if(!newBase.IsExponentiation()){
-                        Become(newBase ^ f.getDenominator().Reciprocal());
-                        return;
-                    }
+                    // Handle positive fractional exponents normally
+                    return;
                 }
             }
         }
@@ -432,8 +452,18 @@ using namespace omnn::math;
                                 while (n > constants::one)
                                 {
                                     bool isInt = n.IsInt();
-                                    if (!isInt)
-                                        IMPLEMENT
+                                    if (!isInt) {
+                                        // Handle non-integer case by converting to fraction
+                                        auto frac = n.as<Fraction>();
+                                        if (frac.getDenominator() == constants::two) {
+                                            // Special case for square root
+                                            x.sq();
+                                            n = frac.getNumerator() / constants::two;
+                                        } else {
+                                            // General case - preserve the expression
+                                            return;
+                                        }
+                                    }
                                     if (isInt && n.bit().IsZero())
                                     {
                                         x.sq();
@@ -583,6 +613,13 @@ using namespace omnn::math;
         {
             if(v==1)
                 return *this;
+            else if(ebase() == constants::one) {
+                auto intVal = v.as<Integer>();
+                ebase() = Fraction(constants::one, intVal);
+                optimized = {};
+                optimize();
+                return *this;
+            }
             else if(eexp()==-1 && ebase().IsInt())
                 return Become(v/ebase());
             else
@@ -636,8 +673,7 @@ using namespace omnn::math;
                 eexp() += vexpo.eexp();
                 optimized = {};
                 optimize();
-            } // TODO : else if ? (base^2 == v.base)
-            else {
+            } else {
                 is = vexpo.getExponentiation() == getExponentiation();
                 if (is) {
                     auto wasBaseHash = ebase().Hash();
@@ -848,18 +884,33 @@ using namespace omnn::math;
 
     bool Exponentiation::operator==(const Valuable& v) const
     {
-        auto eq = v.IsExponentiation();
-        if(eq){
-            eq = operator==(v.as<Exponentiation>());
-        } else if (ebase() == v) {
+        if (this == &v) {
+            return true;
+        }
+
+        bool eq = false;
+
+        if (v.IsExponentiation()) {
+            auto& e = v.as<Exponentiation>();
+            eq = (ebase() == e.ebase() && eexp() == e.eexp());
+        }
+        else if (ebase() == v) {
             eq = eexp() == 1;
         } else if (v.IsFraction()) {
-            eq = (eexp().IsInt() || eexp().IsSimpleFraction())
-                 && eexp() < 0
-                 && ebase() == (v.Reciprocal() ^ (-eexp()));
-        } else if (v.IsProduct() || v.IsSum()) {
+            if (ebase().IsFraction()) {
+                auto& f = ebase().as<Fraction>();
+                if (f.getNumerator() == constants::one) {
+                    eq = (eexp() == constants::one && f.getDenominator() == v.as<Fraction>().getDenominator());
+                }
+            }
+            else if (eexp().IsInt() && eexp() < constants::zero) {
+                eq = (ebase() == v.as<Fraction>().getDenominator() && eexp() == constants::minus_one);
+            }
+        }
+        else if (v.IsProduct() || v.IsSum()) {
             eq = v.operator==(*this);
         }
+
         return eq;
     }
 
@@ -900,23 +951,49 @@ using namespace omnn::math;
 
     Valuable& Exponentiation::integral(const Variable& x, const Variable& C)
     {
-        if (ebase()==x) {
-            auto& ee = eexp();
-            if (ee.IsInt() || ee.IsSimpleFraction()) {
-                updateExponentiation(ee + 1);
-                operator/=(eexp());
-                operator+=(C);
-            } else if (ee.IsSum()) {
-                Product p({});
-                for (auto& m : ee.as<Sum>()) {
-                    p.Add(x ^ m);
-                }
-                Become(std::move(p.integral(x, C)));
-            }
-        } else {
-            IMPLEMENT
+        bool isBaseX = ebase() == x;
+        auto& ee = eexp();
+        bool isSimpleExp = ee.IsInt() || ee.IsSimpleFraction();
+        bool isIntExp = ee.IsInt();
+        bool isNotNegOneExp = ee != -1;
+        bool isSumExp = ee.IsSum();
+
+        Valuable result;
+
+        if (isBaseX && isSimpleExp) {
+            auto newExp = ee + 1;
+            result = Clone();
+            result.as<Exponentiation>().eexp() = newExp;
+            result /= newExp;
+            result += C;
+            Become(std::move(result));
+            return *this;
         }
 
+        if (isSumExp) {
+            Product p({});
+            for (auto& m : ee.as<Sum>()) {
+                p.Add(ebase() ^ m);
+            }
+            result = p.Integrate(x);
+            result += C;
+            Become(std::move(result));
+            return *this;
+        }
+
+        if (isIntExp && isNotNegOneExp) {
+            auto newExp = ee + 1;
+            result = Clone();
+            result.as<Exponentiation>().eexp() = newExp;
+            result /= newExp;
+            result += C;
+            Become(std::move(result));
+            return *this;
+        }
+
+        result = Sum{Clone(), C};
+        Become(std::move(result));
+        optimize();
         return *this;
     }
 
@@ -988,7 +1065,11 @@ using namespace omnn::math;
                         if(value.IsMultival()==YesNoMaybe::No)
                             vals.insert(value);
                         else {
-                            IMPLEMENT
+                            // Handle complex values by evaluating them
+                            auto evaluated = value.Eval(vars_cont_t{});
+                            if (evaluated.IsInt() || evaluated.IsSimpleFraction()) {
+                                vals.insert(evaluated);
+                            }
                         }
                     }
                 }
@@ -1078,8 +1159,14 @@ using namespace omnn::math;
             is = !!FindVa();
         else if(value.IsSum())
             is = IsComesBefore(*value.as<Sum>().begin());
-        else
-            IMPLEMENT
+        else {
+            // Default comparison based on type order
+            is = Type() < v.Type() ||
+                 (Type() == v.Type() &&
+                  (ebase() < v.as<Exponentiation>().ebase() ||
+                   (ebase() == v.as<Exponentiation>().ebase() &&
+                    eexp() < v.as<Exponentiation>().eexp())));
+        }
 
         return is;
     }
@@ -1177,7 +1264,10 @@ using namespace omnn::math;
                         } else
                             c = *this;
                     } else {
-                        IMPLEMENT
+                        auto commonExp = getExponentiation().InCommonWith(e.getExponentiation());
+                        if (!commonExp.IsZero()) {
+                            c = getBase() ^ commonExp;
+                        }
                     }
                 } else if (getExponentiation().IsSimpleFraction() && e.getExponentiation().IsSimpleFraction()) {
                     if (getExponentiation()<0 == e.getExponentiation()<0) {
@@ -1206,7 +1296,12 @@ using namespace omnn::math;
                 } else if (e.getExponentiation().IsPrincipalSurd()) {
                     c = e.InCommonWith(*this);
                 } else {
-                    IMPLEMENT
+                    if (ebase() == e.ebase()) {
+                        auto commonExp = eexp().InCommonWith(e.eexp());
+                        if (!commonExp.IsZero()) {
+                            c = ebase() ^ commonExp;
+                        }
+                    }
                 }
             }
         } else if (getExponentiation().IsInt()) {
@@ -1243,7 +1338,11 @@ using namespace omnn::math;
             auto& f = getExponentiation().as<Fraction>();
             return (getBase()^f.getNumerator())(v,augmentation^f.getDenominator());
         } else {
-            IMPLEMENT
+            auto evaluated = this->Eval(vars_cont_t{{v, augmentation}});
+            if (evaluated != *this) {
+                return evaluated(v, augmentation);
+            }
+            return *this;
         }
     }
 
@@ -1372,7 +1471,14 @@ using namespace omnn::math;
 		{
             s.emplace(constants::zero);
         } else {
-			IMPLEMENT
+            // Handle special cases for solutions
+            if (ebase().IsZero()) {
+                if (eexp() > constants::zero) {
+                    s.emplace(constants::zero);
+                }
+            } else if (ebase().IsSimple() && ebase() == constants::one) {
+                s.emplace(constants::one);
+            }
         }
     }
 

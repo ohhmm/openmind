@@ -257,6 +257,12 @@ using namespace omnn::math;
                         Become(std::move(e));
                         break;
                     }
+                    if (e.getBase() == constants::one && denominator().IsInt() && denominator() > 0) {
+                        auto reciprocal = Fraction(constants::one, denominator());
+                        denominator() = constants::one;
+                        numerator() = reciprocal * e;
+                        break;
+                    }
                 }
             }
 
