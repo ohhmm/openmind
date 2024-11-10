@@ -149,6 +149,7 @@ bool MInfinity::operator <(const Valuable& v) const
     return true;
 }
 
+
 Valuable& MInfinity::operator^=(const Valuable& v)
 {
     if (v.IsZero())
