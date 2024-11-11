@@ -844,7 +844,7 @@ namespace
     Valuable& Sum::operator+=(const Sum& sum) {
         if (sum.size()) {
             {
-                OptimizeOff oo;
+                OptimizeOff off;
                 for (auto &item: sum) {
                     operator+=(item); // FIXME: operator+= -> Add
                 }
@@ -917,7 +917,7 @@ namespace
         else {
             Sum sum;
             {
-                OptimizeOff oo;
+                OptimizeOff off;
                 sum.SetView(GetView());
                 if (v.IsSum()) {
                     for (auto& _1 : v.as<Sum>())
@@ -1495,7 +1495,7 @@ namespace
         // TODO : openmp
         //#pragma omp parallel default(none) shared(grade,coefficients)
         {
-            OptimizeOff oo;
+            OptimizeOff off;
         //#pragma omp for 
         for (auto& m : members)
         {
@@ -2721,7 +2721,7 @@ namespace
                 is.first = mIs.first;
                 sum.Add(mIs.second);
             } else {
-                OptimizeOff oo;
+                OptimizeOff off;
                 sum.Add(Valuable(std::make_shared<Product>(std::initializer_list<Valuable>{v,m})));
             }
         }

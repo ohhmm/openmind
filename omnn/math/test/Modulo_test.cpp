@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(Modulo_IntOperatorLess_test) {
             auto isLess = x < y;
             auto lessOperatorInstantiation = IntLessOperator;
             {
-                Valuable::OptimizeOff oo;
+                Valuable::OptimizeOff off;
                 std::cout << '\n' << x << '<' << y << " = ";
                 lessOperatorInstantiation.eval({{X, x}, {Y, y}});
                 std::cout << " expression that must be equal to zero when true: " << lessOperatorInstantiation << std::endl;

@@ -993,7 +993,7 @@ namespace math {
     {
         if (v.IsProduct()) {
             {
-                OptimizeOff oo;
+                OptimizeOff off;
                 for (auto& i : v.as<Product>())
                     *this /= i;
                 optimized = {};

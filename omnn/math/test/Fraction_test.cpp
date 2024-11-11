@@ -17,8 +17,16 @@ std::string l(const omnn::math::Valuable& v)
 
 BOOST_AUTO_TEST_CASE(Fraction_cmp_tests, *disabled()) {
     Valuable::OptimizeOff off;
-    auto equal = 1_v/2 == 2_v/4_v;
+    auto equal = 1_v / 2 == 2_v / 4_v;
     BOOST_TEST(equal);
+}
+
+BOOST_AUTO_TEST_CASE(Fraction_ordering_tests, *disabled()) {
+    auto _1 = "((((-16)/25)*(1r5) + (16/5))^((1/2)))"_v;
+    auto _2 = "(3/5)*sqrt(5)"_v;
+    auto cmp21 = _1.IsComesBefore(_2);
+    auto cmp12 = _2.IsComesBefore(_1);
+    BOOST_TEST(cmp12 != cmp21);
 }
 
 BOOST_AUTO_TEST_CASE(Fraction_tests)
