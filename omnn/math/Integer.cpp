@@ -648,7 +648,7 @@ namespace math {
     Valuable Integer::Sqrt() const
     {
         auto arbitraryAbsoluteValue = boost::multiprecision::abs(arbitrary);
-        auto sqrtIntegerPart = boost::multiprecision::sqrt(arbitraryAbsoluteValue); // integer square root
+        auto sqrtIntegerPart = boost::multiprecision::sqrt(arbitraryAbsoluteValue.template convert_to<base_int>()); // integer square root
         if (sqrtIntegerPart * sqrtIntegerPart != arbitraryAbsoluteValue) { // no integer square root
             auto d = GreatestCommonExp(constants::two);
             if (d.second != constants::one) {

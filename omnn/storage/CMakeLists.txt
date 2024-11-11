@@ -1,7 +1,9 @@
 option(OPENMIND_STORAGE_FOUNDATIONDB "Use Apple FoundationDB library for one of the multistorage levels" OFF)
 option(OPENMIND_STORAGE_LEVELDB "Use Google LevelDB library for one of the multistorage levels" ON)
 
-set(DEPENDENCIES rt)
+find_package(Boost REQUIRED COMPONENTS filesystem)
+
+set(DEPENDENCIES rt Boost::filesystem)
 if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB)
     option(OPENMIND_STORAGE_ALLOW_UPGRADE "Update optimized cached values during fetch if new optimizations applied" ON)
     option(OPENMIND_STORAGE_VOLATILE "Clean cache each start (for debugging purposes)" OFF)
