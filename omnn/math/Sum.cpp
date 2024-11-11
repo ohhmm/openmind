@@ -47,4 +47,86 @@ namespace math {
         return is;
     }
 
+    Sum::Sum(std::initializer_list<Valuable> l) {
+        for (const auto& v : l) {
+            *this += v;
+        }
+    }
+
+    bool Sum::IsComesBefore(const Valuable& v) const {
+        if (v.IsSum()) {
+            return members < v.as<Sum>().members;
+        }
+        return false;  // Non-sum values come before sums
+    }
+
+    bool Sum::IsPolynomial(const Variable& v) const {
+        for (const auto& m : members) {
+            if (!m.IsPolynomial(v)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool Sum::SumIfSimplifiable(const Valuable& v) {
+        auto result = IsSummationSimplifiable(v);
+        if (result.first) {
+            *this = std::move(result.second);
+            return true;
+        }
+        return false;
+    }
+
+    bool Sum::MultiplyIfSimplifiable(const Valuable& v) {
+        auto result = IsMultiplicationSimplifiable(v);
+        if (result.first) {
+            *this = std::move(result.second);
+            return true;
+        }
+        return false;
+    }
+
+    std::pair<bool, Valuable> Sum::IsMultiplicationSimplifiable(const Valuable& v) const {
+        std::pair<bool, Valuable> result{{}, v * *this};
+        result.first = result.second.Complexity() < Complexity() + v.Complexity();
+        return result;
+    }
+
+    vars_cont_t Sum::GetVaExps() const {
+        if (vars.empty()) {
+            for (const auto& m : members) {
+                auto ve = m.GetVaExps();
+                vars.insert(ve.begin(), ve.end());
+            }
+        }
+        return vars;
+    }
+
+    Valuable Sum::Sign() const {
+        Valuable sign = 1;
+        for (const auto& m : members) {
+            sign *= m.Sign();
+        }
+        return sign;
+    }
+
+    Valuable Sum::LCMofMemberFractionDenominators() const {
+        Valuable lcm = 1;
+        for (const auto& m : members) {
+            if (m.IsFraction()) {
+                lcm = lcm.LCM(m.as<Fraction>().getDenominator());
+            }
+        }
+        return lcm;
+    }
+
+    bool Sum::VarSurdFactor(const Valuable& v) {
+        if (v.IsExponentiation()) {
+            const auto& exp = v.as<Exponentiation>();
+            return exp.getBase().IsVariable() && exp.getExponent().IsFraction();
+        }
+        return false;
+    }
+
 }} // namespace omnn::math
