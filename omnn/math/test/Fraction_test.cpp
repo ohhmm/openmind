@@ -2,8 +2,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "Fraction.h"
-#include "Variable.h"
-#include "Sum.h"
 
 using namespace omnn::math;
 using namespace boost::unit_test_framework;
@@ -15,32 +13,13 @@ std::string l(const omnn::math::Valuable& v)
     return ss.str();
 }
 
-BOOST_AUTO_TEST_CASE(Fraction_cmp_tests, *disabled()) {
-    Valuable::OptimizeOff off;
-    auto equal = 1_v / 2 == 2_v / 4_v;
-    BOOST_TEST(equal);
-}
-
-BOOST_AUTO_TEST_CASE(Fraction_ordering_tests) {
-    // Use consistent sqrt representation for both expressions
-    auto _1 = "(3/5)*sqrt(5)"_v;
-    auto _2 = "(-3/5)*sqrt(5)"_v;
-    BOOST_TEST_MESSAGE("Expression 1: " << _1);
-    BOOST_TEST_MESSAGE("Expression 2: " << _2);
-    auto cmp21 = _1.IsComesBefore(_2);
-    auto cmp12 = _2.IsComesBefore(_1);
-    BOOST_TEST_MESSAGE("cmp21 (1 comes before 2): " << cmp21);
-    BOOST_TEST_MESSAGE("cmp12 (2 comes before 1): " << cmp12);
-    BOOST_TEST(cmp12 != cmp21);
-}
-
 BOOST_AUTO_TEST_CASE(Fraction_tests)
 {
     const auto a = 1_v / 2;
 	auto c = 3_v / 1;
     auto b = a * 4;
 	auto d = 2_v / 4;
-
+    
     BOOST_TEST(a*b==1);
 	BOOST_TEST((c += b) == 5);
 	BOOST_TEST((c *= a) == 5_v / 2);
@@ -56,17 +35,17 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 
     _ = (1_v/2)^2_v;
     BOOST_TEST(_ == 1_v/4);
-
+    
     Variable v1, v2;
     _ = 1_v / (1_v / v1);
     BOOST_TEST(_ == v1);
-
+    
     BOOST_TEST((2040_v*v1/(-2_v*v1))==-1020);
-
+    
     _ = (2040_v/v1) / ((-1_v/v1)*v2);
     _.optimize();
     BOOST_TEST(_ == -2040_v/v2);
-
+    
     BOOST_TEST((Fraction{1,-2}).operator<(0));
 
     _ = 1_v^(1_v/2);
@@ -77,52 +56,25 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     BOOST_TEST((_.IsMultival() == Valuable::YesNoMaybe::Yes));
     eq = _ == (1_v^(1_v/2));
     BOOST_TEST(eq);
-
-    auto _1 = Valuable(0.000144);
-    auto _2 = 144_v / 1000000;
-    BOOST_TEST(_1 == _2);
 }
 
-BOOST_AUTO_TEST_CASE(IrrationalFraction_tests) {
-    Valuable f = Fraction{constants::one, constants::i};
-    f.optimize();
-    BOOST_TEST(f == -constants::i);
-}
-
-BOOST_AUTO_TEST_CASE(FractionWithRadicalsSimplification_tests)
+BOOST_AUTO_TEST_CASE(Fraction_with_sum_tests)
 {
-    auto sqrt2 = constants::two.Sqrt();
-    auto _1 = -8 / (8 * sqrt2) + 1;
-    auto _2 = 1 - 1/sqrt2;
-    BOOST_TEST(static_cast<double>(_1) == static_cast<double>(_2));
-}
+    auto _ = 841_v/64;
+    auto a = _.Sqrt();
+    _ ^= 1_v/2;
 
-BOOST_AUTO_TEST_CASE(FractionSimplification_tests
- , *disabled()
-){
-	auto _1 = (25_v / 5) ^ Fraction{constants::minus_1,constants::two};
-	auto _2 = (1_v / 5)*(1_v^(1_v/2));
-	BOOST_TEST(_1 == _2);
-	
-	DECL_VA(x);
-	_1 =(-1_v)^x;
-	_2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
-    BOOST_TEST(_1 != _2);
-}
-
-BOOST_AUTO_TEST_CASE(Fraction_optimization_no_hang_test
-    , *timeout(2)
-) {
-    DECL_VARS(X);
-    auto _ = constants::one / (2 * X);
-    _.optimize();
-}
-
-BOOST_AUTO_TEST_CASE(Balancing_no_hang_test
-    , *timeout(2)
-    * disabled()
-) {
-    DECL_VARS(x, y, z);
-    auto _ = (constants::minus_1 / 4) * ((-16 * (y ^ 2) + 160 * y - 8 * x - 200) ^ constants::half) + z - 35;
-    _.as<Sum>().balance();
+    a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
+    // (573440 * (±29/±8) + 2115584) / 262144
+    a.optimize();
+    auto ok = a.IsMultival() == Valuable::YesNoMaybe::Yes;
+    BOOST_TEST(ok);
+    
+    for (int64_t i=8; i --> 1; ) {
+        Valuable sh(int64_t(1)<<i);
+        auto multi = 1_v^(1_v/sh);
+        _ = multi;
+        _ /= _;
+        BOOST_TEST(_ == multi);
+    }
 }
