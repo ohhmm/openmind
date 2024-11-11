@@ -158,7 +158,7 @@ namespace
 	Valuable Sum::operator -() const
 	{
 		Sum s;
-		for (auto& a : members) 
+		for (auto& a : members)
 			s.Add(-a);
 		return s;
 	}
@@ -262,7 +262,7 @@ namespace
 
     Valuable Sum::GCD(const Valuable& v) const {
         if (v.IsInt())
-            return v.GCD(GCDofMembers()); 
+            return v.GCD(GCDofMembers());
         auto gcd = base::GCD(v);
         if (gcd == constants::one) {
             auto gcdm = GCDofMembers();
@@ -294,7 +294,7 @@ namespace
                 || (members.size() == 1 && members.begin()->operator==(v))
                 || (IsZero() && v.IsZero());
     }
-    
+
     void Sum::optimize()
     {
         if (is_optimized() || !optimizations)
@@ -371,7 +371,7 @@ namespace
             PerformSurdReduce();
 
             CHECK_OPTIMIZATION_CACHE
-            
+
             if (!IsSum()) {
                 break;
             }
@@ -412,7 +412,7 @@ namespace
                 for (; it2 != members.end();)
                 {
                     CHECK_OPTIMIZATION_CACHE
-                    
+
                     if (c.IsSum() || c.IsNaN()) {
                         break;
                     }
@@ -493,16 +493,16 @@ namespace
                 CHECK_OPTIMIZATION_CACHE
 
                 auto copy = it->Optimized();
-                
+
                 CHECK_OPTIMIZATION_CACHE
-                
+
                 if (!it->Same(copy)) {
                     Update(it, copy);
                 }
                 else
                     ++it;
             }
-            
+
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
 //            if (w!=*this) {
 //                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
@@ -735,7 +735,7 @@ namespace
     const Valuable::vars_cont_t& Sum::getCommonVars() const
     {
         vars.clear();
-        
+
         auto it = members.begin();
         if (it != members.end())
         {
@@ -770,7 +770,7 @@ namespace
 
         return vars;
     }
-    
+
     Valuable Sum::InCommonWith(const Valuable& v) const
     {
         return GCD(v);
@@ -980,7 +980,7 @@ namespace
                                 auto coVa = it->getCommonVars();
                                 auto maxVa = std::max_element(coVa.begin(), coVa.end(),
                                                               [](auto&_1,auto&_2){return _1.second < _2.second;});
-                                
+
                                 for (it2 = b; it2 != e; ++it2)
                                 {
                                     bool found = {};
@@ -998,18 +998,18 @@ namespace
                                                 IMPLEMENT
                                             }
                                             found = coVa1vIt->second >= coVa2vIt->second;
-                                            
+
                                         }
-                                        
+
                                         if (!found) {
                                             break;
                                         }
                                     }
-                                    
+
                                     if(found)
                                         break;
                                 }
-                                
+
                                 if (it2 == e) {
                                     IMPLEMENT;
                                 }
@@ -1100,7 +1100,7 @@ namespace
                     auto e = i.end();
                     size_t offs = 0;
                     std::deque<Valuable> hist {*this};
-                    
+
                     auto icnt = size() * 2;
                     while (!IsZero() && icnt--)
                     {
@@ -1155,7 +1155,7 @@ namespace
                                     break;
                                 }
                             }
-                            
+
                             auto t = *begin() / *it2;
                             sum += t;
                             t *= value;
@@ -1225,7 +1225,7 @@ namespace
         };
         for(auto m : *this)
             add(m.d(x));
-        
+
         return Become(std::move(sum));
     }
 
@@ -1284,7 +1284,7 @@ namespace
         std::stringstream s;
         s << '(';
         constexpr char sep[] = " + ";
-		for (auto& b : members) 
+		for (auto& b : members)
             s << b << sep;
         auto str = s.str();
         auto cstr = const_cast<char*>(str.c_str());
@@ -1408,7 +1408,7 @@ namespace
     }
 
     bool Sum::IsBinomial() const {
-        return members.size() == 2 
+        return members.size() == 2
 			&& members.begin()->IsVa()
 			&& members.rbegin()->FindVa() == nullptr;
 	}
@@ -1460,7 +1460,7 @@ namespace
         //#pragma omp parallel default(none) shared(grade,coefficients)
         {
             OptimizeOff off;
-        //#pragma omp for 
+        //#pragma omp for
         for (auto& m : members)
         {
             if(!m.HasVa(v))
@@ -1612,7 +1612,7 @@ namespace
                     ++i;
             }
 #endif
-            
+
             if (solutions.size()) {
                 return Valuable(std::move(solutions));
             }
@@ -1628,7 +1628,7 @@ namespace
                 _ -= m;
             }
         }
-        
+
         if (todo.IsSum()) {
             auto coVa = todo.getCommonVars();
             auto it = coVa.find(va);
@@ -1702,7 +1702,7 @@ namespace
 
         return Valuable(std::move(solutions));
     }
-    
+
     bool Sum::IsPowerX(const std::vector<Valuable>& coefficients){
         auto coefIdx = coefficients.size() - 1;
         auto is = coefficients[coefIdx] != 0;
@@ -1745,7 +1745,7 @@ namespace
         if(IsPowerX(coefficients)){
             return (-(coefficients[0] / coefficients[grade])) ^ (constants::one / grade);
         }
-        
+
         auto doCheckCache = grade > 2;
         auto checkCached = doCheckCache
                             ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true)
@@ -1871,7 +1871,7 @@ namespace
                     // TODO : IMPLEMENT
                 }
             }
-            
+
             // TODO : IMPLEMENT, the next here needs debugging
             Valuable augmentation = constants::zero;
             Valuable _ = constants::zero;
@@ -1888,16 +1888,16 @@ namespace
 
             return _(va, augmentation);
         }
-        
+
         if(checkCached)
             return checkCached;
-        
+
         Valuable pluralSolutionsExpression(std::move(s));
         if (checkCached.NotInCache())
             DbSumSolutionsOptimizedCache.AsyncSet(str(), pluralSolutionsExpression.str());
         return pluralSolutionsExpression;
     }
-    
+
     Valuable::solutions_t Sum::GetIntegerSolution(const Variable& va) const
     {
         solutions_t solutions;
@@ -1937,7 +1937,7 @@ namespace
             else
                 IMPLEMENT
         }
-        
+
         Valuable min;
         Valuable closest;
         auto finder = [&](const Integer* i) -> bool
@@ -1953,7 +1953,7 @@ namespace
                                         auto _ = c;
                                         _.Eval(va, i);
                                         _.optimize();
-                                        
+
                                         auto found = _.IsZero();
                                         if (found) {
                                             std::cout << "found " << i << std::endl;
@@ -1977,17 +1977,17 @@ namespace
                                     Infinity(),
                                     zz);
         };
-        
+
         auto freeMember = _.calcFreeMember();
         if(!freeMember.IsInt()) {
             IMPLEMENT
         }
         auto& i = freeMember.as<Integer>();
-        
+
         if (finder(&i)) {
             return solutions;
         }
-        
+
         return solutions;
         IMPLEMENT
 
@@ -2130,7 +2130,7 @@ namespace
 				}
 
                 if(GetView() != View::Solving && GetView() != View::Equation) {
-//                    auto 
+//                    auto
                 }
                 auto a = coefficients[grade];
                 if(!a.IsInt()) {
@@ -2205,9 +2205,9 @@ namespace
         }
         if(solutions.size())
             return;
-        
+
         // no rational roots
-        
+
         switch (grade) {
             case 3: {
 //                static const VarHost::ptr VH(VarHost::make<std::string>());
@@ -2260,7 +2260,7 @@ namespace
 //
 //                    IMPLEMENT
 //                }
-                
+
 //                // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_real_coefficients
 //                auto& a = coefficients[3];
 //                auto& b = coefficients[2];
@@ -2336,7 +2336,7 @@ namespace
                 auto& b = coefficients[2]; // -3
                 auto& c = coefficients[1]; // -13
                 auto& d = coefficients[0]; // 19
-                
+
                 auto asq = a.Sq(); // 4
                 auto bsq = b.Sq(); // 9
                 auto ac3 = a * c * 3; // -78
@@ -2450,28 +2450,28 @@ namespace
                         << "    long " << va << "=i;"
                         << "    c[i] = "; copy.code(source);
                 source << ";}";
-                
+
                 auto devices = system::devices();
                 if(devices.size() == 0)
                 	return;
                 auto& cuwinner = ::omnn::rt::GetComputeUnitsWinnerDevice();
                 auto wgsz = cuwinner.max_work_group_size();
                 context context(cuwinner);
-                
+
                 kernel k(program::build_with_source(source.str(), context), "f");
                 auto sz = wgsz * sizeof(cl_long);
                 buffer c(context, sz);
                 k.set_arg(0, c);
-                
+
                 command_queue queue(context, cuwinner);
                 // run the add kernel
                 queue.enqueue_1d_range_kernel(k, 0, wgsz, 0);
-                
+
                 // transfer results to the host array 'c'
                 std::vector<cl_long> z(wgsz);
                 queue.enqueue_read_buffer(c, 0, sz, &z[0]);
                 queue.finish();
-                
+
                 Valuable simple = *this;
                 auto addSolution = [&](auto& s) -> bool {
                     auto it = solutions.insert(s);
@@ -2480,7 +2480,7 @@ namespace
                     }
                     return it.second;
                 };
-                
+
                 for(auto i = wgsz; i-->0;)
                     if (z[i] == 0) {
                         // lets recheck on host
@@ -2491,10 +2491,10 @@ namespace
                             addSolution(i);
                         }
                     }
-                
+
                 if(solutions.size() == grade)
                     return;
-                
+
                 auto simpleSolve = [&](){
                     solutions_t news;
                     do {
@@ -2506,30 +2506,30 @@ namespace
                         }
                     } while(news.size());
                 };
-                
+
                 auto addSolution2 = [&](auto& _) -> bool {
                     if (addSolution(_)) {
                         simpleSolve();
                     }
                     return solutions.size() == grade;
                 };
-                
-                
+
+
 #define IS(_) if(addSolution2(_))return;
-                
+
                 if (solutions.size()) {
                     simpleSolve();
                 }
-                
+
                 if(solutions.size() == grade)
                     return;
-                
-                
+
+
                 for(auto i : simple.GetIntegerSolution(va))
                 {
                     IS(i);
                 }
-                
+
                 // decomposition
                 IMPLEMENT;
 //                auto yx = -*this;
@@ -2538,7 +2538,7 @@ namespace
 //                yx += *this;
 //                yx /= va - y;
 //                auto _ = yx.str();
-                
+
                 sz = grade + 1;
                 auto sza = (grade >> 1) + (grade % 2) + 1;
                 auto szb = (grade >> 1) + 1;
@@ -2551,7 +2551,7 @@ namespace
                 for (auto i = szb; i--; ) {
                     eq2 += vvb[i] * (va ^ i);
                 }
-                
+
                 auto teq = eq1*eq2;
                 std::vector<Valuable> teq_coefficients;
                 if (teq.IsSum()) {
@@ -2573,7 +2573,7 @@ namespace
                 for (auto i = szb; i--; ) {
                     s[i] = sequs.Solve(vvb[i]);
                 }
-                
+
                 auto ss = sequs.Solve(vvb[0]);
                 if (ss.size()) {
                     for(auto& s : ss)
@@ -2597,7 +2597,7 @@ namespace
         }
 #endif
     }
-    
+
     Valuable Sum::SumOfRoots() const
     {   // See Viet's basic formulas: https://en.m.wikipedia.org/wiki/Vieta%27s_formulas#Basic_formulas
         auto vars = Vars();
@@ -2643,7 +2643,6 @@ namespace
         Valuable fx(0);
         std::vector<Valuable> coefficients(4);
         auto grade = FillPolynomialCoefficients(coefficients,v);
-        
         switch (grade) {
             case 2: {
                 // square equation axx+bx+c=0
@@ -2683,7 +2682,7 @@ namespace
                 break;
             }
         }
-        
+
         return Formula::DeclareFormula(v, fx);
 	}
 
@@ -2703,8 +2702,41 @@ namespace
 
     std::pair<bool,Valuable> Sum::IsSummationSimplifiable(const Valuable& v) const{
         std::pair<bool, Valuable> is{{}, v + *this};
-        is.first = is.second.Complexity() < Complexity() + v.Complexity();
-		return is;
+
+        // Check if we're dealing with bit operation formulas
+        bool has_bit_ops = false;
+        for (const auto& m : members) {
+            if (m.IsExponentiation()) {
+                const auto& base = m.getBase();
+                if (base == -1) {
+                    has_bit_ops = true;
+                    break;
+                }
+            }
+        }
+
+        if (has_bit_ops) {
+            // For bit operations, we need to preserve exact exponent relationships
+            auto common_vars = getCommonVars();
+            auto v_vars = v.getCommonVars();
+
+            // Check if the variables match exactly for bit operation formulas
+            bool exact_match = true;
+            for (const auto& var : common_vars) {
+                auto it = v_vars.find(var.first);
+                if (it == v_vars.end() || it->second != var.second) {
+                    exact_match = false;
+                    break;
+                }
+            }
+
+            is.first = exact_match && (is.second.Complexity() < Complexity() + v.Complexity());
+        } else {
+            // For non-bit-operation cases, use the GCD-based approach
+            is.first = is.second.Complexity() < Complexity() + v.Complexity();
+        }
+
+        return is;
     }
 
     std::pair<bool, Valuable> Sum::IsMultiplicationSimplifiable(const Valuable& v) const {
@@ -2727,10 +2759,10 @@ namespace
             is.first = is.first && resultIsNotMoreComplex;
         }
 
-		return is;
+        return is;
     }
 
-	Valuable::vars_cont_t Sum::GetVaExps() const {
+    Valuable::vars_cont_t Sum::GetVaExps() const {
         vars_cont_t vaExps;
         for (auto& m : members) {
             auto mVaExps = m.GetVaExps();
@@ -2741,7 +2773,7 @@ namespace
                 } else if (mve.second > it->second) {
                     it->second = mve.second;
                 }
-            }            
+            }
         }
         return vaExps;
 	}
