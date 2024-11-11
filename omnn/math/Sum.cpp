@@ -1,3 +1,11 @@
+#include <utility>
+#include <algorithm>
+#include "Sum.h"
+#include "Valuable.h"
+
+namespace omnn {
+namespace math {
+
     std::pair<bool,Valuable> Sum::IsSummationSimplifiable(const Valuable& v) const {
         std::pair<bool, Valuable> is{{}, v + *this};
 
@@ -36,3 +44,5 @@
 
         return is;
     }
+
+}} // namespace omnn::math
