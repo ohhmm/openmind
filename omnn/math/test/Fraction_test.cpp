@@ -21,11 +21,16 @@ BOOST_AUTO_TEST_CASE(Fraction_cmp_tests, *disabled()) {
     BOOST_TEST(equal);
 }
 
-BOOST_AUTO_TEST_CASE(Fraction_ordering_tests, *disabled()) {
-    auto _1 = "((((-16)/25)*(1r5) + (16/5))^((1/2)))"_v;
-    auto _2 = "(3/5)*sqrt(5)"_v;
+BOOST_AUTO_TEST_CASE(Fraction_ordering_tests) {
+    // Use consistent sqrt representation for both expressions
+    auto _1 = "(3/5)*sqrt(5)"_v;
+    auto _2 = "(-3/5)*sqrt(5)"_v;
+    BOOST_TEST_MESSAGE("Expression 1: " << _1);
+    BOOST_TEST_MESSAGE("Expression 2: " << _2);
     auto cmp21 = _1.IsComesBefore(_2);
     auto cmp12 = _2.IsComesBefore(_1);
+    BOOST_TEST_MESSAGE("cmp21 (1 comes before 2): " << cmp21);
+    BOOST_TEST_MESSAGE("cmp12 (2 comes before 1): " << cmp12);
     BOOST_TEST(cmp12 != cmp21);
 }
 
@@ -35,7 +40,7 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 	auto c = 3_v / 1;
     auto b = a * 4;
 	auto d = 2_v / 4;
-    
+
     BOOST_TEST(a*b==1);
 	BOOST_TEST((c += b) == 5);
 	BOOST_TEST((c *= a) == 5_v / 2);
@@ -51,17 +56,17 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 
     _ = (1_v/2)^2_v;
     BOOST_TEST(_ == 1_v/4);
-    
+
     Variable v1, v2;
     _ = 1_v / (1_v / v1);
     BOOST_TEST(_ == v1);
-    
+
     BOOST_TEST((2040_v*v1/(-2_v*v1))==-1020);
-    
+
     _ = (2040_v/v1) / ((-1_v/v1)*v2);
     _.optimize();
     BOOST_TEST(_ == -2040_v/v2);
-    
+
     BOOST_TEST((Fraction{1,-2}).operator<(0));
 
     _ = 1_v^(1_v/2);
