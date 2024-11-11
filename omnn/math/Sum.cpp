@@ -2707,7 +2707,8 @@ namespace
         bool has_bit_ops = false;
         for (const auto& m : members) {
             if (m.IsExponentiation()) {
-                const auto& base = m.getBase();
+                const auto& exp = m.as<Exponentiation>();
+                const auto& base = exp.getBase();
                 if (base == -1) {
                     has_bit_ops = true;
                     break;
