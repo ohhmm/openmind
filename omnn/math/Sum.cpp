@@ -124,7 +124,7 @@ namespace math {
     bool Sum::VarSurdFactor(const Valuable& v) {
         if (v.IsExponentiation()) {
             const auto& exp = v.as<Exponentiation>();
-            return exp.getBase().IsVariable() && exp.getExponent().IsFraction();
+            return exp.getBase().IsUnivariable() && exp.getExponentiation().IsFraction();
         }
         return false;
     }
