@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "Sum.h"
 #include "Valuable.h"
+#include "Exponentiation.h"
 
 namespace omnn {
 namespace math {
