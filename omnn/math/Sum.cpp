@@ -182,20 +182,20 @@ namespace
                 auto& p = m.as<Product>();
                 for (auto& m : p) {
                     if (m.IsFraction()) {
-						auto& f = m.as<Fraction>();
-						auto& dn = f.getDenominator();
+                        auto& f = m.as<Fraction>();
+                        auto& dn = f.getDenominator();
                         if (dn != constants::one) {
-							lcm.lcm(dn);
-						}
+                            lcm.lcm(dn);
+                        }
                     }
                     else if (m.IsExponentiation()) {
-						auto& e = m.as<Exponentiation>();
-						auto& ee = e.getExponentiation();
+                        auto& e = m.as<Exponentiation>();
+                        auto& ee = e.getExponentiation();
                         if (ee == constants::minus_1) {
-							lcm.lcm(e.getBase());
-						}
-					}
-				}
+                            lcm.lcm(e.getBase());
+                        }
+                    }
+                }
             }
         }
         return lcm;
@@ -1414,7 +1414,7 @@ namespace
 	}
 
     bool Sum::IsPolynomial(const Variable& v) const {
-        auto isSum = !exp;
+        auto isSum = IsSum() && !exp;
         auto is = isSum ? base::IsPolynomial(v) : exp->IsPolynomial(v);
         if (isSum && is) {
             auto exps = GetVaExps();
