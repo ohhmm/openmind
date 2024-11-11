@@ -922,6 +922,36 @@ using namespace omnn::math;
 
     bool Exponentiation::operator <(const Valuable& v) const
     {
+        // For expressions with multiple solutions (like roots)
+        if (IsMultival() == YesNoMaybe::Yes || v.IsMultival() == YesNoMaybe::Yes) {
+            std::set<Valuable> thisVals, otherVals;
+            Values([&](const Valuable& val) { thisVals.insert(val); return true; });
+            v.Values([&](const Valuable& val) { otherVals.insert(val); return true; });
+
+            // Compare principal values
+            if (!thisVals.empty() && !otherVals.empty()) {
+                // Get the minimum absolute value from each set
+                auto getMinAbs = [](const std::set<Valuable>& vals) -> const Valuable& {
+                    return *std::min_element(vals.begin(), vals.end(),
+                        [](const Valuable& a, const Valuable& b) {
+                            auto aRat = static_cast<a_rational>(a.varless());
+                            auto bRat = static_cast<a_rational>(b.varless());
+                            return std::abs(aRat) < std::abs(bRat);
+                        });
+                };
+
+                const Valuable& thisMin = getMinAbs(thisVals);
+                const Valuable& otherMin = getMinAbs(otherVals);
+
+                // If values are equal, use string comparison to break the tie consistently
+                if (thisMin == otherMin) {
+                    return str() < v.str();
+                }
+                return thisMin < otherMin;
+            }
+        }
+
+        // For same base exponentiations, compare exponents
         if (v.IsExponentiation())
         {
             auto& e = v.as<Exponentiation>();
@@ -1078,8 +1108,9 @@ using namespace omnn::math;
             is = !!FindVa();
         else if(value.IsSum())
             is = IsComesBefore(*value.as<Sum>().begin());
-        else
-            IMPLEMENT
+        else { // Fall back to string comparison for unhandled cases
+            is = base::IsComesBefore(value);
+        }
 
         return is;
     }

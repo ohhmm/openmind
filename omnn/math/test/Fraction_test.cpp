@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 	auto c = 3_v / 1;
     auto b = a * 4;
 	auto d = 2_v / 4;
-    
+
     BOOST_TEST(a*b==1);
 	BOOST_TEST((c += b) == 5);
 	BOOST_TEST((c *= a) == 5_v / 2);
@@ -56,17 +56,16 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 
     _ = (1_v/2)^2_v;
     BOOST_TEST(_ == 1_v/4);
-    
+
     Variable v1, v2;
     _ = 1_v / (1_v / v1);
     BOOST_TEST(_ == v1);
-    
+
     BOOST_TEST(((2040_v*v1/(-2_v*v1))==-1020));
-    
     _ = (2040_v/v1) / ((-1_v/v1)*v2);
     _.optimize();
     BOOST_TEST((_ == -2040_v/v2));
-    
+
     auto f = Fraction(1,-2);
     BOOST_TEST((f < 0));
 
@@ -142,7 +141,7 @@ BOOST_AUTO_TEST_CASE(Fraction_InCommonWith_test)
     auto f2 = Fraction(10, 15); // 2/3
     auto common = f1.InCommonWith(f2);
     BOOST_TEST((common == f1));
-    // FIXME: common = f1.GCD(f2); 
+    // FIXME: common = f1.GCD(f2);
 
     // Test fraction with integer
     f1 = Fraction(15, 5); // 3
