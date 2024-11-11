@@ -319,7 +319,7 @@ namespace omnn::math {
             }
             else
             {
-                OptimizeOff oo;
+                OptimizeOff off;
                 // b = -s;
                 auto c = _1 * _2;
                 auto d = s.Sq() + c * -4;
@@ -2691,7 +2691,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             //return //(than - *this).IntMod_IsPositive(); // evaluated to
                    //(-1*(Y^2)-1*(X^2)+(Y^2)*((-1*X+Y)%(-1*X+Y-1))+(X^2)*((-1*X+Y)%(-1*X+Y-1))-2*Y*X*((-1*X+Y)%(-1*X+Y-1))+2*Y*X+3*X*((-1*X+Y)%(-1*X+Y-1))-3*Y*((-1*X+Y)%(-1*X+Y-1))+3*Y-3*X+2*((-1*X+Y)%(-1*X+Y-1))-2)
 			// https://www.wolframalpha.com/input?i=%28-1*%28Y%5E2%29-1*%28X%5E2%29%2B%28Y%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B%28X%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2*Y*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B2*Y*X%2B3*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-3*Y*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B3*Y-3*X%2B2*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2%29
-            OptimizeOff oo;
+            OptimizeOff off;
             Product less;
             less.MarkAsOptimized();
             less.Add(*this - than + constants::one);
@@ -2877,7 +2877,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             auto a = *this;
             auto b = v;
             for (Valuable i; i < n;) {
@@ -2903,7 +2903,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             auto a = *this;
             auto b = v;
             for (Valuable i; i < n;) {
@@ -2930,7 +2930,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             for (auto i = n; i--;) {
                 s *= constants::two;
                 auto _1 = bit(i);
@@ -2948,7 +2948,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             for (auto i = n; i--;) {
                 s *= constants::two;
                 auto _1 = constants::one - bit(i);
@@ -3027,7 +3027,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return exp->Cyclic(total, shiftLeft);
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             for (auto i = total; i--;) {
                 auto shi = i + shiftLeft;
                 if (shi >= total)

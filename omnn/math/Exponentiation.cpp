@@ -265,7 +265,7 @@ namespace omnn::math {
                         setExponentiation(-eexp());
                     }
                     else if (eexp().IsZero()) {
-                        Become(1);
+                        Become(std::move(ebase()));
                         return;
 					}
 				}
@@ -597,9 +597,9 @@ namespace omnn::math {
                 auto& extract = distinct.extract(value).value();
                 if (extract.MultiplyIfSimplifiable(v)) {
                     is = true;
-				} else {
+                } else {
                     extract *= v;
-				}
+                }
                 values.emplace(std::move(extract));
             }
             Become(Valuable(std::move(values)));
