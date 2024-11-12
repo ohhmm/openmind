@@ -1157,6 +1157,11 @@ namespace omnn::math {
         } else if (v.IsModulo()) {
         } else if (getExponentiation().IsVa()) {
         } else if (getExponentiation().IsModulo()) {
+        } else if (v.IsPrincipalSurd()) {
+            auto commonWithBase = v.InCommonWith(ebase());
+            if (commonWithBase != constants::one) {
+                LOG_AND_IMPLEMENT(*this << " InCommonWith " << v);
+            }
         } else {
             LOG_AND_IMPLEMENT(*this << " InCommonWith " << v);
         }

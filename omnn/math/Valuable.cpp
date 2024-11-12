@@ -2714,22 +2714,23 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
-    Valuable Valuable::Negative() const
-    {
-        if (exp)
-            return exp->Negative();
-        else {
-            return (*this+Abs()) / -Shl();
-        }
-    }
-
     Valuable Valuable::IsNegativeThan(const Valuable& than) const {
         return LessOrEqual(than) / Equals(than);
     }
 
+    Valuable Valuable::IsNegative() const {
+        return IsNegativeThan(operator-());
+    }
+
+    Valuable Valuable::IsPositive() const {
+        return operator-().IsNegativeThan(*this);
+    }
+
     Valuable Valuable::Less(const Valuable& than) const
     {
-        return LessOrEqual(than) / Equals(than);
+        auto y = Distance(than).shr();
+        auto x = -y;
+        return x.IsNegativeThan(y);
     }
 
     Valuable Valuable::LessOrEqual(const Valuable& than) const
@@ -2742,6 +2743,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable Valuable::GreaterOrEqual(const Valuable& than) const
     {
         return than.LessOrEqual(*this);
+    }
+
+    Valuable Valuable::Distance(const Valuable& with) const {
+        return (with - *this).abs();
     }
 
     Valuable Valuable::Minimum(const Valuable& second) const {
@@ -2804,7 +2809,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         // (Y + X -sqrt(Y^2 + X^2 -2YX))/2
         // expressed through Abs:
         // (Y + X -sqrt((Y-X)^2))/2 = (X+Y-|X-Y|)/2
-        return ((second + *this) - (second - *this).abs()) / constants::two;
+        return ((second + *this) - Distance(second)) / constants::two;
+    }
+
+    Valuable Valuable::Maximum(const Valuable& with) const {
+        return ((with + *this) + Distance(with)) / constants::two;
     }
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const

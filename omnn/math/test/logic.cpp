@@ -56,10 +56,28 @@ BOOST_AUTO_TEST_CASE(IsNegativeThan_comparator_test) {
     TestBooleanOperator(IsNegativeThan, [](auto x, auto y) { return x < 0 && x == -y; });
 }
 
+BOOST_AUTO_TEST_CASE(IsNegative_expression_test, *disabled()) {
+    auto IsNegative = X.IsNegative();
+    BOOST_TEST_MESSAGE("X < 0 : " << IsNegative);
+    TestBooleanExpression(IsNegative, [](auto x) { return x < 0; });
+}
+
+BOOST_AUTO_TEST_CASE(IsPositive_expression_test, *disabled()) {
+    auto IsPositive = X.IsPositive();
+    BOOST_TEST_MESSAGE("X>0 : " << IsPositive);
+    TestBooleanExpression(IsPositive, [](auto x) { return x > 0; });
+}
+
 BOOST_AUTO_TEST_CASE(Less_comparator_test, *disabled()) {
     auto Less = X.Less(Y);
     std::cout << "X<Y : " << Less << std::endl;
     TestBooleanOperator(Less, [](auto x, auto y) { return x < y; });
+}
+
+BOOST_AUTO_TEST_CASE(NE_comparator_test, *disabled()) {
+    auto NE = X.NotEquals(Y);
+    std::cout << "X<>Y : " << NE << std::endl;
+    TestBooleanOperator(NE, [](auto x, auto y) { return x != y; });
 }
 
 BOOST_AUTO_TEST_CASE(Sign_operator_test
@@ -114,7 +132,7 @@ BOOST_AUTO_TEST_CASE(Negative_operator_test
     )
 {
     DECL_VARS(X);
-    auto NegativeOperatorExpression = X.Negative();
+    auto NegativeOperatorExpression = X.IsNegative();
     std::cout << "X<0 : " << NegativeOperatorExpression << std::endl;
     for (auto x = 10; x--> -10;) {
         auto isLessEq = x < 0;
@@ -253,8 +271,7 @@ BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
 BOOST_AUTO_TEST_CASE(Delta_function_test
 	, *disabled() // FIXME:
 ) { // https://en.wikipedia.org/wiki/Dirac_delta_function
-    DECL_VARS(X, Y);
-    auto LE = X.LessOrEqual(Y);
+    auto LE = X.NotEquals(Y);
     auto deltaFunction_bool = LE.ToBool();
     std::cout << "X<=Y : " << LE << std::endl;
     for (auto x = 10; x-- > -10;) {
