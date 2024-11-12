@@ -5,6 +5,12 @@
 #include "generic.hpp"
 
 
+BOOST_AUTO_TEST_CASE(Equal_comparator_test) {
+    auto Equal = X.Equals(Y);
+    std::cout << "X=Y : " << Equal << std::endl;
+    TestBooleanOperator(Equal, [](auto x, auto y) { return x == y; });
+}
+
 BOOST_AUTO_TEST_CASE(logic_or_tests
     , *disabled()
 ) {
