@@ -655,20 +655,22 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
     }
 
     bool Fraction::IsComesBefore(const Fraction& fraction) const {
-        bool is;
-        if(IsSimple()) {
-            is = fraction.IsSimple() && operator<(fraction);
-        } else {
-            if (numerator() == fraction.numerator()) {
-                is = denominator().IsComesBefore(fraction.denominator());
-            } else {
-                is = numerator().IsComesBefore(fraction.numerator());
-            }
-//            auto lhs = numerator() * fraction.denominator();
-//            auto rhs = fraction.numerator() * denominator();
-//            is = lhs != rhs && lhs.IsComesBefore(rhs);
+        if (IsSimple() && fraction.IsSimple()) {
+            return operator<(fraction);
         }
-        return is;
+
+        // Cross multiply to compare fractions properly
+        // This ensures antisymmetry: if a comes before b, b cannot come before a
+        auto lhs = numerator() * fraction.denominator();
+        auto rhs = fraction.numerator() * denominator();
+
+        // First ensure they're not equal to maintain antisymmetry
+        if (lhs == rhs) {
+            return false;
+        }
+
+        // Then compare using the established ordering
+        return lhs.IsComesBefore(rhs);
     }
 
     bool Fraction::IsComesBefore(const Valuable& v) const

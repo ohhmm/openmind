@@ -4,10 +4,14 @@ if(MSVC)
         add_compile_options(/MDd)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL")
         add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
+        set(Boost_USE_DEBUG_RUNTIME ON)
+        set(Boost_USE_DEBUG_LIBS ON)
     else()
         add_compile_options(/MD)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
         add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
+        set(Boost_USE_DEBUG_RUNTIME OFF)
+        set(Boost_USE_DEBUG_LIBS OFF)
     endif()
 
     set(Boost_USE_STATIC_RUNTIME OFF)
@@ -33,10 +37,14 @@ target_link_libraries(Fraction_test
 if(MSVC)
     target_link_libraries(Fraction_test PRIVATE
         legacy_stdio_definitions
+        debug ucrtd
+        debug vcruntimed
+        debug msvcrtd
     )
     target_compile_definitions(Fraction_test PRIVATE
         _CRT_SECURE_NO_WARNINGS
         _SCL_SECURE_NO_WARNINGS
+        $<$<CONFIG:Debug>:_DEBUG>
     )
 endif()
 
