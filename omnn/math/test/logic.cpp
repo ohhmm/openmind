@@ -44,6 +44,12 @@ BOOST_AUTO_TEST_CASE(LessOrEqual_comparator_test) {
     TestBooleanOperator(LessOrEqual, [](auto x, auto y) { return x <= y; });
 }
 
+BOOST_AUTO_TEST_CASE(IsNegativeThan_comparator_test) {
+    auto IsNegativeThan = X.IsNegativeThan(Y);
+    std::cout << "X<0, X=-Y : " << IsNegativeThan << std::endl;
+    TestBooleanOperator(IsNegativeThan, [](auto x, auto y) { return x < 0 && x == -y; });
+}
+
 BOOST_AUTO_TEST_CASE(Less_comparator_test, *disabled()) {
     auto Less = X.Less(Y);
     std::cout << "X<Y : " << Less << std::endl;

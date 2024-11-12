@@ -2723,6 +2723,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
+    Valuable Valuable::IsNegativeThan(const Valuable& than) const {
+        return LessOrEqual(than) / Equals(than);
+    }
+
     Valuable Valuable::Less(const Valuable& than) const
     {
         return LessOrEqual(than) / Equals(than);
