@@ -1,12 +1,13 @@
 if(MSVC)
-    # Set runtime library configuration
+    # Set runtime library configuration based on build type
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_options(/MDd)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL")
-        set(Boost_USE_DEBUG_RUNTIME ON)
+        add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
     else()
         add_compile_options(/MD)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+        add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
     endif()
 
     set(Boost_USE_STATIC_RUNTIME OFF)
@@ -36,7 +37,6 @@ if(MSVC)
     target_compile_definitions(Fraction_test PRIVATE
         _CRT_SECURE_NO_WARNINGS
         _SCL_SECURE_NO_WARNINGS
-        _ITERATOR_DEBUG_LEVEL=2
     )
 endif()
 
