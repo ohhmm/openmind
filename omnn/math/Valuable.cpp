@@ -2728,9 +2728,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::Less(const Valuable& than) const
     {
-        auto y = Distance(than).shr();
-        auto x = -y;
-        return x.IsNegativeThan(y);
+        auto negative = *this - than;  //  this < than   <=>   this-than < 0
+        auto positive = -negative;     
+        return negative.IsNegativeThan(positive); // X=this-than, Y=-X
     }
 
     Valuable Valuable::LessOrEqual(const Valuable& than) const

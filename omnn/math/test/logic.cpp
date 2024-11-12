@@ -11,6 +11,18 @@ BOOST_AUTO_TEST_CASE(Equal_comparator_test) {
     TestBooleanOperator(Equal, [](auto x, auto y) { return x == y; });
 }
 
+BOOST_AUTO_TEST_CASE(ABS_expression_test) {
+    auto abs = X.Abs();
+    std::cout << "abs(X) : " << abs << std::endl;
+    TestXpression(abs, [](auto x) { return std::abs(x); });
+}
+
+BOOST_AUTO_TEST_CASE(Sign_expression_test, *disabled()) {
+    auto Sign = X.Sign();
+    std::cout << "sign(X) : " << Sign << std::endl;
+    TestXpression(Sign, [](auto x) { return x ? x / std::abs(x) : x; });
+}
+
 BOOST_AUTO_TEST_CASE(logic_or_tests
     , *disabled()
 ) {
@@ -421,7 +433,7 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_with_exception
     auto _1 = x.Abet({1,2,3,3});
     auto _2 = x.Abet({2,3,3});
     auto _ = _1.Intersect(_2, x).logic_and(x.NotEquals(3));
-    
+
     auto solutions = _.IntSolutions(x);
     if(solutions.size() != 1)
 		for (auto& s : solutions){
