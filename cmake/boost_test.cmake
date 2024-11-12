@@ -11,10 +11,27 @@ function(test)
 
     if(MSVC)
         # Ensure consistent iterator debug level with Boost
+        add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_ITERATOR_DEBUG_LEVEL=2")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_ITERATOR_DEBUG_LEVEL=2")
+
         target_compile_definitions(${test_name} PRIVATE
             _ITERATOR_DEBUG_LEVEL=2
             _DEBUG_FUNCTIONAL_MACHINERY
         )
+
+        # Propagate iterator debug level to dependencies
+        get_target_property(test_deps ${test_name} LINK_LIBRARIES)
+        if(test_deps)
+            foreach(dep ${test_deps})
+                if(TARGET ${dep})
+                    target_compile_definitions(${dep} PRIVATE
+                        _ITERATOR_DEBUG_LEVEL=2
+                        _DEBUG_FUNCTIONAL_MACHINERY
+                    )
+                endif()
+            endforeach()
+        endif()
     endif()
 
     find_package(Boost REQUIRED COMPONENTS unit_test_framework)
