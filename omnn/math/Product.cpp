@@ -72,7 +72,28 @@ namespace math {
         if (it2 == oe)
             LOG_AND_IMPLEMENT(x << " =?= " << y);
 
-        return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
+        // First try direct mathematical comparison if possible
+        if (x.IsProduct() && y.IsProduct()) {
+            return x.IsComesBefore(y);
+        }
+
+        // For different types, ensure antisymmetry by using consistent ordering
+        if (it1 != it2) {
+            // If one is Product and other is Exponentiation, use base comparison
+            if ((x.IsProduct() && y.IsExponentiation()) ||
+                (x.IsExponentiation() && y.IsProduct())) {
+                // Always compare Product to Exponentiation's base to avoid recursion
+                if (x.IsProduct()) {
+                    return x.IsComesBefore(y.as<Exponentiation>().getBase());
+                } else {
+                    return !y.IsComesBefore(x.as<Exponentiation>().getBase());
+                }
+            }
+            return it1 < it2;
+        }
+
+        // Same type, use standard comparison
+        return x.IsComesBefore(y);
     }
 
     static constexpr ProductOrderComparator poc;
