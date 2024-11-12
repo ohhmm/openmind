@@ -12,4 +12,9 @@ target_link_libraries(Fraction_test
     Boost::filesystem
     Boost::serialization
 )
+
+if(MSVC)
+    target_link_libraries(Fraction_test PRIVATE ucrt legacy_stdio_definitions)
+endif()
+
 add_test(NAME Fraction_test COMMAND Fraction_test)
