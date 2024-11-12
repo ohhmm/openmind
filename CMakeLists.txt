@@ -304,7 +304,7 @@ elseif(OPENMIND_BUILD_BOOST)
     string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
     message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
 
-    set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared --disable-icu ${BOOST_BUILD_PARAMS}")
+    set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static link=static --disable-icu ${BOOST_BUILD_PARAMS}")
     if(WIN32)
     	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 			separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat clang")
