@@ -59,6 +59,9 @@ void PrincipalSurd::optimize() {
     if (!optimizations || is_optimized())
         return;
 
+    _1.optimize();
+    _2.optimize();
+
     if (index() == constants::one || IsEquation()) {
         Become(std::move(radicand()));
         return;

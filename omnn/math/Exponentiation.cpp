@@ -8,8 +8,9 @@
 #include "Infinity.h"
 #include "pi.h"
 #include "Integer.h"
-#include "Sum.h"
+#include "PrincipalSurd.h"
 #include "Product.h"
+#include "Sum.h"
 
 #include <cmath>
 #include <limits>
@@ -1064,12 +1065,7 @@ namespace omnn::math {
     }
 
     Valuable& Exponentiation::sqrt() {
-        hash ^= _2.Hash();
-        _2 /= 2;
-        hash ^= _2.Hash();
-        optimized = {};
-        optimize();
-        return *this;
+        return Become(PrincipalSurd(*this, 2));
     }
 
     const Valuable::vars_cont_t& Exponentiation::getCommonVars() const {

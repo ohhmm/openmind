@@ -68,6 +68,24 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function) {
     }
 }
 
+void TestXpression(const Valuable& expressionX, auto function) {
+    auto lambda = expressionX.CompiLambda(X);
+    for (auto x = 10; x --> -10 ;)
+    {
+        auto etalon = function(x);
+        auto copy = expressionX;
+        copy.Eval(X, x);
+        copy.optimize();
+        BOOST_TEST(copy == etalon, "f(X=" << x << ")=" << copy);
+
+        copy = lambda(x);
+        // FIXME: BOOST_TEST(evaluatedToZero == etalon);
+        if (copy != etalon) {
+            BOOST_TEST_MESSAGE("Expected " << (etalon ? "true" : "false") << " lambda(" << x << ") = " << copy);
+        }
+    }
+}
+
 void TestBooleanExpression(const Valuable& expressionX, auto function) {
     auto lambda = expressionX.CompiLambda(X);
     for (auto x = 10; x-- > -10;) {
