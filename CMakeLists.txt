@@ -6,12 +6,16 @@ project(${PRODUCT_NAME} CXX)
 
 # MSVC Configuration - Set this early to affect all dependencies
 if(MSVC)
-    add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
-    set(Boost_USE_DEBUG_RUNTIME ON)
+    # Set iterator debug level and runtime configuration using generator expressions
+    add_compile_definitions($<$<CONFIG:Debug>:_ITERATOR_DEBUG_LEVEL=2>)
+    add_compile_definitions($<$<CONFIG:Release>:_ITERATOR_DEBUG_LEVEL=0>)
+
+    # Set Boost configuration
+    set(Boost_USE_DEBUG_RUNTIME $<$<CONFIG:Debug>:ON>)
     set(Boost_USE_STATIC_RUNTIME OFF)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_ITERATOR_DEBUG_LEVEL=2")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_ITERATOR_DEBUG_LEVEL=2")
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+    # Set runtime library using generator expressions
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
 enable_language(CXX)
@@ -86,7 +90,7 @@ if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 	set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} CACHE PATH "hint for find_package")
 	set(_IS_DEBUG TRUE)
 	if(MSVC)
-		add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
+        # Debug-specific compiler and linker options only
 		add_compile_options($<$<CONFIG:Debug>:/constexpr:steps1000000000>)
 		add_link_options(/stack:1000000000)
 	elseif(NOT OPENMIND_USE_VCPKG)

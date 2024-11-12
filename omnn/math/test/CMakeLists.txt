@@ -1,20 +1,11 @@
-if(MSVC)
-    # Set runtime library configuration based on build type
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_compile_options(/MDd)
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL")
-        add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
-        set(Boost_USE_DEBUG_RUNTIME ON)
-        set(Boost_USE_DEBUG_LIBS ON)
-    else()
-        add_compile_options(/MD)
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-        add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
-        set(Boost_USE_DEBUG_RUNTIME OFF)
-        set(Boost_USE_DEBUG_LIBS OFF)
-    endif()
+cmake
+cmake_minimum_required(VERSION 3.10)
 
-    set(Boost_USE_STATIC_RUNTIME OFF)
+if(MSVC)
+    # Use the global runtime library and iterator debug level settings
+    # No need to set _ITERATOR_DEBUG_LEVEL here as it's handled in the root CMakeLists.txt
+
+    # Boost configuration
     set(Boost_USE_STATIC_LIBS ON)
     add_definitions(-D_MT)
 endif()
@@ -37,10 +28,15 @@ target_link_libraries(Fraction_test
 if(MSVC)
     target_link_libraries(Fraction_test PRIVATE
         legacy_stdio_definitions
-        debug ucrtd
-        debug vcruntimed
-        debug msvcrtd
     )
+
+    # Debug-specific libraries using generator expressions
+    target_link_libraries(Fraction_test PRIVATE
+        $<$<CONFIG:Debug>:ucrtd>
+        $<$<CONFIG:Debug>:vcruntimed>
+        $<$<CONFIG:Debug>:msvcrtd>
+    )
+
     target_compile_definitions(Fraction_test PRIVATE
         _CRT_SECURE_NO_WARNINGS
         _SCL_SECURE_NO_WARNINGS
