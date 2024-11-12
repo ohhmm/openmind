@@ -72,28 +72,37 @@ namespace math {
         if (it2 == oe)
             LOG_AND_IMPLEMENT(x << " =?= " << y);
 
-        // First try direct mathematical comparison if possible
-        if (x.IsProduct() && y.IsProduct()) {
+        // For same types, use standard comparison
+        if (it1 == it2) {
             return x.IsComesBefore(y);
         }
 
-        // For different types, ensure antisymmetry by using consistent ordering
-        if (it1 != it2) {
-            // If one is Product and other is Exponentiation, use base comparison
-            if ((x.IsProduct() && y.IsExponentiation()) ||
-                (x.IsExponentiation() && y.IsProduct())) {
-                // Always compare Product to Exponentiation's base to avoid recursion
-                if (x.IsProduct()) {
-                    return x.IsComesBefore(y.as<Exponentiation>().getBase());
-                } else {
-                    return !y.IsComesBefore(x.as<Exponentiation>().getBase());
-                }
+        // For different types, ensure antisymmetry
+        if ((x.IsProduct() && y.IsExponentiation()) ||
+            (x.IsExponentiation() && y.IsProduct())) {
+            // Compare Product to Exponentiation's base
+            const auto& prod = x.IsProduct() ? x : y;
+            const auto& exp = x.IsExponentiation() ? x : y;
+
+            // Get the base of the exponentiation for comparison
+            const auto& exp_base = exp.as<Exponentiation>().getBase();
+
+            // Compare product with exponentiation's base
+            bool base_comparison = prod.IsComesBefore(exp_base);
+
+            // If product and base are equal, compare with exponent
+            if (!base_comparison && !exp_base.IsComesBefore(prod)) {
+                const auto& exp_power = exp.as<Exponentiation>().getExponentiation();
+                // Products come before positive exponents and after negative ones
+                return exp_power.IsComesBefore(0_v);
             }
-            return it1 < it2;
+
+            // Maintain consistent ordering based on which is Product vs Exponentiation
+            return x.IsProduct() ? base_comparison : !base_comparison;
         }
 
-        // Same type, use standard comparison
-        return x.IsComesBefore(y);
+        // Fall back to type-based ordering for other cases
+        return it1 < it2;
     }
 
     static constexpr ProductOrderComparator poc;
