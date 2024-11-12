@@ -1141,7 +1141,7 @@ namespace math {
         if (size() == 1) {
 			return begin()->ToBool();
 		} else if (is_optimized() && !FindVa()) {
-            return constants::zero;
+            return IsZero() ? constants::one : constants::zero;
         } else {
             return base::ToBool();
         }
