@@ -632,16 +632,22 @@ public:
     virtual Valuable IntMod_Less(const Valuable& than) const;
 
     /// <summary>
-    /// (this < 0) - constraint negative
-    /// </summary>
-    /// <returns>constraint to negative values: expression that equals zero for given negative *this values</returns>
-    virtual Valuable Negative() const;
-
-    /// <summary>
     /// (this <= 0) - constraint negative
     /// </summary>
     /// <returns>constraint values <= 0 : expression that equals zero for given negative or 0 *this values</returns>
     virtual Valuable NegativeOrZero() const;
+
+    /// <summary>
+    /// This > 0
+    /// </summary>
+    /// <returns>filter expression to have roots when this expreesion is positive</returns>
+    virtual Valuable IsPositive() const;
+
+    /// <summary>
+    /// (this < 0) - constraint negative
+    /// </summary>
+    /// <returns>constraint to negative values: expression that equals zero for given negative *this values</returns>
+    virtual Valuable IsNegative() const;
 
     /// <summary>
     /// This < 0, Than = abs(This)
@@ -670,6 +676,16 @@ public:
     /// Returns minimum between the object and the param asuming that both are real
     /// </summary>
     Valuable Minimum(const Valuable& second) const;
+
+    /// <summary>
+    /// Returns maximum between the object and the param asuming that both are real
+    /// </summary>
+    Valuable Maximum(const Valuable& with) const;
+
+    /// <summary>
+    /// Returns distance between the object and the param asuming that both are real
+    /// </summary>
+    Valuable Distance(const Valuable& with) const;
 
 	/// iterations
 	//
