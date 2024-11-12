@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(bit_test)
         BOOST_TEST(*bit.FindVa() == x);
         std::cout << "bit " << j << " of x is " << bit << std::endl;
         for (int i = 0; i < UpTo; ++i) {
-            // tasks.emplace(std::async([=](){  // FIXME: stability issue
+             tasks.emplace(std::async([=](){  // FIXME: stability issue
                 auto etalon = i & n;
                 auto b = bit;
                 BOOST_TEST(b.eval({{x, i}}));
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(bit_test)
                 b = an.eval({{x, i}});
                 an.optimize();
                 BOOST_TEST(an==etalon);
-            // }));
+             }));
             if(tasks.size() > hwThreads)
                 tasks.pop();
         }
