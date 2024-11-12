@@ -6,11 +6,11 @@ project(${PRODUCT_NAME} CXX)
 
 # MSVC Configuration - Set this early to affect all dependencies
 if(MSVC)
-    add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
-    set(Boost_USE_DEBUG_RUNTIME OFF)
+    add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
+    set(Boost_USE_DEBUG_RUNTIME ON)
     set(Boost_USE_STATIC_RUNTIME OFF)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_ITERATOR_DEBUG_LEVEL=0")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_ITERATOR_DEBUG_LEVEL=0")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_ITERATOR_DEBUG_LEVEL=2")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_ITERATOR_DEBUG_LEVEL=2")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
@@ -77,6 +77,7 @@ endif()
 
 include(bins)
 include(sanitizer)
+include(boost_test)
 
 message("address_model: ${address_model}")
 
@@ -85,7 +86,7 @@ if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 	set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} CACHE PATH "hint for find_package")
 	set(_IS_DEBUG TRUE)
 	if(MSVC)
-  add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
+		add_definitions(-D_ITERATOR_DEBUG_LEVEL=2)
 		add_compile_options($<$<CONFIG:Debug>:/constexpr:steps1000000000>)
 		add_link_options(/stack:1000000000)
 	elseif(NOT OPENMIND_USE_VCPKG)
