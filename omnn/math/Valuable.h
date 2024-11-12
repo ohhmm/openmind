@@ -135,7 +135,7 @@ protected:
     virtual std::ostream& print(std::ostream& out) const;
     virtual std::wostream& print(std::wostream& out) const;
 
-    Valuable& Become(Valuable&& i);
+    Valuable& Become(Valuable&&);
 
     size_t hash = 0;
     size_t sz = sizeof(Valuable);
@@ -642,6 +642,13 @@ public:
     /// </summary>
     /// <returns>constraint values <= 0 : expression that equals zero for given negative or 0 *this values</returns>
     virtual Valuable NegativeOrZero() const;
+
+    /// <summary>
+    /// This < 0, Than = abs(This)
+    /// </summary>
+    /// <param name="than"></param>
+    /// <returns></returns>
+    virtual Valuable IsNegativeThan(const Valuable& than) const;
 
     /// <summary>
     /// Operator 'less' then value to which a param expression is to be evaluated
