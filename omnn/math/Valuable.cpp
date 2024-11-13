@@ -2685,7 +2685,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return exp->ToBool();
         else {
             OptimizeOff off;
-            auto delta = constants::one - Sign().Sq();
+            auto delta = constants::one - Sign().Abs();
             delta.MarkAsOptimized();
             return delta; // https://math.stackexchange.com/a/2063238/118612
         }
@@ -3191,6 +3191,13 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
             exp->MarkAsOptimized();
         else
             optimized = true;
+    }
+
+    void Valuable::MarkNotOptimized() {
+        if (exp)
+            exp->MarkNotOptimized();
+        else
+            optimized = {};
     }
 
     bool Valuable::is_optimized() const {

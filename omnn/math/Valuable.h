@@ -146,10 +146,11 @@ protected:
     max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
     bool optimized = false;
-
     void MarkAsOptimized();
 
 public:
+    void MarkNotOptimized();
+
 
     /// <summary>
     /// Depends on optimizing goals, the view may set different.
