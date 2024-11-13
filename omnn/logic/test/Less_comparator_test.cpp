@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE Less_comparator_test
 #include <boost/test/unit_test.hpp>
 #include "../../math/Integer.h"
+#include "../../math/Variable.h"
 
 using namespace omnn::math;
 
