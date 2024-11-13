@@ -106,6 +106,28 @@ BOOST_AUTO_TEST_CASE(NE_comparator_test) {
     TestBooleanOperator(NE, [](auto x, auto y) { return x != y; });
 }
 
+BOOST_AUTO_TEST_CASE(ToBool_Delta_function_expression_test, *disabled()) {
+    auto delta = X.ToBool();
+    auto xIsPresent = delta.FindVa() && *delta.FindVa() == X;
+    BOOST_TEST(xIsPresent);
+    if (xIsPresent) {
+        std::cout << "bool(X=0) : " << delta << std::endl;
+        TestXpression(delta, [](auto x) { return x == 0; });
+    }
+}
+
+BOOST_AUTO_TEST_CASE(Delta_function_optimized_expression_test, *disabled()) {
+    auto delta = X.ToBool();
+    auto xIsPresent = delta.FindVa() && *delta.FindVa() == X;
+    BOOST_TEST(xIsPresent);
+    auto nz = !delta.IsZero();
+    BOOST_TEST(nz);
+    delta = delta.Optimized();
+    nz = !delta.IsZero();
+    BOOST_TEST(nz);
+    BOOST_TEST_MESSAGE("δ (X)= : " << delta);
+}
+
 BOOST_AUTO_TEST_CASE(Sign_operator_test
                      , *disabled()
                      )
