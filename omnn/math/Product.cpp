@@ -1240,12 +1240,15 @@ namespace math {
         } else {
             same = {};
         }
-        if (!same // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
-            && IsMultival() == YesNoMaybe::Yes
-            && value.IsMultival() == YesNoMaybe::Yes)
-        {
-            //LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
-        }
+
+        // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
+        //if (!same 
+        //    && IsMultival() == YesNoMaybe::Yes
+        //    && value.IsMultival() == YesNoMaybe::Yes)
+        //{
+        //    LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
+        //}
+
         return same;
     }
 

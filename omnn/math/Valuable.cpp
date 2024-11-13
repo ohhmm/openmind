@@ -2496,8 +2496,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable Valuable::NotEquals(const Valuable& than) const {
-        return Less(than) * than.Less(*this);
-		//return IfEq(v, 1, 0);
+        Product either = {Less(than), than.Less(*this)};
+        either.MarkAsOptimized(); // Fixme: either optimized into 0
+        return either;
     }
 
     // TODO: constexpr
