@@ -1798,7 +1798,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->Sign();
         else {
-            return *this / Abs();
+            auto sign = Abs();
+            sign /= *this;
+            return sign;
             //return GreaterOrEqual(constants::zero).ToBool() - LessOrEqual(constants::zero).ToBool();
             // sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt")
         }
@@ -2505,9 +2507,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return copy.equals(v);
     }
 
-    Valuable Valuable::NotEquals(const Valuable& v) const {
-        //return Equals(v) ^ -1;
-		return IfEq(v, 1, 0);
+    Valuable Valuable::NotEquals(const Valuable& than) const {
+        return Less(than) * than.Less(*this);
+		//return IfEq(v, 1, 0);
     }
 
     // TODO: constexpr
@@ -2737,11 +2739,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable Valuable::IsNegative() const {
-        return (Sq().sqrt() / *this).equals(constants::minus_1);
+        return Sign().equals(constants::minus_1);
     }
 
     Valuable Valuable::IsPositive() const {
-        return operator-().IsNegativeThan(*this);
+        return Sign().equals(constants::one);
     }
 
     Valuable Valuable::Less(const Valuable& than) const
