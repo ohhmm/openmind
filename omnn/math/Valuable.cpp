@@ -2737,7 +2737,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable Valuable::IsNegative() const {
-        return IsNegativeThan(operator-());
+        return (Sq().sqrt() / *this).equals(constants::minus_1);
     }
 
     Valuable Valuable::IsPositive() const {

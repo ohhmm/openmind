@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(IsNegativeThan_comparator_test) {
     TestBooleanOperator(IsNegativeThan, [](auto x, auto y) { return x < 0 && x == -y; });
 }
 
-BOOST_AUTO_TEST_CASE(IsNegative_expression_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(IsNegative_expression_test) {
     auto IsNegative = X.IsNegative();
     auto xIsPresent = IsNegative.FindVa() && *IsNegative.FindVa() == X;
     BOOST_TEST(xIsPresent);
