@@ -2684,7 +2684,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->ToBool();
         else {
-            return constants::one - Sign().Abs(); // https://math.stackexchange.com/a/2063238/118612
+            OptimizeOff off;
+            auto delta = constants::one - Sign().Sq();
+            delta.MarkAsOptimized();
+            return delta; // https://math.stackexchange.com/a/2063238/118612
         }
 	}
 
