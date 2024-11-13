@@ -390,27 +390,40 @@ bool Fraction::SumIfSimplifiable(const Valuable& v)
     return is;
 }
 
-std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& v) const
+std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value) const
 {
     std::pair<bool,Valuable> is;
     auto simple = IsSimpleFraction();
-    is.first = simple && v.IsSimple();
+    is.first = simple && value.IsSimple();
     if(is.first){
-        is.second = *this + v;
-    } else if (v.IsVa()) {
-        is.first = !simple && HasVa(v.as<Variable>());
+        is.second = *this + value;
+    } else if (value.IsVa()) {
+        is.first = !simple && HasVa(value.as<Variable>());
         if (is.first) {
-            LOG_AND_IMPLEMENT("Optimize summation of " << *this << " with " << v);
+            LOG_AND_IMPLEMENT("Optimize summation of " << *this << " with " << value);
         }
-    } else if (v.IsModulo()) {
-    } else if (v.IsInt()) {
-        is = (getDenominator() * v).IsSummationSimplifiable(getNumerator());
+    } else if (value.IsModulo()) {
+    } else if (value.IsInt()) {
+        is = (getDenominator() * value).IsSummationSimplifiable(getNumerator());
         if (is.first)
             is.second /= getDenominator();
-    } else if (!v.IsFraction()) {
-        is = v.IsSummationSimplifiable(*this);
+    } else if (!value.IsFraction()) {
+        is = value.IsSummationSimplifiable(*this);
     } else {
-        IMPLEMENT
+        auto& frac = value.as<Fraction>();
+        if (getDenominator() == frac.getDenominator()) {
+            is = getNumerator().IsSummationSimplifiable(frac.getNumerator());
+            if (is.first) {
+                is.second /= getDenominator();
+            }
+        } else {
+            is = (getNumerator() * frac.getDenominator())
+                     .IsSummationSimplifiable(frac.getNumerator() * getDenominator());
+            if (is.first) {
+                auto commonDenominator = getDenominator() * frac.getDenominator(); // probably faster than getDenominator().LCM(frac.getDenominator());
+                is.second /= commonDenominator;
+            }
+        }
     }
     return is;
 }
