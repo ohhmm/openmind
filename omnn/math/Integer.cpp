@@ -754,15 +754,15 @@ namespace math {
 
     Valuable Integer::IsNegativeThan(const Valuable& other) const
     {
-        if (arbitrary >= 0)
-            return Integer(1);
-
-        if (other.IsInt())
-            return arbitrary == -other.ca() ? Integer(0) : Integer(1);
-        else if (other.IsFraction())
-            return Integer(1);
-        else
-            return Integer(1);
+        if (other.IsInt()) {
+            return (arbitrary < 0 && arbitrary == -other.ca()) ? Integer(1) : Integer(0);
+        }
+        else if (other.IsFraction()) {
+            return Integer(0);
+        }
+        else {
+            return Integer(0);
+        }
     }
 
     std::ostream& Integer::print(std::ostream& out) const
