@@ -152,9 +152,9 @@ BOOST_AUTO_TEST_CASE(merge_or_tests) {
 #endif
 
 BOOST_AUTO_TEST_CASE(IsNegativeThan_comparator_test) {
-    auto IsNegativeThan = X.IsNegativeThan(Y);
-    std::cout << "X<0, X=-Y : " << IsNegativeThan << std::endl;
-    TestBooleanOperator(IsNegativeThan, [](auto x, auto y) { return x < 0 && x == -y; });
+    auto IsNegativeOf = X.IsNegativeOf(Y);
+    std::cout << "X<0, X=-Y : " << IsNegativeOf << std::endl;
+    TestBooleanOperator(IsNegativeOf, [](auto x, auto y) { return x < 0 && x == -y; });
 }
 
 BOOST_AUTO_TEST_CASE(IsNegative_expression_test) {
