@@ -468,14 +468,37 @@ namespace
 
             if (IsEquation()) {
                 auto e = members.end();
+                auto Surd = [](auto it) {
+                    auto surd = it->template As<PrincipalSurd>();
+                    if (it->IsProduct()) {
+                        auto& product = it->template as<Product>();
+                        auto surdIt = product.template GetFirstOccurence<PrincipalSurd>();
+                        if (surdIt != product.end()) {
+                            surd = surdIt->template As<PrincipalSurd>();
+                        }
+                    }
+                    return surd;
+                };
                 for (auto it = members.begin(); it != e;) {
-                    auto SurdIsReducable = [&](auto& m) {
-                        auto is = size() <= 2;
+                    auto SurdIsReducable = [&](auto& it) {
+                        auto is = size() == 1; // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is different from x+1=0 (x=-1)
+                                    // this means that only equality to zero which has zero sign can be squared (not for odd powers)
+                                    // reducing surd makes new consistent equation which roots might be considered for the source equation but it is not equivalent
+                                    // TODO: if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation
+
                         if (!is) {
-                            auto next = it;
-                            ++next;
-                            is = std::none_of(next, e, [this](auto& m) { return VarSurdFactor(m); });
-						}
+                            auto isThereSurd = Surd(it);
+                            if (isThereSurd) {
+                                auto& index = isThereSurd->Index();
+                                if (index.IsEven() == YesNoMaybe::No) {
+                                    auto next = it;
+                                    ++next;
+                                    is = std::none_of(next, e,
+                                            [this](auto& m) { return VarSurdFactor(m); }
+                                        );
+                                }
+                            }
+                        }
                         return is;
 					};
                     if (it->IsPrincipalSurd()) {
@@ -484,22 +507,19 @@ namespace
                             auto& surd = ps.as<PrincipalSurd>();
                             operator^=(surd.Index());
                             operator-=(surd.Radicand());
-                            return;
-                        } else {
                             break;
                         }
                     }
                     else if(it->IsProduct()) {
-                        if (SurdIsReducable(it)) {
-                            auto& p = it->as<Product>();
-                            auto ps = p.GetFirstOccurence<PrincipalSurd>();
-                            if (ps != p.end()) {
-                                auto& idx = ps->as<PrincipalSurd>().Index();
-                                auto p = Extract(it);
+                        auto isThereSurd = Surd(it);
+                        if (isThereSurd) {
+                            if (SurdIsReducable(it)) {
+                                auto& idx = isThereSurd->Index();
+                                auto product = Extract(it);
                                 operator^=(idx);
-                                p.operator^=(idx);
-                                operator-=(p);
-                                return;
+                                product.operator^=(idx);
+                                operator-=(product);
+                                break;
                             }
                             else {
                                 ++it;
@@ -517,11 +537,10 @@ namespace
                     }
                 }
 
-                auto& coVa = getCommonVars();
-                if (coVa.size()) {
-                    *this /= VaVal(coVa);
-                    if (!IsSum()) {
-                        return;
+                if (IsSum()) {
+                    auto common = GCDofMembers().varless();
+                    if (common != constants::one) {
+                        operator/=(common);
                     }
                 }
             }
@@ -531,6 +550,10 @@ namespace
                 return;
             }
             
+            if (!IsSum()) {
+                break;
+            }
+
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->IsSum()) {
@@ -669,14 +692,15 @@ namespace
 #endif
         } while (w != *this);
 
+        if (IsSum()) {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if (size() == 1) {
-            LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << s << " to " << *this);
-        }
+            if (size() == 1) {
+                LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << s << " to " << *this);
+            }
 #endif
-
-        if (isBalancing)
-            balance();
+            if (isBalancing)
+                balance();
+        }
 
         if (doCheck && checkCache.NotInCache()) {
             db.AsyncSet(std::move(s), str());
@@ -1077,17 +1101,20 @@ namespace
                         }
                     }
                     if (!IsZero()) {
+                        OptimizeOff off;
                         s = Fraction(*this, v);
                     }
                 }
                 else
                 {
+                    OptimizeOff off;
                     s = Fraction(*this, v);
                 }
             }
 		}
 		else
 		{
+            OptimizeOff off;
             for (auto& a : members) {
                 s += a / v;
             }

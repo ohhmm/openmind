@@ -202,8 +202,8 @@ public:
     }
 
     template <class T>
-    T* As() {
-        return Is<T>() ? as<T>() : nullptr;
+    const T* As() const {
+        return Is<T>() ? &as<T>() : nullptr;
     }
 
     [[nodiscard]]
