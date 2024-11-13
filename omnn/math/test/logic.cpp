@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(IsPositive_expression_test, *disabled()) {
     TestBooleanExpression(IsPositive, [](auto x) { return x > 0; });
 }
 
-BOOST_AUTO_TEST_CASE(Less_comparator_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(Less_comparator_test) {
     auto Less = X.Less(Y);
     std::cout << "X<Y : " << Less << std::endl;
     TestBooleanOperator(Less, [](auto x, auto y) { return x < y; });
