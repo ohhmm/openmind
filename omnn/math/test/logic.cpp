@@ -70,8 +70,12 @@ BOOST_AUTO_TEST_CASE(IsNegativeThan_comparator_test) {
 
 BOOST_AUTO_TEST_CASE(IsNegative_expression_test, *disabled()) {
     auto IsNegative = X.IsNegative();
-    BOOST_TEST_MESSAGE("X < 0 : " << IsNegative);
-    TestBooleanExpression(IsNegative, [](auto x) { return x < 0; });
+    auto xIsPresent = IsNegative.FindVa() && *IsNegative.FindVa() == X;
+    BOOST_TEST(xIsPresent);
+    if (xIsPresent) {
+        BOOST_TEST_MESSAGE("X < 0 : " << IsNegative);
+        TestBooleanExpression(IsNegative, [](auto x) { return x < 0; });
+    }
 }
 
 BOOST_AUTO_TEST_CASE(IsPositive_expression_test, *disabled()) {

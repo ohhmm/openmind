@@ -95,19 +95,37 @@ namespace omnn::math {
         return {};
     }
 
+    Valuable& Valuable::call_polymorphic_method(Valuable::method_t method, const Valuable& arg) {
+        if (exp) {
+            auto view = GetView();
+            auto equation = IsEquation();
+            if (equation) {
+                SetView(View::None);
+            }
+            auto& obj = ((*exp).*method)(arg);
+            if (equation) {
+                obj.SetView(view);
+            }
+            if (obj.exp) {
+                auto dispose = std::move(exp);
+                exp = obj.exp;
+                DispatchDispose(std::move(dispose));
+            }
+            if (exp->getAllocSize() <= getAllocSize()) {
+                Become(std::move(*exp));
+            } else if (equation) {
+                optimize();
+            }
+            return *this;
+        } else {
+            LOG_AND_IMPLEMENT(typeid(method).name() << " for " << *this);
+        }
+    }
+
     #define VALUABLE_POLYMORPHIC_METHOD(method)                                                                        \
         Valuable& Valuable::method(const Valuable& value) {                                                            \
-            if (exp) {                                                                                                 \
-                auto& obj = exp->method(value);                                                                        \
-                if (obj.exp) {                                                                                         \
-                    auto dispose = std::move(exp);                                                                     \
-                    exp = obj.exp;                                                                                     \
-                    DispatchDispose(std::move(dispose));                                                               \
-                }                                                                                                      \
-                if (exp->getAllocSize() <= getAllocSize()) {                                                           \
-                    Become(std::move(*exp));                                                                           \
-                }                                                                                                      \
-                return *this;                                                                                          \
+            if(exp) {                                                                                                  \
+                return call_polymorphic_method(&Valuable::method, value);                                              \
             } else {                                                                                                   \
                 LOG_AND_IMPLEMENT(#method " for " << *this);                                                           \
             }                                                                                                          \
@@ -2051,12 +2069,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 		}
 	}
 
-        Valuable Valuable::Sqrt() const {
-            if (exp)
-                return exp->Sqrt();
-            else
-                return PrincipalSurd(*this, 2);
-        }
+    Valuable Valuable::Sqrt() const {
+        if (exp)
+            return exp->Sqrt();
+        else
+            return PrincipalSurd(*this, 2);
+    }
 
     Valuable& Valuable::sqrt() {
         if (exp)
