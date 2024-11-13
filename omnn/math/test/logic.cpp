@@ -94,6 +94,7 @@ BOOST_AUTO_TEST_CASE(NE_comparator_optimized_expression_test, *disabled()) {
     auto NE = X.NotEquals(Y);
     auto nz = !NE.IsZero();
     BOOST_TEST(nz);
+    NE.MarkNotOptimized();
     NE = NE.Optimized();
     nz = !NE.IsZero();
     BOOST_TEST(nz);
@@ -122,7 +123,10 @@ BOOST_AUTO_TEST_CASE(Delta_function_optimized_expression_test, *disabled()) {
     BOOST_TEST(xIsPresent);
     auto nz = !delta.IsZero();
     BOOST_TEST(nz);
+    delta.MarkNotOptimized();
     delta = delta.Optimized();
+    xIsPresent = delta.FindVa() && *delta.FindVa() == X;
+    BOOST_TEST(xIsPresent);
     nz = !delta.IsZero();
     BOOST_TEST(nz);
     BOOST_TEST_MESSAGE("δ (X)= : " << delta);
