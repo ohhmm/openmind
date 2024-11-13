@@ -113,6 +113,7 @@ public:
     Valuable& d(const Variable& x) override;
 
     Valuable Sign() const override;
+    bool IsNegativeThan(const Valuable& other) const;
     bool operator <(const Valuable& v) const override;
     friend bool operator<(const Integer& _1, const Integer& _2) { return _1.arbitrary < _2.arbitrary; }
     friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
