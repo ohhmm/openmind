@@ -806,6 +806,19 @@ namespace math {
             return v.operator==(*this);
     }
 
+    bool Integer::IsNegativeThan(const Valuable& other) const
+    {
+        if (arbitrary >= 0)
+            return false;
+
+        if (other.IsInt())
+            return arbitrary == -other.ca();
+        else if (other.IsFraction())
+            return false;
+        else
+            return false;
+    }
+
     std::ostream& Integer::print(std::ostream& out) const
     {
         return out << arbitrary;
