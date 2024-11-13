@@ -90,7 +90,17 @@ BOOST_AUTO_TEST_CASE(Less_comparator_test) {
     TestBooleanOperator(Less, [](auto x, auto y) { return x < y; });
 }
 
-BOOST_AUTO_TEST_CASE(NE_comparator_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(NE_comparator_optimized_expression_test, *disabled()) {
+    auto NE = X.NotEquals(Y);
+    auto nz = !NE.IsZero();
+    BOOST_TEST(nz);
+    NE = NE.Optimized();
+    nz = !NE.IsZero();
+    BOOST_TEST(nz);
+    BOOST_TEST_MESSAGE("X<>Y : " << NE);
+}
+
+BOOST_AUTO_TEST_CASE(NE_comparator_test) {
     auto NE = X.NotEquals(Y);
     std::cout << "X<>Y : " << NE << std::endl;
     TestBooleanOperator(NE, [](auto x, auto y) { return x != y; });
