@@ -1344,17 +1344,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     VALUABLE_POLYMORPHIC_METHOD(operator+=)
 
-    Valuable& Valuable::operator +=(int v)
+    Valuable& Valuable::operator +=(int value)
     {
-        if(exp) {
-            Valuable& o = exp->operator+=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else
-            IMPLEMENT
+        Integer integer(value);
+        return call_polymorphic_method(&Valuable::operator+=, integer);
     }
 
     Valuable& Valuable::operator *=(const Valuable& v)
@@ -1371,15 +1364,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     s.emplace(m * item);
             Become(Valuable(std::move(s)));
         }
-        else if (exp)
-        {
-            auto& o = exp->operator*=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-        }
         else
-            LOG_AND_IMPLEMENT(*this << " *= " << v);
+        {
+            call_polymorphic_method(&Valuable::operator*=, v);
+        }
         return *this;
     }
 
