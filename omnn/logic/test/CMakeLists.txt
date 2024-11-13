@@ -6,13 +6,13 @@ add_executable(IsNegativeThan_comparator_test IsNegativeThan_comparator_test.cpp
 
 # Link against required libraries
 target_link_libraries(Less_comparator_test PRIVATE
-    logic
+    logic1
     math
     Boost::unit_test_framework
 )
 
 target_link_libraries(IsNegativeThan_comparator_test PRIVATE
-    logic
+    logic1
     math
     Boost::unit_test_framework
 )
