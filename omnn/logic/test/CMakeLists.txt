@@ -1,1 +1,1 @@
-test(logic)
+test()

@@ -698,7 +698,7 @@ public:
     /// </summary>
     /// <param name="than"></param>
     /// <returns></returns>
-    virtual Valuable IsNegativeThan(const Valuable& than) const;
+    virtual Valuable IsNegativeOf(const Valuable& than) const;
 
     /// <summary>
     /// Operator 'less' then value to which a param expression is to be evaluated
