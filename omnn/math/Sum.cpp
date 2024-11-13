@@ -296,9 +296,11 @@ namespace
             OptimizeOn on;
             Valuable copy(Clone());
             copy.optimize();
-            return copy.IsSum()
-                ? copy.as<Sum>().GCDofMembers()
-                : std::move(copy);
+            if (copy.is_optimized()) {
+                return copy.IsSum()
+                    ? copy.as<Sum>().GCDofMembers()
+                    : std::move(copy);
+            }
         }
         auto b = members.begin();
         auto e = members.end();
