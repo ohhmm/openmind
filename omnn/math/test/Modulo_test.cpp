@@ -6,6 +6,7 @@
  */
 #define BOOST_TEST_MODULE Modulo test
 #include <omnn/math/Modulo.h>
+#include <omnn/math/Fraction.h>
 #include "generic.hpp"
 
 
@@ -24,10 +25,16 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     BOOST_TEST(7_v % 3 == p);
 }
 
-BOOST_AUTO_TEST_CASE(NegativeFractionModulo_test, *disabled()) {
-    auto _1 = "((((-2165) / 4)) % (-770))"_v;
-    auto _2 = "-541.25"_v;
-    BOOST_TEST(_1 == _2);
+BOOST_AUTO_TEST_CASE(NegativeFractionModulo_test) {
+    auto numerator = Fraction(-2165_v, 4_v);  // -2165/4
+    auto denominator = -770_v;                // -770
+    std::cout << "Numerator value: " << numerator << std::endl;
+    std::cout << "Denominator value: " << denominator << std::endl;
+    auto result = numerator % denominator;    // (-2165/4) % (-770)
+    std::cout << "Result value: " << result << std::endl;
+    auto expected = -541.25_v;
+    std::cout << "Expected value: " << expected << std::endl;
+    BOOST_TEST(result == expected);
 }
 
 BOOST_AUTO_TEST_CASE(ModIntLess_comparator_test) {

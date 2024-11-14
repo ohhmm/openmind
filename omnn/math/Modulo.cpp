@@ -86,7 +86,7 @@ void Modulo::optimize() {
         auto& m1devisor = m1.get2();
         CHECK_OPTIMIZATION_CACHE
         if (m1devisor == _2)
-		{
+        {
             CHECK_OPTIMIZATION_CACHE
             Become(std::move(_1));
         } else if (m1devisor.IsInt() && _2.IsInt()) {
@@ -102,9 +102,6 @@ void Modulo::optimize() {
         }
     } else if (_2.IsInt()) {
         if (_2.IsZero()) {
-			// FIXME: upstream math theory for the remainder of division by zero (x mod 0)
-			// TODO : keeping this makes IntMod ops work 
-			//IMPLEMENT
             Become(std::move(_1));
         }
         else if (_1.IsInt()) {
@@ -115,6 +112,14 @@ void Modulo::optimize() {
                 CHECK_OPTIMIZATION_CACHE
                 Become(std::move(_1 %= _2));
             }
+        }
+        else if (_1.IsFraction()) {
+            CHECK_OPTIMIZATION_CACHE
+            auto& fraction = _1.as<Fraction>();
+            auto lambda = GetBinaryOperationLambdaTemplate();
+            auto result = lambda(fraction, _2);
+            CHECK_OPTIMIZATION_CACHE
+            Become(result);
         }
     }
 
