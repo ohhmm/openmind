@@ -336,8 +336,8 @@ public:
 
     static void DispatchDispose(encapsulated_instance&&);
     //constexpr
-	virtual ~Valuable()//{}
-        ;
+    // Virtual destructor for proper cleanup in inheritance hierarchy
+    virtual ~Valuable() noexcept = default;
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
     virtual Valuable& operator +=(int);
