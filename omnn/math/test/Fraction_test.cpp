@@ -51,7 +51,6 @@ BOOST_AUTO_TEST_CASE(Fraction_ordering_tests)
     }
 }
 
-// Additional test case capturing knowledge gained from debugging IsComesBefore behavior
 BOOST_AUTO_TEST_CASE(Fraction_ordering_comparison_tests)
 {
     // These expressions were discovered during debugging and revealed important
