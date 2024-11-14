@@ -414,30 +414,35 @@ BOOST_AUTO_TEST_CASE(Less_operator_test) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(not_tests
-    ,*disabled() //TODO:
-)
-{
+BOOST_AUTO_TEST_CASE(not_tests) {
     DECL_VA(x);
     auto x_eq_1 = x - 1;
-    auto x_ne_1 = !x_eq_1; //!x; // must mean all except this equation
-    std::cout << x_ne_1 << std::endl;
     auto eval_x_eq_1 = x_eq_1;
     eval_x_eq_1.Eval(x, 1);
-    auto ok = eval_x_eq_1 == 0_v;
+    auto ok = eval_x_eq_1.IsZero(); // yes, x=1
     BOOST_TEST(ok);
 
+    auto x_ne_1 = !x_eq_1; //! x; // must mean all except this equation
+    std::cout << x_ne_1 << std::endl;
     auto eval_x_ne_1 = x_ne_1;
-    eval_x_ne_1.Eval(x, 7);
-    ok = eval_x_ne_1 != 0_v;
+    eval_x_ne_1.Eval(x, 1);
+    ok = !eval_x_ne_1.IsZero(); // no, x is 1
     BOOST_TEST(ok);
 
-    auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
-    auto neq = x_ne_1;
-    auto intersection = eq && neq;
-    auto _2or3 = x.Equals(2) || x.Equals(3);
-    ok = intersection == _2or3;
+    eval_x_ne_1 = x_ne_1;
+    eval_x_ne_1.Eval(x, 7);
+    ok = eval_x_ne_1.IsZero(); // yes, 7<>1, x is not 1
     BOOST_TEST(ok);
+}
+
+BOOST_AUTO_TEST_CASE(intersect_with_not_tests, *disabled()) {
+    DECL_VA(x);
+    auto x_is_1 = x.Equals(1);
+    auto x_either_123 = x_is_1.logic_or(x.Equals(2)).logic_or(x.Equals(3));
+    auto x_isnt_1 = !x_is_1;
+    auto intersection = x_either_123 && x_isnt_1;
+    auto _2or3 = x.Equals(2) || x.Equals(3);
+    BOOST_TEST(intersection == _2or3);
 }
 
 BOOST_AUTO_TEST_CASE(test_logic_intersection
