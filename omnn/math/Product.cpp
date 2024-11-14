@@ -289,10 +289,17 @@ namespace math {
             }
         };
 
-        // zero
-        auto it = GetFirstOccurence<Integer>();
+        // NaN
+        auto it = GetFirstOccurence<NaN>();
         if (it != end()) {
-            if (it->Same(0)) {
+            Become(Extract(it));
+            return;
+        }
+
+        // zero
+        it = GetFirstOccurence<Integer>();
+        if (it != end()) {
+            if (it->IsZero()) {
                 Become(0);
                 return;
             }
