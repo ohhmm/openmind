@@ -2400,14 +2400,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::operator!() const
     {
-        // if current expression equals to zero then it is
-        // we need to know why not
-        Variable whyNot(getVaHost()); // whyNot==1 when this!=0
-        auto is = LogicAnd(whyNot);                      // THIS==0 AND WHYNOT==0
-        auto isNot = whyNot.Equals(constants::one);      // WHYNOT==1
-        auto orNot = (is || isNot) && isNot;             // ((THIS==0 AND WHYNOT==0) OR (WHYNOT==1)) AND (WHYNOT==1)
-        // std::cout << "orNot = " << orNot << std::endl;
-        return orNot(whyNot); // try to express out the WHYNOT va and leave only f(x)==0
+        return NotEquals(constants::zero);
     }
 
     Valuable::operator int() const
