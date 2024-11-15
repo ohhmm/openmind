@@ -18,6 +18,27 @@ class OptimizedCollection {
     large_container large_members;
     bool using_small = true;
 
+    // Helper methods for default iterators
+    static typename small_container::iterator default_small_iterator() {
+        static small_container dummy;
+        return dummy.begin();
+    }
+
+    static typename large_container::iterator default_large_iterator() {
+        static large_container dummy;
+        return dummy.begin();
+    }
+
+    static typename small_container::const_iterator default_small_const_iterator() {
+        static const small_container dummy;
+        return dummy.begin();
+    }
+
+    static typename large_container::const_iterator default_large_const_iterator() {
+        static const large_container dummy;
+        return dummy.begin();
+    }
+
 public:
     class iterator;
     class const_iterator;
@@ -148,49 +169,52 @@ public:
     };
 
     iterator begin() {
-        return iterator(this, using_small,
-                       using_small ? small_members.begin() : small_container::iterator(),
-                       using_small ? large_container::iterator() : large_members.begin());
+        if (using_small) {
+            return iterator(this, true, small_members.begin(), default_large_iterator());
+        }
+        return iterator(this, false, default_small_iterator(), large_members.begin());
     }
 
     iterator end() {
-        return iterator(this, using_small,
-                       using_small ? small_members.end() : small_container::iterator(),
-                       using_small ? large_container::iterator() : large_members.end());
+        if (using_small) {
+            return iterator(this, true, small_members.end(), default_large_iterator());
+        }
+        return iterator(this, false, default_small_iterator(), large_members.end());
     }
 
-
     const_iterator begin() const {
-        return const_iterator(this, using_small,
-                            using_small ? small_members.begin() : small_container::const_iterator(),
-                            using_small ? large_container::const_iterator() : large_members.begin());
+        if (using_small) {
+            return const_iterator(this, true, small_members.begin(), default_large_const_iterator());
+        }
+        return const_iterator(this, false, default_small_const_iterator(), large_members.begin());
     }
 
     const_iterator end() const {
-        return const_iterator(this, using_small,
-                            using_small ? small_members.end() : small_container::const_iterator(),
-                            using_small ? large_container::const_iterator() : large_members.end());
+        if (using_small) {
+            return const_iterator(this, true, small_members.end(), default_large_const_iterator());
+        }
+        return const_iterator(this, false, default_small_const_iterator(), large_members.end());
     }
 
     std::pair<iterator, bool> insert(const T& value) {
         if (using_small) {
             if (small_members.size() < SmallSize) {
                 small_members.push_back(value);
-                return {iterator(this, true, --small_members.end(), large_container::iterator()), true};
+                return {iterator(this, true, --small_members.end(), default_large_iterator()), true};
             }
             using_small = false;
             large_members.insert(small_members.begin(), small_members.end());
             small_members.clear();
         }
         auto [it, inserted] = large_members.insert(value);
-        return {iterator(this, false, small_container::iterator(), it), inserted};
+        return {iterator(this, false, default_small_iterator(), it), inserted};
     }
 
     std::pair<iterator, bool> insert(T&& value) {
         if (using_small) {
             if (small_members.size() < SmallSize) {
                 small_members.push_back(std::move(value));
-                return {iterator(this, true, --small_members.end(), large_container::iterator()), true};
+                return {iterator(this, true, --small_members.end(), default_large_iterator()), true};
             }
             using_small = false;
             large_members.insert(
@@ -199,7 +223,7 @@ public:
             small_members.clear();
         }
         auto [it, inserted] = large_members.insert(std::move(value));
-        return {iterator(this, false, small_container::iterator(), it), inserted};
+        return {iterator(this, false, default_small_iterator(), it), inserted};
     }
 
     size_t size() const { return using_small ? small_members.size() : large_members.size(); }
@@ -218,10 +242,10 @@ public:
     iterator erase(iterator pos) {
         if (using_small) {
             auto next_it = small_members.erase(pos.small_it);
-            return iterator(this, true, next_it, large_container::iterator());
+            return iterator(this, true, next_it, default_large_iterator());
         }
         auto next_it = large_members.erase(pos.large_it);
-        return iterator(this, false, small_container::iterator(), next_it);
+        return iterator(this, false, default_small_iterator(), next_it);
     }
 };
 
