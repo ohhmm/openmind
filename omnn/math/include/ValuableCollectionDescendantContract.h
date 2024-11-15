@@ -4,10 +4,15 @@
 #pragma once
 #include "Exponentiation.h"
 #include <algorithm>
+#include <atomic>
+#include <execution>
 #include <future>
 #include <iterator>
 #include <ranges>
+#include <thread>
 
+#include "SmallVectorOptimization.h"
+#include "OptimizedCollection.h"
 #include <omnn/rt/each.hpp>
 //#include <omnn/rt/iterator_transforming_wrapper.hpp>
 
@@ -285,44 +290,53 @@ namespace omnn::math {
             bool evaluated = {};
             auto& members = GetCont();
             Valuable::SetView(Valuable::View::Calc);
-            cont evaluatedMembers;
+            SmallVector<Valuable, 16> evaluatedMembers;
             auto e = members.end();
-            if (members.size() < 100) {
+
+            // Use hardware-aware threshold for async processing
+            if (members.size() < get_async_threshold()) {
                 for (iterator it = members.begin(); it != e; ) {
                     auto& v = const_cast<Valuable&>(*it);
                     if (v.eval(with)) {
                         evaluated = true;
-                        evaluatedMembers.emplace(Extract(it++));
+                        // Optimize Extract/Add cycle by moving directly into SmallVector
+                        evaluatedMembers.push_back(Extract(it++));
                     } else
                         ++it;
                 }
             } else {
                 rt::StoringTasksQueue<iterator> jobs({});
-                int ec = 0;
+                std::atomic<int> ec{0};
                 jobs.AddIteratorTasks(members, [&](auto it) {
                     auto& v = const_cast<Valuable&>(*it);
-                    if (v.eval(with))
-                        ++ec;
-                    else
+                    if (v.eval(with)) {
+                        ec.fetch_add(1, std::memory_order_relaxed);
+                    } else {
                         it = e;
+                    }
                     return it;
-                    });
-                evaluated = ec != 0 || evaluated;
-                for (auto i = evaluatedMembers.size(); i-->0 ;)
-                {
-                    auto it = jobs.PeekNextResult();
-                    if (it != e) {
-                        evaluatedMembers.emplace(Extract(it));
+                });
+
+                evaluated = ec.load(std::memory_order_relaxed) != 0 || evaluated;
+
+                // Batch process results to reduce synchronization overhead
+                if (evaluated) {
+                    auto results = jobs.GetAllResults();
+                    for (auto it : results) {
+                        if (it != e) {
+                            evaluatedMembers.push_back(Extract(it));
+                        }
                     }
                 }
             }
+
             if (evaluated) {
-                for (auto i = evaluatedMembers.size(); i-->0 ;)
-                {
-                    this->Add(std::move(evaluatedMembers.extract(evaluatedMembers.begin()).value()));
+                // Optimize by moving elements directly
+                for (auto&& val : evaluatedMembers) {
+                    this->Add(std::move(val));
                 }
                 Valuable::optimized = {};
-                if( Complexity() <=8 ){
+                if (Complexity() <= 8) {
                     Valuable::OptimizeOn on;
                     this->optimize();
                 }
@@ -420,18 +434,31 @@ namespace omnn::math {
             static Valuable::universal_lambda_t getInitialValue = [](Valuable::universal_lambda_params_t) {
                 return Valuable(ChildT());
             };
-            return std::reduce(PAR
-                range.begin(), range.end(), getInitialValue,
-                [&]<typename LambdaFwd1, typename LambdaFwd2>(LambdaFwd1&& item1, LambdaFwd2&& item2) {
-                    return [
-                        lambda1 = std::forward<LambdaFwd1>(item1),
-                        lambda2 = std::forward<LambdaFwd2>(item2)
-                    ]
-                    (auto params) -> Valuable
-                    {
+
+            if (GetConstCont().size() < get_async_threshold()) {
+                // For small collections, use standard reduction
+                return std::reduce(
+                    range.begin(), range.end(),
+                    getInitialValue,
+                    [&](const auto& lambda1, const auto& lambda2) {
+                        return [lambda1, lambda2](auto params) -> Valuable {
+                            return ChildT::GetBinaryOperationLambdaTemplate()(lambda1(params), lambda2(params));
+                        };
+                    }
+                );
+            }
+
+            // For large collections, use parallel execution policy
+            return std::reduce(
+                std::execution::par,
+                range.begin(), range.end(),
+                getInitialValue,
+                [&](const auto& lambda1, const auto& lambda2) {
+                    return [lambda1, lambda2](auto params) -> Valuable {
                         return ChildT::GetBinaryOperationLambdaTemplate()(lambda1(params), lambda2(params));
                     };
-                });
+                }
+            );
         }
 
     private:
