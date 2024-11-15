@@ -19,8 +19,13 @@ class OptimizedCollection {
     bool using_small = true;
 
 public:
+    class iterator;
+    class const_iterator;
+
     class iterator {
         friend class OptimizedCollection;
+        friend class const_iterator;
+
         OptimizedCollection* collection;
         typename small_container::iterator small_it;
         typename large_container::iterator large_it;
@@ -77,52 +82,115 @@ public:
         bool operator!=(const iterator& other) const { return !(*this == other); }
     };
 
-    using const_iterator = const iterator;
+    class const_iterator {
+        friend class OptimizedCollection;
+
+        const OptimizedCollection* collection;
+        typename small_container::const_iterator small_it;
+        typename large_container::const_iterator large_it;
+        bool is_small;
+
+    public:
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const T*;
+        using reference = const T&;
+
+        const_iterator(const OptimizedCollection* c, bool small,
+                      typename small_container::const_iterator sit,
+                      typename large_container::const_iterator lit)
+            : collection(c)
+            , small_it(sit)
+            , large_it(lit)
+            , is_small(small) {}
+
+        const_iterator(const iterator& it)
+            : collection(it.collection)
+            , small_it(it.small_it)
+            , large_it(it.large_it)
+            , is_small(it.is_small) {}
+
+        reference operator*() const { return is_small ? *small_it : *large_it; }
+        pointer operator->() const { return is_small ? &*small_it : &*large_it; }
+
+        const_iterator& operator++() {
+            if (is_small) ++small_it;
+            else ++large_it;
+            return *this;
+        }
+
+        const_iterator operator++(int) {
+            const_iterator tmp = *this;
+            ++*this;
+            return tmp;
+        }
+
+        const_iterator& operator--() {
+            if (is_small) --small_it;
+            else --large_it;
+            return *this;
+        }
+
+        const_iterator operator--(int) {
+            const_iterator tmp = *this;
+            --*this;
+            return tmp;
+        }
+
+        bool operator==(const const_iterator& other) const {
+            return collection == other.collection &&
+                   is_small == other.is_small &&
+                   (is_small ? small_it == other.small_it : large_it == other.large_it);
+        }
+
+        bool operator!=(const const_iterator& other) const { return !(*this == other); }
+    };
 
     iterator begin() {
         return iterator(this, using_small,
-                       using_small ? small_members.begin() : small_container::iterator{},
-                       using_small ? large_container::iterator{} : large_members.begin());
+                       using_small ? small_members.begin() : small_container::iterator(),
+                       using_small ? large_container::iterator() : large_members.begin());
     }
 
     iterator end() {
         return iterator(this, using_small,
-                       using_small ? small_members.end() : small_container::iterator{},
-                       using_small ? large_container::iterator{} : large_members.end());
+                       using_small ? small_members.end() : small_container::iterator(),
+                       using_small ? large_container::iterator() : large_members.end());
     }
 
+
     const_iterator begin() const {
-        return const_iterator(const_cast<OptimizedCollection*>(this), using_small,
-                            using_small ? small_members.begin() : small_container::iterator{},
-                            using_small ? large_container::iterator{} : large_members.begin());
+        return const_iterator(this, using_small,
+                            using_small ? small_members.begin() : small_container::const_iterator(),
+                            using_small ? large_container::const_iterator() : large_members.begin());
     }
 
     const_iterator end() const {
-        return const_iterator(const_cast<OptimizedCollection*>(this), using_small,
-                            using_small ? small_members.end() : small_container::iterator{},
-                            using_small ? large_container::iterator{} : large_members.end());
+        return const_iterator(this, using_small,
+                            using_small ? small_members.end() : small_container::const_iterator(),
+                            using_small ? large_container::const_iterator() : large_members.end());
     }
 
     std::pair<iterator, bool> insert(const T& value) {
         if (using_small) {
             if (small_members.size() < SmallSize) {
                 small_members.push_back(value);
-                return {iterator(this, true, --small_members.end(), large_container::iterator{}), true};
+                return {iterator(this, true, --small_members.end(), large_container::iterator()), true};
             }
-            // Switch to large collection
             using_small = false;
             large_members.insert(small_members.begin(), small_members.end());
             small_members.clear();
         }
         auto [it, inserted] = large_members.insert(value);
-        return {iterator(this, false, small_container::iterator{}, it), inserted};
+        return {iterator(this, false, small_container::iterator(), it), inserted};
     }
 
     std::pair<iterator, bool> insert(T&& value) {
         if (using_small) {
             if (small_members.size() < SmallSize) {
                 small_members.push_back(std::move(value));
-                return {iterator(this, true, --small_members.end(), large_container::iterator{}), true};
+                return {iterator(this, true, --small_members.end(), large_container::iterator()), true};
             }
             using_small = false;
             large_members.insert(
@@ -131,7 +199,7 @@ public:
             small_members.clear();
         }
         auto [it, inserted] = large_members.insert(std::move(value));
-        return {iterator(this, false, small_container::iterator{}, it), inserted};
+        return {iterator(this, false, small_container::iterator(), it), inserted};
     }
 
     size_t size() const { return using_small ? small_members.size() : large_members.size(); }
@@ -139,7 +207,9 @@ public:
 
     T extract(iterator pos) {
         if (using_small) {
-            return small_members.extract(pos.small_it);
+            T value = std::move(*pos.small_it);
+            erase(pos);
+            return value;
         }
         auto node = large_members.extract(pos.large_it);
         return std::move(node.value());
@@ -148,10 +218,10 @@ public:
     iterator erase(iterator pos) {
         if (using_small) {
             auto next_it = small_members.erase(pos.small_it);
-            return iterator(this, true, next_it, large_container::iterator{});
+            return iterator(this, true, next_it, large_container::iterator());
         }
         auto next_it = large_members.erase(pos.large_it);
-        return iterator(this, false, small_container::iterator{}, next_it);
+        return iterator(this, false, small_container::iterator(), next_it);
     }
 };
 
