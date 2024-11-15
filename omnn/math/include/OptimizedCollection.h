@@ -24,9 +24,9 @@ class OptimizedCollection {
         return dummy.begin();
     }
 
-    static typename large_container::iterator default_large_iterator() {
+    static typename large_container::const_iterator default_large_iterator() {  // Changed return type
         static large_container dummy;
-        return dummy.begin();
+        return dummy.cbegin();  // Use cbegin() for const_iterator
     }
 
     static typename small_container::const_iterator default_small_const_iterator() {
@@ -36,7 +36,7 @@ class OptimizedCollection {
 
     static typename large_container::const_iterator default_large_const_iterator() {
         static const large_container dummy;
-        return dummy.begin();
+        return dummy.cbegin();  // Use cbegin() for consistency
     }
 
 public:
@@ -49,12 +49,12 @@ public:
 
         OptimizedCollection* collection;
         typename small_container::iterator small_it;
-        typename large_container::iterator large_it;
+        typename large_container::const_iterator large_it;  // Changed to const_iterator
         bool is_small;
 
         iterator(OptimizedCollection* c, bool small,
                 typename small_container::iterator sit,
-                typename large_container::iterator lit)
+                typename large_container::const_iterator lit)  // Changed to const_iterator
             : collection(c)
             , small_it(sit)
             , large_it(lit)
@@ -67,8 +67,8 @@ public:
         using pointer = T*;
         using reference = T&;
 
-        reference operator*() { return is_small ? *small_it : *large_it; }
-        pointer operator->() { return is_small ? &*small_it : &*large_it; }
+        reference operator*() { return is_small ? *small_it : const_cast<reference>(*large_it); }
+        pointer operator->() { return is_small ? &*small_it : const_cast<pointer>(&*large_it); }
 
         iterator& operator++() {
             if (is_small) ++small_it;
@@ -172,42 +172,40 @@ public:
         if (using_small) {
             return iterator(this, true, small_members.begin(), default_large_iterator());
         }
-        return iterator(this, false, default_small_iterator(), large_members.begin());
+        return iterator(this, false, default_small_iterator(), large_members.cbegin());
     }
 
     iterator end() {
         if (using_small) {
             return iterator(this, true, small_members.end(), default_large_iterator());
         }
-        return iterator(this, false, default_small_iterator(), large_members.end());
+        return iterator(this, false, default_small_iterator(), large_members.cend());
     }
 
     const_iterator begin() const {
         if (using_small) {
             return const_iterator(this, true, small_members.begin(), default_large_const_iterator());
         }
-        return const_iterator(this, false, default_small_const_iterator(), large_members.begin());
+        return const_iterator(this, false, default_small_const_iterator(), large_members.cbegin());
     }
 
     const_iterator end() const {
         if (using_small) {
             return const_iterator(this, true, small_members.end(), default_large_const_iterator());
         }
-        return const_iterator(this, false, default_small_const_iterator(), large_members.end());
+        return const_iterator(this, false, default_small_const_iterator(), large_members.cend());
     }
 
     std::pair<iterator, bool> insert(const T& value) {
         if (using_small) {
-            if (small_members.size() < SmallSize) {
-                small_members.push_back(value);
-                return {iterator(this, true, --small_members.end(), default_large_iterator()), true};
+            auto result = small_members.insert(value);
+            if (small_members.size() > SmallSize) {
+                switchToLarge();
             }
-            using_small = false;
-            large_members.insert(small_members.begin(), small_members.end());
-            small_members.clear();
+            return {iterator(this, true, result.first, default_large_iterator()), result.second};
         }
-        auto [it, inserted] = large_members.insert(value);
-        return {iterator(this, false, default_small_iterator(), it), inserted};
+        auto result = large_members.insert(value);
+        return {iterator(this, false, default_small_iterator(), result.first), result.second};
     }
 
     std::pair<iterator, bool> insert(T&& value) {
@@ -246,6 +244,13 @@ public:
         }
         auto next_it = large_members.erase(pos.large_it);
         return iterator(this, false, default_small_iterator(), next_it);
+    }
+
+private:
+    void switchToLarge() {
+        using_small = false;
+        large_members.insert(small_members.begin(), small_members.end());
+        small_members.clear();
     }
 };
 

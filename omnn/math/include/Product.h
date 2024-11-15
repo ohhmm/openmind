@@ -39,13 +39,14 @@ namespace math {
         using base::base;
 
         Product()
-        : members{constants::one}
+        : members()  // Initialize empty first
         {
+            members.insert(constants::one);  // Then insert using proper method
             hash = constants::one.Hash();
         }
         Product(Product&&)=default;
         Product(const Product&)=default;
-        Product(const std::initializer_list<Valuable>);
+        Product(const std::initializer_list<Valuable>& list) : members() { for(const auto& v : list) members.insert(v); }
 
         const cont& GetConstCont() const override { return members; }
         iterator Had(iterator it) override;
