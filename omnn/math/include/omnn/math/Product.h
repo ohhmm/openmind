@@ -3,8 +3,7 @@
 //
 
 #pragma once
-#include <set>
-#include <unordered_set>
+#include "CollectionForward.h"
 #include "Integer.h"
 #include "Fraction.h"
 #include "Variable.h"
@@ -15,10 +14,12 @@ namespace omnn {
 namespace math {
 
     struct ProductOrderComparator {
-        bool operator()(const Valuable&, const Valuable&) const;
+        bool operator()(const Valuable& lhs, const Valuable& rhs) const {
+            return lhs.Hash() < rhs.Hash();
+        }
     };
 
-    using product_cont = OptimizedCollection<Valuable>;
+    using product_cont = OptimizedCollection<Valuable, ProductOrderComparator>;
 
     class Product
         : public ValuableCollectionDescendantContract<Product, product_cont>
@@ -35,15 +36,8 @@ namespace math {
         void AddToVarsIfVaOrVaExp(const Valuable &item);
 
     public:
-
         using base::base;
-
-        Product()
-        : members()  // Initialize empty first
-        {
-            members.insert(constants::one);  // Then insert using proper method
-            hash = constants::one.Hash();
-        }
+        Product() : members() { members.insert(constants::one); hash = constants::one.Hash(); }
         Product(Product&&)=default;
         Product(const Product&)=default;
         Product(const std::initializer_list<Valuable>& list) : members() { for(const auto& v : list) members.insert(v); }
@@ -51,10 +45,8 @@ namespace math {
         const cont& GetConstCont() const override { return members; }
         iterator Had(iterator it) override;
         static bool VarSurdFactor(const Valuable&);
-        using base::Add;
         const iterator Add(Valuable&& item, const iterator hint) override;
         const iterator Add(const Valuable& item, const iterator hint) override;
-        using base::Delete;
         void Delete(iterator& it) override;
 
         const vars_cont_t& getCommonVars() const override;

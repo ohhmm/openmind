@@ -2,6 +2,8 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
+#include "CollectionForward.h"
+#include "OptimizedCollection.h"
 #include "Exponentiation.h"
 #include <algorithm>
 #include <atomic>
@@ -47,13 +49,13 @@ namespace omnn::math {
         using const_reference = typename ContT::const_reference;
         using value_type = typename ContT::value_type;
 
-        using base::base;
+        ValuableCollectionDescendantContract() = default;
         ValuableCollectionDescendantContract(ValuableCollectionDescendantContract&&)=default;
         ValuableCollectionDescendantContract(const ValuableCollectionDescendantContract&)=default;
         ValuableCollectionDescendantContract& operator=(ValuableCollectionDescendantContract&&)=default;
         ValuableCollectionDescendantContract& operator=(const ValuableCollectionDescendantContract&)=default;
 
-        // Pure virtual methods for collection operations
+        // Base class methods for collection operations
         virtual const iterator Add(const Valuable& item, const iterator hint) = 0;
         virtual const iterator Add(Valuable&& item, const iterator hint) = 0;
         virtual void Delete(iterator& it) = 0;

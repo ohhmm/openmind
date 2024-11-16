@@ -17,19 +17,24 @@ struct SumOrderComparator {
 };
 
 // Complete definition needed before use
-template<typename T, size_t N = 16>
+template<
+    typename T,
+    typename Comparator = SumOrderComparator,
+    size_t N = 16
+>
 class OptimizedCollection {
 public:
+    using container_type = std::set<T, Comparator>;
     using value_type = T;
     using reference = value_type&;
     using const_reference = const value_type&;
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
-    using iterator = typename std::set<T, SumOrderComparator>::iterator;
-    using const_iterator = typename std::set<T, SumOrderComparator>::const_iterator;
+    using iterator = typename container_type::iterator;
+    using const_iterator = typename container_type::const_iterator;
 
 private:
-    std::set<T, SumOrderComparator> large_collection;
+    container_type large_collection;
     SmallVector<T, N> small_collection;
     bool using_small = true;
 
@@ -88,8 +93,8 @@ public:
     std::pair<iterator, bool> emplace(T&& value) {
         if (using_small) {
             if (small_collection.size() < N) {
-                auto it = std::lower_bound(small_collection.begin(), small_collection.end(), value, SumOrderComparator());
-                if (it != small_collection.end() && !SumOrderComparator()(value, *it)) {
+                auto it = std::lower_bound(small_collection.begin(), small_collection.end(), value, Comparator());
+                if (it != small_collection.end() && !Comparator()(value, *it)) {
                     return {it, false};
                 }
                 return {small_collection.insert(it, std::move(value)), true};
@@ -102,8 +107,8 @@ public:
     std::pair<iterator, bool> insert(const T& value) {
         if (using_small) {
             if (small_collection.size() < N) {
-                auto it = std::lower_bound(small_collection.begin(), small_collection.end(), value, SumOrderComparator());
-                if (it != small_collection.end() && !SumOrderComparator()(value, *it)) {
+                auto it = std::lower_bound(small_collection.begin(), small_collection.end(), value, Comparator());
+                if (it != small_collection.end() && !Comparator()(value, *it)) {
                     return {it, false};
                 }
                 return {small_collection.insert(it, value), true};
