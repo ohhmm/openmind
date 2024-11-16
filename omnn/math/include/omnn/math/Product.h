@@ -7,12 +7,12 @@
 #include <iterator>
 
 // Include complete definitions first
+#include "CollectionForward.h"
 #include "OptimizedCollection.h"
 #include "ValuableCollectionDescendantContract.h"
 #include "Integer.h"
 #include "Fraction.h"
 #include "Variable.h"
-#include "CollectionForward.h"
 
 namespace omnn {
 namespace math {
@@ -61,9 +61,11 @@ namespace math {
         }
 
         void Delete(iterator& it) override {
-            this->hash ^= it->Hash();
-            members.erase(it);
-            this->is_optimized = false;
+            if (it != members.end()) {
+                this->hash ^= it->Hash();
+                members.erase(it);
+                this->is_optimized = false;
+            }
         }
 
         iterator Had(iterator it) override;

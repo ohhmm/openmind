@@ -12,10 +12,10 @@
 
 // Include complete definitions first
 #include "ValuableDescendantContract.h"
+#include "CollectionForward.h"
 #include "OptimizedCollection.h"
 #include <omnn/rt/each.hpp>
 //#include <omnn/rt/iterator_transforming_wrapper.hpp>
-#include "CollectionForward.h"
 #include "Exponentiation.h"
 
 namespace omnn::math {
