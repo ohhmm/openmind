@@ -5,18 +5,11 @@
 #include <memory>
 #include "SmallVectorOptimization.h"
 #include "Valuable.h"
+#include "Comparators.h"
 
 namespace omnn {
 namespace math {
 
-// Forward declare comparison
-struct SumOrderComparator {
-    bool operator()(const Valuable& lhs, const Valuable& rhs) const {
-        return lhs.Hash() < rhs.Hash();
-    }
-};
-
-// Complete definition needed before use
 template<
     typename T,
     typename Comparator = SumOrderComparator,
@@ -97,7 +90,8 @@ public:
                 if (it != small_collection.end() && !Comparator()(value, *it)) {
                     return {it, false};
                 }
-                return {small_collection.insert(it, std::move(value)), true};
+                small_collection.push_back(std::move(value));
+                return {--small_collection.end(), true};
             }
             switch_to_large();
         }
@@ -111,7 +105,8 @@ public:
                 if (it != small_collection.end() && !Comparator()(value, *it)) {
                     return {it, false};
                 }
-                return {small_collection.insert(it, value), true};
+                small_collection.push_back(value);
+                return {--small_collection.end(), true};
             }
             switch_to_large();
         }
@@ -121,7 +116,8 @@ public:
     iterator insert(const_iterator hint, const T& value) {
         if (using_small) {
             if (small_collection.size() < N) {
-                return small_collection.insert(hint, value);
+                small_collection.push_back(value);
+                return --small_collection.end();
             }
             switch_to_large();
         }

@@ -21,6 +21,7 @@ set(MATH_SOURCES
     Infinity.cpp
     Variable.cpp
     Euler.cpp
+    ValuableDescendantContract.cpp  # Add this file to the build
 )
 
 lib(${DEPENDENCIES})
