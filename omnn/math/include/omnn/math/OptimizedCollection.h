@@ -1,9 +1,9 @@
 #pragma once
 #include <set>
-#include <vector>
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include "SmallVectorOptimization.h"
 #include "Valuable.h"
 
 namespace omnn {
@@ -21,10 +21,10 @@ public:
     using value_type = T;
     using reference = value_type&;
     using const_reference = const value_type&;
-    using iterator = typename std::vector<value_type>::iterator;
-    using const_iterator = typename std::vector<value_type>::const_iterator;
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
+    using small_container_type = SmallVector<value_type, SmallSize>;
+    using large_container_type = std::set<value_type, SumOrderComparator>;
 
     class iterator;
     class const_iterator;
@@ -34,13 +34,13 @@ public:
         friend class const_iterator;
 
         OptimizedCollection* collection;
-        typename std::vector<value_type>::iterator small_it;
-        typename std::set<value_type, SumOrderComparator>::const_iterator large_it;
+        typename small_container_type::iterator small_it;
+        typename large_container_type::iterator large_it;
         bool is_small;
 
         iterator(OptimizedCollection* c, bool small,
-                typename std::vector<value_type>::iterator sit,
-                typename std::set<value_type, SumOrderComparator>::const_iterator lit)
+                typename small_container_type::iterator sit,
+                typename large_container_type::iterator lit)
             : collection(c)
             , small_it(sit)
             , large_it(lit)
@@ -53,8 +53,8 @@ public:
         using pointer = T*;
         using reference = T&;
 
-        reference operator*() { return is_small ? *small_it : const_cast<reference>(*large_it); }
-        pointer operator->() { return is_small ? &*small_it : const_cast<pointer>(&*large_it); }
+        reference operator*() { return is_small ? *small_it : *large_it; }
+        pointer operator->() { return is_small ? &*small_it : &*large_it; }
 
         iterator& operator++() {
             if (is_small) ++small_it;
@@ -93,8 +93,8 @@ public:
         friend class OptimizedCollection;
 
         const OptimizedCollection* collection;
-        typename std::vector<value_type>::const_iterator small_it;
-        typename std::set<value_type, SumOrderComparator>::const_iterator large_it;
+        typename small_container_type::const_iterator small_it;
+        typename large_container_type::const_iterator large_it;
         bool is_small;
 
     public:
@@ -105,8 +105,8 @@ public:
         using reference = const T&;
 
         const_iterator(const OptimizedCollection* c, bool small,
-                      typename std::vector<value_type>::const_iterator sit,
-                      typename std::set<value_type, SumOrderComparator>::const_iterator lit)
+                      typename small_container_type::const_iterator sit,
+                      typename large_container_type::const_iterator lit)
             : collection(c)
             , small_it(sit)
             , large_it(lit)
@@ -156,58 +156,54 @@ public:
 
     iterator begin() {
         if (using_small) {
-            return iterator(this, true, small_members.begin(), default_large_iterator());
+            return iterator(this, true, small_members.begin(), large_members.end());
         }
-        return iterator(this, false, default_small_iterator(), large_members.cbegin());
+        return iterator(this, false, small_members.end(), large_members.begin());
     }
 
     iterator end() {
         if (using_small) {
-            return iterator(this, true, small_members.end(), default_large_iterator());
+            return iterator(this, true, small_members.end(), large_members.end());
         }
-        return iterator(this, false, default_small_iterator(), large_members.cend());
+        return iterator(this, false, small_members.end(), large_members.end());
     }
 
     const_iterator begin() const {
         if (using_small) {
-            return const_iterator(this, true, small_members.begin(), default_large_const_iterator());
+            return const_iterator(this, true, small_members.begin(), large_members.end());
         }
-        return const_iterator(this, false, default_small_const_iterator(), large_members.cbegin());
+        return const_iterator(this, false, small_members.end(), large_members.begin());
     }
 
     const_iterator end() const {
         if (using_small) {
-            return const_iterator(this, true, small_members.end(), default_large_const_iterator());
+            return const_iterator(this, true, small_members.end(), large_members.end());
         }
-        return const_iterator(this, false, default_small_const_iterator(), large_members.cend());
+        return const_iterator(this, false, small_members.end(), large_members.end());
     }
 
     std::pair<iterator, bool> insert(const T& value) {
         if (using_small) {
-            auto result = small_members.insert(value);
-            if (small_members.size() > SmallSize) {
-                switchToLarge();
+            if (small_members.size() < SmallSize) {
+                small_members.push_back(value);
+                return {iterator(this, true, --small_members.end(), large_members.end()), true};
             }
-            return {iterator(this, true, result.first, default_large_iterator()), result.second};
+            switchToLarge();
         }
-        auto result = large_members.insert(value);
-        return {iterator(this, false, default_small_iterator(), result.first), result.second};
+        auto [it, inserted] = large_members.insert(value);
+        return {iterator(this, false, small_members.end(), it), inserted};
     }
 
     std::pair<iterator, bool> insert(T&& value) {
         if (using_small) {
             if (small_members.size() < SmallSize) {
                 small_members.push_back(std::move(value));
-                return {iterator(this, true, --small_members.end(), default_large_iterator()), true};
+                return {iterator(this, true, --small_members.end(), large_members.end()), true};
             }
-            using_small = false;
-            large_members.insert(
-                std::make_move_iterator(small_members.begin()),
-                std::make_move_iterator(small_members.end()));
-            small_members.clear();
+            switchToLarge();
         }
         auto [it, inserted] = large_members.insert(std::move(value));
-        return {iterator(this, false, default_small_iterator(), it), inserted};
+        return {iterator(this, false, small_members.end(), it), inserted};
     }
 
     size_t size() const { return using_small ? small_members.size() : large_members.size(); }
@@ -226,42 +222,24 @@ public:
     iterator erase(iterator pos) {
         if (using_small) {
             auto next_it = small_members.erase(pos.small_it);
-            return iterator(this, true, next_it, default_large_iterator());
+            return iterator(this, true, next_it, large_members.end());
         }
         auto next_it = large_members.erase(pos.large_it);
-        return iterator(this, false, default_small_iterator(), next_it);
+        return iterator(this, false, small_members.end(), next_it);
     }
 
 private:
     void switchToLarge() {
         using_small = false;
-        large_members.insert(small_members.begin(), small_members.end());
+        for (auto& item : small_members) {
+            large_members.insert(std::move(item));
+        }
         small_members.clear();
     }
 
-    std::vector<value_type> small_members;
-    std::set<value_type, SumOrderComparator> large_members;
+    small_container_type small_members;
+    large_container_type large_members;
     bool using_small = true;
-
-    static typename std::vector<value_type>::iterator default_small_iterator() {
-        static std::vector<value_type> dummy;
-        return dummy.begin();
-    }
-
-    static typename std::set<value_type, SumOrderComparator>::const_iterator default_large_iterator() {
-        static std::set<value_type, SumOrderComparator> dummy;
-        return dummy.cbegin();
-    }
-
-    static typename std::vector<value_type>::const_iterator default_small_const_iterator() {
-        static const std::vector<value_type> dummy;
-        return dummy.begin();
-    }
-
-    static typename std::set<value_type, SumOrderComparator>::const_iterator default_large_const_iterator() {
-        static const std::set<value_type, SumOrderComparator> dummy;
-        return dummy.cbegin();
-    }
 };
 
 }} // namespace omnn::math
