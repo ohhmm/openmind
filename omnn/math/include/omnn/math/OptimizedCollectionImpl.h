@@ -3,16 +3,13 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include "OptimizedCollection.h"
 
 namespace omnn {
 namespace math {
 
-// Forward declarations
-template<typename T, size_t N = 16> class OptimizedCollection;
-class Valuable;
-
 namespace detail {
-    // Implementation details that don't require complete OptimizedCollection type
+    // Implementation details for OptimizedCollection
     template<typename T>
     struct CollectionTraits {
         using value_type = T;

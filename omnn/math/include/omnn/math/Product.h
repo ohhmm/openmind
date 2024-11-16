@@ -5,11 +5,11 @@
 #pragma once
 #include <set>
 #include <unordered_set>
-#include "ValuableCollectionDescendantContract.h"
 #include "Integer.h"
 #include "Fraction.h"
 #include "Variable.h"
 #include "OptimizedCollection.h"
+#include "ValuableCollectionDescendantContract.h"
 
 namespace omnn {
 namespace math {
@@ -55,7 +55,7 @@ namespace math {
         const iterator Add(Valuable&& item, const iterator hint) override;
         const iterator Add(const Valuable& item, const iterator hint) override;
         using base::Delete;
-        void Delete(typename cont::iterator& it) override;
+        void Delete(iterator& it) override;
 
         const vars_cont_t& getCommonVars() const override;
         vars_cont_t getCommonVars(const vars_cont_t& with) const;
@@ -108,7 +108,7 @@ namespace math {
     protected:
         std::ostream& print(std::ostream& out) const override;
         cont& GetCont() override { return members; }
-        Product(const vars_cont_t& v) : vars(v) { base::Add(constants::one); }
+        explicit Product(const vars_cont_t& v) : vars(v), members() { Add(constants::one); }
 
     private:
         vars_cont_t vars;

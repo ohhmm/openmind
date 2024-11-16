@@ -101,7 +101,7 @@ namespace math {
 				vaExpsSum += f.getNumerator().ca() / f.getDenominator().ca();
             }
             else {
-                IMPLEMENT;
+                throw std::runtime_error("Unsupported exponentiation type in findMaxVaExp");
             }
         }
         auto it = std::max_element(vars.begin(), vars.end(), [](auto& x, auto& y){
@@ -130,10 +130,10 @@ namespace math {
                 AddToVars(va, copy);
                 return;
             }
-            LOG_AND_IMPLEMENT("estimate in to be greater for those which you want to see first in sum sequence:"
-                              << va.str() << " ^ " << exponentiation.str());
+            throw std::runtime_error("Unsupported exponentiation type in AddToVars: " +
+                                     va.str() + " ^ " + exponentiation.str());
         }
-        
+
         auto& e = vars[va];
         auto re = static_cast<a_rational>(e);
         auto wasMax = maxVaExp == re;
@@ -143,11 +143,11 @@ namespace math {
         if (isMax) {
             maxVaExp = re;
         }
-        
+
         if (e == 0) {
             vars.erase(va);
         }
-        
+
         if (!isMax && wasMax) {
             assert(exponentiation < 0);
             maxVaExp = findMaxVaExp();
@@ -419,7 +419,7 @@ namespace math {
                             if(cAsP.size() == 2 && cAsP.begin()->IsSimple()) {
                                 break;
                             } else {
-                                IMPLEMENT
+                                throw std::runtime_error("Unsupported operation in optimize");
                             }
                         }
                         Delete(it2);
@@ -545,7 +545,7 @@ namespace math {
                 }
                 else
                 {
-                    IMPLEMENT
+                    throw std::runtime_error("Unsupported operation in getCommonVars");
                 }
             }
         }
@@ -1347,9 +1347,9 @@ namespace math {
     Valuable Product::operator()(const Variable& va, const Valuable& augmentation) const
     {
         Valuable s; s.SetView(Valuable::View::Flat);
-       
+
         if(augmentation.HasVa(va)) {
-            IMPLEMENT;
+            throw std::runtime_error("Unsupported operation in operator()");
         } else {
             auto coVa = getCommonVars();
             auto it = coVa.find(va);
@@ -1372,12 +1372,12 @@ namespace math {
                     else
                         aug *= m;
                 if (a==1) {
-                    IMPLEMENT
+                    throw std::runtime_error("Unsupported operation in operator()");
                 }
                 s = a(va,aug);
             }
         }
-        
+
 //        if(augmentation.HasVa(va)) {
 //            IMPLEMENT;
 //        } else {
@@ -1391,12 +1391,12 @@ namespace math {
 //                    _ /= m;
 //                }
 //            }
-//            
+//
 //            left.optimize();
 //            if (left.IsProduct()) {
 //                IMPLEMENT
 //            }
-//            
+//
 //            return left(va, _);
 //        }
 //        auto cova = getCommonVars();
@@ -1416,7 +1416,7 @@ namespace math {
 //        }
         return s;
     }
-    
+
     void Product::solve(const Variable& va, solutions_t& solutions) const
     {
         auto it = std::find(members.begin(), members.end(), va);
@@ -1434,7 +1434,7 @@ namespace math {
             }
             if (found) {
                 if (e->getExponentiation().IsZero()) {
-                    IMPLEMENT
+                    throw std::runtime_error("Zero exponentiation in solve");
                 }
                 solutions.insert(0_v);
             }
@@ -1485,14 +1485,14 @@ namespace math {
         out << cstr;
         return out;
 	}
-    
+
     Valuable::vars_cont_t Product::GetVaExps() const {
         vars_cont_t vaExps;
         for (auto& m : members) {
             auto mVaExps = m.GetVaExps();
             for (auto& mve : mVaExps) {
                 vaExps[mve.first] += mve.second;
-            }            
+            }
         }
         return vaExps;
     }
