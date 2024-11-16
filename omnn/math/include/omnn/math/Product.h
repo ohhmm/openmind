@@ -46,6 +46,23 @@ namespace math {
     public:
         using base::Add;
 
+        // Implement pure virtual Add methods from base class
+        const iterator Add(const Valuable& item, const iterator hint) override {
+            this->hash ^= item.Hash();
+            auto& c = GetCont();
+            this->is_optimized = false;
+            auto it = hint == c.end() ? getit(c.emplace(item)) : getit(c.insert(hint, item));
+            return it;
+        }
+
+        const iterator Add(Valuable&& item, const iterator hint) override {
+            this->hash ^= item.Hash();
+            auto& c = GetCont();
+            this->is_optimized = false;
+            auto it = hint == c.end() ? getit(c.emplace(std::move(item))) : getit(c.insert(hint, std::move(item)));
+            return it;
+        }
+
         Product() : members() { this->Add(constants::one); }
         Product(Product&&) = default;
         Product(const Product&) = default;
@@ -63,8 +80,11 @@ namespace math {
         void Delete(iterator& it) override {
             if (it != members.end()) {
                 this->hash ^= it->Hash();
-                members.erase(it);
+                auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
+                members.erase(it++);
                 this->is_optimized = false;
+                if (findNewMaxVaExp)
+                    this->maxVaExp = this->findMaxVaExp();
             }
         }
 
