@@ -9,7 +9,7 @@ namespace omnn {
 namespace math {
 
 // Forward declarations
-template<typename T, size_t SmallSize> class OptimizedCollection;
+template<typename T, size_t N = 8> class OptimizedCollection;
 class Valuable;
 
 namespace detail {
