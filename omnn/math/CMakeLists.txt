@@ -14,6 +14,7 @@ endif()
 lib(${DEPENDENCIES})
 
 target_include_directories(${this_target} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
