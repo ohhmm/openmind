@@ -51,6 +51,12 @@ namespace math {
         iterator Had(iterator it) override;
         static bool VarSurdFactor(const Valuable&);
 
+        void Delete(iterator& it) override {
+            Valuable::hash ^= it->Hash();
+            members.erase(it);
+            this->optimized = {};
+        }
+
         const vars_cont_t& getCommonVars() const override;
         vars_cont_t getCommonVars(const vars_cont_t& with) const;
 
@@ -101,7 +107,9 @@ namespace math {
 
     protected:
         std::ostream& print(std::ostream& out) const override;
-        explicit Product(const vars_cont_t& v) : base(), vars(v), members() { base::Add(constants::one); }
+        explicit Product(const vars_cont_t& v) : base(), vars(v), members() {
+            this->Add(constants::one);  // Use this->Add instead of base::Add
+        }
 
     private:
         vars_cont_t vars;
