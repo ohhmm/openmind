@@ -7,8 +7,8 @@
 #include "Integer.h"
 #include "Fraction.h"
 #include "Variable.h"
+#include "ValuableCollectionDescendantContract.h"  // Move this before OptimizedCollection
 #include "OptimizedCollection.h"
-#include "ValuableCollectionDescendantContract.h"
 
 namespace omnn {
 namespace math {
@@ -40,11 +40,11 @@ namespace math {
         using base::Add;  // Properly inherit Add methods
         using base::Delete;  // Properly inherit Delete method
 
-        Product() : members() { Add(constants::one); }
+        Product() : base(), members() { base::Add(constants::one); }
         Product(Product&&)=default;
         Product(const Product&)=default;
-        Product(const std::initializer_list<Valuable>& list) : members() {
-            for(const auto& v : list) Add(v);
+        Product(const std::initializer_list<Valuable>& list) : base(), members() {
+            for(const auto& v : list) base::Add(v);
         }
 
         const cont& GetConstCont() const override { return members; }
@@ -101,7 +101,7 @@ namespace math {
 
     protected:
         std::ostream& print(std::ostream& out) const override;
-        explicit Product(const vars_cont_t& v) : vars(v), members() { Add(constants::one); }
+        explicit Product(const vars_cont_t& v) : base(), vars(v), members() { base::Add(constants::one); }
 
     private:
         vars_cont_t vars;
