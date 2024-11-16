@@ -8,12 +8,12 @@ namespace omnn {
 namespace math {
 
 // Forward declare for friend declaration
-template<typename T> class OptimizedCollection;
+template<typename T, size_t N = 8> class OptimizedCollection;
 
 // Small vector optimization to reduce heap allocations for small collections
 template<typename T, size_t N = 16>
 class SmallVector {
-    friend class OptimizedCollection<T>;
+    friend class OptimizedCollection<T, N>;
     alignas(T) std::array<std::byte, sizeof(T) * N> buffer;
     T* data_ = reinterpret_cast<T*>(buffer.data());
     size_t size_ = 0;
