@@ -129,8 +129,8 @@ namespace math {
         using base::Add;
         const iterator Add(Valuable&& item, const iterator hint) override;
         const iterator Add(const Valuable& item, const iterator hint) override;
-        void Update(iterator&, Valuable&&) override;
-        void Update(iterator&, const Valuable&) override;
+        void Update(iterator& it, Valuable&& v) override;
+        void Update(iterator& it, const Valuable& v) override;
 
         bool IsComesBefore(const Valuable& v) const override;
 

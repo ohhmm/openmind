@@ -4,7 +4,8 @@
 #include <iterator>
 #include <memory>
 #include "SmallVectorOptimization.h"
-#include "Valuable.h"
+
+namespace omnn { namespace math { class Valuable; }}  // Forward declaration
 
 namespace omnn {
 namespace math {
