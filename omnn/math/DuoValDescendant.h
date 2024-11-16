@@ -277,4 +277,4 @@ namespace omnn::math {
     ANTILOOP(base::type)
 #endif
 
-#define DUO_USE_CACHE(name) auto doCheck = _1.Complexity() + _2.Complexity() > 10; USE_CACHE(name);
+#define DUO_USE_CACHE(name) auto doCheckCache = _1.Complexity() + _2.Complexity() > 10; USE_CACHE(name);

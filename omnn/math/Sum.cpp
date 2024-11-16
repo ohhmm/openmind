@@ -395,25 +395,19 @@ namespace
         Optimizing o(*this);
 
         auto s = str();
-        auto doCheck = s.length() > 10;
+        auto doCheckCache = s.length() > 10;
         auto isBalancing = IsEquation();
         auto& db = isBalancing ? DbSumBalancingCache : DbSumOptimizationCache;
-        auto checkCache = doCheck ? db.AsyncFetch(*this, true) : Cache::TaskNoCache;
+        auto cached = doCheckCache ? db.AsyncFetch(*this, true) : Cache::TaskNoCache;
 
         Valuable w;
         do
         {
-            if (checkCache) {
-                Become(checkCache);
-                return;
-            }
+            CHECK_OPTIMIZATION_CACHE
 
             w = *this;
 
-            if (checkCache) {
-                Become(checkCache);
-                return;
-            }
+            CHECK_OPTIMIZATION_CACHE
 
             if (members.size() == 0) {
                 Become(0_v);
@@ -424,10 +418,7 @@ namespace
                 return;
             }
 
-            if (checkCache) {
-                Become(checkCache);
-                return;
-            }
+            CHECK_OPTIMIZATION_CACHE
 
             // Remove inner sums first, to eliminate recursive optimization loop
             for (auto it = members.begin(); it != members.end();) {
@@ -451,19 +442,13 @@ namespace
             for (auto it = members.begin(); it != members.end();)
             {
                 // optimize member
-                auto copy = *it;
-                copy.optimize();
-                if (copy.IsZero())
-                    Delete(it);
-                else if (!it->Same(copy))
+                auto copy = it->Optimized();
+                if (!it->Same(copy))
                     Update(it, copy);
                 else
                     ++it;
 
-                if (checkCache) {
-                    Become(checkCache);
-                    return;
-                }
+                CHECK_OPTIMIZATION_CACHE
             }
 
             if (IsEquation()) {
@@ -531,10 +516,7 @@ namespace
                     else
                         ++it;
 
-                    if (checkCache) {
-                        Become(checkCache);
-                        return;
-                    }
+                    CHECK_OPTIMIZATION_CACHE
                 }
 
                 if (IsSum()) {
@@ -545,10 +527,7 @@ namespace
                 }
             }
             
-            if (checkCache) {
-                Become(checkCache);
-                return;
-            }
+            CHECK_OPTIMIZATION_CACHE
             
             if (!IsSum()) {
                 break;
@@ -589,10 +568,7 @@ namespace
                 
                 for (; it2 != members.end();)
                 {
-                    if (checkCache) {
-                        Become(checkCache);
-                        return;
-                    }
+                    CHECK_OPTIMIZATION_CACHE
                     
                     if(c.IsSum()){
                         break;
@@ -661,22 +637,11 @@ namespace
             // optimize members
             for (auto it = members.begin(); it != members.end();)
             {
-                if (checkCache) {
-                    Become(checkCache);
-                    return;
-                }
-                auto copy = *it;
+                CHECK_OPTIMIZATION_CACHE
+
+                auto copy = it->Optimized();
                 
-                if (checkCache) {
-                    Become(checkCache);
-                    return;
-                }
-                copy.optimize();
-                
-                if (checkCache) {
-                    Become(checkCache);
-                    return;
-                }
+                CHECK_OPTIMIZATION_CACHE
                 
                 if (!it->Same(copy)) {
                     Update(it, copy);
@@ -702,7 +667,7 @@ namespace
                 balance();
         }
 
-        if (doCheck && checkCache.NotInCache()) {
+        if (doCheckCache && cached.NotInCache()) {
             db.AsyncSet(std::move(s), str());
         }
     }
@@ -1124,37 +1089,34 @@ namespace
         return Become(std::move(s));
 	}
 
-    Valuable& Sum::operator %=(const Valuable& v)
+    Valuable& Sum::operator %=(const Valuable& value)
     {
-        auto doCheck = size() > 20;
-        auto cached = doCheck ? DbSumModCache.AsyncFetch(*this, true) : Cache::TaskNoCache;
+        auto doCheckCache = size() > 20;
+        USE_CACHE(DbSumModCache);
 
-        Valuable s = constants::zero;
-        if (v.IsSum())
+        Valuable sum = constants::zero;
+        if (value.IsSum())
         {
-            auto& i = v.as<Sum>();
-            if(!v.FindVa())
+            auto& i = value.as<Sum>();
+            if(!value.FindVa())
             {
                 for (auto& a : members) {
-                    if (cached)
-                        return Become(cached);
+                    CHECK_CACHED_READY
                     for (auto& b : i.members) {
-                        s += a / b;
+                        sum += a / b;
                     }
                 }
             }
             else
             {
-                if (cached)
-                    return Become(cached);
+                CHECK_CACHED_READY
                 if (size() < i.size())
                 {
-                    s = Modulo(*this, v);
+                    sum = Modulo(*this, value);
                 }
-                else if (HasSameVars(v))
+                else if (HasSameVars(value))
                 {
-                    if (cached)
-                        return Become(cached);
+                    CHECK_CACHED_READY
                     auto b = i.begin();
                     auto e = i.end();
                     size_t offs = 0;
@@ -1163,8 +1125,7 @@ namespace
                     auto icnt = size() * 2;
                     while (!IsZero() && icnt--)
                     {
-                        if (cached)
-                            return Become(cached);
+                        CHECK_CACHED_READY
                         if (IsSum())
                         {
                             auto it = begin();
@@ -1217,8 +1178,8 @@ namespace
                             }
                             
                             auto t = *begin() / *it2;
-                            s += t;
-                            t *= v;
+                            sum += t;
+                            t *= value;
                             *this -= t;
                             if (std::find(hist.begin(), hist.end(), *this) == hist.end()) {
                                 hist.push_back(*this);
@@ -1236,36 +1197,31 @@ namespace
                         }
                         else
                         {
-                            s = Modulo(*this, v);
+                            sum = Modulo(*this, value);
                         }
                     }
                     if (!IsZero()) {
-                        s = Modulo(*this, v);
+                        sum = Modulo(*this, value);
                     }
                 }
                 else
                 {
-                    s = Modulo(*this, v);
+                    sum = Modulo(*this, value);
                 }
             }
         }
         else
         {
             for (auto& a : members) {
-                s += a % v;
+                sum += a % value;
             }
-            s = Modulo(s,v);
+            sum = Modulo(sum,value);
         }
 
-        if (cached)
-            return Become(cached);
-        if (cached.NotInCache()) {
-            auto key = str();
-            OptimizeOn on;
-            Become(std::move(s));
-            DbSumSqCache.AsyncSet(std::move(key), str());
-        } else
-            Become(std::move(s));
+        CHECK_CACHED_READY
+        Become(std::move(sum));
+
+        STORE_TO_CACHE
         return *this;
     }
 
@@ -1424,25 +1380,25 @@ namespace
 
     Valuable& Sum::sq()
     {
-        auto cached = DbSumSqCache.AsyncFetch(*this, true);
+        auto doCheckCache = Complexity() > 10;
+        USE_CACHE(DbSumSqCache);
         Sum sum;
         auto e = end();
         for (auto i = begin(); i != e; ++i)
         {
-            if (cached)
-                return Become(cached);
+            CHECK_CACHED_READY;
             sum.Add(i->Sq());
             for (auto j = i; ++j != e;)
             {
                 sum.Add(*i * *j * 2);
             }
         }
-        if (cached.NotInCache())
+        if (doCheckCache && cached.NotInCache())
         {
             auto key = str();
             OptimizeOn on;
             Become(std::move(sum));
-            DbSumSqCache.AsyncSet(std::move(key), str());
+            cache.AsyncSet(std::move(key), str());
         }
         else
             Become(std::move(sum));
@@ -1817,8 +1773,8 @@ namespace
             return (-(coefficients[0] / coefficients[grade])) ^ (constants::one / grade);
         }
         
-        auto doCheck = grade > 2;
-        auto checkCached = doCheck
+        auto doCheckCache = grade > 2;
+        auto checkCached = doCheckCache
                             ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true)
                             : Cache::TaskNoCache;
         if (grade == 2) {

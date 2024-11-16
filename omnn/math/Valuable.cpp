@@ -2513,23 +2513,20 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 //        return Abet(x, abet)/(*this-to);
 //    }
 
-    Valuable Valuable::LogicAnd(const Valuable& v) const
+    Valuable& Valuable::logic_and(const Valuable& expression)
     {
-        if (Vars() == v.Vars()) {
-            return GCD(v);
+        if (HasSameVars(expression)) {
+            gcd(expression);
         } else {
-            return Sq() + v.Sq(); // equal to zero if both are equal to zero only
-        }
-    }
-
-    Valuable& Valuable::logic_and(const Valuable& v)
-    {
-        if (Vars() == v.Vars()) {
-            gcd(v);
-        } else {
-            sq() += v.Sq(); // equal to zero if both are equal to zero only
+            sq() += expression.Sq(); // equal to zero if both are equal to zero only
         }
         return *this;
+    }
+
+    Valuable Valuable::LogicAnd(const Valuable& expression) const
+    {
+        auto copy = *this;
+        return copy.logic_and(expression);
     }
 
     Valuable& Valuable::logic_or(const Valuable& v)
