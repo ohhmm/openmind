@@ -7,8 +7,8 @@
 #include "Integer.h"
 #include "Fraction.h"
 #include "Variable.h"
-#include "ValuableCollectionDescendantContract.h"  // Move this before OptimizedCollection
-#include "OptimizedCollection.h"
+#include "OptimizedCollection.h"  // Move this before ValuableCollectionDescendantContract
+#include "ValuableCollectionDescendantContract.h"
 
 namespace omnn {
 namespace math {
