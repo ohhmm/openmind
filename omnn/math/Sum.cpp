@@ -1,20 +1,20 @@
 //
 // Created by Сергей Кривонос on 25.09.17.
 //
-#include "Sum.h"
-#include "Euler.h"
-#include "Formula.h"
-#include "Fraction.h"
-#include "i.h"
-#include "Infinity.h"
-#include "Integer.h"
-#include "Modulo.h"
-#include "Product.h"
-#include "PrincipalSurd.h"
-#include "pi.h"
-#include "System.h"
-#include "VarHost.h"
-#include "Cache.h"
+#include "omnn/math/Sum.h"
+#include "omnn/math/Euler.h"
+#include "omnn/math/Formula.h"
+#include "omnn/math/Fraction.h"
+#include "omnn/math/i.h"
+#include "omnn/math/Infinity.h"
+#include "omnn/math/Integer.h"
+#include "omnn/math/Modulo.h"
+#include "omnn/math/Product.h"
+#include "omnn/math/PrincipalSurd.h"
+#include "omnn/math/pi.h"
+#include "omnn/math/System.h"
+#include "omnn/math/VarHost.h"
+#include "omnn/math/Cache.h"
 
 #include <omnn/rt/antiloop.hpp>
 #include <rt/cl.h>
@@ -31,7 +31,6 @@
 #include <stack>
 #include <thread>
 #include <type_traits>
-
 
 namespace omnn::math {
 

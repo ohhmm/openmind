@@ -1,13 +1,13 @@
 //
 // Created by Сергей Кривонос on 25.09.17.
 //
-#include "Variable.h"
-#include "Exponentiation.h"
-#include "Integer.h"
-#include "Modulo.h"
-#include "Product.h"
-#include "Sum.h"
-#include "VarHost.h"
+#include "omnn/math/Variable.h"
+#include "omnn/math/Exponentiation.h"
+#include "omnn/math/Integer.h"
+#include "omnn/math/Modulo.h"
+#include "omnn/math/Product.h"
+#include "omnn/math/Sum.h"
+#include "omnn/math/VarHost.h"
 
 namespace omnn{
 namespace math {
