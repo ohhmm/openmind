@@ -25,7 +25,6 @@ namespace math {
         : public ValuableCollectionDescendantContract<Product, product_cont>
     {
         using base = ValuableCollectionDescendantContract<Product, product_cont>;
-        using base::cont;
         friend class Variable;
         cont members;
         max_exp_t vaExpsSum;
@@ -34,20 +33,23 @@ namespace math {
         void AddToVars(const Variable &item, const Valuable & exponentiation);
         void AddToVarsIfVaOrVaExp(const Valuable::vars_cont_t&);
         void AddToVarsIfVaOrVaExp(const Valuable &item);
+        cont& GetCont() override { return members; }
 
     public:
         using base::base;
-        Product() : members() { members.insert(constants::one); hash = constants::one.Hash(); }
+        using base::Add;  // Properly inherit Add methods
+        using base::Delete;  // Properly inherit Delete method
+
+        Product() : members() { Add(constants::one); }
         Product(Product&&)=default;
         Product(const Product&)=default;
-        Product(const std::initializer_list<Valuable>& list) : members() { for(const auto& v : list) members.insert(v); }
+        Product(const std::initializer_list<Valuable>& list) : members() {
+            for(const auto& v : list) Add(v);
+        }
 
         const cont& GetConstCont() const override { return members; }
         iterator Had(iterator it) override;
         static bool VarSurdFactor(const Valuable&);
-        const iterator Add(Valuable&& item, const iterator hint) override;
-        const iterator Add(const Valuable& item, const iterator hint) override;
-        void Delete(iterator& it) override;
 
         const vars_cont_t& getCommonVars() const override;
         vars_cont_t getCommonVars(const vars_cont_t& with) const;
@@ -99,7 +101,6 @@ namespace math {
 
     protected:
         std::ostream& print(std::ostream& out) const override;
-        cont& GetCont() override { return members; }
         explicit Product(const vars_cont_t& v) : vars(v), members() { Add(constants::one); }
 
     private:
