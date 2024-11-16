@@ -28,40 +28,48 @@ namespace math {
     class Product
         : public ValuableCollectionDescendantContract<Product, product_cont>
     {
+    protected:
         using base = ValuableCollectionDescendantContract<Product, product_cont>;
         friend class Variable;
-        cont members;
-        max_exp_t vaExpsSum;
 
-    protected:
-        void AddToVars(const Variable &item, const Valuable & exponentiation);
-        void AddToVarsIfVaOrVaExp(const Valuable::vars_cont_t&);
-        void AddToVarsIfVaOrVaExp(const Valuable &item);
+        product_cont members;
+        max_exp_t vaExpsSum = 0;
+        vars_cont_t vars;
+
         cont& GetCont() override { return members; }
+        const cont& GetConstCont() const override { return members; }
+
+        void AddToVars(const Variable& item, const Valuable& exponentiation);
+        void AddToVarsIfVaOrVaExp(const Valuable::vars_cont_t&);
+        void AddToVarsIfVaOrVaExp(const Valuable& item);
 
     public:
-        using base::base;
         using base::Add;
-        using base::Delete;
 
-        Product() : base(), members() { this->Add(constants::one); }
-        Product(Product&&)=default;
-        Product(const Product&)=default;
-        Product(const std::initializer_list<Valuable>& list) : base(), members() {
-            for(const auto& v : list) this->Add(v);
+        Product() : members() { this->Add(constants::one); }
+        Product(Product&&) = default;
+        Product(const Product&) = default;
+        Product& operator=(Product&&) = default;
+        Product& operator=(const Product&) = default;
+
+        Product(const std::initializer_list<Valuable>& list) : members() {
+            for(const auto& v : list) { this->Add(v); }
+        }
+
+        explicit Product(const vars_cont_t& v) : vars(v), members() {
+            this->Add(constants::one);
         }
 
         void Delete(iterator& it) override {
-            Valuable::hash ^= it->Hash();
+            this->hash ^= it->Hash();
             members.erase(it);
-            this->optimized = {};
+            this->is_optimized = false;
         }
 
-        const cont& GetConstCont() const override { return members; }
         iterator Had(iterator it) override;
         static bool VarSurdFactor(const Valuable&);
 
-        const vars_cont_t& getCommonVars() const override;
+        const vars_cont_t& getCommonVars() const override { return vars; }
         vars_cont_t getCommonVars(const vars_cont_t& with) const;
 
         Valuable getCommVal(const Product& with) const;
@@ -111,12 +119,6 @@ namespace math {
 
     protected:
         std::ostream& print(std::ostream& out) const override;
-        explicit Product(const vars_cont_t& v) : base(), vars(v), members() {
-            this->Add(constants::one);
-        }
-
-    private:
-        vars_cont_t vars;
     };
 
 }}
