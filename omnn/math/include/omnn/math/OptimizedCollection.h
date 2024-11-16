@@ -1,11 +1,6 @@
 #pragma once
-#include <set>
-#include <algorithm>
-#include <iterator>
-#include <memory>
-#include "SmallVectorOptimization.h"
-
-namespace omnn { namespace math { class Valuable; }}  // Forward declaration
+#include "OptimizedCollectionImpl.h"
+#include "Valuable.h"
 
 namespace omnn {
 namespace math {
@@ -180,7 +175,7 @@ public:
         if (using_small) {
             return const_iterator(this, true, small_members.end(), large_members.end());
         }
-        return const_iterator(this, false, small_members.end(), large_members.end());
+        return const_iterator(this, false, small_members.end(), large_members.begin());
     }
 
     std::pair<iterator, bool> insert(const T& value) {

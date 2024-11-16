@@ -11,7 +11,7 @@
 #include <ranges>
 #include <thread>
 
-#include "SmallVectorOptimization.h"
+#include "OptimizedCollectionImpl.h"
 #include "OptimizedCollection.h"
 #include <omnn/rt/each.hpp>
 //#include <omnn/rt/iterator_transforming_wrapper.hpp>
