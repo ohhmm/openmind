@@ -3,13 +3,12 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
-#include "SmallVectorOptimization.h"
 
 namespace omnn {
 namespace math {
 
 // Forward declarations
-template<typename T, size_t N = 8> class OptimizedCollection;
+template<typename T, size_t N = 16> class OptimizedCollection;
 class Valuable;
 
 namespace detail {
@@ -21,6 +20,8 @@ namespace detail {
         using const_reference = const value_type&;
         using size_type = std::size_t;
         using difference_type = std::ptrdiff_t;
+        using iterator = typename OptimizedCollection<T>::iterator;
+        using const_iterator = typename OptimizedCollection<T>::const_iterator;
     };
 }
 

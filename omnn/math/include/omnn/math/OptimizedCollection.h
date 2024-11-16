@@ -1,5 +1,6 @@
 #pragma once
-#include "OptimizedCollectionImpl.h"
+#include <set>
+#include "SmallVectorOptimization.h"
 #include "Valuable.h"
 
 namespace omnn {
@@ -11,7 +12,7 @@ struct SumOrderComparator {
     }
 };
 
-template<typename T, size_t SmallSize = 8>
+template<typename T, size_t N = 16>
 class OptimizedCollection {
 public:
     using value_type = T;
@@ -19,7 +20,7 @@ public:
     using const_reference = const value_type&;
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
-    using small_container_type = SmallVector<value_type, SmallSize>;
+    using small_container_type = SmallVector<value_type, N>;
     using large_container_type = std::set<value_type, SumOrderComparator>;
 
     class iterator;
@@ -180,7 +181,7 @@ public:
 
     std::pair<iterator, bool> insert(const T& value) {
         if (using_small) {
-            if (small_members.size() < SmallSize) {
+            if (small_members.size() < N) {
                 small_members.push_back(value);
                 return {iterator(this, true, --small_members.end(), large_members.end()), true};
             }
@@ -192,7 +193,7 @@ public:
 
     std::pair<iterator, bool> insert(T&& value) {
         if (using_small) {
-            if (small_members.size() < SmallSize) {
+            if (small_members.size() < N) {
                 small_members.push_back(std::move(value));
                 return {iterator(this, true, --small_members.end(), large_members.end()), true};
             }

@@ -8,7 +8,7 @@ namespace omnn {
 namespace math {
 
 // Forward declare for friend declaration
-template<typename T, size_t N = 8> class OptimizedCollection;
+template<typename T, size_t N = 16> class OptimizedCollection;
 
 // Small vector optimization to reduce heap allocations for small collections
 template<typename T, size_t N = 16>
