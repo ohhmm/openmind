@@ -2,9 +2,6 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
-#include "CollectionForward.h"
-#include "OptimizedCollection.h"
-#include "Exponentiation.h"
 #include <algorithm>
 #include <atomic>
 #include <execution>
@@ -14,10 +11,12 @@
 #include <thread>
 
 // Include complete definitions first
-#include "OptimizedCollection.h"
 #include "ValuableDescendantContract.h"
+#include "OptimizedCollection.h"
 #include <omnn/rt/each.hpp>
 //#include <omnn/rt/iterator_transforming_wrapper.hpp>
+#include "CollectionForward.h"
+#include "Exponentiation.h"
 
 namespace omnn::math {
 

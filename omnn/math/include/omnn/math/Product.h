@@ -3,12 +3,16 @@
 //
 
 #pragma once
-#include "CollectionForward.h"
+#include <algorithm>
+#include <iterator>
+
+// Include complete definitions first
+#include "OptimizedCollection.h"
+#include "ValuableCollectionDescendantContract.h"
 #include "Integer.h"
 #include "Fraction.h"
 #include "Variable.h"
-#include "OptimizedCollection.h"  // Move this before ValuableCollectionDescendantContract
-#include "ValuableCollectionDescendantContract.h"
+#include "CollectionForward.h"
 
 namespace omnn {
 namespace math {
@@ -37,25 +41,25 @@ namespace math {
 
     public:
         using base::base;
-        using base::Add;  // Properly inherit Add methods
-        using base::Delete;  // Properly inherit Delete method
+        using base::Add;
+        using base::Delete;
 
-        Product() : base(), members() { base::Add(constants::one); }
+        Product() : base(), members() { this->Add(constants::one); }
         Product(Product&&)=default;
         Product(const Product&)=default;
         Product(const std::initializer_list<Valuable>& list) : base(), members() {
-            for(const auto& v : list) base::Add(v);
+            for(const auto& v : list) this->Add(v);
         }
-
-        const cont& GetConstCont() const override { return members; }
-        iterator Had(iterator it) override;
-        static bool VarSurdFactor(const Valuable&);
 
         void Delete(iterator& it) override {
             Valuable::hash ^= it->Hash();
             members.erase(it);
             this->optimized = {};
         }
+
+        const cont& GetConstCont() const override { return members; }
+        iterator Had(iterator it) override;
+        static bool VarSurdFactor(const Valuable&);
 
         const vars_cont_t& getCommonVars() const override;
         vars_cont_t getCommonVars(const vars_cont_t& with) const;
@@ -108,7 +112,7 @@ namespace math {
     protected:
         std::ostream& print(std::ostream& out) const override;
         explicit Product(const vars_cont_t& v) : base(), vars(v), members() {
-            this->Add(constants::one);  // Use this->Add instead of base::Add
+            this->Add(constants::one);
         }
 
     private:
