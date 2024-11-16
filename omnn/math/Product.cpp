@@ -1486,6 +1486,13 @@ namespace math {
         return out;
 	}
 
+    Valuable Product::operator-() const {
+        Product p;
+        p.Add(constants::minus_1);
+        p *= *this;
+        return p;
+    }
+
     Valuable::vars_cont_t Product::GetVaExps() const {
         vars_cont_t vaExps;
         for (auto& m : members) {

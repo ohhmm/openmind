@@ -3,144 +3,189 @@
 //
 
 #pragma once
-#include <algorithm>
-#include <iterator>
-
-// Include complete definitions first
-#include "CollectionForward.h"
-#include "OptimizedCollection.h"
-#include "ValuableCollectionDescendantContract.h"
-#include "Integer.h"
-#include "Fraction.h"
-#include "Variable.h"
+#include "omnn/math/ValuableCollectionDescendantContract.h"
+#include "omnn/math/Variable.h"
+#include "omnn/math/Valuable.h"
+#include "omnn/math/Constant.h"
+#include "omnn/math/OptimizedCollection.h"
+#include <set>
 
 namespace omnn {
 namespace math {
 
-    struct ProductOrderComparator {
-        bool operator()(const Valuable& lhs, const Valuable& rhs) const {
-            return lhs.Hash() < rhs.Hash();
+class ProductOrderComparator {
+    using cont_t = std::set<Valuable>;
+    cont_t members;
+public:
+    using iterator = cont_t::iterator;
+    using const_iterator = cont_t::const_iterator;
+    using value_type = cont_t::value_type;
+    using reference = cont_t::reference;
+    using const_reference = cont_t::const_reference;
+    using difference_type = cont_t::difference_type;
+    using size_type = cont_t::size_type;
+
+    size_t size() const { return members.size(); }
+    bool empty() const { return members.empty(); }
+    void clear() { members.clear(); }
+
+    iterator begin() { return members.begin(); }
+    iterator end() { return members.end(); }
+    const_iterator begin() const { return members.begin(); }
+    const_iterator end() const { return members.end(); }
+    const_iterator cbegin() const { return members.cbegin(); }
+    const_iterator cend() const { return members.cend(); }
+
+    template<typename... Args>
+    auto insert(Args&&... args) {
+        return members.insert(std::forward<Args>(args)...);
+    }
+
+    template<typename... Args>
+    auto erase(Args&&... args) {
+        return members.erase(std::forward<Args>(args)...);
+    }
+
+    iterator find(const Valuable& value) {
+        return members.find(value);
+    }
+
+    const_iterator find(const Valuable& value) const {
+        return members.find(value);
+    }
+};
+
+class Product : public ValuableCollectionDescendantContract<Product, ProductOrderComparator>
+{
+    using base = ValuableCollectionDescendantContract<Product, ProductOrderComparator>;
+    using cont = ProductOrderComparator;
+    vars_cont_t vars;
+    mutable exp_t maxVaExp = 0;
+    mutable bool is_optimized = false;
+
+public:
+    static auto GetBinaryOperationLambdaTemplate() {
+        return [](const Valuable& a, const Valuable& b) -> Valuable {
+            return a * b;
+        };
+    }
+
+    Product() : base() {
+        Add(constants::one, this->end());
+    }
+
+    Product(Product&&) = default;
+    Product(const Product&) = default;
+    Product& operator=(Product&&) = default;
+    Product& operator=(const Product&) = default;
+
+    Product(const std::initializer_list<Valuable>& list)
+        : base() {
+        for(const auto& v : list) {
+            Add(v, this->end());
         }
-    };
+    }
 
-    using product_cont = OptimizedCollection<Valuable, ProductOrderComparator>;
-
-    class Product
-        : public ValuableCollectionDescendantContract<Product, product_cont>
-    {
-    protected:
-        using base = ValuableCollectionDescendantContract<Product, product_cont>;
-        friend class Variable;
-
-        product_cont members;
-        max_exp_t vaExpsSum = 0;
-        vars_cont_t vars;
-
-        cont& GetCont() override { return members; }
-        const cont& GetConstCont() const override { return members; }
-
-        void AddToVars(const Variable& item, const Valuable& exponentiation);
-        void AddToVarsIfVaOrVaExp(const Valuable::vars_cont_t&);
-        void AddToVarsIfVaOrVaExp(const Valuable& item);
-
-    public:
-        using base::Add;
-
-        // Implement pure virtual Add methods from base class
-        const iterator Add(const Valuable& item, const iterator hint) override {
-            this->hash ^= item.Hash();
-            auto& c = GetCont();
-            this->is_optimized = false;
-            auto it = hint == c.end() ? getit(c.emplace(item)) : getit(c.insert(hint, item));
-            return it;
+    explicit Product(const vars_cont_t& v)
+        : base() {
+        for (const auto& [var, val] : v) {
+            vars.insert(std::make_pair(var, val));
         }
+        Add(constants::one, this->end());
+    }
 
-        const iterator Add(Valuable&& item, const iterator hint) override {
-            this->hash ^= item.Hash();
-            auto& c = GetCont();
-            this->is_optimized = false;
-            auto it = hint == c.end() ? getit(c.emplace(std::move(item))) : getit(c.insert(hint, std::move(item)));
-            return it;
-        }
-
-        Product() : members() { this->Add(constants::one); }
-        Product(Product&&) = default;
-        Product(const Product&) = default;
-        Product& operator=(Product&&) = default;
-        Product& operator=(const Product&) = default;
-
-        Product(const std::initializer_list<Valuable>& list) : members() {
-            for(const auto& v : list) { this->Add(v); }
-        }
-
-        explicit Product(const vars_cont_t& v) : vars(v), members() {
-            this->Add(constants::one);
-        }
-
-        void Delete(iterator& it) override {
-            if (it != members.end()) {
-                this->hash ^= it->Hash();
-                auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
-                members.erase(it++);
-                this->is_optimized = false;
-                if (findNewMaxVaExp)
-                    this->maxVaExp = this->findMaxVaExp();
+    void Delete(iterator& it) override {
+        auto& c = GetCont();
+        if (it != c.end()) {
+            Valuable::hash ^= (*it).Hash();
+            auto findNewMaxVaExp = (*it).getMaxVaExp() == maxVaExp;
+            auto next = std::next(it);
+            c.erase(it);
+            it = next;
+            is_optimized = false;
+            if (findNewMaxVaExp) {
+                maxVaExp = findMaxVaExp();
             }
         }
+    }
 
-        iterator Had(iterator it) override;
-        static bool VarSurdFactor(const Valuable&);
+    cont& GetCont() override { return base::GetCont(); }
+    const cont& GetConstCont() const override { return base::GetConstCont(); }
 
-        const vars_cont_t& getCommonVars() const override { return vars; }
-        vars_cont_t getCommonVars(const vars_cont_t& with) const;
+protected:
+    iterator getit(typename cont::iterator it) {
+        return it;
+    }
 
-        Valuable getCommVal(const Product& with) const;
-        Valuable InCommonWith(const Valuable& v) const override;
-        max_exp_t findMaxVaExp();
-        bool IsComesBefore(const Valuable& v) const override;
-        Valuable calcFreeMember() const override;
+    const_iterator getit(typename cont::const_iterator it) const {
+        return it;
+    }
 
-        Valuable& operator +=(const Valuable& v) override;
-        std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
-        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
-        Valuable& operator*=(const Valuable& v) override;
-        Valuable& operator /=(const Valuable& v) override;
-        Valuable& operator %=(const Valuable& v) override;
-        Valuable& operator ^=(const Valuable& v) override;
-        bool operator ==(const Product& v) const;
-        bool operator ==(const Valuable& v) const override;
-        bool operator<(const Product& v) const;
-        bool operator<(const Valuable& v) const override;
-        Valuable Sign() const override;
-        Valuable ToBool() const override;
-        explicit operator double() const override;
-        Valuable& d(const Variable& x) override;
-        void optimize() override;
-        Valuable Sqrt() const override;
-        Valuable& sq() override;
-        Valuable abs() const override;
-        Valuable& reciprocal() override;
-
-        bool IsProduct() const override { return true; }
-        bool IsZero() const override;
-        std::pair<Valuable, Valuable> SplitSimplePart() const;
-        std::pair<Valuable, Valuable> split_simple_part();
-
-        Valuable operator()(const Variable& va) const override;
-        Valuable operator()(const Variable&, const Valuable& augmentation) const override;
-        void solve(const Variable& va, solutions_t& solutions) const override;
-        Valuable::solutions_t Distinct() const override;
-
-        std::ostream& code(std::ostream& out) const override;
-
-        static constexpr auto GetBinaryOperationLambdaTemplate() {
-            return [](const auto& _1st, const auto& _2nd) { return _1st * _2nd; };
+    void AddToVarsIfVaOrVaExp(const Valuable& v) {
+        if (v.IsVa() || v.IsVaExp()) {
+            vars.insert(std::make_pair(v.get(), v));
+            auto ve = v.getMaxVaExp();
+            if (ve > maxVaExp) maxVaExp = ve;
         }
+    }
 
-        vars_cont_t GetVaExps() const override;
+    Valuable findMaxVaExp() const {
+        Valuable max;
+        const auto& c = GetConstCont();
+        for (const auto& v : c) {
+            auto ve = v.getMaxVaExp();
+            if (ve > max) max = ve;
+        }
+        return max;
+    }
 
-    protected:
-        std::ostream& print(std::ostream& out) const override;
-    };
+public:
+    using iterator = typename base::iterator;
+    using const_iterator = typename base::const_iterator;
 
-}}
+    using base::Add;  // Make base class Add visible
+
+    const iterator Add(const Valuable& item, const iterator& hint) override {
+        auto& c = GetCont();
+        Valuable::hash ^= item.Hash();
+        is_optimized = false;
+        AddToVarsIfVaOrVaExp(item);
+        return hint == this->end() ? getit(c.insert(item)) : getit(c.insert(hint, item));
+    }
+
+    const iterator Add(Valuable&& item, const iterator& hint) override {
+        auto& c = GetCont();
+        Valuable::hash ^= item.Hash();
+        is_optimized = false;
+        AddToVarsIfVaOrVaExp(item);
+        return hint == this->end() ? getit(c.insert(std::move(item))) : getit(c.insert(hint, std::move(item)));
+    }
+
+    bool operator==(const Valuable& v) const override;
+    bool operator<(const Valuable& v) const override;
+    Valuable& operator+=(const Valuable& v) override;
+    Valuable& operator*=(const Valuable& v) override;
+    Valuable& operator/=(const Valuable& v) override;
+    Valuable& operator%=(const Valuable& v) override;
+    Valuable& operator^=(const Valuable& v) override;
+    Valuable operator-() const override;
+    Valuable Sign() const override;
+    Valuable ToBool() const override;
+    explicit operator double() const override;
+    Valuable& d(const Variable& x) override;
+    void optimize() override;
+    Valuable Sqrt() const override;
+    Valuable& sq() override;
+    Valuable abs() const override;
+    Valuable& reciprocal() override;
+    bool IsProduct() const override { return true; }
+    bool IsZero() const override;
+    Valuable operator()(const Variable& va) const override;
+    Valuable operator()(const Variable&, const Valuable& augmentation) const override;
+    void solve(const Variable& va, solutions_t& solutions) const override;
+    solutions_t Distinct() const override;
+    std::ostream& code(std::ostream& out) const override;
+    std::ostream& print(std::ostream& out) const override;
+};
+
+}} // namespace omnn::math

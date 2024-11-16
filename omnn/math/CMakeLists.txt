@@ -9,9 +9,23 @@ endif(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
 
 set(DEPENDENCIES storage)
 if(WIN32 AND OPENMIND_USE_VCPKG)
-	list(APPEND DEPENDENCIES bcrypt) # workaround boost-uuid vcpkg bug
+    list(APPEND DEPENDENCIES bcrypt) # workaround boost-uuid vcpkg bug
 endif()
+
+set(MATH_SOURCES
+    Comparators.cpp
+    Constant.cpp
+    Sum.cpp
+    Product.cpp
+    SySHA.cpp
+    Infinity.cpp
+    Variable.cpp
+    Euler.cpp
+)
+
 lib(${DEPENDENCIES})
+
+target_sources(${this_target} PRIVATE ${MATH_SOURCES})
 
 target_include_directories(${this_target} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../../  # Add root directory for omnn/math/... includes
@@ -21,16 +35,16 @@ target_include_directories(${this_target} PUBLIC
 )
 
 if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
-	if(OPENMIND_MATH_USE_LEVELDB_CACHE)
-		target_compile_definitions(${this_target} PUBLIC OPENMIND_MATH_USE_LEVELDB_CACHE)
-	endif()
-	if(OPENMIND_MATH_CACHE_VOLATILE)
-		target_compile_definitions(${this_target} PUBLIC OPENMIND_MATH_CACHE_VOLATILE)
-	endif(OPENMIND_MATH_CACHE_VOLATILE)
-	if(OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
-		target_compile_definitions(${this_target} PUBLIC OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
-	endif()
-	if(OPENMIND_MATH_CACHE_ALLOW_CACHE_UPGRADE)
+    if(OPENMIND_MATH_USE_LEVELDB_CACHE)
+        target_compile_definitions(${this_target} PUBLIC OPENMIND_MATH_USE_LEVELDB_CACHE)
+    endif()
+    if(OPENMIND_MATH_CACHE_VOLATILE)
+        target_compile_definitions(${this_target} PUBLIC OPENMIND_MATH_CACHE_VOLATILE)
+    endif(OPENMIND_MATH_CACHE_VOLATILE)
+    if(OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
+        target_compile_definitions(${this_target} PUBLIC OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
+    endif()
+    if(OPENMIND_MATH_CACHE_ALLOW_CACHE_UPGRADE)
         target_compile_definitions(${this_target} PUBLIC ALLOW_CACHE_UPGRADE)
     endif()
 endif()
