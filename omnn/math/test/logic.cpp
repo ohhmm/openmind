@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "Variable.h"
+#include "Sum.h"
 #include "generic.hpp"
 
 
@@ -15,6 +16,20 @@ BOOST_AUTO_TEST_CASE(ABS_expression_test) {
     auto abs = X.Abs();
     std::cout << "abs(X) : " << abs << std::endl;
     TestXpression(abs, [](auto x) { return std::abs(x); });
+}
+
+BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test, *disabled()) {
+    // abs(x)/x doesn't want for x=0, its NaN because of division by zero
+    // searching for alternative approaches to make robust sign(x) function
+    auto lez = X.LessOrEqual(0);
+    auto gez = X.GreaterOrEqual(0);
+    Valuable::OptimizeOff off;
+    Product lezSq{lez, lez}, gezSq{gez, gez};
+    Sum both{lezSq, gezSq};
+    auto expression = Product{Sum{both.sq(), X.Equals(0)}, Sum{gezSq, X.Equals(1).sq()}, Sum{lezSq, X.Equals(-1).sq()}};
+    auto Sign = expression(X);
+    std::cout << "sign(X) : " << Sign << std::endl;
+    TestXpression(Sign, [](auto x) { return x ? x / std::abs(x) : x; });
 }
 
 BOOST_AUTO_TEST_CASE(Sign_expression_test, *disabled()) {
