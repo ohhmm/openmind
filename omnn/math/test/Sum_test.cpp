@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(Fractions_SumOrderComparator_test)
     BOOST_TEST(cmp12 != cmp21);
 }
 
-BOOST_AUTO_TEST_CASE(Fractions_with_unoptimized_SumOrderComparator_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(Fractions_with_Exponentiation_SumOrderComparator_test) {
     SumOrderComparator cmp;
     Fraction _1 = {-std::sqrt(constants::two), 2};
     auto _2 = "(((1/4)*(1r2) + ((-1)/2)*(1r2) + (((1r2))/4) + (1r2))^((1/2)))"_v;
