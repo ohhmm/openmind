@@ -104,6 +104,15 @@ BOOST_AUTO_TEST_CASE(Fractions_SumOrderComparator_test)
     BOOST_TEST(cmp12 != cmp21);
 }
 
+BOOST_AUTO_TEST_CASE(Fractions_with_unoptimized_SumOrderComparator_test, *disabled()) {
+    SumOrderComparator cmp;
+    Fraction _1 = {-std::sqrt(constants::two), 2};
+    auto _2 = "(((1/4)*(1r2) + ((-1)/2)*(1r2) + (((1r2))/4) + (1r2))^((1/2)))"_v;
+    auto cmp12 = cmp(_1, _2);
+    auto cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+}
+
 BOOST_AUTO_TEST_CASE(AddMultipleEqual_SumOrderComparator_test)
 {
     // test Sum move assignment operator:
