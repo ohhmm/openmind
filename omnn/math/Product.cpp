@@ -121,8 +121,7 @@ namespace math {
         if (exponentiation.IsInt()) {
             vaExpsSum += exponentiation.as<Integer>().ca();
         } else if (exponentiation.IsSimpleFraction()) {
-            auto& f = exponentiation.as<Fraction>();
-            vaExpsSum += f.getNumerator().ca() / f.getDenominator().ca();
+            vaExpsSum += static_cast<decltype(vaExpsSum)>(exponentiation);
         } else {
             if (!optimizations) {
                 OptimizeOn oo;

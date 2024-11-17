@@ -142,6 +142,9 @@ Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
                 ve.second /= _2;
     } else if (!FindVa()) {
         vaExps.clear();
+    } else if (_2.IsSimpleFraction() && _2 > constants::zero) {
+        for (auto& ve : vaExps)
+            ve.second /= _2;
     } else {
         IMPLEMENT
     }
@@ -149,7 +152,9 @@ Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
 }
 
 max_exp_t PrincipalSurd::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
-    return _1.getMaxVaExp() / _2.ca();
+    auto exponentiation = _1.getMaxVaExp();
+    exponentiation /= static_cast<decltype(exponentiation)>(_2);
+    return exponentiation;
 }
 
 bool PrincipalSurd::operator <(const Valuable& other) const {
