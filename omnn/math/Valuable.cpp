@@ -2721,11 +2721,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable Valuable::IsNegative() const {
-        return Sign().equals(constants::minus_1);
+        return (Abs() / *this).equals(constants::minus_1);
     }
 
     Valuable Valuable::IsPositive() const {
-        return Sign().equals(constants::one);
+        return (Abs() / *this).equals(constants::one);
     }
 
     Valuable Valuable::Less(const Valuable& than) const
