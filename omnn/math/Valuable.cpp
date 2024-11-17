@@ -824,6 +824,22 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
                 SetView(View::Equation);
                 return;
+            } else if (s[c] == '<' && c + 1 < l && s[c + 1] != '=') {
+                Valuable l(s.substr(0, c - 1), h, itIsOptimized);
+                Valuable r(s.substr(c + 1), h, itIsOptimized);
+                if(s[c + 1] == '>'){
+                    Become(l.NotEquals(r));
+                } else {
+                    Become(l.Less(r));
+                }
+                SetView(View::Equation);
+                return;
+            } else if (s[c] == '>' && c + 1 < l && s[c + 1] != '=') {
+                Valuable l(s.substr(0, c - 1), h, itIsOptimized);
+                Valuable r(s.substr(c + 1), h, itIsOptimized);
+                Become(r.Less(l));
+                SetView(View::Equation);
+                return;
             }
             c++;
         }

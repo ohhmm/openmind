@@ -21,15 +21,19 @@ BOOST_AUTO_TEST_CASE(ABS_expression_test) {
 BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test, *disabled()) {
     // abs(x)/x doesn't want for x=0, its NaN because of division by zero
     // searching for alternative approaches to make robust sign(x) function
+    DECL_VA(sign);
     auto lez = X.LessOrEqual(0);
     auto gez = X.GreaterOrEqual(0);
-    Valuable::OptimizeOff off;
+    Valuable::OptimizeOff off; // FIXME: optimize should work well here
     Product lezSq{lez, lez}, gezSq{gez, gez};
     Sum both{lezSq, gezSq};
-    auto expression = Product{Sum{both.sq(), X.Equals(0)}, Sum{gezSq, X.Equals(1).sq()}, Sum{lezSq, X.Equals(-1).sq()}};
+    auto expression = Product{
+        Sum{both.Sq(), sign.Sq()}, 
+        Sum{gezSq, sign.Equals(1).sq()}, 
+        Sum{lezSq, sign.Equals(-1).sq()}};
     auto Sign = expression(X);
     std::cout << "sign(X) : " << Sign << std::endl;
-    TestXpression(Sign, [](auto x) { return x ? x / std::abs(x) : x; });
+    //TestXpression(Sign, [](auto x) { return x ? x / std::abs(x) : x; });
 }
 
 BOOST_AUTO_TEST_CASE(Sign_expression_test, *disabled()) {
