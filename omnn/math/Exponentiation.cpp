@@ -1303,4 +1303,38 @@ namespace omnn::math {
         return ebase().Sign() ^ eexp();
     }
 
+    void Exponentiation::CollectVa(::std::set<Variable>& s) const noexcept {
+        ebase().CollectVa(s);
+        eexp().CollectVa(s);
+    }
+
+    bool Exponentiation::eval(const ::std::map<Variable, ValuableWrapper>& with) noexcept {
+        bool changed = ebase().eval(with);
+        changed |= eexp().eval(with);
+        if (changed) {
+            InitVars();
+            optimized = {};
+        }
+        return changed;
+    }
+
+    void Exponentiation::Eval(const Variable& va, const Valuable& v) noexcept {
+        ebase().Eval(va, v);
+        eexp().Eval(va, v);
+        InitVars();
+        optimized = {};
+    }
+
+    bool Exponentiation::is_optimized() const noexcept {
+        return optimized && ebase().is_optimized() && eexp().is_optimized();
+    }
+
+    void Exponentiation::optimize() noexcept {
+        if (!is_optimized()) {
+            ebase().optimize();
+            eexp().optimize();
+            InitVars();
+            optimized = true;
+        }
+    }
 }
