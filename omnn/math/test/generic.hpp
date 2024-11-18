@@ -40,7 +40,7 @@ void TestBinaryOperator(const Valuable& expressionXY, auto function) {
     }
 }
 
-void TestBooleanOperator(const Valuable& expressionXY, auto function) {
+void TestBooleanOperator(const Valuable& expressionXY, auto function, bool compilambda = {}) {
     //std::cout << " Cheking " << expressionXY << std::endl;
     auto lambda = expressionXY.CompiLambda(X, Y);
     for (auto x = 10; x --> -10 ;)
@@ -60,7 +60,10 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function) {
             copy = lambda(x, y);
             //std::cout << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
 
-            // FIXME: BOOST_TEST(copy.IsZero() == etalon);
+            // FIXME: 
+            if (compilambda) {
+                BOOST_TEST(copy.IsZero() == etalon);
+            }
             if(copy.IsZero() != etalon){
                 std::cout << "Expected " << (etalon ? "true" : "false") << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
             }
