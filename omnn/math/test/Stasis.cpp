@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(Stasis
     };
 
     Sum sumd0{mm}, sumd1{mm};
-    Valuable::OptimizeOff oo;
+    Valuable::OptimizeOff off;
     for (auto xx=Sz; xx--;) {
         Sum sumx{mm}, sumy{mm};
         for (auto yy=Sz; yy--; ) {

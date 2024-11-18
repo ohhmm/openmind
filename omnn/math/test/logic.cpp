@@ -2,8 +2,45 @@
 #include <boost/test/unit_test.hpp>
 
 #include "Variable.h"
+#include "Sum.h"
 #include "generic.hpp"
 
+
+BOOST_AUTO_TEST_CASE(Equal_comparator_test) {
+    auto Equal = X.Equals(Y);
+    std::cout << "X=Y : " << Equal << std::endl;
+    TestBooleanOperator(Equal, [](auto x, auto y) { return x == y; });
+}
+
+BOOST_AUTO_TEST_CASE(ABS_expression_test) {
+    auto abs = X.Abs();
+    std::cout << "abs(X) : " << abs << std::endl;
+    TestXpression(abs, [](auto x) { return std::abs(x); });
+}
+
+BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test, *disabled()) {
+    // abs(x)/x doesn't want for x=0, its NaN because of division by zero
+    // searching for alternative approaches to make robust sign(x) function
+    DECL_VA(sign);
+    auto lez = X.LessOrEqual(0);
+    auto gez = X.GreaterOrEqual(0);
+    Valuable::OptimizeOff off; // FIXME: optimize should work well here
+    Product lezSq{lez, lez}, gezSq{gez, gez};
+    Sum both{lezSq, gezSq};
+    auto expression = Product{
+        Sum{both.Sq(), sign.Sq()}, 
+        Sum{gezSq, sign.Equals(1).sq()}, 
+        Sum{lezSq, sign.Equals(-1).sq()}};
+    auto Sign = expression(X);
+    std::cout << "sign(X) : " << Sign << std::endl;
+    //TestXpression(Sign, [](auto x) { return x ? x / std::abs(x) : x; });
+}
+
+BOOST_AUTO_TEST_CASE(Sign_expression_test, *disabled()) {
+    auto Sign = X.Sign();
+    std::cout << "sign(X) : " << Sign << std::endl;
+    TestXpression(Sign, [](auto x) { return x ? x / std::abs(x) : x; });
+}
 
 BOOST_AUTO_TEST_CASE(logic_or_tests
     , *disabled()
@@ -44,10 +81,74 @@ BOOST_AUTO_TEST_CASE(LessOrEqual_comparator_test) {
     TestBooleanOperator(LessOrEqual, [](auto x, auto y) { return x <= y; });
 }
 
-BOOST_AUTO_TEST_CASE(Less_comparator_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(IsNegativeThan_comparator_test) {
+    auto IsNegativeThan = X.IsNegativeThan(Y);
+    std::cout << "X<0, X=-Y : " << IsNegativeThan << std::endl;
+    TestBooleanOperator(IsNegativeThan, [](auto x, auto y) { return x < 0 && x == -y; });
+}
+
+BOOST_AUTO_TEST_CASE(IsNegative_expression_test) {
+    auto IsNegative = X.IsNegative();
+    auto xIsPresent = IsNegative.FindVa() && *IsNegative.FindVa() == X;
+    BOOST_TEST(xIsPresent);
+    if (xIsPresent) {
+        BOOST_TEST_MESSAGE("X < 0 : " << IsNegative);
+        TestBooleanExpression(IsNegative, [](auto x) { return x < 0; });
+    }
+}
+
+BOOST_AUTO_TEST_CASE(IsPositive_expression_test) {
+    auto IsPositive = X.IsPositive();
+    BOOST_TEST_MESSAGE("X>0 : " << IsPositive);
+    TestBooleanExpression(IsPositive, [](auto x) { return x > 0; });
+}
+
+BOOST_AUTO_TEST_CASE(Less_comparator_test) {
     auto Less = X.Less(Y);
     std::cout << "X<Y : " << Less << std::endl;
     TestBooleanOperator(Less, [](auto x, auto y) { return x < y; });
+}
+
+BOOST_AUTO_TEST_CASE(NE_comparator_optimized_expression_test, *disabled()) {
+    auto NE = X.NotEquals(Y);
+    auto nz = !NE.IsZero();
+    BOOST_TEST(nz);
+    NE.MarkNotOptimized();
+    NE = NE.Optimized();
+    nz = !NE.IsZero();
+    BOOST_TEST(nz);
+    BOOST_TEST_MESSAGE("X<>Y : " << NE);
+}
+
+BOOST_AUTO_TEST_CASE(NE_comparator_test) {
+    auto NE = X.NotEquals(Y);
+    std::cout << "X<>Y : " << NE << std::endl;
+    TestBooleanOperator(NE, [](auto x, auto y) { return x != y; });
+}
+
+BOOST_AUTO_TEST_CASE(ToBool_Delta_function_expression_test, *disabled()) {
+    auto delta = X.ToBool();
+    auto xIsPresent = delta.FindVa() && *delta.FindVa() == X;
+    BOOST_TEST(xIsPresent);
+    if (xIsPresent) {
+        std::cout << "bool(X=0) : " << delta << std::endl;
+        TestXpression(delta, [](auto x) { return x == 0; });
+    }
+}
+
+BOOST_AUTO_TEST_CASE(Delta_function_optimized_expression_test, *disabled()) {
+    auto delta = X.ToBool();
+    auto xIsPresent = delta.FindVa() && *delta.FindVa() == X;
+    BOOST_TEST(xIsPresent);
+    auto nz = !delta.IsZero();
+    BOOST_TEST(nz);
+    delta.MarkNotOptimized();
+    delta = delta.Optimized();
+    xIsPresent = delta.FindVa() && *delta.FindVa() == X;
+    BOOST_TEST(xIsPresent);
+    nz = !delta.IsZero();
+    BOOST_TEST(nz);
+    BOOST_TEST_MESSAGE("δ (X)= : " << delta);
 }
 
 BOOST_AUTO_TEST_CASE(Sign_operator_test
@@ -97,12 +198,9 @@ BOOST_AUTO_TEST_CASE(Sign_operator_test
     }
 }
 
-BOOST_AUTO_TEST_CASE(Negative_operator_test
-    , *disabled()
-    )
+BOOST_AUTO_TEST_CASE(Negative_operator_test)
 {
-    DECL_VARS(X);
-    auto NegativeOperatorExpression = X.Negative();
+    auto NegativeOperatorExpression = X.IsNegative();
     std::cout << "X<0 : " << NegativeOperatorExpression << std::endl;
     for (auto x = 10; x--> -10;) {
         auto isLessEq = x < 0;
@@ -144,11 +242,8 @@ BOOST_AUTO_TEST_CASE(Negative_operator_test
     }
 }
 
-BOOST_AUTO_TEST_CASE(NegativeOrZero_operator_test
-    , *disabled()
-    )
+BOOST_AUTO_TEST_CASE(NegativeOrZero_operator_test)
 {
-    DECL_VARS(X);
     auto NegativeOrZeroOperatorExpression = X.NegativeOrZero();
     std::cout << "X<=0 : " << NegativeOrZeroOperatorExpression << std::endl;
     for (auto x = 10; x--> -10;) {
@@ -241,10 +336,10 @@ BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
 BOOST_AUTO_TEST_CASE(Delta_function_test
 	, *disabled() // FIXME:
 ) { // https://en.wikipedia.org/wiki/Dirac_delta_function
-    DECL_VARS(X, Y);
     auto LE = X.LessOrEqual(Y);
     auto deltaFunction_bool = LE.ToBool();
     std::cout << "X<=Y : " << LE << std::endl;
+    std::cout << "bool(X<=Y) : " << deltaFunction_bool << std::endl;
     for (auto x = 10; x-- > -10;) {
         for (auto y = 10; y-- > -10;) {
             auto isLessEq = x <= y;
@@ -294,10 +389,7 @@ BOOST_AUTO_TEST_CASE(ifz_tests) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(Less_operator_test
-                     , *disabled() // FIXME:
-) {
-    DECL_VARS(X, Y);
+BOOST_AUTO_TEST_CASE(Less_operator_test) {
     auto Less = X.Less(Y);
     std::cout << "X<Y : " << Less << std::endl;
     for (auto x = 10; x--> -10;) {
@@ -341,30 +433,35 @@ BOOST_AUTO_TEST_CASE(Less_operator_test
     }
 }
 
-BOOST_AUTO_TEST_CASE(not_tests
-    ,*disabled() //TODO:
-)
-{
+BOOST_AUTO_TEST_CASE(not_tests) {
     DECL_VA(x);
     auto x_eq_1 = x - 1;
-    auto x_ne_1 = !x_eq_1; //!x; // must mean all except this equation
-    std::cout << x_ne_1 << std::endl;
     auto eval_x_eq_1 = x_eq_1;
     eval_x_eq_1.Eval(x, 1);
-    auto ok = eval_x_eq_1 == 0_v;
+    auto ok = eval_x_eq_1.IsZero(); // yes, x=1
     BOOST_TEST(ok);
 
+    auto x_ne_1 = !x_eq_1; //! x; // must mean all except this equation
+    std::cout << x_ne_1 << std::endl;
     auto eval_x_ne_1 = x_ne_1;
-    eval_x_ne_1.Eval(x, 7);
-    ok = eval_x_ne_1 != 0_v;
+    eval_x_ne_1.Eval(x, 1);
+    ok = !eval_x_ne_1.IsZero(); // no, x is 1
     BOOST_TEST(ok);
 
-    auto eq = x.Equals(1).logic_or(x.Equals(2)).logic_or(x.Equals(3));
-    auto neq = x_ne_1;
-    auto intersection = eq && neq;
-    auto _2or3 = x.Equals(2) || x.Equals(3);
-    ok = intersection == _2or3;
+    eval_x_ne_1 = x_ne_1;
+    eval_x_ne_1.Eval(x, 7);
+    ok = eval_x_ne_1.IsZero(); // yes, 7<>1, x is not 1
     BOOST_TEST(ok);
+}
+
+BOOST_AUTO_TEST_CASE(intersect_with_not_tests, *disabled()) {
+    DECL_VA(x);
+    auto x_is_1 = x.Equals(1);
+    auto x_either_123 = x_is_1.logic_or(x.Equals(2)).logic_or(x.Equals(3));
+    auto x_isnt_1 = !x_is_1;
+    auto intersection = x_either_123 && x_isnt_1;
+    auto _2or3 = x.Equals(2) || x.Equals(3);
+    BOOST_TEST(intersection == _2or3);
 }
 
 BOOST_AUTO_TEST_CASE(test_logic_intersection
@@ -392,7 +489,7 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_with_exception
     auto _1 = x.Abet({1,2,3,3});
     auto _2 = x.Abet({2,3,3});
     auto _ = _1.Intersect(_2, x).logic_and(x.NotEquals(3));
-    
+
     auto solutions = _.IntSolutions(x);
     if(solutions.size() != 1)
 		for (auto& s : solutions){

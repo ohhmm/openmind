@@ -89,10 +89,40 @@ namespace
         }
 
         // If types are different, use type ordering
-        if (v1.Type() != v2.Type()
-            && !((v1.IsProduct() && v2.IsExponentiation()) || (v2.IsProduct() && v1.IsExponentiation())))
-        {
-            return toc(v1, v2);
+        if (v1.Type() != v2.Type()) {
+            if (v1.IsSum()) {
+                auto &sum1 = v1.as<Sum>();
+                if (sum1.size() == 1) {
+                    return operator()(sum1.begin()->get(), v2);
+                }
+            }
+
+            if (v2.IsSum()) {
+                auto &sum2 = v2.as<Sum>();
+                if (sum2.size() == 1) {
+                    return operator()(v1, sum2.begin()->get());
+                }
+            }
+
+            if (v1.IsProduct()) {
+                auto &prod1 = v1.as<Product>();
+                if (prod1.size() == 1) {
+                    return operator()(prod1.begin()->get(), v2);
+                }
+            }
+
+            if (v2.IsProduct()) {
+                auto &prod2 = v2.as<Product>();
+                if (prod2.size() == 1) {
+                    return operator()(v1, prod2.begin()->get());
+                }
+            }
+
+            if (!((v1.IsProduct() && v2.IsExponentiation())
+                  || (v2.IsProduct() && v1.IsExponentiation()))
+                    ) {
+                return toc(v1, v2);
+            }
         }
 
         // For same types, delegate to IsComesBefore
@@ -106,10 +136,7 @@ namespace
 
         // If neither comes before the other and they're not equal, MSVC considering it as inconsistent ordering
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        //auto result = toc(v1, v2);
-        //if (result == toc(v2, v1)) {
-            LOG_AND_IMPLEMENT("FIXME: inconsistent ordering, SumOrderComparator failed for not equal values: " << v1 << " and " << v2);
-        //}
+        LOG_AND_IMPLEMENT("FIXME: inconsistent ordering, SumOrderComparator failed for not equal values: " << v1 << " and " << v2);
 #endif
         return {};
     }
@@ -140,7 +167,9 @@ namespace
     const Sum::iterator Sum::Add(Valuable&& item, const iterator hint)
     {
         iterator it = hint;
-        if (item.IsInt()) {
+        if (item.IsZero())
+            it = end();
+        else if (item.IsInt()) {
             it = GetFirstOccurence<Integer>();
             auto e = end();
             if (it == e) 
@@ -149,7 +178,7 @@ namespace
                 auto i = Extract(it++);
                 OptimizeOn oo;
                 i += item;
-                if (i != constants::zero)
+                if (!i.IsZero())
                     it = Add(std::move(i), it);
                 else
                     it = e;
@@ -163,7 +192,7 @@ namespace
             auto i = Extract(it++);
             OptimizeOn oo;
             i += item;
-            if (i != constants::zero)
+            if (!i.IsZero())
                 it = Add(std::move(i), it);
             else
                 it = end();
@@ -198,6 +227,24 @@ namespace
         return it;
     }
     
+    void Sum::Update(iterator& it, Valuable&& value)
+    {
+        if (value.IsZero()) {
+            Delete(it);
+        } else {
+            base::Update(it, std::move(value));
+        }
+    }
+
+    void Sum::Update(iterator& it, const Valuable& value)
+    {
+        if (value.IsZero()) {
+            Delete(it);
+        } else {
+            base::Update(it, value);
+        }
+    }
+
 	Valuable Sum::operator -() const
 	{
 		Sum s;
@@ -249,9 +296,11 @@ namespace
             OptimizeOn on;
             Valuable copy(Clone());
             copy.optimize();
-            return copy.IsSum()
-                ? copy.as<Sum>().GCDofMembers()
-                : std::move(copy);
+            if (copy.is_optimized()) {
+                return copy.IsSum()
+                    ? copy.as<Sum>().GCDofMembers()
+                    : std::move(copy);
+            }
         }
         auto b = members.begin();
         auto e = members.end();
@@ -346,25 +395,19 @@ namespace
         Optimizing o(*this);
 
         auto s = str();
-        auto doCheck = s.length() > 10;
+        auto doCheckCache = s.length() > 10;
         auto isBalancing = IsEquation();
         auto& db = isBalancing ? DbSumBalancingCache : DbSumOptimizationCache;
-        auto checkCache = doCheck ? db.AsyncFetch(*this, true) : Cache::TaskNoCache;
+        auto cached = doCheckCache ? db.AsyncFetch(*this, true) : Cache::TaskNoCache;
 
         Valuable w;
         do
         {
-            if (checkCache) {
-                Become(checkCache);
-                return;
-            }
+            CHECK_OPTIMIZATION_CACHE
 
             w = *this;
 
-            if (checkCache) {
-                Become(checkCache);
-                return;
-            }
+            CHECK_OPTIMIZATION_CACHE
 
             if (members.size() == 0) {
                 Become(0_v);
@@ -375,10 +418,7 @@ namespace
                 return;
             }
 
-            if (checkCache) {
-                Become(checkCache);
-                return;
-            }
+            CHECK_OPTIMIZATION_CACHE
 
             // Remove inner sums first, to eliminate recursive optimization loop
             for (auto it = members.begin(); it != members.end();) {
@@ -402,31 +442,48 @@ namespace
             for (auto it = members.begin(); it != members.end();)
             {
                 // optimize member
-                auto copy = *it;
-                copy.optimize();
-                if (copy.IsZero())
-                    Delete(it);
-                else if (!it->Same(copy))
+                auto copy = it->Optimized();
+                if (!it->Same(copy))
                     Update(it, copy);
                 else
                     ++it;
 
-                if (checkCache) {
-                    Become(checkCache);
-                    return;
-                }
+                CHECK_OPTIMIZATION_CACHE
             }
 
             if (IsEquation()) {
                 auto e = members.end();
+                auto Surd = [](auto it) {
+                    auto surd = it->template As<PrincipalSurd>();
+                    if (it->IsProduct()) {
+                        auto& product = it->template as<Product>();
+                        auto surdIt = product.template GetFirstOccurence<PrincipalSurd>();
+                        if (surdIt != product.end()) {
+                            surd = surdIt->template As<PrincipalSurd>();
+                        }
+                    }
+                    return surd;
+                };
                 for (auto it = members.begin(); it != e;) {
-                    auto SurdIsReducable = [&](auto& m) {
-                        auto is = size() <= 2;
+                    auto SurdIsReducable = [&](auto& it) {
+                        auto is = size() == 1; // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is different from x+1=0 (x=-1)
+                                    // this means that only equality to zero which has zero sign can be squared (not for odd powers)
+                                    // reducing surd makes new consistent equation which roots might be considered for the source equation but it is not equivalent
+                                    // TODO: if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation
+
                         if (!is) {
-                            auto next = it;
-                            ++next;
-                            is = std::none_of(next, e, [this](auto& m) { return VarSurdFactor(m); });
-						}
+                            auto isThereSurd = Surd(it);
+                            if (isThereSurd) {
+                                auto& index = isThereSurd->Index();
+                                if (index.IsEven() == YesNoMaybe::No) {
+                                    auto next = it;
+                                    ++next;
+                                    is = std::none_of(next, e,
+                                            [this](auto& m) { return VarSurdFactor(m); }
+                                        );
+                                }
+                            }
+                        }
                         return is;
 					};
                     if (it->IsPrincipalSurd()) {
@@ -435,22 +492,22 @@ namespace
                             auto& surd = ps.as<PrincipalSurd>();
                             operator^=(surd.Index());
                             operator-=(surd.Radicand());
-                            return;
-                        } else {
                             break;
+                        }
+                        else {
+                            ++it;
                         }
                     }
                     else if(it->IsProduct()) {
-                        if (SurdIsReducable(it)) {
-                            auto& p = it->as<Product>();
-                            auto ps = p.GetFirstOccurence<PrincipalSurd>();
-                            if (ps != p.end()) {
-                                auto& idx = ps->as<PrincipalSurd>().Index();
-                                auto p = Extract(it);
+                        auto isThereSurd = Surd(it);
+                        if (isThereSurd) {
+                            if (SurdIsReducable(it)) {
+                                auto& idx = isThereSurd->Index();
+                                auto product = Extract(it);
                                 operator^=(idx);
-                                p.operator^=(idx);
-                                operator-=(p);
-                                return;
+                                product.operator^=(idx);
+                                operator-=(product);
+                                break;
                             }
                             else {
                                 ++it;
@@ -462,26 +519,23 @@ namespace
                     else
                         ++it;
 
-                    if (checkCache) {
-                        Become(checkCache);
-                        return;
-                    }
+                    CHECK_OPTIMIZATION_CACHE
                 }
 
-                auto& coVa = getCommonVars();
-                if (coVa.size()) {
-                    *this /= VaVal(coVa);
-                    if (!IsSum()) {
-                        return;
+                if (IsSum()) {
+                    auto common = GCDofMembers().varless();
+                    if (common != constants::one) {
+                        operator/=(common);
                     }
                 }
             }
             
-            if (checkCache) {
-                Become(checkCache);
-                return;
-            }
+            CHECK_OPTIMIZATION_CACHE
             
+            if (!IsSum()) {
+                break;
+            }
+
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->IsSum()) {
@@ -517,10 +571,7 @@ namespace
                 
                 for (; it2 != members.end();)
                 {
-                    if (checkCache) {
-                        Become(checkCache);
-                        return;
-                    }
+                    CHECK_OPTIMIZATION_CACHE
                     
                     if(c.IsSum()){
                         break;
@@ -589,22 +640,11 @@ namespace
             // optimize members
             for (auto it = members.begin(); it != members.end();)
             {
-                if (checkCache) {
-                    Become(checkCache);
-                    return;
-                }
-                auto copy = *it;
+                CHECK_OPTIMIZATION_CACHE
+
+                auto copy = it->Optimized();
                 
-                if (checkCache) {
-                    Become(checkCache);
-                    return;
-                }
-                copy.optimize();
-                
-                if (checkCache) {
-                    Become(checkCache);
-                    return;
-                }
+                CHECK_OPTIMIZATION_CACHE
                 
                 if (!it->Same(copy)) {
                     Update(it, copy);
@@ -620,16 +660,17 @@ namespace
 #endif
         } while (w != *this);
 
+        if (IsSum()) {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if (size() == 1) {
-            LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << s << " to " << *this);
-        }
+            if (size() == 1) {
+                LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << s << " to " << *this);
+            }
 #endif
+            if (isBalancing)
+                balance();
+        }
 
-        if (isBalancing)
-            balance();
-
-        if (doCheck && checkCache.NotInCache()) {
+        if (doCheckCache && cached.NotInCache()) {
             db.AsyncSet(std::move(s), str());
         }
     }
@@ -649,6 +690,13 @@ namespace
                 Become(std::move(const_cast<Valuable&>(*b)));
             }
             else {
+                if (IsSum()) {
+                    auto& coVa = getCommonVars();
+                    if (coVa.size()) {
+                        *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
+                    }
+                }
+
                 // make coefficients int to use https://simple.wikipedia.org/wiki/Rational_root_theorem
                 bool scan;
                 do {
@@ -711,24 +759,17 @@ namespace
                     }
                 } while (scan);
 
-                if (IsSum()) {
-                    auto& coVa = getCommonVars();
-                    if (coVa.size()) {
-                        *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
+                if(IsSum())
+                {
+                    auto gcd = GCDofMembers();
+                    if(gcd != constants::one){
+                        operator/=(gcd);
                     }
 
-                    if(IsSum())
-                    {
-                        auto gcd = GCDofMembers();
-                        if(gcd != constants::one){
-                            operator/=(gcd);
-                        }
-
-                        if(IsMultival()== Valuable::YesNoMaybe::Yes){
-                            auto uni = Univariate();
-                            if(!Same(uni)){
-                                Become(std::move(uni));
-                            }
+                    if(IsMultival()== Valuable::YesNoMaybe::Yes){
+                        auto uni = Univariate();
+                        if(!Same(uni)){
+                            Become(std::move(uni));
                         }
                     }
                 }
@@ -794,24 +835,22 @@ namespace
         return GCDofMembers().varless();
     }
 
-    Valuable& Sum::operator+=(const Sum& s) {
-        {
-            OptimizeOff oo;
-            for (auto& i : s) {
-                operator+=(i); // FIXME: operator+= -> Add
+    Valuable& Sum::operator+=(const Sum& sum) {
+        if (sum.size()) {
+            {
+                OptimizeOff off;
+                for (auto &item: sum) {
+                    operator+=(item); // FIXME: operator+= -> Add
+                }
             }
-
-            if (s.size()) {
-                optimized = {};
-            }
+            optimize();
         }
-		optimize();
 		return *this;
 	}
 
     Valuable& Sum::operator +=(const Valuable& v)
     {
-        if (v.IsInt() && v == 0) {
+        if (v.IsZero()) {
             return *this;
         }
         if (v.IsSum()) {
@@ -827,7 +866,9 @@ namespace
                     optimize();
                     return *this;
                 }
-                if (it->OfSameType(v) && it->getCommonVars() == v.getCommonVars())
+                if (it->OfSameType(v)
+                    && it->is_optimized() && v.is_optimized()
+                    && it->getCommonVars() == v.getCommonVars())
                 {
                     auto s = *it + v;
                     if (!s.IsSum()) {
@@ -848,9 +889,7 @@ namespace
                 }
             }
 
-            // add new member
             Add(v);
-            optimized={};
         }
 
         optimize();
@@ -872,7 +911,7 @@ namespace
         else {
             Sum sum;
             {
-                OptimizeOff oo;
+                OptimizeOff off;
                 sum.SetView(GetView());
                 if (v.IsSum()) {
                     for (auto& _1 : v.as<Sum>())
@@ -1030,17 +1069,20 @@ namespace
                         }
                     }
                     if (!IsZero()) {
+                        OptimizeOff off;
                         s = Fraction(*this, v);
                     }
                 }
                 else
                 {
+                    OptimizeOff off;
                     s = Fraction(*this, v);
                 }
             }
 		}
 		else
 		{
+            OptimizeOff off;
             for (auto& a : members) {
                 s += a / v;
             }
@@ -1050,37 +1092,34 @@ namespace
         return Become(std::move(s));
 	}
 
-    Valuable& Sum::operator %=(const Valuable& v)
+    Valuable& Sum::operator %=(const Valuable& value)
     {
-        auto doCheck = size() > 20;
-        auto cached = doCheck ? DbSumModCache.AsyncFetch(*this, true) : Cache::TaskNoCache;
+        auto doCheckCache = size() > 20;
+        USE_CACHE(DbSumModCache);
 
-        Valuable s = constants::zero;
-        if (v.IsSum())
+        Valuable sum = constants::zero;
+        if (value.IsSum())
         {
-            auto& i = v.as<Sum>();
-            if(!v.FindVa())
+            auto& i = value.as<Sum>();
+            if(!value.FindVa())
             {
                 for (auto& a : members) {
-                    if (cached)
-                        return Become(cached);
+                    CHECK_CACHED_READY
                     for (auto& b : i.members) {
-                        s += a / b;
+                        sum += a / b;
                     }
                 }
             }
             else
             {
-                if (cached)
-                    return Become(cached);
+                CHECK_CACHED_READY
                 if (size() < i.size())
                 {
-                    s = Modulo(*this, v);
+                    sum = Modulo(*this, value);
                 }
-                else if (HasSameVars(v))
+                else if (HasSameVars(value))
                 {
-                    if (cached)
-                        return Become(cached);
+                    CHECK_CACHED_READY
                     auto b = i.begin();
                     auto e = i.end();
                     size_t offs = 0;
@@ -1089,8 +1128,7 @@ namespace
                     auto icnt = size() * 2;
                     while (!IsZero() && icnt--)
                     {
-                        if (cached)
-                            return Become(cached);
+                        CHECK_CACHED_READY
                         if (IsSum())
                         {
                             auto it = begin();
@@ -1143,8 +1181,8 @@ namespace
                             }
                             
                             auto t = *begin() / *it2;
-                            s += t;
-                            t *= v;
+                            sum += t;
+                            t *= value;
                             *this -= t;
                             if (std::find(hist.begin(), hist.end(), *this) == hist.end()) {
                                 hist.push_back(*this);
@@ -1162,36 +1200,31 @@ namespace
                         }
                         else
                         {
-                            s = Modulo(*this, v);
+                            sum = Modulo(*this, value);
                         }
                     }
                     if (!IsZero()) {
-                        s = Modulo(*this, v);
+                        sum = Modulo(*this, value);
                     }
                 }
                 else
                 {
-                    s = Modulo(*this, v);
+                    sum = Modulo(*this, value);
                 }
             }
         }
         else
         {
             for (auto& a : members) {
-                s += a % v;
+                sum += a % value;
             }
-            s = Modulo(s,v);
+            sum = Modulo(sum,value);
         }
 
-        if (cached)
-            return Become(cached);
-        if (cached.NotInCache()) {
-            auto key = str();
-            OptimizeOn on;
-            Become(std::move(s));
-            DbSumSqCache.AsyncSet(std::move(key), str());
-        } else
-            Become(std::move(s));
+        CHECK_CACHED_READY
+        Become(std::move(sum));
+
+        STORE_TO_CACHE
         return *this;
     }
 
@@ -1243,15 +1276,31 @@ namespace
             if (sz1 != sz2) {
                 return sz1 > sz2;
             }
-            
-            for (auto i1=begin(), i2=s.begin(); i1!=end(); ++i1, ++i2) {
+
+            auto beg = begin();
+            auto sbeg = s.begin();
+            for (auto i1 = beg, i2 = sbeg; i1 != end(); ++i1, ++i2) {
                 if (*i1 != *i2) {
-                    return i1->IsComesBefore(*i2);
+                    auto cmp12 = soc(*i1, *i2);
+                    auto cmp21 = soc(*i2, *i1);
+                    if (cmp12 == cmp21)
+                        continue;
+                    return cmp21;
+                }
+            }
+
+            for (auto i1 = beg, i2 = sbeg; i1 != end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    return toc(*i1, *i2);
                 }
             }
         }
-        
-        return {};
+
+        if (size() == 1) {
+            return begin()->IsComesBefore(v);
+        }
+
+        return toc(*this, v);
     }
 
 	std::ostream& Sum::print(std::ostream& out) const
@@ -1334,25 +1383,25 @@ namespace
 
     Valuable& Sum::sq()
     {
-        auto cached = DbSumSqCache.AsyncFetch(*this, true);
+        auto doCheckCache = Complexity() > 10;
+        USE_CACHE(DbSumSqCache);
         Sum sum;
         auto e = end();
         for (auto i = begin(); i != e; ++i)
         {
-            if (cached)
-                return Become(cached);
+            CHECK_CACHED_READY;
             sum.Add(i->Sq());
             for (auto j = i; ++j != e;)
             {
                 sum.Add(*i * *j * 2);
             }
         }
-        if (cached.NotInCache())
+        if (doCheckCache && cached.NotInCache())
         {
             auto key = str();
             OptimizeOn on;
             Become(std::move(sum));
-            DbSumSqCache.AsyncSet(std::move(key), str());
+            cache.AsyncSet(std::move(key), str());
         }
         else
             Become(std::move(sum));
@@ -1434,7 +1483,7 @@ namespace
         // TODO : openmp
         //#pragma omp parallel default(none) shared(grade,coefficients)
         {
-            OptimizeOff oo;
+            OptimizeOff off;
         //#pragma omp for 
         for (auto& m : members)
         {
@@ -1727,8 +1776,8 @@ namespace
             return (-(coefficients[0] / coefficients[grade])) ^ (constants::one / grade);
         }
         
-        auto doCheck = grade > 2;
-        auto checkCached = doCheck
+        auto doCheckCache = grade > 2;
+        auto checkCached = doCheckCache
                             ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true)
                             : Cache::TaskNoCache;
         if (grade == 2) {
@@ -2660,7 +2709,7 @@ namespace
                 is.first = mIs.first;
                 sum.Add(mIs.second);
             } else {
-                OptimizeOff oo;
+                OptimizeOff off;
                 sum.Add(Valuable(std::make_shared<Product>(std::initializer_list<Valuable>{v,m})));
             }
         }

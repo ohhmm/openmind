@@ -12,7 +12,34 @@ using namespace boost::unit_test;
 
 
 BOOST_AUTO_TEST_CASE(Product_operator_tests) {
+    Valuable::OptimizeOff off;
 	auto p = std::move(Product{2, 4}); 
+
+    // test adding equal by value values:
+    p.Add(1_v / 2);
+    p.Add(2_v / 4);
+
+    auto _1 = p.Optimized();
+    auto _2 = 2_v;
+    BOOST_TEST(_1 == _2);
+}
+
+BOOST_AUTO_TEST_CASE(Product_comparision_test) {
+    auto _1 = "2*((v8)^2)"_v;
+    auto _2 = "2 * (v8 ^ 2)"_v;
+    BOOST_TEST(_1 == _2);
+    auto less = _1 < _2;
+    BOOST_TEST(!less);
+    less = _2 < _1;
+    BOOST_TEST(!less);
+
+    _1 = "((x)^2)*(z^2)"_v;
+    _2 = "((x)^2)*((z)^2)"_v;
+    BOOST_TEST(_1 == _2);
+    less = _1 < _2;
+    BOOST_TEST(!less);
+    less = _2 < _1;
+    BOOST_TEST(!less);
 }
 
 BOOST_AUTO_TEST_CASE(Product_tests)

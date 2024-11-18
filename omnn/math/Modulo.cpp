@@ -109,7 +109,7 @@ void Modulo::optimize() {
     if (IsModulo()) {
         hash = _1.Hash() ^ _2.Hash();
         MarkAsOptimized();
-        STORE_OPTIMIZATION_CACHE
+        STORE_TO_CACHE
     }
 }
 

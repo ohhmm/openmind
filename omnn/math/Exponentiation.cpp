@@ -8,8 +8,9 @@
 #include "Infinity.h"
 #include "pi.h"
 #include "Integer.h"
-#include "Sum.h"
+#include "PrincipalSurd.h"
 #include "Product.h"
+#include "Sum.h"
 
 #include <cmath>
 #include <limits>
@@ -201,13 +202,7 @@ namespace omnn::math {
             if (_.IsExponentiation()) {
                 auto& e = _.as<Exponentiation>();
                 if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
-                    // If the exponentiation result differs, we need to handle it
-                    // This could involve creating a new Exponentiation object or simplifying further
-                    auto newBase = e.ebase() ^ eexp();
-                    auto newExp = e.eexp() * eexp();
-                    Become(newBase ^ newExp);
-                    optimize(); // Recursively optimize the new structure
-                    return;
+                    IMPLEMENT
                 }
             } else {
                 Become(std::move(_));
@@ -271,7 +266,7 @@ namespace omnn::math {
                         setExponentiation(-eexp());
                     }
                     else if (eexp().IsZero()) {
-                        Become(1);
+                        Become(std::move(ebase()));
                         return;
 					}
 				}
@@ -310,14 +305,7 @@ namespace omnn::math {
                 Become(Fraction{1,ebase()});
                 return;
             } else if (eexp().IsInfinity()) {
-                if (ebase() > 1) {
-                    Become(Infinity());
-                } else if (ebase() < 1) {
-                    Become(0_v);
-                } else {
-                    // Base is 1, result is indeterminate
-                    throw std::runtime_error("Indeterminate form: 1^∞");
-                }
+                IMPLEMENT
             } else if (eexp().IsFraction()) {
                 auto& f = eexp().as<Fraction>();
                 auto& n = f.getNumerator();
@@ -337,17 +325,7 @@ namespace omnn::math {
         if(exz)
         {
             if (ebase().IsInfinity() || ebase().IsMInfinity()) {
-                // Handle infinity or minus infinity base cases
-                if (eexp() > 0) {
-                    // Positive exponent: result is infinity with same sign as base
-                    Become(ebase().IsInfinity() ? Infinity() : -Infinity());
-                } else if (eexp() < 0) {
-                    // Negative exponent: result is zero
-                    Become(0_v);
-                } else {
-                    // Zero exponent: result is indeterminate
-                    throw std::runtime_error("Indeterminate form: ∞^0");
-                }
+                IMPLEMENT
             }
             if(ebz)
                 throw "NaN";
@@ -441,19 +419,7 @@ namespace omnn::math {
                                 {
                                     bool isInt = n.IsInt();
                                     if (!isInt)
-                                        // Handle non-integer case in optimization
-                                        // For non-integer exponents, we need to handle special cases
-                                        if (n.IsSimpleFraction()) {
-                                            // For simple fractions, try to simplify using root properties
-                                            auto& f = n.as<Fraction>();
-                                            x = x ^ f.getNumerator();
-                                            if (f.getDenominator() != 1) {
-                                                x = x.nthRoot(f.getDenominator());
-                                            }
-                                        } else {
-                                            // For complex non-integer expressions, keep as is
-                                            x = *this;
-                                        }
+                                        IMPLEMENT
                                     if (isInt && n.bit().IsZero())
                                     {
                                         x.sq();
@@ -632,9 +598,9 @@ namespace omnn::math {
                 auto& extract = distinct.extract(value).value();
                 if (extract.MultiplyIfSimplifiable(v)) {
                     is = true;
-				} else {
+                } else {
                     extract *= v;
-				}
+                }
                 values.emplace(std::move(extract));
             }
             Become(Valuable(std::move(values)));
@@ -661,16 +627,7 @@ namespace omnn::math {
         } else if (v.IsMultival() == YesNoMaybe::Yes) {
             LOG_AND_IMPLEMENT(str() << " Exponentiation::MultiplyIfSimplifiable " << v);
         } else if (v.IsInt()) {
-            // Handle integer multiplication case
-            auto n = v.as<Integer>();
-            if (n > 0) {
-                eexp() *= n;  // Update exponent by multiplying with n
-                return true;
-            } else if (n < 0) {
-                eexp() *= -n;  // Update exponent with absolute value of n
-                ebase() = -ebase();  // Negate base to handle negative multiplier
-                return true;
-            }
+            IMPLEMENT
         } else {
 //            std::cout << str() << " * " << v.str() << std::endl;
         }
@@ -750,6 +707,8 @@ namespace omnn::math {
             }else{
                 is=sum.IsMultiplicationSimplifiable(*this);
             }
+        } else if (v.IsNaN()) {
+            is = {true, v};
         } else {
 #ifndef NDEBUG
             std::cout << "IsMultiplication simplifiable?: " << str() << " * " << v.str() << std::endl;
@@ -915,29 +874,7 @@ namespace omnn::math {
                 Become(std::move(p.integral(x, C)));
             }
         } else {
-            // Handle case where base is not the integration variable
-            // Use the chain rule: integral of f(x)^g(x) dx
-            auto baseDerivative = ebase().d(x);
-            auto expDerivative = eexp().d(x);
-
-            // If either derivative is zero, handle special cases
-            if (baseDerivative.IsZero()) {
-                // If base doesn't depend on x, treat as constant coefficient
-                auto result = ebase() ^ eexp();
-                result *= x;
-                result += C;
-                Become(std::move(result));
-            } else if (expDerivative.IsZero()) {
-                // If exponent is constant, use power rule
-                auto newExp = eexp() + 1;
-                auto result = (ebase() ^ newExp) / newExp;
-                result += C;
-                Become(std::move(result));
-            } else {
-                // General case: use substitution or keep as is
-                // This is a complex case that might not have a closed form
-                operator+=(C);
-            }
+            IMPLEMENT
         }
 
         return *this;
@@ -1006,22 +943,7 @@ namespace omnn::math {
                         if(value.IsMultival()==YesNoMaybe::No)
                             vals.insert(value);
                         else {
-                            // Handle value insertion case
-                            // For non-trivial values, we need to check compatibility
-                            if (value.IsExponentiation()) {
-                                // If the value is also an exponentiation, compare bases
-                                auto& otherExp = value.as<Exponentiation>();
-                                if (ebase() == otherExp.ebase()) {
-                                    // Same base, merge exponents
-                                    vals.insert(ebase() ^ (eexp() + otherExp.eexp()));
-                                } else {
-                                    // Different bases, keep separate
-                                    vals.insert(value);
-                                }
-                            } else {
-                                // For other types, insert as is
-                                vals.insert(value);
-                            }
+                            IMPLEMENT
                         }
                     }
                 }
@@ -1103,23 +1025,8 @@ namespace omnn::math {
             is = !!FindVa();
         else if(v.IsSum())
             is = IsComesBefore(*v.as<Sum>().begin());
-        else {
-            // Default comparison for other cases
-            // Compare based on string representation as a fallback
-            // This ensures consistent ordering even for complex expressions
-            if (v.IsExponentiation()) {
-                // For exponentiations, compare bases first, then exponents
-                auto& otherExp = v.as<Exponentiation>();
-                if (ebase() == otherExp.ebase()) {
-                    is = eexp().IsComesBefore(otherExp.eexp());
-                } else {
-                    is = ebase().IsComesBefore(otherExp.ebase());
-                }
-            } else {
-                // For other types, use string comparison as fallback
-                is = str().compare(v.str()) < 0;
-            }
-        }
+        else
+            IMPLEMENT
 
         return is;
     }
@@ -1158,12 +1065,7 @@ namespace omnn::math {
     }
 
     Valuable& Exponentiation::sqrt() {
-        hash ^= _2.Hash();
-        _2 /= 2;
-        hash ^= _2.Hash();
-        optimized = {};
-        optimize();
-        return *this;
+        return Become(PrincipalSurd(*this, 2));
     }
 
     const Valuable::vars_cont_t& Exponentiation::getCommonVars() const {
@@ -1222,15 +1124,7 @@ namespace omnn::math {
                         } else
                             c = *this;
                     } else {
-                        // Handle special case for exponentiation comparison
-                        // Compare based on base and exponent values
-                        if (ebase() == e.ebase()) {
-                            // Same base, compare exponents
-                            c = ebase() ^ std::min(eexp(), e.eexp());
-                        } else {
-                            // Different bases, keep original
-                            c = *this;
-                        }
+                        IMPLEMENT
                     }
                 } else if (getExponentiation().IsSimpleFraction() && e.getExponentiation().IsSimpleFraction()) {
                     if (getExponentiation()<0 == e.getExponentiation()<0) {
@@ -1246,18 +1140,7 @@ namespace omnn::math {
                 } else if (e.getExponentiation().IsProduct()) {
                     c = ebase() ^ e.eexp().InCommonWith(eexp());
                 } else {
-                    // Handle general case for exponentiation comparison
-                    // Try to find common factors or simplify
-                    if (ebase() == e.ebase()) {
-                        // Same base, use common exponent
-                        c = ebase() ^ std::min(eexp(), e.eexp());
-                    } else if (eexp() == e.eexp()) {
-                        // Same exponent, compare bases
-                        c = std::min(ebase(), e.ebase()) ^ eexp();
-                    } else {
-                        // No common factors, keep as is
-                        c = *this;
-                    }
+                    IMPLEMENT
                 }
             }
         } else if (getExponentiation().IsInt()) {
@@ -1270,6 +1153,11 @@ namespace omnn::math {
         } else if (v.IsModulo()) {
         } else if (getExponentiation().IsVa()) {
         } else if (getExponentiation().IsModulo()) {
+        } else if (v.IsPrincipalSurd()) {
+            auto commonWithBase = v.InCommonWith(ebase());
+            if (commonWithBase != constants::one) {
+                LOG_AND_IMPLEMENT(*this << " InCommonWith " << v);
+            }
         } else {
             LOG_AND_IMPLEMENT(*this << " InCommonWith " << v);
         }
@@ -1289,9 +1177,7 @@ namespace omnn::math {
             auto& f = getExponentiation().as<Fraction>();
             return (getBase()^f.getNumerator())(v,augmentation^f.getDenominator());
         } else {
-            auto newBase = ebase()(v, augmentation);
-            auto newExp = eexp()(v, augmentation);
-            return newBase ^ newExp;
+            IMPLEMENT
         }
     }
 
@@ -1384,37 +1270,13 @@ namespace omnn::math {
 	}
 
     void Exponentiation::solve(const Variable& va, solutions_t& s) const {
-        if (ebase() == va) {
-            // For x^n = k, solutions depend on n
-            if (eexp().IsInt()) {
-                // For integer exponents, handle positive and negative cases
-                auto n = eexp().ca();
-                if (n % 2 == 0) {
-                    // Even exponents: two solutions for non-zero values
-                    s.insert(Valuable::Sqrt());
-                    s.insert(-Valuable::Sqrt());
-                } else {
-                    // Odd exponents: one solution
-                    s.insert(*this ^ (Valuable(1) / eexp()));
-                }
-            } else if (eexp().IsSimpleFraction()) {
-                // For fractional exponents, handle root finding
-                auto& f = eexp().as<Fraction>();
-                auto& num = f.getNumerator();
-                auto& den = f.getDenominator();
-                if (den.IsEven() == YesNoMaybe::Yes) {
-                    // Even denominator: multiple solutions possible
-                    auto root = *this ^ (Valuable(1) / eexp());
-                    s.insert(root);
-                    s.insert(-root);
-                } else {
-                    // Odd denominator: one solution
-                    s.insert(*this ^ (Valuable(1) / eexp()));
-                }
-            }
+        if (_1 == va
+			&& !_2.FindVa()
+			&& _2 != constants::zero)
+		{
+            s.emplace(constants::zero);
         } else {
-            // If base contains the variable, try to solve base equation
-            ebase().solve(va, s);
+			IMPLEMENT
         }
     }
 
@@ -1422,214 +1284,4 @@ namespace omnn::math {
         return ebase().Sign() ^ eexp();
     }
 
-    void Exponentiation::CollectVa(::std::set<Variable>& s) const noexcept {
-        ebase().CollectVa(s);
-        eexp().CollectVa(s);
-    }
-
-    bool Exponentiation::eval(const ::std::map<Variable, ValuableWrapper>& with) noexcept {
-        bool changed = ebase().eval(with);
-        changed |= eexp().eval(with);
-        if (changed) {
-            InitVars();
-            optimized = {};
-        }
-        return changed;
-    }
-
-    void Exponentiation::Eval(const Variable& va, const Valuable& v) noexcept {
-        ebase().Eval(va, v);
-        eexp().Eval(va, v);
-        InitVars();
-        optimized = {};
-    }
-
-    bool Exponentiation::is_optimized() const noexcept {
-        return optimized && ebase().is_optimized() && eexp().is_optimized();
-    }
-
-    void Exponentiation::optimize() noexcept {
-        if (!is_optimized()) {
-            ebase().optimize();
-            eexp().optimize();
-            InitVars();
-            optimized = true;
-        }
-    }
-
-    bool Exponentiation::operator==(const Variable& v) const noexcept {
-        return false;  // An exponentiation is never equal to a single variable
-    }
-
-    Valuable Exponentiation::operator()(const Variable& va, const Valuable& augmentation) const {
-        if (ebase() == va) {
-            return augmentation ^ eexp();
-        } else {
-            auto newBase = ebase()(va, augmentation);
-            auto newExp = eexp()(va, augmentation);
-            return newBase ^ newExp;
-        }
-    }
-
-    Valuable& Exponentiation::d(const Variable& x) noexcept {
-        // Using the chain rule for derivatives:
-        // d/dx(f^g) = f^g * (g * d/dx(ln(f)) + ln(f) * d/dx(g))
-        if (ebase().HasVa(x) || eexp().HasVa(x)) {
-            auto f = ebase();
-            auto g = eexp();
-            auto f_prime = f.d(x);
-            auto g_prime = g.d(x);
-
-            // Calculate d/dx(ln(f)) = f'/f
-            auto ln_f_prime = f_prime / f;
-
-            // Calculate the full derivative
-            Become(*this * (g * ln_f_prime + Valuable::ln(f) * g_prime));
-        } else {
-            Become(0_v);
-        }
-        return *this;
-    }
-
-    // Implement missing virtual functions
-
-    bool Exponentiation::IsVa() const noexcept {
-        return false;  // Exponentiation is not a variable
-    }
-
-    YesNoMaybe Exponentiation::IsMultival() const noexcept {
-        return ebase().IsMultival() || eexp().IsMultival() ? YesNoMaybe::Yes : YesNoMaybe::No;
-    }
-
-    bool Exponentiation::IsSimple() const noexcept {
-        return ebase().IsSimple() && eexp().IsSimple();
-    }
-
-    a_int Exponentiation::Complexity() const noexcept {
-        return ebase().Complexity() + eexp().Complexity() + 1;
-    }
-
-    const Variable* Exponentiation::FindVa() const noexcept {
-        auto baseVa = ebase().FindVa();
-        if (baseVa) return baseVa;
-        return eexp().FindVa();
-    }
-
-    void Exponentiation::CollectVaNames(va_names_t& s) const noexcept {
-        ebase().CollectVaNames(s);
-        eexp().CollectVaNames(s);
-    }
-
-    const Valuable::vars_cont_t& Exponentiation::getCommonVars() const noexcept {
-        static vars_cont_t commonVars;
-        commonVars.clear();
-        auto baseVars = ebase().getCommonVars();
-        auto expVars = eexp().getCommonVars();
-        std::set_intersection(baseVars.begin(), baseVars.end(),
-                              expVars.begin(), expVars.end(),
-                              std::inserter(commonVars, commonVars.begin()));
-        return commonVars;
-    }
-
-    Valuable::vars_cont_t Exponentiation::GetVaExps() const noexcept {
-        vars_cont_t result;
-        auto baseVaExps = ebase().GetVaExps();
-        auto expVaExps = eexp().GetVaExps();
-        result.insert(baseVaExps.begin(), baseVaExps.end());
-        result.insert(expVaExps.begin(), expVaExps.end());
-        return result;
-    }
-
-    bool Exponentiation::MultiplyIfSimplifiable(const Valuable& v) noexcept {
-        if (v.IsExponentiation()) {
-            const auto& e = v.as<Exponentiation>();
-            if (ebase() == e.ebase()) {
-                eexp() += e.eexp();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool Exponentiation::SumIfSimplifiable(const Valuable& v) noexcept {
-        return false;  // Exponentiation cannot be directly summed
-    }
-
-    Valuable Exponentiation::operator-() const noexcept {
-        return Exponentiation(ebase(), -eexp());
-    }
-
-    bool Exponentiation::operator<(const Valuable& v) const noexcept {
-        if (v.IsExponentiation()) {
-            const auto& e = v.as<Exponentiation>();
-            if (ebase() == e.ebase()) {
-                return eexp() < e.eexp();
-            }
-            return ebase() < e.ebase();
-        }
-        return Type() < v.Type();
-    }
-
-    bool Exponentiation::is_optimized() const noexcept {
-        return optimized && ebase().is_optimized() && eexp().is_optimized();
-    }
-
-    void Exponentiation::CollectVa(::std::set<Variable>& s) const noexcept {
-        // Collect variables from both base and exponent
-        ebase().CollectVa(s);
-        eexp().CollectVa(s);
-    }
-
-    bool Exponentiation::eval(const ::std::map<Variable, ValuableWrapper>& with) noexcept {
-        // Evaluate both base and exponent with the provided variable substitutions
-        bool baseChanged = ebase().eval(with);
-        bool expChanged = eexp().eval(with);
-
-        if (baseChanged || expChanged) {
-            optimized = false;  // Mark for re-optimization since values changed
-            optimize();         // Re-optimize after evaluation
-            return true;
-        }
-        return false;
-    }
-
-    void Exponentiation::Eval(const Variable& va, const Valuable& v) noexcept {
-        // Evaluate both base and exponent with the provided variable substitution
-        ebase().Eval(va, v);
-        eexp().Eval(va, v);
-
-        optimized = false;  // Mark for re-optimization since values may have changed
-        optimize();         // Re-optimize after evaluation
-    }
-
-    void Exponentiation::solve(const Variable& va, solutions_t& solutions) const noexcept {
-        // Check if the variable appears in base or exponent
-        bool inBase = ebase().HasVa(va);
-        bool inExp = eexp().HasVa(va);
-
-        if (inBase && !inExp) {
-            // If variable only appears in base, we can solve directly
-            // x^n = C -> x = C^(1/n) where n is the exponent
-            if (eexp().IsInt() || eexp().IsSimpleFraction()) {
-                auto recipExp = Valuable(1) / eexp();
-                solutions.insert(*this ^ recipExp);
-            }
-        } else if (!inBase && inExp) {
-            // If variable only appears in exponent, we need logarithmic solution
-            // a^x = C -> x = log_a(C)
-            // This is a complex case that might require special handling
-            // For now, we'll keep the equation as is
-            solutions.insert(*this);
-        } else if (inBase && inExp) {
-            // Variable appears in both base and exponent
-            // This is a complex case that might require numerical methods
-            // For now, we'll keep the equation as is
-            solutions.insert(*this);
-        }
-
-        // Optimize solutions if possible
-        for (auto& sol : solutions) {
-            sol.optimize();
-        }
-    }
 }

@@ -97,7 +97,7 @@ public:
     Valuable GCD(const Valuable& v) const override;
 
     bool operator ==(const Valuable& v) const override;
-    
+
     void optimize() override;
     void balance();
     const vars_cont_t& getCommonVars() const override;
@@ -135,6 +135,9 @@ public:
     using base::Add;
     const iterator Add(Valuable&& item, const iterator hint) override;
     const iterator Add(const Valuable& item, const iterator hint) override;
+    void Update(iterator&, Valuable&&) override;
+    void Update(iterator&, const Valuable&) override;
+
     bool IsComesBefore(const Valuable& v) const override;
 
     Sum(std::initializer_list<Valuable> l);

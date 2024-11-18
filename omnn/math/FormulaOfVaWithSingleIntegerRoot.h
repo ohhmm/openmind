@@ -6,7 +6,6 @@
 #include "Formula.h"
 #include "Infinity.h"
 #include <sstream>
-#include <boost/lockfree/queue.hpp>
 
 namespace omnn {
 namespace math {
@@ -16,10 +15,12 @@ class FormulaOfVaWithSingleIntegerRoot
         : public Formula
 {
     using base = Formula;
-    using flow = boost::lockfree::queue<Valuable>;
-    //flow extrenums, doubleDerivatives;
-    
+
 protected:
+    mutable std::vector<Valuable> evaluation_cache;
+    mutable Valuable closest;
+    mutable Valuable closest_y;
+
     size_t grade;
     Valuable Solve(Valuable& v) const override;
     std::ostream& print(std::ostream& out) const override;
@@ -37,7 +38,7 @@ public:
     void SetMode(Mode m) { mode = m; }
     void SetMax(const Valuable& m) { max = m; }
     void SetMin(const Valuable& m) { min = m; }
-    
+
 private:
     Mode mode = Strict;
     Valuable max = Infinity();

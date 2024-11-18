@@ -120,7 +120,7 @@ namespace math {
 //        }
 
         bool is(const std::type_index& ti) const override {
-            return ti==std::type_index(typeid(Chld));
+            return ti == get().Type();
         }
 
         std::type_index Type() const override {

@@ -59,6 +59,9 @@ void PrincipalSurd::optimize() {
     if (!optimizations || is_optimized())
         return;
 
+    _1.optimize();
+    _2.optimize();
+
     if (index() == constants::one || IsEquation()) {
         Become(std::move(radicand()));
         return;
@@ -139,6 +142,9 @@ Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
                 ve.second /= _2;
     } else if (!FindVa()) {
         vaExps.clear();
+    } else if (_2.IsSimpleFraction() && _2 > constants::zero) {
+        for (auto& ve : vaExps)
+            ve.second /= _2;
     } else {
         IMPLEMENT
     }
@@ -146,7 +152,9 @@ Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
 }
 
 max_exp_t PrincipalSurd::getMaxVaExp(const Valuable& _1, const Valuable& _2) {
-    return _1.getMaxVaExp() / _2.ca();
+    auto exponentiation = _1.getMaxVaExp();
+    exponentiation /= static_cast<decltype(exponentiation)>(_2);
+    return exponentiation;
 }
 
 bool PrincipalSurd::operator <(const Valuable& other) const {
@@ -241,13 +249,6 @@ Valuable PrincipalSurd::InCommonWith(const Valuable& v) const {
 }
 
 const Valuable::vars_cont_t& PrincipalSurd::getCommonVars() const {
-    commonVars = {}; // TODO: this method should not modify commonVars. Methods that affect it should. https://github.com/ohhmm/openmind/issues/112
-    for (auto& [var, exp] : _1.getCommonVars()) {
-        auto e = exp / _2;
-        if (e.IsInt()) {
-            commonVars.insert({var, e});
-        }
-    }
     return commonVars;
 }
 

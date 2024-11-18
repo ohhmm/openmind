@@ -15,8 +15,8 @@
 #include "PrincipalSurd.h"
 #include "Logarithm.h"
 
-#include <rt/GC.h>
-#include <rt/tasq.h>
+#include <omnn/rt/GC.h>
+#include <omnn/rt/tasq.h>
 
 #include <algorithm>
 #include <functional>
@@ -95,6 +95,42 @@ namespace omnn::math {
         return {};
     }
 
+    Valuable& Valuable::call_polymorphic_method(Valuable::method_t method, const Valuable& arg) {
+        if (exp) {
+            auto view = GetView();
+            auto equation = IsEquation();
+            if (equation) {
+                SetView(View::None);
+            }
+            auto& obj = ((*exp).*method)(arg);
+            if (equation) {
+                obj.SetView(view);
+            }
+            if (obj.exp) {
+                auto dispose = std::move(exp);
+                exp = obj.exp;
+                DispatchDispose(std::move(dispose));
+            }
+            if (exp->getAllocSize() <= getAllocSize()) {
+                Become(std::move(*exp));
+            } else if (equation) {
+                optimize();
+            }
+            return *this;
+        } else {
+            LOG_AND_IMPLEMENT(typeid(method).name() << " for " << *this);
+        }
+    }
+
+    #define VALUABLE_POLYMORPHIC_METHOD(method)                                                                        \
+        Valuable& Valuable::method(const Valuable& value) {                                                            \
+            if(exp) {                                                                                                  \
+                return call_polymorphic_method(&Valuable::method, value);                                              \
+            } else {                                                                                                   \
+                LOG_AND_IMPLEMENT(#method " for " << *this);                                                           \
+            }                                                                                                          \
+        }
+
     bool Valuable::IsSubObject(const Valuable& o) const {
         if (exp)
             return exp->IsSubObject(o);
@@ -159,6 +195,14 @@ namespace omnn::math {
 #endif
     }
 
+    void Valuable::DispatchDispose(encapsulated_instance&& e) {
+#ifdef OPENMIND_BUILD_GC
+        if (e) {
+            rt::GC::DispatchDispose(std::move(e));
+        }
+#endif
+    }
+
     Valuable& Valuable::Become(Valuable&& i)
     {
         if (Same(i))
@@ -173,7 +217,7 @@ namespace omnn::math {
                 e = e->exp;
             }
 
-            if(exp)
+            if (exp || Is<Valuable>())
             {
                 exp = e;
                 if (Hash() != h) {
@@ -184,8 +228,6 @@ namespace omnn::math {
             {
                 Become(std::move(*e));
             }
-
-            e.reset();
         }
         else
         {
@@ -295,7 +337,7 @@ namespace omnn::math {
             }
             else
             {
-                OptimizeOff oo;
+                OptimizeOff off;
                 // b = -s;
                 auto c = _1 * _2;
                 auto d = s.Sq() + c * -4;
@@ -512,18 +554,18 @@ std::string_view Trim(std::string& str) {
 }
 
 [[nodiscard]]
-auto OmitOuterBrackets(auto& s) {
+auto OmitOuterBrackets(auto& str) {
     decltype(BracketsMap({})) bracketsmap;
     bool outerBracketsDetected;
     do{
         outerBracketsDetected = {};
-        Trim(s);
-        bracketsmap = BracketsMap(s);
-        auto l = s.length();
+        Trim(str);
+        bracketsmap = BracketsMap(str);
+        auto l = str.length();
         auto first = bracketsmap.find(0);
         outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
         if (outerBracketsDetected)
-            s = s.substr(1,l-2);
+            str = str.substr(1,l-2);
     } while(outerBracketsDetected);
     return bracketsmap;
 }
@@ -558,7 +600,7 @@ struct HashStrOmitOuterBrackets
 struct HashStrIgnoringAnyParentheses
 {
     [[nodiscard]] size_t operator()(const std::string_view& str) const {
-        size_t hash = 0; 
+        size_t hash = 0;
         for (auto ch : str) {
             if (ch != '(' && ch != ')')
                 hash ^= ch;
@@ -567,8 +609,22 @@ struct HashStrIgnoringAnyParentheses
     }
 };
 
+struct OuterParenthesesIgnoringStringsComparator {
+    [[nodiscard]] constexpr bool operator()(std::string_view str1, std::string_view str2) const {
+        auto equal = str1 == str2;
+        if (!equal) {
+            (void)OmitOuterBrackets(str1);
+            (void)OmitOuterBrackets(str2);
+            equal = str1 == str2;
+        }
+        return equal;
+    }
+};
+
 class StateProxyComparator
+    : public OuterParenthesesIgnoringStringsComparator
 {
+    using base = OuterParenthesesIgnoringStringsComparator;
 public:
     using tokens_collection_t =
         ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
@@ -634,11 +690,7 @@ public:
             if (s == str2) {
                 return val->SerializedStrEqual(str1);
             } else {
-                auto s1 = str1;
-                (void) OmitOuterBrackets(s1);
-                auto s2 = str2;
-                (void) OmitOuterBrackets(s2);
-                return s1 == s2;
+                return base::operator()(str1, str2);
             }
         } else
             return val->SerializedStrEqual(str2);
@@ -691,17 +743,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             same = m1 == m2;
         }
 
-        while (!same && !_1.empty() && _1.front() == '(' && _1.back() == ')') {
-            auto _1len = _1.length();
-            auto _2len = _2.length();
-            auto diff = _1len - _2len;
-            auto dhalf = diff >> 1;
-            if (diff > 0 && !(diff & 1) && _1.substr(dhalf, _1len - diff) == _2) {
-                _1 = _1.substr(1, _1.length() - 2);
-                same = _1 == _2;
-            } else {
-                break;
-            }
+        if (!same) {
+            (void)OmitOuterBrackets(_1);
+            (void)OmitOuterBrackets(_2);
+            same = _1 == _2;
         }
         if (!same) {
             auto str2set = [this](auto& str) {
@@ -729,9 +774,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 std::cout << "SerializedStrEqual detected deserialization issue: " << _ << " != " << s << std::endl
                           << _1 << "\n !=\n"
                           << _2 << std::endl;
-                ::omnn::rt::OptimizationLoopDetect<Valuable> antilooper(*this);                                                        
-                if (antilooper.isLoopDetected()) {                                                                                 
-                    std::cout << "Loop of optimizing detected in " << *this << std::endl;                                          
+                ::omnn::rt::OptimizationLoopDetect<Valuable> antilooper(*this);
+                if (antilooper.isLoopDetected()) {
+                    std::cout << "Loop of optimizing detected in " << *this << std::endl;
                 } else {
                     Valuable v(s, getVaHost(), true);
                     same = operator==(v);
@@ -777,6 +822,22 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     l.equals(std::move(r));
                     Become(std::move(l));
                 }
+                SetView(View::Equation);
+                return;
+            } else if (s[c] == '<' && c + 1 < l && s[c + 1] != '=') {
+                Valuable l(s.substr(0, c - 1), h, itIsOptimized);
+                Valuable r(s.substr(c + 1), h, itIsOptimized);
+                if(s[c + 1] == '>'){
+                    Become(l.NotEquals(r));
+                } else {
+                    Become(l.Less(r));
+                }
+                SetView(View::Equation);
+                return;
+            } else if (s[c] == '>' && c + 1 < l && s[c + 1] != '=') {
+                Valuable l(s.substr(0, c - 1), h, itIsOptimized);
+                Valuable r(s.substr(c + 1), h, itIsOptimized);
+                Become(r.Less(l));
                 SetView(View::Equation);
                 return;
             }
@@ -1286,14 +1347,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable::~Valuable() noexcept
     {
-#ifdef OPENMIND_BUILD_GC
-        if (exp) {
-			#if 0
-            std::cout << *this << std::endl;
-			#endif
-            rt::GC::DispatchDispose(std::move(exp));
-        }
-#endif
+        DispatchDispose(std::move(exp));
     }
 
     Valuable Valuable::operator -() const
@@ -1304,31 +1358,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator +=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator+=(v);
-            if (o.exp) {
-                exp = o.exp;
-                return *this;
-            }
-            return o;
-        }
-        else
-            IMPLEMENT
-    }
+    VALUABLE_POLYMORPHIC_METHOD(operator+=)
 
-    Valuable& Valuable::operator +=(int v)
+    Valuable& Valuable::operator +=(int value)
     {
-        if(exp) {
-            Valuable& o = exp->operator+=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else
-            IMPLEMENT
+        Integer integer(value);
+        return call_polymorphic_method(&Valuable::operator+=, integer);
     }
 
     Valuable& Valuable::operator *=(const Valuable& v)
@@ -1345,15 +1380,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     s.emplace(m * item);
             Become(Valuable(std::move(s)));
         }
-        else if (exp)
-        {
-            auto& o = exp->operator*=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-        }
         else
-            LOG_AND_IMPLEMENT(*this << " *= " << v);
+        {
+            call_polymorphic_method(&Valuable::operator*=, v);
+        }
         return *this;
     }
 
@@ -1411,30 +1441,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
-    Valuable& Valuable::operator /=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator/=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-            IMPLEMENT
-    }
+    VALUABLE_POLYMORPHIC_METHOD(operator/=)
 
-    Valuable& Valuable::operator %=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator%=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else // a - (n * int(a/n))
-            IMPLEMENT // https://math.stackexchange.com/a/2027475/118612
-    }
+    VALUABLE_POLYMORPHIC_METHOD(operator%=) // a - (n * int(a/n)) https://math.stackexchange.com/a/2027475/118612
 
     Valuable& Valuable::operator--()
     {
@@ -1462,18 +1471,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    Valuable& Valuable::operator^=(const Valuable& v)
-    {
-        if(exp) {
-            Valuable& o = exp->operator^=(v);
-            if (o.exp) {
-                exp = o.exp;
-            }
-            return *this;
-        }
-        else
-            IMPLEMENT
-    }
+    VALUABLE_POLYMORPHIC_METHOD(operator^=)
 
     Valuable Valuable::GCD(const Valuable& v) const {
         if (exp) {
@@ -1804,7 +1802,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->Sign();
         else {
-            return *this / Abs();
+            auto sign = Abs();
+            sign /= *this;
+            return sign;
             //return GreaterOrEqual(constants::zero).ToBool() - LessOrEqual(constants::zero).ToBool();
             // sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt")
         }
@@ -1896,9 +1896,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    bool Valuable::is(const std::type_index&) const
-    {
-        IMPLEMENT//ed in contract
+    bool Valuable::is(const std::type_index& ti) const {
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        if(exp)
+            IMPLEMENT
+#endif
+        return ti == std::type_index(typeid(Valuable));
     }
 
     std::ostream& Valuable::print(std::ostream& out) const
@@ -2072,12 +2075,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 		}
 	}
 
-        Valuable Valuable::Sqrt() const {
-            if (exp)
-                return exp->Sqrt();
-            else
-                return PrincipalSurd(*this, 2);
-        }
+    Valuable Valuable::Sqrt() const {
+        if (exp)
+            return exp->Sqrt();
+        else
+            return PrincipalSurd(*this, 2);
+    }
 
     Valuable& Valuable::sqrt() {
         if (exp)
@@ -2386,13 +2389,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::VaVal(const vars_cont_t& v)
     {
-        Valuable p(1);
-        for(auto& kv : v)
-        {
-            p *= kv.first ^ kv.second;
+        auto product = std::make_shared<Product>();
+        if (v.size()) {
+            for (auto& kv : v) {
+                product->Add(Exponentiation{kv.first, kv.second});
+            }
         }
-        p.optimize();
-        return p;
+        return Valuable(product);
     }
 
     Valuable Valuable::getVaVal() const
@@ -2413,14 +2416,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::operator!() const
     {
-        // if current expression equals to zero then it is
-        // we need to know why not
-        Variable whyNot(getVaHost()); // whyNot==1 when this!=0
-        auto is = LogicAnd(whyNot);                      // THIS==0 AND WHYNOT==0
-        auto isNot = whyNot.Equals(constants::one);      // WHYNOT==1
-        auto orNot = (is || isNot) && isNot;             // ((THIS==0 AND WHYNOT==0) OR (WHYNOT==1)) AND (WHYNOT==1)
-        // std::cout << "orNot = " << orNot << std::endl;
-        return orNot(whyNot); // try to express out the WHYNOT va and leave only f(x)==0
+        return NotEquals(constants::zero);
     }
 
     Valuable::operator int() const
@@ -2508,9 +2504,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return copy.equals(v);
     }
 
-    Valuable Valuable::NotEquals(const Valuable& v) const {
-        //return Equals(v) ^ -1;
-		return IfEq(v, 1, 0);
+    Valuable Valuable::NotEquals(const Valuable& than) const {
+        Product either = {Less(than), than.Less(*this)};
+        either.MarkAsOptimized(); // Fixme: either optimized into 0
+        return either;
     }
 
     // TODO: constexpr
@@ -2532,23 +2529,20 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 //        return Abet(x, abet)/(*this-to);
 //    }
 
-    Valuable Valuable::LogicAnd(const Valuable& v) const
+    Valuable& Valuable::logic_and(const Valuable& expression)
     {
-        if (Vars() == v.Vars()) {
-            return GCD(v);
+        if (HasSameVars(expression)) {
+            gcd(expression);
         } else {
-            return Sq() + v.Sq(); // equal to zero if both are equal to zero only
-        }
-    }
-
-    Valuable& Valuable::logic_and(const Valuable& v)
-    {
-        if (Vars() == v.Vars()) {
-            gcd(v);
-        } else {
-            sq() += v.Sq(); // equal to zero if both are equal to zero only
+            sq() += expression.Sq(); // equal to zero if both are equal to zero only
         }
         return *this;
+    }
+
+    Valuable Valuable::LogicAnd(const Valuable& expression) const
+    {
+        auto copy = *this;
+        return copy.logic_and(expression);
     }
 
     Valuable& Valuable::logic_or(const Valuable& v)
@@ -2696,7 +2690,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->ToBool();
         else {
-            return constants::one - Sign().Abs(); // https://math.stackexchange.com/a/2063238/118612
+            OptimizeOff off;
+            auto delta = constants::one - Sign().Abs();
+            delta.MarkAsOptimized();
+            return delta; // https://math.stackexchange.com/a/2063238/118612
         }
 	}
 
@@ -2712,7 +2709,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             //return //(than - *this).IntMod_IsPositive(); // evaluated to
                    //(-1*(Y^2)-1*(X^2)+(Y^2)*((-1*X+Y)%(-1*X+Y-1))+(X^2)*((-1*X+Y)%(-1*X+Y-1))-2*Y*X*((-1*X+Y)%(-1*X+Y-1))+2*Y*X+3*X*((-1*X+Y)%(-1*X+Y-1))-3*Y*((-1*X+Y)%(-1*X+Y-1))+3*Y-3*X+2*((-1*X+Y)%(-1*X+Y-1))-2)
 			// https://www.wolframalpha.com/input?i=%28-1*%28Y%5E2%29-1*%28X%5E2%29%2B%28Y%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B%28X%5E2%29*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2*Y*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B2*Y*X%2B3*X*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-3*Y*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29%2B3*Y-3*X%2B2*%28%28-1*X%2BY%29%25%28-1*X%2BY-1%29%29-2%29
-            OptimizeOff oo;
+            OptimizeOff off;
             Product less;
             less.MarkAsOptimized();
             less.Add(*this - than + constants::one);
@@ -2735,18 +2732,22 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
-    Valuable Valuable::Negative() const
-    {
-        if (exp)
-            return exp->Negative();
-        else {
-            return (*this+Abs()) / -Shl();
-        }
+    Valuable Valuable::IsNegativeThan(const Valuable& than) const {
+        return LessOrEqual(than) / Equals(than);
+    }
+
+    Valuable Valuable::IsNegative() const {
+        return (Abs() / *this).equals(constants::minus_1);
+    }
+
+    Valuable Valuable::IsPositive() const {
+        return (Abs() / *this).equals(constants::one);
     }
 
     Valuable Valuable::Less(const Valuable& than) const
     {
-        return LessOrEqual(than) / Equals(than);
+        auto negative = *this - than;  //  this < than   <=>   this-than < 0
+        return negative.IsNegative();
     }
 
     Valuable Valuable::LessOrEqual(const Valuable& than) const
@@ -2759,6 +2760,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable Valuable::GreaterOrEqual(const Valuable& than) const
     {
         return than.LessOrEqual(*this);
+    }
+
+    Valuable Valuable::Distance(const Valuable& with) const {
+        return (with - *this).abs();
     }
 
     Valuable Valuable::Minimum(const Valuable& second) const {
@@ -2821,7 +2826,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         // (Y + X -sqrt(Y^2 + X^2 -2YX))/2
         // expressed through Abs:
         // (Y + X -sqrt((Y-X)^2))/2 = (X+Y-|X-Y|)/2
-        return ((second + *this) - (second - *this).abs()) / constants::two;
+        return ((second + *this) - Distance(second)) / constants::two;
+    }
+
+    Valuable Valuable::Maximum(const Valuable& with) const {
+        return ((with + *this) + Distance(with)) / constants::two;
     }
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
@@ -2898,7 +2907,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             auto a = *this;
             auto b = v;
             for (Valuable i; i < n;) {
@@ -2924,7 +2933,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             auto a = *this;
             auto b = v;
             for (Valuable i; i < n;) {
@@ -2951,7 +2960,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             for (auto i = n; i--;) {
                 s *= constants::two;
                 auto _1 = bit(i);
@@ -2969,7 +2978,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             for (auto i = n; i--;) {
                 s *= constants::two;
                 auto _1 = constants::one - bit(i);
@@ -3048,7 +3057,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return exp->Cyclic(total, shiftLeft);
         auto s = constants::zero;
         {
-            OptimizeOff oo;
+            OptimizeOff off;
             for (auto i = total; i--;) {
                 auto shi = i + shiftLeft;
                 if (shi >= total)
@@ -3188,6 +3197,13 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
             exp->MarkAsOptimized();
         else
             optimized = true;
+    }
+
+    void Valuable::MarkNotOptimized() {
+        if (exp)
+            exp->MarkNotOptimized();
+        else
+            optimized = {};
     }
 
     bool Valuable::is_optimized() const {

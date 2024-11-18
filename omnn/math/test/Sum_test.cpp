@@ -66,15 +66,66 @@ BOOST_AUTO_TEST_CASE(Exponentiations_SumOrderComparator_test)
     BOOST_TEST(cmpMed12 != cmpMed21);
 }
 
+BOOST_AUTO_TEST_CASE(Exponentiations_into_variable_SumOrderComparator_test) {
+    SumOrderComparator cmp;
+    DECL_VA(v1);
+    auto _1 = "((1/4)*((-1)^v1) + (19/4))"_v;
+    bool cmp12 = cmp(_1, v1);
+    bool cmp21 = cmp(v1, _1);
+    BOOST_TEST(cmp12 != cmp21);
+
+    _1 = "((-1) ^ ((1 / 4) * ((-1) ^ v1) + (19 / 4)))"_v;
+    auto _2 = -1^v1;
+    cmp12 = cmp(_1, _2);
+    cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+
+    _1 = "((-1) / 4) * ((-1) ^ ((1 / 4) * ((-1) ^ v1) + (19 / 4)))"_v;
+    _2 = "((-1)/4)*((-1)^v1)"_v;
+    cmp12 = cmp(_1, _2);
+    cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+}
+
 BOOST_AUTO_TEST_CASE(Fractions_SumOrderComparator_test)
 {
     SumOrderComparator cmp;
     DECL_VA(v1);
-    auto high1 = (v1 ^ (1_v / 2)) + ((v1 + 1) / 2);
-    auto high2 = (v1 ^ (1_v / 2)) + ((v1 + 2) / 2);
-    bool cmpHigh12 = cmp(high1, high2);
-    bool cmpHigh21 = cmp(high2, high1);
-    BOOST_TEST(cmpHigh12 != cmpHigh21);
+    auto _1 = (v1 ^ (1_v / 2)) + ((v1 + 1) / 2);
+    auto _2 = (v1 ^ (1_v / 2)) + ((v1 + 2) / 2);
+    bool cmp12 = cmp(_1, _2);
+    bool cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+
+    _1 = "((-1 * ((-1) ^ x) + 1) / (-4))"_v;
+    _2 = "((-1 * ((-1) ^ ((1 / 2) * x + ((-1 * ((-1) ^ x) + 1) / (-4)))) + 1) / (-2))"_v;
+    cmp12 = cmp(_1, _2);
+    cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+}
+
+BOOST_AUTO_TEST_CASE(Fractions_with_Exponentiation_SumOrderComparator_test) {
+    SumOrderComparator cmp;
+    Fraction _1 = {-std::sqrt(constants::two), 2};
+    auto _2 = "(((1/4)*(1r2) + ((-1)/2)*(1r2) + (((1r2))/4) + (1r2))^((1/2)))"_v;
+    auto cmp12 = cmp(_1, _2);
+    auto cmp21 = cmp(_2, _1);
+    BOOST_TEST(cmp12 != cmp21);
+}
+
+BOOST_AUTO_TEST_CASE(AddMultipleEqual_SumOrderComparator_test)
+{
+    // test Sum move assignment operator:
+    Valuable::OptimizeOff off;
+    auto sum = std::move(Sum{2, 4});
+
+    // test adding equal by value values:
+    sum.Add(1_v / 2);
+    sum.Add(2_v / 4);
+
+    auto _1 = sum.Optimized();
+    auto _2 = 7_v;
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
@@ -92,7 +143,7 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
         BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
     }
     {
-        Valuable::OptimizeOff oo;
+        Valuable::OptimizeOff off;
         DECL_VA(v1);
         auto _1 =
             ((-8 *
@@ -162,10 +213,13 @@ BOOST_AUTO_TEST_CASE(SumOrderComparator_test) {
 BOOST_AUTO_TEST_CASE(Mixed_SumOrderComparator_test)
 {
     SumOrderComparator cmp;
-    Valuable::OptimizeOff oo;
-    DECL_VA(v1);
+    Valuable::OptimizeOff off;
     auto _1 = "((-8*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 4*((-1)^(v1 + 10)) + 68)/32)))*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 4*((-1)^(v1 + 11)) + 76)/32))) + 8*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 4*((-1)^(v1 + 10)) + 68)/32))) + 8*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 4*((-1)^(v1 + 11)) + 76)/32))) + -8)/(-8))"_v;
     auto _2 = "((-32*((-1)^(v1 + 11))*((-1)^(v1 + 10)) + -64*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4))))*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + -256*((-1)^((1/8)*v1 + ((-8*((-1)^(v1 + 11)) + -16*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + -32*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 4*((-1)^(v1 + 11)) + 76)/32))) + -120)/(-128))))*((-1)^((1/8)*v1 + ((-8*((-1)^(v1 + 10)) + -16*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + -32*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 4*((-1)^(v1 + 10)) + 68)/32))) + -104)/(-128)))) + 256*((-1)^((1/8)*v1 + ((-8*((-1)^(v1 + 11)) + -16*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + -32*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 4*((-1)^(v1 + 11)) + 76)/32))) + -120)/(-128)))) + 256*((-1)^((1/8)*v1 + ((-8*((-1)^(v1 + 10)) + -16*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + -32*((-1)^((1/4)*v1 + ((8*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 4*((-1)^(v1 + 10)) + 68)/32))) + -104)/(-128)))) + 64*((-1)^((1/2)*v1 + 5 + ((-1*((-1)^(v1 + 10)) + 1)/(-4)))) + 64*((-1)^((1/2)*v1 + ((-2*((-1)^(v1 + 11)) + -42)/(-8)))) + 32*((-1)^(v1 + 11)) + 32*((-1)^(v1 + 10)) + -352)/(-128))"_v;
+    BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
+
+    _1 = "(8/32)*((-1)^(((-2)/(-8))*((-1)^(v1 + 11)) + ((-42)/(-8))))"_v;
+    _2 = "(1/4)*((-1)^v1)"_v;
     BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
 }
 

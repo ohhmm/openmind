@@ -46,7 +46,19 @@ namespace math {
         typeid(Variable),
         typeid(Modulo),
     };
-    
+
+    auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
+    {
+        static auto ob = std::begin(order);
+        static auto oe = std::end(order);
+
+        auto it1 = std::find(ob, oe, x.Type());
+        assert(it1 != oe); // IMPLEMENT
+        auto it2 = std::find(ob, oe, y.Type());
+        assert(it2 != oe); // IMPLEMENT
+        return it1 == it2 ? x > y : it1 < it2;
+    };
+
     bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
     {
         static const auto ob = std::cbegin(order);
@@ -62,6 +74,8 @@ namespace math {
 
         return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
     }
+
+    static constexpr ProductOrderComparator poc;
 
     Product::Product(const std::initializer_list<Valuable> l)
     {
@@ -107,8 +121,7 @@ namespace math {
         if (exponentiation.IsInt()) {
             vaExpsSum += exponentiation.as<Integer>().ca();
         } else if (exponentiation.IsSimpleFraction()) {
-            auto& f = exponentiation.as<Fraction>();
-            vaExpsSum += f.getNumerator().ca() / f.getDenominator().ca();
+            vaExpsSum += static_cast<decltype(vaExpsSum)>(exponentiation);
         } else {
             if (!optimizations) {
                 OptimizeOn oo;
@@ -275,10 +288,17 @@ namespace math {
             }
         };
 
-        // zero
-        auto it = GetFirstOccurence<Integer>();
+        // NaN
+        auto it = GetFirstOccurence<NaN>();
         if (it != end()) {
-            if (it->Same(0)) {
+            Become(Extract(it));
+            return;
+        }
+
+        // zero
+        it = GetFirstOccurence<Integer>();
+        if (it != end()) {
+            if (it->IsZero()) {
                 Become(0);
                 return;
             }
@@ -289,7 +309,7 @@ namespace math {
             if (it->Same(1) && size() > 1) {
                 Delete(it);
             }
-            
+
         }
 
         if (IsEquation()) {
@@ -326,7 +346,7 @@ namespace math {
             }
         } while (updated);
 
-        
+
         // optimize members, if found a sum then become the sum multiplied by other members
         for (auto it = members.begin(); it != members.end();)
         {
@@ -350,7 +370,7 @@ namespace math {
             else
                 ++it;
         }
-        
+
         // emerge inner products
         for (auto it = members.begin(); it != members.end();)
         {
@@ -417,7 +437,7 @@ namespace math {
                 }
             }
         } while (updated && !Same(was));
-        
+
         // fraction optimizations
         auto f = GetFirstOccurence<Fraction>();
         if (f != members.end()) {
@@ -430,7 +450,7 @@ namespace math {
                     if (it != f && pd.Has(*it)) {
                         fo *= *it;
                         Delete(it);
-                        
+
                         if (!fo.IsFraction() ||
                             !fo.as<Fraction>().getDenominator().IsProduct()
                             ) {
@@ -440,9 +460,9 @@ namespace math {
                     else  ++it;
                 }
             }
-            
+
             fo.optimize();
-            
+
             if (fo.IsFraction()) {
                 auto& dn = fo.as<Fraction>().getDenominator();
                 if (!dn.IsProduct()) {
@@ -461,13 +481,13 @@ namespace math {
                     }
                 }
             }
-            
+
             if(!f->Same(fo))
             {
                 Update(f,fo);
             }
         }
-        
+
         if(members.size()==0)
             Become(1_v);
         else if (members.size()==1)
@@ -585,6 +605,10 @@ namespace math {
     // NOTE : inequality must cover all cases for bugless Sum::Add
     bool Product::IsComesBefore(const Valuable& v) const
     {
+        if (size() == 1 && !v.IsProduct()) {
+            return begin()->IsComesBefore(v);
+        }
+
         auto mae = getMaxVaExp();
         auto vme = v.getMaxVaExp();
         
@@ -625,9 +649,9 @@ namespace math {
                 return members.size() > p->members.size();
             }
             
-            auto i1 = members.begin();
-            auto i2 = p->members.begin();
-            for (; i1 != members.end(); ++i1, ++i2) {
+            auto beg = begin();
+            auto pbeg = p->begin();
+            for (auto i1 = beg, i2 = pbeg; i1 != members.end(); ++i1, ++i2) {
                 static const auto ob = std::cbegin(order);
                 static const auto oe = std::cend(order);
 
@@ -639,13 +663,27 @@ namespace math {
                     return it1 < it2;
                 }
             }
-            // same types set, compare by value
-            i1 = members.begin();
-            i2 = p->members.begin();
-            for (; i1 != members.end(); ++i1, ++i2) {
-                if(*i1 != *i2)
-                {
+
+            for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    auto cmp12 = poc(*i1, *i2);
+                    auto cmp21 = poc(*i2, *i1);
+                    if (cmp12 == cmp21)
+                        continue;
+                    return cmp21;
+                }
+            }
+
+            for (auto i1 = beg, i2 = pbeg; i1 != members.end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
                     return i1->IsComesBefore(*i2);
+                }
+            }
+
+            // same types set, compare by value
+            for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    return toc(*i1, *i2);
                 }
             }
             
@@ -961,7 +999,7 @@ namespace math {
     {
         if (v.IsProduct()) {
             {
-                OptimizeOff oo;
+                OptimizeOff off;
                 for (auto& i : v.as<Product>())
                     *this /= i;
                 optimized = {};
@@ -1109,7 +1147,7 @@ namespace math {
         if (size() == 1) {
 			return begin()->ToBool();
 		} else if (is_optimized() && !FindVa()) {
-            return constants::zero;
+            return IsZero() ? constants::one : constants::zero;
         } else {
             return base::ToBool();
         }
@@ -1124,6 +1162,9 @@ namespace math {
     }
 
     bool Product::operator<(const Valuable& v) const{
+        if (operator==(v)) {
+            return {};
+        }
         auto beg = begin();
         if (members.size() == 1) {
             return beg->operator<(v);
@@ -1205,12 +1246,15 @@ namespace math {
         } else {
             same = {};
         }
-        if (!same // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
-            && IsMultival() == YesNoMaybe::Yes
-            && value.IsMultival() == YesNoMaybe::Yes)
-        {
-            //LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
-        }
+
+        // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
+        //if (!same 
+        //    && IsMultival() == YesNoMaybe::Yes
+        //    && value.IsMultival() == YesNoMaybe::Yes)
+        //{
+        //    LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
+        //}
+
         return same;
     }
 
@@ -1249,6 +1293,17 @@ namespace math {
                         } else {
                             LOG_AND_IMPLEMENT("Examine new multisign form: " << *this << " == " << e);
                         }
+                    }
+                }
+            }
+            else {
+                auto& e = v.as<Exponentiation>();
+                auto& ee = e.getExponentiation();
+                if (ee.IsSimple() && ee < constants::zero) {
+                    OptimizeOn on;
+                    auto potentiallyAlternativeForm = e.getBase().Reciprocal() ^ -ee;
+                    if (!potentiallyAlternativeForm.Same(v)) {
+                        same = operator==(potentiallyAlternativeForm);
                     }
                 }
             }

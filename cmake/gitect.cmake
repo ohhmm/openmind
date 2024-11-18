@@ -116,21 +116,24 @@ if(GIT_EXECUTABLE)
 
 	if(WIN32)
         set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch -a | Select-String -NotMatch '^\\s*remotes/' | ForEach-Object { $$branch = $$_.Trim; if ($$branch -ne 'main') { . '${GIT_EXECUTABLE}' checkout $$branch; if (.'${GIT_EXECUTABLE}' pull --rebase --autostash origin main) { Write-Host \\\"Rebased $$branch onto main\\\" } else { . '${GIT_EXECUTABLE}' rebase --abort; Write-Host \\\"Failed to rebase $$branch onto main\\\" } } }")
-		add_custom_target(rebase-all-branches-to-main
-				COMMAND ${GIT_EXECUTABLE} fetch --all
-				#COMMAND powershell -NoProfile -NonInteractive -File "${CMAKE_SOURCE_DIR}/cmake/scripts/RebaseAllBranches.ps1" -GitExecutable "${GIT_EXECUTABLE}"
-				# ^- cannot be loaded because running scripts is disabled
-				COMMAND powershell -Command "${PS_GIT_CMD}"
-				COMMENT "Rebasing all branches onto origin/main using powershell."
-				WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		)
-	else(WIN32)
-		add_custom_target(rebase-all-branches-to-main
+		add_custom_target(rebase-all-branches
+            COMMAND ${CMAKE_COMMAND} -E echo "Rebasing all branches onto origin/main"
+			COMMAND ${GIT_EXECUTABLE} fetch --all
+            #COMMAND powershell -NoProfile -NonInteractive -File "${CMAKE_SOURCE_DIR}/cmake/scripts/RebaseAllBranches.ps1" -GitExecutable "${GIT_EXECUTABLE}"
+            # ^- cannot be loaded because running scripts is disabled
+			COMMAND cmd /c "for /f %b in ('git branch --format \"%%(refname:short)\" ^| findstr /v \"^main$$\"') do (git checkout %b && git rebase main) && git checkout main"
+            COMMENT "Rebasing all branches onto origin/main using powershell."
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-			COMMAND ${CMAKE_SOURCE_DIR}/rebase_all_branches_to_main.sh ${CMAKE_SOURCE_DIR}
+		)
+	else()
+		add_custom_target(rebase-all-branches
+			COMMAND ${GIT_EXECUTABLE} fetch --all
+			COMMAND ${CMAKE_COMMAND} -E echo "Rebasing all branches onto main"
+			COMMAND ${CMAKE_COMMAND} -E env bash "${CMAKE_SOURCE_DIR}/cmake/rebase-all-branches.sh"
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
 	endif()
-	set_target_properties(rebase-all-branches-to-main PROPERTIES
+	set_target_properties(rebase-all-branches PROPERTIES
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
