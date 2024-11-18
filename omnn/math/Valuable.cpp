@@ -2389,13 +2389,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::VaVal(const vars_cont_t& v)
     {
-        Valuable p(1);
-        for(auto& kv : v)
-        {
-            p *= kv.first ^ kv.second;
+        auto product = std::make_shared<Product>();
+        if (v.size()) {
+            for (auto& kv : v) {
+                product->Add(Exponentiation{kv.first, kv.second});
+            }
         }
-        p.optimize();
-        return p;
+        return Valuable(product);
     }
 
     Valuable Valuable::getVaVal() const

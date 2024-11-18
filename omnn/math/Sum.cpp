@@ -690,6 +690,13 @@ namespace
                 Become(std::move(const_cast<Valuable&>(*b)));
             }
             else {
+                if (IsSum()) {
+                    auto& coVa = getCommonVars();
+                    if (coVa.size()) {
+                        *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
+                    }
+                }
+
                 // make coefficients int to use https://simple.wikipedia.org/wiki/Rational_root_theorem
                 bool scan;
                 do {
@@ -752,24 +759,17 @@ namespace
                     }
                 } while (scan);
 
-                if (IsSum()) {
-                    auto& coVa = getCommonVars();
-                    if (coVa.size()) {
-                        *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
+                if(IsSum())
+                {
+                    auto gcd = GCDofMembers();
+                    if(gcd != constants::one){
+                        operator/=(gcd);
                     }
 
-                    if(IsSum())
-                    {
-                        auto gcd = GCDofMembers();
-                        if(gcd != constants::one){
-                            operator/=(gcd);
-                        }
-
-                        if(IsMultival()== Valuable::YesNoMaybe::Yes){
-                            auto uni = Univariate();
-                            if(!Same(uni)){
-                                Become(std::move(uni));
-                            }
+                    if(IsMultival()== Valuable::YesNoMaybe::Yes){
+                        auto uni = Univariate();
+                        if(!Same(uni)){
+                            Become(std::move(uni));
                         }
                     }
                 }
