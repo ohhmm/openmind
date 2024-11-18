@@ -71,6 +71,7 @@ private:
     std::string expression_;
     VarHost::ptr host_;
     vars_cont_t common_vars_;
+    size_t sz = sizeof(ConcreteValuable);  // Added sz member for allocation size
 };
 
 } // namespace omnn::math

@@ -5,7 +5,7 @@
 namespace omnn::math {
 
 ConcreteValuable::ConcreteValuable(const std::string& str, VarHost::ptr host, bool optimized)
-    : Valuable(ValuableDescendantMarker{}), expression_(str), host_(host), optimized_(optimized) {
+    : Valuable(ValuableDescendantMarker{}), expression_(str), host_(host), optimized_(optimized), sz(sizeof(ConcreteValuable)) {
     // Parse string and initialize valuable
     if (str.empty()) {
         throw std::invalid_argument("Empty string not allowed");
@@ -17,7 +17,7 @@ ConcreteValuable::ConcreteValuable(const std::string& str, VarHost::ptr host, bo
 }
 
 ConcreteValuable::ConcreteValuable(const std::string& str, const Valuable::va_names_t& vaNames, bool optimized)
-    : Valuable(ValuableDescendantMarker{}), expression_(str), optimized_(optimized) {
+    : Valuable(ValuableDescendantMarker{}), expression_(str), optimized_(optimized), sz(sizeof(ConcreteValuable)) {
     // Parse string with variable names
     if (str.empty()) {
         throw std::invalid_argument("Empty string not allowed");
@@ -150,6 +150,7 @@ Valuable& ConcreteValuable::operator=(Valuable&& v) noexcept {
         expression_ = std::move(other.expression_);
         host_ = std::move(other.host_);
         optimized_ = other.optimized_;
+        sz = other.sz;
     }
     return *this;
 }
@@ -160,6 +161,7 @@ Valuable& ConcreteValuable::operator=(const Valuable& v) noexcept {
         expression_ = other.expression_;
         host_ = other.host_;
         optimized_ = other.optimized_;
+        sz = other.sz;
     }
     return *this;
 }
