@@ -1243,7 +1243,9 @@ using namespace omnn::math;
             auto& f = getExponentiation().as<Fraction>();
             return (getBase()^f.getNumerator())(v,augmentation^f.getDenominator());
         } else {
-            IMPLEMENT
+            auto newBase = ebase()(v, augmentation);
+            auto newExp = eexp()(v, augmentation);
+            return newBase ^ newExp;
         }
     }
 
@@ -1366,13 +1368,37 @@ using namespace omnn::math;
     }
 
     void Exponentiation::solve(const Variable& va, solutions_t& s) const {
-        if (_1 == va
-			&& !_2.FindVa()
-			&& _2 != constants::zero)
-		{
-            s.emplace(constants::zero);
+        if (ebase() == va) {
+            // For x^n = k, solutions depend on n
+            if (eexp().IsInt()) {
+                // For integer exponents, handle positive and negative cases
+                auto n = eexp().ca();
+                if (n % 2 == 0) {
+                    // Even exponents: two solutions for non-zero values
+                    s.insert(Valuable::Sqrt());
+                    s.insert(-Valuable::Sqrt());
+                } else {
+                    // Odd exponents: one solution
+                    s.insert(*this ^ (Valuable(1) / eexp()));
+                }
+            } else if (eexp().IsSimpleFraction()) {
+                // For fractional exponents, handle root finding
+                auto& f = eexp().as<Fraction>();
+                auto& num = f.getNumerator();
+                auto& den = f.getDenominator();
+                if (den.IsEven() == YesNoMaybe::Yes) {
+                    // Even denominator: multiple solutions possible
+                    auto root = *this ^ (Valuable(1) / eexp());
+                    s.insert(root);
+                    s.insert(-root);
+                } else {
+                    // Odd denominator: one solution
+                    s.insert(*this ^ (Valuable(1) / eexp()));
+                }
+            }
         } else {
-			IMPLEMENT
+            // If base contains the variable, try to solve base equation
+            ebase().solve(va, s);
         }
     }
 
