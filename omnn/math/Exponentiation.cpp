@@ -1578,4 +1578,67 @@ namespace omnn::math {
         }
         return Type() < v.Type();
     }
+
+    bool Exponentiation::is_optimized() const noexcept {
+        return optimized && ebase().is_optimized() && eexp().is_optimized();
+    }
+
+    void Exponentiation::CollectVa(::std::set<Variable>& s) const noexcept {
+        // Collect variables from both base and exponent
+        ebase().CollectVa(s);
+        eexp().CollectVa(s);
+    }
+
+    bool Exponentiation::eval(const ::std::map<Variable, ValuableWrapper>& with) noexcept {
+        // Evaluate both base and exponent with the provided variable substitutions
+        bool baseChanged = ebase().eval(with);
+        bool expChanged = eexp().eval(with);
+
+        if (baseChanged || expChanged) {
+            optimized = false;  // Mark for re-optimization since values changed
+            optimize();         // Re-optimize after evaluation
+            return true;
+        }
+        return false;
+    }
+
+    void Exponentiation::Eval(const Variable& va, const Valuable& v) noexcept {
+        // Evaluate both base and exponent with the provided variable substitution
+        ebase().Eval(va, v);
+        eexp().Eval(va, v);
+
+        optimized = false;  // Mark for re-optimization since values may have changed
+        optimize();         // Re-optimize after evaluation
+    }
+
+    void Exponentiation::solve(const Variable& va, solutions_t& solutions) const noexcept {
+        // Check if the variable appears in base or exponent
+        bool inBase = ebase().HasVa(va);
+        bool inExp = eexp().HasVa(va);
+
+        if (inBase && !inExp) {
+            // If variable only appears in base, we can solve directly
+            // x^n = C -> x = C^(1/n) where n is the exponent
+            if (eexp().IsInt() || eexp().IsSimpleFraction()) {
+                auto recipExp = Valuable(1) / eexp();
+                solutions.insert(*this ^ recipExp);
+            }
+        } else if (!inBase && inExp) {
+            // If variable only appears in exponent, we need logarithmic solution
+            // a^x = C -> x = log_a(C)
+            // This is a complex case that might require special handling
+            // For now, we'll keep the equation as is
+            solutions.insert(*this);
+        } else if (inBase && inExp) {
+            // Variable appears in both base and exponent
+            // This is a complex case that might require numerical methods
+            // For now, we'll keep the equation as is
+            solutions.insert(*this);
+        }
+
+        // Optimize solutions if possible
+        for (auto& sol : solutions) {
+            sol.optimize();
+        }
+    }
 }
