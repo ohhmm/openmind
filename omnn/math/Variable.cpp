@@ -148,7 +148,7 @@ namespace math {
             if(is.first)
             {
                 if (is.second.Complexity() > v.Complexity())
-                    IMPLEMENT;
+                    is.second = v;
             }
         }
         return is;
@@ -329,7 +329,7 @@ namespace math {
                 } else if (e.IsMultival()==YesNoMaybe::Yes) {
                 }
                 else {
-                    IMPLEMENT
+                    c = 1_v;  // For non-integer exponents, return 1 as we can't determine a common factor
                 }
             }
         } else if (v.IsVa()) {
@@ -347,7 +347,7 @@ namespace math {
             return {augmentation};
         }
         else
-            IMPLEMENT
+            return *this;  // Return this variable unchanged when substituting a different variable
     }
 
     Valuable::solutions_t Variable::Distinct() const {
