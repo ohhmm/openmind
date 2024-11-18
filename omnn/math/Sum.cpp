@@ -494,6 +494,9 @@ namespace
                             operator-=(surd.Radicand());
                             break;
                         }
+                        else {
+                            ++it;
+                        }
                     }
                     else if(it->IsProduct()) {
                         auto isThereSurd = Surd(it);
