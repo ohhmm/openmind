@@ -1360,7 +1360,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         Valuable::optimizations = optimizationsWas;
     }
 
-    Valuable::~Valuable()
+    Valuable::~Valuable() noexcept
     {
         DispatchDispose(std::move(exp));
     }
