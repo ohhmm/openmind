@@ -238,7 +238,7 @@ namespace math {
         if (operator==(value)) {
             return {};
         } else if (value.IsVa())
-            return base::IsComesBefore(value);
+            return value.as<Variable>() < *this;
         else {
             return !value.IsComesBefore(*this);
         }

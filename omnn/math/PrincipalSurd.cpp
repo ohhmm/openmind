@@ -188,16 +188,18 @@ Valuable& PrincipalSurd::operator^=(const Valuable& e) {
         return base::operator^=(e);
 }
 
-bool PrincipalSurd::IsComesBefore(const Valuable& v) const {
-    if(v.IsPrincipalSurd()) {
-        auto& ps = v.as<PrincipalSurd>();
+bool PrincipalSurd::IsComesBefore(const Valuable& value) const {
+    if(value.IsPrincipalSurd()) {
+        auto& ps = value.as<PrincipalSurd>();
         if (_2 == ps._2) {
             return _1.IsComesBefore(ps._1);
         } else {
             return _2 < ps._2;
         }
+    } else if (value.IsVa()) {
+        return {};
     } else {
-        return base::IsComesBefore(v);
+        return base::IsComesBefore(value);
     }
 }
 
