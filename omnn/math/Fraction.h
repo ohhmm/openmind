@@ -63,6 +63,7 @@ namespace math {
         Valuable::solutions_t Distinct() const override;
 
         void optimize() override;
+        Valuable& sqrt() override;
         Valuable Sqrt() const override;
         const vars_cont_t& getCommonVars() const override;
         vars_cont_t GetVaExps() const override;

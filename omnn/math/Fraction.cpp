@@ -576,9 +576,19 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
         return *this;
     }
 
+    Valuable& Fraction::sqrt() {
+        std::function<void(Valuable&)> updater = [this](Valuable& num) {
+            num *= denominator();
+            num.sqrt();
+        };
+        updateNumerator(updater);
+        optimize();
+        return *this;
+    }
+
     Valuable Fraction::Sqrt() const
     {
-        return numerator().Sqrt() / denominator().Sqrt();
+        return (numerator() * denominator()).sqrt() / denominator();
     }
 
     std::ostream& Fraction::print_sign(std::ostream& out) const
