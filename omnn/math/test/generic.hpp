@@ -57,21 +57,20 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function, bool compi
             //std::cout << " evaluated(" << x << ',' << y << ") = " << copy << std::endl;
             BOOST_TEST(copy.IsZero() == etalon);
 
-            copy = lambda(x, y);
-            //std::cout << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
-
-            // FIXME: 
+            // FIXME: should be always on
             if (compilambda) {
+                copy = lambda(x, y);
+                //std::cout << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
                 BOOST_TEST(copy.IsZero() == etalon);
-            }
-            if(copy.IsZero() != etalon){
-                std::cout << "Expected " << (etalon ? "true" : "false") << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
+                if(copy.IsZero() != etalon){
+                    std::cout << "Expected " << (etalon ? "true" : "false") << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
+                }
             }
         }
     }
 }
 
-void TestXpression(const Valuable& expressionX, auto function) {
+void TestXpression(const Valuable& expressionX, auto function, bool compilambda = {}) {
     auto lambda = expressionX.CompiLambda(X);
     for (auto x = 10; x --> -10 ;)
     {
@@ -82,7 +81,10 @@ void TestXpression(const Valuable& expressionX, auto function) {
         BOOST_TEST(copy == etalon, "f(X=" << x << ")=" << copy);
 
         copy = lambda(x);
-        // FIXME: BOOST_TEST(evaluatedToZero == etalon);
+        // FIXME: should be always on
+        if (compilambda) {
+            BOOST_TEST(copy == etalon);
+        }
         if (copy != etalon) {
             BOOST_TEST_MESSAGE("Expected " << (etalon ? "true" : "false") << " lambda(" << x << ") = " << copy);
         }
