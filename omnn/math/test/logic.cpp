@@ -9,7 +9,7 @@
 BOOST_AUTO_TEST_CASE(Equal_comparator_test) {
     auto Equal = X.Equals(Y);
     std::cout << "X=Y : " << Equal << std::endl;
-    TestBooleanOperator(Equal, [](auto x, auto y) { return x == y; });
+    TestBooleanOperator(Equal, [](auto x, auto y) { return x == y; }, true);
 }
 
 BOOST_AUTO_TEST_CASE(ABS_expression_test) {
@@ -21,18 +21,17 @@ BOOST_AUTO_TEST_CASE(ABS_expression_test) {
 BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test, *disabled()) {
     // abs(x)/x doesn't want for x=0, its NaN because of division by zero
     // searching for alternative approaches to make robust sign(x) function
-    DECL_VA(sign);
+    auto& sign = Y;
     auto lez = X.LessOrEqual(0);
     auto gez = X.GreaterOrEqual(0);
     Valuable::OptimizeOff off; // FIXME: optimize should work well here
     Product lezSq{lez, lez}, gezSq{gez, gez};
-    Sum both{lezSq, gezSq};
     auto expression = Product{
-        Sum{both.Sq(), sign.Sq()}, 
+        Sum{lezSq, gezSq, sign.Sq()},
         Sum{gezSq, sign.Equals(1).sq()}, 
         Sum{lezSq, sign.Equals(-1).sq()}};
-    auto Sign = expression(X);
-    std::cout << "sign(X) : " << Sign << std::endl;
+    auto Sign = expression(sign); // FIXME : should not evaluate to zero
+    std::cout << "sign(X) : " << expression << " = 0" << std::endl;
     //TestXpression(Sign, [](auto x) { return x ? x / std::abs(x) : x; });
 }
 
