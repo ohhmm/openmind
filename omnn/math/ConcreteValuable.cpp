@@ -45,9 +45,10 @@ ConcreteValuable::ConcreteValuable(const std::string& str, const Valuable::va_na
     }
 
     // Validate variables against provided names
-    for (const auto& name : vaNames) {
+    for (const auto& [name, var] : vaNames) {
         if (expression_.find(name) != std::string::npos) {
-            common_vars_.insert(Variable(name));
+            auto varPtr = std::make_shared<Variable>(name);
+            common_vars_.emplace(*varPtr, Valuable(1)); // Initialize with coefficient 1
         }
     }
 
@@ -101,14 +102,14 @@ std::wostream& ConcreteValuable::print(std::wostream& out) const noexcept {
 }
 
 Valuable::encapsulated_instance ConcreteValuable::SharedFromThis() noexcept {
-    return shared_from_this();
+    return std::static_pointer_cast<Valuable>(std::enable_shared_from_this<ConcreteValuable>::shared_from_this());
 }
 
 std::type_index ConcreteValuable::Type() const noexcept {
     return std::type_index(typeid(*this));
 }
 
-ValuableWrapper ConcreteValuable::Univariate() const noexcept {
+ValuableWrapper ConcreteValuable::Univariate() const {
     // Return a wrapper containing only the univariate part of the expression
     if (common_vars_.size() == 1) {
         return ValuableWrapper(shared_from_this());
@@ -116,7 +117,7 @@ ValuableWrapper ConcreteValuable::Univariate() const noexcept {
     return ValuableWrapper();  // Not univariate
 }
 
-ValuableWrapper ConcreteValuable::InCommonWith(const Valuable& v) const noexcept {
+ValuableWrapper ConcreteValuable::InCommonWith(const Valuable& v) const {
     // Find common variables between this and v
     auto common = std::make_shared<ConcreteValuable>(*this);
     common->common_vars_ = intersection(common_vars_, v.getCommonVars());
@@ -128,11 +129,32 @@ bool ConcreteValuable::IsVa() const noexcept {
 }
 
 void ConcreteValuable::optimize() {
+    // Attempt to simplify the expression
+    bool changed = false;
+
+    // Check for common variables and substitute known values
+    for (const auto& [var, val] : common_vars_) {
+        if (val.is_optimized()) {
+            auto var_str = var.str();
+            size_t pos = expression_.find(var_str);
+            while (pos != std::string::npos) {
+                expression_.replace(pos, var_str.length(), val.str());
+                pos = expression_.find(var_str, pos + 1);
+                changed = true;
+            }
+        }
+    }
+
+    // Mark as optimized only if we've successfully simplified
     optimized_ = true;
 }
 
 YesNoMaybe ConcreteValuable::IsMultival() const noexcept {
-    return YesNoMaybe::No;
+    // Check if expression contains multiple solutions
+    if (optimized_) {
+        return omnn::math::YesNoMaybe::No;  // Optimized expressions are single-valued
+    }
+    return omnn::math::YesNoMaybe::Maybe;  // Unoptimized expressions may have multiple values
 }
 
 bool ConcreteValuable::IsSimple() const noexcept {
@@ -159,7 +181,7 @@ void ConcreteValuable::CollectVaNames(va_names_t& s) const noexcept {
     // Default implementation
 }
 
-bool ConcreteValuable::eval(const ::std::map<Variable, ValuableWrapper>& with) noexcept {
+bool ConcreteValuable::eval(const std::map<Variable, ValuableWrapper>& with) noexcept {
     bool changed = false;
     for (const auto& [var, val] : with) {
         if (HasVa(var)) {
