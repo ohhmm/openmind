@@ -102,7 +102,7 @@ std::wostream& ConcreteValuable::print(std::wostream& out) const noexcept {
 }
 
 Valuable::encapsulated_instance ConcreteValuable::SharedFromThis() noexcept {
-    auto self = shared_from_this();
+    auto self = std::enable_shared_from_this<ConcreteValuable>::shared_from_this();
     return std::static_pointer_cast<Valuable>(self);
 }
 
