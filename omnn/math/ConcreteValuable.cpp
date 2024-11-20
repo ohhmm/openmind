@@ -66,7 +66,7 @@ std::shared_ptr<Valuable> ConcreteValuable::Clone() const noexcept {
 }
 
 std::shared_ptr<Valuable> ConcreteValuable::Move() noexcept {
-    return std::make_shared<ConcreteValuable>(std::move(*this));
+    return std::static_pointer_cast<Valuable>(std::make_shared<ConcreteValuable>(std::move(*this)));
 }
 
 void ConcreteValuable::New(void* p, Valuable&& v) noexcept {
@@ -112,7 +112,7 @@ std::type_index ConcreteValuable::Type() const noexcept {
 ValuableWrapper ConcreteValuable::Univariate() const {
     // Return a wrapper containing only the univariate part of the expression
     if (common_vars_.size() == 1) {
-        return ValuableWrapper(shared_from_this());
+        return ValuableWrapper(std::static_pointer_cast<Valuable>(shared_from_this()));
     }
     return ValuableWrapper();  // Not univariate
 }
@@ -121,7 +121,7 @@ ValuableWrapper ConcreteValuable::InCommonWith(const Valuable& v) const {
     // Find common variables between this and v
     auto common = std::make_shared<ConcreteValuable>(*this);
     common->common_vars_ = intersection(common_vars_, v.getCommonVars());
-    return ValuableWrapper(std::move(common));
+    return ValuableWrapper(std::static_pointer_cast<Valuable>(common));
 }
 
 bool ConcreteValuable::IsVa() const noexcept {
