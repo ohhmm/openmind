@@ -6,10 +6,11 @@
 
 #include <boost/operators.hpp>
 #include <type_traits>
-#include "Valuable.h"
 
 namespace omnn {
 namespace math {
+
+class Valuable;  // Forward declaration
 
     template<class CT>
     class OpenOps
@@ -72,3 +73,5 @@ namespace math {
     };
 
 }}
+
+#include "Valuable.h"  // Include after OpenOps definition
