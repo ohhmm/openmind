@@ -150,12 +150,12 @@ void ConcreteValuable::optimize() {
     optimized_ = true;
 }
 
-YesNoMaybe ConcreteValuable::IsMultival() const noexcept {
+ValuableDescendantBase::YesNoMaybe ConcreteValuable::IsMultival() const noexcept {
     // Check if expression contains multiple solutions
     if (optimized_) {
-        return omnn::math::YesNoMaybe::No;  // Optimized expressions are single-valued
+        return ValuableDescendantBase::YesNoMaybe::No;  // Optimized expressions are single-valued
     }
-    return omnn::math::YesNoMaybe::Maybe;  // Unoptimized expressions may have multiple values
+    return ValuableDescendantBase::YesNoMaybe::Maybe;  // Unoptimized expressions may have multiple values
 }
 
 bool ConcreteValuable::IsSimple() const noexcept {
