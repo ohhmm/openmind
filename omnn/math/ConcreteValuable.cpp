@@ -61,12 +61,12 @@ ConcreteValuable::ConcreteValuable(std::string_view str, const Valuable::va_name
     : ConcreteValuable(std::string(str), vaNames, optimized) {
 }
 
-std::shared_ptr<Valuable> ConcreteValuable::Clone() const noexcept {
-    return std::static_pointer_cast<Valuable>(std::make_shared<ConcreteValuable>(*this));
+Valuable* ConcreteValuable::Clone() const noexcept {
+    return new ConcreteValuable(*this);
 }
 
-std::shared_ptr<Valuable> ConcreteValuable::Move() noexcept {
-    return std::static_pointer_cast<Valuable>(std::make_shared<ConcreteValuable>(std::move(*this)));
+Valuable* ConcreteValuable::Move() noexcept {
+    return new ConcreteValuable(std::move(*this));
 }
 
 void ConcreteValuable::New(void* p, Valuable&& v) noexcept {
@@ -102,19 +102,20 @@ std::wostream& ConcreteValuable::print(std::wostream& out) const noexcept {
 }
 
 Valuable::encapsulated_instance ConcreteValuable::SharedFromThis() noexcept {
-    return std::static_pointer_cast<Valuable>(shared_from_this());
+    auto self = shared_from_this();
+    return std::static_pointer_cast<Valuable>(self);
 }
 
 std::type_index ConcreteValuable::Type() const noexcept {
     return std::type_index(typeid(*this));
 }
 
-ValuableWrapper ConcreteValuable::Univariate() const {
+Valuable ConcreteValuable::Univariate() const {
     // Return a wrapper containing only the univariate part of the expression
     if (common_vars_.size() == 1) {
-        return ValuableWrapper(std::static_pointer_cast<Valuable>(shared_from_this()));
+        return *this;
     }
-    return ValuableWrapper();  // Not univariate
+    return Valuable();  // Not univariate
 }
 
 Valuable ConcreteValuable::InCommonWith(const Valuable& v) const {
@@ -292,8 +293,8 @@ bool ConcreteValuable::operator==(const Variable& v) const noexcept {
     return false;  // Default implementation
 }
 
-Valuable ConcreteValuable::operator()(const Variable& va, const Valuable& augmentation) const {
-    return *this;  // Default implementation
+Valuable ConcreteValuable::operator()(const Variable& va, const Valuable& augmentation) const noexcept {
+    return ConcreteValuable(expression_, host_, optimized_);  // Return a new instance with the same state
 }
 
 } // namespace omnn::math
