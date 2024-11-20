@@ -7,7 +7,12 @@ namespace math {
 enum class YesNoMaybe {
     No,
     Yes,
-    Maybe
+    Maybe,
+
+    // Conversion to bool (explicit to prevent accidental conversions)
+    constexpr explicit operator bool() const noexcept {
+        return *this == YesNoMaybe::Yes;
+    }
 };
 
 // Allow implicit conversion to bool for backward compatibility
@@ -26,11 +31,6 @@ inline constexpr bool operator!=(YesNoMaybe value, bool b) {
 
 inline constexpr bool operator!=(bool b, YesNoMaybe value) {
     return !(value == b);
-}
-
-// Conversion to bool (explicit to prevent accidental conversions)
-inline constexpr explicit operator bool(YesNoMaybe value) {
-    return value == YesNoMaybe::Yes;
 }
 
 } // namespace math
