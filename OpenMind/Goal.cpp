@@ -37,7 +37,7 @@ void Goal::SubscribeOnReach( std::function <void()> f )
 
 void Goal::OnReach()
 {
-    for(std::function <void()> f : _onReach)
+    for(auto& f : _onReach)
     {
         f();
     }

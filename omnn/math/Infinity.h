@@ -72,6 +72,7 @@ public:
 
     static /*constinit*/ std::string_view SerializationName;
 
+    constexpr
     bool IsNaN() const override { return true; }
 
     bool IsSimple() const override { return {}; }
