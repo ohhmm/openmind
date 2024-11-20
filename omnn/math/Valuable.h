@@ -100,7 +100,8 @@ extern const Variable& integration_result_constant;
 
 
 class Valuable
-        : public OpenOps<Valuable>
+        : public std::enable_shared_from_this<Valuable>
+        , public OpenOps<Valuable>
 {
     using self = Valuable;
 
@@ -317,7 +318,7 @@ public:
 
     static void DispatchDispose(encapsulated_instance&&);
     //constexpr
-	virtual ~Valuable()//{}
+	virtual ~Valuable() noexcept//{}
         ;
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);

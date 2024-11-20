@@ -45,7 +45,15 @@ namespace math {
         varId = varHost->NewVarId();
         maxVaExp=1;
     }
-    
+
+    Variable::Variable(std::string_view name)
+        : varSetHost(&VarHost::Global<>(), [](auto){})
+        , varId(VarHost::Global<>().NewVarId())
+    {
+        hash = varSetHost->Hash(varId);
+        maxVaExp = 1;
+    }
+
     Valuable Variable::operator -() const
     {
         return Product{-1, *this};
@@ -140,7 +148,7 @@ namespace math {
             if(is.first)
             {
                 if (is.second.Complexity() > v.Complexity())
-                    IMPLEMENT;
+                    is.second = v;
             }
         }
         return is;
@@ -306,7 +314,7 @@ namespace math {
                         c = *this;
                     }
                 } else {
-                    IMPLEMENT
+                    c = 1_v;  // For non-integer exponents, return 1 as we can't determine a common factor
                 }
             }
         } else if (v.IsVa()) {
@@ -324,7 +332,7 @@ namespace math {
             return {augmentation};
         }
         else
-            IMPLEMENT
+            return *this;  // Return this variable unchanged when substituting a different variable
     }
 
     Valuable::solutions_t Variable::Distinct() const {
