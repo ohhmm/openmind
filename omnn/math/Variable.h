@@ -39,6 +39,7 @@ public:
     Variable& operator=(Variable&& v) = default;
     Variable& operator=(const Variable& v) = default;
     Variable(const Variable& v);
+    Variable(std::string_view name);  // Add constructor for string_view
     Variable(std::shared_ptr<VarHost>);
     Variable(const std::string_view&, const std::shared_ptr<VarHost> host = nullptr);
 
