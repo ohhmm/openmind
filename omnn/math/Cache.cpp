@@ -28,7 +28,7 @@ void DeleteDB(const Cache::path_str_t& path) {
 }
 #endif
 
-auto CancelAtExit = []() -> nullptr_t {
+auto CancelAtExit = []() -> std::nullptr_t {
     atexit([]() {
         Cache::GlobalCacheCancel = true;
     });
