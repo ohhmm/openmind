@@ -100,7 +100,8 @@ extern const Variable& integration_result_constant;
 
 
 class Valuable
-        : public OpenOps<Valuable>
+        : public std::enable_shared_from_this<Valuable>
+        , public OpenOps<Valuable>
 {
     using self = Valuable;
 

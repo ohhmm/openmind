@@ -13,7 +13,7 @@
 
 namespace omnn::math {
 
-class ConcreteValuable : public std::enable_shared_from_this<ConcreteValuable>, public Valuable {
+class ConcreteValuable : public Valuable {
 public:
     ConcreteValuable(const std::string& str, VarHost::ptr host, bool optimized = false);
     ConcreteValuable(const std::string& str, const Valuable::va_names_t& vaNames, bool optimized = false);
