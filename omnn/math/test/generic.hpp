@@ -74,10 +74,16 @@ void TestXpression(const Valuable& expressionX, auto function, bool compilambda 
     auto lambda = expressionX.CompiLambda(X);
     for (auto x = 10; x --> -10 ;)
     {
-        auto etalon = function(x);
         auto copy = expressionX;
         copy.Eval(X, x);
         copy.optimize();
+        auto vars = copy.Vars();
+        decltype(vars) requiredSolvingVars = {Y};
+        if (vars == requiredSolvingVars) {
+            Valuable::OptimizeOn on;
+            copy = copy(Y).Optimized();
+        }
+        auto etalon = function(x);
         BOOST_TEST(copy == etalon, "f(X=" << x << ")=" << copy);
 
         copy = lambda(x);
