@@ -283,10 +283,10 @@ namespace omnn::math {
             Valuable::SetView(Valuable::View::Calc);
             ChildT c;
             if (members.size() < 100) {
-                for(auto&& cm:GetCont()){
-                    auto&& m = const_cast<Valuable&&>(cm);
-                    evaluated = m.eval(with) || evaluated;
-                    c.Add(std::move(m));
+                while (size()) {
+                    auto item = Extract();
+                    evaluated = item.eval(with) || evaluated;
+                    c.Add(std::move(item));
                 }
             } else {
                 std::deque<std::future<bool>> jobs;
