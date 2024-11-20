@@ -1,3 +1,6 @@
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if (OPENMIND_USE_VCPKG)
     set(DEPENDENCIES
             Boost::filesystem
@@ -19,5 +22,8 @@ if(OPENMIND_USE_OPENCL)
         list(APPEND DEPENDENCIES Boost::compute)
     endif()
 endif()
+
+# Add stdc++ explicitly to ensure proper linkage
+list(APPEND DEPENDENCIES stdc++)
 
 lib(${DEPENDENCIES})
