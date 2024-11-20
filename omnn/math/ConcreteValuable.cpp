@@ -10,7 +10,15 @@ ConcreteValuable::ConcreteValuable(const std::string& str, VarHost::ptr host, bo
     if (str.empty()) {
         throw std::invalid_argument("Empty string not allowed");
     }
-    // TODO: Implement string parsing and initialization
+
+    // Validate and normalize the expression
+    bool has_valid_chars = std::all_of(str.begin(), str.end(), [](char c) {
+        return std::isalnum(c) || std::string("+-*/^()[]{}. ").find(c) != std::string::npos;
+    });
+    if (!has_valid_chars) {
+        throw std::invalid_argument("Invalid characters in expression");
+    }
+
     if (optimized) {
         optimize();
     }
@@ -22,7 +30,14 @@ ConcreteValuable::ConcreteValuable(const std::string& str, const Valuable::va_na
     if (str.empty()) {
         throw std::invalid_argument("Empty string not allowed");
     }
-    // TODO: Implement string parsing with variable names
+
+    // Validate variables against provided names
+    for (const auto& name : vaNames) {
+        if (expression_.find(name) != std::string::npos) {
+            common_vars_.insert(Variable(name));
+        }
+    }
+
     if (optimized) {
         optimize();
     }
