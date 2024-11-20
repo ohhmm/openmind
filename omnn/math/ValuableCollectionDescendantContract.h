@@ -219,6 +219,10 @@ namespace omnn::math {
             return std::all_of(begin(), end(), [](auto& m){return m.IsSimple();});
         }
 
+        bool IsNaN() const override {
+            return std::any_of(begin(), end(), [](auto& m) { return m.IsNaN(); });
+        }
+
         bool IsPolynomial(const Variable& v) const override {
             return std::all_of(begin(), end(), [&](auto& m) { return m.IsPolynomial(v); });
         }

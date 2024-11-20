@@ -37,7 +37,6 @@ BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test) {
     auto signIsOne = Sum{gezSq, sign.Equals(1).sq()};
     auto signIsMinusOne = Sum { lezSq, sign.Equals(-1).sq() };
 
-
     {
         Valuable::OptimizeOn on;
         Valuable copy = signIsMinusOne;
@@ -90,7 +89,6 @@ BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test) {
     auto Sign = FormulaOfVaWithSingleIntegerRoot(sign,expression); // FIXME : should not evaluate to zero
     Sign.SetMin(-1);
     Sign.SetMax(1);
-    std::cout << "sign(X) : " << Sign << std::endl;
 
     Valuable::OptimizeOff off;
     //TestXpression(expression, [=](auto x) {
