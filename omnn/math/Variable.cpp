@@ -45,7 +45,15 @@ namespace math {
         varId = varHost->NewVarId();
         maxVaExp=1;
     }
-    
+
+    Variable::Variable(std::string_view name)
+        : varSetHost(&VarHost::Global<>(), [](auto){})
+        , varId(VarHost::Global<>().NewVarId())
+    {
+        hash = varSetHost->Hash(varId);
+        maxVaExp = 1;
+    }
+
     Valuable Variable::operator -() const
     {
         return Product{-1, *this};
