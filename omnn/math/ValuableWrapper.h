@@ -104,8 +104,8 @@ public:
         return value && value->Same(other);
     }
 
-    YesNoMaybe IsMultival() const noexcept {
-        return value ? value->IsMultival() : YesNoMaybe::No;
+    ValuableDescendantBase::YesNoMaybe IsMultival() const noexcept {
+        return value ? value->IsMultival() : ValuableDescendantBase::YesNoMaybe::No;
     }
 
     ValuableWrapper Link() const noexcept {
