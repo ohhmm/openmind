@@ -3,6 +3,9 @@
 #include "ConcreteValuableForward.h"
 #include "Valuable.h"
 #include "VarHost.h"
+#include "Variable.h"
+#include "ValuableWrapper.h"
+#include "YesNoMaybe.h"
 #include <memory>
 #include <string>
 #include <string_view>
@@ -10,7 +13,7 @@
 
 namespace omnn::math {
 
-class ConcreteValuable : public Valuable {
+class ConcreteValuable : public std::enable_shared_from_this<ConcreteValuable>, public Valuable {
 public:
     ConcreteValuable(const std::string& str, VarHost::ptr host, bool optimized = false);
     ConcreteValuable(const std::string& str, const Valuable::va_names_t& vaNames, bool optimized = false);
@@ -29,8 +32,8 @@ public:
     std::wostream& print(std::wostream& out) const noexcept override;
     encapsulated_instance SharedFromThis() noexcept override;
     std::type_index Type() const noexcept override;
-    ValuableWrapper Univariate() const noexcept override;
-    ValuableWrapper InCommonWith(const Valuable& v) const noexcept override;
+    ValuableWrapper Univariate() const override;
+    ValuableWrapper InCommonWith(const Valuable& v) const override;
 
     // Virtual interface implementations
     bool IsVa() const noexcept override;
@@ -43,7 +46,7 @@ public:
     const Variable* FindVa() const noexcept override;
     void CollectVa(::std::set<Variable>& s) const noexcept override;
     void CollectVaNames(va_names_t& s) const noexcept override;
-    bool eval(const ::std::map<Variable, ValuableWrapper>& with) noexcept override;
+    bool eval(const std::map<Variable, ValuableWrapper>& with) noexcept override;
     void Eval(const Variable& va, const Valuable& v) noexcept override;
     void solve(const Variable& va, solutions_t& solutions) const noexcept override;
     const vars_cont_t& getCommonVars() const noexcept override;
