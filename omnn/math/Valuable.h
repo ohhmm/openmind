@@ -307,7 +307,7 @@ public:
 
     static void DispatchDispose(encapsulated_instance&&);
     //constexpr
-	virtual ~Valuable()//{}
+	virtual ~Valuable() noexcept//{}
         ;
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
