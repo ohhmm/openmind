@@ -402,8 +402,8 @@ function(test)
         endif()
 
         if(NOT MSVC)
-            message("Adding explicit libstdc++ linkage for ${TEST_NAME}")
-            target_link_libraries(${TEST_NAME} PUBLIC stdc++)
+            message("Adding explicit libstdc++ and math library linkage for ${TEST_NAME}")
+            target_link_libraries(${TEST_NAME} PUBLIC stdc++ m)
         endif()
 
         file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
