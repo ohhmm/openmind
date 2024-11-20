@@ -1,6 +1,19 @@
 #include "ConcreteValuable.h"
+#include "ValuableWrapper.h"
+#include "Variable.h"
 #include <stdexcept>
 #include <typeinfo>
+
+template<typename T>
+T intersection(const T& a, const T& b) {
+    T result;
+    for (const auto& item : a) {
+        if (b.find(item.first) != b.end()) {
+            result.insert(item);
+        }
+    }
+    return result;
+}
 
 namespace omnn::math {
 
@@ -96,11 +109,18 @@ std::type_index ConcreteValuable::Type() const noexcept {
 }
 
 ValuableWrapper ConcreteValuable::Univariate() const noexcept {
-    return ValuableWrapper(*this);  // Default implementation
+    // Return a wrapper containing only the univariate part of the expression
+    if (common_vars_.size() == 1) {
+        return ValuableWrapper(shared_from_this());
+    }
+    return ValuableWrapper();  // Not univariate
 }
 
 ValuableWrapper ConcreteValuable::InCommonWith(const Valuable& v) const noexcept {
-    return ValuableWrapper(*this);  // Default implementation
+    // Find common variables between this and v
+    auto common = std::make_shared<ConcreteValuable>(*this);
+    common->common_vars_ = intersection(common_vars_, v.getCommonVars());
+    return ValuableWrapper(std::move(common));
 }
 
 bool ConcreteValuable::IsVa() const noexcept {
@@ -140,7 +160,23 @@ void ConcreteValuable::CollectVaNames(va_names_t& s) const noexcept {
 }
 
 bool ConcreteValuable::eval(const ::std::map<Variable, ValuableWrapper>& with) noexcept {
-    return false;  // Default implementation
+    bool changed = false;
+    for (const auto& [var, val] : with) {
+        if (HasVa(var)) {
+            // Replace variable with its value in the expression
+            auto var_str = var.str();
+            size_t pos = expression_.find(var_str);
+            while (pos != std::string::npos) {
+                expression_.replace(pos, var_str.length(), val.str());
+                pos = expression_.find(var_str, pos + 1);
+                changed = true;
+            }
+        }
+    }
+    if (changed && optimized_) {
+        optimize();
+    }
+    return changed;
 }
 
 void ConcreteValuable::Eval(const Variable& va, const Valuable& v) noexcept {
