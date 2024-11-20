@@ -33,28 +33,28 @@ public:
     encapsulated_instance SharedFromThis() noexcept override;
     std::type_index Type() const noexcept override;
     ValuableWrapper Univariate() const override;
-    ValuableWrapper InCommonWith(const Valuable& v) const override;
+    Valuable InCommonWith(const Valuable& v) const override;
 
     // Virtual interface implementations
     bool IsVa() const noexcept override;
     void optimize() override;
     bool is_optimized() const noexcept override { return optimized_; }
-    YesNoMaybe IsMultival() const noexcept override;
+    YesNoMaybe IsMultival() const override;
     bool IsSimple() const noexcept override;
     bool IsComesBefore(const Valuable& v) const noexcept override;
     a_int Complexity() const noexcept override;
     const Variable* FindVa() const noexcept override;
     void CollectVa(::std::set<Variable>& s) const noexcept override;
     void CollectVaNames(va_names_t& s) const noexcept override;
-    bool eval(const std::map<Variable, ValuableWrapper>& with) noexcept override;
+    bool eval(const vars_cont_t& with) override;
     void Eval(const Variable& va, const Valuable& v) noexcept override;
     void solve(const Variable& va, solutions_t& solutions) const noexcept override;
     const vars_cont_t& getCommonVars() const noexcept override;
     vars_cont_t GetVaExps() const noexcept override;
 
     // Operator overrides
-    Valuable& operator=(Valuable&& v) noexcept override;
-    Valuable& operator=(const Valuable& v) noexcept override;
+    Valuable& operator=(Valuable&& v) noexcept;
+    Valuable& operator=(const Valuable& v) noexcept;
     Valuable operator-() const noexcept override;
     Valuable& operator+=(const Valuable& v) noexcept override;
     Valuable& operator*=(const Valuable& v) noexcept override;
@@ -66,7 +66,7 @@ public:
     Valuable& d(const Variable& x) noexcept override;
     bool operator<(const Valuable& v) const noexcept override;
     bool operator==(const Valuable& v) const noexcept override;
-    bool operator==(const Variable& v) const noexcept override;
+    bool operator==(const Variable& v) const noexcept;
     Valuable operator()(const Variable& va, const Valuable& augmentation) const override;
 
 private:
