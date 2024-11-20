@@ -1,5 +1,6 @@
 #include "PrincipalSurd.h"
 #include "Product.h"
+#include "Sum.h"
 
 using namespace omnn::math;
 
@@ -198,6 +199,10 @@ bool PrincipalSurd::IsComesBefore(const Valuable& value) const {
         }
     } else if (value.IsVa()) {
         return {};
+    } else if (value.IsProduct()) {
+        return Product{*this}.IsComesBefore(value);
+    } else if (value.IsSum()) {
+        return Sum{*this}.IsComesBefore(value);
     } else {
         return base::IsComesBefore(value);
     }
