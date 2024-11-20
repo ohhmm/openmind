@@ -766,7 +766,7 @@ namespace
                         operator/=(gcd);
                     }
 
-                    if(IsMultival()== Valuable::YesNoMaybe::Yes){
+                    if(IsMultival()== YesNoMaybe::Yes){
                         auto uni = Univariate();
                         if(!Same(uni)){
                             Become(std::move(uni));
@@ -1452,7 +1452,7 @@ namespace
     {
         size_t grade = 0;
         OptimizeOn opt;
-        if(IsMultival() == Valuable::YesNoMaybe::Yes){
+        if(IsMultival() == YesNoMaybe::Yes){
             auto univariate = Univariate();
             if (!univariate.IsSum()) {
                 IMPLEMENT
@@ -1746,7 +1746,7 @@ namespace
     Valuable Sum::operator()(const Variable& va) const
     {
         Valuable::solutions_t s;
-        if(IsMultival() == Valuable::YesNoMaybe::Yes){
+        if(IsMultival() == YesNoMaybe::Yes){
             return Univariate()(va);
         }
 
@@ -2360,7 +2360,7 @@ namespace
                         (*this / va.Equals(x)).solve(va, solutions);
                         solutions.emplace(std::move(x));
                     }
-                    else if(x.IsMultival() == Valuable::YesNoMaybe::Yes
+                    else if(x.IsMultival() == YesNoMaybe::Yes
                         && x.Vars().empty()
                         && !x.IsSimple()
                     ) {

@@ -29,7 +29,7 @@ namespace math {
 
         std::vector<Valuable> coefficients;
 
-        //auto isMultival = IsMultival()== Valuable::YesNoMaybe::Yes;
+        //auto isMultival = IsMultival()== YesNoMaybe::Yes;
         auto& sum = _.as<Sum>();
         auto g = sum.FillPolyCoeff(coefficients,getVa());
         if (g<3)

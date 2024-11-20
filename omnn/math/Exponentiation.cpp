@@ -903,7 +903,7 @@ namespace omnn::math {
         return _2.IsFraction()
             && _2.as<Fraction>().getDenominator().IsEven() == YesNoMaybe::Yes;
     }
-    Valuable::YesNoMaybe Exponentiation::IsMultival() const
+    YesNoMaybe Exponentiation::IsMultival() const
     {
         auto is = _1.IsMultival() || _2.IsMultival();
         if (is != YesNoMaybe::Yes && _2.IsFraction())
@@ -1214,7 +1214,7 @@ namespace omnn::math {
                     do {
                         b.sqrt();
                         d.shr();
-                    } while(d.IsEven() == Valuable::YesNoMaybe::Yes);
+                    } while(d.IsEven() == YesNoMaybe::Yes);
                     auto _ = b ^ d.Reciprocal();
                     auto distinct = _.Distinct();
                     if(denom==constants::two)
@@ -1246,7 +1246,7 @@ namespace omnn::math {
                         };
 
                         branches = std::move(distinct);
-                        for(auto d = denom; d.IsEven() == Valuable::YesNoMaybe::Yes; d.shr()) {
+                        for(auto d = denom; d.IsEven() == YesNoMaybe::Yes; d.shr()) {
 							auto newBranches = Branch(branches);
 							branches = std::move(newBranches);
 						}
