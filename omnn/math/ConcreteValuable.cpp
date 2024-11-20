@@ -62,7 +62,7 @@ ConcreteValuable::ConcreteValuable(std::string_view str, const Valuable::va_name
 }
 
 std::shared_ptr<Valuable> ConcreteValuable::Clone() const noexcept {
-    return std::make_shared<ConcreteValuable>(*this);
+    return std::static_pointer_cast<Valuable>(std::make_shared<ConcreteValuable>(*this));
 }
 
 std::shared_ptr<Valuable> ConcreteValuable::Move() noexcept {
@@ -102,7 +102,7 @@ std::wostream& ConcreteValuable::print(std::wostream& out) const noexcept {
 }
 
 Valuable::encapsulated_instance ConcreteValuable::SharedFromThis() noexcept {
-    return std::static_pointer_cast<Valuable>(std::enable_shared_from_this<ConcreteValuable>::shared_from_this());
+    return std::static_pointer_cast<Valuable>(shared_from_this());
 }
 
 std::type_index ConcreteValuable::Type() const noexcept {
@@ -117,11 +117,11 @@ ValuableWrapper ConcreteValuable::Univariate() const {
     return ValuableWrapper();  // Not univariate
 }
 
-ValuableWrapper ConcreteValuable::InCommonWith(const Valuable& v) const {
+Valuable ConcreteValuable::InCommonWith(const Valuable& v) const {
     // Find common variables between this and v
     auto common = std::make_shared<ConcreteValuable>(*this);
     common->common_vars_ = intersection(common_vars_, v.getCommonVars());
-    return ValuableWrapper(std::static_pointer_cast<Valuable>(common));
+    return Valuable(std::static_pointer_cast<Valuable>(common));
 }
 
 bool ConcreteValuable::IsVa() const noexcept {
@@ -181,7 +181,7 @@ void ConcreteValuable::CollectVaNames(va_names_t& s) const noexcept {
     // Default implementation
 }
 
-bool ConcreteValuable::eval(const std::map<Variable, ValuableWrapper>& with) noexcept {
+bool ConcreteValuable::eval(const vars_cont_t& with) {
     bool changed = false;
     for (const auto& [var, val] : with) {
         if (HasVa(var)) {
