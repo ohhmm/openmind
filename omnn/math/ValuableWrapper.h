@@ -46,13 +46,13 @@ public:
     ~ValuableWrapper() = default;
     // String constructors
     ValuableWrapper(const std::string& str, VarHost::ptr host, bool optimized = false)
-        : value(std::make_shared<ConcreteValuable>(str, std::move(host), optimized)) {}
+        : value(std::static_pointer_cast<Valuable>(std::make_shared<ConcreteValuable>(str, std::move(host), optimized))) {}
 
     ValuableWrapper(const std::string& str, const Valuable::va_names_t& vaNames, bool optimized = false)
-        : value(std::make_shared<ConcreteValuable>(str, vaNames, optimized)) {}
+        : value(std::static_pointer_cast<Valuable>(std::make_shared<ConcreteValuable>(str, vaNames, optimized))) {}
 
     ValuableWrapper(std::string_view str, const Valuable::va_names_t& vaNames, bool optimized = false)
-        : value(std::make_shared<ConcreteValuable>(str, vaNames, optimized)) {}
+        : value(std::static_pointer_cast<Valuable>(std::make_shared<ConcreteValuable>(str, vaNames, optimized))) {}
 
     // String conversion methods
     std::string str() const {
@@ -104,8 +104,8 @@ public:
         return value && value->Same(other);
     }
 
-    bool IsMultival() const noexcept {
-        return value ? value->IsMultival() : false;
+    YesNoMaybe IsMultival() const noexcept {
+        return value ? value->IsMultival() : YesNoMaybe::No;
     }
 
     ValuableWrapper Link() const noexcept {
