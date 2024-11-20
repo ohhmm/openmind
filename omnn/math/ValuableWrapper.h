@@ -85,7 +85,7 @@ public:
     }
 
     size_t getMaxVaExp() const noexcept {
-        return value ? value->getMaxVaExp() : 0;
+        return value ? boost::numeric_cast<size_t>(value->getMaxVaExp()) : 0;
     }
 
     // Conversion operators
@@ -115,7 +115,7 @@ public:
     // Collection operation helpers
     template<typename Container>
     void emplace_back(const Valuable& v) {
-        if (auto ptr = v.SharedFromThis()) {
+        if (auto ptr = const_cast<Valuable&>(v).SharedFromThis()) {
             static_cast<Container&>(*this).emplace_back(std::move(ptr));
         }
     }
@@ -130,7 +130,14 @@ public:
     }
 
     bool eval(const std::map<Variable, ValuableWrapper>& with) noexcept {
-        return value && value->eval(with);
+        if (!value) return false;
+        std::map<Variable, Valuable> converted_map;
+        for (const auto& [var, wrapper] : with) {
+            if (wrapper.get()) {
+                converted_map.emplace(var, *wrapper.get());
+            }
+        }
+        return value->eval(converted_map);
     }
 
     void optimize() noexcept {
