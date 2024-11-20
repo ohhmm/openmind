@@ -86,7 +86,7 @@ namespace math {
         return boost::numeric_cast<uint64_t>(arbitrary);
     }
     
-    Valuable::YesNoMaybe Integer::IsEven() const {
+    YesNoMaybe Integer::IsEven() const {
         return (arbitrary >= 0 ? arbitrary : -arbitrary) & 1 ? YesNoMaybe::No : YesNoMaybe::Yes;
     }
 

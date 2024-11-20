@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(Higher_orders_tests
     a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
     // (573440 * (±29/±8) + 2115584) / 262144
     a.optimize();
-    auto ok = a.IsMultival() == Valuable::YesNoMaybe::Yes;
+    auto ok = a.IsMultival() == YesNoMaybe::Yes;
     BOOST_TEST(ok);
     
     for (auto i = 1; i < 8; ++i) {

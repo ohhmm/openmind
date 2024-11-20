@@ -195,7 +195,7 @@ namespace omnn::math {
         }
 
         bool IsSimple() const override {
-            return IsMultival() == Valuable::YesNoMaybe::No
+            return IsMultival() == YesNoMaybe::No
                 && _1.IsSimple() && _2.IsSimple();
         }
 
@@ -203,7 +203,7 @@ namespace omnn::math {
             return _1.IsNaN() || _2.IsNaN();
         }
 
-        Valuable::YesNoMaybe IsMultival() const override {
+        YesNoMaybe IsMultival() const override {
             return _1.IsMultival() || _2.IsMultival();
         }
 

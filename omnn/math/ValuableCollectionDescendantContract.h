@@ -227,16 +227,16 @@ namespace omnn::math {
             return std::all_of(begin(), end(), [&](auto& m) { return m.IsPolynomial(v); });
         }
 
-        Valuable::YesNoMaybe IsMultival() const override {
-            Valuable::YesNoMaybe is;
-            if(size()==0) {
-                is = Valuable::YesNoMaybe::No;
+        YesNoMaybe IsMultival() const override {
+            YesNoMaybe is;
+            if (size() == 0) {
+                is = YesNoMaybe::No;
             } else {
-            auto it = begin();
+                auto it = begin();
                 is = it->IsMultival();
-            if(size()!=1)
-                while(++it != end())
-                    is = is || it->IsMultival();
+                if (size() != 1)
+                    while (++it != end())
+                        is = is || it->IsMultival();
             }
             return is;
         }
@@ -244,7 +244,7 @@ namespace omnn::math {
         void Values(const std::function<bool(const Valuable&)>& fun) const override {
             auto sharedValuesProjection = std::vector<std::vector<Valuable>>();
             for (auto& m : GetConstCont()) {
-                if (m.IsMultival() == Valuable::YesNoMaybe::Yes) {
+                if (m.IsMultival() == YesNoMaybe::Yes) {
                     if (sharedValuesProjection.size()) {
                         auto sharedValuesProjectionCopy = std::move(sharedValuesProjection);
                         m.Values([&](const Valuable& value) {

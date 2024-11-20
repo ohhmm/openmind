@@ -67,9 +67,9 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     _ = 1_v^(1_v/2);
     auto eq = _ == (1_v^(1_v/2));
     BOOST_TEST(eq);
-    BOOST_TEST((_.IsMultival() == Valuable::YesNoMaybe::Yes));
+    BOOST_TEST((_.IsMultival() == YesNoMaybe::Yes));
     _ /= 1_v^(1_v/2);
-    BOOST_TEST((_.IsMultival() == Valuable::YesNoMaybe::Yes));
+    BOOST_TEST((_.IsMultival() == YesNoMaybe::Yes));
     eq = _ == (1_v^(1_v/2));
     BOOST_TEST(eq);
 

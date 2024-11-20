@@ -1875,7 +1875,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    Valuable::YesNoMaybe Valuable::IsMultival() const {
+    YesNoMaybe Valuable::IsMultival() const {
         if(exp)
             return exp->IsMultival();
         else
@@ -1889,7 +1889,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    Valuable::YesNoMaybe Valuable::IsEven() const {
+    YesNoMaybe Valuable::IsEven() const {
         if(exp)
             return exp->IsEven();
         else
