@@ -42,6 +42,11 @@ for branch in "${BRANCHES[@]}"; do
     if [ "$branch" != "main" ]; then
         echo "Processing branch: $branch"
         if "$GIT_EXECUTABLE" checkout "$branch"; then
+            echo "Synchronizing branch with main..."
+            if ! "$GIT_EXECUTABLE" pull --rebase --autostash origin main; then
+                echo "Failed to synchronize branch $branch with main"
+                continue
+            fi
             # Store the branch's original HEAD
             BRANCH_HEAD=$("$GIT_EXECUTABLE" rev-parse HEAD)
 
