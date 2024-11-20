@@ -42,6 +42,23 @@ BOOST_AUTO_TEST_CASE(Product_comparision_test) {
     BOOST_TEST(!less);
 }
 
+BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
+    Valuable::OptimizeOff off;
+
+    auto _1 = "-2*(1^5)"_v;
+    auto _2 = "(1 ^ 6)"_v;
+    auto after = _1.IsComesBefore(_2);
+    BOOST_TEST(after);
+    auto before = _2.IsComesBefore(_1);
+    BOOST_TEST(!before);
+    BOOST_TEST(after != before);
+
+    bool less = _1 < _2;
+    BOOST_TEST(less);
+
+    Sum sum = {std::move(_1), std::move(_2)};
+}
+
 BOOST_AUTO_TEST_CASE(Product_tests)
 {
 	auto f = 1_v / 2;

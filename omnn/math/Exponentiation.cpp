@@ -975,7 +975,7 @@ namespace omnn::math {
 
     bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
-        auto is = v.IsSimple();
+        auto is = FindVa() && v.IsSimple();
         if (is)
         {}
         else if (auto degreeDiff = getMaxVaExp() - v.getMaxVaExp();
