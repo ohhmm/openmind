@@ -13,15 +13,15 @@
 
 namespace omnn::math {
 
-class ConcreteValuable : public Valuable {
+class ConcreteValuable : public Valuable, public std::enable_shared_from_this<ConcreteValuable> {
 public:
     ConcreteValuable(const std::string& str, VarHost::ptr host, bool optimized = false);
     ConcreteValuable(const std::string& str, const Valuable::va_names_t& vaNames, bool optimized = false);
     ConcreteValuable(std::string_view str, const Valuable::va_names_t& vaNames, bool optimized = false);
 
     // Pure virtual interface implementations
-    std::shared_ptr<Valuable> Clone() const noexcept override;
-    std::shared_ptr<Valuable> Move() noexcept override;
+    Valuable* Clone() const noexcept override;
+    Valuable* Move() noexcept override;
     void New(void*, Valuable&&) noexcept override;
     size_t getTypeSize() const noexcept override;
     size_t getAllocSize() const noexcept override;
@@ -32,14 +32,14 @@ public:
     std::wostream& print(std::wostream& out) const noexcept override;
     encapsulated_instance SharedFromThis() noexcept override;
     std::type_index Type() const noexcept override;
-    ValuableWrapper Univariate() const override;
+    Valuable Univariate() const override;
     Valuable InCommonWith(const Valuable& v) const override;
 
     // Virtual interface implementations
     bool IsVa() const noexcept override;
     void optimize() override;
     bool is_optimized() const noexcept override { return optimized_; }
-    YesNoMaybe IsMultival() const override;
+    YesNoMaybe IsMultival() const noexcept override;
     bool IsSimple() const noexcept override;
     bool IsComesBefore(const Valuable& v) const noexcept override;
     a_int Complexity() const noexcept override;
@@ -67,7 +67,7 @@ public:
     bool operator<(const Valuable& v) const noexcept override;
     bool operator==(const Valuable& v) const noexcept override;
     bool operator==(const Variable& v) const noexcept;
-    Valuable operator()(const Variable& va, const Valuable& augmentation) const override;
+    Valuable operator()(const Variable& va, const Valuable& augmentation) const noexcept override;
 
 private:
     bool optimized_ = false;
