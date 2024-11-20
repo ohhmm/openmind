@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE Logic test
 #include <boost/test/unit_test.hpp>
 
+#include "FormulaOfVaWithSingleIntegerRoot.h"
 #include "Variable.h"
 #include "Sum.h"
 #include "generic.hpp"
@@ -18,21 +19,83 @@ BOOST_AUTO_TEST_CASE(ABS_expression_test) {
     TestXpression(abs, [](auto x) { return std::abs(x); });
 }
 
-BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(Min_operator_test) {
+    auto Minimum = X.Minimum(Y);
+    std::cout << "Minimum(X,Y) : " << Minimum << std::endl;
+    TestBinaryOperator(Minimum, [](auto x, auto y) { return std::min(x, y); });
+}
+
+BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test) {
     // abs(x)/x doesn't want for x=0, its NaN because of division by zero
     // searching for alternative approaches to make robust sign(x) function
     auto& sign = Y;
     auto lez = X.LessOrEqual(0);
     auto gez = X.GreaterOrEqual(0);
-    Valuable::OptimizeOff off; // FIXME: optimize should work well here
+    //Valuable::OptimizeOff off; // FIXME: optimize should work well here
     Product lezSq{lez, lez}, gezSq{gez, gez};
-    auto expression = Product{
-        Sum{lezSq, gezSq, sign.Sq()},
-        Sum{gezSq, sign.Equals(1).sq()}, 
-        Sum{lezSq, sign.Equals(-1).sq()}};
-    auto Sign = expression(sign); // FIXME : should not evaluate to zero
+    auto signIsZero = Sum{lezSq, gezSq, sign.Sq()};
+    auto signIsOne = Sum{gezSq, sign.Equals(1).sq()};
+    auto signIsMinusOne = Sum { lezSq, sign.Equals(-1).sq() };
+
+
+    {
+        Valuable::OptimizeOn on;
+        Valuable copy = signIsMinusOne;
+        copy.eval({{X, 3 / -5}, {sign, -1}});
+        auto ok = copy.Optimized().IsZero();
+        BOOST_TEST(ok);
+        copy = signIsMinusOne;
+        copy.eval({{X, 3 / -5}, {sign, 1}});
+        ok = copy.Optimized().IsZero() == false;
+        BOOST_TEST(ok);
+        copy = signIsMinusOne;
+        copy.eval({{X, 3 / -5}, {sign, 0}});
+        ok = copy.Optimized().IsZero() == false;
+        BOOST_TEST(ok);
+
+        copy = signIsZero;
+        copy.eval({{X, 0}, {sign, 0}});
+        ok = copy.Optimized().IsZero();
+        BOOST_TEST(ok);
+        copy = signIsZero;
+        copy.eval({{X, 0}, {sign, -1}});
+        ok = copy.Optimized().IsZero() == false;
+        BOOST_TEST(ok);
+        copy = signIsZero;
+        copy.eval({{X, 0}, {sign, 1}});
+        ok = copy.Optimized().IsZero() == false;
+        BOOST_TEST(ok);
+
+        copy = signIsOne;
+        copy.eval({{X, 7}, {sign, 1}});
+        ok = copy.Optimized().IsZero();
+        BOOST_TEST(ok);
+        copy = signIsOne;
+        copy.eval({{X, 7}, {sign, -1}});
+        ok = copy.Optimized().IsZero() == false;
+        BOOST_TEST(ok);
+        copy = signIsOne;
+        copy.eval({{X, 7}, {sign, 0}});
+        ok = copy.Optimized().IsZero() == false;
+        BOOST_TEST(ok);
+    }
+
+    auto signIsZeroAndNotOther = Sum{signIsZero, !signIsOne, !signIsMinusOne};
+    auto signIsOneAndNotOther = Sum{!signIsZero, signIsOne, !signIsMinusOne};
+    auto signIsMinusOneAndNotOther = Sum{!signIsZero, !signIsOne, signIsMinusOne};
+
+    auto expression = Product{signIsZeroAndNotOther, signIsOneAndNotOther, signIsMinusOneAndNotOther};
     std::cout << "sign(X) : " << expression << " = 0" << std::endl;
-    //TestXpression(Sign, [](auto x) { return x ? x / std::abs(x) : x; });
+
+    auto Sign = FormulaOfVaWithSingleIntegerRoot(sign,expression); // FIXME : should not evaluate to zero
+    Sign.SetMin(-1);
+    Sign.SetMax(1);
+    std::cout << "sign(X) : " << Sign << std::endl;
+
+    Valuable::OptimizeOff off;
+    //TestXpression(expression, [=](auto x) {
+    //    return x ? x / std::abs(x) : x;
+    //});
 }
 
 BOOST_AUTO_TEST_CASE(Sign_expression_test, *disabled()) {
@@ -66,12 +129,6 @@ BOOST_AUTO_TEST_CASE(merge_or_tests
     BOOST_TEST(express1 == set1);
     auto set2 = Valuable({1_v, 2_v, 3_v});
     BOOST_TEST(set1 == set2);
-}
-
-BOOST_AUTO_TEST_CASE(Min_operator_test) {
-    auto Minimum = X.Minimum(Y);
-    std::cout << "Minimum(X,Y) : " << Minimum << std::endl;
-    TestBinaryOperator(Minimum, [](auto x, auto y) { return std::min(x, y); });
 }
 
 BOOST_AUTO_TEST_CASE(LessOrEqual_comparator_test) {
