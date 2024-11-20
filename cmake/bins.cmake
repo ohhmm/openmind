@@ -344,6 +344,11 @@ function(test)
             target_enable_asan(${TEST_NAME})
         endif()
 
+        if(NOT MSVC)
+            message("Adding explicit libstdc++ linkage for ${TEST_NAME}")
+            target_link_libraries(${TEST_NAME} PUBLIC stdc++)
+        endif()
+
         file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
         add_test(NAME ${TEST_NAME}
             COMMAND $<TARGET_FILE:${TEST_NAME}>
