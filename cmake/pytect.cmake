@@ -1,8 +1,8 @@
 
 if(NOT Python_EXECUTABLE)
     find_package(Python)
-    if(NOT Python_FOUND AND WIN32)
-        find_package(Python PATHS "$ENV{APPDATA}/Python/*/")
+    if(NOT Python_FOUND AND WIN32 AND EXISTS "$ENV{APPDATA}/Python")
+        find_package(Python HINTS "$ENV{APPDATA}/Python/*/")
     endif()
 endif()
 
