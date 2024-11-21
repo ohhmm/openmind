@@ -113,9 +113,9 @@ BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test) {
     Sign.SetMin(-1);
     Sign.SetMax(1);
 
-    //TestXpression(expression, [=](auto x) {
-    //    return x ? x / std::abs(x) : x;
-    //});
+    TestXpression(expression, [=](auto x) {
+        return x ? x / std::abs(x) : x;
+    });
 }
 
 BOOST_AUTO_TEST_CASE(Sign_expression_test, *disabled()) {
