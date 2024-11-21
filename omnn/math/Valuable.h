@@ -242,6 +242,12 @@ public:
     Valuable& operator =(const Valuable& v);
     Valuable& operator =(Valuable&& v);
 
+    template <typename ValuableT>
+        requires(std::derived_from<ValuableT, Valuable>)
+    Valuable& operator=(ptrs::shared_ptr<ValuableT>&& ptr) {
+        return operator=(Valuable(std::move(std::static_pointer_cast<Valuable>(ptr))));
+    }
+
     bool SerializedStrEqual(const std::string_view& s) const;
 
     Valuable(const Valuable& v);

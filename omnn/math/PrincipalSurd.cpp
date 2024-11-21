@@ -52,6 +52,8 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
                 is.second = PrincipalSurd{_1 * surd._1, _2};
             }
         } 
+    } else if (v.IsExponentiation()) {
+        is = v.IsMultiplicationSimplifiable(*this);
     }
     return is;
 }

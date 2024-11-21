@@ -709,6 +709,15 @@ namespace omnn::math {
             }
         } else if (v.IsNaN()) {
             is = {true, v};
+        } else if (v.IsPrincipalSurd()) {
+            auto& surd = v.as<PrincipalSurd>();
+            if (surd.Radicand() == getBase() && surd.Index().IsEven() == YesNoMaybe::No) {
+                is = surd.Index().Reciprocal().IsSummationSimplifiable(getExponentiation());
+                if (is.first) {
+                    is.second = std::static_pointer_cast<Valuable>(
+                        std::make_shared<Exponentiation>(getBase(), std::move(is.second)));
+                }
+            }
         } else {
 #ifndef NDEBUG
             std::cout << "IsMultiplication simplifiable?: " << str() << " * " << v.str() << std::endl;
