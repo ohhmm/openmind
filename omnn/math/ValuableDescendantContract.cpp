@@ -67,6 +67,7 @@ Valuable ValuableDescendantBase::Sqrt() const {
 }
 
 bool ValuableDescendantBase::IsComesBefore(const Valuable& v) const {
+    LOG_AND_IMPLEMENT("Implement " << *this << " IsComesBefore " << v);
     return *this > v;
 }
 
