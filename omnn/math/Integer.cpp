@@ -227,6 +227,7 @@ namespace math {
             }
         } else if (v.IsSimple()) {
             Become(Fraction(*this, v));
+        //} else if (IsZero() && !v.IsNaN()) {
         }
         else
             *this *= v^-1;
