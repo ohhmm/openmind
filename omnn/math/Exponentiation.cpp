@@ -987,11 +987,6 @@ namespace omnn::math {
         auto is = FindVa() && v.IsSimple();
         if (is)
         {}
-        else if (auto degreeDiff = getMaxVaExp() - v.getMaxVaExp();
-            degreeDiff != 0)
-        {
-            is = degreeDiff > 0;
-        }
         else if (v.IsExponentiation())
         {
             auto& e = v.as<Exponentiation>();
@@ -1026,7 +1021,11 @@ namespace omnn::math {
         {
             is = !(v.IsComesBefore(*this) || operator==(v));
         }
-        else if(v.IsSimple())
+        else if (auto degreeDiff = getMaxVaExp() - v.getMaxVaExp(); degreeDiff != 0)
+        {
+            is = degreeDiff > 0;
+        }
+        else if (v.IsSimple())
             is = true;
 //        else if(v.IsFraction())
 //        {is=}
