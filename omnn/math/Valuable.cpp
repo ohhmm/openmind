@@ -1889,12 +1889,51 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return z;
     }
 
+    namespace {
+        //"((X + sqrt((X^2))) + (Y^2) + 2*Y + (1 + ((sqrt(((Y^4) + -4*(Y^3) + -2*sqrt((X^2))*(Y^2) + 2*(Y^2)*X + "
+        //"-2*sqrt((X^2))*X + 2*(X^2) + 6*(Y^2) + 4*sqrt((X^2))*Y + -4*Y*X + -2*sqrt((X^2)) + -4*Y + 2*X + "
+        //"1)))/(-1*(Y^2) + -1*X + 2*Y + -1 + sqrt((X^2)))))*(1 + ((sqrt(((Y^4) + -4*(Y^3) + -2*sqrt((X^2))*(Y^2) + "
+        //"2*(Y^2)*X + -2*sqrt((X^2))*X + 2*(X^2) + 6*(Y^2) + 4*sqrt((X^2))*Y + -4*Y*X + -2*sqrt((X^2)) + -4*Y + 2*X + "
+        //"1)))/((Y^2) + -1*sqrt((X^2)) + -2*Y + X + 1))) + (1 + ((sqrt(((Y^4) + 4*(Y^2)*X + 4*(X^2))))/(-1*(Y^2) + "
+        //"-2*X)))*(1 + ((sqrt(((Y^4) + 4*(Y^2)*X + 4*(X^2))))/((Y^2) + 2*X))) + 1)*((-1*sqrt((X^2)) + X) + (Y^2) + -2*Y "
+        //"+ (1 + ((sqrt(((Y^4) + 4*(Y^3) + 2*sqrt((X^2))*(Y^2) + 2*(Y^2)*X + 2*sqrt((X^2))*X + 2*(X^2) + 6*(Y^2) + "
+        //"4*sqrt((X^2))*Y + 4*Y*X + 2*sqrt((X^2)) + 2*X + 4*Y + 1)))/(-1*(Y^2) + -1*sqrt((X^2)) + -2*Y + -1*X + "
+        //"-1)))*(1 + ((sqrt(((Y^4) + 4*(Y^3) + 2*sqrt((X^2))*(Y^2) + 2*(Y^2)*X + 2*sqrt((X^2))*X + 2*(X^2) + 6*(Y^2) + "
+        //"4*sqrt((X^2))*Y + 4*Y*X + 2*sqrt((X^2)) + 2*X + 4*Y + 1)))/((Y^2) + 2*Y + X + 1 + sqrt((X^2))))) + (1 + "
+        //"((sqrt(((Y^4) + 4*(Y^2)*X + 4*(X^2))))/(-1*(Y^2) + -2*X)))*(1 + ((sqrt(((Y^4) + 4*(Y^2)*X + 4*(X^2))))/((Y^2) "
+        //"+ 2*X))) + 1)*((-1*sqrt((X^2)) + X) + (X + sqrt((X^2))) + (Y^2) + (1 + ((sqrt(((Y^4) + 4*(Y^3) + "
+        //"2*sqrt((X^2))*(Y^2) + 2*(Y^2)*X + 2*sqrt((X^2))*X + 2*(X^2) + 6*(Y^2) + 4*sqrt((X^2))*Y + 4*Y*X + "
+        //"2*sqrt((X^2)) + 2*X + 4*Y + 1)))/(-1*(Y^2) + -1*sqrt((X^2)) + -2*Y + -1*X + -1)))*(1 + ((sqrt(((Y^4) + "
+        //"4*(Y^3) + 2*sqrt((X^2))*(Y^2) + 2*(Y^2)*X + 2*sqrt((X^2))*X + 2*(X^2) + 6*(Y^2) + 4*sqrt((X^2))*Y + 4*Y*X + "
+        //"2*sqrt((X^2)) + 2*X + 4*Y + 1)))/((Y^2) + 2*Y + X + 1 + sqrt((X^2))))) + (1 + ((sqrt(((Y^4) + -4*(Y^3) + "
+        //"-2*sqrt((X^2))*(Y^2) + 2*(Y^2)*X + -2*sqrt((X^2))*X + 2*(X^2) + 6*(Y^2) + 4*sqrt((X^2))*Y + -4*Y*X + "
+        //"-2*sqrt((X^2)) + -4*Y + 2*X + 1)))/(-1*(Y^2) + -1*X + 2*Y + -1 + sqrt((X^2)))))*(1 + ((sqrt(((Y^4) + -4*(Y^3) "
+        //"+ -2*sqrt((X^2))*(Y^2) + 2*(Y^2)*X + -2*sqrt((X^2))*X + 2*(X^2) + 6*(Y^2) + 4*sqrt((X^2))*Y + -4*Y*X + "
+        //"-2*sqrt((X^2)) + -4*Y + 2*X + 1)))/((Y^2) + -1*sqrt((X^2)) + -2*Y + X + 1))))"_v;
+    }
 	Valuable Valuable::Sign() const {
         if (exp)
             return exp->Sign();
         else {
-            auto sign = Abs();
-            sign /= *this;
+            DECL_VARS(X, Sgn);
+            const auto LessThanZeroFnExpression = X.LessOrEqual(0);
+            const auto GreaterThanZeroFnExpression = X.GreaterOrEqual(0);
+            Product LtzSq{LessThanZeroFnExpression, LessThanZeroFnExpression},
+                GtzSq{GreaterThanZeroFnExpression, GreaterThanZeroFnExpression}, SgnSq{Sgn, Sgn};
+            const auto SignIsZero = Sum{LtzSq, GtzSq, SgnSq};
+            const auto SignIsOne = Sum{GtzSq, Sgn.Equals(1).sq()};
+            const auto SignIsMinusOne = Sum{LtzSq, Sgn.Equals(-1).sq()};
+            const auto SignIsZeroAndNotOther = Sum{SignIsZero, !SignIsOne, !SignIsMinusOne};
+            const auto SignIsOneAndNotOther = Sum{!SignIsZero, SignIsOne, !SignIsMinusOne};
+            const auto SignIsMinusOneAndNotOther = Sum{!SignIsZero, !SignIsOne, SignIsMinusOne};
+
+            const auto SignFunctionExpression =
+                Product{SignIsZeroAndNotOther, SignIsOneAndNotOther, SignIsMinusOneAndNotOther};
+
+            OptimizeOff off;
+            auto copy = SignFunctionExpression;
+            copy.eval({{X, *this}});
+            auto sign = copy(Sgn);
             return sign;
             //return GreaterOrEqual(constants::zero).ToBool() - LessOrEqual(constants::zero).ToBool();
             // sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt")
