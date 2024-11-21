@@ -435,7 +435,7 @@ if (OPENMIND_BUILD_TESTS)
 else()
     add_custom_target(enable_openmind_tests
         COMMAND ${CMAKE_COMMAND} -DOPENMIND_BUILD_TESTS=ON "${CMAKE_CURRENT_SOURCE_DIR}")
-	set_target_properties(enable_openmind_tests PROPERTIES FOLDER "util")
+	set_target_properties(enable_openmind_tests PROPERTIES FOLDER "test")
 endif()
 
 macro(echo)
