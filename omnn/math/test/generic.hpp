@@ -5,6 +5,8 @@
 #include <omnn/math/Sum.h>
 #include <omnn/math/Variable.h>
 
+#include <omnn/rt/diag.hpp>
+
 #include <cmath>
 
 using namespace omnn::math;
@@ -73,18 +75,36 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function, bool compi
 }
 
 void TestXpression(const Valuable& expressionX, auto function, bool compilambda = {}) {
+    std::cout << "Checking expression: " << expressionX << std::endl;
     auto lambda = expressionX.CompiLambda(X);
     for (auto x = 10; x --> -10 ;)
     {
         auto copy = expressionX;
+        std::cout << "Evaluating with x=" << x << std::endl;
         copy.Eval(X, x);
-        copy.optimize();
+        std::cout << "After eval with x=" << x << ": " << copy << std::endl;
+
+        auto Optimize = [&]() {
+            if (!copy.is_optimized()) {
+                std::cout << " optimizing..." << std::endl;
+                auto ms = omnn::measure::mills([&]() { copy.optimize(); });
+                std::cout << " optimized ";
+                if (ms)
+                    std::cout << "in " << ms << " mls ";
+                std::cout << "into " << copy << std::endl;
+            }
+        };
+        Optimize();
+
         auto vars = copy.Vars();
-        decltype(vars) requiredSolvingVars = {Y};
+        static const decltype(vars) requiredSolvingVars = {Y};
         if (vars == requiredSolvingVars) {
-            Valuable::OptimizeOn on;
-            copy = copy(Y).Optimized();
+            std::cout << " solving Y.." << std::endl;
+            copy = copy(Y);
+            std::cout << " solved Y=" << copy << std::endl;
+            Optimize();
         }
+
         auto etalon = function(x);
         BOOST_TEST(copy == etalon, "f(X=" << x << ")=" << copy);
 

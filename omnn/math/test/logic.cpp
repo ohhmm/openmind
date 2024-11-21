@@ -49,11 +49,20 @@ BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test) {
     auto& sign = Y;
     auto lez = X.LessOrEqual(0);
     auto gez = X.GreaterOrEqual(0);
-    //Valuable::OptimizeOff off; // FIXME: optimize should work well here
+
+#ifndef OPENMIND_MATH_USE_LEVELDB_CACHE
+    Valuable::OptimizeOff off; // FIXME: optimize should work well here
+#endif
+
     Product lezSq{lez, lez}, gezSq{gez, gez};
-    auto signIsZero = Sum{lezSq, gezSq, sign.Sq()};
-    auto signIsOne = Sum{gezSq, sign.Equals(1).sq()};
-    auto signIsMinusOne = Sum { lezSq, sign.Equals(-1).sq() };
+    auto signIsZero = X.Sq() + sign.Sq();
+    std::cout << "sign(X)=0 : " << signIsZero << " = 0" << std::endl;
+    auto signIsNotZero = !signIsZero;
+    std::cout << "sign(X)<>0 : " << signIsNotZero << " = 0" << std::endl;
+    auto signIsNotZeroSq = signIsNotZero.Sq();
+    std::cout << "sign(X)<>0 square : " << signIsNotZeroSq << " = 0" << std::endl;
+    auto signIsOne = Sum{gezSq, sign.Equals(1).sq(), signIsNotZeroSq};
+    auto signIsMinusOne = Sum{lezSq, sign.Equals(-1).sq(), signIsNotZeroSq};
 
     {
         Valuable::OptimizeOn on;
@@ -97,18 +106,13 @@ BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test) {
         BOOST_TEST(ok);
     }
 
-    auto signIsZeroAndNotOther = Sum{signIsZero, !signIsOne, !signIsMinusOne};
-    auto signIsOneAndNotOther = Sum{!signIsZero, signIsOne, !signIsMinusOne};
-    auto signIsMinusOneAndNotOther = Sum{!signIsZero, !signIsOne, signIsMinusOne};
-
-    auto expression = Product{signIsZeroAndNotOther, signIsOneAndNotOther, signIsMinusOneAndNotOther};
+    auto expression = Product{signIsZero, signIsOne, signIsMinusOne};
     std::cout << "sign(X) : " << expression << " = 0" << std::endl;
 
     auto Sign = FormulaOfVaWithSingleIntegerRoot(sign,expression); // FIXME : should not evaluate to zero
     Sign.SetMin(-1);
     Sign.SetMax(1);
 
-    Valuable::OptimizeOff off;
     //TestXpression(expression, [=](auto x) {
     //    return x ? x / std::abs(x) : x;
     //});
@@ -198,7 +202,7 @@ BOOST_AUTO_TEST_CASE(ToBool_Delta_function_expression_test) {
     auto xIsPresent = delta.FindVa() && *delta.FindVa() == X;
     BOOST_TEST(xIsPresent);
     if (xIsPresent) {
-        std::cout << "bool(X=0) : " << delta << std::endl;
+        std::cout << "X==0 boolean 1 (true) or 0 (false) function : " << delta << std::endl;
         TestXpression(delta, [](auto x) { return x == 0; });
     }
 }
