@@ -34,13 +34,13 @@ jobs:
     #   run: cmake ${{github.workspace}}
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `nproc` --config Debug
-    - name: Build
-      working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build -j `nproc` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
       run: ctest . -j`nproc` -C Release -E "ts" --rerun-failed --output-on-failure
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake -DENABLE_ASAN=ON ${{github.workspace}}/build && cmake --config Debug --build ${{github.workspace}}/build -j `nproc`
     - name: Check
       working-directory: ${{github.workspace}}/build
       run: ctest . -j`nproc` -C Debug -E "ts" --rerun-failed --output-on-failure
