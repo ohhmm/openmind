@@ -6,7 +6,7 @@ class DB;
 struct Options;
 }
 
-namespace omnn::rt::storage {
+namespace omnn::storage {
 
 #ifdef 	OPENMIND_STORAGE_LEVELDB
 class LevelDbCache

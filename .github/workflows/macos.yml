@@ -4,9 +4,24 @@ on: [push]
 
 jobs:
   build-in-macos:
-
     runs-on: macos-latest
-    
+    env:
+      OPENMIND_TEST_REDIS_HOST: "127.0.0.1"
+      OPENMIND_TEST_REDIS_PORT: 6379
+      OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+      OPENMIND_TEST_REDIS_RETRY_DELAY: 1000
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v4
     - name: Create Build Dir
@@ -18,10 +33,41 @@ jobs:
         max_attempts: 3
         command: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install boost-python3 snappy leveldb
+          brew install boost-python3 snappy leveldb hiredis redis
+    - name: Verify Redis Service
+      timeout-minutes: 2
+      run: |
+        echo "Starting Redis service verification..."
+        max_attempts=20
+        attempt=1
+        until redis-cli -h 127.0.0.1 ping || [ $attempt -ge $max_attempts ]; do
+          echo "Attempt $attempt/$max_attempts: Waiting for Redis..."
+          if [ $attempt -eq 1 ] || [ $((attempt % 5)) -eq 0 ]; then
+            echo "=== Diagnostic Information ==="
+            echo "1. Redis Server Status:"
+            redis-cli -h 127.0.0.1 info server || echo "Could not get server info"
+            echo "2. Network Status:"
+            netstat -an | grep 6379 || echo "Port 6379 not found in netstat"
+            echo "3. Brew Services:"
+            brew services list | grep redis || echo "Redis service not found in brew services"
+            echo "4. Redis Memory Info:"
+            redis-cli -h 127.0.0.1 info memory || echo "Could not get memory info"
+            echo "5. Redis Clients:"
+            redis-cli -h 127.0.0.1 client list || echo "Could not get client list"
+            echo "=========================="
+          fi
+          sleep 2
+          ((attempt++))
+        done
+        if [ $attempt -ge $max_attempts ]; then
+          echo "Redis service failed to start after $max_attempts attempts"
+          exit 1
+        fi
+        echo "Redis is fully operational"
+        redis-cli -h 127.0.0.1 info server
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
+      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF -DOPENMIND_STORAGE_REDIS=ON
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu` --config Release
@@ -33,4 +79,9 @@ jobs:
       run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 3200  -C Release -j `sysctl -n hw.ncpu` -E ts
+      env:
+        OPENMIND_TEST_REDIS_HOST: "127.0.0.1"
+        OPENMIND_TEST_REDIS_PORT: 6379
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 500
+      run: ctest --timeout 3200 -C Release -j `sysctl -n hw.ncpu` -E ts --rerun-failed --output-on-failure

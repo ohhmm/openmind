@@ -47,7 +47,7 @@ macro(check_dep_file)
 					message("pip output: ${pipConanOutput}")
 					unset(warnBinPath)
 				endif()
-				list(PYTHON_SEARCH_PATHS APPEND "${warnBinPath}")
+				list(APPEND PYTHON_SEARCH_PATHS "${warnBinPath}")
 				find_program(CONAN_EXECUTABLE NAMES conan PATHS ${PYTHON_SEARCH_PATHS})
 				if(CONAN_EXECUTABLE AND warnBinPath)
 					EXECUTE_PROCESS(

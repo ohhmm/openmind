@@ -42,7 +42,7 @@ void Cache::DbOpen() {
 # endif
   leveldb::Status status;
   auto strPath = path.string();
-  const auto& options = omnn::rt::storage::LevelDbCache::GetDbConnectionOptions();
+  const auto& options = omnn::storage::LevelDbCache::GetDbConnectionOptions();
   while (!((status = leveldb::DB::Open(options, strPath, &db)).ok())) {
     auto err = strPath + " DB connection error";
     std::cerr << err << status.ToString() << std::endl;

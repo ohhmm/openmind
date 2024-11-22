@@ -13,20 +13,38 @@ jobs:
           - os: ubuntu-latest
             suffix: linux-x64
             name: Linux Build
+            redis_enabled: true
+            redis_host: localhost
           - os: macos-latest
             suffix: macos-x64
             name: macOS Build
+            redis_enabled: true
+            redis_host: 127.0.0.1
           - os: windows-latest
             suffix: windows-x64
             name: Windows Build
+            redis_enabled: true
+            redis_host: 127.0.0.1
     name: ${{ matrix.name }}
+
     runs-on: ${{ matrix.os }}
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Cache vcpkg
-      uses: actions/cache@v4
+      uses: actions/cache@v3
       with:
         path: |
           ${{github.workspace}}/vcpkg
@@ -74,11 +92,16 @@ jobs:
       
     - name: Set Windows vcpkg triplet
       if: runner.os == 'Windows'
-      run: echo "VCPKG_TARGET_TRIPLET_CMAKE_PARAM=-DVCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+      run: |
+        echo "VCPKG_TARGET_TRIPLET_CMAKE_PARAM=-DVCPKG_TARGET_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+        choco install redis-64
+        redis-server --service-install
+        redis-server --service-start
+        redis-cli ping
 
     - name: Setup MSVC
       if: runner.os == 'Windows'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: microsoft/setup-msbuild@v2
 
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
@@ -86,12 +109,75 @@ jobs:
         vcpkgGitCommitId: 'c82f74667287d3dc386bce81e44964370c91a289'
         vcpkgJsonGlob: '**/vcpkg.json'
 
+    - name: Verify Redis (Linux/macOS)
+      if: runner.os != 'Windows' && matrix.redis_enabled
+      timeout-minutes: 2
+      run: |
+        max_attempts=20
+        attempt=1
+        until redis-cli -h ${{ matrix.redis_host }} ping || [ $attempt -ge $max_attempts ]; do
+          echo "Attempt $attempt/$max_attempts: Waiting for Redis..."
+          if [ $attempt -eq 1 ] || [ $((attempt % 5)) -eq 0 ]; then
+            echo "Checking Redis server status..."
+            redis-cli -h ${{ matrix.redis_host }} info server || echo "Could not get server info"
+            netstat -an | grep 6379 || echo "Port 6379 not found in netstat"
+          fi
+          sleep 2
+          ((attempt++))
+        done
+        if [ $attempt -ge $max_attempts ]; then
+          echo "Redis service failed to start after $max_attempts attempts"
+          redis-cli -h ${{ matrix.redis_host }} info server || echo "Could not get server info"
+          exit 1
+        fi
+        echo "Redis is ready"
+        redis-cli -h ${{ matrix.redis_host }} info server
+
+    - name: Verify Redis (Windows)
+      if: runner.os == 'Windows' && matrix.redis_enabled
+      timeout-minutes: 2
+      run: |
+        $maxAttempts = 20
+        $attempt = 1
+        do {
+          Write-Host "Attempt $attempt/$maxAttempts: Checking Redis..."
+          try {
+            $result = redis-cli -h ${{ matrix.redis_host }} ping
+            if ($result -eq 'PONG') {
+              Write-Host "Redis responded successfully with PONG"
+              break
+            }
+            Write-Host "Redis responded but unexpected result: $result"
+          } catch {
+            Write-Host "Redis check failed: $_"
+            if ($attempt % 5 -eq 0) {
+              Write-Host "Checking Redis server status..."
+              redis-cli -h ${{ matrix.redis_host }} info server
+              netstat -an | findstr "6379"
+            }
+          }
+          Start-Sleep -Seconds 2
+          $attempt++
+        } while ($attempt -lt $maxAttempts)
+        if ($attempt -ge $maxAttempts) {
+          Write-Error "Redis failed to start after $maxAttempts attempts"
+          redis-cli -h ${{ matrix.redis_host }} info server
+          exit 1
+        }
+        Write-Host "Redis is ready"
+        redis-cli -h ${{ matrix.redis_host }} info server
+
     - name: Configure CMake
+      env:
+        OPENMIND_TEST_REDIS_HOST: ${{ matrix.redis_host }}
+        OPENMIND_TEST_REDIS_PORT: 6379
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 1000
       uses: nick-fields/retry@v2
       with:
         timeout_minutes: 10
         max_attempts: 3
-        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_STORAGE_REDIS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
@@ -105,6 +191,11 @@ jobs:
 
     - name: Check
       working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_HOST: ${{ matrix.redis_host }}
+        OPENMIND_TEST_REDIS_PORT: 6379
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 1000
       run: ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" --rerun-failed --output-on-failure
 
     - name: List runtime dependencies
