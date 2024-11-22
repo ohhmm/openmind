@@ -20,11 +20,16 @@ if(NOT IntelSYCL_FOUND)
 		message("IntelSYCL_DIR: ${IntelSYCL_DIR}")
 	endif()
 endif()
-find_optional_pkg(
-	IntelDPCPP
-	CUDAToolkit
-	OpenCL
-)
+# Only search for Intel-specific packages when OpenCL is enabled
+if(OPENMIND_USE_OPENCL)
+    find_optional_pkg(
+        IntelDPCPP
+        CUDAToolkit
+        OpenCL
+    )
+else()
+    find_optional_pkg(OpenCL)
+endif()
 
 if(IntelSYCL_FOUND AND OPENMIND_USE_OPENCL_INTEL_SYCL
 	AND NOT EXISTS OpenCL_INCLUDE_DIR
