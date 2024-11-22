@@ -21,6 +21,7 @@
     "boost-ublas",
     "boost-uuid",
     "leveldb",
+    "hiredis",
     "liblzma",
     {
       "name": "vcpkg-cmake",
