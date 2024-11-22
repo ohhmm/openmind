@@ -205,6 +205,8 @@ bool PrincipalSurd::IsComesBefore(const Valuable& value) const {
         return Product{*this}.IsComesBefore(value);
     } else if (value.IsSum()) {
         return Sum{*this}.IsComesBefore(value);
+    } else if (value.IsSimple()) {
+        return true;
     } else {
         return base::IsComesBefore(value);
     }
