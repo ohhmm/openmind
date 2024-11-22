@@ -20,12 +20,43 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-apt-
     - name: OS prerequisites
-      run: sudo add-apt-repository -y ppa:mhier/libboost-latest && sudo apt update && sudo apt upgrade -y && sudo apt install -y libboost1.83-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
+      run: sudo add-apt-repository -y ppa:mhier/libboost-latest && sudo apt update && sudo apt upgrade -y && sudo apt install -y libboost1.83-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build redis-server libhiredis-dev
+    - name: Start Redis
+      run: |
+        sudo systemctl start redis-server
+        max_retries=10
+        retry_count=0
+
+        # Verify Redis service and basic operations
+        while true; do
+          if [ $retry_count -ge $max_retries ]; then
+            echo "Redis failed to start after $max_retries attempts"
+            sudo systemctl status redis-server
+            sudo journalctl -u redis-server
+            exit 1
+          fi
+
+          if redis-cli ping > /dev/null 2>&1; then
+            # Test basic Redis operations
+            if redis-cli set test_key test_value > /dev/null 2>&1 && \
+               [ "$(redis-cli get test_key)" = "test_value" ]; then
+              echo "Redis server is running and operations verified"
+              break
+            fi
+          fi
+
+          echo "Waiting for Redis to start... (attempt $((retry_count + 1)))"
+          sleep 3
+          ((retry_count++))
+        done
+
+        echo "OPENMIND_TEST_REDIS_RETRY_COUNT=5" >> $GITHUB_ENV
+        echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $GITHUB_ENV
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -G "Ninja Multi-Config"
+      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -DOPENMIND_STORAGE_REDIS=ON -G "Ninja Multi-Config"
     # - name: Install prerequisites
     #   working-directory: ${{github.workspace}}/build
     #   run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`
@@ -38,9 +69,17 @@ jobs:
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build -j `nproc` --config Release
-    - name: Check
+    - name: Check Release
       working-directory: ${{github.workspace}}/build
-      run: ctest . -j`nproc` -C Release -E "ts" --rerun-failed --output-on-failure
-    - name: Check
+      env:
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 5
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
+        OPENMIND_TEST_REDIS_LOG_LEVEL: DEBUG
+      run: ctest . -j`nproc` -C Release -E "ts" --rerun-failed --output-on-failure --verbose
+    - name: Check Debug
       working-directory: ${{github.workspace}}/build
-      run: ctest . -j`nproc` -C Debug -E "ts" --rerun-failed --output-on-failure
+      env:
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 5
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
+        OPENMIND_TEST_REDIS_LOG_LEVEL: DEBUG
+      run: ctest . -j`nproc` -C Debug -E "ts" --rerun-failed --output-on-failure --verbose
