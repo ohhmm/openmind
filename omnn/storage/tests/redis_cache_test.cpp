@@ -3,6 +3,8 @@
 #include <boost/test/unit_test.hpp>
 #include "../CacheBase.h"
 #include "../RedisCache.h"
+#include <chrono>
+#include <thread>
 
 #ifdef OPENMIND_STORAGE_REDIS
 
@@ -12,12 +14,18 @@ using namespace omnn::rt::storage;
 
 namespace {
 bool is_redis_available() {
-    try {
-        RedisCache test_cache("localhost", 6379);
-        return true;
-    } catch (const std::exception&) {
-        return false;
+    int retries = 3;
+    while (retries--) {
+        try {
+            RedisCache test_cache("localhost", 6379);
+            return true;
+        } catch (const std::exception&) {
+            if (retries > 0) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            }
+        }
     }
+    return false;
 }
 }
 
