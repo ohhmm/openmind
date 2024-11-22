@@ -119,10 +119,6 @@ jobs:
             exit 1
         }
 
-        # Set environment variables for tests
-        echo "OPENMIND_TEST_REDIS_RETRY_COUNT=10" >> $env:GITHUB_ENV
-        echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $env:GITHUB_ENV
-
     - name: Configure
       working-directory: ${{github.workspace}}/build
       env:
