@@ -50,10 +50,11 @@ jobs:
         }
 
         Write-Host "Installing Memurai service..."
-        Start-Process -FilePath $memuraiPath -ArgumentList "--service-install", "--port", "6379" -Wait -NoNewWindow
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to install Memurai service"
-            exit 1
+        Start-Process -FilePath $memuraiPath -ArgumentList "--service-install", "--port", "6379" -Wait -NoNewWindow -PassThru | ForEach-Object {
+            if ($_.ExitCode -ne 0) {
+                Write-Error "Failed to install Memurai service (Exit code: $($_.ExitCode))"
+                exit 1
+            }
         }
 
         Write-Host "Starting Memurai service..."
@@ -82,6 +83,17 @@ jobs:
             }
             Start-Sleep -s $retryDelay
         }
+
+        if (-not $success) {
+            Write-Error "Failed to verify Memurai service after $maxRetries attempts"
+            Get-Service -Name "memurai" | Format-List *
+            Get-EventLog -LogName Application -Source "Memurai" -Newest 10
+            exit 1
+        }
+
+        # Set environment variables for tests
+        echo "OPENMIND_TEST_REDIS_RETRY_COUNT=10" >> $env:GITHUB_ENV
+        echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $env:GITHUB_ENV
 
         if (-not $success) {
             Write-Error "Failed to verify Memurai service after $maxRetries attempts"
