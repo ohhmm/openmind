@@ -1,0 +1,226 @@
+name: C/C++ CI MSVC
+
+on: [push]
+
+jobs:
+  build-on-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ilammy/msvc-dev-cmd@v1
+    - name: Cache Boost dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/build/CMakeFiles
+          C:/Boost
+          ${{ github.workspace }}/build/bin/Db*.solutions
+        key: ${{ runner.os }}-boost-${{ hashFiles('**/vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-boost-
+
+    - name: Create Build Dir
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Install Redis Dependencies
+      run: |
+        # Install dependencies using vcpkg manifest mode
+        vcpkg install --triplet x64-windows
+
+        # Remove existing Memurai installation if present
+        if (Get-Service -Name "memurai" -ErrorAction SilentlyContinue) {
+            Write-Host "Stopping and removing existing Memurai service..."
+            Stop-Service -Name "memurai" -Force -ErrorAction SilentlyContinue
+            Start-Sleep -s 5
+            & sc.exe delete memurai
+        }
+
+        # Clean install Memurai
+        choco install memurai-developer.install --no-progress --params="'/Port:6379'" --force
+
+        # Refresh environment variables and verify installation paths
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        refreshenv
+
+        # Enhanced Memurai verification with detailed logging
+        $defaultPath = "C:\Program Files\Memurai Developer\memurai-developer.exe"
+        $memuraiPath = $defaultPath
+        $memuraiCli = $memuraiPath -replace "memurai-developer.exe", "memurai-cli.exe"
+
+        Write-Host "System Information:"
+        Write-Host "Windows Version: $(Get-WmiObject -class Win32_OperatingSystem).Version"
+        Write-Host "Default Memurai path: $defaultPath"
+        Write-Host "Current PATH: $env:PATH"
+
+        $maxAttempts = 10
+        $attempt = 0
+        $success = $false
+
+        do {
+            Write-Host "Checking Memurai installation (Attempt $attempt of $maxAttempts)..."
+
+            if (Test-Path $memuraiPath) {
+                Write-Host "Found Memurai at default path: $memuraiPath"
+                $success = $true
+            } else {
+                Write-Host "Default path not found, searching Program Files..."
+                Get-ChildItem -Path @(
+                    "C:\Program Files",
+                    "C:\Program Files (x86)"
+                ) -Recurse -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -eq "memurai-developer.exe" } |
+                ForEach-Object {
+                    Write-Host "Found alternative path: $($_.FullName)"
+                    $memuraiPath = $_.FullName
+                    $success = $true
+                }
+            }
+
+            if (-not $success) {
+                Write-Host "Searching for Memurai in Program Files..."
+                Get-ChildItem -Path "C:\Program Files" -Recurse -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Name -like "*memurai*.exe" } |
+                    ForEach-Object { Write-Host "Found: $($_.FullName)" }
+            }
+
+            Start-Sleep -Seconds 5
+            $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+            refreshenv
+
+            try {
+                if (-not $success) {
+                    Write-Error "Memurai executable not found after $maxAttempts attempts"
+                    Get-ChildItem "C:\Program Files" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*memurai*" } | Format-Table FullName
+                    exit 1
+                }
+
+                Write-Host "Installing Memurai service..."
+                $process = Start-Process -FilePath $memuraiPath -ArgumentList "--service-install", "--port", "6379" -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                if ($process.ExitCode -ne 0) {
+                    throw "Service installation failed with exit code: $($process.ExitCode)"
+                }
+
+                Write-Host "Starting Memurai service..."
+                Start-Service -Name "memurai" -ErrorAction Stop
+                Start-Sleep -s 15
+
+                Write-Host "Verifying Memurai service..."
+                $maxRetries = 20  # Increased retries
+                $retryDelay = 8   # Increased delay
+                $success = $false
+
+                for ($i = 1; $i -le $maxRetries; $i++) {
+                    Write-Host "Verification attempt $i of $maxRetries..."
+                    try {
+                        $status = Get-Service -Name "memurai" -ErrorAction Stop
+                        Write-Host "Service Status: $($status.Status)"
+
+                        if ($status.Status -eq "Running") {
+                            # Enhanced error recovery
+                            if ($i -gt 1) {
+                                Write-Host "Attempting to flush Redis database..."
+                                & $memuraiCli flushdb
+                                Start-Sleep -s 2
+                            }
+
+                            try {
+                                $ping = & $memuraiCli ping
+                                Write-Host "Memurai ping response: $ping"
+                                if ($ping -eq "PONG") {
+                                    Write-Host "Memurai service verified and responding!"
+                                    # Test basic Redis operations
+                                    & $memuraiCli set test_key test_value
+                                    $testValue = & $memuraiCli get test_key
+                                    Write-Host "Test key value: $testValue"
+                                    if ($testValue -eq "test_value") {
+                                        Write-Host "Basic Redis operations verified!"
+                                        $success = $true
+                                        break
+                                    }
+                                }
+                            } catch {
+                                Write-Warning "Redis operation failed: $_"
+                                Write-Host "Attempting service restart..."
+                                Restart-Service -Name "memurai" -ErrorAction SilentlyContinue
+                                Start-Sleep -s 10
+                                Get-EventLog -LogName Application -Source "Memurai" -Newest 10 | Format-List *
+                            }
+                        }
+                    } catch {
+                        Write-Warning "Service check failed: $_"
+                        Get-EventLog -LogName Application -Source "Memurai" -Newest 10 | Format-List *
+                        # Attempt recovery
+                        Write-Host "Attempting service recovery..."
+                        Stop-Service -Name "memurai" -Force -ErrorAction SilentlyContinue
+                        Start-Sleep -s 5
+                        Start-Service -Name "memurai" -ErrorAction SilentlyContinue
+                    }
+                    Start-Sleep -s $retryDelay
+                }
+
+                # Enhanced test environment configuration
+                $env:OPENMIND_TEST_REDIS_RETRY_COUNT = "15"
+                $env:OPENMIND_TEST_REDIS_RETRY_DELAY = "5000"
+                $env:OPENMIND_TEST_REDIS_LOG_LEVEL = "DEBUG"
+
+                if (-not $success) {
+                    throw "Failed to verify Memurai service after $maxRetries attempts. Check logs for details."
+                }
+
+                # Set environment variables for tests
+                $env:OPENMIND_TEST_REDIS_RETRY_COUNT = "10"
+                $env:OPENMIND_TEST_REDIS_RETRY_DELAY = "3000"
+                [System.Environment]::SetEnvironmentVariable('OPENMIND_TEST_REDIS_RETRY_COUNT', '10', [System.EnvironmentVariableTarget]::Process)
+                [System.Environment]::SetEnvironmentVariable('OPENMIND_TEST_REDIS_RETRY_DELAY', '3000', [System.EnvironmentVariableTarget]::Process)
+                echo "OPENMIND_TEST_REDIS_RETRY_COUNT=10" >> $env:GITHUB_ENV
+                echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $env:GITHUB_ENV
+
+            } catch {
+                Write-Error "Critical error in Memurai setup: $_"
+                Get-Service -Name "memurai" -ErrorAction SilentlyContinue | Format-List *
+                Get-EventLog -LogName Application -Source "Memurai" -Newest 10
+                exit 1
+            }
+
+    - name: Configure
+      working-directory: ${{github.workspace}}/build
+      env:
+        CC: cl
+      run: cmake ${{github.workspace}} -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO -DOPENMIND_STORAGE_REDIS=ON -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+    - name: Install prerequisites
+      run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
+
+    - name: Reconfigure to detect newly installed prerequisites
+      working-directory: ${{github.workspace}}/build
+      run: cmake .
+
+    - name: Get number of CPU cores
+      uses: SimenB/github-actions-cpu-cores@v2
+      id: cpu-cores
+
+    - name: Build Debug
+      run: cmake --build ${{github.workspace}}/build --config Debug
+
+    - name: Build Release
+      run: cmake --build ${{github.workspace}}/build --config Release
+
+    - name: make check Release
+      working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 10
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
+        OPENMIND_TEST_REDIS_LOG_LEVEL: DEBUG
+      run: ctest --timeout 1024 -C Release -j ${{steps.cpu-cores.outputs.count}} -E "ts" --output-on-failure --verbose
+
+    - name: make check Debug
+      working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 10
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
+        OPENMIND_TEST_REDIS_LOG_LEVEL: DEBUG
+      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}} -E "ts" --output-on-failure --verbose
+
+    - name: Install
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --target install --config Release

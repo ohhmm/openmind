@@ -7,7 +7,7 @@
 #include <string>
 
 
-using namespace omnn::storage;
+using namespace omnn::rt::storage;
 
 
 LevelDbCache::LevelDbCache(const std::string_view& path)
@@ -16,6 +16,20 @@ LevelDbCache::LevelDbCache(const std::string_view& path)
     auto _status = leveldb::DB::Open(GetDbConnectionOptions(), name, &_db);
 	if (!_status.ok())
 		throw std::runtime_error(_status.ToString());
+}
+
+bool LevelDbCache::ResetAllDB(const CacheBase::path_str_t& path) {
+    // Delete all keys in the database
+    auto it = _db->NewIterator(leveldb::ReadOptions());
+    for (it->SeekToFirst(); it->Valid(); it->Next()) {
+        auto status = _db->Delete(leveldb::WriteOptions(), it->key());
+        if (!status.ok()) {
+            delete it;
+            return false;
+        }
+    }
+    delete it;
+    return true;
 }
 
 std::string LevelDbCache::GetOne(const std::string_view &key) {
@@ -36,11 +50,6 @@ bool LevelDbCache::Clear(const std::string_view &key) {
 	return _status.ok();
 }
 
-bool LevelDbCache::ResetAllDB(const CacheBase::path_str_t& path) {
-	return base::ResetAllDB(path);
-}
-
-
 LevelDbCache::~LevelDbCache() {
 	delete _db;
 }
@@ -48,7 +57,7 @@ LevelDbCache::~LevelDbCache() {
 namespace{
 	std::once_flag dbConnectionOptionsInitializedFlag;
 }
-const leveldb::Options& LevelDbCache::GetDbConnectionOptions() {
+const leveldb::Options& omnn::rt::storage::LevelDbCache::GetDbConnectionOptions() {
 	static leveldb::Options options;
 	std::call_once(dbConnectionOptionsInitializedFlag, [] {
 		options.create_if_missing = true;

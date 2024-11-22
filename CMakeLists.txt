@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
@@ -15,6 +17,12 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
 	set_property(GLOBAL PROPERTY CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 endif()
+
+# Add prerequisites target for dependency management
+add_custom_target(prerequisites
+    COMMAND ${CMAKE_COMMAND} -E echo "All prerequisites are satisfied through Conan"
+    COMMENT "Checking prerequisites..."
+)
 
 message("BIN_DIR=${CMAKE_BINARY_DIR}")
 message("SRC_DIR=${CMAKE_SOURCE_DIR}")
@@ -42,6 +50,11 @@ endif()
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(WARNING "CMake build should be run in a separate 'build' directory. Please create a 'build' directory and run 'cmake ..' from there.")
 endif()
+
+# Storage Backend Options
+option(OPENMIND_STORAGE_REDIS "Enable Redis storage backend" ON)
+option(OPENMIND_STORAGE_REDIS_MEMURAI "Use Memurai instead of Redis on Windows" ON)
+option(OPENMIND_STORAGE_LEVELDB "Enable LevelDB storage backend" OFF)
 
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
 
@@ -190,7 +203,7 @@ if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 		unit_test_framework
 		CACHE STRING "Components" FORCE)
-	if(NOT OPENMIND_USE_VCPKG)
+	if(NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)  # Remove test_exec_monitor for both package managers
 		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 			test_exec_monitor
 			CACHE STRING "Components" FORCE)
@@ -209,21 +222,19 @@ endif()
 set(OPENMIND_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 message("OPENMIND_INCLUDE_DIR=${OPENMIND_INCLUDE_DIR}")
 
-if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-	option(OPENMIND_USE_CONAN "Use conan dependencies" ON)
-	if(OPENMIND_USE_CONAN)
-		message("Using conanbuildinfo.cmake")
-		include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-		conan_basic_setup(TARGETS)
-	endif()
-elseif(OPENMIND_USE_CONAN)
-	if(EXISTS ${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
-		message("conanbuildinfo.cmake created in source directory")
-		include(${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
-		conan_basic_setup(TARGETS)
-	else()
-		message("conanbuildinfo.cmake not found. Try building Install__Conan target.")
-	endif()
+# Check for Conan toolchain
+if(CMAKE_TOOLCHAIN_FILE)
+    message("Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+    include(${CMAKE_TOOLCHAIN_FILE})
+
+    option(OPENMIND_USE_CONAN "Use conan dependencies" ON)
+    if(OPENMIND_USE_CONAN)
+        # Find packages installed by Conan
+        find_package(hiredis CONFIG REQUIRED)
+        find_package(Boost CONFIG REQUIRED COMPONENTS ${BOOST_USED_COMPONENTS})
+    endif()
+else()
+    message(FATAL_ERROR "CMAKE_TOOLCHAIN_FILE not specified. Please run with -DCMAKE_TOOLCHAIN_FILE=path/to/conan_toolchain.cmake")
 endif()
 
 if (NOT Boost_FOUND)
@@ -252,9 +263,8 @@ if (NOT Boost_FOUND)
 		endif()
 	endif ()
 endif ()
-add_custom_target(prerequisites)
+# Target properties for prerequisites target defined above
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
-
 
 if(NOT Boost_FOUND
 	AND NOT OPENMIND_USE_CONAN
@@ -284,6 +294,47 @@ option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
 include(packaging)
 include(ExternalData)
 include(ExternalProject)
+
+# Find Redis/Memurai dependencies
+if(OPENMIND_STORAGE_REDIS)
+    if(NOT WIN32)
+        # Try Conan-provided hiredis first
+        if(OPENMIND_USE_CONAN)
+            find_package(hiredis REQUIRED CONFIG)
+            if(TARGET hiredis::hiredis)
+                set(HIREDIS_FOUND TRUE)
+                set(HIREDIS_LIBRARIES hiredis::hiredis)
+                message(STATUS "Using Conan-provided hiredis")
+            else()
+                message(FATAL_ERROR "hiredis target not found. Please ensure hiredis is properly installed via Conan.")
+            endif()
+        else()
+            # Fallback to system hiredis
+            list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
+            list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+            find_package(hiredis MODULE)
+            if(HIREDIS_FOUND)
+                add_library(hiredis::hiredis ALIAS hiredis)
+            endif()
+        endif()
+
+        if(NOT HIREDIS_FOUND)
+            message(FATAL_ERROR "Could not find hiredis. Please ensure hiredis is installed via Conan or system package.")
+        endif()
+    else()
+        # Windows-specific Redis/Memurai configuration
+        if(OPENMIND_STORAGE_REDIS_MEMURAI)
+            message(STATUS "Using Memurai for Windows Redis implementation")
+            # Try vcpkg-provided hiredis first
+            find_package(hiredis CONFIG REQUIRED)
+            if(NOT hiredis_FOUND)
+                message(FATAL_ERROR "Could not find hiredis. Please ensure it's installed via vcpkg.")
+            endif()
+            add_definitions(-DUSE_MEMURAI_WINDOWS)
+        endif()
+    endif()
+endif()
+
 find_package(OpenMP)
 #if (OPENMP_FOUND)
 #    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -300,9 +351,11 @@ if (Boost_FOUND OR OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
 elseif(OPENMIND_BUILD_BOOST)
     message("Required boost components ${BOOST_USED_COMPONENTS}")
     foreach(_module ${BOOST_USED_COMPONENTS})
-        if(_module STREQUAL "unit_test_framework"
-            OR _module STREQUAL "test_exec_monitor")
+        if(_module STREQUAL "unit_test_framework")
             string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
+        elseif(_module STREQUAL "test_exec_monitor")
+            # Skip test_exec_monitor as it's handled by unit_test_framework
+            continue()
         else()
             string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
         endif()
@@ -310,7 +363,6 @@ elseif(OPENMIND_BUILD_BOOST)
         string(TOUPPER ${_module} BOOST_MODULE_NAME_UPCASE)
         add_definitions(-DBOOST_${BOOST_MODULE_NAME_UPCASE}_STATIC_LIB)
     endforeach()
-    string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
     message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
 
     set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared --disable-icu ${BOOST_BUILD_PARAMS}")
@@ -384,25 +436,27 @@ set(BOOST_LINK_LIBS
     Boost::serialization
     Boost::system
     )
-if(NOT MSVC
-	OR Boost_VERSION VERSION_LESS 1.80.0
-	OR OPENMIND_USE_CONAN
-)
+
+# Ensure thread library is included for all platforms when using tests
+if(OPENMIND_BUILD_TESTS OR NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0 OR OPENMIND_USE_CONAN)
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
         Boost::thread)
 endif()
 
 set(BOOST_TEST_LINK_LIBS
-	${BOOST_LINK_LIBS}
-	Boost::unit_test_framework
+    ${BOOST_LINK_LIBS}
+    Boost::unit_test_framework
 )
+
 if(OPENMIND_USE_VCPKG)
     list(APPEND BOOST_LINK_LIBS
         Boost::headers
     )
 endif()
-if(NOT MSVC AND NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)
-	list(APPEND BOOST_TEST_LINK_LIBS Boost::test_exec_monitor)
+
+# Add test_exec_monitor only for non-package-manager builds
+if(OPENMIND_BUILD_TESTS AND NOT (OPENMIND_USE_VCPKG OR OPENMIND_USE_CONAN))
+    list(APPEND BOOST_TEST_LINK_LIBS Boost::test_exec_monitor)
 endif()
 set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS} CACHE STRING "Boost libraries" FORCE)
 set(BOOST_TEST_LINK_LIBS ${BOOST_TEST_LINK_LIBS} CACHE STRING "Boost test libraries" FORCE)
@@ -450,6 +504,8 @@ fold(
 	cmake
     omnn
     OpenMind
+    Examples
+    lang
 )
 
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL _openmind_hook_end_of_configure())
@@ -465,3 +521,9 @@ function(_openmind_hook_end_of_configure)
 		COMMAND_ECHO STDOUT
 	)
 endfunction()
+
+# Update storage paths - only process if not already added
+set(STORAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/omnn/rt/storage")
+if(EXISTS "${STORAGE_DIR}" AND NOT TARGET storage)
+    add_subdirectory("${STORAGE_DIR}")
+endif()

@@ -6,9 +6,16 @@ jobs:
   build-in-macos:
 
     runs-on: macos-latest
-    
+
     steps:
     - uses: actions/checkout@v4
+    - name: Install Conan
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install conan==2.0.13
+        conan profile detect --force
+        mkdir -p ~/.conan2/profiles
+        conan install . --build=missing -s build_type=Release
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Pre-Install Boost, LevelDB
@@ -18,10 +25,41 @@ jobs:
         max_attempts: 3
         command: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install boost-python3 snappy leveldb
+          brew install boost-python3 snappy leveldb redis hiredis
+    - name: Start Redis
+      run: |
+        brew services start redis
+        max_retries=10
+        retry_count=0
+
+        # Verify Redis service and basic operations
+        while true; do
+          if [ $retry_count -ge $max_retries ]; then
+            echo "Redis failed to start after $max_retries attempts"
+            brew services list
+            brew services info redis
+            exit 1
+          fi
+
+          if redis-cli ping > /dev/null 2>&1; then
+            # Test basic Redis operations
+            if redis-cli set test_key test_value > /dev/null 2>&1 && \
+               [ "$(redis-cli get test_key)" = "test_value" ]; then
+              echo "Redis server is running and operations verified"
+              break
+            fi
+          fi
+
+          echo "Waiting for Redis to start... (attempt $((retry_count + 1)))"
+          sleep 3
+          ((retry_count++))
+        done
+
+        echo "OPENMIND_TEST_REDIS_RETRY_COUNT=5" >> $GITHUB_ENV
+        echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $GITHUB_ENV
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
+      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF -DOPENMIND_STORAGE_REDIS=ON
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu` --config Release
@@ -33,4 +71,8 @@ jobs:
       run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 3200  -C Release -j `sysctl -n hw.ncpu` -E ts
+      env:
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 5
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
+        OPENMIND_TEST_REDIS_LOG_LEVEL: DEBUG
+      run: ctest --timeout 3200 -C Release -j `sysctl -n hw.ncpu` -E ts --output-on-failure --verbose
