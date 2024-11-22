@@ -26,25 +26,20 @@ jobs:
     - name: Install Redis Dependencies
       run: |
         vcpkg install hiredis:x64-windows
-        choco install redis-64
-        refreshenv
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-        $redisPath = "C:\Program Files\Redis"
-        if (!(Test-Path $redisPath)) {
-          $redisPath = "C:\ProgramData\chocolatey\lib\redis-64\tools"
-        }
-        & "$redisPath\redis-server.exe" --service-install
-        & "$redisPath\redis-server.exe" --service-start
-        Start-Sleep -s 10  # Increased wait time for Redis to fully start
+        choco install memurai-developer.install
+        $memuraiPath = "C:\Program Files\Memurai\memurai-developer.exe"
+        & $memuraiPath --service-install
+        & $memuraiPath --service-start
+        Start-Sleep -s 10  # Wait for Memurai service to start
         $retryCount = 0
         do {
-          $ping = & "$redisPath\redis-cli.exe" ping
+          $ping = & "C:\Program Files\Memurai\memurai-cli.exe" ping
           if ($ping -eq "PONG") { break }
           Start-Sleep -s 2
           $retryCount++
         } while ($retryCount -lt 5)
         if ($ping -ne "PONG") {
-          Write-Error "Redis server failed to respond after multiple attempts"
+          Write-Error "Memurai server failed to respond after multiple attempts"
           exit 1
         }
 
