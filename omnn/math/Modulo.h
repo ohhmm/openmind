@@ -20,7 +20,7 @@ class Modulo : public DuoValDescendant<Modulo>
 public:
     using base::base;
 
-	bool IsModulo() const override { return true; }
+	constexpr bool IsModulo() const override { return true; }
     auto& getDividend() const { return get1(); }
     auto& getDevisor() const { return get2(); }
 
@@ -49,8 +49,9 @@ public:
     Valuable InCommonWith(const Valuable& v) const override { return 1; }
     const vars_cont_t& getCommonVars() const override { return VarsForCommoning; }
 
-	bool IsComesBefore(const Valuable& v) const override;
-	omnn::math::Valuable::vars_cont_t GetVaExps() const override;
+	bool IsComesBefore(const Modulo&) const;
+    bool IsComesBefore(const Valuable&) const override;
+    omnn::math::Valuable::vars_cont_t GetVaExps() const override;
 };
 
 } /* namespace omnn::math */

@@ -137,18 +137,28 @@ Valuable& Modulo::sq() {
 	return operator^=(2_v);
 }
 
+bool Modulo::IsComesBefore(const Modulo& mod) const {
+    auto& modDividend = mod.getDividend();
+    auto equalDividends = getDividend() == modDividend;
+    if (equalDividends) {
+        return getDevisor().IsComesBefore(mod.getDevisor());
+    }
+    auto equalDivisors = getDevisor() == mod.getDevisor();
+    if (equalDivisors) {
+        return getDividend().IsComesBefore(modDividend);
+    }
+    auto is = _1.IsComesBefore(modDividend);
+    if (!is) {
+        is = _1 == modDividend && mod.get2().IsComesBefore(_2);
+    }
+    return is;
+}
+
 bool Modulo::IsComesBefore(const Valuable& v) const
 {
     auto is = v.IsModulo();
     if (is) {
-        auto& vModulo = v.as<Modulo>();
-        auto& v_1st = vModulo.get1();
-        is = _1.IsComesBefore(v_1st);
-        if (!is)
-		{
-            is = _1 == v_1st
-				&& vModulo.get2().IsComesBefore(_2);
-        }
+        is = IsComesBefore(v.as<Modulo>());
     }
     return is;
 }
