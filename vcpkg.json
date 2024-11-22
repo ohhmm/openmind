@@ -23,6 +23,10 @@
     "leveldb",
     "liblzma",
     {
+      "name": "hiredis",
+      "version>=": "1.2.0"
+    },
+    {
       "name": "vcpkg-cmake",
       "host": true
     },
