@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(NegativeFractionModulo_test, *disabled()) {
     BOOST_TEST(_1 == _2);
 }
 
-BOOST_AUTO_TEST_CASE(ModIntLess_comparator_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(ModIntLess_comparator_test) {
     auto Less = X.IntMod_Less(Y);
     std::cout << "X<Y : " << Less << std::endl;
     TestBooleanOperator(Less, [](auto x, auto y) { return x < y; });
