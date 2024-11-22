@@ -45,7 +45,7 @@ endif()
 # Storage Backend Options
 option(OPENMIND_STORAGE_REDIS "Enable Redis storage backend" ON)
 option(OPENMIND_STORAGE_REDIS_MEMURAI "Use Memurai instead of Redis on Windows" ON)
-option(OPENMIND_STORAGE_LEVELDB "Enable LevelDB storage backend" ON)
+option(OPENMIND_STORAGE_LEVELDB "Enable LevelDB storage backend" OFF)
 
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
 
@@ -286,13 +286,19 @@ include(ExternalProject)
 # Find Redis/Memurai dependencies
 if(OPENMIND_STORAGE_REDIS)
     if(NOT WIN32)
-        # Use our custom Find module directly
-        list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
-        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-        find_package(hiredis MODULE REQUIRED)
-        message(STATUS "HIREDIS_FOUND: ${HIREDIS_FOUND}")
+        # Try Conan-provided hiredis first
+        if(EXISTS "${CMAKE_BINARY_DIR}/hiredis-config.cmake")
+            include("${CMAKE_BINARY_DIR}/hiredis-config.cmake")
+            set(HIREDIS_FOUND TRUE)
+        else()
+            # Fallback to system hiredis
+            list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
+            list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+            find_package(hiredis MODULE)
+        endif()
+
         if(NOT HIREDIS_FOUND)
-            message(FATAL_ERROR "Could not find hiredis. Please install libhiredis-dev package.")
+            message(FATAL_ERROR "Could not find hiredis. Please ensure hiredis is installed via Conan or system package.")
         endif()
     else()
         if(OPENMIND_STORAGE_REDIS_MEMURAI)
