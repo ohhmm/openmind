@@ -1,7 +1,8 @@
 option(OPENMIND_STORAGE_FOUNDATIONDB "Use Apple FoundationDB library for one of the multistorage levels" NO)
 find_optional_pkg(leveldb)
 option(OPENMIND_STORAGE_LEVELDB "Use Google LevelDB library for one of the multistorage levels" ${OPENMIND_USE_leveldb})
-option(OPENMIND_STORAGE_REDIS "Use Redis for distributed caching" OFF)
+find_optional_pkg(redis)
+option(OPENMIND_STORAGE_REDIS "Use Redis for distributed caching" ${OPENMIND_USE_redis})
 
 set(DEPENDENCIES rt)
 if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE_REDIS)
@@ -22,6 +23,26 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE
 
     if(OPENMIND_STORAGE_REDIS)
         list(APPEND DEPENDENCIES Boost::redis)
+    endif()
+
+    if(OPENMIND_STORAGE_REDIS)
+        find_package(hiredis REQUIRED CONFIG)
+        if(WIN32)
+            find_package(unofficial-redis CONFIG REQUIRED)
+            find_package(unofficial-redis-server CONFIG)
+            add_definitions(-DWIN32_LEAN_AND_MEAN)
+            list(APPEND DEPENDENCIES unofficial::redis::redis)
+        else()
+            # For Unix-like systems, check for Redis server
+            find_program(REDIS_SERVER redis-server)
+            if(NOT REDIS_SERVER)
+                message(WARNING "redis-server not found. Tests may fail if Redis server is not installed.")
+            endif()
+        endif()
+        list(APPEND DEPENDENCIES hiredis::hiredis)
+        if(NOT WIN32)
+            list(APPEND DEPENDENCIES pthread)
+        endif()
     endif()
 
 endif(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE_REDIS)

@@ -1,0 +1,57 @@
+option(OPENMIND_STORAGE_FOUNDATIONDB "Use Apple FoundationDB library for one of the multistorage levels" OFF)
+option(OPENMIND_STORAGE_LEVELDB "Use Google LevelDB library for one of the multistorage levels" ON)
+option(OPENMIND_STORAGE_REDIS "Use Redis for distributed caching" ON)
+
+set(DEPENDENCIES rt)
+if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE_REDIS)
+    option(OPENMIND_STORAGE_ALLOW_UPGRADE "Update optimized cached values during fetch if new optimizations applied" ON)
+    option(OPENMIND_STORAGE_VOLATILE "Clean cache each start (for debugging purposes)" OFF)
+
+    if(OPENMIND_STORAGE_LEVELDB)
+        find_package(Threads) # workaround leveldb config bug
+        list(APPEND DEPENDENCIES leveldb)  # Changed from google/leveldb to leveldb
+        if(NOT WIN32)
+            list(APPEND DEPENDENCIES pthread)
+        endif()
+    endif()
+
+    if(OPENMIND_STORAGE_FOUNDATIONDB)
+        list(APPEND DEPENDENCIES ohhmm/FoundationDB)
+    endif()
+
+    if(OPENMIND_STORAGE_REDIS)
+        find_package(hiredis REQUIRED CONFIG)
+        if(WIN32)
+            find_package(unofficial-redis CONFIG REQUIRED)
+            find_package(unofficial-redis-server CONFIG)
+            add_definitions(-DWIN32_LEAN_AND_MEAN)
+            list(APPEND DEPENDENCIES unofficial::redis::redis)
+        else()
+            # For Unix-like systems, check for Redis server
+            find_program(REDIS_SERVER redis-server)
+            if(NOT REDIS_SERVER)
+                message(WARNING "redis-server not found. Tests may fail if Redis server is not installed.")
+            endif()
+        endif()
+        list(APPEND DEPENDENCIES hiredis::hiredis)
+        if(NOT WIN32)
+            list(APPEND DEPENDENCIES pthread)
+        endif()
+    endif()
+
+endif(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE_REDIS)
+
+lib(${DEPENDENCIES})
+
+if(OPENMIND_STORAGE_LEVELDB)
+    target_compile_definitions(${this_target} PUBLIC OPENMIND_STORAGE_LEVELDB)
+endif()
+if(OPENMIND_STORAGE_FOUNDATIONDB)
+    target_compile_definitions(${this_target} PUBLIC OPENMIND_STORAGE_FOUNDATIONDB)
+endif()
+if(OPENMIND_STORAGE_REDIS)
+    target_compile_definitions(${this_target} PUBLIC OPENMIND_STORAGE_REDIS)
+endif()
+if(OPENMIND_STORAGE_ALLOW_UPGRADE)
+    target_compile_definitions(${this_target} PUBLIC ALLOW_UPGRADE OPENMIND_STORAGE_ALLOW_UPGRADE)
+endif()

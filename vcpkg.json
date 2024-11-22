@@ -53,6 +53,10 @@
     "boost-thread",
     "boost-ublas",
     "boost-uuid",
+    {
+      "name": "hiredis",
+      "features": ["ssl"]
+    },
     "fann",
     "liblzma",
     "leveldb",

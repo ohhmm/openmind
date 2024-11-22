@@ -79,6 +79,11 @@ if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(WARNING "CMake build should be run in a separate 'build' directory. Please create a 'build' directory and run 'cmake ..' from there.")
 endif()
 
+# Storage Backend Options
+option(OPENMIND_STORAGE_REDIS "Enable Redis storage backend" ON)
+option(OPENMIND_STORAGE_REDIS_MEMURAI "Use Memurai instead of Redis on Windows" ON)
+option(OPENMIND_STORAGE_LEVELDB "Enable LevelDB storage backend" OFF)
+
 set(OPENMIND_PRIME_TABLE Boost CACHE STRING "Table of predefined prime numbers")
 
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -324,6 +329,31 @@ option(OPENMIND_BUILD_BOOST "Fetch&build boost" ${OM_BUILD_BOOST})
 include(packaging)
 include(ExternalData)
 include(ExternalProject)
+
+# Find Redis/Memurai dependencies
+if(OPENMIND_STORAGE_REDIS)
+    if(NOT WIN32)
+        # Try Conan-provided hiredis first
+        if(EXISTS "${CMAKE_BINARY_DIR}/hiredis-config.cmake")
+            include("${CMAKE_BINARY_DIR}/hiredis-config.cmake")
+            set(HIREDIS_FOUND TRUE)
+        else()
+            # Fallback to system hiredis
+            list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
+            list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+            find_package(hiredis MODULE)
+        endif()
+
+        if(NOT HIREDIS_FOUND)
+            message(FATAL_ERROR "Could not find hiredis. Please ensure hiredis is installed via Conan or system package.")
+        endif()
+    else()
+        if(OPENMIND_STORAGE_REDIS_MEMURAI)
+            message(STATUS "Using Memurai for Windows Redis implementation")
+        endif()
+    endif()
+endif()
+
 find_package(OpenMP)
 #if (OPENMP_FOUND)
 #    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -428,10 +458,9 @@ set(BOOST_LINK_LIBS
     Boost::filesystem
     Boost::serialization
     )
-if(NOT MSVC
-	OR Boost_VERSION VERSION_LESS 1.80.0
-	OR OPENMIND_USE_CONAN
-)
+
+# Ensure thread library is included for all platforms when using tests
+if(OPENMIND_BUILD_TESTS OR NOT MSVC OR Boost_VERSION VERSION_LESS 1.80.0 OR OPENMIND_USE_CONAN)
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
         Boost::thread)
 endif()
@@ -443,9 +472,10 @@ if(NOT MSVC
 endif()
 
 set(BOOST_TEST_LINK_LIBS
-	${BOOST_LINK_LIBS}
-	Boost::unit_test_framework
+    ${BOOST_LINK_LIBS}
+    Boost::unit_test_framework
 )
+
 if(OPENMIND_USE_VCPKG)
     list(APPEND BOOST_LINK_LIBS
         Boost::headers
@@ -521,3 +551,9 @@ function(_openmind_hook_end_of_configure)
 		COMMAND_ECHO STDOUT
 	)
 endfunction()
+
+# Update storage paths - only process if not already added
+set(STORAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/omnn/rt/storage")
+if(EXISTS "${STORAGE_DIR}" AND NOT TARGET storage)
+    add_subdirectory("${STORAGE_DIR}")
+endif()

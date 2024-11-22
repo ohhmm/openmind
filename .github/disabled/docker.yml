@@ -14,6 +14,39 @@ jobs:
       - name: Check for dockerenv file
         run: (ls /.dockerenv && echo Found dockerenv && which clang++) || (echo No dockerenv)
 
+      - name: Install and Start Redis
+        run: |
+          apt-get update && apt-get install -y redis-server libhiredis-dev
+          service redis-server start
+          max_retries=10
+          retry_count=0
+
+          # Verify Redis service and basic operations
+          while true; do
+            if [ $retry_count -ge $max_retries ]; then
+              echo "Redis failed to start after $max_retries attempts"
+              service redis-server status
+              journalctl -u redis-server
+              exit 1
+            fi
+
+            if redis-cli ping > /dev/null 2>&1; then
+              # Test basic Redis operations
+              if redis-cli set test_key test_value > /dev/null 2>&1 && \
+                 [ "$(redis-cli get test_key)" = "test_value" ]; then
+                echo "Redis server is running and operations verified"
+                break
+              fi
+            fi
+
+            echo "Waiting for Redis to start... (attempt $((retry_count + 1)))"
+            sleep 3
+            ((retry_count++))
+          done
+
+          echo "OPENMIND_TEST_REDIS_RETRY_COUNT=5" >> $GITHUB_ENV
+          echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $GITHUB_ENV
+
       - name: Create Build Dir
         run: cmake -E make_directory ./build
 
@@ -21,12 +54,14 @@ jobs:
         working-directory: ./build
         run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_CXX_COMPILER=/usr/lib/llvm/17/bin/clang-17 -DCMAKE_C_COMPILER=/usr/lib/llvm/17/bin/clang-17 \
-          -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
+          -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_STORAGE_REDIS=ON -DOPENMIND_BUILD_TESTS=ON
 
       - name: Build
         run: cmake --build build
 
       - name: Check
         working-directory: ./build
+        env:
+          OPENMIND_TEST_REDIS_RETRY_COUNT: 5
+          OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
         run: ctest . -j`nproc` -E ts --rerun-failed --output-on-failure
-

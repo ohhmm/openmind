@@ -57,7 +57,8 @@ jobs:
         max_attempts: 3
         command: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive
+          sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive redis-server
+          sudo systemctl start redis-server
           cmake --version
           ninja --version
           gcc --version
@@ -86,6 +87,7 @@ jobs:
             boost-python3 \
             snappy \
             leveldb \
+            redis \
             rocksdb \
             fmt \
             lz4 \
@@ -94,6 +96,7 @@ jobs:
           curl -fsSL https://github.com/Kitware/CMake/releases/download/v4.2.1/cmake-4.2.1-macos-universal.tar.gz | tar -xz -C /tmp
           echo "/tmp/cmake-4.2.1-macos-universal/CMake.app/Contents/bin" >> $GITHUB_PATH
           export PATH="/tmp/cmake-4.2.1-macos-universal/CMake.app/Contents/bin:$PATH"
+          brew services start redis
           cmake --version
           ninja --version
           clang --version
