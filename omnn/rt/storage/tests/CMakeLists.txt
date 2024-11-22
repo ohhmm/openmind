@@ -6,11 +6,14 @@ set(DEPENDENCIES
 # Find Boost components for testing
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
+# Set common test properties
+set(BOOST_TEST_LIBS Boost::unit_test_framework)
+
 # Redis cache test configuration
 if(OPENMIND_STORAGE_REDIS)
     list(APPEND DEPENDENCIES
         hiredis::hiredis
-        Boost::unit_test_framework
+        ${BOOST_TEST_LIBS}
     )
 
     # Configure Redis cache test
@@ -44,9 +47,13 @@ endif()
 
 # LevelDB cache test configuration
 if(OPENMIND_STORAGE_LEVELDB)
-    list(APPEND DEPENDENCIES leveldb)
+    list(APPEND DEPENDENCIES leveldb ${BOOST_TEST_LIBS})
     add_executable(leveldb_cache_test leveldb_cache_test.cpp)
-    target_link_libraries(leveldb_cache_test PRIVATE ${DEPENDENCIES} ${BOOST_TEST_LINK_LIBS})
+    target_link_libraries(leveldb_cache_test PRIVATE ${DEPENDENCIES})
+    target_compile_definitions(leveldb_cache_test PRIVATE
+        BOOST_TEST_DYN_LINK
+        BOOST_TEST_MODULE=leveldb_cache_test
+    )
     add_test(NAME leveldb_cache_test COMMAND leveldb_cache_test)
     set_target_properties(leveldb_cache_test PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
