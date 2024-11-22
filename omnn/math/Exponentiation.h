@@ -110,6 +110,7 @@ public:
     const vars_cont_t& getCommonVars() const override;
     vars_cont_t GetVaExps() const override;
     Valuable InCommonWith(const Valuable& v) const override;
+    bool IsComesBefore(const Exponentiation& v) const;
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;
 
