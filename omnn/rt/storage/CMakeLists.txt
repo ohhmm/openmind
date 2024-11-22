@@ -8,7 +8,7 @@ if(WIN32)
     # On Windows, default to Memurai
     option(OPENMIND_STORAGE_REDIS "Enable Redis/Memurai storage backend" ON)
     if(OPENMIND_STORAGE_REDIS)
-        find_package(hiredis REQUIRED)
+        find_package(hiredis REQUIRED CONFIG)
         list(APPEND DEPENDENCIES hiredis::hiredis)
         add_definitions(-DOPENMIND_STORAGE_REDIS)
 
@@ -73,7 +73,15 @@ else()
     # Non-Windows platforms use standard Redis
     option(OPENMIND_STORAGE_REDIS "Enable Redis storage backend" ON)
     if(OPENMIND_STORAGE_REDIS)
-        find_package(hiredis REQUIRED)
+        # First try to find hiredis through our custom module
+        list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+        find_package(hiredis MODULE REQUIRED)
+
+        if(NOT HIREDIS_FOUND)
+            message(FATAL_ERROR "hiredis library not found. Please install libhiredis-dev package.")
+        endif()
+
+        # Add to dependencies regardless - it will be installed by prerequisites
         list(APPEND DEPENDENCIES hiredis::hiredis)
         add_definitions(-DOPENMIND_STORAGE_REDIS)
     endif()
@@ -89,5 +97,5 @@ endif()
 lib(${DEPENDENCIES})
 
 if(OPENMIND_BUILD_TESTS)
-    add_subdirectory(tests)
+    add_subdirectory(tests ${CMAKE_CURRENT_BINARY_DIR}/storage_tests)
 endif()
