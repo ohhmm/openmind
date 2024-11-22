@@ -22,6 +22,7 @@ class RedisCache : public CacheBase {
     const std::string _host;
     const int _port;
     const int _timeout_ms;
+    bool _debug_logging;
 
 public:
     RedisCache(const std::string_view& host = "localhost",
@@ -37,6 +38,8 @@ public:
 private:
     void ensureConnection();
     std::unique_ptr<redisReply, void(*)(redisReply*)> executeCommand(const char* format, ...);
+    void logDebug(const std::string& message) const;
+    bool isDebugLogging() const { return _debug_logging; }
 };
 
 } // namespace omnn::rt::storage
