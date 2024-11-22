@@ -21,5 +21,12 @@ target_include_directories(redis_cache
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# Configure Redis connection settings from environment
+target_compile_definitions(redis_cache
+    PRIVATE
+    REDIS_HOST="$ENV{REDIS_HOST}"
+    REDIS_PORT=$ENV{REDIS_PORT}
+)
+
 # Add tests subdirectory
 add_subdirectory(tests)
