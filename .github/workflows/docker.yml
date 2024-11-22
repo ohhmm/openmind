@@ -16,8 +16,13 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          emerge-webrsync
-          emerge --getbinpkg=y --usepkg=y -q dev-libs/hiredis dev-util/pkgconfig dev-util/ninja dev-util/cmake dev-cpp/boost
+          emerge-webrsync || exit 1
+          emerge --getbinpkg=y --usepkg=y -q dev-libs/hiredis dev-util/pkgconfig dev-util/ninja dev-util/cmake dev-cpp/boost dev-util/ccache || exit 1
+
+      - name: Setup ccache
+        run: |
+          ccache --max-size=2G
+          ccache --zero-stats
 
       - name: Create Build Dir
         run: cmake -E make_directory ./build
@@ -25,18 +30,18 @@ jobs:
       - name: Configure
         working-directory: ./build
         env:
-          CC: /usr/lib/llvm/17/bin/clang-17
-          CXX: /usr/lib/llvm/17/bin/clang++-17
+          CC: ccache /usr/lib/llvm/17/bin/clang-17
+          CXX: ccache /usr/lib/llvm/17/bin/clang++-17
         run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug \
           -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_STORAGE_REDIS=ON -DBOOST_TEST_NO_AUTO_LINK=ON -DBoost_USE_STATIC_LIBS=ON
 
-      # - name: Install prerequisites
-      #   working-directory: ./build
-      #   run: cmake --build . --target prerequisites -j `nproc`
+      - name: Install prerequisites
+        working-directory: ./build
+        run: cmake --build . --target prerequisites -j `nproc`
 
-      # - name: Reconfigure to detect newly installed prerequisites
-      #   working-directory: ./build
-      #   run: cmake .
+      - name: Reconfigure to detect prerequisites
+        working-directory: ./build
+        run: cmake .
 
       - name: Build
         run: cmake --build build -j$(nproc) --verbose
