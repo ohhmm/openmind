@@ -7,7 +7,7 @@
 #include <string>
 
 
-using namespace omnn::rt::storage; 
+using namespace omnn::storage; 
 
 
 LevelDbCache::LevelDbCache(const std::string_view& path)
@@ -43,7 +43,7 @@ LevelDbCache::~LevelDbCache() {
 namespace{
 	std::once_flag dbConnectionOptionsInitializedFlag;
 }
-const leveldb::Options& omnn::rt::storage::LevelDbCache::GetDbConnectionOptions() {
+const leveldb::Options& LevelDbCache::GetDbConnectionOptions() {
 	static leveldb::Options options;
 	std::call_once(dbConnectionOptionsInitializedFlag, [] {
 		options.create_if_missing = true;

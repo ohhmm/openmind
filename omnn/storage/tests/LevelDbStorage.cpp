@@ -2,7 +2,7 @@
 #include "LevelDbCache.h"
 #include <boost/test/unit_test.hpp>
 
-using namespace omnn::rt::storage;
+using namespace omnn::storage;
 
 #ifdef 	OPENMIND_STORAGE_LEVELDB
 BOOST_AUTO_TEST_CASE(LevelDbStorage_test) {
