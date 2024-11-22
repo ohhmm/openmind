@@ -36,7 +36,7 @@ bool LevelDbCache::Clear(const std::string_view &key) {
 	return _status.ok();
 }
 
-bool LevelDbCache::ResetAllDB(const path_str_t& path) {
+bool LevelDbCache::ResetAllDB(const CacheBase::path_str_t& path) {
     // Delete all keys in the database
     auto it = _db->NewIterator(leveldb::ReadOptions());
     for (it->SeekToFirst(); it->Valid(); it->Next()) {
