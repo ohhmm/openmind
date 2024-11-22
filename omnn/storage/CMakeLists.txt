@@ -7,13 +7,13 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE
     option(OPENMIND_STORAGE_ALLOW_UPGRADE "Update optimized cached values during fetch if new optimizations applied" ON)
     option(OPENMIND_STORAGE_VOLATILE "Clean cache each start (for debugging purposes)" NO)
 
-	if(OPENMIND_STORAGE_LEVELDB)
-		find_package(Threads) # workaround leveldb config bug
-		list(APPEND DEPENDENCIES google/leveldb)
-		if(NOT WIN32)
-			list(APPEND DEPENDENCIES pthread)
-		endif()
-	endif()
+    if(OPENMIND_STORAGE_LEVELDB)
+        find_package(Threads) # workaround leveldb config bug
+        list(APPEND DEPENDENCIES google/leveldb)
+        if(NOT WIN32)
+            list(APPEND DEPENDENCIES pthread)
+        endif()
+    endif()
 
     if(OPENMIND_STORAGE_FOUNDATIONDB)
         list(APPEND DEPENDENCIES ohhmm/FoundationDB)
