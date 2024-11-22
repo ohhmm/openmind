@@ -62,11 +62,24 @@ bool Modulo::operator==(const Modulo& modulo) const {
 
 void Modulo::optimize() {
     DUO_OPT_PFX
+
+    if (_1 == _2) {
+        Become(0);
+        return;
+    }
+
     DUO_USE_CACHE(DbModuloOptimizationCache)
+
     CHECK_OPTIMIZATION_CACHE
     _1.optimize();
     CHECK_OPTIMIZATION_CACHE
     _2.optimize();
+
+    if (_1 == _2) {
+        Become(0);
+        return;
+    }
+
     CHECK_OPTIMIZATION_CACHE
     if (_1.IsModulo()) {
         auto& m1 = _1.as<Modulo>();
