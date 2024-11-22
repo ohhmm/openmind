@@ -22,7 +22,10 @@
     "boost-uuid",
     "leveldb",
     "liblzma",
-    "hiredis",
+    {
+      "name": "hiredis",
+      "features": ["ssl"]
+    },
     {
       "name": "vcpkg-cmake",
       "host": true

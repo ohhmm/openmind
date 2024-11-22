@@ -14,7 +14,7 @@ class DB;
 #include <boost/filesystem.hpp>
 
 #include <omnn/rt/tasq.h>
-#include <omnn/storage/CacheBase.h>
+#include <omnn/rt/storage/CacheBase.h>
 
 #include <omnn/math/VarHost.h>
 
