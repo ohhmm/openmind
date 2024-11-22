@@ -25,6 +25,24 @@ BOOST_AUTO_TEST_CASE(Min_operator_test) {
     TestBinaryOperator(Minimum, [](auto x, auto y) { return std::min(x, y); });
 }
 
+BOOST_AUTO_TEST_CASE(LessOrEqual_comparator_test) {
+    auto LessOrEqual = X.LessOrEqual(Y);
+    std::cout << "LessOrEqual(X,Y) : " << LessOrEqual << std::endl;
+    TestBooleanOperator(LessOrEqual, [](auto x, auto y) { return x <= y; });
+}
+
+BOOST_AUTO_TEST_CASE(GreaterOrEqual_comparator_test) {
+    auto GreaterOrEqual = X.GreaterOrEqual(Y);
+    std::cout << "GreaterOrEqual(X,Y) : " << GreaterOrEqual << std::endl;
+    TestBooleanOperator(GreaterOrEqual, [](auto x, auto y) { return x >= y; });
+}
+
+BOOST_AUTO_TEST_CASE(GreaterOrEqualThanZero_comparator_test) {
+    auto GreaterOrEqualThanZero = X.GreaterOrEqual(0);
+    std::cout << "GreaterOrEqualThanZero(X) : " << GreaterOrEqualThanZero << std::endl;
+    TestBooleanExpression(GreaterOrEqualThanZero, [](auto x) { return x >= 0; });
+}
+
 BOOST_AUTO_TEST_CASE(Deducing_Sign_function_test) {
     // abs(x)/x doesn't want for x=0, its NaN because of division by zero
     // searching for alternative approaches to make robust sign(x) function
@@ -129,11 +147,6 @@ BOOST_AUTO_TEST_CASE(merge_or_tests
     BOOST_TEST(set1 == set2);
 }
 
-BOOST_AUTO_TEST_CASE(LessOrEqual_comparator_test) {
-    auto LessOrEqual = X.LessOrEqual(Y);
-    std::cout << "LessOrEqual(X,Y) : " << LessOrEqual << std::endl;
-    TestBooleanOperator(LessOrEqual, [](auto x, auto y) { return x <= y; });
-}
 
 BOOST_AUTO_TEST_CASE(IsNegativeThan_comparator_test) {
     auto IsNegativeThan = X.IsNegativeThan(Y);

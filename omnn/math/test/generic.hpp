@@ -102,7 +102,10 @@ void TestBooleanExpression(const Valuable& expressionX, auto function) {
     for (auto x = 10; x-- > -10;) {
         auto etalon = function(x);
         auto copy = expressionX;
-        copy.Eval(X, x);
+        {
+            Valuable::OptimizeOff off;
+            copy.eval({{X, x}});
+        }
         copy.optimize();
         auto evaluatedToZero = copy.IsZero();
         BOOST_TEST(evaluatedToZero == etalon);
