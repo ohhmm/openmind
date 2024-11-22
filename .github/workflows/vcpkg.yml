@@ -46,7 +46,8 @@ jobs:
         max_attempts: 3
         command: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive
+          sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive redis-server
+        sudo systemctl start redis-server
           cmake --version
           ninja --version
           gcc --version
@@ -63,7 +64,8 @@ jobs:
         command: |
           echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
           brew update || brew update || brew update || brew update || brew update
-          brew install cmake ninja autoconf automake autoconf-archive
+          brew install cmake ninja autoconf automake autoconf-archive redis
+        brew services start redis
           cmake --version
           ninja --version
           clang --version

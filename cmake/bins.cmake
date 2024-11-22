@@ -659,6 +659,11 @@ macro(exe)
             )
     endif()
 
+    # Ensure test libraries are properly linked for all platforms
+    if(OPENMIND_BUILD_TESTS)
+        target_link_libraries(${this_target} PUBLIC ${BOOST_TEST_LINK_LIBS})
+    endif()
+
     if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
     elseif(OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Test)
