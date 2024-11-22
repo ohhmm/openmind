@@ -26,9 +26,21 @@ jobs:
       run: |
         vcpkg install hiredis:x64-windows
         choco install memurai-developer.install --no-progress --params="'/Port:6379'"
-        $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+
+        # Refresh environment variables and verify installation paths
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        refreshenv
+
+        # Use installation directory directly
         $memuraiPath = "C:\Program Files\Memurai\memurai-developer.exe"
         $memuraiCli = "C:\Program Files\Memurai\memurai-cli.exe"
+
+        # Verify executable exists
+        if (-not (Test-Path $memuraiPath)) {
+            Write-Error "Memurai executable not found at: $memuraiPath"
+            Get-ChildItem "C:\Program Files\Memurai\" -Recurse
+            exit 1
+        }
 
         Write-Host "Configuring Memurai service..."
         if (Get-Service -Name "memurai" -ErrorAction SilentlyContinue) {
@@ -38,7 +50,7 @@ jobs:
         }
 
         Write-Host "Installing Memurai service..."
-        & $memuraiPath --service-install --port 6379
+        Start-Process -FilePath $memuraiPath -ArgumentList "--service-install", "--port", "6379" -Wait -NoNewWindow
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to install Memurai service"
             exit 1
