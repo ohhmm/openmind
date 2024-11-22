@@ -140,3 +140,9 @@ BOOST_AUTO_TEST_CASE(ModuloSquaredOptimization_test, *disabled())
     expr3.optimize();
     BOOST_TEST(expr3 == z+1);
 }
+
+BOOST_AUTO_TEST_CASE(Modulo_Ordering_test) {
+    auto _1 = "(1 % ((Y ^ 4)))"_v;
+    auto _2 = "((-4 * (Y ^ 3)) % ((Y ^ 4)))"_v;
+    InequalOrderCheck(_1, _2);
+}
