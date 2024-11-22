@@ -20,6 +20,10 @@
     "boost-uuid",
     "leveldb",
     {
+      "name": "hiredis",
+      "version>=": "0.13.0"
+    },
+    {
       "name": "vcpkg-cmake",
       "host": true
     },
