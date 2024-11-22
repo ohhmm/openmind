@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(Fraction_cmp_tests, *disabled()) {
     BOOST_TEST(equal);
 }
 
-BOOST_AUTO_TEST_CASE(Fraction_ordering_tests, *disabled()) {
+BOOST_AUTO_TEST_CASE(Fraction_ordering_tests) {
     auto _1 = "((-16/25)*(1r5) + (16/5))^(1/2)"_v;
     auto _2 = "(3/5)*sqrt(5)"_v;
     auto cmp21 = _1.IsComesBefore(_2);
