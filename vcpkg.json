@@ -14,12 +14,17 @@
     "boost-locale",
     "boost-multiprecision",
     "boost-python",
+    "boost-redis",
     "boost-serialization",
     "boost-system",
     "boost-test",
     "boost-thread",
     "boost-ublas",
     "boost-uuid",
+    {
+      "name": "hiredis",
+      "features": ["ssl"]
+    },
     "leveldb",
     "liblzma",
     {
