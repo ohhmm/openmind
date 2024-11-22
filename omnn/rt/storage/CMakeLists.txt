@@ -1,4 +1,10 @@
 # Storage module CMake configuration
+set(STORAGE_SOURCES
+    CacheBase.cpp
+    LevelDbCache.cpp
+    RedisCache.cpp
+)
+
 set(DEPENDENCIES
     rt
 )
@@ -71,17 +77,26 @@ if(WIN32)
     endif()
 else()
     # Non-Windows platforms use standard Redis
-    option(OPENMIND_STORAGE_REDIS "Enable Redis storage backend" ON)
     if(OPENMIND_STORAGE_REDIS)
-        # First try to find hiredis through our custom module
-        list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
-        find_package(hiredis MODULE REQUIRED)
+        # Set up Conan dependencies
+        include("${CMAKE_BINARY_DIR}/conan_paths.cmake" OPTIONAL)
 
-        if(NOT HIREDIS_FOUND)
-            message(FATAL_ERROR "hiredis library not found. Please install libhiredis-dev package.")
+        # Try finding hiredis through various methods
+        if(NOT TARGET hiredis::hiredis)
+            # First try CONFIG mode
+            find_package(hiredis CONFIG QUIET)
+
+            if(NOT hiredis_FOUND)
+                # Then try MODULE mode with our custom Find module
+                list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+                find_package(hiredis MODULE REQUIRED)
+            endif()
+
+            if(NOT hiredis_FOUND)
+                message(FATAL_ERROR "hiredis not found. Please install libhiredis-dev package.")
+            endif()
         endif()
 
-        # Add to dependencies regardless - it will be installed by prerequisites
         list(APPEND DEPENDENCIES hiredis::hiredis)
         add_definitions(-DOPENMIND_STORAGE_REDIS)
     endif()
@@ -97,5 +112,6 @@ endif()
 lib(${DEPENDENCIES})
 
 if(OPENMIND_BUILD_TESTS)
-    add_subdirectory(tests ${CMAKE_CURRENT_BINARY_DIR}/storage_tests)
+    set(STORAGE_TEST_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/rt_storage_tests")
+    add_subdirectory(tests ${STORAGE_TEST_BINARY_DIR})
 endif()
