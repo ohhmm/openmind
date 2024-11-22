@@ -15,7 +15,9 @@ if(WIN32)
         # Check for Memurai
         find_program(MEMURAI_EXECUTABLE "memurai-developer.exe"
             PATHS
+            "C:/Program Files/Memurai Developer"
             "C:/Program Files/Memurai"
+            "C:/Program Files (x86)/Memurai Developer"
             "C:/Program Files (x86)/Memurai"
             ENV PATH
             DOC "Path to Memurai Developer executable")
@@ -26,14 +28,15 @@ if(WIN32)
         else()
             message(STATUS "Searching for Memurai in alternative locations...")
             file(GLOB_RECURSE MEMURAI_SEARCH
-                "C:/Program Files/Memurai/**/memurai-developer.exe"
-                "C:/Program Files (x86)/Memurai/**/memurai-developer.exe")
+                "C:/Program Files/**/memurai-developer.exe"
+                "C:/Program Files (x86)/**/memurai-developer.exe")
+
             if(MEMURAI_SEARCH)
-                set(MEMURAI_EXECUTABLE ${MEMURAI_SEARCH})
+                list(GET MEMURAI_SEARCH 0 MEMURAI_EXECUTABLE)
                 add_definitions(-DOPENMIND_STORAGE_REDIS_MEMURAI)
                 message(STATUS "Found Memurai via search at: ${MEMURAI_EXECUTABLE}")
             else()
-                message(WARNING "Memurai not found. Redis tests may fail on Windows. Please ensure Memurai is installed correctly.")
+                message(FATAL_ERROR "Memurai not found. Please ensure Memurai Developer is installed correctly and the executable is accessible.")
             endif()
         endif()
     endif()
