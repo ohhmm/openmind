@@ -24,16 +24,18 @@ if(OPENMIND_STORAGE_REDIS)
         BOOST_TEST_MODULE=redis_cache_test
     )
 
-    # Set test properties with increased timeout for Windows
+    # Set test properties with platform-specific configurations
     if(WIN32)
         set(TEST_TIMEOUT 300)  # 5 minutes timeout for Windows
         if(OPENMIND_STORAGE_REDIS_MEMURAI)
             set(REDIS_HOST "localhost")
             set(REDIS_PORT "6379")
-            set(REDIS_EXECUTABLE "C:/Program Files/Memurai/memurai-developer.exe")
+            set(REDIS_EXECUTABLE "C:/Program Files/Memurai Developer/memurai-developer.exe")
         endif()
     else()
         set(TEST_TIMEOUT 120)  # 2 minutes timeout for other platforms
+        set(REDIS_HOST "127.0.0.1")  # Use IP address for Unix platforms
+        set(REDIS_PORT "6379")
     endif()
 
     add_test(NAME redis_cache_test COMMAND redis_cache_test)

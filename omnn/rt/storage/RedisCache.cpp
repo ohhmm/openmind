@@ -43,21 +43,31 @@ RedisCache::~RedisCache() {
 void RedisCache::ensureConnection() {
     if (_context) return;
 
-    int retries = 5;  // Increased from 3 to 5
+    const int retries = std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT") ?
+        std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT")) : 5;
+    const int delay_ms = std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY") ?
+        std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY")) : 3000;
     std::string last_error;
-    const char* server_type =
-#ifdef OPENMIND_STORAGE_REDIS_MEMURAI
-        "Memurai";
+
+    std::string platform_info;
+#ifdef _WIN32
+    platform_info = " on Windows";
 #else
-        "Redis";
+    platform_info = " on Unix";
 #endif
 
-    while (retries--) {
+#ifdef OPENMIND_STORAGE_REDIS_MEMURAI
+    const char* server_type = "Memurai";
+#else
+    const char* server_type = "Redis";
+#endif
+
+    int attempts = retries;
+    while (attempts--) {
         struct timeval timeout = { 0, _timeout_ms * 1000 };
         redisContext* c = redisConnectWithTimeout(_host.c_str(), _port, timeout);
 
         if (c && !c->err) {
-            // Test connection with PING
             redisReply* reply = (redisReply*)redisCommand(c, "PING");
             if (reply && reply->type == REDIS_REPLY_STATUS &&
                 std::string_view(reply->str, reply->len) == "PONG") {
@@ -66,10 +76,11 @@ void RedisCache::ensureConnection() {
                 return;
             }
             if (reply) {
-                last_error = "PING failed: " + std::string(reply->str, reply->len);
+                last_error = std::string(server_type) + " PING failed" + platform_info + ": " +
+                    std::string(reply->str, reply->len);
                 freeReplyObject(reply);
             } else {
-                last_error = "PING failed: no reply";
+                last_error = std::string(server_type) + " PING failed" + platform_info + ": no reply";
             }
             redisFree(c);
         } else {
@@ -77,12 +88,14 @@ void RedisCache::ensureConnection() {
             if (c) redisFree(c);
         }
 
-        if (retries > 0) {
-            std::this_thread::sleep_for(std::chrono::seconds(3));  // Increased from 500ms to 2s
+        if (attempts > 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
         }
     }
 
-    throw std::runtime_error(std::string(server_type) + " connection error after retries: " + last_error);
+    throw std::runtime_error(std::string(server_type) + " connection error" + platform_info +
+        " after " + std::to_string(retries) + " attempts to " + _host + ":" +
+        std::to_string(_port) + ". Last error: " + last_error);
 }
 
 std::unique_ptr<redisReply, void(*)(redisReply*)> RedisCache::executeCommand(const char* format, ...) {
