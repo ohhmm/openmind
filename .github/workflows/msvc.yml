@@ -15,11 +15,6 @@ jobs:
         .\vcpkg\bootstrap-vcpkg.bat
         .\vcpkg\vcpkg integrate install
 
-    - name: Install Dependencies
-      run: |
-        .\vcpkg\vcpkg install hiredis:x64-windows
-        .\vcpkg\vcpkg install boost:x64-windows
-
     - name: Create Build Directory
       run: mkdir build
 
