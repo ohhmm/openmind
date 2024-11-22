@@ -31,13 +31,30 @@ jobs:
         $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
         refreshenv
 
-        # Use installation directory directly
+        # Wait for Memurai installation to complete and verify executable
         $memuraiPath = "C:\Program Files\Memurai\memurai-developer.exe"
         $memuraiCli = "C:\Program Files\Memurai\memurai-cli.exe"
+        $maxAttempts = 5
+        $attempt = 0
+        $success = $false
 
-        # Verify executable exists
-        if (-not (Test-Path $memuraiPath)) {
-            Write-Error "Memurai executable not found at: $memuraiPath"
+        do {
+            $attempt++
+            Write-Host "Attempt $attempt of $maxAttempts to locate Memurai executable..."
+
+            if (Test-Path $memuraiPath) {
+                Write-Host "Found Memurai executable at: $memuraiPath"
+                $success = $true
+                break
+            }
+
+            Start-Sleep -Seconds 5
+            $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+            refreshenv
+        } while ($attempt -lt $maxAttempts)
+
+        if (-not $success) {
+            Write-Error "Failed to locate Memurai executable after $maxAttempts attempts"
             Get-ChildItem "C:\Program Files\Memurai\" -Recurse
             exit 1
         }
