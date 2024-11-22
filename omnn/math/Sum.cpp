@@ -573,7 +573,7 @@ namespace
                 {
                     CHECK_OPTIMIZATION_CACHE
                     
-                    if(c.IsSum()){
+                    if (c.IsSum() || c.IsNaN()) {
                         break;
                     }
                     auto simplified = it2->IsSummationSimplifiable(c);
@@ -629,13 +629,20 @@ namespace
                         ++it2;
                 }
 
-                if (c==0)
+                if (c.IsZero())
                     Delete(it);
+                else if (c.IsNaN()) {
+                    Become(std::move(c));
+                    break;
+                }
                 else if (it->Same(c))
                     ++it;
                 else
                     Update(it, c);
             }
+
+            if (!IsSum())
+                break;
 
             // optimize members
             for (auto it = members.begin(); it != members.end();)
