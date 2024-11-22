@@ -16,7 +16,16 @@ jobs:
 
       - name: Install and Start Redis
         run: |
-          apt-get update && apt-get install -y redis-server libhiredis-dev
+          # Install Redis server and Conan
+          apt-get update && apt-get install -y redis-server python3-pip
+          pip3 install conan==2.0.13
+          conan profile detect --force
+
+          # Install hiredis using Conan
+          mkdir -p ~/.conan2/profiles
+          conan install . --build=missing -s build_type=Debug
+
+          # Start Redis server
           service redis-server start
           max_retries=10
           retry_count=0

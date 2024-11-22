@@ -15,6 +15,12 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 
+# Add prerequisites target for dependency management
+add_custom_target(prerequisites
+    COMMAND ${CMAKE_COMMAND} -E echo "All prerequisites are satisfied through Conan"
+    COMMENT "Checking prerequisites..."
+)
+
 message("BIN_DIR=${CMAKE_BINARY_DIR}")
 message("SRC_DIR=${CMAKE_SOURCE_DIR}")
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
@@ -188,7 +194,7 @@ if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 		unit_test_framework
 		CACHE STRING "Components" FORCE)
-	if(NOT (OPENMIND_USE_VCPKG OR OPENMIND_USE_CONAN))
+	if(NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)  # Remove test_exec_monitor for both package managers
 		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 			test_exec_monitor
 			CACHE STRING "Components" FORCE)
@@ -207,21 +213,19 @@ endif()
 set(OPENMIND_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 message("OPENMIND_INCLUDE_DIR=${OPENMIND_INCLUDE_DIR}")
 
-if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-	option(OPENMIND_USE_CONAN "Use conan dependencies" ON)
-	if(OPENMIND_USE_CONAN)
-		message("Using conanbuildinfo.cmake")
-		include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-		conan_basic_setup(TARGETS)
-	endif()
-elseif(OPENMIND_USE_CONAN)
-	if(EXISTS ${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
-		message("conanbuildinfo.cmake created in source directory")
-		include(${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake)
-		conan_basic_setup(TARGETS)
-	else()
-		message("conanbuildinfo.cmake not found. Try building Install__Conan target.")
-	endif()
+# Check for Conan toolchain
+if(CMAKE_TOOLCHAIN_FILE)
+    message("Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+    include(${CMAKE_TOOLCHAIN_FILE})
+
+    option(OPENMIND_USE_CONAN "Use conan dependencies" ON)
+    if(OPENMIND_USE_CONAN)
+        # Find packages installed by Conan
+        find_package(hiredis CONFIG REQUIRED)
+        find_package(Boost CONFIG REQUIRED COMPONENTS ${BOOST_USED_COMPONENTS})
+    endif()
+else()
+    message(FATAL_ERROR "CMAKE_TOOLCHAIN_FILE not specified. Please run with -DCMAKE_TOOLCHAIN_FILE=path/to/conan_toolchain.cmake")
 endif()
 
 if (NOT Boost_FOUND)
@@ -250,9 +254,8 @@ if (NOT Boost_FOUND)
 		endif()
 	endif ()
 endif ()
-add_custom_target(prerequisites)
+# Target properties for prerequisites target defined above
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
-
 
 if(NOT Boost_FOUND
 	AND NOT OPENMIND_USE_CONAN
@@ -289,8 +292,13 @@ if(OPENMIND_STORAGE_REDIS)
         # Try Conan-provided hiredis first
         if(OPENMIND_USE_CONAN)
             find_package(hiredis REQUIRED CONFIG)
-            set(HIREDIS_FOUND TRUE)
-            set(HIREDIS_LIBRARIES hiredis::hiredis)
+            if(TARGET hiredis::hiredis)
+                set(HIREDIS_FOUND TRUE)
+                set(HIREDIS_LIBRARIES hiredis::hiredis)
+                message(STATUS "Using Conan-provided hiredis")
+            else()
+                message(FATAL_ERROR "hiredis target not found. Please ensure hiredis is properly installed via Conan.")
+            endif()
         else()
             # Fallback to system hiredis
             list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
@@ -334,9 +342,11 @@ if (Boost_FOUND OR OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
 elseif(OPENMIND_BUILD_BOOST)
     message("Required boost components ${BOOST_USED_COMPONENTS}")
     foreach(_module ${BOOST_USED_COMPONENTS})
-        if(_module STREQUAL "unit_test_framework"
-            OR _module STREQUAL "test_exec_monitor")
+        if(_module STREQUAL "unit_test_framework")
             string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
+        elseif(_module STREQUAL "test_exec_monitor")
+            # Skip test_exec_monitor as it's handled by unit_test_framework
+            continue()
         else()
             string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
         endif()
@@ -344,7 +354,6 @@ elseif(OPENMIND_BUILD_BOOST)
         string(TOUPPER ${_module} BOOST_MODULE_NAME_UPCASE)
         add_definitions(-DBOOST_${BOOST_MODULE_NAME_UPCASE}_STATIC_LIB)
     endforeach()
-    string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
     message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
 
     set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared --disable-icu ${BOOST_BUILD_PARAMS}")

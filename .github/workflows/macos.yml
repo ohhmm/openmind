@@ -9,6 +9,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install Conan
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install conan==2.0.13
+        conan profile detect --force
+        mkdir -p ~/.conan2/profiles
+        conan install . --build=missing -s build_type=Release
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Pre-Install Boost, LevelDB, Redis

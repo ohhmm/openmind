@@ -1,4 +1,6 @@
 # Storage module CMake configuration
+include("${CMAKE_BINARY_DIR}/conan_paths.cmake" OPTIONAL)
+
 set(STORAGE_SOURCES
     CacheBase.cpp
     LevelDbCache.cpp
@@ -48,23 +50,48 @@ if(WIN32)
             add_definitions(-DOPENMIND_STORAGE_REDIS_MEMURAI)
             message(STATUS "Using Memurai as Redis provider on Windows at: ${MEMURAI_EXECUTABLE}")
 
-            # Verify Memurai service status and functionality
+            # Verify Memurai service status and functionality with enhanced retry logic
             execute_process(
                 COMMAND powershell -Command "
-                    $status = Get-Service memurai -ErrorAction SilentlyContinue;
-                    if ($status) {
-                        Write-Host \"Service Status: $($status.Status)\";
-                        if ($status.Status -ne 'Running') {
-                            Write-Host \"Starting Memurai service...\";
-                            Start-Service memurai;
-                            Start-Sleep -s 5;
-                            $status = Get-Service memurai;
+                    $maxAttempts = 5
+                    $attempt = 1
+                    $success = $false
+
+                    do {
+                        Write-Host \"Attempt $attempt of $maxAttempts to verify Memurai service...\"
+                        $status = Get-Service memurai -ErrorAction SilentlyContinue
+
+                        if ($status) {
+                            Write-Host \"Service Status: $($status.Status)\"
+                            if ($status.Status -ne 'Running') {
+                                Write-Host \"Starting Memurai service...\"
+                                Start-Service memurai -ErrorAction SilentlyContinue
+                                Start-Sleep -s 10
+                                $status = Get-Service memurai
+                            }
+
+                            if ($status.Status -eq 'Running') {
+                                # Verify Redis connectivity
+                                $memuraiCli = 'C:/Program Files/Memurai Developer/memurai-cli.exe'
+                                if (Test-Path $memuraiCli) {
+                                    & $memuraiCli ping
+                                    if ($LASTEXITCODE -eq 0) {
+                                        $success = $true
+                                        break
+                                    }
+                                }
+                            }
                         }
-                        exit $($status.Status -eq 'Running' ? 0 : 1);
-                    } else {
-                        Write-Host \"Memurai service not found\";
-                        exit 2;
-                    }"
+
+                        $attempt++
+                        Start-Sleep -s 5
+                    } while ($attempt -le $maxAttempts)
+
+                    if (-not $success) {
+                        Write-Host \"Failed to verify Memurai service after $maxAttempts attempts\"
+                        exit 1
+                    }
+                    exit 0"
                 RESULT_VARIABLE MEMURAI_SERVICE_RESULT
                 OUTPUT_VARIABLE MEMURAI_SERVICE_OUTPUT)
 
@@ -78,23 +105,9 @@ if(WIN32)
 else()
     # Non-Windows platforms use standard Redis
     if(OPENMIND_STORAGE_REDIS)
-        # Set up Conan dependencies
-        include("${CMAKE_BINARY_DIR}/conan_paths.cmake" OPTIONAL)
-
-        # Try finding hiredis through various methods
+        # Find hiredis (will use the configuration from root CMakeLists.txt)
         if(NOT TARGET hiredis::hiredis)
-            # First try CONFIG mode
-            find_package(hiredis CONFIG QUIET)
-
-            if(NOT hiredis_FOUND)
-                # Then try MODULE mode with our custom Find module
-                list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
-                find_package(hiredis MODULE REQUIRED)
-            endif()
-
-            if(NOT hiredis_FOUND)
-                message(FATAL_ERROR "hiredis not found. Please install libhiredis-dev package.")
-            endif()
+            find_package(hiredis REQUIRED CONFIG)
         endif()
 
         list(APPEND DEPENDENCIES hiredis::hiredis)
@@ -109,7 +122,8 @@ if(OPENMIND_STORAGE_LEVELDB)
     add_definitions(-DOPENMIND_STORAGE_LEVELDB)
 endif()
 
-lib(${DEPENDENCIES})
+add_library(storage ${STORAGE_SOURCES})
+target_link_libraries(storage PUBLIC ${DEPENDENCIES})
 
 if(OPENMIND_BUILD_TESTS)
     set(STORAGE_TEST_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/rt_storage_tests")

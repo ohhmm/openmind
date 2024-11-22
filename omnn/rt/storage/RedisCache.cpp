@@ -7,6 +7,7 @@
 #include <cstdarg>
 #include <chrono>
 #include <thread>
+#include <iostream>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -65,45 +66,15 @@ void RedisCache::ensureConnection() {
         std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT")) : 5;
     const int delay_ms = std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY") ?
         std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY")) : 3000;
+    std::string last_error;
 
     logDebug("Redis connection attempt to " + _host + ":" + std::to_string(_port) +
              " (timeout: " + std::to_string(_timeout_ms) + "ms, retries: " +
              std::to_string(retries) + ", delay: " + std::to_string(delay_ms) + "ms)");
 
     std::string platform_info;
-
-void RedisCache::ensureConnection() {
-    if (_context) return;
-
-    const char* log_level = std::getenv("OPENMIND_TEST_REDIS_LOG_LEVEL");
-    const bool debug_logging = log_level && std::string(log_level) == "DEBUG";
-
-    const int retries = std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT") ?
-        std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT")) : 5;
-    const int delay_ms = std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY") ?
-        std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY")) : 3000;
-    std::string last_error;
-
-    if (debug_logging) {
-        std::cerr << "Redis connection attempt to " << _host << ":" << _port
-                  << " (timeout: " << _timeout_ms << "ms, retries: " << retries
-                  << ", delay: " << delay_ms << "ms)" << std::endl;
-    }
-
-    std::string platform_info;
-
-    std::string platform_info;
 #ifdef _WIN32
     platform_info = " on Windows (Memurai)";
-    // Enhanced Windows-specific error handling
-    WSADATA wsaData;
-    if (!wsaInitialized) {
-        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-            throw std::runtime_error("Failed to initialize Winsock");
-        }
-        wsaInitialized = true;
-    }
-
     // Check Memurai service status
     SC_HANDLE scm = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
     if (!scm) {
@@ -139,7 +110,7 @@ void RedisCache::ensureConnection() {
     while (attempts--) {
         logDebug("Connection attempt " + std::to_string(retries - attempts) + " of " + std::to_string(retries));
 
-        struct timeval timeout = { 0, _timeout_ms * 1000 };
+        struct timeval timeout = { _timeout_ms / 1000, (_timeout_ms % 1000) * 1000 };
         redisContext* c = redisConnectWithTimeout(_host.c_str(), _port, timeout);
 
         if (c && !c->err) {
@@ -173,53 +144,6 @@ void RedisCache::ensureConnection() {
 #else
     const char* server_type = "Redis";
 #endif
-
-    int attempts = retries;
-    const bool debug_logging = std::getenv("OPENMIND_TEST_REDIS_LOG_LEVEL") &&
-                             std::string(std::getenv("OPENMIND_TEST_REDIS_LOG_LEVEL")) == "DEBUG";
-
-    while (attempts--) {
-        if (debug_logging) {
-            std::cerr << "Connection attempt " << (retries - attempts) << " of " << retries << std::endl;
-        }
-
-        struct timeval timeout = { 0, _timeout_ms * 1000 };
-        redisContext* c = redisConnectWithTimeout(_host.c_str(), _port, timeout);
-
-        if (c && !c->err) {
-            if (debug_logging) {
-                std::cerr << "Connection established, attempting PING" << std::endl;
-            }
-            redisReply* reply = (redisReply*)redisCommand(c, "PING");
-            if (reply) {
-                bool success = (reply->type == REDIS_REPLY_STATUS &&
-                              std::string_view(reply->str, reply->len) == "PONG");
-                freeReplyObject(reply);
-                if (success) {
-                    _context.reset(c);
-                    return;
-                }
-            }
-            redisFree(c);
-        } else {
-            last_error = c ? c->errstr : "can't allocate redis context";
-            if (debug_logging) {
-                std::cerr << "Connection failed: " << last_error << std::endl;
-#ifdef _WIN32
-                std::cerr << "Checking Memurai service status..." << std::endl;
-                system("sc query memurai");
-#endif
-            }
-            if (c) redisFree(c);
-        }
-
-        if (attempts > 0) {
-            if (debug_logging) {
-                std::cerr << "Waiting " << delay_ms << "ms before next attempt" << std::endl;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
-        }
-    }
 
     throw std::runtime_error(std::string(server_type) + " connection error" + platform_info +
         " after " + std::to_string(retries) + " attempts to " + _host + ":" +
