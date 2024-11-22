@@ -6,6 +6,7 @@
 #include "../RedisCache.h"
 #include <chrono>
 #include <thread>
+#include <cstdlib>
 
 #ifdef OPENMIND_STORAGE_REDIS
 
@@ -15,25 +16,35 @@ using namespace omnn::rt::storage;
 
 namespace {
 bool is_redis_available() {
-    int retries = 5;
+    const int retries = std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT") ?
+        std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT")) : 5;
+    const int delay_ms = std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY") ?
+        std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY")) : 2000;
     std::string last_error;
 #ifdef OPENMIND_STORAGE_REDIS_MEMURAI
     const char* server_type = "Memurai";
 #else
     const char* server_type = "Redis";
 #endif
-    while (retries--) {
+    int attempt = 1;
+    while (attempt <= retries) {
         try {
-            RedisCache test_cache;  // Use default constructor for platform-specific defaults
+            RedisCache test_cache;
+            BOOST_TEST_MESSAGE(std::string(server_type) + " connection successful on attempt " + std::to_string(attempt));
             return true;
         } catch (const std::exception& e) {
             last_error = e.what();
-            if (retries > 0) {
-                std::this_thread::sleep_for(std::chrono::seconds(2));
+            BOOST_TEST_MESSAGE(std::string(server_type) + " connection attempt " +
+                std::to_string(attempt) + "/" + std::to_string(retries) +
+                " failed: " + last_error);
+            if (attempt < retries) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
             }
+            attempt++;
         }
     }
-    BOOST_TEST_MESSAGE(std::string(server_type) + " connection failed after retries. Last error: " + last_error);
+    BOOST_TEST_MESSAGE(std::string(server_type) + " connection failed after " +
+        std::to_string(retries) + " attempts. Last error: " + last_error);
     return false;
 }
 }
