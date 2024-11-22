@@ -20,4 +20,13 @@ if(OPENMIND_USE_OPENCL)
     endif()
 endif()
 
+# Add Redis dependency for storage module
+if(OPENMIND_STORAGE_REDIS)
+    find_package(hiredis REQUIRED)
+    list(APPEND DEPENDENCIES hiredis::hiredis)
+endif()
+
 lib(${DEPENDENCIES})
+
+# Add storage subdirectory
+add_subdirectory(storage)

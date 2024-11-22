@@ -58,6 +58,10 @@
     "leveldb",
     "libpng",
     "libjpeg-turbo",
+    {
+      "name": "hiredis",
+      "features": ["ssl"]
+    },
     "tbb"
   ],
   "overrides": [

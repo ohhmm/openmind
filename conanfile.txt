@@ -1,0 +1,18 @@
+[requires]
+hiredis/1.1.0
+boost/[>=1.83.0]
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+hiredis/*:shared=True
+hiredis/*:ssl=True
+boost/*:shared=False
+boost/*:without_unit_test_framework=False
+
+[imports]
+bin, *.dll -> ./bin
+lib, *.dylib* -> ./lib
+lib, *.so* -> ./lib

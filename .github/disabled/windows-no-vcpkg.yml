@@ -23,11 +23,71 @@ jobs:
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
 
+    - name: Install Redis Dependencies
+      run: |
+        vcpkg install hiredis:x64-windows
+        choco install memurai-developer.install --no-progress --params="'/Port:6379'"
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+        $memuraiPath = "C:\Program Files\Memurai\memurai-developer.exe"
+        $memuraiCli = "C:\Program Files\Memurai\memurai-cli.exe"
+
+        Write-Host "Configuring Memurai service..."
+        if (Get-Service -Name "memurai" -ErrorAction SilentlyContinue) {
+            Write-Host "Stopping existing Memurai service..."
+            Stop-Service -Name "memurai" -Force
+            Start-Sleep -s 5
+        }
+
+        Write-Host "Installing Memurai service..."
+        & $memuraiPath --service-install --port 6379
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to install Memurai service"
+            exit 1
+        }
+
+        Write-Host "Starting Memurai service..."
+        Start-Service -Name "memurai"
+        Start-Sleep -s 10
+
+        Write-Host "Verifying Memurai service..."
+        $maxRetries = 10
+        $retryDelay = 3
+        $success = $false
+
+        for ($i = 1; $i -le $maxRetries; $i++) {
+            Write-Host "Verification attempt $i of $maxRetries..."
+            try {
+                $status = Get-Service -Name "memurai" -ErrorAction Stop
+                if ($status.Status -eq "Running") {
+                    $ping = & $memuraiCli ping
+                    if ($ping -eq "PONG") {
+                        Write-Host "Memurai service verified and responding!"
+                        $success = $true
+                        break
+                    }
+                }
+            } catch {
+                Write-Warning "Service check failed: $_"
+            }
+            Start-Sleep -s $retryDelay
+        }
+
+        if (-not $success) {
+            Write-Error "Failed to verify Memurai service after $maxRetries attempts"
+            Get-Service -Name "memurai" | Format-List *
+            Get-EventLog -LogName Application -Source "Memurai" -Newest 10
+            exit 1
+        }
+
+        # Set environment variables for tests
+        echo "OPENMIND_TEST_REDIS_RETRY_COUNT=10" >> $env:GITHUB_ENV
+        echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $env:GITHUB_ENV
+
     - name: Configure
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
-      run: cmake ${{github.workspace}} -G "Ninja Multi-Config" -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO
+      run: cmake ${{github.workspace}} -G "Ninja Multi-Config" -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO -DOPENMIND_STORAGE_REDIS=ON -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Install prerequisites
       run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
@@ -48,8 +108,18 @@ jobs:
 
     - name: make check Release
       working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 10
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
       run: ctest --timeout 2048 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "ts"  --output-on-failure
             #   --rerun-failed --output-on-failure
+
+    - name: make check Debug
+      working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 10
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
+      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}} -E "ts" --output-on-failure
 
     - name: Install
       working-directory: ${{github.workspace}}/build
