@@ -29,7 +29,7 @@ jobs:
           CXX: /usr/lib/llvm/17/bin/clang++-17
         run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug \
           -DCMAKE_CXX_COMPILER=/usr/lib/llvm/17/bin/clang-17 -DCMAKE_C_COMPILER=/usr/lib/llvm/17/bin/clang-17 \
-          -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_STORAGE_REDIS=ON
+          -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_STORAGE_REDIS=ON -DBOOST_TEST_NO_AUTO_LINK=ON -DBoost_USE_STATIC_LIBS=ON
 
       # - name: Install prerequisites
       #   working-directory: ./build
