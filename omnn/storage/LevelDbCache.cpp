@@ -36,6 +36,10 @@ bool LevelDbCache::Clear(const std::string_view &key) {
 	return _status.ok();
 }
 
+LevelDbCache::~LevelDbCache() {
+	delete _db;
+}
+
 bool LevelDbCache::ResetAllDB(const path_str_t& path) {
     // Delete all keys in the database
     auto it = _db->NewIterator(leveldb::ReadOptions());
@@ -48,10 +52,6 @@ bool LevelDbCache::ResetAllDB(const path_str_t& path) {
     }
     delete it;
     return true;
-}
-
-LevelDbCache::~LevelDbCache() {
-	delete _db;
 }
 
 namespace{
