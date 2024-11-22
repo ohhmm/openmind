@@ -16,8 +16,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          apt-get update
-          apt-get install -y libhiredis-dev pkg-config
+          apk update
+          apk add libhiredis-dev pkgconfig
 
       - name: Create Build Dir
         run: cmake -E make_directory ./build
