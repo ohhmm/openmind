@@ -768,13 +768,17 @@ namespace math {
 
     bool Integer::operator <(const Valuable& v) const
     {
-        if (v.IsInt())
+        // Handle same type comparison first
+        if (v.IsInt()) {
             return arbitrary < v.ca();
-        else if (v.IsFraction())
-            return !(v.operator<(*this) || operator==(v));
-        else if(v.IsMInfinity())
-            return {};
-        else if(v.IsInfinity())
+        }
+
+        // Handle special values
+        if (v.IsMInfinity()) {
+            return false;
+        }
+
+        if (v.IsInfinity())
             return true;
         else if (v.IsRational() == YesNoMaybe::Yes) 
             return arbitrary < static_cast<a_rational>(v);
@@ -806,7 +810,7 @@ namespace math {
         else if(v.FindVa() || v.IsConstant())
             return {};
         else
-            return v.operator==(*this);
+            return static_cast<double>(*this) == static_cast<double>(v);
     }
 
     std::ostream& Integer::print(std::ostream& out) const
