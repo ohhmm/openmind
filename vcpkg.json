@@ -19,6 +19,7 @@
     "boost-thread",
     "boost-uuid",
     "leveldb",
+    "hiredis",
     {
       "name": "vcpkg-cmake",
       "host": true
