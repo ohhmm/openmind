@@ -55,18 +55,20 @@ if(OPENMIND_STORAGE_REDIS)
         FOLDER "Tests/Storage"
         ENVIRONMENT "OPENMIND_TEST_REDIS_RETRY_COUNT=10;OPENMIND_TEST_REDIS_RETRY_DELAY=3000;OPENMIND_TEST_REDIS_HOST=${REDIS_HOST};OPENMIND_TEST_REDIS_PORT=${REDIS_PORT}"
     )
+endif()
 
 # LevelDB cache test configuration
-if(OPENMIND_STORAGE_LEVELDB AND NOT TARGET rt_storage_leveldb_cache_test)
+if(OPENMIND_STORAGE_LEVELDB)
     list(APPEND DEPENDENCIES leveldb ${BOOST_TEST_LIBS})
     add_executable(rt_storage_leveldb_cache_test leveldb_cache_test.cpp)
     target_link_libraries(rt_storage_leveldb_cache_test PRIVATE ${DEPENDENCIES})
     target_compile_definitions(rt_storage_leveldb_cache_test PRIVATE
         BOOST_TEST_DYN_LINK
-        BOOST_TEST_MODULE=leveldb_cache_test
+        BOOST_TEST_MODULE=rt_storage_leveldb_cache_test
     )
     add_test(NAME rt_storage_leveldb_cache_test COMMAND rt_storage_leveldb_cache_test)
-    set_target_properties(rt_storage_leveldb_cache_test PROPERTIES
+    set_tests_properties(rt_storage_leveldb_cache_test PROPERTIES
+        TIMEOUT 120
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         FOLDER "Tests/Storage"
     )
