@@ -20,6 +20,7 @@ public:
     std::string GetOne(const std::string_view& key) override;
     bool Set(const std::string_view& key, const std::string_view& v) override;
     bool Clear(const std::string_view& key) override;
+    bool ResetAllDB(const path_str_t& path) override;
     ~LevelDbCache() override;
 
     static const leveldb::Options& GetDbConnectionOptions();
