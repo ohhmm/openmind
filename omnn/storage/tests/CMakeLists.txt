@@ -1,4 +1,5 @@
 test()
 
-# Redis cache tests are automatically included by the test() macro
-# when OPENMIND_STORAGE_REDIS is defined
+if(OPENMIND_STORAGE_REDIS)
+    add_boost_test(redis_cache_test)
+endif()
