@@ -40,7 +40,7 @@ jobs:
       #   run: cmake .
 
       - name: Build
-        run: cmake --build build
+        run: cmake --build build -j$(nproc) --verbose
 
       - name: Check
         working-directory: ./build
