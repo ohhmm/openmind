@@ -4,22 +4,35 @@ set(DEPENDENCIES
 )
 
 # Add Redis dependency
-if(OPENMIND_STORAGE_REDIS)
-    find_package(hiredis REQUIRED)
-    list(APPEND DEPENDENCIES hiredis::hiredis)
-    add_definitions(-DOPENMIND_STORAGE_REDIS)
+if(WIN32)
+    # On Windows, default to Memurai
+    option(OPENMIND_STORAGE_REDIS "Enable Redis/Memurai storage backend" ON)
+    if(OPENMIND_STORAGE_REDIS)
+        find_package(hiredis REQUIRED)
+        list(APPEND DEPENDENCIES hiredis::hiredis)
+        add_definitions(-DOPENMIND_STORAGE_REDIS)
 
-    if(WIN32)
-        # On Windows, default to Memurai if available
+        # Check for Memurai
         find_program(MEMURAI_EXECUTABLE "memurai-developer.exe"
-            PATHS "C:/Program Files/Memurai"
+            PATHS
+            "C:/Program Files/Memurai"
+            "C:/Program Files (x86)/Memurai"
             DOC "Path to Memurai Developer executable")
+
         if(MEMURAI_EXECUTABLE OR OPENMIND_STORAGE_REDIS_MEMURAI)
             add_definitions(-DOPENMIND_STORAGE_REDIS_MEMURAI)
-            message(STATUS "Using Memurai as Redis provider on Windows")
+            message(STATUS "Using Memurai as Redis provider on Windows at: ${MEMURAI_EXECUTABLE}")
         else()
-            message(STATUS "Using Redis on Windows (Memurai not found)")
+            message(WARNING "Memurai not found. Redis tests may fail on Windows")
         endif()
+    endif()
+else()
+    # Non-Windows platforms use standard Redis
+    option(OPENMIND_STORAGE_REDIS "Enable Redis storage backend" ON)
+    if(OPENMIND_STORAGE_REDIS)
+        find_package(hiredis REQUIRED)
+        list(APPEND DEPENDENCIES hiredis::hiredis)
+        add_definitions(-DOPENMIND_STORAGE_REDIS)
     endif()
 endif()
 
