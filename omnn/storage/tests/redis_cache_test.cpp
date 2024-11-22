@@ -1,5 +1,5 @@
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE redis_cache_test
+#define BOOST_TEST_MODULE OpenMind_Redis_Cache_Tests
 #include <boost/test/unit_test.hpp>
 #include "../CacheBase.h"
 #include "../RedisCache.h"
