@@ -5,6 +5,8 @@
 #include <hiredis/hiredis.h>
 #include <stdexcept>
 #include <cstdarg>
+#include <chrono>
+#include <thread>
 
 namespace omnn::rt::storage {
 
@@ -22,18 +24,27 @@ RedisCache::~RedisCache() = default;
 void RedisCache::ensureConnection() {
     if (_context) return;
 
-    struct timeval timeout = { 0, _timeout_ms * 1000 };
-    redisContext* c = redisConnectWithTimeout(_host.c_str(), _port, timeout);
-    if (c == nullptr || c->err) {
-        if (c) {
-            std::string error = c->errstr;
-            redisFree(c);
-            throw std::runtime_error("Redis connection error: " + error);
-        } else {
-            throw std::runtime_error("Redis connection error: can't allocate redis context");
+    int retries = 3;
+    std::string last_error;
+
+    while (retries--) {
+        struct timeval timeout = { 0, _timeout_ms * 1000 };
+        redisContext* c = redisConnectWithTimeout(_host.c_str(), _port, timeout);
+
+        if (c && !c->err) {
+            _context.reset(c);
+            return;
+        }
+
+        last_error = c ? c->errstr : "can't allocate redis context";
+        if (c) redisFree(c);
+
+        if (retries > 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }
-    _context.reset(c);
+
+    throw std::runtime_error("Redis connection error after retries: " + last_error);
 }
 
 std::unique_ptr<redisReply, void(*)(redisReply*)> RedisCache::executeCommand(const char* format, ...) {
@@ -80,7 +91,7 @@ bool RedisCache::Clear(const std::string_view& key) {
     return reply->type == REDIS_REPLY_INTEGER && reply->integer > 0;
 }
 
-bool RedisCache::ResetAllDB(const path_str_t& path) {
+bool RedisCache::ResetAllDB(const CacheBase::path_str_t& path) {
     auto reply = executeCommand("FLUSHDB");
 
     return reply->type == REDIS_REPLY_STATUS &&
