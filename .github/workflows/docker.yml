@@ -16,8 +16,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          apk update
-          apk add hiredis-dev pkgconf
+          emerge --sync
+          emerge -q dev-libs/hiredis dev-util/pkgconfig
 
       - name: Create Build Dir
         run: cmake -E make_directory ./build
