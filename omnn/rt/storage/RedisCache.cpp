@@ -22,9 +22,13 @@ RedisCache::RedisCache(const std::string_view& host, int port, int timeout_ms)
     , _timeout_ms(timeout_ms)
 {
 #ifdef _WIN32
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        throw std::runtime_error("Failed to initialize Winsock");
+    static bool wsaInitialized = false;
+    if (!wsaInitialized) {
+        WSADATA wsaData;
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            throw std::runtime_error("Failed to initialize Winsock");
+        }
+        wsaInitialized = true;
     }
 #endif
     ensureConnection();
