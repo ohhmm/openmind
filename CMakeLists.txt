@@ -188,7 +188,7 @@ if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 		unit_test_framework
 		CACHE STRING "Components" FORCE)
-	if(NOT OPENMIND_USE_VCPKG)
+	if(NOT (OPENMIND_USE_VCPKG OR OPENMIND_USE_CONAN))
 		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 			test_exec_monitor
 			CACHE STRING "Components" FORCE)
@@ -287,22 +287,33 @@ include(ExternalProject)
 if(OPENMIND_STORAGE_REDIS)
     if(NOT WIN32)
         # Try Conan-provided hiredis first
-        if(EXISTS "${CMAKE_BINARY_DIR}/hiredis-config.cmake")
-            include("${CMAKE_BINARY_DIR}/hiredis-config.cmake")
+        if(OPENMIND_USE_CONAN)
+            find_package(hiredis REQUIRED CONFIG)
             set(HIREDIS_FOUND TRUE)
+            set(HIREDIS_LIBRARIES hiredis::hiredis)
         else()
             # Fallback to system hiredis
             list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
             list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
             find_package(hiredis MODULE)
+            if(HIREDIS_FOUND)
+                add_library(hiredis::hiredis ALIAS hiredis)
+            endif()
         endif()
 
         if(NOT HIREDIS_FOUND)
             message(FATAL_ERROR "Could not find hiredis. Please ensure hiredis is installed via Conan or system package.")
         endif()
     else()
+        # Windows-specific Redis/Memurai configuration
         if(OPENMIND_STORAGE_REDIS_MEMURAI)
             message(STATUS "Using Memurai for Windows Redis implementation")
+            # Try vcpkg-provided hiredis first
+            find_package(hiredis CONFIG REQUIRED)
+            if(NOT hiredis_FOUND)
+                message(FATAL_ERROR "Could not find hiredis. Please ensure it's installed via vcpkg.")
+            endif()
+            add_definitions(-DUSE_MEMURAI_WINDOWS)
         endif()
     endif()
 endif()
@@ -425,8 +436,8 @@ if(OPENMIND_USE_VCPKG)
     )
 endif()
 
-# Always include test_exec_monitor for test builds
-if(OPENMIND_BUILD_TESTS)
+# Add test_exec_monitor only for non-package-manager builds
+if(OPENMIND_BUILD_TESTS AND NOT (OPENMIND_USE_VCPKG OR OPENMIND_USE_CONAN))
     list(APPEND BOOST_TEST_LINK_LIBS Boost::test_exec_monitor)
 endif()
 
