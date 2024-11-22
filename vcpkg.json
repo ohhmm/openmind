@@ -20,8 +20,11 @@
     "boost-thread",
     "boost-ublas",
     "boost-uuid",
+    {
+      "name": "hiredis",
+      "features": ["ssl"]
+    },
     "leveldb",
-    "hiredis",
     "liblzma",
     {
       "name": "vcpkg-cmake",
