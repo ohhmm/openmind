@@ -1,0 +1,1 @@
+. "/home/ubuntu/openmind/omnn/rt/storage/conanbuildenv-release-x86_64.sh"
