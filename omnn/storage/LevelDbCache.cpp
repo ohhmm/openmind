@@ -36,14 +36,14 @@ bool LevelDbCache::Clear(const std::string_view &key) {
 	return _status.ok();
 }
 
+LevelDbCache::~LevelDbCache() {
+	delete _db;
+}
+
 bool LevelDbCache::ResetAllDB(const path_str_t& path) {
 	return base::ResetAllDB(path);
 }
 
-
-LevelDbCache::~LevelDbCache() {
-	delete _db;
-}
 
 namespace{
 	std::once_flag dbConnectionOptionsInitializedFlag;
