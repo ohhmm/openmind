@@ -26,18 +26,32 @@ jobs:
       run: |
         # Install dependencies using vcpkg manifest mode
         vcpkg install --triplet x64-windows
-        choco install memurai-developer.install --no-progress --params="'/Port:6379'"
+
+        # Remove existing Memurai installation if present
+        if (Get-Service -Name "memurai" -ErrorAction SilentlyContinue) {
+            Write-Host "Stopping and removing existing Memurai service..."
+            Stop-Service -Name "memurai" -Force -ErrorAction SilentlyContinue
+            Start-Sleep -s 5
+            & sc.exe delete memurai
+        }
+
+        # Clean install Memurai
+        choco install memurai-developer.install --no-progress --params="'/Port:6379'" --force
 
         # Refresh environment variables and verify installation paths
         $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
         refreshenv
 
-        # Wait for Memurai installation to complete and verify executable
+        # Enhanced Memurai verification with detailed logging
         $defaultPath = "C:\Program Files\Memurai Developer\memurai-developer.exe"
         $memuraiPath = $defaultPath
         $memuraiCli = $memuraiPath -replace "memurai-developer.exe", "memurai-cli.exe"
+
+        Write-Host "System Information:"
+        Write-Host "Windows Version: $(Get-WmiObject -class Win32_OperatingSystem).Version"
         Write-Host "Default Memurai path: $defaultPath"
         Write-Host "Current PATH: $env:PATH"
+
         $maxAttempts = 10
         $attempt = 0
         $success = $false
@@ -81,28 +95,18 @@ jobs:
                 }
 
                 Write-Host "Installing Memurai service..."
-                if (Get-Service -Name "memurai" -ErrorAction SilentlyContinue) {
-                    Write-Host "Stopping existing Memurai service..."
-                    Stop-Service -Name "memurai" -Force
-                    Start-Sleep -s 5
-                }
-
-                Write-Host "Using Memurai executable: $memuraiPath"
                 $process = Start-Process -FilePath $memuraiPath -ArgumentList "--service-install", "--port", "6379" -Wait -NoNewWindow -PassThru -ErrorAction Stop
                 if ($process.ExitCode -ne 0) {
-                    Write-Error "Failed to install Memurai service (Exit code: $($process.ExitCode))"
-                    Write-Host "Memurai executable path: $memuraiPath"
-                    Get-ChildItem "C:\Program Files\Memurai\" -Recurse
-                    exit 1
+                    throw "Service installation failed with exit code: $($process.ExitCode)"
                 }
 
                 Write-Host "Starting Memurai service..."
-                Start-Service -Name "memurai"
-                Start-Sleep -s 10
+                Start-Service -Name "memurai" -ErrorAction Stop
+                Start-Sleep -s 15
 
                 Write-Host "Verifying Memurai service..."
-                $maxRetries = 10
-                $retryDelay = 3
+                $maxRetries = 20  # Increased retries
+                $retryDelay = 8   # Increased delay
                 $success = $false
 
                 for ($i = 1; $i -le $maxRetries; $i++) {
@@ -112,6 +116,13 @@ jobs:
                         Write-Host "Service Status: $($status.Status)"
 
                         if ($status.Status -eq "Running") {
+                            # Enhanced error recovery
+                            if ($i -gt 1) {
+                                Write-Host "Attempting to flush Redis database..."
+                                & $memuraiCli flushdb
+                                Start-Sleep -s 2
+                            }
+
                             try {
                                 $ping = & $memuraiCli ping
                                 Write-Host "Memurai ping response: $ping"
@@ -129,20 +140,31 @@ jobs:
                                 }
                             } catch {
                                 Write-Warning "Redis operation failed: $_"
+                                Write-Host "Attempting service restart..."
+                                Restart-Service -Name "memurai" -ErrorAction SilentlyContinue
+                                Start-Sleep -s 10
+                                Get-EventLog -LogName Application -Source "Memurai" -Newest 10 | Format-List *
                             }
                         }
                     } catch {
                         Write-Warning "Service check failed: $_"
-                        Get-EventLog -LogName Application -Source "Memurai" -Newest 5 | Format-List *
+                        Get-EventLog -LogName Application -Source "Memurai" -Newest 10 | Format-List *
+                        # Attempt recovery
+                        Write-Host "Attempting service recovery..."
+                        Stop-Service -Name "memurai" -Force -ErrorAction SilentlyContinue
+                        Start-Sleep -s 5
+                        Start-Service -Name "memurai" -ErrorAction SilentlyContinue
                     }
                     Start-Sleep -s $retryDelay
                 }
 
+                # Enhanced test environment configuration
+                $env:OPENMIND_TEST_REDIS_RETRY_COUNT = "15"
+                $env:OPENMIND_TEST_REDIS_RETRY_DELAY = "5000"
+                $env:OPENMIND_TEST_REDIS_LOG_LEVEL = "DEBUG"
+
                 if (-not $success) {
-                    Write-Error "Failed to verify Memurai service after $maxRetries attempts"
-                    Get-Service -Name "memurai" | Format-List *
-                    Get-EventLog -LogName Application -Source "Memurai" -Newest 10
-                    exit 1
+                    throw "Failed to verify Memurai service after $maxRetries attempts. Check logs for details."
                 }
 
                 # Set environment variables for tests
@@ -154,8 +176,8 @@ jobs:
                 echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $env:GITHUB_ENV
 
             } catch {
-                Write-Error "Exception while managing Memurai service: $_"
-                Get-Service -Name "memurai" | Format-List *
+                Write-Error "Critical error in Memurai setup: $_"
+                Get-Service -Name "memurai" -ErrorAction SilentlyContinue | Format-List *
                 Get-EventLog -LogName Application -Source "Memurai" -Newest 10
                 exit 1
             }
@@ -188,14 +210,16 @@ jobs:
       env:
         OPENMIND_TEST_REDIS_RETRY_COUNT: 10
         OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
-      run: ctest --timeout 1024 -C Release -j ${{steps.cpu-cores.outputs.count}} -E "ts" --output-on-failure
+        OPENMIND_TEST_REDIS_LOG_LEVEL: DEBUG
+      run: ctest --timeout 1024 -C Release -j ${{steps.cpu-cores.outputs.count}} -E "ts" --output-on-failure --verbose
 
     - name: make check Debug
       working-directory: ${{github.workspace}}/build
       env:
         OPENMIND_TEST_REDIS_RETRY_COUNT: 10
         OPENMIND_TEST_REDIS_RETRY_DELAY: 3000
-      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}} -E "ts" --output-on-failure
+        OPENMIND_TEST_REDIS_LOG_LEVEL: DEBUG
+      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}} -E "ts" --output-on-failure --verbose
 
     - name: Install
       working-directory: ${{github.workspace}}/build
