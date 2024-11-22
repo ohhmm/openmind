@@ -138,20 +138,13 @@ Valuable& Modulo::sq() {
 }
 
 bool Modulo::IsComesBefore(const Modulo& mod) const {
-    auto& modDividend = mod.getDividend();
-    auto equalDividends = getDividend() == modDividend;
-    if (equalDividends) {
+    // First compare divisors (Y^4 in both cases)
+    if (getDevisor() != mod.getDevisor()) {
         return getDevisor().IsComesBefore(mod.getDevisor());
     }
-    auto equalDivisors = getDevisor() == mod.getDevisor();
-    if (equalDivisors) {
-        return getDividend().IsComesBefore(modDividend);
-    }
-    auto is = _1.IsComesBefore(modDividend);
-    if (!is) {
-        is = _1 == modDividend && mod.get2().IsComesBefore(_2);
-    }
-    return is;
+
+    // If divisors are equal, compare dividends (1 vs -4*Y^3)
+    return getDividend().IsComesBefore(mod.getDividend());
 }
 
 bool Modulo::IsComesBefore(const Valuable& v) const
