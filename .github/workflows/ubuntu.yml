@@ -4,8 +4,23 @@ on: [push]
 
 jobs:
   build-in-ubuntu:
-
     runs-on: ubuntu-22.04
+    env:
+      OPENMIND_TEST_REDIS_HOST: "127.0.0.1"
+      OPENMIND_TEST_REDIS_PORT: 6379
+      OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+      OPENMIND_TEST_REDIS_RETRY_DELAY: 500
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --redis-server-config "maxclients 10000"
 
     steps:
     - uses: actions/checkout@v4
@@ -28,12 +43,36 @@ jobs:
           sudo add-apt-repository -y ppa:mhier/libboost-latest
           sudo apt update
           sudo apt upgrade -y
-          sudo apt install -y libboost1.83-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
+          sudo apt install -y libboost1.83-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build libhiredis-dev
+    - name: Verify Redis Service
+      timeout-minutes: 2
+      run: |
+        echo "Checking Redis service configuration..."
+        max_attempts=20
+        attempt=1
+        until redis-cli -h 127.0.0.1 ping || [ $attempt -ge $max_attempts ]; do
+          echo "Attempt $attempt/$max_attempts: Waiting for Redis..."
+          sleep 1
+          ((attempt++))
+        done
+        if [ $attempt -ge $max_attempts ]; then
+          echo "Redis service failed to start after $max_attempts attempts"
+          exit 1
+        fi
+        echo "Redis is ready. Checking configuration:"
+        echo "1. Server Info:"
+        redis-cli -h 127.0.0.1 info server
+        echo "2. Memory Info:"
+        redis-cli -h 127.0.0.1 info memory
+        echo "3. Client List:"
+        redis-cli -h 127.0.0.1 client list
+        echo "4. Config Get:"
+        redis-cli -h 127.0.0.1 config get "*maxmemory*"
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -G "Ninja Multi-Config"
+      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -DOPENMIND_STORAGE_REDIS=ON -G "Ninja Multi-Config"
     # - name: Install prerequisites
     #   working-directory: ${{github.workspace}}/build
     #   run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`
@@ -42,13 +81,28 @@ jobs:
     #   run: cmake ${{github.workspace}}
     - name: Build
       working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_HOST: "127.0.0.1"
+        OPENMIND_TEST_REDIS_PORT: 6379
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 500
       run: cmake --build ${{github.workspace}}/build -j `nproc` --config Debug
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build -j `nproc` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_HOST: "127.0.0.1"
+        OPENMIND_TEST_REDIS_PORT: 6379
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 500
       run: ctest . -j`nproc` -C Release -E "ts" --rerun-failed --output-on-failure
     - name: Check
       working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_HOST: "127.0.0.1"
+        OPENMIND_TEST_REDIS_PORT: 6379
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 500
       run: ctest . -j`nproc` -C Debug -E "ts" --rerun-failed --output-on-failure

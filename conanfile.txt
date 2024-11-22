@@ -1,0 +1,12 @@
+[requires]
+boost/1.81.0
+hiredis/0.13.0
+
+[generators]
+cmake
+cmake_find_package
+cmake_paths
+
+[options]
+boost:shared=True
+hiredis:shared=False

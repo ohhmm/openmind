@@ -1,0 +1,89 @@
+name: C/C++ CI MSVC
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      OPENMIND_TEST_REDIS_HOST: "127.0.0.1"
+      OPENMIND_TEST_REDIS_PORT: 6379
+      OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+      OPENMIND_TEST_REDIS_RETRY_DELAY: 1000
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --redis-server-config "maxclients 10000"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '3508985146f1b1d248c67ead13f8f54be5b4f5da'
+
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Verify Redis Service
+      run: |
+        choco install redis-64
+        $env:PATH = "$env:PATH;C:\Program Files\Redis"
+
+        $maxAttempts = 30
+        $attempts = 0
+        do {
+            $attempts++
+            Write-Host "Attempt $attempts of $maxAttempts: Checking Redis availability..."
+            try {
+                Write-Host "1. Checking Redis ping..."
+                $result = redis-cli -h 127.0.0.1 ping
+                if ($result -eq 'PONG') {
+                    Write-Host "2. Getting Redis info..."
+                    redis-cli -h 127.0.0.1 info server
+                    Write-Host "3. Checking memory info..."
+                    redis-cli -h 127.0.0.1 info memory
+                    Write-Host "4. Checking client connections..."
+                    redis-cli -h 127.0.0.1 client list
+                    Write-Host "5. Configuring Redis..."
+                    redis-cli -h 127.0.0.1 config set maxclients 10000
+                    Write-Host "Redis is fully operational!"
+                    break
+                }
+            } catch {
+                Write-Host "Redis check failed: $_"
+            }
+            if ($attempts -eq $maxAttempts) {
+                Write-Error "Redis failed to become available after $maxAttempts attempts"
+                exit 1
+            }
+            Start-Sleep -Seconds 2
+        } while ($true)
+
+    - name: Configure CMake
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake `
+          -DOPENMIND_BUILD_SAMPLES=OFF `
+          -DOPENMIND_STORAGE_REDIS=ON
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config Release
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      env:
+        OPENMIND_TEST_REDIS_HOST: "127.0.0.1"
+        OPENMIND_TEST_REDIS_PORT: 6379
+        OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+        OPENMIND_TEST_REDIS_RETRY_DELAY: 1000
+      run: ctest -C Release -E ts --rerun-failed --output-on-failure

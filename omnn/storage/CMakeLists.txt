@@ -1,6 +1,6 @@
 option(OPENMIND_STORAGE_FOUNDATIONDB "Use Apple FoundationDB library for one of the multistorage levels" NO)
 option(OPENMIND_STORAGE_LEVELDB "Use Google LevelDB library for one of the multistorage levels" ON)
-option(OPENMIND_STORAGE_REDIS "Use Redis for distributed caching" OFF)
+option(OPENMIND_STORAGE_REDIS "Use Redis for caching" ON)
 
 set(DEPENDENCIES rt)
 if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE_REDIS)
@@ -24,6 +24,19 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE
     endif()
 
 endif(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE_REDIS)
+
+if(OPENMIND_STORAGE_REDIS)
+    find_package(hiredis 0.13.0 REQUIRED)
+    if(NOT TARGET hiredis::hiredis)
+        message(FATAL_ERROR "hiredis target not found. Please ensure hiredis is properly installed with vcpkg or system package manager.")
+    endif()
+    list(APPEND DEPENDENCIES hiredis::hiredis)
+    add_compile_definitions(HIREDIS_VERSION="${hiredis_VERSION}")
+    message(STATUS "Redis support enabled. Using hiredis version ${hiredis_VERSION}")
+    if(WIN32)
+        message(STATUS "On Windows, ensure Redis server is running at localhost:6379 for tests")
+    endif()
+endif()
 
 lib(${DEPENDENCIES})
 

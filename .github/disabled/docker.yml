@@ -4,29 +4,87 @@ on: []  # Workflow disabled
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     container:
-        image: ohhmm/openmind:latest
+      image: ohhmm/openmind:latest
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --redis-server-config "maxclients 10000"
 
     steps:
       - uses: actions/checkout@v3
       - name: Check for dockerenv file
         run: (ls /.dockerenv && echo Found dockerenv && which clang++) || (echo No dockerenv)
 
+      - name: Install Redis dependencies
+        run: |
+          emerge --quiet '>=dev-libs/hiredis-0.13.0'
+          emerge --info dev-libs/hiredis
+          redis-cli -h redis ping || echo "Redis not responding yet"
+
+      - name: Wait for Redis
+        timeout-minutes: 2
+        run: |
+          max_attempts=20
+          attempt=1
+          until redis-cli -h redis ping || [ $attempt -ge $max_attempts ]; do
+            echo "Attempt $attempt/$max_attempts: Waiting for Redis..."
+            if [ $attempt -eq 1 ] || [ $((attempt % 5)) -eq 0 ]; then
+              echo "Checking Redis server status..."
+              redis-cli -h redis info server || echo "Could not get server info"
+              netstat -an | grep 6379 || echo "Port 6379 not found in netstat"
+            fi
+            sleep 1
+            ((attempt++))
+          done
+          if [ $attempt -ge $max_attempts ]; then
+            echo "Redis service failed to start after $max_attempts attempts"
+            redis-cli -h redis info server || echo "Could not get server info"
+            exit 1
+          fi
+          echo "Redis is ready"
+          redis-cli -h redis info server
+
       - name: Create Build Dir
         run: cmake -E make_directory ./build
 
       - name: Configure
         working-directory: ./build
+        env:
+          OPENMIND_TEST_REDIS_HOST: redis
+          OPENMIND_TEST_REDIS_PORT: 6379
+          OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+          OPENMIND_TEST_REDIS_RETRY_DELAY: 1000
         run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_CXX_COMPILER=/usr/lib/llvm/17/bin/clang-17 -DCMAKE_C_COMPILER=/usr/lib/llvm/17/bin/clang-17 \
-          -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
+          -DOPENMIND_BUILD_SAMPLES=OFF \
+          -DOPENMIND_STORAGE_REDIS=ON -DOPENMIND_BUILD_TESTS=ON
+
+      # - name: Install prerequisites
+      #   working-directory: ./build
+      #   run: cmake --build . --target prerequisites -j `nproc`
+
+      # - name: Reconfigure to detect newly installed prerequisites
+      #   working-directory: ./build
+      #   run: cmake .
 
       - name: Build
         run: cmake --build build
 
       - name: Check
         working-directory: ./build
+        env:
+          OPENMIND_TEST_REDIS_HOST: redis
+          OPENMIND_TEST_REDIS_PORT: 6379
+          OPENMIND_TEST_REDIS_RETRY_COUNT: 3
+          OPENMIND_TEST_REDIS_RETRY_DELAY: 500
         run: ctest . -j`nproc` -E ts --rerun-failed --output-on-failure
-
