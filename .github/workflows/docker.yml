@@ -14,6 +14,11 @@ jobs:
       - name: Check for dockerenv file
         run: (ls /.dockerenv && echo Found dockerenv && which clang++) || (echo No dockerenv)
 
+      - name: Install Dependencies
+        run: |
+          apt-get update
+          apt-get install -y libhiredis-dev pkg-config
+
       - name: Create Build Dir
         run: cmake -E make_directory ./build
 
@@ -21,7 +26,7 @@ jobs:
         working-directory: ./build
         run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug \
           -DCMAKE_CXX_COMPILER=/usr/lib/llvm/17/bin/clang-17 -DCMAKE_C_COMPILER=/usr/lib/llvm/17/bin/clang-17 \
-          -DOPENMIND_BUILD_SAMPLES=OFF
+          -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_STORAGE_REDIS=ON
 
       # - name: Install prerequisites
       #   working-directory: ./build
@@ -37,4 +42,3 @@ jobs:
       - name: Check
         working-directory: ./build
         run: ctest . -j`nproc` -E ts --rerun-failed --output-on-failure
-

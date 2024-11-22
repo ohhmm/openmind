@@ -217,6 +217,12 @@ elseif(OPENMIND_USE_CONAN)
 	endif()
 endif()
 
+# Set vcpkg toolchain file path
+if(OPENMIND_USE_VCPKG)
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "Vcpkg toolchain file")
+endif()
+
 if (NOT Boost_FOUND)
 	if (OPENMIND_USE_VCPKG)
 		unset(Boost_DIR CACHE)
@@ -394,6 +400,12 @@ if(OPENMIND_USE_VCPKG)
 endif()
 if(NOT MSVC AND NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)
 	list(APPEND BOOST_TEST_LINK_LIBS Boost::test_exec_monitor)
+endif()
+
+# Find hiredis package
+if(OPENMIND_STORAGE_REDIS)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(HIREDIS REQUIRED hiredis)
 endif()
 
 IF (Boost_FOUND)
