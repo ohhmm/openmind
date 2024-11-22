@@ -16,8 +16,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          emerge --sync
-          emerge -q dev-libs/hiredis dev-util/pkgconfig
+          emerge-webrsync
+          emerge --getbinpkg=y --usepkg=y -q dev-libs/hiredis dev-util/pkgconfig
 
       - name: Create Build Dir
         run: cmake -E make_directory ./build
