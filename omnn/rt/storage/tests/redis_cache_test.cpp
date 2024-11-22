@@ -6,7 +6,6 @@
 #include <chrono>
 #include <thread>
 #include <cstdlib>
-#include <boost/test/included/unit_test.hpp>
 #include <boost/test/unit_test_monitor.hpp>
 
 #ifdef OPENMIND_STORAGE_REDIS
@@ -107,6 +106,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 #ifdef BOOST_TEST_DYN_LINK
 bool init_unit_test() {
+    boost::unit_test::framework::master_test_suite().p_name.value = "redis_cache_test";
     return true;
 }
 
