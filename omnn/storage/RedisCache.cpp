@@ -2,7 +2,7 @@
 
 #ifdef OPENMIND_STORAGE_REDIS
 
-#include <hiredis/hiredis.h>
+#include <boost/redis.hpp>
 #include <stdexcept>
 #include <cstdarg>
 
