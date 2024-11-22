@@ -7,7 +7,7 @@
 #include <string>
 
 
-using namespace omnn::rt::storage; 
+using namespace omnn::rt::storage;
 
 
 LevelDbCache::LevelDbCache(const std::string_view& path)
@@ -34,6 +34,20 @@ bool LevelDbCache::Set(const std::string_view &key, const std::string_view &v) {
 bool LevelDbCache::Clear(const std::string_view &key) {
 	auto _status = _db->Delete(leveldb::WriteOptions(), static_cast<const std::string>(key));
 	return _status.ok();
+}
+
+bool LevelDbCache::ResetAllDB(const path_str_t& path) {
+    // Delete all keys in the database
+    auto it = _db->NewIterator(leveldb::ReadOptions());
+    for (it->SeekToFirst(); it->Valid(); it->Next()) {
+        auto status = _db->Delete(leveldb::WriteOptions(), it->key());
+        if (!status.ok()) {
+            delete it;
+            return false;
+        }
+    }
+    delete it;
+    return true;
 }
 
 LevelDbCache::~LevelDbCache() {
