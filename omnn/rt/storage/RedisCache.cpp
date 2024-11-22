@@ -110,6 +110,10 @@ std::unique_ptr<redisReply, void(*)(redisReply*)> RedisCache::executeCommand(con
 }
 
 std::string RedisCache::GetOne(const std::string_view& key) {
+    if (key.empty()) {
+        throw std::invalid_argument("Key cannot be empty");
+    }
+
     auto reply = executeCommand("GET %b", key.data(), key.size());
 
     if (reply->type == REDIS_REPLY_NIL) {
@@ -124,10 +128,12 @@ std::string RedisCache::GetOne(const std::string_view& key) {
 }
 
 bool RedisCache::Set(const std::string_view& key, const std::string_view& v) {
-    auto reply = executeCommand("SET %b %b", key.data(), key.size(), v.data(), v.size());
+    if (key.empty()) {
+        throw std::invalid_argument("Key cannot be empty");
+    }
 
-    return reply->type == REDIS_REPLY_STATUS &&
-           std::string_view(reply->str, reply->len) == "OK";
+    auto reply = executeCommand("SET %b %b", key.data(), key.size(), v.data(), v.size());
+    return reply->type == REDIS_REPLY_STATUS && std::string_view(reply->str, reply->len) == "OK";
 }
 
 bool RedisCache::Clear(const std::string_view& key) {
