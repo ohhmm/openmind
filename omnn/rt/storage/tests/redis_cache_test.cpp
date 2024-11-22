@@ -79,8 +79,25 @@ BOOST_AUTO_TEST_CASE(redis_cache_error_handling) {
         return;
     }
 
-    // Test connection to non-existent server
+    // Test connection error handling
     BOOST_CHECK_THROW(RedisCache("nonexistent.local", 6379), std::runtime_error);
+
+    RedisCache cache;
+
+    // Test invalid key operations
+    BOOST_CHECK_THROW(cache.GetOne(""), std::invalid_argument);
+    BOOST_CHECK_THROW(cache.Set("", "value"), std::invalid_argument);
+
+    // Test large value handling
+    std::string large_value(1024 * 1024, 'x');  // 1MB string
+    BOOST_CHECK(cache.Set("large_key", large_value));
+    BOOST_CHECK_EQUAL(cache.GetOne("large_key"), large_value);
+
+#ifdef OPENMIND_STORAGE_REDIS_MEMURAI
+    BOOST_TEST_MESSAGE("Running Memurai-specific error handling tests");
+#else
+    BOOST_TEST_MESSAGE("Running Redis-specific error handling tests");
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()
