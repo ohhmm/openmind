@@ -7,7 +7,7 @@
 #include <string>
 
 
-using namespace omnn::storage; 
+using namespace omnn::storage;
 
 
 LevelDbCache::LevelDbCache(const std::string_view& path)
