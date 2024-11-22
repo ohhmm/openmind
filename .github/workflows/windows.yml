@@ -26,21 +26,35 @@ jobs:
     - name: Install Redis Dependencies
       run: |
         vcpkg install hiredis:x64-windows
-        choco install memurai-developer.install
+        choco install memurai-developer.install --no-progress
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine")
         $memuraiPath = "C:\Program Files\Memurai\memurai-developer.exe"
+        Write-Host "Stopping any existing Memurai service..."
+        & $memuraiPath --service-stop 2>&1 | Out-Null
+        Write-Host "Installing Memurai service..."
         & $memuraiPath --service-install
+        Write-Host "Starting Memurai service..."
         & $memuraiPath --service-start
-        Start-Sleep -s 10  # Wait for Memurai service to start
+        Write-Host "Waiting for service to be ready..."
+        Start-Sleep -s 15  # Increased wait time for service startup
         $retryCount = 0
         do {
-          $ping = & "C:\Program Files\Memurai\memurai-cli.exe" ping
-          if ($ping -eq "PONG") { break }
-          Start-Sleep -s 2
-          $retryCount++
+            try {
+                $ping = & "C:\Program Files\Memurai\memurai-cli.exe" ping
+                if ($ping -eq "PONG") {
+                    Write-Host "Memurai service is responding!"
+                    break
+                }
+            } catch {
+                Write-Warning "Ping attempt failed: $_"
+            }
+            Start-Sleep -s 3
+            $retryCount++
+            Write-Host "Retry attempt $retryCount..."
         } while ($retryCount -lt 5)
         if ($ping -ne "PONG") {
-          Write-Error "Memurai server failed to respond after multiple attempts"
-          exit 1
+            Write-Error "Memurai server failed to respond after multiple attempts"
+            exit 1
         }
 
     - name: Configure
