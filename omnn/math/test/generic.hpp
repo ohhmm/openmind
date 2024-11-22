@@ -51,20 +51,25 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function, bool compi
             //std::cout << " etalon(" << x << ',' << y << ") = " << etalon << std::endl;
 
             auto copy = expressionXY;
-            Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
-            copy.eval(evalMap);
-            copy.optimize();
-            //std::cout << " evaluated(" << x << ',' << y << ") = " << copy << std::endl;
-            BOOST_TEST(copy.IsZero() == etalon);
+            {
+                Valuable::OptimizeOff off;  // Disable optimization during evaluation
+                Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
+                copy.eval(evalMap);
+                copy.optimize();
+                bool result = copy.IsZero();
+                BOOST_TEST(result == etalon,
+                    "Eval path failed: x=" << x << ", y=" << y <<
+                    ", expected=" << etalon << ", got=" << result);
+            }
 
             // FIXME: should be always on
             if (compilambda) {
                 copy = lambda(x, y);
                 //std::cout << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
-                BOOST_TEST(copy.IsZero() == etalon);
-                if(copy.IsZero() != etalon){
-                    std::cout << "Expected " << (etalon ? "true" : "false") << " lambda(" << x << ',' << y << ") = " << copy << std::endl;
-                }
+                bool result = copy.IsZero();
+                BOOST_TEST(result == etalon,
+                    "Lambda path failed: x=" << x << ", y=" << y <<
+                    ", expected=" << etalon << ", got=" << result);
             }
         }
     }

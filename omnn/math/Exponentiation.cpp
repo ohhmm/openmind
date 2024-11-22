@@ -982,57 +982,66 @@ namespace omnn::math {
         return out;
     }
 
-    bool Exponentiation::IsComesBefore(const Valuable& v) const
-    {
-        auto is = FindVa() && v.IsSimple();
-        if (is)
-        {}
-        else if (v.IsExponentiation())
-        {
-            auto& e = v.as<Exponentiation>();
-            bool baseIsVa = getBase().IsVa();
-            bool vbaseIsVa = e.getBase().IsVa();
-            if (baseIsVa && vbaseIsVa)
-                is = getExponentiation() == e.getExponentiation() ? getBase().IsComesBefore(e.getBase()) : getExponentiation() > e.getExponentiation();
-            else if(baseIsVa)
-                is = false;
-            else if(vbaseIsVa)
-                is = true;
-            else if(getBase() == e.ebase())
-                is = getExponentiation().IsComesBefore(e.getExponentiation());
-            else if(getExponentiation() == e.getExponentiation())
-                is = getBase().IsComesBefore(e.getBase());
-            else
-            {
-                auto c = Complexity();
-                auto ec = e.Complexity();
-                if (c != ec)
-                    is = c > ec;
-                else {
-                    is = getBase().IsComesBefore(e.getBase()) ||
-                        (!e.ebase().IsComesBefore(ebase()) && getExponentiation().IsComesBefore(e.getExponentiation())); //  || str().length() > e->str().length();
-    //                auto expComesBefore = eexp().IsComesBefore(e->eexp());
-    //                auto ebase()ComesBefore = ebase().IsComesBefore(e->ebase());
-    //                is = expComesBefore==ebase()ComesBefore || str().length() > e->str().length();
-                }
+    bool Exponentiation::IsComesBefore(const Exponentiation& e) const {
+        bool is = {};
+        bool baseIsVa = getBase().IsVa();
+        bool vbaseIsVa = e.getBase().IsVa();
+        if (baseIsVa && vbaseIsVa)
+            is = getExponentiation() == e.getExponentiation() ? getBase().IsComesBefore(e.getBase())
+                                                              : getExponentiation() > e.getExponentiation();
+        else if (baseIsVa)
+            is = false;
+        else if (vbaseIsVa)
+            is = true;
+        else if (getBase() == e.ebase())
+            is = getExponentiation().IsComesBefore(e.getExponentiation());
+        else if (getExponentiation() == e.getExponentiation())
+            is = getBase().IsComesBefore(e.getBase());
+        else {
+            auto c = Complexity();
+            auto ec = e.Complexity();
+            if (c != ec)
+                is = c > ec;
+            else {
+                is = getBase().IsComesBefore(e.getBase()) ||
+                     (!e.ebase().IsComesBefore(ebase()) &&
+                      getExponentiation().IsComesBefore(
+                          e.getExponentiation())); //  || str().length() > e->str().length();
+                //                auto expComesBefore = eexp().IsComesBefore(e->eexp());
+                //                auto ebase()ComesBefore = ebase().IsComesBefore(e->ebase());
+                //                is = expComesBefore==ebase()ComesBefore || str().length() > e->str().length();
             }
         }
-        else if(v.IsProduct())
-        {
-            is = !(v.IsComesBefore(*this) || operator==(v));
+        return is;
+    }
+
+    bool Exponentiation::IsComesBefore(const Valuable& value) const
+    {
+        if (value.IsExponentiation()) {
+            return IsComesBefore(value.as<Exponentiation>());
         }
-        else if (auto degreeDiff = getMaxVaExp() - v.getMaxVaExp(); degreeDiff != 0)
+
+        auto is = FindVa() && value.IsSimple();
+        if (is)
+        {
+            is = {};
+        }
+        else if(value.IsProduct())
+        {
+            is = !(value.IsComesBefore(*this) || operator==(value));
+        }
+        else if (auto degreeDiff = getMaxVaExp() - value.getMaxVaExp(); degreeDiff != 0)
         {
             is = degreeDiff > 0;
         }
-        else if (v.IsSimple())
+        else if (value.IsSimple())
             is = true;
 //        else if(v.IsFraction())
 //        {is=}
-        else if(v.IsVa())
+        else if(value.IsVa())
             is = !!FindVa();
-        else if(v.IsSum())
-            is = IsComesBefore(*v.as<Sum>().begin());
+        else if(value.IsSum())
+            is = IsComesBefore(*value.as<Sum>().begin());
         else
             IMPLEMENT
 

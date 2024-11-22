@@ -605,7 +605,12 @@ namespace math {
     
     bool Integer::IsComesBefore(const Valuable& v) const
     {
-        return v.IsInt() && *this > v;
+        // For non-integer values, maintain consistent ordering
+        if (!v.IsInt())
+            return false;
+
+        // Compare using the underlying arbitrary value for consistent ordering
+        return arbitrary < v.ca();
     }
     
     Valuable Integer::InCommonWith(const Valuable& v) const
@@ -700,23 +705,46 @@ namespace math {
 
     bool Integer::operator <(const Valuable& v) const
     {
-        if (v.IsInt())
+        // Handle same type comparison first
+        if (v.IsInt()) {
             return arbitrary < v.ca();
-        else if (v.IsFraction())
-            return !(v.operator<(*this) || operator==(v));
-        else if(v.IsMInfinity())
-            return {};
-        else if(v.IsInfinity())
+        }
+
+        // Handle special values
+        if (v.IsMInfinity()) {
+            return false;
+        }
+
+        if (v.IsInfinity()) {
             return true;
-        else if (!v.FindVa()) {
-            double _1 = boost::numeric_cast<double>(arbitrary);
-            double _2 = static_cast<double>(v);
-            if(_1 == _2) {
-                IMPLEMENT
+        }
+
+        // For fractions and non-variable types, use numeric comparison
+        if (v.IsFraction() || !v.FindVa()) {
+            // Handle special case when this is 0
+            if (arbitrary.is_zero()) {
+                return v.Sign() > 0;
             }
-            return _1 < _2;
-       } else
-            return base::operator <(v);
+
+            // Special handling for power operations (e.g., 1^(1/2))
+            if (v.IsExponentiation()) {
+                auto base = v.GetBase();
+                auto exp = v.GetExponent();
+                if (base == constants::one && exp.IsFraction()) {
+                    return false;  // 1^(1/n) = 1, so Integer is never less than it
+                }
+            }
+
+            // Convert both to double for comparison, maintaining ordering
+            double thisVal = boost::numeric_cast<double>(arbitrary);
+            double otherVal = static_cast<double>(v);
+            if (std::abs(thisVal - otherVal) < std::numeric_limits<double>::epsilon()) {
+                return false;  // Consider equal values not less than each other
+            }
+            return thisVal < otherVal;
+        }
+
+        return base::operator <(v);
     }
 
     bool Integer::operator ==(const int& i) const
@@ -737,11 +765,13 @@ namespace math {
     bool Integer::operator ==(const Valuable& v) const
     {
         if (v.IsInt())
-            return operator ==(v.as<Integer>());
+            return arbitrary == v.ca();
         else if(v.FindVa())
             return false;
+        else if (v.IsFraction() || v.IsInfinity() || v.IsMInfinity())
+            return false;
         else
-            return v.operator==(*this);
+            return static_cast<double>(*this) == static_cast<double>(v);
     }
 
     std::ostream& Integer::print(std::ostream& out) const

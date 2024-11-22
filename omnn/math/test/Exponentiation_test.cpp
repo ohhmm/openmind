@@ -67,12 +67,18 @@ BOOST_AUTO_TEST_CASE(Compare_test)
 BOOST_AUTO_TEST_CASE(Exponentiation_Order_test) {
     auto _1 = "(((Y^2) + -1*sqrt((X^2)) + -2*Y + X + 1)^(-1))"_v;
     auto _2 = Exponentiation{9, 2};
-    BOOST_TEST(_1 != _2);
-    auto before = _1.IsComesBefore(_2);
-    auto after = _2.IsComesBefore(_1);
-    BOOST_TEST(before != after);
-    Product{_1, _2};
-    Sum{_1, _2};
+    auto Check = [&]() {
+        BOOST_TEST(_1 != _2);
+        auto before = _1.IsComesBefore(_2);
+        auto after = _2.IsComesBefore(_1);
+        BOOST_TEST(before != after);
+        Product{_1, _2};
+        Sum{_1, _2};
+    };
+    Check();
+
+    _1 = Exponentiation{"X"_va, 2};
+    Check();
 }
 
 BOOST_AUTO_TEST_CASE(Exponentiation_Simplification_tests)
