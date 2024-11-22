@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
@@ -134,7 +136,7 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.85.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.83.0 CACHE STRING "Boost library version to use")
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
@@ -283,9 +285,19 @@ include(ExternalProject)
 
 # Find Redis/Memurai dependencies
 if(OPENMIND_STORAGE_REDIS)
-    find_package(hiredis REQUIRED)
-    if(WIN32 AND OPENMIND_STORAGE_REDIS_MEMURAI)
-        message(STATUS "Using Memurai for Windows Redis implementation")
+    if(NOT WIN32)
+        # Use our custom Find module directly
+        list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
+        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+        find_package(hiredis MODULE REQUIRED)
+        message(STATUS "HIREDIS_FOUND: ${HIREDIS_FOUND}")
+        if(NOT HIREDIS_FOUND)
+            message(FATAL_ERROR "Could not find hiredis. Please install libhiredis-dev package.")
+        endif()
+    else()
+        if(OPENMIND_STORAGE_REDIS_MEMURAI)
+            message(STATUS "Using Memurai for Windows Redis implementation")
+        endif()
     endif()
 endif()
 
@@ -463,8 +475,9 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib
                     )
 
 fold(
-    omnn
     OpenMind
+    Examples
+    lang
 )
 
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL _openmind_hook_end_of_configure())
@@ -481,8 +494,8 @@ function(_openmind_hook_end_of_configure)
 	)
 endfunction()
 
-# Update storage paths
+# Update storage paths - only process if not already added
 set(STORAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/omnn/rt/storage")
-if(EXISTS "${STORAGE_DIR}")
+if(EXISTS "${STORAGE_DIR}" AND NOT TARGET storage)
     add_subdirectory("${STORAGE_DIR}")
 endif()
