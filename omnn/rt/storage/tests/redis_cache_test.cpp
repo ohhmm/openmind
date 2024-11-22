@@ -1,12 +1,13 @@
 #define BOOST_TEST_MODULE redis_cache_test
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_NO_MAIN
 #include <boost/test/unit_test.hpp>
 #include "../CacheBase.h"
 #include "../RedisCache.h"
 #include <chrono>
 #include <thread>
 #include <cstdlib>
+#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test_monitor.hpp>
 
 #ifdef OPENMIND_STORAGE_REDIS
 
@@ -104,10 +105,12 @@ BOOST_AUTO_TEST_SUITE_END()
 
 #endif // OPENMIND_STORAGE_REDIS
 
+#ifdef BOOST_TEST_DYN_LINK
 bool init_unit_test() {
     return true;
 }
 
 int main(int argc, char* argv[]) {
-    return boost::unit_test::unit_test_main(init_unit_test, argc, argv);
+    return boost::unit_test::unit_test_main(&init_unit_test, argc, argv);
 }
+#endif
