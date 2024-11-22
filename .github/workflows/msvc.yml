@@ -24,7 +24,8 @@ jobs:
 
     - name: Install Redis Dependencies
       run: |
-        vcpkg install hiredis:x64-windows
+        # Install dependencies using vcpkg manifest mode
+        vcpkg install --triplet x64-windows
         choco install memurai-developer.install --no-progress --params="'/Port:6379'"
 
         # Refresh environment variables and verify installation paths
@@ -32,111 +33,132 @@ jobs:
         refreshenv
 
         # Wait for Memurai installation to complete and verify executable
-        $memuraiPath = "C:\Program Files\Memurai\memurai-developer.exe"
-        $memuraiCli = "C:\Program Files\Memurai\memurai-cli.exe"
-        $maxAttempts = 5
+        $defaultPath = "C:\Program Files\Memurai Developer\memurai-developer.exe"
+        $memuraiPath = $defaultPath
+        $memuraiCli = $memuraiPath -replace "memurai-developer.exe", "memurai-cli.exe"
+        Write-Host "Default Memurai path: $defaultPath"
+        Write-Host "Current PATH: $env:PATH"
+        $maxAttempts = 10
         $attempt = 0
         $success = $false
 
         do {
-            $attempt++
-            Write-Host "Attempt $attempt of $maxAttempts to locate Memurai executable..."
+            Write-Host "Checking Memurai installation (Attempt $attempt of $maxAttempts)..."
 
             if (Test-Path $memuraiPath) {
-                Write-Host "Found Memurai executable at: $memuraiPath"
+                Write-Host "Found Memurai at default path: $memuraiPath"
                 $success = $true
-                break
+            } else {
+                Write-Host "Default path not found, searching Program Files..."
+                Get-ChildItem -Path @(
+                    "C:\Program Files",
+                    "C:\Program Files (x86)"
+                ) -Recurse -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -eq "memurai-developer.exe" } |
+                ForEach-Object {
+                    Write-Host "Found alternative path: $($_.FullName)"
+                    $memuraiPath = $_.FullName
+                    $success = $true
+                }
+            }
+
+            if (-not $success) {
+                Write-Host "Searching for Memurai in Program Files..."
+                Get-ChildItem -Path "C:\Program Files" -Recurse -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Name -like "*memurai*.exe" } |
+                    ForEach-Object { Write-Host "Found: $($_.FullName)" }
             }
 
             Start-Sleep -Seconds 5
             $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
             refreshenv
-        } while ($attempt -lt $maxAttempts)
 
-        if (-not $success) {
-            Write-Error "Failed to locate Memurai executable after $maxAttempts attempts"
-            Get-ChildItem "C:\Program Files\Memurai\" -Recurse
-            exit 1
-        }
-
-        Write-Host "Configuring Memurai service..."
-        if (Get-Service -Name "memurai" -ErrorAction SilentlyContinue) {
-            Write-Host "Stopping existing Memurai service..."
-            Stop-Service -Name "memurai" -Force
-            Start-Sleep -s 5
-        }
-
-        Write-Host "Installing Memurai service..."
-        Start-Process -FilePath $memuraiPath -ArgumentList "--service-install", "--port", "6379" -Wait -NoNewWindow -PassThru | ForEach-Object {
-            if ($_.ExitCode -ne 0) {
-                Write-Error "Failed to install Memurai service (Exit code: $($_.ExitCode))"
-                exit 1
-            }
-        }
-
-        Write-Host "Starting Memurai service..."
-        Start-Service -Name "memurai"
-        Start-Sleep -s 10
-
-        Write-Host "Verifying Memurai service..."
-        $maxRetries = 10
-        $retryDelay = 3
-        $success = $false
-
-        for ($i = 1; $i -le $maxRetries; $i++) {
-            Write-Host "Verification attempt $i of $maxRetries..."
             try {
-                $status = Get-Service -Name "memurai" -ErrorAction Stop
-                Write-Host "Service Status: $($status.Status)"
+                if (-not $success) {
+                    Write-Error "Memurai executable not found after $maxAttempts attempts"
+                    Get-ChildItem "C:\Program Files" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*memurai*" } | Format-Table FullName
+                    exit 1
+                }
 
-                if ($status.Status -eq "Running") {
+                Write-Host "Installing Memurai service..."
+                if (Get-Service -Name "memurai" -ErrorAction SilentlyContinue) {
+                    Write-Host "Stopping existing Memurai service..."
+                    Stop-Service -Name "memurai" -Force
+                    Start-Sleep -s 5
+                }
+
+                Write-Host "Using Memurai executable: $memuraiPath"
+                $process = Start-Process -FilePath $memuraiPath -ArgumentList "--service-install", "--port", "6379" -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                if ($process.ExitCode -ne 0) {
+                    Write-Error "Failed to install Memurai service (Exit code: $($process.ExitCode))"
+                    Write-Host "Memurai executable path: $memuraiPath"
+                    Get-ChildItem "C:\Program Files\Memurai\" -Recurse
+                    exit 1
+                }
+
+                Write-Host "Starting Memurai service..."
+                Start-Service -Name "memurai"
+                Start-Sleep -s 10
+
+                Write-Host "Verifying Memurai service..."
+                $maxRetries = 10
+                $retryDelay = 3
+                $success = $false
+
+                for ($i = 1; $i -le $maxRetries; $i++) {
+                    Write-Host "Verification attempt $i of $maxRetries..."
                     try {
-                        $ping = & $memuraiCli ping
-                        Write-Host "Memurai ping response: $ping"
-                        if ($ping -eq "PONG") {
-                            Write-Host "Memurai service verified and responding!"
-                            # Test basic Redis operations
-                            & $memuraiCli set test_key test_value
-                            $testValue = & $memuraiCli get test_key
-                            Write-Host "Test key value: $testValue"
-                            if ($testValue -eq "test_value") {
-                                Write-Host "Basic Redis operations verified!"
-                                $success = $true
-                                break
+                        $status = Get-Service -Name "memurai" -ErrorAction Stop
+                        Write-Host "Service Status: $($status.Status)"
+
+                        if ($status.Status -eq "Running") {
+                            try {
+                                $ping = & $memuraiCli ping
+                                Write-Host "Memurai ping response: $ping"
+                                if ($ping -eq "PONG") {
+                                    Write-Host "Memurai service verified and responding!"
+                                    # Test basic Redis operations
+                                    & $memuraiCli set test_key test_value
+                                    $testValue = & $memuraiCli get test_key
+                                    Write-Host "Test key value: $testValue"
+                                    if ($testValue -eq "test_value") {
+                                        Write-Host "Basic Redis operations verified!"
+                                        $success = $true
+                                        break
+                                    }
+                                }
+                            } catch {
+                                Write-Warning "Redis operation failed: $_"
                             }
                         }
                     } catch {
-                        Write-Warning "Redis operation failed: $_"
+                        Write-Warning "Service check failed: $_"
+                        Get-EventLog -LogName Application -Source "Memurai" -Newest 5 | Format-List *
                     }
+                    Start-Sleep -s $retryDelay
                 }
+
+                if (-not $success) {
+                    Write-Error "Failed to verify Memurai service after $maxRetries attempts"
+                    Get-Service -Name "memurai" | Format-List *
+                    Get-EventLog -LogName Application -Source "Memurai" -Newest 10
+                    exit 1
+                }
+
+                # Set environment variables for tests
+                $env:OPENMIND_TEST_REDIS_RETRY_COUNT = "10"
+                $env:OPENMIND_TEST_REDIS_RETRY_DELAY = "3000"
+                [System.Environment]::SetEnvironmentVariable('OPENMIND_TEST_REDIS_RETRY_COUNT', '10', [System.EnvironmentVariableTarget]::Process)
+                [System.Environment]::SetEnvironmentVariable('OPENMIND_TEST_REDIS_RETRY_DELAY', '3000', [System.EnvironmentVariableTarget]::Process)
+                echo "OPENMIND_TEST_REDIS_RETRY_COUNT=10" >> $env:GITHUB_ENV
+                echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $env:GITHUB_ENV
+
             } catch {
-                Write-Warning "Service check failed: $_"
-                Get-EventLog -LogName Application -Source "Memurai" -Newest 5 | Format-List *
+                Write-Error "Exception while managing Memurai service: $_"
+                Get-Service -Name "memurai" | Format-List *
+                Get-EventLog -LogName Application -Source "Memurai" -Newest 10
+                exit 1
             }
-            Start-Sleep -s $retryDelay
-        }
-
-        if (-not $success) {
-            Write-Error "Failed to verify Memurai service after $maxRetries attempts"
-            Get-Service -Name "memurai" | Format-List *
-            Get-EventLog -LogName Application -Source "Memurai" -Newest 10
-            exit 1
-        }
-
-        # Set environment variables for tests
-        $env:OPENMIND_TEST_REDIS_RETRY_COUNT = "10"
-        $env:OPENMIND_TEST_REDIS_RETRY_DELAY = "3000"
-        [System.Environment]::SetEnvironmentVariable('OPENMIND_TEST_REDIS_RETRY_COUNT', '10', [System.EnvironmentVariableTarget]::Process)
-        [System.Environment]::SetEnvironmentVariable('OPENMIND_TEST_REDIS_RETRY_DELAY', '3000', [System.EnvironmentVariableTarget]::Process)
-        echo "OPENMIND_TEST_REDIS_RETRY_COUNT=10" >> $env:GITHUB_ENV
-        echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $env:GITHUB_ENV
-
-        if (-not $success) {
-            Write-Error "Failed to verify Memurai service after $maxRetries attempts"
-            Get-Service -Name "memurai" | Format-List *
-            Get-EventLog -LogName Application -Source "Memurai" -Newest 10
-            exit 1
-        }
 
     - name: Configure
       working-directory: ${{github.workspace}}/build
