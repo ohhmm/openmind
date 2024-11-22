@@ -1,10 +1,12 @@
-#define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE OpenMind_Redis_Cache_Tests
+#define BOOST_TEST_DYN_LINK  // Add dynamic linking for debug builds
 #include <boost/test/unit_test.hpp>
 #include "../CacheBase.h"
 #include "../RedisCache.h"
 
 #ifdef OPENMIND_STORAGE_REDIS
+
+BOOST_AUTO_TEST_SUITE(redis_cache_suite)
 
 using namespace omnn::rt::storage;
 
@@ -52,5 +54,7 @@ BOOST_AUTO_TEST_CASE(redis_cache_error_handling) {
     // Test connection to non-existent Redis server
     BOOST_CHECK_THROW(RedisCache("nonexistent", 6379), std::runtime_error);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 #endif // OPENMIND_STORAGE_REDIS
