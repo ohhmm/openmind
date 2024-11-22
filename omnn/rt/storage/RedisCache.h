@@ -25,11 +25,7 @@ class RedisCache : public CacheBase {
 
 public:
     RedisCache(const std::string_view& host = "localhost",
-#ifdef OPENMIND_STORAGE_REDIS_MEMURAI
-               int port = 6379,  // Memurai uses Redis's default port
-#else
-               int port = 6379,
-#endif
+               int port = 6379,  // Default port for both Redis and Memurai
                int timeout_ms = 5000);  // Increased from 1000ms to 5000ms for CI environments
     ~RedisCache() override;
 

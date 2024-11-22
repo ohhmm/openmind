@@ -16,35 +16,49 @@ using namespace omnn::rt::storage;
 
 namespace {
 bool is_redis_available() {
+    const char* host = std::getenv("OPENMIND_TEST_REDIS_HOST") ?
+        std::getenv("OPENMIND_TEST_REDIS_HOST") : "127.0.0.1";
+    const int port = std::getenv("OPENMIND_TEST_REDIS_PORT") ?
+        std::stoi(std::getenv("OPENMIND_TEST_REDIS_PORT")) : 6379;
     const int retries = std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT") ?
         std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_COUNT")) : 5;
     const int delay_ms = std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY") ?
         std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY")) : 2000;
     std::string last_error;
+
+    std::string server_info;
 #ifdef OPENMIND_STORAGE_REDIS_MEMURAI
-    const char* server_type = "Memurai";
+    server_info = "Memurai Developer";
+    BOOST_TEST_MESSAGE("Testing with Memurai Developer at " + std::string(host) + ":" + std::to_string(port));
 #else
-    const char* server_type = "Redis";
+    server_info = "Redis Server";
+    BOOST_TEST_MESSAGE("Testing with Redis Server at " + std::string(host) + ":" + std::to_string(port));
 #endif
+
     int attempt = 1;
     while (attempt <= retries) {
         try {
-            RedisCache test_cache;
-            BOOST_TEST_MESSAGE(std::string(server_type) + " connection successful on attempt " + std::to_string(attempt));
+            RedisCache test_cache(host, port);
+            BOOST_TEST_MESSAGE(server_info + " connection successful after " +
+                std::to_string(attempt) + " attempt(s)");
             return true;
         } catch (const std::exception& e) {
             last_error = e.what();
-            BOOST_TEST_MESSAGE(std::string(server_type) + " connection attempt " +
+            BOOST_TEST_MESSAGE(server_info + " connection attempt " +
                 std::to_string(attempt) + "/" + std::to_string(retries) +
                 " failed: " + last_error);
+
             if (attempt < retries) {
+                BOOST_TEST_MESSAGE("Waiting " + std::to_string(delay_ms) + "ms before next attempt...");
                 std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
             }
             attempt++;
         }
     }
-    BOOST_TEST_MESSAGE(std::string(server_type) + " connection failed after " +
-        std::to_string(retries) + " attempts. Last error: " + last_error);
+
+    BOOST_TEST_MESSAGE(server_info + " connection failed after " + std::to_string(retries) +
+        " attempts at " + std::string(host) + ":" + std::to_string(port) +
+        ". Last error: " + last_error);
     return false;
 }
 }
@@ -79,8 +93,9 @@ BOOST_AUTO_TEST_CASE(redis_cache_error_handling) {
         return;
     }
 
-    // Test connection error handling
-    BOOST_CHECK_THROW(RedisCache("nonexistent.local", 6379), std::runtime_error);
+    // Test connection error handling with environment variables
+    const char* test_host = std::getenv("OPENMIND_TEST_REDIS_HOST") ? std::getenv("OPENMIND_TEST_REDIS_HOST") : "127.0.0.1";
+    BOOST_CHECK_THROW(RedisCache("nonexistent.invalid", std::stoi(std::getenv("OPENMIND_TEST_REDIS_PORT") ? std::getenv("OPENMIND_TEST_REDIS_PORT") : "6379")), std::runtime_error);
 
     RedisCache cache;
 
