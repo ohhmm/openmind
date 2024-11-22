@@ -87,16 +87,31 @@ jobs:
             Write-Host "Verification attempt $i of $maxRetries..."
             try {
                 $status = Get-Service -Name "memurai" -ErrorAction Stop
+                Write-Host "Service Status: $($status.Status)"
+
                 if ($status.Status -eq "Running") {
-                    $ping = & $memuraiCli ping
-                    if ($ping -eq "PONG") {
-                        Write-Host "Memurai service verified and responding!"
-                        $success = $true
-                        break
+                    try {
+                        $ping = & $memuraiCli ping
+                        Write-Host "Memurai ping response: $ping"
+                        if ($ping -eq "PONG") {
+                            Write-Host "Memurai service verified and responding!"
+                            # Test basic Redis operations
+                            & $memuraiCli set test_key test_value
+                            $testValue = & $memuraiCli get test_key
+                            Write-Host "Test key value: $testValue"
+                            if ($testValue -eq "test_value") {
+                                Write-Host "Basic Redis operations verified!"
+                                $success = $true
+                                break
+                            }
+                        }
+                    } catch {
+                        Write-Warning "Redis operation failed: $_"
                     }
                 }
             } catch {
                 Write-Warning "Service check failed: $_"
+                Get-EventLog -LogName Application -Source "Memurai" -Newest 5 | Format-List *
             }
             Start-Sleep -s $retryDelay
         }
@@ -109,6 +124,10 @@ jobs:
         }
 
         # Set environment variables for tests
+        $env:OPENMIND_TEST_REDIS_RETRY_COUNT = "10"
+        $env:OPENMIND_TEST_REDIS_RETRY_DELAY = "3000"
+        [System.Environment]::SetEnvironmentVariable('OPENMIND_TEST_REDIS_RETRY_COUNT', '10', [System.EnvironmentVariableTarget]::Process)
+        [System.Environment]::SetEnvironmentVariable('OPENMIND_TEST_REDIS_RETRY_DELAY', '3000', [System.EnvironmentVariableTarget]::Process)
         echo "OPENMIND_TEST_REDIS_RETRY_COUNT=10" >> $env:GITHUB_ENV
         echo "OPENMIND_TEST_REDIS_RETRY_DELAY=3000" >> $env:GITHUB_ENV
 
