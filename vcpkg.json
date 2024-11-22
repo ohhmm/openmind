@@ -20,7 +20,10 @@
     "boost-ublas",
     "boost-uuid",
     "leveldb",
-    "hiredis",
+    {
+      "name": "hiredis",
+      "features": ["ssl"]
+    },
     {
       "name": "vcpkg-cmake",
       "host": true

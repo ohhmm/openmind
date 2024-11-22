@@ -1,6 +1,6 @@
 option(OPENMIND_STORAGE_FOUNDATIONDB "Use Apple FoundationDB library for one of the multistorage levels" OFF)
 option(OPENMIND_STORAGE_LEVELDB "Use Google LevelDB library for one of the multistorage levels" ON)
-option(OPENMIND_STORAGE_REDIS "Use Redis for distributed caching" OFF)
+option(OPENMIND_STORAGE_REDIS "Use Redis for distributed caching" ON)
 
 set(DEPENDENCIES rt)
 if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE_REDIS)
@@ -9,7 +9,7 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE
 
     if(OPENMIND_STORAGE_LEVELDB)
         find_package(Threads) # workaround leveldb config bug
-        list(APPEND DEPENDENCIES google/leveldb)
+        list(APPEND DEPENDENCIES leveldb)  # Changed from google/leveldb to leveldb
         if(NOT WIN32)
             list(APPEND DEPENDENCIES pthread)
         endif()
@@ -20,13 +20,22 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE
     endif()
 
     if(OPENMIND_STORAGE_REDIS)
-        find_library(HIREDIS_LIBRARY NAMES hiredis)
-        find_path(HIREDIS_INCLUDE_DIR NAMES hiredis/hiredis.h)
-        if(HIREDIS_LIBRARY AND HIREDIS_INCLUDE_DIR)
-            include_directories(${HIREDIS_INCLUDE_DIR})
-            list(APPEND DEPENDENCIES ${HIREDIS_LIBRARY})
+        find_package(hiredis REQUIRED CONFIG)
+        if(WIN32)
+            find_package(unofficial-redis CONFIG REQUIRED)
+            find_package(unofficial-redis-server CONFIG)
+            add_definitions(-DWIN32_LEAN_AND_MEAN)
+            list(APPEND DEPENDENCIES unofficial::redis::redis)
         else()
-            message(FATAL_ERROR "hiredis library not found. Please install libhiredis-dev")
+            # For Unix-like systems, check for Redis server
+            find_program(REDIS_SERVER redis-server)
+            if(NOT REDIS_SERVER)
+                message(WARNING "redis-server not found. Tests may fail if Redis server is not installed.")
+            endif()
+        endif()
+        list(APPEND DEPENDENCIES hiredis::hiredis)
+        if(NOT WIN32)
+            list(APPEND DEPENDENCIES pthread)
         endif()
     endif()
 

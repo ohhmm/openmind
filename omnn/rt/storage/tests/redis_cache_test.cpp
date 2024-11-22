@@ -16,6 +16,11 @@ using namespace omnn::rt::storage;
 
 namespace {
 bool is_redis_available() {
+    const char* log_level = std::getenv("OPENMIND_TEST_REDIS_LOG_LEVEL");
+    if (log_level && std::string(log_level) == "DEBUG") {
+        BOOST_TEST_MESSAGE("Checking Redis/Memurai availability with debug logging");
+    }
+
     const char* host = std::getenv("OPENMIND_TEST_REDIS_HOST") ?
         std::getenv("OPENMIND_TEST_REDIS_HOST") : "127.0.0.1";
     const int port = std::getenv("OPENMIND_TEST_REDIS_PORT") ?
@@ -26,12 +31,13 @@ bool is_redis_available() {
         std::stoi(std::getenv("OPENMIND_TEST_REDIS_RETRY_DELAY")) : 2000;
     std::string last_error;
 
-    std::string server_info;
 #ifdef OPENMIND_STORAGE_REDIS_MEMURAI
-    server_info = "Memurai Developer";
-    BOOST_TEST_MESSAGE("Testing with Memurai Developer at " + std::string(host) + ":" + std::to_string(port));
+    std::string server_info = "Memurai Developer";
+    BOOST_TEST_MESSAGE("Windows environment detected - Testing with Memurai Developer");
+    BOOST_TEST_MESSAGE("Connection details: " + std::string(host) + ":" + std::to_string(port));
+    BOOST_TEST_MESSAGE("Retry settings: count=" + std::to_string(retries) + ", delay=" + std::to_string(delay_ms) + "ms");
 #else
-    server_info = "Redis Server";
+    std::string server_info = "Redis Server";
     BOOST_TEST_MESSAGE("Testing with Redis Server at " + std::string(host) + ":" + std::to_string(port));
 #endif
 
@@ -39,14 +45,30 @@ bool is_redis_available() {
     while (attempt <= retries) {
         try {
             RedisCache test_cache(host, port);
-            BOOST_TEST_MESSAGE(server_info + " connection successful after " +
-                std::to_string(attempt) + " attempt(s)");
-            return true;
+            if (test_cache.Set("__test_connection__", "ping") &&
+                test_cache.GetOne("__test_connection__") == "ping") {
+                test_cache.Clear("__test_connection__");
+                BOOST_TEST_MESSAGE(server_info + " connection and basic operations verified after " +
+                    std::to_string(attempt) + " attempt(s)");
+                return true;
+            }
+            throw std::runtime_error("Connection established but basic operations failed");
         } catch (const std::exception& e) {
             last_error = e.what();
             BOOST_TEST_MESSAGE(server_info + " connection attempt " +
                 std::to_string(attempt) + "/" + std::to_string(retries) +
                 " failed: " + last_error);
+
+#ifdef OPENMIND_STORAGE_REDIS_MEMURAI
+            BOOST_TEST_MESSAGE("Checking Memurai service status...");
+            // Enhanced Windows service status check
+            std::string cmd = "powershell -Command \"";
+            cmd += "Write-Host 'Service Status:'; sc query memurai | findstr STATE; ";
+            cmd += "Write-Host 'Process Status:'; Get-Process memurai* | Format-Table Name,Id,Status; ";
+            cmd += "Write-Host 'Port Status:'; netstat -ano | findstr :6379; ";
+            cmd += "Write-Host 'Event Logs:'; Get-EventLog -LogName Application -Source Memurai -Newest 3\"";
+            system(cmd.c_str());
+#endif
 
             if (attempt < retries) {
                 BOOST_TEST_MESSAGE("Waiting " + std::to_string(delay_ms) + "ms before next attempt...");
@@ -57,8 +79,8 @@ bool is_redis_available() {
     }
 
     BOOST_TEST_MESSAGE(server_info + " connection failed after " + std::to_string(retries) +
-        " attempts at " + std::string(host) + ":" + std::to_string(port) +
-        ". Last error: " + last_error);
+        " attempts. Details: host=" + std::string(host) + ", port=" + std::to_string(port) +
+        ", last_error=\"" + last_error + "\"");
     return false;
 }
 }
@@ -93,6 +115,31 @@ BOOST_AUTO_TEST_CASE(redis_cache_error_handling) {
         return;
     }
 
+#ifdef OPENMIND_STORAGE_REDIS_MEMURAI
+    BOOST_TEST_MESSAGE("Running Memurai-specific error handling tests");
+    try {
+        RedisCache cache;  // This will initialize debug logging if enabled
+
+        // Test connection with invalid port
+        BOOST_CHECK_THROW(RedisCache("127.0.0.1", 6380), std::runtime_error);
+
+        // Test connection timeout
+        BOOST_CHECK_THROW(RedisCache("127.0.0.1", 6379, 1), std::runtime_error);
+
+        // Test service interruption recovery
+        BOOST_CHECK(cache.Set("test_key", "test_value"));
+        system("net stop memurai");
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        BOOST_CHECK_THROW(cache.Set("test_key2", "test_value2"), std::runtime_error);
+        system("net start memurai");
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        BOOST_CHECK(cache.Set("test_key3", "test_value3"));
+    } catch (const std::exception& e) {
+        BOOST_TEST_MESSAGE("Memurai error test failed: " + std::string(e.what()));
+        system("net start memurai");  // Ensure service is restored
+        throw;
+    }
+#else
     // Test connection error handling with environment variables
     const char* test_host = std::getenv("OPENMIND_TEST_REDIS_HOST") ? std::getenv("OPENMIND_TEST_REDIS_HOST") : "127.0.0.1";
     BOOST_CHECK_THROW(RedisCache("nonexistent.invalid", std::stoi(std::getenv("OPENMIND_TEST_REDIS_PORT") ? std::getenv("OPENMIND_TEST_REDIS_PORT") : "6379")), std::runtime_error);
@@ -107,11 +154,6 @@ BOOST_AUTO_TEST_CASE(redis_cache_error_handling) {
     std::string large_value(1024 * 1024, 'x');  // 1MB string
     BOOST_CHECK(cache.Set("large_key", large_value));
     BOOST_CHECK_EQUAL(cache.GetOne("large_key"), large_value);
-
-#ifdef OPENMIND_STORAGE_REDIS_MEMURAI
-    BOOST_TEST_MESSAGE("Running Memurai-specific error handling tests");
-#else
-    BOOST_TEST_MESSAGE("Running Redis-specific error handling tests");
 #endif
 }
 
