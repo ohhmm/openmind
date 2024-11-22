@@ -1,6 +1,8 @@
 #pragma once
 #include <boost/test/unit_test.hpp>
 
+#include <omnn/math/Product.h>
+#include <omnn/math/Sum.h>
 #include <omnn/math/Variable.h>
 
 #include <cmath>
@@ -117,6 +119,16 @@ void TestBooleanExpression(const Valuable& expressionX, auto function) {
             BOOST_TEST_MESSAGE("Expected " << (etalon ? "true" : "false") << " lambda(" << x << ") = " << copy);
         }
     }
+}
+
+void InequalOrderCheck(const Valuable& _1, const Valuable& _2)
+{
+    BOOST_TEST(_1 != _2);
+    auto before = _1.IsComesBefore(_2);
+    auto after = _2.IsComesBefore(_1);
+    BOOST_TEST(before != after);
+    Product{_1, _2};
+    Sum{_1, _2};
 }
 
 } // namespace
