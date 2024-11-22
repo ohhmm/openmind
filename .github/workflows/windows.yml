@@ -23,11 +23,20 @@ jobs:
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
 
+    - name: Install and Start Redis
+      run: |
+        choco install redis-64
+        redis-server --service-install
+        redis-server --service-start
+        Start-Sleep -s 5  # Wait for Redis to start
+        redis-cli ping
+        vcpkg install hiredis:x64-windows
+
     - name: Configure
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
-      run: cmake ${{github.workspace}} -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO
+      run: cmake ${{github.workspace}} -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO -DOPENMIND_STORAGE_REDIS=ON -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Install prerequisites
       run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
