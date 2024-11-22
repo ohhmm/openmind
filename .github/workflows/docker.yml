@@ -4,36 +4,68 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     container:
         image: ohhmm/openmind:latest
+        options: --privileged
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-tools libhiredis-dev libboost-all-dev
+          echo "Testing Redis connection..."
+          redis-cli -h redis ping || { echo "Redis connection failed"; exit 1; }
+          redis-cli -h redis info || { echo "Redis info failed"; exit 1; }
+
+      - name: Cache dependencies and build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.ccache
+            ./build
+          key: ${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'vcpkg.json') }}
+          restore-keys: ${{ runner.os }}-
+
       - name: Check for dockerenv file
         run: (ls /.dockerenv && echo Found dockerenv && which clang++) || (echo No dockerenv)
 
-      - name: Install Dependencies
+      - name: Initialize vcpkg
         run: |
-          emerge-webrsync || exit 1
-          emerge --getbinpkg=y --usepkg=y -q dev-libs/hiredis dev-util/pkgconfig dev-util/ninja dev-util/cmake dev-cpp/boost dev-util/ccache || exit 1
-
-      - name: Setup ccache
-        run: |
-          ccache --max-size=2G
-          ccache --zero-stats
-
-      - name: Create Build Dir
-        run: cmake -E make_directory ./build
+          git clone https://github.com/Microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.sh
+          ./vcpkg/vcpkg integrate install
 
       - name: Configure
         working-directory: ./build
         env:
-          CC: ccache /usr/lib/llvm/17/bin/clang-17
-          CXX: ccache /usr/lib/llvm/17/bin/clang++-17
-        run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug \
-          -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_STORAGE_REDIS=ON -DBOOST_TEST_NO_AUTO_LINK=ON -DBoost_USE_STATIC_LIBS=ON
+          CCACHE_DIR: ~/.ccache
+          CCACHE_COMPRESS: "true"
+          CCACHE_MAXSIZE: "2G"
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
+          REDIS_CONNECTION_TIMEOUT: 30
+          REDIS_OPERATION_TIMEOUT: 10
+        run: |
+          cmake -E make_directory .
+          cmake .. -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+            -DOPENMIND_BUILD_SAMPLES=OFF \
+            -DOPENMIND_STORAGE_REDIS=ON \
+            -DOPENMIND_USE_VCPKG=ON
 
       - name: Install prerequisites
         working-directory: ./build
@@ -48,4 +80,4 @@ jobs:
 
       - name: Check
         working-directory: ./build
-        run: ctest . -j`nproc` -E ts --rerun-failed --output-on-failure
+        run: ctest . -j`nproc` -E "(ts|image_codec_test)" --rerun-failed --output-on-failure

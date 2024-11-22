@@ -403,9 +403,18 @@ if(NOT MSVC AND NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)
 endif()
 
 # Find hiredis package
+option(OPENMIND_STORAGE_REDIS "Enable Redis storage backend" ON)
 if(OPENMIND_STORAGE_REDIS)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(HIREDIS REQUIRED hiredis)
+
+    # Set Redis connection defaults from environment
+    if(NOT DEFINED ENV{REDIS_HOST})
+        set(ENV{REDIS_HOST} "localhost")
+    endif()
+    if(NOT DEFINED ENV{REDIS_PORT})
+        set(ENV{REDIS_PORT} "6379")
+    endif()
 endif()
 
 IF (Boost_FOUND)
