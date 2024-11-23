@@ -666,12 +666,12 @@ namespace math {
             return IsComesBefore(v.as<Product>());
         } else if (v.IsSum()) {
             return IsComesBefore(v.as<Sum>());
-        } else if (v.IsPrincipalSurd()) {
+        } else if (v.IsPrincipalSurd() || v.IsModulo()) {
             return {};
         } else if (v.IsInt()) {
             return *this > v;
         } else {
-            return v.FindVa() != nullptr;
+            return !v.FindVa();  // Non-variables come before variables
         }
     }
 
@@ -771,12 +771,12 @@ namespace math {
         if (v.IsInt())
             return arbitrary < v.ca();
         else if (v.IsFraction())
-            return !(v.operator<(*this) || operator==(v));
+            return arbitrary * v.as<Fraction>().denominator() < v.as<Fraction>().numerator();
         else if(v.IsMInfinity())
-            return {};
+            return false;
         else if(v.IsInfinity())
             return true;
-        else if (v.IsRational() == YesNoMaybe::Yes) 
+        else if (v.IsRational() == YesNoMaybe::Yes)
             return arbitrary < static_cast<a_rational>(v);
         else if (v.Is_pi())
             return arbitrary < 4;
@@ -784,24 +784,46 @@ namespace math {
             return v > *this;
     }
 
-    bool Integer::operator ==(const int& i) const
-    {
+    bool operator<(const Integer& _1, const Integer& _2) {
+        return _1.arbitrary < _2.arbitrary;
+    }
+
+    bool operator<(const Integer& _1, int _2) {
+        return _1.arbitrary < _2;
+    }
+
+    bool operator<(int _1, const Integer& _2) {
+        return _1 < _2.arbitrary;
+    }
+
+    bool operator<=(const Integer& _1, const Integer& _2) {
+        return !(_2 < _1);
+    }
+
+    bool operator<=(const Integer& _1, int _2) {
+        return !(_2 < _1.arbitrary);
+    }
+
+    bool operator<=(int _1, const Integer& _2) {
+        return !(_2.arbitrary < _1);
+    }
+
+    bool Integer::operator ==(const int& i) const {
         return arbitrary == i;
     }
 
-    bool Integer::operator ==(const a_int& v) const
-    {
+    bool Integer::operator ==(const a_int& v) const {
         return arbitrary == v;
     }
 
-    bool Integer::operator ==(const Integer& v) const
-    {
+    bool Integer::operator ==(const Integer& v) const {
         return operator ==(v.ca());
     }
 
-    bool Integer::operator ==(const Valuable& v) const
-    {
-        if (v.IsInt())
+    bool Integer::operator ==(const Valuable& v) const {
+        if (v.IsNaN())
+            return false;  // NaN is never equal to anything
+        else if (v.IsInt())
             return operator ==(v.as<Integer>());
         else if(v.FindVa() || v.IsConstant())
             return {};
@@ -1069,7 +1091,7 @@ namespace math {
             auto primeScanUp = up;
             while (from <= primeUpmost
                 && primeScanUp >= prime
-				&& primeIdx < maxPrimeIdx)
+                && primeIdx < static_cast<decltype(primeIdx)>(maxPrimeIdx))
             {
                 if (absolute % prime == 0) {
                     auto a = absolute;
