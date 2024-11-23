@@ -334,18 +334,18 @@ elseif(OPENMIND_BUILD_BOOST)
 			set(BOOST_BUILD_APPLE_ARGS "-address-model=64 architecture=arm+x86 -s NO_LZMA=1 -s NO_ZSTD=1")
 		endif()
 		separate_arguments(BOOST_EXT_CONFIGURE UNIX_COMMAND "./bootstrap.sh ${BOOST_TOOLSET}")
-        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} --cxx=${CMAKE_CXX_COMPILER}")
-        separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
+        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./\${BOOST_BUILD_COMMAND} --cxx=\${CMAKE_CXX_COMPILER}")
+        separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./\${BOOST_BUILD_COMMAND} install \${BOOST_BUILD_APPLE_ARGS} --prefix='\${CMAKE_BINARY_DIR}'")
     endif()
 
-    message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
+    message("ExternalProject_Add: \${BOOST_EXT_CONFIGURE} && \${BOOST_BUILD_COMMAND}")
     ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
         GIT_TAG boost-${OPENMIND_PREFERRED_BOOST_VERSION}
         GIT_SHALLOW ON
         BUILD_IN_SOURCE 1
-        CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE} --without-icu
-        BUILD_COMMAND ${BOOST_BUILD_COMMAND}
-        INSTALL_COMMAND ${BOOST_INSTALL_COMMAND}
+        CONFIGURE_COMMAND \${BOOST_EXT_CONFIGURE} --without-icu
+        BUILD_COMMAND \${BOOST_BUILD_COMMAND}
+        INSTALL_COMMAND \${BOOST_INSTALL_COMMAND}
         UPDATE_COMMAND ""
         )
     set(EXTERNAL_FETCHED_BOOST ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
@@ -353,7 +353,7 @@ elseif(OPENMIND_BUILD_BOOST)
     build_command(BOOST_BUILD_CMD TARGET boost)
     message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
     message("BOOST_BUILD_CMD ${BOOST_BUILD_CMD}")
-    execute_process(COMMAND ${BOOST_BUILD_CMD}
+    execute_process(COMMAND \${BOOST_BUILD_CMD}
         WORKING_DIRECTORY ${EXTERNAL_FETCHED_BOOST}
         )
     if(WIN32)
@@ -455,13 +455,13 @@ fold(
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL _openmind_hook_end_of_configure())
 function(_openmind_hook_end_of_configure)
 	if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21)
-		build_command(PREREQUISITES_BUILD_CMD TARGET prerequisites PARALLEL_LEVEL ${CMAKE_AUTOGEN_PARALLEL})
+		build_command(PREREQUISITES_BUILD_CMD TARGET prerequisites PARALLEL_LEVEL $${CMAKE_AUTOGEN_PARALLEL})
 	else()
 		build_command(PREREQUISITES_BUILD_CMD TARGET prerequisites)
 	endif()
-	message("Building target prerequisites in ${CMAKE_BINARY_DIR} for prerequisites:")
-	execute_process(COMMAND ${PREREQUISITES_BUILD_CMD}
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	message("Building target prerequisites in $${CMAKE_BINARY_DIR} for prerequisites:")
+	execute_process(COMMAND $${PREREQUISITES_BUILD_CMD}
+		WORKING_DIRECTORY $${CMAKE_BINARY_DIR}
 		COMMAND_ECHO STDOUT
 	)
 endfunction()
