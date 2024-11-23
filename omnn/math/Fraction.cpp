@@ -623,6 +623,19 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
         if (v.IsFraction())
         {
             auto& f = v.as<Fraction>();
+            // Handle negative denominators by normalizing signs
+            if (denominator() < 0) {
+                if (f.denominator() < 0) {
+                    // Both negative denominators, invert both comparisons
+                    return (-numerator()) * (-f.denominator()) < (-f.numerator()) * (-denominator());
+                } else {
+                    // This denominator negative, other positive
+                    return (-numerator()) * f.denominator() < f.numerator() * (-denominator());
+                }
+            } else if (f.denominator() < 0) {
+                // Other denominator negative, this positive
+                return numerator() * (-f.denominator()) < (-f.numerator()) * denominator();
+            }
             return numerator() * f.denominator() < f.numerator() * denominator();
         }
         else if (v.IsInt())
