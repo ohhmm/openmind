@@ -1,12 +1,12 @@
 //
 // Created by Сергей Кривонос on 01.09.17.
 //
-#include "Exponentiation.h"
-#include "Fraction.h"
-#include "Modulo.h"
-#include "PrincipalSurd.h"
-#include "Product.h"
-#include "Sum.h"
+#include "omnn/math/Exponentiation.h"
+#include "omnn/math/Fraction.h"
+#include "omnn/math/Modulo.h"
+#include "omnn/math/PrincipalSurd.h"
+#include "omnn/math/Product.h"
+#include "omnn/math/Sum.h"
 
 namespace omnn{
 namespace math {

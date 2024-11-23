@@ -36,7 +36,7 @@ template <class Chld>
         bool IsConstant() const override { return true; }
         bool IsSimple() const override { return true; }
         bool IsPolynomial(const Variable&) const override { return true; }
-        YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+        Valuable::YesNoMaybe IsMultival() const override { return Valuable::YesNoMaybe::No; }
 
         const Variable* FindVa() const override {
             return {};

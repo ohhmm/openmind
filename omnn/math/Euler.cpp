@@ -2,7 +2,7 @@
 // Created by Sergej Krivonos on 5/26/18.
 //
 
-#include "Euler.h"
+#include "omnn/math/Euler.h"
 
 using namespace omnn::math;
 
@@ -30,4 +30,3 @@ std::pair<bool, Valuable> Euler::IsMultiplicationSimplifiable(const Valuable& v)
 bool Euler::MultiplyIfSimplifiable(const Valuable& v) {
 	return {};
 }
-

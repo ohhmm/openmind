@@ -1,4 +1,4 @@
-#include "Constant.h"
+#include "omnn/math/Constant.h"
 
 using namespace omnn::math;
 using namespace constants;

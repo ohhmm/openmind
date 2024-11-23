@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "Constant.h"
+#include "omnn/math/Constant.h"
 
 namespace omnn::math {
 

@@ -1,4 +1,4 @@
-#include "Infinity.h"
+#include "omnn/math/Infinity.h"
 
 using namespace omnn;
 using namespace math;
@@ -32,7 +32,7 @@ Valuable& Infinity::operator *=(const Valuable& v)
         IMPLEMENT;
     } else if (v < constants::zero)
         Become(MInfinity());
-        
+
     return *this;
 }
 

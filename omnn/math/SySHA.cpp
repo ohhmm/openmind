@@ -5,5 +5,4 @@
  *      Author: Serg
  */
 
-#include "SySHA.h"
-
+#include "omnn/math/SySHA.h"
