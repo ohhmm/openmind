@@ -10,6 +10,7 @@ namespace omnn::rt::storage {
     namespace fs = boost::filesystem;
 
 class CacheBase {
+public:
     using path_str_t = fs::path;
 
 public:
