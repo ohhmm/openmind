@@ -20,7 +20,7 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(bit_test)
 {
     DECL_VA(x);
-    std::queue<std::future<void>> tasks;
+    std::vector<std::future<void>> tasks;
     auto hwThreads = std::thread::hardware_concurrency();
     std::cout << "std::thread::hardware_concurrency() is " << hwThreads << std::endl;
     constexpr int NBits = 3, UpTo = 1<<NBits;
@@ -30,13 +30,13 @@ BOOST_AUTO_TEST_CASE(bit_test)
         BOOST_TEST(*bit.FindVa() == x);
         std::cout << "bit " << j << " of x is " << bit << std::endl;
         for (int i = 0; i < UpTo; ++i) {
-             tasks.emplace(std::async([=](){  // FIXME: stability issue
+             tasks.emplace_back(std::async([=](){  // FIXME: stability issue
                 auto etalon = i & n;
                 auto b = bit;
                 BOOST_TEST(b.eval({{x, i}}));
                 if(b!=!!etalon){
                     std::cout << i << '&' << n << '=' << etalon << " ;  " << j << " bit of " << i << " is " << b << std::endl;
-                    b.optimizations=true;   
+                    b.optimizations=true;
                     BOOST_TEST(b.is_optimized());
                     b.optimize();
                     b = bit;
@@ -48,16 +48,18 @@ BOOST_AUTO_TEST_CASE(bit_test)
                     std::cout << b << " != " << etalon << " (" << !!etalon << ')' << std::endl;
                 }
                 BOOST_TEST(ok);
-                
+
                 // and test
                 auto an = x.And(NBits, n);
                 b = an.eval({{x, i}});
                 an.optimize();
                 BOOST_TEST(an==etalon);
              }));
-            if(tasks.size() > hwThreads)
-                tasks.pop();
         }
+    }
+    // Wait for all tasks to complete before test case ends
+    for (auto& task : tasks) {
+        task.wait();
     }
 }
 

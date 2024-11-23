@@ -121,7 +121,7 @@ if(GIT_EXECUTABLE)
 			COMMAND ${GIT_EXECUTABLE} fetch --all
             #COMMAND powershell -NoProfile -NonInteractive -File "${CMAKE_SOURCE_DIR}/cmake/scripts/RebaseAllBranches.ps1" -GitExecutable "${GIT_EXECUTABLE}"
             # ^- cannot be loaded because running scripts is disabled
-			COMMAND cmd /c "for /f %b in ('git branch --format \"%%(refname:short)\" ^| findstr /v \"^main$$\"') do (git checkout %b && git rebase main) && git checkout main"
+			COMMAND cmd /c "for /f %%b in ('git branch --format \"%%%(refname:short)\" ^| findstr /v \"^main$$\"') do (git checkout %%b && git rebase main) && git checkout main"
             COMMENT "Rebasing all branches onto origin/main using powershell."
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
