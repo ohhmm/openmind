@@ -826,10 +826,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 return;
             } else if (s[c] == '<' && c + 1 < l && s[c + 1] != '=') {
                 Valuable l(s.substr(0, c), h, itIsOptimized);
-                Valuable r(s.substr(c + 1), h, itIsOptimized);
                 if(s[c + 1] == '>'){
+                    Valuable r(s.substr(c + 2), h, itIsOptimized);
                     Become(l.NotEquals(r));
                 } else {
+                    Valuable r(s.substr(c + 1), h, itIsOptimized);
                     Become(l.Less(r));
                 }
                 SetView(View::Equation);
