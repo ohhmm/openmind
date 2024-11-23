@@ -6,6 +6,8 @@
 #include "Fraction.h"
 #include "Variable.h"
 
+#include "generic.hpp"
+
 using namespace std;
 using namespace omnn::math;
 using namespace boost::unit_test;
@@ -47,6 +49,7 @@ BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
 
     auto _1 = "-2*(1^5)"_v;
     auto _2 = "(1 ^ 6)"_v;
+    InequalOrderCheck(_1, _2);
     auto after = _1.IsComesBefore(_2);
     BOOST_TEST(after);
     auto before = _2.IsComesBefore(_1);
@@ -57,6 +60,10 @@ BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
     BOOST_TEST(less);
 
     Sum sum = {std::move(_1), std::move(_2)};
+
+    _1 = 1;
+    _2 = "(-4 * (Y ^ 3))"_v;
+    InequalOrderCheck(_1, _2);
 }
 
 BOOST_AUTO_TEST_CASE(Product_tests)
