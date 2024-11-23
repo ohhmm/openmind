@@ -57,6 +57,15 @@ if(GIT_EXECUTABLE)
 	add_git_target(rebase-main-interactive rebase -i --autostash origin/main)
 	add_git_target(offline-rebase-origin-main-interactive rebase -i --autostash origin/main)
 	add_git_target(update pull --rebase --autostash)
+	add_git_target(bring-to-develop rebase HEAD develop --autostash)
+	set_target_properties(bring-to-develop PROPERTIES FOLDER "util/git/develop")
+	add_git_target_multiple_commands(bring-to-develop-interactive 
+		COMMAND ${GIT_EXECUTABLE} rebase HEAD develop --autostash || ${GIT_EXECUTABLE} rebase --continue
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main || ${GIT_EXECUTABLE} rebase --continue
+		COMMAND ${GIT_EXECUTABLE} rebase -i --autostash origin/main || ${GIT_EXECUTABLE} rebase --continue
+		COMMAND ${GIT_EXECUTABLE} fetch --all
+	)
+	set_target_properties(bring-to-develop-interactive PROPERTIES FOLDER "util/git/develop")
 
 	if(openmind_SOURCE_DIR AND NOT openmind_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_custom_target(update-openmind
@@ -106,6 +115,7 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_ALL 1
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git/develop")
+
 
 	add_git_target(force-push-head push -f)
 	add_git_target(force-push-origin push -f origin)
