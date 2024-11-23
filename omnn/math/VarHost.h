@@ -181,8 +181,8 @@ namespace math {
         }
 
         bool Has(const ::std::any& id) const override {
-            IMPLEMENT
-            return varIds.find(::std::any_cast<T>(id)) != varIds.end();
+            auto idTp = ::std::any_cast<T>(&id);
+            return idTp && varIds.find(*idTp) != varIds.end();
         }
 
         size_t Hash(const ::std::any& id) const override {
@@ -190,7 +190,13 @@ namespace math {
         }
 
         bool CompareIdsLess(const ::std::any& a, const ::std::any& b) const override {
-            return ::std::any_cast<T>(a) < ::std::any_cast<T>(b);
+            auto& ca = ::std::any_cast<const T&>(a);
+            auto& cb = ::std::any_cast<const T&>(b);
+            if constexpr (std::is_same_v<T, std::string>) {
+                return ca.compare(cb) < 0;
+            } else {
+                return ca < cb;
+            }
         }
 
         bool CompareIdsEqual(const ::std::any& a, const ::std::any& b) const override {

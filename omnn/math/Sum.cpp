@@ -1445,14 +1445,16 @@ namespace
 	}
 
     bool Sum::IsPolynomial(const Variable& v) const {
-        auto isSum = !exp;
-        auto is = isSum ? base::IsPolynomial(v) : exp->IsPolynomial(v);
-        if (isSum && is) {
-            auto exps = GetVaExps();
-            auto grade = exps[v];
-            is = grade.IsInt() && (grade < 5 || exps.size() == 1);
+        auto is = base::IsPolynomial(v);
+        if (!is) {
+            return false;
         }
-        return is;
+        if (!IsSum()) {
+            return exp->IsPolynomial(v);
+        }
+        auto exps = GetVaExps();
+        auto grade = exps[v];
+        return grade.IsInt() && (grade < 5 || exps.size() == 1);
     }
 
     size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const

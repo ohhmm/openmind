@@ -605,14 +605,15 @@ namespace math {
     
     bool Integer::IsComesBefore(const Valuable& v) const
     {
-        if (v.IsProduct()) {
-            return Product{*this}.IsComesBefore(v);
-        } else if (v.IsProduct()) {
-            return Product{*this}.IsComesBefore(v);
-        } else if(v.IsInt()){
-            return *this > v;
+        if (v.IsInt()) {
+            return arbitrary < v.ca();  // Direct integer comparison
+        } else if (v.IsModulo()) {
+            // Make comparison deterministic across platforms by always having Integer come before Modulo
+            return true;  // Integers are simpler, so they come before Modulo
+        } else if (v.IsProduct() || v.IsSum()) {
+            return Product{*this}.IsComesBefore(v);  // Delegate to Product comparison
         } else {
-            return v.FindVa() != nullptr;
+            return !v.FindVa();  // Non-variables come before variables
         }
     }
     
@@ -711,40 +712,66 @@ namespace math {
         if (v.IsInt())
             return arbitrary < v.ca();
         else if (v.IsFraction())
-            return !(v.operator<(*this) || operator==(v));
+            return arbitrary * v.as<Fraction>().denominator() < v.as<Fraction>().numerator();
         else if(v.IsMInfinity())
-            return {};
+            return false;
         else if(v.IsInfinity())
             return true;
+        else if(v.IsNaN())
+            return false;
         else if (!v.FindVa()) {
+            if (v.IsNaN()) return false;
             double _1 = boost::numeric_cast<double>(arbitrary);
             double _2 = static_cast<double>(v);
+            if(std::isnan(_2)) return false;
             if(_1 == _2) {
-                IMPLEMENT
+                return false;
             }
             return _1 < _2;
        } else
             return base::operator <(v);
     }
 
-    bool Integer::operator ==(const int& i) const
-    {
+    bool operator<(const Integer& _1, const Integer& _2) {
+        return _1.arbitrary < _2.arbitrary;
+    }
+
+    bool operator<(const Integer& _1, int _2) {
+        return _1.arbitrary < _2;
+    }
+
+    bool operator<(int _1, const Integer& _2) {
+        return _1 < _2.arbitrary;
+    }
+
+    bool operator<=(const Integer& _1, const Integer& _2) {
+        return !(_2 < _1);
+    }
+
+    bool operator<=(const Integer& _1, int _2) {
+        return !(_2 < _1.arbitrary);
+    }
+
+    bool operator<=(int _1, const Integer& _2) {
+        return !(_2.arbitrary < _1);
+    }
+
+    bool Integer::operator ==(const int& i) const {
         return arbitrary == i;
     }
 
-    bool Integer::operator ==(const a_int& v) const
-    {
+    bool Integer::operator ==(const a_int& v) const {
         return arbitrary == v;
     }
 
-    bool Integer::operator ==(const Integer& v) const
-    {
+    bool Integer::operator ==(const Integer& v) const {
         return Hash() == v.Hash() && operator ==(v.ca());
     }
 
-    bool Integer::operator ==(const Valuable& v) const
-    {
-        if (v.IsInt())
+    bool Integer::operator ==(const Valuable& v) const {
+        if (v.IsNaN())
+            return false;  // NaN is never equal to anything
+        else if (v.IsInt())
             return operator ==(v.as<Integer>());
         else if(v.FindVa())
             return false;
@@ -954,7 +981,7 @@ namespace math {
         auto scanIt = zz.second.end();
         Valuable up(absolute);
         if (up > max) up = max;
-        auto primeIdx = 0;
+        auto primeIdx = size_t{0};
         if (zz.first.first < zz.first.second) {
             if (zz.first.second < up) {
                 if (zz.first.second.IsInt())
@@ -1012,7 +1039,7 @@ namespace math {
             auto primeScanUp = up;
             while (from <= primeUpmost
                 && primeScanUp >= prime
-				&& primeIdx < maxPrimeIdx)
+                && primeIdx < static_cast<decltype(primeIdx)>(maxPrimeIdx))
             {
                 if (absolute % prime == 0) {
                     auto a = absolute;

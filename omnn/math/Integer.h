@@ -113,14 +113,25 @@ public:
     Valuable& d(const Variable& x) override;
 
     Valuable Sign() const override;
-    bool operator <(const Valuable& v) const override;
-    friend bool operator<(const Integer& _1, const Integer& _2) { return _1.arbitrary < _2.arbitrary; }
-    friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
-    friend bool operator<(const Integer& _1, int _2) { return _1.arbitrary < _2; }
-    bool operator ==(const Valuable& v) const override;
-    bool operator ==(const Integer& v) const;
-    bool operator ==(const a_int& v) const;
-    bool operator ==(const int& v) const;
+
+    // Primary comparison with base class
+    bool operator<(const Valuable& v) const override;
+    bool operator==(const Valuable& v) const override;
+
+    // Type-specific comparison operators
+    bool operator==(const Integer& v) const;
+    bool operator==(const a_int& v) const;
+    bool operator==(const int& v) const;
+
+    // Primary less-than comparisons
+    friend bool operator<(const Integer& _1, const Integer& _2);
+    friend bool operator<(const Integer& _1, int _2);
+    friend bool operator<(int _1, const Integer& _2);
+
+    // Primary less-than-or-equal operators
+    friend bool operator<=(const Integer& _1, const Integer& _2);
+    friend bool operator<=(const Integer& _1, int _2);
+    friend bool operator<=(int _1, const Integer& _2);
 
     explicit operator int() const override;
     explicit operator a_int() const override;
@@ -237,13 +248,18 @@ public:
     /// <param name="than">the param to compare that the object is less then the param</param>
     /// <returns>An expression that equals zero only when the object is less then param</returns>
     Valuable IntMod_Less(const Valuable& than) const override {
-        if (than.IsInt())
-            return ca() < than.ca() ? 0 : 1;
-        else if (than.IsSimpleFraction())
-            return than > *this ? 1 : 0;
-        else
-			return base::IntMod_Less(than);
-	}
+        if (than.IsInt()) {
+            auto thisVal = ca();
+            auto thatVal = than.ca();
+            // Use explicit comparison to avoid operator ambiguity
+            return (thisVal - thatVal < 0) ? 0 : 1;
+        } else if (than.IsSimpleFraction()) {
+            // Use direct value comparison instead of operator overloads
+            return (ca() - than.ca() < 0) ? 0 : 1;
+        } else {
+            return base::IntMod_Less(than);
+        }
+    }
 
     Valuable MustBeInt() const override { return 0; }
 

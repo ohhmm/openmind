@@ -11,7 +11,7 @@
 #include <omnn/math/Fraction.h>
 #include <omnn/math/Product.h>
 #include <omnn/math/Variable.h>
-
+#include <omnn/math/Valuable.h>
 
 using namespace omnn::math;
 
@@ -138,29 +138,43 @@ Valuable& Modulo::sq() {
 }
 
 bool Modulo::IsComesBefore(const Modulo& mod) const {
-    auto& modDividend = mod.getDividend();
-    auto equalDividends = getDividend() == modDividend;
-    if (equalDividends) {
-        return getDevisor().IsComesBefore(mod.getDevisor());
+    // Compare divisors first
+    auto& thisDevisor = getDevisor();
+    auto& otherDevisor = mod.getDevisor();
+
+    if (thisDevisor.IsInt() && otherDevisor.IsInt()) {
+        // For integer divisors, handle negative values consistently
+        auto thisAbs = thisDevisor.abs();
+        auto otherAbs = otherDevisor.abs();
+        if (thisAbs != otherAbs) {
+            return thisAbs < otherAbs;
+        }
+        if (thisDevisor != otherDevisor) {
+            return thisDevisor < otherDevisor;
+        }
+    } else if (thisDevisor != otherDevisor) {
+        return thisDevisor.IsComesBefore(otherDevisor);
     }
-    auto equalDivisors = getDevisor() == mod.getDevisor();
-    if (equalDivisors) {
-        return getDividend().IsComesBefore(modDividend);
+
+    // If divisors are equal, compare dividends with consistent handling of negative values
+    auto& thisDividend = getDividend();
+    auto& otherDividend = mod.getDividend();
+    if (thisDividend.IsInt() && otherDividend.IsInt()) {
+        auto thisAbs = thisDividend.abs();
+        auto otherAbs = otherDividend.abs();
+        if (thisAbs != otherAbs) {
+            return thisAbs < otherAbs;
+        }
     }
-    auto is = _1.IsComesBefore(modDividend);
-    if (!is) {
-        is = _1 == modDividend && mod.get2().IsComesBefore(_2);
-    }
-    return is;
+    return thisDividend.IsComesBefore(otherDividend);
 }
 
 bool Modulo::IsComesBefore(const Valuable& v) const
 {
-    auto is = v.IsModulo();
-    if (is) {
-        is = IsComesBefore(v.as<Modulo>());
+    if (v.IsModulo()) {
+        return IsComesBefore(v.as<Modulo>());
     }
-    return is;
+    return base::IsComesBefore(v);
 }
 
 Valuable::vars_cont_t Modulo::GetVaExps() const {
