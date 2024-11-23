@@ -13,6 +13,7 @@ class PrincipalSurd /// Also known as principal root of Nth index
 
 protected:
     Valuable& radicand() { return base::_1; }
+    void set1(const Valuable& v);  // Initialize commonVars when radicand changes
     Valuable& index() { return base::_2; }
 
     std::ostream& print(std::ostream&) const override;

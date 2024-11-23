@@ -51,11 +51,22 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
             } else {
                 is.second = PrincipalSurd{_1 * surd._1, _2};
             }
-        } 
+        }
     } else if (v.IsExponentiation()) {
         is = v.IsMultiplicationSimplifiable(*this);
     }
     return is;
+}
+
+void PrincipalSurd::set1(const Valuable& v) {
+    base::set1(v);
+    commonVars.clear();
+    for (auto& [var, exp] : v.getCommonVars()) {
+        auto e = exp / _2;
+        if (e.IsInt()) {
+            commonVars.insert({var, e});
+        }
+    }
 }
 
 void PrincipalSurd::optimize() {
@@ -64,6 +75,15 @@ void PrincipalSurd::optimize() {
 
     _1.optimize();
     _2.optimize();
+
+    // Initialize commonVars with integer exponents divided by index
+    commonVars.clear();
+    for (auto& [var, exp] : _1.getCommonVars()) {
+        auto e = exp / _2;
+        if (e.IsInt()) {
+            commonVars.insert({var, e});
+        }
+    }
 
     if (index() == constants::one || IsEquation()) {
         Become(std::move(radicand()));
@@ -114,6 +134,13 @@ void PrincipalSurd::optimize() {
 
 Valuable& PrincipalSurd::sq() {
     index() /= 2;
+    commonVars.clear();
+    for (auto& [var, exp] : _1.getCommonVars()) {
+        auto e = exp / _2;
+        if (e.IsInt()) {
+            commonVars.insert({var, e});
+        }
+    }
     optimized = {};
     optimize();
     return *this;
