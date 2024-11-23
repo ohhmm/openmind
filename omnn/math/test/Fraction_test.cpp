@@ -15,18 +15,56 @@ std::string l(const omnn::math::Valuable& v)
     return ss.str();
 }
 
-BOOST_AUTO_TEST_CASE(Fraction_cmp_tests, *disabled()) {
+BOOST_AUTO_TEST_CASE(Fraction_cmp_tests) {
     Valuable::OptimizeOff off;
     auto equal = 1_v / 2 == 2_v / 4_v;
     BOOST_TEST(equal);
 }
 
-BOOST_AUTO_TEST_CASE(Fraction_ordering_tests) {
-    auto _1 = "((-16/25)*(1r5) + (16/5))^(1/2)"_v;
+BOOST_AUTO_TEST_CASE(Fraction_ordering_tests)
+{
+    // Test case verifies fraction ordering with square roots and multival expressions
+    // Mathematical properties being tested:
+    // 1. sqrt(841/64) = 29/8 (positive root)
+    // 2. Expression: (573440 * sqrt(841/64) + 2115584)/262144
+    //    = (573440 * (29/8) + 2115584)/262144
+    //    This tests fraction ordering with complex expressions
+
+    auto _ = 841_v/64;
+    auto a = _.Sqrt();
+    _ ^= 1_v/2;
+
+    a = (573440_v*(((841_v/64))^((1_v/2))) + 2115584)/262144;
+    a.optimize();
+    auto ok = a.IsMultival() == Valuable::YesNoMaybe::Yes;
+    BOOST_TEST(ok);
+
+    // Test fraction ordering with power expressions
+    // For each i, test that 1^(1/2^i) maintains proper ordering
+    // This verifies that fractional exponents preserve ordering relationships
+    for (int64_t i=8; i --> 1; ) {
+        Valuable sh(int64_t(1)<<i);
+        auto multi = 1_v^(1_v/sh);
+        _ = multi;
+        _ /= _;
+        BOOST_TEST(_ == multi);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(Fraction_ordering_comparison_tests)
+{
+    // These expressions were discovered during debugging and revealed important
+    // properties of the IsComesBefore implementation with complex expressions
+    auto _1 = "((((-16)/25)*(1r5) + (16/5))^((1/2)))"_v;
     auto _2 = "(3/5)*sqrt(5)"_v;
+
+    // Test both directions of comparison to verify antisymmetry
     auto cmp21 = _1.IsComesBefore(_2);
     auto cmp12 = _2.IsComesBefore(_1);
-    BOOST_TEST(cmp12 != cmp21);
+
+    // Verify antisymmetry property: if a comes before b, b cannot come before a
+    // This was a key insight from our debugging investigation
+    BOOST_TEST(cmp12 != cmp21, "Both comparisons returned true, violating ordering relationship");
 }
 
 BOOST_AUTO_TEST_CASE(Fraction_tests)
@@ -35,7 +73,7 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 	auto c = 3_v / 1;
     auto b = a * 4;
 	auto d = 2_v / 4;
-    
+
     BOOST_TEST(a*b==1);
 	BOOST_TEST((c += b) == 5);
 	BOOST_TEST((c *= a) == 5_v / 2);
@@ -51,17 +89,17 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
 
     _ = (1_v/2)^2_v;
     BOOST_TEST(_ == 1_v/4);
-    
+
     Variable v1, v2;
     _ = 1_v / (1_v / v1);
     BOOST_TEST(_ == v1);
-    
+
     BOOST_TEST((2040_v*v1/(-2_v*v1))==-1020);
-    
+
     _ = (2040_v/v1) / ((-1_v/v1)*v2);
     _.optimize();
     BOOST_TEST(_ == -2040_v/v2);
-    
+
     BOOST_TEST((Fraction{1,-2}).operator<(0));
 
     _ = 1_v^(1_v/2);

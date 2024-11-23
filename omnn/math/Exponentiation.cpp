@@ -891,6 +891,36 @@ namespace omnn::math {
 
     bool Exponentiation::operator <(const Valuable& v) const
     {
+        // For expressions with multiple solutions (like roots)
+        if (IsMultival() == YesNoMaybe::Yes || v.IsMultival() == YesNoMaybe::Yes) {
+            std::set<Valuable> thisVals, otherVals;
+            Values([&](const Valuable& val) { thisVals.insert(val); return true; });
+            v.Values([&](const Valuable& val) { otherVals.insert(val); return true; });
+
+            // Compare principal values
+            if (!thisVals.empty() && !otherVals.empty()) {
+                // Get the minimum absolute value from each set
+                auto getMinAbs = [](const std::set<Valuable>& vals) -> const Valuable& {
+                    return *std::min_element(vals.begin(), vals.end(),
+                        [](const Valuable& a, const Valuable& b) {
+                            auto aRat = static_cast<a_rational>(a.varless());
+                            auto bRat = static_cast<a_rational>(b.varless());
+                            return std::abs(aRat) < std::abs(bRat);
+                        });
+                };
+
+                const Valuable& thisMin = getMinAbs(thisVals);
+                const Valuable& otherMin = getMinAbs(otherVals);
+
+                // If values are equal, use string comparison to break the tie consistently
+                if (thisMin == otherMin) {
+                    return str() < v.str();
+                }
+                return thisMin < otherMin;
+            }
+        }
+
+        // For same base exponentiations, compare exponents
         if (v.IsExponentiation())
         {
             auto& e = v.as<Exponentiation>();
@@ -1015,37 +1045,99 @@ namespace omnn::math {
         return is;
     }
 
-    bool Exponentiation::IsComesBefore(const Valuable& value) const
+    bool Exponentiation::IsComesBefore(const Valuable& v) const
     {
-        if (value.IsExponentiation()) {
-            return IsComesBefore(value.as<Exponentiation>());
+        // Handle simple values first
+        if (v.IsSimple())
+        {
+            return !IsSimple() || str() < v.str();
         }
 
-        auto is = FindVa() && value.IsSimple();
-        if (is)
+        // Compare by maximum variable exponent
+        if (auto degreeDiff = getMaxVaExp() - v.getMaxVaExp();
+            degreeDiff != 0)
         {
-            is = {};
+            return degreeDiff > 0;
         }
-        else if(value.IsProduct())
-        {
-            is = !(value.IsComesBefore(*this) || operator==(value));
-        }
-        else if (auto degreeDiff = getMaxVaExp() - value.getMaxVaExp(); degreeDiff != 0)
-        {
-            is = degreeDiff > 0;
-        }
-        else if (value.IsSimple())
-            is = true;
-//        else if(v.IsFraction())
-//        {is=}
-        else if(value.IsVa())
-            is = !!FindVa();
-        else if(value.IsSum())
-            is = IsComesBefore(*value.as<Sum>().begin());
-        else
-            IMPLEMENT
 
-        return is;
+        // Handle exponentiation comparison
+        if (v.IsExponentiation())
+        {
+            auto& e = v.as<Exponentiation>();
+            bool baseIsVa = getBase().IsVa();
+            bool vbaseIsVa = e.getBase().IsVa();
+
+            // Handle variable bases
+            if (baseIsVa && vbaseIsVa)
+            {
+                // Compare bases if exponents are equal, otherwise compare exponents
+                return getExponentiation() == e.getExponentiation()
+                    ? getBase().IsComesBefore(e.getBase())
+                    : getExponentiation() > e.getExponentiation();
+            }
+
+            // Non-variable bases come after variable bases
+            if (baseIsVa) return false;
+            if (vbaseIsVa) return true;
+
+            // Compare same bases by exponent
+            if (getBase() == e.ebase())
+                return getExponentiation().IsComesBefore(e.getExponentiation());
+
+            // Compare same exponents by base
+            if (getExponentiation() == e.getExponentiation())
+                return getBase().IsComesBefore(e.getBase());
+
+            // Compare by complexity first
+            auto c = Complexity();
+            auto ec = e.Complexity();
+            if (c != ec)
+                return c > ec;
+
+            // Final comparison: compare bases first, then exponents
+            return getBase().IsComesBefore(e.getBase());
+        }
+
+        // Handle other types
+        if (v.IsProduct())
+        {
+            return !v.IsComesBefore(*this) && !operator==(v);
+        }
+
+        if (v.IsVa())
+            return !!FindVa();
+
+        if (v.IsSum())
+            return IsComesBefore(*v.as<Sum>().begin());
+
+        // Fall back to string comparison for unhandled cases
+        return base::IsComesBefore(v);
+    }
+
+            // Compare by complexity first
+            auto c = Complexity();
+            auto ec = e.Complexity();
+            if (c != ec)
+                return c > ec;
+
+            // Final comparison: compare bases first, then exponents
+            return getBase().IsComesBefore(e.getBase());
+        }
+
+        // Handle other types
+        if (v.IsProduct())
+        {
+            return !v.IsComesBefore(*this) && !operator==(v);
+        }
+
+        if (v.IsVa())
+            return !!FindVa();
+
+        if (v.IsSum())
+            return IsComesBefore(*v.as<Sum>().begin());
+
+        // Fall back to string comparison for unhandled cases
+        return base::IsComesBefore(v);
     }
 
     Valuable Exponentiation::calcFreeMember() const

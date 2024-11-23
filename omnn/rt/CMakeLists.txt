@@ -1,3 +1,5 @@
+find_package(Boost REQUIRED COMPONENTS filesystem system)
+
 if (OPENMIND_USE_VCPKG)
     set(DEPENDENCIES
             Boost::filesystem
