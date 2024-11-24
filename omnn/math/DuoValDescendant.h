@@ -70,7 +70,10 @@ namespace omnn::math {
 
         static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
             if(_1.FindVa() || _2.FindVa())
-                IMPLEMENT // in Child
+            {
+                // Use proper throw instead of IMPLEMENT macro
+                throw std::runtime_error("getMaxVaExp not implemented in child class");
+            }
             return {};
         }
 
@@ -138,7 +141,7 @@ namespace omnn::math {
         }
 
         bool operator==(const Valuable& other) const override {
-            return (other.Is<Chld>() && operator==(other.as<Chld>()))
+            return (other.template Is<Chld>() && operator==(other.template as<Chld>()))
                 || ((other.IsSum() || other.IsProduct()) && other.operator==(*this));
         }
 
@@ -190,12 +193,12 @@ namespace omnn::math {
 
         Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t vars) const override {
             return [
-                lambda1 = _1.CompileIntoLambda(vars),
-                lambda2 = _2.CompileIntoLambda(vars)
+                lambda1 = _1.template CompileIntoLambda(vars),
+                lambda2 = _2.template CompileIntoLambda(vars)
                 ]
-                (auto params)
+                (auto params) -> decltype(auto)
                 {
-                    return Chld::GetBinaryOperationLambdaTemplate()(lambda1(params), lambda2(params));
+                    return type::GetBinaryOperationLambdaTemplate()(lambda1(params), lambda2(params));
                 };
         }
 
@@ -278,28 +281,28 @@ namespace omnn::math {
 }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-#define DUO_OPT_PFX                                                                                                    \
-    if (!optimizations && !IsSimple()) {                                                                               \
-        hash = _1.Hash() ^ _2.Hash();                                                                                  \
-        return;                                                                                                        \
-    }                                                                                                                  \
-    if (optimized) {                                                                                                   \
-        auto h = _1.Hash() ^ _2.Hash();                                                                                \
-        if (h != hash) {                                                                                               \
-            LOG_AND_IMPLEMENT("Fix hash updating for " << *this);                                                      \
-        }                                                                                                              \
-        return;                                                                                                        \
-    }                                                                                                                  \
+#define DUO_OPT_PFX \
+    if (!optimizations && !IsSimple()) { \
+        hash = _1.Hash() ^ _2.Hash(); \
+        return; \
+    } \
+    if (optimized) { \
+        auto h = _1.Hash() ^ _2.Hash(); \
+        if (h != hash) { \
+            throw std::runtime_error("Hash mismatch in optimization"); \
+        } \
+        return; \
+    } \
     ANTILOOP(base::type)
 #else
-#define DUO_OPT_PFX                                                                                                    \
-    if (!optimizations && !IsSimple()) {                                                                               \
-        hash = _1.Hash() ^ _2.Hash();                                                                                  \
-        return;                                                                                                        \
-    }                                                                                                                  \
-    if (optimized) {                                                                                                   \
-        return;                                                                                                        \
-    }                                                                                                                  \
+#define DUO_OPT_PFX \
+    if (!optimizations && !IsSimple()) { \
+        hash = _1.Hash() ^ _2.Hash(); \
+        return; \
+    } \
+    if (optimized) { \
+        return; \
+    } \
     ANTILOOP(base::type)
 #endif
 
