@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(NE_comparator_test) {
     TestBooleanOperator(NE, [](auto x, auto y) { return x != y; });
 }
 
-BOOST_AUTO_TEST_CASE(ToBool_Delta_function_expression_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(ToBool_Delta_function_expression_test) {
     auto delta = X.ToBool();
     auto xIsPresent = delta.FindVa() && *delta.FindVa() == X;
     BOOST_TEST(xIsPresent);
