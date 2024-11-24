@@ -1,6 +1,8 @@
 #ifdef OPENMIND_BUILD_GC
 #include "GC.h"
 
+#include "exit.h"
+
 #ifdef OPENMIND_PRIME_MINING
 #include "Prime.h"
 #endif
@@ -33,7 +35,10 @@ void Nop(std::shared_ptr<void> obj) { }
 } // namespace
 
 void GC::DispatchDispose(std::shared_ptr<void>&& obj) {
-    if (!GC::IsThreadGC() && !GC::GCThread.get_stop_token().stop_requested())
+    if (!GC::IsThreadGC()
+        && !IsProcessExit()
+        && !GC::GCThread.get_stop_token().stop_requested()
+        )
         Bin.push(std::move(obj));
 }
 

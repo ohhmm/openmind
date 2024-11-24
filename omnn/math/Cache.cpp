@@ -3,20 +3,18 @@
 //
 #include "Cache.h"
 
-#include <iostream>
-#include <thread>
+#include <omnn/rt/exit.h>
 
 #include <storage/LevelDbCache.h>
 
 #include <boost/tokenizer.hpp>
 
+#include <iostream>
+#include <thread>
+
 
 using namespace omnn::math;
 using namespace omnn::rt;
-
-
-bool Cache::GlobalCacheCancel = {};
-Cache::Cached Cache::TaskNoCache;
 
 
 namespace {
@@ -28,13 +26,9 @@ void DeleteDB(const Cache::path_str_t& path) {
 }
 #endif
 
-auto CancelAtExit = []() -> nullptr_t {
-    atexit([]() {
-        Cache::GlobalCacheCancel = true;
-    });
-    return {};
-}();
 }
+
+Cache::Cached Cache::TaskNoCache;
 
 
 void Cache::DbOpen() {
@@ -81,11 +75,11 @@ Cache::Cached Cache::AsyncFetch(const Valuable &value, bool itIsOptimized) {
   auto key = value.str();
   auto host = value.getVaHost();
   auto task = [=,this] () {
-      return Cache::GlobalCacheCancel
+      return IsProcessExit()
         ? CheckCacheResult{}
         : this->GetOneUsingVarHost(decltype(key)(key), std::move(host), itIsOptimized);
   };
-  return Cache::GlobalCacheCancel ? TaskNoCache : Tasks.AddTask(std::move(task));
+  return IsProcessExit() ? TaskNoCache : Tasks.AddTask(std::move(task));
 }
 
 Cache::CheckCacheResult Cache::GetOneUsingVarHost(std::string&& key, VarHost::ptr host, bool itIsOptimized) {
