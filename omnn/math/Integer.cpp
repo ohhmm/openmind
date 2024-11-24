@@ -720,7 +720,7 @@ namespace math {
             double _1 = boost::numeric_cast<double>(arbitrary);
             double _2 = static_cast<double>(v);
             if(_1 == _2) {
-                IMPLEMENT
+                return false;  // Equal values means not less than
             }
             return _1 < _2;
        } else
@@ -750,6 +750,19 @@ namespace math {
             return false;
         else
             return v.operator==(*this);
+    }
+
+    Valuable Integer::IsNegativeThan(const Valuable& other) const
+    {
+        if (other.IsInt()) {
+            return (arbitrary < 0 && arbitrary == -other.ca()) ? Integer(1) : Integer(0);
+        }
+        else if (other.IsFraction()) {
+            return Integer(0);
+        }
+        else {
+            return Integer(0);
+        }
     }
 
     std::ostream& Integer::print(std::ostream& out) const
