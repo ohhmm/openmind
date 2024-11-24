@@ -605,15 +605,7 @@ namespace math {
     
     bool Integer::IsComesBefore(const Valuable& v) const
     {
-        if (v.IsProduct()) {
-            return Product{*this}.IsComesBefore(v);
-        } else if (v.IsProduct()) {
-            return Product{*this}.IsComesBefore(v);
-        } else if(v.IsInt()){
-            return *this > v;
-        } else {
-            return v.FindVa() != nullptr;
-        }
+        return v.IsInt() && *this > v;
     }
     
     Valuable Integer::InCommonWith(const Valuable& v) const
