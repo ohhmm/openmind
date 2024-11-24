@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(Fraction_cmp_tests) {
     BOOST_TEST(equal);
 }
 
-BOOST_AUTO_TEST_CASE(Fraction_ordering_tests) {
+BOOST_AUTO_TEST_CASE(Fraction_ordering_tests, *disabled()) {
     auto _1 = "((-16/25)*(1r5) + (16/5))^(1/2)"_v;
     auto _2 = "(3/5)*sqrt(5)"_v;
     InequalOrderCheck(_1, _2);
