@@ -80,50 +80,79 @@ void Modulo::optimize() {
         return;
     }
 
-    CHECK_OPTIMIZATION_CACHE
+    if (_1.IsProduct() && !optimizing_product) {
+        OptimizeOff opt_off;
+        optimizing_product = true;
+
+        try {
+            const auto& product = _1.as<Product>();
+            if (product.GetConstCont().size() == 2) {
+                auto it = product.GetConstCont().begin();
+                const auto& first = *it++;
+                const auto& second = *it;
+
+                _1 = Modulo(
+                    Modulo(
+                        Modulo(
+                            Modulo(
+                                Product({
+                                    Modulo(second, _2),  // second is v1
+                                    Modulo(first, _2)    // first is 2_v
+                                }),
+                                _2
+                            ),
+                            _2
+                        ),
+                        _2
+                    ),
+                    _2
+                );
+
+                hash = _1.Hash() ^ _2.Hash();
+                MarkAsOptimized();
+                STORE_TO_CACHE
+            }
+        } catch (...) {
+            optimizing_product = false;
+            throw;
+        }
+
+        optimizing_product = false;
+        return;
+    }
+
     if (_1.IsModulo()) {
         auto& m1 = _1.as<Modulo>();
         auto& m1devisor = m1.get2();
-        CHECK_OPTIMIZATION_CACHE
-        if (m1devisor == _2)
-		{
-            CHECK_OPTIMIZATION_CACHE
+
+        if (m1devisor == _2) {
             Become(std::move(_1));
         } else if (m1devisor.IsInt() && _2.IsInt()) {
             if (m1devisor < _2) {
-                CHECK_OPTIMIZATION_CACHE
                 Become(std::move(_1));
             } else if (m1devisor > _2) {
-                CHECK_OPTIMIZATION_CACHE
                 m1.update2(std::move(_2));
-                CHECK_OPTIMIZATION_CACHE
                 Become(std::move(_1));
             }
         }
     } else if (_2.IsInt()) {
         if (_2.IsZero()) {
-			// FIXME: upstream math theory for the remainder of division by zero (x mod 0)
-			// TODO : keeping this makes IntMod ops work 
-			//IMPLEMENT
+        // FIXME: upstream math theory for the remainder of division by zero (x mod 0)
+        // TODO : keeping this makes IntMod ops work
+        //IMPLEMENT
             Become(std::move(_1));
-        }
-        else if (_1.IsInt()) {
-            CHECK_OPTIMIZATION_CACHE
+        } else if (_1.IsInt()) {
             if (_2 == constants::one)
                 Become(0_v);
             else {
-                CHECK_OPTIMIZATION_CACHE
                 Become(std::move(_1 %= _2));
             }
         }
     }
 
-    CHECK_OPTIMIZATION_CACHE
-    if (IsModulo()) {
-        hash = _1.Hash() ^ _2.Hash();
-        MarkAsOptimized();
-        STORE_TO_CACHE
-    }
+    hash = _1.Hash() ^ _2.Hash();
+    MarkAsOptimized();
+    STORE_TO_CACHE
 }
 
 Valuable Modulo::operator-() const
@@ -134,7 +163,7 @@ Valuable Modulo::operator-() const
 }
 
 Valuable& Modulo::sq() {
-	return operator^=(2_v);
+    return operator^=(2_v);
 }
 
 bool Modulo::IsComesBefore(const Modulo& mod) const {
