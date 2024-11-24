@@ -32,7 +32,6 @@ namespace fs = boost::filesystem;
         class Cached;
         using cache_get_value_task_queue_t = ::omnn::rt::StoringTasksQueue<CheckCacheResult, Cached>;
 
-        static bool GlobalCacheCancel;
         static Cached TaskNoCache;
 
 
