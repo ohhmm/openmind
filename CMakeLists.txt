@@ -1,15 +1,67 @@
 cmake_minimum_required(VERSION 3.14)
 
+# Force response files for Ninja
+set(CMAKE_NINJA_FORCE_RESPONSE_FILE ON CACHE BOOL "Force Ninja to use response files" FORCE)
+set(CMAKE_NINJA_RESPONSE_FILE_LENGTH 1024 CACHE STRING "Response file length" FORCE)
+
+# Configure toolchain files
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if(WIN32)
+        set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+        include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/toolchain-windows.cmake")
+    else()
+        set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+    endif()
+endif()
+
+# Ensure Ninja is available for multi-config builds
+find_program(NINJA_EXECUTABLE ninja)
+if(NOT NINJA_EXECUTABLE)
+    message(FATAL_ERROR "Ninja build system not found. Please install ninja-build")
+endif()
+
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
 
 enable_language(CXX)
+
+# Configure threading support
+set(THREADS_PREFER_PTHREAD_FLAG OFF)
+set(CMAKE_THREAD_PREFER_PTHREAD OFF)
+set(CMAKE_USE_WIN32_THREADS_INIT ON)
+find_package(Threads REQUIRED)
+
 include(cmake/compiler_support.cmake)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set_property(GLOBAL PROPERTY CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
+
+# Configure runtime library before generator setup
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+elseif(MINGW)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
+endif()
+
+# Configure vcpkg and Boost settings
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
+
+if(MSVC OR MINGW)
+    set(Boost_USE_STATIC_LIBS ON)
+    set(Boost_USE_STATIC_RUNTIME OFF)
+    set(Boost_USE_MULTITHREADED ON)
+    set(BOOST_MIN_VERSION "1.83.0")
+    set(OPENMIND_REQUIRED_BOOST_VERSION "1.83.0")
+    set(OPENMIND_PREFERRED_BOOST_VERSION "1.83.0")
+else()
+    set(Boost_USE_STATIC_LIBS OFF)
+    set(BOOST_MIN_VERSION "1.83.0")
+    set(OPENMIND_REQUIRED_BOOST_VERSION "1.83.0")
+    set(OPENMIND_PREFERRED_BOOST_VERSION "1.83.0")
+endif()
 
 message("BIN_DIR=${CMAKE_BINARY_DIR}")
 message("SRC_DIR=${CMAKE_SOURCE_DIR}")
@@ -55,6 +107,8 @@ list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
 	"${CMAKE_BINARY_DIR}/lib/cmake"
 	"${CMAKE_SOURCE_DIR}/cmake"
+	"$ENV{VCPKG_ROOT}/installed/x64-windows/share"
+	"$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg/ports"
 )
 if(OPENMIND_USE_CONAN)
 	list(PREPEND CMAKE_MODULE_PATH
@@ -81,9 +135,12 @@ if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 	endif()
 else()
 	set(_IS_DEBUG FALSE)
-	set(Boost_USE_STATIC_LIBS ON)
-	SET(BUILD_SHARED_LIBS OFF)
-	if(NOT OPENMIND_USE_VCPKG)
+	if(OPENMIND_USE_VCPKG)
+		set(Boost_USE_STATIC_LIBS OFF)
+		set(BUILD_SHARED_LIBS ON)
+	else()
+		set(Boost_USE_STATIC_LIBS ON)
+		SET(BUILD_SHARED_LIBS OFF)
 		add_definitions(-DBOOST_ALL_STATIC_LINK)
 	endif()
 	if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
@@ -114,10 +171,17 @@ option(OPENMIND_USE_QT "Link Qt libs" OFF)
 
 include(intel)
 
+# OpenCL Configuration
 option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
 if(OPENMIND_USE_OPENCL)
-	find_optional_pkg(OpenGL)
-	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
+    find_package(OpenCL REQUIRED)
+    if(OpenCL_FOUND)
+        message(STATUS "Found OpenCL: ${OpenCL_LIBRARIES}")
+        find_optional_pkg(OpenGL)
+        option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
+    else()
+        message(FATAL_ERROR "OpenCL is required but not found")
+    endif()
 endif()
 
 if(NOT WIN32)
@@ -127,8 +191,10 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.85.0 CACHE STRING "Boost library version to use")
-set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
+
+# Boost Configuration
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.83.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_REQUIRED_BOOST_VERSION 1.83.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
 if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
@@ -162,28 +228,33 @@ set(_BOOST_USED_COMPONENTS
 	system
 	thread
 	CACHE STRING "Components" FORCE)
-if(OPENMIND_USE_VCPKG)
-#	set(Boost_USE_STATIC_LIBS        ON)
-#	set(Boost_USE_DEBUG_LIBS        OFF)
-#	set(Boost_USE_RELEASE_LIBS       ON)
-#	set(Boost_USE_MULTITHREADED      ON)
-#	set(Boost_USE_STATIC_RUNTIME     ON)
+if(OPENMIND_USE_VCPKG AND NOT MINGW)
+    set(Boost_USE_STATIC_LIBS OFF)
+    set(Boost_USE_DEBUG_LIBS ON)
+    set(Boost_USE_RELEASE_LIBS ON)
+    set(Boost_USE_MULTITHREADED ON)
+    set(Boost_USE_STATIC_RUNTIME OFF)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 		compute
 		multiprecision
 		uuid
 		CACHE STRING "Components" FORCE)
-endif(OPENMIND_USE_VCPKG)
+endif()
 if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
-    enable_testing()
-	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
-		unit_test_framework
-		CACHE STRING "Components" FORCE)
-	if(NOT OPENMIND_USE_VCPKG)
-		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
-			test_exec_monitor
-			CACHE STRING "Components" FORCE)
-	endif()
+    if(NOT MINGW)
+        enable_testing()
+        set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
+            unit_test_framework
+            CACHE STRING "Components" FORCE)
+        if(NOT OPENMIND_USE_VCPKG)
+            set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
+                test_exec_monitor
+                CACHE STRING "Components" FORCE)
+        endif()
+    else()
+        message(STATUS "Tests disabled for MinGW build - Boost unit_test_framework not available")
+        set(OPENMIND_BUILD_TESTS OFF CACHE BOOL "Build various TESTS" FORCE)
+    endif()
 endif()
 list(REMOVE_DUPLICATES _BOOST_USED_COMPONENTS)
 set(BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS} CACHE STRING "Components" FORCE)
@@ -216,31 +287,53 @@ elseif(OPENMIND_USE_CONAN)
 endif()
 
 if (NOT Boost_FOUND)
+	if (MINGW)
+		set(Boost_USE_STATIC_LIBS ON)
+		set(Boost_USE_STATIC_RUNTIME ON)
+		set(Boost_USE_MULTITHREADED ON)
+	endif()
+
 	if (OPENMIND_USE_VCPKG)
 		unset(Boost_DIR CACHE)
 		unset(Boost_INCLUDE_DIR CACHE)
-		find_package(Boost CONFIG COMPONENTS ${BOOST_USED_COMPONENTS} REQUIRED)
+		set(Boost_NO_SYSTEM_PATHS ON)
+		set(BOOST_ROOT "$ENV{VCPKG_ROOT}/installed/x64-windows")
+		set(Boost_DIR "${BOOST_ROOT}/share/boost" CACHE PATH "Boost config directory")
+		find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION} CONFIG REQUIRED
+			COMPONENTS ${BOOST_USED_COMPONENTS}
+			PATHS "${BOOST_ROOT}"
+			NO_DEFAULT_PATH)
 	else()
 		set(BOOST_PATHS_HINTS
 				C:/Boost
+				C:/local/boost_*
+				C:/local/boost
+				C:/Program Files/boost/boost_*
+				C:/Program Files/Boost
 				/usr/local/lib/cmake/Boost-*
 				/usr/lib/x86_64-linux-gnu/cmake/Boost-*
 				/usr/local/share/boost-*
 		)
-		find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
+		if(WIN32)
+			find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION} CONFIG REQUIRED
+				HINTS ${BOOST_PATHS_HINTS}
+				COMPONENTS ${BOOST_USED_COMPONENTS})
+		else()
+			find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION}
 				CONFIG
 				HINTS ${BOOST_PATHS_HINTS}
 				COMPONENTS ${BOOST_USED_COMPONENTS}
-		)
-		if(NOT Boost_FOUND)
-			find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
+			)
+			if(NOT Boost_FOUND)
+				find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
 					CONFIG
 					HINTS ${BOOST_PATHS_HINTS}
 					COMPONENTS ${BOOST_USED_COMPONENTS}
-			)
+				)
+			endif()
 		endif()
-	endif ()
-endif ()
+	endif()
+endif()
 add_custom_target(prerequisites)
 set_target_properties(prerequisites PROPERTIES FOLDER "util")
 

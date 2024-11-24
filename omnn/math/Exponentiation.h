@@ -16,8 +16,8 @@ class Exponentiation
 
 protected:
     friend Logarithm;
-    constexpr Valuable& ebase() { return base::_1; }
-    constexpr Valuable& eexp() { return base::_2; }
+    MSVC_CONSTEXPR Valuable& ebase() { return base::_1; }
+    MSVC_CONSTEXPR Valuable& eexp() { return base::_2; }
     std::ostream& print_sign(std::ostream& out) const override;
 public:
     std::ostream& code(std::ostream& out) const override;
@@ -32,7 +32,7 @@ public:
         InitVars();
     }
 
-    static constexpr auto GetBinaryOperationLambdaTemplate() {
+    static MSVC_CONSTEXPR auto GetBinaryOperationLambdaTemplate() {
         return [](const auto& base, const auto& exp) { return ::std::pow(base, exp); };
     }
 

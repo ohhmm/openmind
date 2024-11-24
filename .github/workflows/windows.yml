@@ -10,16 +10,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ilammy/msvc-dev-cmd@v1
-    - name: Cache Boost dependencies
+    - name: Install vcpkg
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat
+        # vcpkg will install packages automatically in manifest mode
+    - name: Cache vcpkg dependencies
       uses: actions/cache@v4
       with:
         path: |
+          ${{ github.workspace }}/vcpkg/installed
+          ${{ github.workspace }}/build/vcpkg_installed
           ${{ github.workspace }}/build/CMakeFiles
-          C:/Boost
-          ${{ github.workspace }}/build/bin/Db*.solutions
-        key: ${{ runner.os }}-boost-${{ hashFiles('**/vcpkg.json') }}
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
-          ${{ runner.os }}-boost-
+          ${{ runner.os }}-vcpkg-
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
 
@@ -27,7 +32,8 @@ jobs:
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
-      run: cmake ${{github.workspace}} -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO
+        VCPKG_ROOT: ${{github.workspace}}/vcpkg
+      run: cmake ${{github.workspace}} -DOPENMIND_USE_VCPKG=YES -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DBoost_NO_BOOST_CMAKE=OFF -DCMAKE_PREFIX_PATH=${{github.workspace}}/vcpkg/installed/x64-windows
 
     - name: Install prerequisites
       run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
