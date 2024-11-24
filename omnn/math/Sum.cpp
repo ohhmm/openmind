@@ -1393,14 +1393,15 @@ namespace
         auto doCheckCache = Complexity() > 10;
         USE_CACHE(DbSumSqCache);
         Sum sum;
-        auto e = end();
-        for (auto i = begin(); i != e; ++i)
         {
-            CHECK_CACHED_READY;
-            sum.Add(i->Sq());
-            for (auto j = i; ++j != e;)
-            {
-                sum.Add(*i * *j * 2);
+            OptimizeOff off;
+            auto e = end();
+            for (auto i = begin(); i != e; ++i) {
+                CHECK_CACHED_READY;
+                sum.Add(i->Sq());
+                for (auto j = i; ++j != e;) {
+                    sum.Add(*i * *j * 2);
+                }
             }
         }
         if (doCheckCache && cached.NotInCache())
