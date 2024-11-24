@@ -80,6 +80,8 @@ void Modulo::optimize() {
         return;
     }
 
+    static thread_local bool optimizing_product = false;
+
     if (_1.IsProduct() && !optimizing_product) {
         OptimizeOff opt_off;
         optimizing_product = true;
@@ -95,10 +97,13 @@ void Modulo::optimize() {
                     Modulo(
                         Modulo(
                             Modulo(
-                                Product({
-                                    Modulo(second, _2),  // second is v1
-                                    Modulo(first, _2)    // first is 2_v
-                                }),
+                                Modulo(
+                                    Product({
+                                        Modulo(first, _2),    // first is 2_v
+                                        Modulo(second, _2)    // second is v1
+                                    }),
+                                    _2
+                                ),
                                 _2
                             ),
                             _2
