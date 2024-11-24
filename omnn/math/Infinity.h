@@ -94,4 +94,8 @@ public:
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable&) const override { return {true, *this}; }
 };
 
+namespace constant {
+static const NaN nan;
+}
+
 }}
