@@ -80,6 +80,7 @@ namespace omnn::math {
             {"e", constant::e},
             {"i", constant::i},
             {"pi", constant::pi},
+            {NaN::SerializationName, constant::nan},
         };
     } // namespace constants
 
