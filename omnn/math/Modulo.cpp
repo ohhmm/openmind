@@ -81,12 +81,54 @@ void Modulo::optimize() {
     }
 
     CHECK_OPTIMIZATION_CACHE
+
+    static thread_local bool optimizing_product = false;
+
+    if (_1.IsProduct() && !optimizing_product) {
+        const auto& product = _1.as<Product>();
+        const auto& terms = product.GetConstCont();
+
+        if (terms.size() == 2) {
+            try {
+                // Use RAII optimization guard
+                Valuable::OptimizeOff opt_guard;
+                optimizing_product = true;
+
+                auto it = terms.begin();
+                Valuable term1 = *it;
+                ++it;
+                Valuable term2 = *it;
+
+                // If both terms are constants, compute directly
+                if (term1.IsConstant() && term2.IsConstant()) {
+                    _1 = (term1 * term2) % _2;
+                    hash = _1.Hash() ^ _2.Hash();
+                    optimizing_product = false;
+                    return;
+                }
+
+                // Create individual modulo terms
+                Valuable mod1 = Modulo(term1, _2);
+                Valuable mod2 = Modulo(term2, _2);
+
+                // Create the product of the modulo terms
+                _1 = Product{mod1, mod2};
+                hash = _1.Hash() ^ _2.Hash();
+                optimizing_product = false;
+                return;
+            } catch (const std::exception& e) {
+                optimizing_product = false;
+                throw;
+            }
+        }
+    }
+
     if (_1.IsModulo()) {
+        CHECK_OPTIMIZATION_CACHE
         auto& m1 = _1.as<Modulo>();
         auto& m1devisor = m1.get2();
-        CHECK_OPTIMIZATION_CACHE
-        if (m1devisor == _2)
-		{
+
+        if (m1devisor == _2) {
             CHECK_OPTIMIZATION_CACHE
             Become(std::move(_1));
         } else if (m1devisor.IsInt() && _2.IsInt()) {
@@ -102,12 +144,12 @@ void Modulo::optimize() {
         }
     } else if (_2.IsInt()) {
         if (_2.IsZero()) {
-			// FIXME: upstream math theory for the remainder of division by zero (x mod 0)
-			// TODO : keeping this makes IntMod ops work 
-			//IMPLEMENT
+        // FIXME: upstream math theory for the remainder of division by zero (x mod 0)
+        // TODO : keeping this makes IntMod ops work
+        //IMPLEMENT
+            CHECK_OPTIMIZATION_CACHE
             Become(std::move(_1));
-        }
-        else if (_1.IsInt()) {
+        } else if (_1.IsInt()) {
             CHECK_OPTIMIZATION_CACHE
             if (_2 == constants::one)
                 Become(0_v);
@@ -125,11 +167,9 @@ void Modulo::optimize() {
     }
 
     CHECK_OPTIMIZATION_CACHE
-    if (IsModulo()) {
-        hash = _1.Hash() ^ _2.Hash();
-        MarkAsOptimized();
-        STORE_TO_CACHE
-    }
+    hash = _1.Hash() ^ _2.Hash();
+    MarkAsOptimized();
+    STORE_TO_CACHE
 }
 
 Valuable Modulo::operator-() const
@@ -140,7 +180,7 @@ Valuable Modulo::operator-() const
 }
 
 Valuable& Modulo::sq() {
-	return operator^=(2_v);
+    return operator^=(2_v);
 }
 
 bool Modulo::IsComesBefore(const Modulo& mod) const {
