@@ -99,8 +99,8 @@ void Modulo::optimize() {
                             Modulo(
                                 Modulo(
                                     Product({
-                                        Modulo(first, _2),    // first is 2_v
-                                        Modulo(second, _2)    // second is v1
+                                        Modulo(second, _2),    // second is v1
+                                        Modulo(first, _2)      // first is 2_v
                                     }),
                                     _2
                                 ),
