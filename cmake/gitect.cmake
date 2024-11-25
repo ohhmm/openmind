@@ -125,14 +125,10 @@ if(GIT_EXECUTABLE)
 	endforeach()
 
 	if(WIN32)
-        set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch -a | Select-String -NotMatch '^\\s*remotes/' | ForEach-Object { $$branch = $$_.Trim; if ($$branch -ne 'main') { . '${GIT_EXECUTABLE}' checkout $$branch; if (.'${GIT_EXECUTABLE}' pull --rebase --autostash origin main) { Write-Host \\\"Rebased $$branch onto main\\\" } else { . '${GIT_EXECUTABLE}' rebase --abort; Write-Host \\\"Failed to rebase $$branch onto main\\\" } } }")
 		add_custom_target(rebase-all-branches
-            COMMAND ${CMAKE_COMMAND} -E echo "Rebasing all branches onto origin/main"
 			COMMAND ${GIT_EXECUTABLE} fetch --all
-            #COMMAND powershell -NoProfile -NonInteractive -File "${CMAKE_SOURCE_DIR}/cmake/scripts/RebaseAllBranches.ps1" -GitExecutable "${GIT_EXECUTABLE}"
-            # ^- cannot be loaded because running scripts is disabled
-			COMMAND cmd /c "for /f %b in ('git branch --format \"%%(refname:short)\" ^| findstr /v \"^main$$\"') do (git checkout %b && git rebase main) && git checkout main"
-            COMMENT "Rebasing all branches onto origin/main using powershell."
+			COMMAND ${CMAKE_COMMAND} -E echo "Rebasing all branches onto main"
+			COMMAND ${CMAKE_COMMAND} -E env cmd /c "${CMAKE_SOURCE_DIR}/cmake/rebase-all-branches.cmd"
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
 	else()
