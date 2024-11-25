@@ -1,2 +1,2 @@
-test()
-#target_link_libraries(08_System PUBLIC Boost::thread)
+# Build test targets for math module
+test(math)
