@@ -3,6 +3,8 @@
 
 #include "Variable.h"
 #include "Sum.h"
+
+
 using namespace omnn::math;
 using namespace boost::unit_test;
 
@@ -79,6 +81,21 @@ BOOST_AUTO_TEST_CASE(Exponentiation_Order_test) {
 
     _1 = Exponentiation{"X"_va, 2};
     Check();
+}
+
+BOOST_AUTO_TEST_CASE(Exponentiation_Same_test, *disabled()) {
+    DECL_VA(X);
+    auto _1 = Exponentiation{X, 2};
+    auto _2 = Exponentiation{Sum{X}, 2};
+
+    BOOST_TEST(_1 == _2);
+    auto before = _1.IsComesBefore(_2);
+    auto after = _2.IsComesBefore(_1);
+    BOOST_TEST(before == after);
+    Product{_1, _2};
+    Sum{_1, _2};
+    auto same = _1.Same(_2);
+    BOOST_TEST(!same);
 }
 
 BOOST_AUTO_TEST_CASE(Exponentiation_Simplification_tests)
