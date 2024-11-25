@@ -986,6 +986,7 @@ namespace omnn::math {
         bool is = {};
         bool baseIsVa = getBase().IsVa();
         bool vbaseIsVa = e.getBase().IsVa();
+
         if (baseIsVa && vbaseIsVa)
             is = getExponentiation() == e.getExponentiation() ? getBase().IsComesBefore(e.getBase())
                                                               : getExponentiation() > e.getExponentiation();

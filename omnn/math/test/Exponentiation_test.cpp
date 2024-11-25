@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(Exponentiation_Order_test) {
     Check();
 }
 
-BOOST_AUTO_TEST_CASE(Exponentiation_Same_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(Exponentiation_Same_test) {
     DECL_VA(X);
     auto _1 = Exponentiation{X, 2};
     auto _2 = Exponentiation{Sum{X}, 2};
