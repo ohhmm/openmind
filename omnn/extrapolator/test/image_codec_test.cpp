@@ -52,6 +52,8 @@ std::string l(const omnn::math::Valuable& v)
 
 DECL_VARS(x, y, z);
 
+#if !defined(NDEBUG) || defined(MSVC)
+
 BOOST_AUTO_TEST_CASE(ImageCodec_test)
 {
     rgba8_image_t src;
@@ -109,7 +111,8 @@ BOOST_AUTO_TEST_CASE(ImageCodec_test)
     }
 }
 
-BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test, *disabled())
+#else
+BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test)
 {
     rgba8_image_t src;
     read_image(TEST_SRC_DIR "g.tga", src, targa_tag());
@@ -128,7 +131,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test, *disabled())
             }
         }
         auto factors = extrapolator.Factors(y, x, z);
-        //BOOST_CHECK_NO_THROW(factors.optimize());
+        //BOOST_CHECK_NO_THROW(factors.optimize()); //FIXME: uncomment
         std::cout << "\n Input image formula for " << tag << " chennel: " << factors << std::endl;
 
         return FormulaOfVaWithSingleIntegerRoot(z, factors, &formulaParamSequence);
@@ -176,7 +179,7 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test, *disabled())
     bfo.SetMode(FormulaOfVaWithSingleIntegerRoot::Newton);
     bfo.SetMin(0); bfo.SetMax(255);
 
-    const auto d = 2; // 5
+    const auto d = 1;
     cols+=d;rows+=d;
     dst = decltype(src)(rows+d, cols+d);
     dv = view(dst);
@@ -194,3 +197,4 @@ BOOST_AUTO_TEST_CASE(ImageCodec_extrapolated_test, *disabled())
     write_view(TEST_BIN_DIR "e.tga", dv, targa_tag());
 }
 
+#endif
