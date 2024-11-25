@@ -37,7 +37,7 @@ public:
     }
 
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
-    
+
     void optimize() override;
 
 	Valuable operator-() const override;
@@ -45,7 +45,10 @@ public:
     Valuable& sq() override;
 
 	std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
-    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
+    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override {
+        // We'll let optimize() handle the product optimization
+        return {};
+    }
     Valuable InCommonWith(const Valuable& v) const override { return 1; }
     const vars_cont_t& getCommonVars() const override { return VarsForCommoning; }
 
