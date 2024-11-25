@@ -219,6 +219,17 @@ namespace omnn::math {
             return std::all_of(begin(), end(), [](auto& m){return m.IsSimple();});
         }
 
+        bool Same(const Valuable& value) const override {
+            auto same = this->OfSameType(value) && this->Hash() == value.Hash();
+            if (same) {
+                auto& other = value.as<ChildT>();
+                same = std::equal(
+                    begin(), end(), other.begin(), other.end(),
+                    [](auto& item1, auto&item2) { return item1.Same(item2); });
+            }
+            return same;
+        }
+
         bool IsNaN() const override {
             return std::any_of(begin(), end(), [](auto& m) { return m.IsNaN(); });
         }

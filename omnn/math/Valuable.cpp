@@ -2300,9 +2300,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return typeid(v1) == typeid(v2);
     }
 
-    bool Valuable::Same(const Valuable& v) const
+    bool Valuable::Same(const Valuable& value) const
     {
-        return Hash()==v.Hash() && OfSameType(v) && operator==(v);
+        if (exp)
+            return exp->Same(value);
+        return Hash() == value.Hash()
+            && OfSameType(value)
+            && operator==(value);
     }
 
     bool Valuable::HasSameVars(const Valuable& v) const
