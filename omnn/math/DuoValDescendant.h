@@ -142,6 +142,15 @@ namespace omnn::math {
                 || ((other.IsSum() || other.IsProduct()) && other.operator==(*this));
         }
 
+        bool Same(const Valuable& value) const override {
+            auto same = this->OfSameType(value) && this->Hash() == value.Hash();
+            if (same) {
+                auto& other = value.as<type>();
+                same = _1.Same(other._1) && _2.Same(other._2);
+            }
+            return same;
+        }
+
         const Variable* FindVa() const override {
             auto va = _1.FindVa();
             return va ? va : _2.FindVa();

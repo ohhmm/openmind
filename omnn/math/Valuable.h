@@ -466,7 +466,7 @@ public:
     virtual void Eval(const Variable& va, const Valuable& v);
     virtual bool IsComesBefore(const Valuable& v) const; /// accepts same type as param
 
-    bool Same(const Valuable& v) const;
+    virtual bool Same(const Valuable& v) const;
     bool OfSameType(const Valuable& v) const;
     bool HasSameVars(const Valuable& v) const;
     bool IsMonic() const;
