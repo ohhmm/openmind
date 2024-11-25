@@ -840,13 +840,6 @@ namespace omnn::math {
         return eq;
     }
 
-    bool Exponentiation::OfSameType(const Valuable& v) const {
-        if (!base::OfSameType(v))
-            return false;
-        const auto& other = v.as<Exponentiation>();
-        return ebase().OfSameType(other.ebase()) && eexp().OfSameType(other.eexp());
-    }
-
     Exponentiation::operator double() const
     {
         return std::pow(static_cast<double>(ebase()), static_cast<double>(eexp()));
@@ -993,16 +986,6 @@ namespace omnn::math {
         bool is = {};
         bool baseIsVa = getBase().IsVa();
         bool vbaseIsVa = e.getBase().IsVa();
-
-        // Special case: if one is Variable and other is Sum{Variable}, treat them as equal
-        if ((baseIsVa && e.getBase().IsSum()) || (vbaseIsVa && getBase().IsSum())) {
-            const Valuable& sumExpr = baseIsVa ? e.getBase() : getBase();
-            const Valuable& varExpr = baseIsVa ? getBase() : e.getBase();
-            if (sumExpr.as<Sum>().size() == 1 && sumExpr == varExpr) {
-                // Bases are equivalent, compare exponents
-                return getExponentiation().IsComesBefore(e.getExponentiation());
-            }
-        }
 
         if (baseIsVa && vbaseIsVa)
             is = getExponentiation() == e.getExponentiation() ? getBase().IsComesBefore(e.getBase())
