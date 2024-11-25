@@ -99,6 +99,7 @@ public:
     Valuable& operator ^=(const Valuable&) override;
     bool operator==(const Exponentiation&) const;
     bool operator ==(const Valuable&) const override;
+    bool OfSameType(const Valuable& v) const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable& integral(const Variable& x, const Variable& C) override;

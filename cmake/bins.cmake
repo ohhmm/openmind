@@ -120,7 +120,7 @@ function(apply_target_commons this_target)
 		EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-		MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:DebugDLL>
+		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
 		)
 	target_compile_options(${this_target} PUBLIC
 		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-fcoroutines>
@@ -163,9 +163,9 @@ function(apply_target_commons this_target)
 			/MP
 			/constexpr:steps1000000000
 			/source-charset:utf-8
-			$<$<CONFIG:DEBUG>:/ZI>
-			$<$<CONFIG:Release>:/MT>
-			$<$<CONFIG:RelWithDebInfo>:/ZI>
+			$<$<CONFIG:DEBUG>:/MDd /ZI>
+			$<$<CONFIG:Release>:/MD>
+			$<$<CONFIG:RelWithDebInfo>:/MDd /ZI>
 			)
 		#target_compile_options(${this_target} PUBLIC REMOVE
 		#	$<$<CONFIG:DEBUG>:/Zi>
@@ -175,6 +175,7 @@ function(apply_target_commons this_target)
 			$<$<CONFIG:DEBUG>:/LTCG:OFF>
 			$<$<CONFIG:RelWithDebInfo>:/LTCG:OFF>
 			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-wunicode>
+			$<$<CXX_COMPILER_ID:MSVC>:/DEFAULTLIB:msvcrtd.lib>
 			)
 		message("${CMAKE_BINARY_DIR}/bin")
         if(EXISTS ${Boost_INCLUDE_DIR}/stage/lib)
