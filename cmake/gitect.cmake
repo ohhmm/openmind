@@ -83,28 +83,32 @@ if(GIT_EXECUTABLE)
 
 		add_git_target(push-openmind-develop push origin develop)
 		add_git_target(force-push-openmind-develop push origin develop -f)
-	else()
-		if(WIN32)
-			set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged origin/main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -D $$_.Line.Trim() }")
-			add_custom_target(delete-merged-branches
-				COMMAND ${GIT_EXECUTABLE} checkout main
-				COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
-				COMMAND powershell -Command "${PS_GIT_CMD}"
-				COMMENT "Deleting branches that already are in main using powershell."
-			)
-		else(WIN32)
-		add_custom_target(delete-merged-branches
-				COMMAND ${GIT_EXECUTABLE} checkout main
-				COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
-				COMMAND ${GIT_EXECUTABLE} branch --merged origin/main | grep -v "^* main" | xargs -n 1 -r ${GIT_EXECUTABLE} branch -d
-				COMMENT "Deleting branches that already are in main using bash."
-			)
-		endif(WIN32)
-		set_target_properties(delete-merged-branches PROPERTIES
-			EXCLUDE_FROM_ALL 1
-			EXCLUDE_FROM_DEFAULT_BUILD 1
-			FOLDER "util/git")
 	endif()
+
+	if(WIN32)
+		set(PS_GIT_CMD ".'${GIT_EXECUTABLE}' branch --merged origin/main | Select-String -NotMatch '^\\s*\\*?\\s*main$$' | ForEach-Object { .'${GIT_EXECUTABLE}' branch -D $$_.Line.Trim() }")
+		add_custom_target(delete-merged-branches
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+			COMMAND ${GIT_EXECUTABLE} checkout --merge main
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+			COMMAND powershell -Command "${PS_GIT_CMD}"
+			COMMENT "Deleting branches that already are in main using powershell."
+		)
+	else(WIN32)
+		add_custom_target(delete-merged-branches
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+			COMMAND ${GIT_EXECUTABLE} checkout --merge main
+			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+			COMMAND ${GIT_EXECUTABLE} branch --merged origin/main | grep -v "^* main" | xargs -n 1 -r ${GIT_EXECUTABLE} branch -d
+			COMMENT "Deleting branches that already are in main using bash."
+		)
+	endif(WIN32)
+	set_target_properties(delete-merged-branches PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
 
 	add_custom_target(push-to-develop
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
