@@ -56,14 +56,17 @@ jobs:
       if: runner.os == 'macOS'
       env:
         VCPKG_PYTHON3: $(which python3)
+        CXX: $(cmake -L | grep CMAKE_CXX_COMPILER)
       uses: nick-fields/retry@v2
       with:
         timeout_minutes: 10
         max_attempts: 3
         command: |
           echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER=$CMAKE_CXX_COMPILER" >> $GITHUB_ENV
           brew update || brew update || brew update || brew update || brew update
-          brew install cmake ninja autoconf automake autoconf-archive
+          brew install cmake ninja autoconf automake autoconf-archive libtool texinfo
+          brew link --force autoconf automake libtool
           cmake --version
           ninja --version
           clang --version
@@ -83,7 +86,7 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: 'c82f74667287d3dc386bce81e44964370c91a289'
+        vcpkgGitCommitId: '6f29f12e82a8293156836ad81cc9bf5af41fe836'
         vcpkgJsonGlob: '**/vcpkg.json'
 
     - name: Configure CMake
