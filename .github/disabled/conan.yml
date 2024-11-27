@@ -37,7 +37,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
-      run: cmake ${{github.workspace}} -DOPENMIND_USE_CONAN=ON -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=NO -DOPENMIND_BUILD_TESTS=ON -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO
+      run: cmake ${{github.workspace}} -DOPENMIND_USE_CONAN=ON -DOPENMIND_PREFERRED_BOOST_VERSION="1.85.0" -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=NO -DOPENMIND_BUILD_TESTS=ON -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO
     - name: Install prerequisites with conan
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target Install__Conan --config Release
