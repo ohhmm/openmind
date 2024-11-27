@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "builtin-baseline": "c82f74667287d3dc386bce81e44964370c91a289",
+  "builtin-baseline": "6f29f12e82a8293156836ad81cc9bf5af41fe836",
   "name": "openmind",
   "version": "1.0.0",
   "description": "OpenMind",
