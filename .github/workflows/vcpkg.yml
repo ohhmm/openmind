@@ -64,12 +64,12 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: 'c82f74667287d3dc386bce81e44964370c91a289'
+        vcpkgGitCommitId: '6f29f12e82a8293156836ad81cc9bf5af41fe836'
         vcpkgJsonGlob: '**/vcpkg.json'
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
-
+      run: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+      
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
 

@@ -12,10 +12,10 @@ jobs:
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Pre-Install Boost, LevelDB
-      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && ( brew install boost-python3 snappy leveldb || brew install boost-python3 snappy leveldb )
+      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && ( brew install autoconf autoconf-archive automake ninja boost-python3 snappy leveldb || brew install autoconf autoconf-archive automake ninja boost-python3 snappy leveldb )
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
+      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu` --config Release
