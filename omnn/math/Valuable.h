@@ -214,6 +214,7 @@ public:
     class [[maybe_unused]] OptimizeOn {
         bool opts;
     public:
+        MSVC_CONSTEXPR
         OptimizeOn() : opts(optimizations) {
             optimizations = true;
         }
@@ -225,11 +226,27 @@ public:
     class [[maybe_unused]] OptimizeOff {
         bool opts;
     public:
+        MSVC_CONSTEXPR
         OptimizeOff() : opts(optimizations) {
 			optimizations = {};
         }
         ~OptimizeOff(){
             optimizations = opts;
+        }
+    };
+
+    class [[maybe_unused]] ViewOptimizePause {
+        View view;
+        Valuable* valuable;
+    public:
+        ViewOptimizePause(Valuable* value)
+            : view(value->GetView())
+            , valuable(value)
+        {
+            value->SetView(View::Calc);
+        }
+        ~ViewOptimizePause() {
+            valuable->SetView(view);
         }
     };
 
