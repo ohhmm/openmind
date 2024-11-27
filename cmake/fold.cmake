@@ -22,12 +22,11 @@ macro(check_dep_file)
 			unset(CONAN_EXECUTABLE CACHE)
 		endif()
 		if(NOT CONAN_EXECUTABLE)
-			find_program(CONAN_EXECUTABLE
-				NAMES conan
-				PATHS
-					$ENV{USERPROFILE}$ENV{HOME}/.local/bin
-					"$ENV{APPDATA}/Python/*/Scripts"
-					)
+			set(PYTHON_SEARCH_PATHS $ENV{USERPROFILE}$ENV{HOME}/.local/bin)
+			if(EXISTS "$ENV{APPDATA}/Python/")
+				list(PYTHON_SEARCH_PATHS APPEND "$ENV{APPDATA}/Python/*/Scripts")
+			endif()
+			find_program(CONAN_EXECUTABLE NAMES conan PATHS ${PYTHON_SEARCH_PATHS})
 		endif()
 		if(NOT CONAN_EXECUTABLE)
 			if(EXISTS ${Python_EXECUTABLE})
@@ -48,13 +47,8 @@ macro(check_dep_file)
 					message("pip output: ${pipConanOutput}")
 					unset(warnBinPath)
 				endif()
-				find_program(CONAN_EXECUTABLE 
-					NAMES conan
-					PATHS
-						$ENV{USERPROFILE}$ENV{HOME}/.local/bin
-						"$ENV{APPDATA}/Python/*/Scripts"
-						${warnBinPath}
-					)
+				list(PYTHON_SEARCH_PATHS APPEND "${warnBinPath}")
+				find_program(CONAN_EXECUTABLE NAMES conan PATHS ${PYTHON_SEARCH_PATHS})
 				if(CONAN_EXECUTABLE AND warnBinPath)
 					EXECUTE_PROCESS(
 						COMMAND ${CONAN_EXECUTABLE} profile detect
