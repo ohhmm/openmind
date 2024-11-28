@@ -11,8 +11,13 @@
 namespace omnn{
 namespace math {
 
-class System // TODO: resolve current problem, it mixes-up conjunction with disjunction and sees not all roots, if you are dealing with serious system, consider using total equation instead or  fix this  class first   
+    using system_base_t = Valuable::expressions_t;
+
+class System
+    : public system_base_t
 {
+    using base = system_base_t;
+
     std::set<Variable> solving;
     std::set<Variable> fetching;
     std::set<Variable> fetched;
@@ -41,17 +46,34 @@ class System // TODO: resolve current problem, it mixes-up conjunction with disj
     };
 
 public:
+    using base::const_iterator;
+    using base::const_pointer;
+    using base::const_reference;
+    using base::difference_type;
+    using base::iterator;
+    using base::pointer;
+    using base::reference;
+    using base::value_type;
+
     using solutions_t = Valuable::solutions_t;
     using es_t = std::map<std::set<Variable>,solutions_t>;
     using v_es_t = std::map<Variable, es_t>;
     using expressions = std::unordered_set<Valuable>;
     
+    using base::begin;
+    using base::end;
+    using base::emplace;
+    using base::empty;
+    using base::erase;
+    using base::size;
+
+
     System& operator()(const Variable& v);
     System& operator<<(const Valuable& v);
     bool Add(const Variable&, const Valuable& v);
     bool Add(const Valuable& v);
     Valuable::var_set_t Vars() const;
-    Valuable::var_set_t CollectVa(const Variable& v) const;
+    Valuable::var_set_t CollectVarsFromEquationsWithThisVar(const Variable& v) const;
     bool Eval(const Variable&, const Valuable& v);
     bool Fetch(const Variable&);
     bool Has(const Valuable&) const;
@@ -76,14 +98,14 @@ public:
 
     Valuable CalculateTotalExpression() const;
 
-	constexpr const auto& Expressions() const { return equs; }
-    auto IsEmpty() const { return equs.empty(); }
+	constexpr const Valuable::expressions_t& Expressions() const { return *this; }
+
+    auto IsEmpty() const { return empty(); }
 
     es_t& Yarns(const Variable& v) { return vEs[v]; }
     const solutions_t& Known(const Variable& v) { return Yarns(v)[{}]; }
 
 private:
-    expressions equs;
     v_es_t vEs;
     Valuable sqs;
     bool makeTotalEqu = {};

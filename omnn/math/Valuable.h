@@ -417,7 +417,8 @@ public:
     virtual Valuable& reciprocal();
     virtual Valuable Reciprocal() const;
 
-    using solutions_t = std::unordered_set<Valuable>;
+    using expressions_t = std::unordered_set<Valuable>;
+    using solutions_t = expressions_t;
     static Valuable MergeAnd(const Valuable&, const Valuable&); /// conjunctive merge of two values
     static Valuable MergeOr(const Valuable&, const Valuable&); /// disjunctive merge algorithm deduced from square equation solutions formula, works for integers
     static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&); /// algorithm is to be deduced from cubic equation solutions formula

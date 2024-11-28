@@ -48,21 +48,21 @@ bool System::Test(const Valuable::vars_cont_t& values) const {
         auto satisfied = equation.Optimized().IsZero();
         return satisfied;
     };
-    return std::all_of(equs.begin(), equs.end(), DoesEquationSatisfyGivenValues);
+    return std::all_of(begin(), end(), DoesEquationSatisfyGivenValues);
 }
 
-bool System::Has(const Valuable& e) const
+bool System::Has(const Valuable& equation) const
 {
-    if (!e.IsEquation() || !e.is_optimized()) {
-        auto copy = e;
+    if (!equation.IsEquation() || !equation.is_optimized()) {
+        auto copy = equation;
         copy.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
         try {
             Valuable::OptimizeOn o;
             try {
                 copy.optimize();
             } catch (...) {
-                std::cerr << "Exception optimizing: " << e;
-                if (e != copy) {
+                std::cerr << "Exception optimizing: " << equation;
+                if (equation != copy) {
                     std::cerr << " -> " << copy;
                 }
                 std::cerr << std::endl;
@@ -73,15 +73,17 @@ bool System::Has(const Valuable& e) const
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
             else
             {
-                LOG_AND_IMPLEMENT("Unoptimizable equation: " << e);
+                LOG_AND_IMPLEMENT("Unoptimizable equation: " << equation);
             }
 #endif
         } catch (...) {
         }
     }
-    return e.IsZero() ||
-           std::find(PAR std::begin(equs), std::end(equs), e) != equs.end() ||
-           std::find(PAR std::begin(equs), std::end(equs), -e) != equs.end();
+    auto b = begin();
+    auto e = end();
+    return equation.IsZero() ||
+           std::find(PAR b, e, equation) != e ||
+           std::find(PAR b, e, -equation) != e;
 }
 
 bool System::Add(const Valuable& v)
@@ -98,13 +100,14 @@ bool System::Add(const Valuable& v)
                 _ = v;
             }
         }
+        
         auto vars = _.Vars();
         if(vars.size() == 1){
             auto& va = *vars.begin();
             _.solve(va, vEs[va][{}]);
         } 
 
-        equs.emplace(_);
+        emplace(_);
         if (makeTotalEqu) {
             Valuable::OptimizeOn o;
             sqs += _.Sq();
@@ -119,15 +122,15 @@ bool System::Add(const Valuable& v)
 
 Valuable::var_set_t System::Vars() const {
     Valuable::var_set_t _;
-    for (auto& e : equs)
+    for (auto& e : Expressions())
         e.CollectVa(_);
     return _;
 }
 
-Valuable::var_set_t System::CollectVa(const Variable& va) const
+Valuable::var_set_t System::CollectVarsFromEquationsWithThisVar(const Variable& va) const
 {
     Valuable::var_set_t _;
-    for(auto& e : equs)
+    for (auto& e : Expressions())
         if (e.HasVa(va))
             e.CollectVa(_);
     _.erase(va);
@@ -139,11 +142,11 @@ bool System::Eval(const Variable& va, const Valuable& v)
     bool modified = {};
     if(!v.HasVa(va)) {
         auto subst = v.IsInt() || v.IsSimpleFraction();
-        auto e = equs.end();
+        auto e = end();
         bool again;
         do {
             again = {};
-            auto prev = equs.begin();
+            auto prev = begin();
             for(auto it = prev; !again && it != e; ++it)
             {
                 auto& e = *it;
@@ -153,19 +156,19 @@ bool System::Eval(const Variable& va, const Valuable& v)
                     auto eva = e;
                     eva.Eval(va, v);
                     eva.optimize();
-                    if (eva != 0) {
+                    if (!eva.IsZero()) {
                         auto becameVars = eva.Vars();
                         if (becameVars.size()) {
                             if (subst
                                 || std::includes(wasVars.begin(), wasVars.end(), becameVars.begin(), becameVars.end())
                                 ) {
                                 auto del = it;
-                                auto b = equs.begin();
+                                auto b = begin();
                                 again = prev==b;
-                                equs.erase(del);
+                                erase(del);
                                 modified = true;
                                 Add(eva);
-                                it = again ? equs.begin() : prev;
+                                it = again ? begin() : prev;
                             } else
                                 modified = Add(eva) || modified;
                         }
@@ -196,9 +199,9 @@ bool System::Fetch(const Variable& va)
     bool again;
     do {
         again = {};
-        //std::all_of(equs, [&](auto it) { // todo: multithread System::Eval
+        //std::all_of(Expressions(), [&](auto it) { // todo: multithread System::Eval
             //auto& e = *it;
-        for (auto& e : equs) {
+        for (auto& e : Expressions()) {
             try {
                 e.CollectVa(vars);
                 if (e.HasVa(va)) {
@@ -374,7 +377,7 @@ System::solutions_t System::Solve(const Variable& va)
             do
             {
                 modified = {};
-                auto otherVars = CollectVa(va);
+                auto otherVars = CollectVarsFromEquationsWithThisVar(va);
                 if (otherVars.empty()) {
                     auto& solved = vEs[va][{}];
                     if (solved.size()) {
@@ -478,8 +481,8 @@ System::solutions_t System::Solve(const Variable& va)
 }
 
 Valuable System::CalculateTotalExpression() const {
-    Sum total;
-    for (auto& e : equs) {
+    Sum total; // TODO: use intersection
+    for (auto& e : Expressions()) {
 		total.Add(e.Sq());
 	}
     return total;
