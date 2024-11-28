@@ -61,13 +61,8 @@ public:
 	virtual bool Validate() const {
         return true;
     }
-    
-    [[deprecated("Please, switch to MakesTotalEqu instead.")]]
-    void MakeTotalEqu(bool makeTotalEqu) {
-        this->makeTotalEqu = makeTotalEqu;
-    }
-    [[deprecated("Please, switch to MakesTotalEqu instead.")]]
-    constexpr auto MakeTotalEqu() const { return makeTotalEqu; }
+
+    bool Test(const Valuable::vars_cont_t&) const;
 
     void MakesTotalEqu(bool makeTotalEqu) { this->makeTotalEqu = makeTotalEqu; }
     constexpr auto MakesTotalEqu() const { return makeTotalEqu; }
@@ -93,7 +88,7 @@ private:
     Valuable sqs;
     bool makeTotalEqu = {};
     bool doEarlyFetch = {};
-//    solutions solus;
+    Valuable totalEqusComplexity;
 };
 
 }}

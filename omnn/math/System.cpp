@@ -42,6 +42,15 @@ bool System::Add(const Variable& va, const Valuable& v)
         && Add(va.Equals(v));
 }
 
+bool System::Test(const Valuable::vars_cont_t& values) const {
+    auto DoesEquationSatisfyGivenValues = [&](auto equation) {
+        equation.eval(values);
+        auto satisfied = equation.Optimized().IsZero();
+        return satisfied;
+    };
+    return std::all_of(equs.begin(), equs.end(), DoesEquationSatisfyGivenValues);
+}
+
 bool System::Has(const Valuable& e) const
 {
     if (!e.IsEquation() || !e.is_optimized()) {
