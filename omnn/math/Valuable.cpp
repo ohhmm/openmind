@@ -16,6 +16,7 @@
 #include "Logarithm.h"
 
 #include <omnn/rt/GC.h>
+#include <omnn/rt/strhash.hpp>
 #include <omnn/rt/tasq.h>
 
 #include <algorithm>
@@ -25,10 +26,7 @@
 #include <iterator>
 #include <numeric>
 #include <sstream>
-#include <string>
-#include <string_view>
 #include <stack>
-#include <map>
 #include <type_traits>
 #include <unordered_set>
 
@@ -41,7 +39,8 @@
 #include <boost/stacktrace.hpp>
 #endif
 
-using namespace std::string_view_literals;
+using namespace ::omnn::rt;
+using namespace ::std::string_view_literals;
 
 #ifdef max
 #undef max
@@ -515,112 +514,6 @@ namespace omnn::math {
 #endif
     }
 
-namespace{
-auto BracketsMap(const std::string_view& s){
-    auto l = s.length();
-    using index_t = decltype(l);
-    std::stack <index_t> st;
-    std::map<index_t, index_t> bracketsmap;
-    decltype(l) c = 0;
-    while (c < l)
-    {
-        if (s[c] == '(')
-            st.push(c);
-        else if (s[c] == ')')
-        {
-            if (st.empty()) {
-                throw "parentheses relation mismatch";
-            }
-            bracketsmap.emplace(st.top(), c);
-            st.pop();
-        }
-        ++c;
-    }
-    if (!st.empty())
-        throw "parentheses relation mismatch";
-    return bracketsmap;
-}
-
-constexpr std::string_view& Trim(std::string_view& s) {
-    s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
-    s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
-    return s;
-}
-
-std::string_view Trim(std::string& str) {
-    auto view = std::string_view(str);
-    view = Trim(view);
-    str = view;
-    return str;
-}
-
-[[nodiscard]]
-auto OmitOuterBrackets(auto& str) {
-    decltype(BracketsMap({})) bracketsmap;
-    bool outerBracketsDetected;
-    do{
-        outerBracketsDetected = {};
-        Trim(str);
-        bracketsmap = BracketsMap(str);
-        auto l = str.length();
-        auto first = bracketsmap.find(0);
-        outerBracketsDetected = first != bracketsmap.end() && first->second == l-1;
-        if (outerBracketsDetected)
-            str = str.substr(1,l-2);
-    } while(outerBracketsDetected);
-    return bracketsmap;
-}
-
-[[nodiscard]]
-std::string Solid(std::string str) {
-    str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
-    (void)OmitOuterBrackets(str);
-    if (str.ends_with("+0")) {
-        str.resize(str.length() - 2);
-    (void)OmitOuterBrackets(str);
-    }
-    return str;
-}
-[[nodiscard]]
-std::string Solid(const std::string_view& str) {
-    return Solid(std::string(str));
-}
-
-} // namespace
-
-struct HashStrOmitOuterBrackets
-    : public std::hash<std::string_view>
-{
-    [[nodiscard]] size_t operator()(const std::string_view& s) const {
-        auto str = s;
-        (void) OmitOuterBrackets(str);
-        return std::hash<std::string_view>::operator()(str);
-    }
-};
-
-struct HashStrIgnoringAnyParentheses
-{
-    [[nodiscard]] size_t operator()(const std::string_view& str) const {
-        size_t hash = 0;
-        for (auto ch : str) {
-            if (ch != '(' && ch != ')')
-                hash ^= ch;
-        }
-        return hash;
-    }
-};
-
-struct OuterParenthesesIgnoringStringsComparator {
-    [[nodiscard]] constexpr bool operator()(std::string_view str1, std::string_view str2) const {
-        auto equal = str1 == str2;
-        if (!equal) {
-            (void)OmitOuterBrackets(str1);
-            (void)OmitOuterBrackets(str2);
-            equal = str1 == str2;
-        }
-        return equal;
-    }
-};
 
 class StateProxyComparator
     : public OuterParenthesesIgnoringStringsComparator
@@ -705,7 +598,7 @@ public:
 thread_local const Valuable* StateProxyComparator::state = {};
 
 struct hash_tokens_collection_t {
-    static constexpr ::omnn::math::HashStrOmitOuterBrackets hasher = {};
+    static constexpr HashStrOmitOuterBrackets hasher = {};
     static size_t reduce(size_t s, std::string_view str) {
         auto strhash = hasher(str);
         return s ^ strhash;
