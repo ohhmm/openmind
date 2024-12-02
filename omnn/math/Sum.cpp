@@ -2752,45 +2752,45 @@ namespace
             if (FindVa()) {
                 return base::Sign();
             }
-            OptimizeOn oo;
-            std::map<Valuable, Valuable> directions;
-            for (auto& m : members) {
-                auto s = m.Sign();
-                auto it = directions.find(s);
-                if (it == directions.end()) {
-                    auto ms = -s;
-                    it = directions.find(ms);
-                    if (it == directions.end()) {
-                        directions.emplace(std::move(s), m);
-                    } else {
-                        it->second += m;
-                        auto compensatedSign = it->second.Sign();
-                        if (compensatedSign != ms) {
-                            if (compensatedSign == s) {
-                                directions.emplace(std::move(s),
-                                    std::move(directions.extract(it).mapped()));
-                            } else {
-                                IMPLEMENT
-                            }
-                        }
-                    }
-                } else {
-                    it->second += m;
-                }
+
+            std::map<Valuable, Sum> membersPerSign;
+            for (auto& member : members) {
+                membersPerSign[member.Sign()].Add(member);
             }
 
-            auto it = directions.begin();
-            sign = it->first;
-            if (directions.size() >= 1) {
-                auto e = directions.end();
-                while (++it != e) {
-                    auto s = it->first;
-                    if (-s == sign) {
-                        IMPLEMENT
-                    } else {
-                        sign = (sign + s).Sign();
+            auto it0 = membersPerSign.find(constants::zero);
+            if (it0 != membersPerSign.end()) {
+                membersPerSign.erase(it0);
+            }
+
+            switch (membersPerSign.size()) {
+            case 0:
+                break;
+            case 1:
+                sign = membersPerSign.begin()->first;
+                break;
+            case 2: {
+                auto it1 = membersPerSign.begin();
+                auto it2 = membersPerSign.rbegin();
+                if (it1->first == -it2->first) {
+                    auto& sum1 = it1->second;
+                    auto& sum2 = it2->second;
+                    auto abs1 = sum1.Abs();
+                    auto abs2 = sum2.Abs();
+                    if (abs1 < abs2)
+                        sign = it1->first;
+                    else if (abs2 < abs1)
+                        sign = it2->first;
+                    else if (abs2 != abs1) {
+                        LOG_AND_IMPLEMENT(abs1 << " <=> " << abs2);
                     }
+                } else {
+                    LOG_AND_IMPLEMENT(it1->first << " <=> " << it2->first);
                 }
+                break;
+            }
+            default:
+                LOG_AND_IMPLEMENT(*this << " has " << membersPerSign.size() << " signs");
             }
         }
         return sign;
