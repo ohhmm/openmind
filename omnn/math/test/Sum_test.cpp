@@ -388,7 +388,7 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     t.Eval(x,1); t.Eval(y,1); t.Eval(z, 4);
     t.optimize();
     BOOST_TEST(t==0);
-    
+
     DECL_VA(v4);
     DECL_VA(v5);
     DECL_VA(v6);
@@ -396,7 +396,7 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     BOOST_TEST((v5^2)*-4*v4 == (v5^2)*-4*v4);
     BOOST_TEST(v4+v5 == v5+v4);
     BOOST_TEST(v4*v6+v5*v6 == v5*v6+v4*v6);
-    
+
     auto t1 = (v4^2)*v5*-4 + (v5^2)*-4*v4;
     auto t2 = (v5^2)*-4*v4 + (v4^2)*v5*-4;
     auto& s1 = t1.as<Sum>();
@@ -406,7 +406,7 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
 //    BOOST_TEST(*s1->begin()==*s2->GetConstCont().rbegin());
 //    BOOST_TEST(*s2->begin()==*s1->GetConstCont().rbegin());
     BOOST_TEST(t1 == t2);
-    
+
     t1 = Valuable("((v4^4) + (v6^4) + (v5^4) + (v6^2)*-4*v4 + (v4^2)*v5*-4 + (v5^2)*-4*v4 + (v6^2)*v5*-4 + (v4^2)*-16*v6 + (v5^2)*-16*v6 + -72*v5 + -72*v4 + -288*v6 + 324 + (v6^2)*100 + (v4^2)*40 + (v5^2)*40 + 8*v5*v4 + (v6^3)*-16 + 32*v6*v4 + 32*v5*v6 + (v5^3)*-4 + (v4^3)*-4 + (v6^2)*(v5^2)*2 + (v5^2)*(v4^2)*2 + (v6^2)*(v4^2)*2)", v4.getVaHost(), true);
     t2 = Valuable("((v4^4) + (v6^4) + (v5^4) + (v6^2)*-4*v4 + (v5^2)*-4*v4 + (v4^2)*v5*-4 + (v6^2)*v5*-4 + (v4^2)*-16*v6 + (v5^2)*-16*v6 + -72*v5 + -72*v4 + -288*v6 + 324 + (v6^2)*100 + (v4^2)*40 + (v5^2)*40 + 8*v5*v4 + (v6^3)*-16 + 32*v6*v4 + 32*v5*v6 + (v5^3)*-4 + (v4^3)*-4 + (v6^2)*(v5^2)*2 + (v5^2)*(v4^2)*2 + (v6^2)*(v4^2)*2)", v4.getVaHost(), true);
     BOOST_TEST(t1 == t2);
@@ -432,15 +432,15 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     BOOST_TEST(!ss.HasVa(v3));
     BOOST_TEST(ss == -2040_v/v1);
     }
-    
+
     _1 = x*-1+y*-2;
     _1 /= z;
     BOOST_TEST(_1.HasVa(z));
     _2 = x*-1/z+y*-2/z;
     BOOST_TEST(_1==_2);
-    
+
     DECL_VARS(v7,v8,v9,v10,v11,v12,v13,v14,v15,v16,v17);
-    
+
     _1 = -1_v*v17*v12 + -1_v*v16*v13 + 174;
     _2 = -1_v*v17*v12 + -1_v*v13*v16 + 174;
     BOOST_TEST(_1 == _2);
@@ -452,17 +452,17 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     _ = (-1_v*(v6^-1_v)*(v8^2_v)*v13 + -1_v*(v6^-1_v)*v14*v7*v8 + -1_v*(v6^-1)*v12*v9*v8 + v10*v13 + v9*v14 + -1_v*(v6^-1)*v11*v10*v8 + 2723_v*(v6^-1)*v8 + -174_v);
     // -1_v*(v6^-1_v)*(v8^2_v)*v13 + -1_v*(v6^-1_v)*v14*v7*v8 + -1_v*(v6^-1)*v12*v9*v8 -1_v*(v6^-1)*v11*v10*v8 + 2723_v*(v6^-1)*v8
     //              == -v10*v13 - v9*v14 + 174_v
-    
+
     // -1_v*(v8^2_v)*v13 + -1_v*v14*v7*v8 + -1_v*v12*v9*v8 -1_v*v11*v10*v8 + 2723_v*v8 == v6(-v10*v13 - v9*v14 + 174_v)
     // v6 == (-1_v*(v8^2_v)*v13 + -1_v*v14*v7*v8 + -1_v*v12*v9*v8 -1_v*v11*v10*v8 + 2723_v*v8) / (-v10*v13 - v9*v14 + 174_v)
     _1 = _(v6);
     _2 = Fraction((v8^2_v)*v13 + v14*v7*v8 + v12*v9*v8 + v11*v10*v8 - 2723_v*v8,
                   v10*v13 + v9*v14 - 174_v);
     BOOST_TEST(_1 == _2);
-    
+
     _ = ((-1_v/2)*(v14^-1)*v13*v9 + (-1_v/2)*(v14^-1)*v12*v10 + (-1_v/2)*(((4*v14*v13*v10*v7 + 4*(v14^2)*v9*v7 + 2*v13*v12*v10*v9 + (v9^2)*(v13^2) + (v10^2)*(v12^2) + 1732*v13*v9 + 1732*v12*v10 + -696*v14*v7 + 749956))^((1_v/2)))*(v14^-1));
     _ += -433*(v14^-1);
-    
+
     _1 = (x^2)*y + (y^2)*x + x;
     _2 = (y^2)*x + (x^2)*y + x;
     BOOST_TEST(_1 == _2);
@@ -474,7 +474,7 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     BOOST_TEST(s == _);
     s *= _2;
     BOOST_TEST(s == _1);
-    
+
     _1 = (x^6)+(x^4)*6+(x^3)+(x^2)*9+x*3-5;
     _ = _1;
     _.Eval(x,y);
@@ -483,10 +483,10 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     s = _1 / _2;
     _ = (y^5)+(x^5)+(y^4)*x+(x^4)*y+(y^3)*(x^2)+(x^3)*(y^2)+6*(y^3)+6*(x^3)+6*(y^2)*x+6*(x^2)*y+(y^2)+(x^2)+y*x+9*y+9*x+3;
     BOOST_TEST(s == _);
-    
+
     _ = ((((v3 + -255))^2) + (((v2 + 0))^2) + (((v1 + -1))^2))*((((v3 + -255))^2) + (((v2 + -1))^2) + (((v1 + 0))^2))*((((v3 + -255))^2) + (((v2 + -1))^2) + (((v1 + -1))^2));
     _.optimize();
-    
+
     _1 = (-510*v3 + (v3^2) + (v2^2) + (v1^2) + 65025);
     _2 = ((v3^2) + (v2^2) + (v1^2) + -510*v3 + 65025);
     BOOST_TEST(_1 == _2);
@@ -495,18 +495,18 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     _2 = 2 * v5 + v7 + 3;
     _ = Sum{ _1 } / _2;
     BOOST_TEST(_ == _1 / _2);
-    
+
     _ = (x-1)/(x-3);
     BOOST_TEST(_ == 1+2/(x-3));
-    
+
     _ = (4*(x^3) + -8*(x^2) + -27*x + 45) / (x-3);
     BOOST_TEST(_ == (4*(x^2)+4*x-15));
-    
+
     _ = (4*(x^3) + -8*(x^2) + -27*x + 45);
     _.SetView(Valuable::View::Solving);
     _ /= x-3;
     BOOST_TEST(_ == (4*(x^2)+4*x-15));
-    
+
     auto v = "v"_va;
     _ = (4_v*(v^2) + 2048)^(1_v/2);
     _.SetView(Valuable::View::Solving);
@@ -514,14 +514,14 @@ BOOST_AUTO_TEST_CASE(Sum_advanced_tests
     t=4_v;
     auto c=2048_v;
     auto a = "a"_va;
-    
-    
-    
+
+
+
     _ = (32_v*((4_v*(v^2) + 2048)^((1_v/2)))*((4_v*(v^2) + 2044)^((1_v/2)))*((4_v*(v^2) + 1948)^((1_v/2))) + -15604_v*((4_v*(v^2) + 2032)^((1_v/2)))*((4_v*(v^2) + 892)^((1_v/2))));
     auto sum = &_.as<Sum>();
     BOOST_TEST(*sum == _);
     // TODO:    _ = _(v);
-    
+
 }
 
 class Pub : public Valuable

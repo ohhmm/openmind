@@ -39,8 +39,10 @@ static const size_t PrimeItems = Primes.size();
 namespace {
 #ifdef _rt_SRC_DIR
 boost::filesystem::path PrimeListDir = _rt_SRC_DIR;
-auto PrimeListPath = PrimeListDir / PRIME_LIST_FILENAME;
+#else
+boost::filesystem::path PrimeListDir = ".";
 #endif
+auto PrimeListPath = PrimeListDir / PRIME_LIST_FILENAME;
 const auto PrimesBeginIterator = std::begin(Primes);
 const auto PrimesEndIterator = std::end(Primes);
 } // namespace

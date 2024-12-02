@@ -105,6 +105,12 @@ else()
 	set(initTestsEnabled OFF)
 endif()
 option(OPENMIND_BUILD_TESTS "Build various TESTS" ${initTestsEnabled})
+
+# Set output directories for executables and libraries
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 option(OPENMIND_DEBUG_CHECKS "Additional debug checks (NOOMDEBUG define)" ${_IS_DEBUG})
 option(OPENMIND_DEPEND_ON_PREREQUISITES "Better consider installing prerequisites by building the target 'prerequisites' upon initial setup. This way its not checked each build." OFF)
 option(OPENMIND_BUILD_SAMPLES "Build various samples" FALSE)
@@ -160,6 +166,8 @@ set(_BOOST_USED_COMPONENTS
 	filesystem
 	iostreams
 	locale
+    log
+    log_setup
 	serialization
 	system
 	thread
