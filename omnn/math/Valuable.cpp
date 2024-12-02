@@ -13,6 +13,7 @@
 #include "VarHost.h"
 #include "Sum.h"
 #include "PrincipalSurd.h"
+#include "StateProxyComparator.h"
 #include "Logarithm.h"
 
 #include <omnn/rt/GC.h>
@@ -28,7 +29,6 @@
 #include <sstream>
 #include <stack>
 #include <type_traits>
-#include <unordered_set>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -514,88 +514,6 @@ namespace omnn::math {
 #endif
     }
 
-
-class StateProxyComparator
-    : public OuterParenthesesIgnoringStringsComparator
-{
-    using base = OuterParenthesesIgnoringStringsComparator;
-public:
-    using tokens_collection_t =
-        ::std::unordered_multiset<::std::string_view, HashStrOmitOuterBrackets, StateProxyComparator>;
-
-private:
-    const Valuable* val;
-    static thread_local const Valuable* state;
-
-
-    static auto TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(const ::std::string_view& str,
-                                                                               char delimiter) {
-        tokens_collection_t tokens;
-        ::std::stack<char> braceStack;
-        size_t start = 0;
-
-        for (size_t i = 0; i < str.size(); ++i) {
-            char c = str[i];
-
-            // Push opening braces onto the stack
-            if (c == '(' || c == '{' || c == '[') {
-                braceStack.push(c);
-            }
-            // Pop matching opening braces from the stack
-            else if ((c == ')' && !braceStack.empty() && braceStack.top() == '(') ||
-                     (c == '}' && !braceStack.empty() && braceStack.top() == '{') ||
-                     (c == ']' && !braceStack.empty() && braceStack.top() == '[')) {
-                braceStack.pop();
-            }
-            // Tokenize at delimiter if not within braces
-            else if (c == delimiter && braceStack.empty()) {
-                tokens.emplace(str.data() + start, i - start);
-                start = i + 1;
-            }
-        }
-
-        // Add the last token after the final delimiter if it's not at the end of the string
-        if (start < str.size()) {
-            tokens.emplace(str.data() + start, str.size() - start);
-        }
-
-        return tokens;
-    }
-
-public:
-    StateProxyComparator() { val = state; }
-
-    StateProxyComparator(const Valuable* v) {
-        val = state;
-        state = v;
-    }
-
-    StateProxyComparator(const Valuable& v) {
-        val = state;
-        state = &v;
-    }
-
-    ~StateProxyComparator() { state = val; }
-
-    [[nodiscard]]
-    bool operator()(const std::string_view& str1, const std::string_view& str2) const {
-        auto s = val->str();
-        if (s != str1) {
-            if (s == str2) {
-                return val->SerializedStrEqual(str1);
-            } else {
-                return base::operator()(str1, str2);
-            }
-        } else
-            return val->SerializedStrEqual(str2);
-    }
-
-    [[nodiscard]]
-    auto TokenizeStringViewToMultisetKeepBraces(const std::string_view& str, char delimiter) const {
-        return TokenizeStringViewToMultisetKeepBracesWithStateProxyComparator(str, delimiter);
-    }
-};
-thread_local const Valuable* StateProxyComparator::state = {};
 
 struct hash_tokens_collection_t {
     static constexpr HashStrOmitOuterBrackets hasher = {};
