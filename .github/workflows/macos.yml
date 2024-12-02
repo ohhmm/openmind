@@ -3,14 +3,18 @@ name: C/C++ CI macOS
 on: [push]
 
 jobs:
-  build-in-macos:
+  build-in-linux-container:
+    runs-on: ubuntu-latest
 
-    runs-on: macos-latest
-    
+    container:
+      image: intel/oneapi:2024.1.0-devel-ubuntu22.04
+
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
+    - name: Set SYCL environment variable
+      run: echo "SYCL_DIR=/opt/intel/oneapi/compiler/2024.1/lib/cmake/IntelSYCL" >> $GITHUB_ENV
     - name: Pre-Install Boost, LevelDB
       run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && ( brew install boost-python3 snappy leveldb || brew install boost-python3 snappy leveldb )
     - name: Configure
@@ -24,7 +28,7 @@ jobs:
       run: cmake .
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
-    - name: Check
+      run: cmake --build . --config Release
+    - name: Test
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 120 -C Release -j `sysctl -n hw.ncpu` -E ts
