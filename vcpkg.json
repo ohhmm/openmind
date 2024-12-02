@@ -18,6 +18,8 @@
     "boost-test",
     "boost-thread",
     "boost-uuid",
+    "eigen3",
+    "freeglut",
     "leveldb",
     {
       "name": "vcpkg-cmake",
