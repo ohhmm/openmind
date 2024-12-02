@@ -606,50 +606,54 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     namespace {
         constexpr char SupportedOps[] = " */%+-^()";
     }
-    Valuable::Valuable(const std::string_view& s, std::shared_ptr<VarHost> h, bool itIsOptimized // = false
+    Valuable::Valuable(const std::string_view& str
+        , std::shared_ptr<VarHost> host // = nullptr
+        , bool itIsOptimized // = false
 	) {
-        auto l = s.length();
+        if (!host)
+            host = VarHost::Global<std::string>().shared_from_this();
+        auto l = str.length();
         using index_t = decltype(l);
         std::stack <index_t> st;
         std::map<index_t, index_t> bracketsmap;
         decltype(l) c = 0;
         while (c < l)
         {
-            if (s[c] == '(')
+            if (str[c] == '(')
                 st.push(c);
-            else if (s[c] == ')')
+            else if (str[c] == ')')
             {
                 bracketsmap.emplace(st.top(), c);
                 st.pop();
-            } else if(s[c] == '=') {
-                Valuable r(s.substr(c+1), h, itIsOptimized);
-                if (c && s[c-1] == '<') {
-                    Valuable l(s.substr(0, c - 1), h, itIsOptimized);
+            } else if(str[c] == '=') {
+                Valuable r(str.substr(c+1), host, itIsOptimized);
+                if (c && str[c-1] == '<') {
+                    Valuable l(str.substr(0, c - 1), host, itIsOptimized);
                     Become(l.LessOrEqual(r));
-                } else if (c && s[c - 1] == '>') {
-                    Valuable l(s.substr(0, c - 1), h, itIsOptimized);
+                } else if (c && str[c - 1] == '>') {
+                    Valuable l(str.substr(0, c - 1), host, itIsOptimized);
                     Become(r.LessOrEqual(l));
                 } else {
-                    Valuable l(s.substr(0, c), h, itIsOptimized);
+                    Valuable l(str.substr(0, c), host, itIsOptimized);
                     l.equals(std::move(r));
                     Become(std::move(l));
                 }
                 SetView(View::Equation);
                 return;
-            } else if (s[c] == '<' && c + 1 < l && s[c + 1] != '=') {
-                Valuable l(s.substr(0, c), h, itIsOptimized);
-                if(s[c + 1] == '>'){
-                    Valuable r(s.substr(c + 2), h, itIsOptimized);
+            } else if (str[c] == '<' && c + 1 < l && str[c + 1] != '=') {
+                Valuable l(str.substr(0, c), host, itIsOptimized);
+                if(str[c + 1] == '>'){
+                    Valuable r(str.substr(c + 2), host, itIsOptimized);
                     Become(l.NotEquals(r));
                 } else {
-                    Valuable r(s.substr(c + 1), h, itIsOptimized);
+                    Valuable r(str.substr(c + 1), host, itIsOptimized);
                     Become(l.Less(r));
                 }
                 SetView(View::Equation);
                 return;
-            } else if (s[c] == '>' && c + 1 < l && s[c + 1] != '=') {
-                Valuable l(s.substr(0, c), h, itIsOptimized);
-                Valuable r(s.substr(c + 1), h, itIsOptimized);
+            } else if (str[c] == '>' && c + 1 < l && str[c + 1] != '=') {
+                Valuable l(str.substr(0, c), host, itIsOptimized);
+                Valuable r(str.substr(c + 1), host, itIsOptimized);
                 Become(r.Less(l));
                 SetView(View::Equation);
                 return;
@@ -661,7 +665,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         auto ok = bracketsmap.empty();
         if (ok)
         {
-            auto copy = s;
+            auto copy = str;
             auto s = Trim(copy);
             auto offs = 0;
             while (s[offs]=='-')
@@ -677,12 +681,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 exp = std::make_shared<PrincipalSurd>(
                     Integer(a_int(s.substr(found+1))),
                     Integer(a_int(s.substr(0, found))));
-            else if (s[0] == 'v' && s.size() > 1 && h && h->IsIntegerId()
+            else if (s[0] == 'v' && s.size() > 1 && host && host->IsIntegerId()
                 && std::all_of(s.begin() + 1, s.end(),
 					[](auto ch) { return std::isdigit(ch); }
 					)
 				)
-                Become(Valuable(h->Host(Valuable(a_int(s.substr(1))))));
+                Become(Valuable(host->Host(Valuable(a_int(s.substr(1))))));
             else if (s.length() > 2
                 && s[0] == '0'
                 && (s[1] == 'x' || s[1] == 'X')
@@ -700,8 +704,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     if (itIsOptimized)
                         v.MarkAsOptimized();
                     Become(std::move(v));
-                } else if (h != nullptr) {
-                    Become(Valuable(h->Host(s)));
+                } else if (host != nullptr) {
+                    Become(Valuable(host->Host(s)));
                 } else {
                     LOG_AND_IMPLEMENT("Parse " << s);
                 }
@@ -848,37 +852,37 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
             auto o = std::ref(o_mov);
             //std::stack<char> op;
-            for (index_t i = s.find_first_not_of(" \t\n\r"); i < l; ++i)
+            for (index_t i = str.find_first_not_of(" \t\n\r"); i < l; ++i)
             {
-                auto c = s[i];
+                auto c = str[i];
                 if (c == '(')
                 {
                     auto cb = bracketsmap[i];
                     auto next = i + 1;
-                    o(Valuable(s.substr(next, cb - next), h, itIsOptimized));
+                    o(Valuable(str.substr(next, cb - next), host, itIsOptimized));
                     i = cb;
                 }
                 else if (c == 'v') {
                     auto idStart = i + 1;
-                    auto next = s.find_first_not_of("0123456789", idStart);
-                    auto id = s.substr(idStart, next - idStart);
+                    auto next = str.find_first_not_of("0123456789", idStart);
+                    auto id = str.substr(idStart, next - idStart);
                     if (id.empty()) {
-                        auto to = s.find_first_of(SupportedOps, idStart);
-                        auto id = to == std::string::npos ? s.substr(i) : s.substr(i, to - i);
-                        o(Valuable(h->Host(id)));
+                        auto to = str.find_first_of(SupportedOps, idStart);
+                        auto id = to == std::string::npos ? str.substr(i) : str.substr(i, to - i);
+                        o(Valuable(host->Host(id)));
                         i = to - 1;
-                    } else if (h->IsIntegerId()){
-                        o(Valuable(h->Host(Valuable(a_int(id)))));
+                    } else if (host->IsIntegerId()){
+                        o(Valuable(host->Host(Valuable(a_int(id)))));
                         i = next - 1;
                     } else {
-                        next = s.find_first_of(SupportedOps, idStart);
+                        next = str.find_first_of(SupportedOps, idStart);
                         if (next == std::string::npos) {
-                            id = s.substr(i);
+                            id = str.substr(i);
                             next = i + id.size();
                         } else {
-                            id = s.substr(i, next - i);
+                            id = str.substr(i, next - i);
                         }
-                        o(Valuable(h->Host(id)));
+                        o(Valuable(host->Host(id)));
                         i = next - 1;
                     }
                 } else if (c == '-') {
@@ -887,8 +891,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     o = o_mov;
                     mulByNeg ^= true;
                 } else if ((c >= '0' && c <= '9') || c =='.') {
-                    auto next = s.find_first_not_of(" 0123456789.", i+1);
-                    auto ss = s.substr(i, next - i);
+                    auto next = str.find_first_not_of(" 0123456789.", i+1);
+                    auto ss = str.substr(i, next - i);
                     Trim(ss);
                     auto hasSpace = ss.find(' ') != std::string::npos;
                     auto dot = ss.find('.');
@@ -908,7 +912,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         Valuable integer = hasSpace
                             ? Integer(Solid(std::string(ss)))
                             : Integer(ss);
-                        if (i < s.length() && s[next] == 'r') {
+                        if (i < str.length() && str[next] == 'r') {
                             o = o_pSurd;
                         } else {
                             o(std::move(integer));
@@ -922,18 +926,18 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
                 else if (c == '*') {
                     o = o_mul;
-                    while (s[i + 1] == ' ')
+                    while (str[i + 1] == ' ')
                         ++i;
-                    mulByNeg ^= s[i + 1] == '-';
+                    mulByNeg ^= str[i + 1] == '-';
                 }
                 else if (c == '/') {
                     o = o_div;
-                    while (s[i + 1] == ' ')
+                    while (str[i + 1] == ' ')
                         ++i;
                 }
                 else if (c == '%') {
                     o = o_mod;
-                    while (s[i + 1] == ' ')
+                    while (str[i + 1] == ' ')
                         ++i;
                 }
                 else if (c == '^') {
@@ -942,24 +946,24 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 else if (c == ' ') {
                 }
                 else if (std::isalpha(c)){
-                    auto to = s.find_first_of(SupportedOps, i+1);
-                    auto id = s.substr(i);
+                    auto to = str.find_first_of(SupportedOps, i+1);
+                    auto id = str.substr(i);
                     if (to != std::string::npos) {
-                        id = s.substr(i, to - i);
-                        if (s[to] == '(') { // functions
+                        id = str.substr(i, to - i);
+                        if (str[to] == '(') { // functions
                             if (to == 0) {
                                 IMPLEMENT
                             }
                             auto cb = bracketsmap[to];
                             if (id == "sqrt"sv) {
                                 auto next = to + 1;
-                                o(PrincipalSurd{Valuable(s.substr(next, cb - next), h, itIsOptimized)});
+                                o(PrincipalSurd{Valuable(str.substr(next, cb - next), host, itIsOptimized)});
                             }
 							i = cb;
                             continue;
                         }
                     }
-                    Valuable val(h->Host(id));
+                    Valuable val(host->Host(id));
                     if (mulByNeg) {
                         val *= -1;
                         mulByNeg = {};
@@ -967,7 +971,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     o(std::move(val));
                     i = to - 1;
                 } else {
-                    LOG_AND_IMPLEMENT("Unexpected char " << c << " in " << s << " position " << i);
+                    LOG_AND_IMPLEMENT("Unexpected char " << c << " in " << str << " position " << i);
                 }
             }
 
@@ -982,7 +986,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if (!SerializedStrEqual(s)) {
+        if (!SerializedStrEqual(str)) {
             LOG_AND_IMPLEMENT(
                 "Deserialization check failed. "
                 " potential reasons:\n"
