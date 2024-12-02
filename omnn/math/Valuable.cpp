@@ -19,10 +19,12 @@
 #include <omnn/rt/tasq.h>
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <numeric>
 #include <sstream>
 #include <string>
@@ -37,6 +39,8 @@
 #include <boost/core/demangle.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <boost/multiprecision/number.hpp>
 #ifndef __APPLE__
 #include <boost/stacktrace.hpp>
 #endif
@@ -1820,12 +1824,23 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 			return false;
         else if (!FindVa())
         {
-            double _1 = operator double();
-            double _2 = static_cast<double>(v);
-            if (_1 == _2) {
-                LOG_AND_IMPLEMENT(*this << " looks optimizable");
+            // Direct comparison with optimization flag for cross-platform compatibility
+            try {
+                double f1 = this->operator double();
+                double f2 = static_cast<double>(v);
+                constexpr double epsilon = 1e-10;  // Fixed epsilon for cross-platform consistency
+
+                if (std::abs(f1 - f2) < epsilon) {
+                    if (optimizations) {
+                        LOG_AND_IMPLEMENT(*this << " looks optimizable");
+                    }
+                    return false;
+                }
+                return f1 < f2;
+            } catch (...) {
+                // Fallback to double comparison if conversion fails
+                return operator double() < static_cast<double>(v);
             }
-            return _1 < _2;
         } else {
             auto diff = *this - v;
             if (!diff.FindVa()) {

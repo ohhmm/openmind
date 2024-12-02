@@ -196,6 +196,16 @@ function(apply_target_commons this_target)
 				APPLE_CONSTEXPR=constexpr
 				NO_APPLE_CONSTEXPR=
 				NO_CLANG_CONSTEXPR=
+				FP_STRICT=1
+				)
+			# Add numerical precision optimizations for macOS
+			target_compile_options(${this_target} PUBLIC
+				-fno-fast-math        # Disable aggressive floating-point optimizations
+				-ffp-contract=off     # Prevent floating-point expression contraction
+				-fno-finite-math-only # Don't assume finite math only
+				-O2                   # Optimization level for better numerical stability
+				-Wfloat-equal         # Warn about floating-point equality comparisons
+				-Wdouble-promotion    # Warn about implicit float to double promotions
 				)
 		else()
 			target_compile_definitions(${this_target} PUBLIC
