@@ -135,14 +135,18 @@ if(GIT_EXECUTABLE)
 
 	if(WIN32)
 		set(CMD_LIST_BRANCHES "${GIT_EXE_CMD} for-each-ref --format=%(refname:short) refs/heads/ --no-contains main")
+		set(CMD_REBASE_BRANCH "${GIT_EXE_CMD} rebase --autostash origin/main %b")
 		set(CMD_ITERATE_BRANCHES "for /f \"usebackq tokens=*\" %b in ( branches.txt ) do ( ${CMD_REBASE_BRANCH} )")
+		set(CMD_LINE_SUFFIX " ^|^| ${GIT_EXE_CMD} rebase --abort")
 		add_custom_target(rebase-all-branches
             COMMAND ${CMAKE_COMMAND} -E echo "Rebasing all branches onto origin/main"
 			COMMAND ${GIT_EXECUTABLE} fetch --all || echo git fetch error
 
 			COMMAND cmd /c ${CMD_LIST_BRANCHES} > branches.txt
-			COMMAND echo echo rebasing all branches > rebase.cmd
-			COMMAND cmd /c for /f "usebackq tokens=*" %b in ( branches.txt ) do @echo ${GIT_EXE_CMD} rebase --autostash origin/main %b >> rebase.cmd
+			COMMAND type NUL > rebase.cmd
+			COMMAND cmd /c ( for /f "usebackq tokens=*" %b in ( branches.txt ) do @echo ${CMD_REBASE_BRANCH} ) >> rebase.cmd
+			COMMAND echo echo rebasing all branches > rebase-or-abort.cmd
+			COMMAND cmd /c ( ( for /f "usebackq tokens=*" %a in ( rebase.cmd ) do ( echo %a ^|^| ${GIT_EXE_CMD} rebase --abort ) ) >> rebase-or-abort.cmd )
 			COMMAND cmd /c rebase.cmd
 
             COMMENT "Rebasing all branches onto origin/main using cmd with improved branch handling."
