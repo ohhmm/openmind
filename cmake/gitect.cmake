@@ -141,8 +141,10 @@ if(GIT_EXECUTABLE)
 			COMMAND ${GIT_EXECUTABLE} fetch --all || echo git fetch error
 
 			COMMAND cmd /c ${CMD_LIST_BRANCHES} > branches.txt
-			COMMAND cmd /c for /f "usebackq tokens=*" %b in ( branches.txt ) do ( ${GIT_EXE_CMD} rebase --autostash origin/main %b )
-			
+			COMMAND echo echo rebasing all branches > rebase.cmd
+			COMMAND cmd /c for /f "usebackq tokens=*" %b in ( branches.txt ) do @echo ${GIT_EXE_CMD} rebase --autostash origin/main %b >> rebase.cmd
+			COMMAND cmd /c rebase.cmd
+
             COMMENT "Rebasing all branches onto origin/main using cmd with improved branch handling."
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
