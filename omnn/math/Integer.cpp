@@ -750,13 +750,8 @@ namespace math {
             return {};
         else if(v.IsInfinity())
             return true;
-        else if (!v.FindVa()) {
-            double _1 = boost::numeric_cast<double>(arbitrary);
-            double _2 = static_cast<double>(v);
-            if(_1 == _2) {
-                IMPLEMENT
-            }
-            return _1 < _2;
+        else if (v.IsRational() == YesNoMaybe::Yes) {
+            return arbitrary < static_cast<a_rational>(v);
        } else
             return base::operator <(v);
     }
