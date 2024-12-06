@@ -17,23 +17,25 @@
 #include <boost/tokenizer.hpp>
 #endif
 
+#include <omnn/rt/lookup.hpp>
 #include <omnn/rt/tasq.h>
 
+
 #define PRIME_LIST_FILENAME "Primes.inc"
+
+static omnn::rt::PrimeLookupTable Primes =
 #ifdef OPENMIND_PRIME_TABLE_OM
-static const boost::multiprecision::cpp_int Primes[] = {
-#include "Primes.inc"
+{
+#include PRIME_LIST_FILENAME
 };
-static const size_t PrimeItems = sizeof(Primes) / sizeof(Primes[0]);
 #else
-static const auto Primes = [](){
+[]() {
     constexpr auto size = boost::math::max_prime + 1;
     std::array<boost::multiprecision::cpp_int, size> numbers;
     for (uint32_t idx = size; idx-->0 ;)
         numbers[idx] = boost::math::prime(idx);
     return numbers;
 }();
-static const size_t PrimeItems = Primes.size();
 #endif
 
 namespace {
@@ -46,6 +48,67 @@ const auto PrimesEndIterator = std::end(Primes);
 } // namespace
 
 namespace omnn::rt {
+
+// Utility function to find power
+number_t power(number_t base, number_t exp,
+                                     number_t mod) {
+    number_t result = 1;
+    while (exp > 0) {
+        if (exp % 2 == 1)
+            result = (result * base) % mod;
+        base = (base * base) % mod;
+        exp /= 2;
+    }
+    return result;
+}
+
+// Function to find gcd
+number_t gcd(number_t a, number_t b) {
+    while (b != 0) {
+        number_t t = b;
+        b = a % b;
+        a = t;
+    }
+    return a;
+}
+
+// Check if a given number is prime
+bool is_prime(const number_t& n) {
+    if (n == 2 || n == 3)
+        return true;
+    if (n < 2 || n % 2 == 0)
+        return false;
+
+    number_t r, i;
+    bool flag = true;
+    for (r = 1; r < n; ++r) {
+        if (gcd(r, n) != 1)
+            return false;
+        if (power(r, n - 1, n) != 1)
+            return false;
+    }
+
+    return true;
+}
+
+void PrimeLookupTable::emplace() {
+    auto num = back();
+    while (!is_prime(++num))
+        ;
+    emplace_back(std::move(num));
+}
+
+void PrimeLookupTable::Generate(prime_idx_t idx)
+{
+    if (size() <= idx) {
+        reserve(idx + 1);
+    }
+
+    for (auto i = idx - size(); i-->0 ;)
+    {
+        emplace();
+    }
+}
 
 auto NextToCheckForPrime() {
     boost::filesystem::ifstream inpt(PrimeListPath);
@@ -62,12 +125,13 @@ auto NextToCheckForPrime() {
     } while (c != ',');
     assert(s.length() > 1);
 
-    return ++boost::multiprecision::cpp_int(s);
+    return ++number_t(s);
 }
 
-bool GrowPrime(const boost::multiprecision::cpp_int& upto,
-               std::function<bool(boost::multiprecision::cpp_int)> is_prime) {
-    static boost::multiprecision::cpp_int from = NextToCheckForPrime();
+bool GrowPrime(const number_t& upto,
+               std::function<bool(number_t)> is_prime)
+{
+    static number_t from = NextToCheckForPrime();
     auto prev = from - 1;
     if (upto <= prev)
         return {}; // another table is in use
@@ -118,28 +182,12 @@ bool GrowPrime(const boost::multiprecision::cpp_int& upto,
     return true;
 }
 
-const boost::multiprecision::cpp_int& prime(size_t idx) {
-#ifndef NDEBUG
-    auto haveThePrime = idx < PrimeItems;
-    if (!haveThePrime) {
-        std::cerr << "There is no " << idx
-                  << "th prime in the table yet. Use GrowPrime call if you use debug version to increase the table for "
-                     "next compile time. Currently the table has "
-                  << PrimeItems << " elements" << std::endl;
-        assert(haveThePrime);
-    }
-#endif
+const prime_t& prime(size_t idx) {
     return Primes[idx];
 }
 
 size_t primes() {
-#ifdef OPENMIND_PRIME_TABLE_OM
-    return PrimeItems - 1;
-#elif defined(OPENMIND_PRIME_TABLE_BOOST)
-    return boost::math::max_prime;
-#else
-    static_assert(!"Specify primes table");
-#endif // OPENMIND_PRIME_TABLE_BOOST
+    return Primes.size() - 1;
 }
 
 prime_idx_t greatest_prime_idx(const number_t& bound) {
@@ -152,7 +200,7 @@ prime_idx_t greatest_prime_idx(const number_t& bound) {
     return idx;
 }
 
-const boost::multiprecision::cpp_int& get_greatest_prime(const boost::multiprecision::cpp_int& bound) {
+const prime_t& get_greatest_prime(const number_t& bound) {
     return prime(greatest_prime_idx(bound));
 }
 
@@ -166,7 +214,7 @@ auto GetNextToCheckForPrimeToMine() {
 
 
 namespace {
-boost::multiprecision::cpp_int factorial(const boost::multiprecision::cpp_int& n) {
+number_t factorial(const number_t& n) {
     auto result = n;
     if (n == 0)
         ++result;

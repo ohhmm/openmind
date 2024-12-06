@@ -9,30 +9,34 @@ class Lookup
     : public std::vector<ValueT>
 {
     using base_t = std::vector<ValueT>;
+    using value_t = ValueT;
     using size_type = base_t::size_type;
 
     size_type lookup = [this]() { return size(); }();
-    static constexpr ValueT Empty = ValueT();
+    static const ValueT Empty;
 
 protected:
-    virtual ValueT Generate(size_type index) = 0;
+    virtual void Generate(size_type index) = 0;
 
 public:
     using base_t::base_t;
     using base_t::size;
+    using base_t::begin;
+    using base_t::end;
+    using base_t::resize;
 
     const auto& operator[](size_type index) {
-        if (index >= lookup) {
-            if (index >= size()) {
-                resize(index+1);
-            }
+        if (index >= size()) {
+            Generate(index);
         }
         auto& item = base_t::operator[](index);
         if (item == Empty) {
-            item = Generate(index);
+            Generate(index);
         }
         return item;
     }
 };
+
+template <typename ValueT> const ValueT Lookup<ValueT>::Empty = {};
 
 }
