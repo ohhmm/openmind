@@ -15,11 +15,12 @@ class FactorsLookupTable
     using value_t = base_t::value_t;
 
 protected:
+    using base_t::base_t;
     void Generate(size_type number) override;
 
 public:
-    using base_t::base_t;
     using base_t::operator[];
+    static const value_t& Factors(const number_t&);
 };
 
 } // namespace omnn::rt

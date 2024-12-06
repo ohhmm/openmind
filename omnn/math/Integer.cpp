@@ -12,7 +12,7 @@
 #include "Product.h"
 #include "Sum.h"
 
-#include <omnn/rt/Prime.h>
+#include <omnn/rt/Factors.hpp>
 #include <omnn/rt/tasq.h>
 
 #include <algorithm>
@@ -379,32 +379,32 @@ namespace math {
         if (e == constants::one)
             return {*this,*this};
 
-        auto xFactors = Facts();
-        std::sort(xFactors.begin(), xFactors.end());
-        while(xFactors.size() > 3) { // <3 is Prime (0,1,self)
-            auto&& xFactor = std::move(xFactors.back());
-            if(xFactor > constants::one)
-            {
-                if(e.IsInt() && e.as<Integer>().IsPositivePowerOf2())
-                {
-                    auto value = xFactor.ca();
-                    for (auto power = e; power > constants::one; ) {
-                        power.shr();
-                        value = boost::multiprecision::sqrt(value);
-                    }
-                    if ((value ^ e) == xFactor)
-                        return {std::move(value), std::move(xFactor)};
-                } else if (e < constants::zero) {
-                    auto me = -e;
-                    LOG_AND_IMPLEMENT(arbitrary << " GreatestCommonExp " << e);
-                } else {
-                    IMPLEMENT
-                    // auto v = boost::multiprecision::pow(boost::multiprecision::cpp_rational(xFactor.ca(),1), boost::multiprecision::cpp_rational{1, e.ca()});
-                    // if ((v ^ e) == xFactor)
-                    //     return {std::move(v), std::move(xFactor)};
+        auto divisors = Divisors();// auto& divisors = omnn::rt::DivisorsLookupTable::Divisors(ca());
+        std::sort(divisors.begin(), divisors.end()); 
+        auto eIsPowerOf2 = divisors.size() > 0
+                        && e.IsInt()
+                        && e.as<Integer>().IsPositivePowerOf2();
+        auto rnd = divisors.rend();
+        for (auto it = divisors.rbegin(); it != rnd; ++it) {
+            auto& divisor = *it;
+            if (eIsPowerOf2) {
+                auto value = divisor;
+                for (auto power = e; power > constants::one;) {
+                    power.shr();
+                    value = boost::multiprecision::sqrt(value.ca());
                 }
+                auto divisorPowerE = value ^ e;
+                if (divisorPowerE == divisor) {
+                    return {std::move(value), std::move(divisorPowerE.a())};
+                }
+            } else if (e < constants::zero) {
+                LOG_AND_IMPLEMENT(arbitrary << " GreatestCommonExp " << e);
+            } else {
+                IMPLEMENT
+                // auto v = boost::multiprecision::pow(boost::multiprecision::cpp_rational(xFactor.ca(),1),
+                // boost::multiprecision::cpp_rational{1, e.ca()}); if ((v ^ e) == xFactor)
+                //     return {std::move(v), xFactor};
             }
-            xFactors.pop_back();
         }
         return {constants::one, constants::one};
     }
@@ -775,7 +775,7 @@ namespace math {
         return *this;
     }
 
-    std::deque<Valuable> Integer::Facts() const
+    std::deque<Valuable> Integer::Divisors() const
     {
         std::deque<Valuable> f;
         Factorization([&](auto& v){
