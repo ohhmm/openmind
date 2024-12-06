@@ -8,7 +8,10 @@ using namespace omnn::rt;
 
 void FactorsLookupTable::Generate(size_type num)
 {
-    base_t::value_t factors;
+    if (num >= size())
+        resize(num + 1);
+
+    auto& factors = base_container_t::operator[](num);
     for (prime_idx_t i = 0; num > 1; ++i) {
         auto prn = boost::numeric_cast<size_type>(prime(i));
         auto divisor = num % prn == 0;
@@ -17,9 +20,12 @@ void FactorsLookupTable::Generate(size_type num)
                 num /= prn;
                 divisor = num % prn == 0;
             } while (divisor);
-            factors.insert(std::move(prn));
+            factors.emplace(std::move(prn));
         }
     }
-    emplace_back(std::move(factors));
 }
 
+const FactorsLookupTable::value_t& FactorsLookupTable::Factors(const number_t& num) {
+    static FactorsLookupTable Instance; // TODO: const section chunk of preinitialized lookup concarinated with ramges::view to runtime extended lookup
+    return Instance[boost::numeric_cast<size_type>(num < 0 ? -num : num)];
+}

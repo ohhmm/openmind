@@ -176,7 +176,7 @@ public:
                        const Valuable& max,
                        const ranges_t& zz = empty_zero_zone) const;
     bool IsPrime() const;
-    std::deque<Valuable> Facts() const;
+    std::deque<Valuable> Divisors() const;
     std::set<Valuable> FactSet() const;
     bool SimpleFactorization(const std::function<bool(const Valuable&)>& f, const Valuable& max,
                        const ranges_t& zz = empty_zero_zone) const;
