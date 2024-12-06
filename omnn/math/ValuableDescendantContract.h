@@ -25,7 +25,7 @@ namespace math {
         constexpr Valuable& operator --() override { return operator+=(constants::minus_1); }
         constexpr Valuable& operator ++() override { return operator+=(constants::one); }
 
-        Valuable& sq() override { return *this *= *this; }
+        Valuable& sq() override;
 
         void optimize() override { }
         //void expand() override { }

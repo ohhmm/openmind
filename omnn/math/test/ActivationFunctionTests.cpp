@@ -12,6 +12,8 @@ using namespace omnn::math;
 using namespace boost::unit_test;
 
 
+auto TestPrecision = 0.000001;
+
 // ReLU activation function
 auto relu(auto x) {
     return std::max(x, {});
@@ -44,18 +46,15 @@ BOOST_AUTO_TEST_CASE(test_tanh
     BOOST_TEST(std::abs(tanh_activation(-10_v) - constants::one).IsZero());
 }
 
-// Test function for GELU
-BOOST_AUTO_TEST_CASE(test_gelu
-                     , *disabled()
-                     )
+BOOST_AUTO_TEST_CASE(gelu_double_test, *tolerance(TestPrecision))
 {
-    BOOST_TEST(gelu(0).IsZero());
-    // FIXME: compilability
-    // BOOST_TEST(std::abs(gelu(1) - 0.841344) < (constants::one ^ -6));
-    // BOOST_TEST(std::abs(gelu(-1) - (-0.158655)) < (constants::one ^ -6));
-    BOOST_TEST(gelu(10) == 10);
-    BOOST_TEST(gelu(-10).IsZero());
+    BOOST_TEST(static_cast<double>(gelu(10)) == 10);
 }
 
-BOOST_AUTO_TEST_CASE(test_activation_empty) {
+BOOST_AUTO_TEST_CASE(test_gelu, *disabled()) {
+    BOOST_TEST(gelu(0).IsZero());
+    BOOST_TEST(gelu(1) == 0.841344);
+    BOOST_TEST(gelu(-1) == -0.158655);
+    BOOST_TEST(gelu(10) == 10);
+    BOOST_TEST(gelu(-10).IsZero());
 }

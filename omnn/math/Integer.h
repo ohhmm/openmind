@@ -157,6 +157,7 @@ public:
     void Eval(const Variable& va, const Valuable& v) override { }
     Valuable calcFreeMember() const override;
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
+    Valuable& sq() override { return *this *= *this; }
     Valuable Sqrt() const override;
     bool IsComesBefore(const Valuable& v) const override;
     Valuable InCommonWith(const Valuable& v) const override;

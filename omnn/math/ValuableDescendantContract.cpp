@@ -58,6 +58,10 @@ Valuable ValuableDescendantBase::Univariate() const {
 	return uni;
 }
 
+Valuable& ValuableDescendantBase::sq() {
+    return Become(Exponentiation{*this, 2});
+}
+
 Valuable ValuableDescendantBase::Sqrt() const {
     return PrincipalSurd{*this};
 }
