@@ -12,7 +12,7 @@
 #include "Product.h"
 #include "Sum.h"
 
-#include <omnn/rt/Factors.hpp>
+#include <omnn/rt/Divisors.hpp>
 #include <omnn/rt/tasq.h>
 
 #include <algorithm>
@@ -379,8 +379,7 @@ namespace math {
         if (e == constants::one)
             return {*this,*this};
 
-        auto divisors = Divisors();// auto& divisors = omnn::rt::DivisorsLookupTable::Divisors(ca());
-        std::sort(divisors.begin(), divisors.end()); 
+        auto& divisors = omnn::rt::DivisorsLookupTable::Divisors(ca());
         auto eIsPowerOf2 = divisors.size() > 0
                         && e.IsInt()
                         && e.as<Integer>().IsPositivePowerOf2();
@@ -391,7 +390,7 @@ namespace math {
                 auto value = divisor;
                 for (auto power = e; power > constants::one;) {
                     power.shr();
-                    value = boost::multiprecision::sqrt(value.ca());
+                    value = boost::multiprecision::sqrt(value);
                 }
                 auto divisorPowerE = value ^ e;
                 if (divisorPowerE == divisor) {
@@ -401,9 +400,9 @@ namespace math {
                 LOG_AND_IMPLEMENT(arbitrary << " GreatestCommonExp " << e);
             } else {
                 IMPLEMENT
-                // auto v = boost::multiprecision::pow(boost::multiprecision::cpp_rational(xFactor.ca(),1),
-                // boost::multiprecision::cpp_rational{1, e.ca()}); if ((v ^ e) == xFactor)
-                //     return {std::move(v), xFactor};
+                // auto v = boost::multiprecision::pow(boost::multiprecision::cpp_rational(divisor,1),
+                // boost::multiprecision::cpp_rational{1, e.ca()}); if ((v ^ e) == divisor)
+                //     return {std::move(v), divisor};
             }
         }
         return {constants::one, constants::one};
