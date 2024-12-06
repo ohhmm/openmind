@@ -26,6 +26,6 @@ void FactorsLookupTable::Generate(size_type num)
 }
 
 const FactorsLookupTable::value_t& FactorsLookupTable::Factors(const number_t& num) {
-    static FactorsLookupTable Instance; // TODO: const section chunk of preinitialized lookup concarinated with ramges::view to runtime extended lookup
+    static FactorsLookupTable Instance; // TODO: const section chunk of preinitialized lookup concatinated with ranges::view to runtime extended lookup
     return Instance[boost::numeric_cast<size_type>(num < 0 ? -num : num)];
 }
