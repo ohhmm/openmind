@@ -249,12 +249,14 @@ namespace omnn::math {
             if (eexp().IsProduct()) {
                 auto& p = eexp().as<Product>();
                 auto it = p.GetFirstOccurence<Integer>();
-                auto in = ebase() ^ *it;  // IsExponentiationSimplifiable
-                if (in.IsInt()) {
-                    ebase() = in;
-                    p.Delete(it);
-                    if (p.size() == 1) {
-                        eexp().optimize();
+                if (it != p.end()) {
+                    auto in = ebase() ^ *it; // todo : IsExponentiationSimplifiable(p.begin())
+                    if (in.IsInt()) {
+                        ebase() = in;
+                        p.Delete(it);
+                        if (p.size() == 1) {
+                            eexp().optimize();
+                        }
                     }
                 }
             }

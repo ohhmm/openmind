@@ -75,12 +75,12 @@ namespace omnn::math {
     constexpr const Valuable& minfinity = MInfinity::GlobalObject;
     const Variable& integration_result_constant = "integration_result_constant"_va;
 
-        std::map<std::string_view, Valuable> Constants ={
-            {"e", constant::e},
-            {"i", constant::i},
-            {"pi", constant::pi},
-            {NaN::SerializationName, constant::nan},
-        };
+    std::map<std::string_view, Valuable> Constants = {
+        {Euler::SerializationName, constant::e},
+        {MinusOneSurd::SerializationName, constant::i},
+        {Pi::SerializationName, constant::pi},
+        {NaN::SerializationName, constant::nan},
+    };
     } // namespace constants
 
     thread_local bool Valuable::optimizations = true;
@@ -963,7 +963,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                             continue;
                         }
                     }
-                    Valuable val(host->Host(id));
+                    Valuable val(id, host, itIsOptimized);
                     if (mulByNeg) {
                         val *= -1;
                         mulByNeg = {};

@@ -239,8 +239,9 @@ namespace math {
                 auto info = item.GetVaExps();
                 it = base::Add(std::move(item), hint);
                 AddToVarsIfVaOrVaExp(info);
-            } else
+            } else {
                 Update(it, std::move(item.sq()));
+            }
         }
         return it;
     }
