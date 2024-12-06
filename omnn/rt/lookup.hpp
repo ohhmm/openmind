@@ -1,21 +1,21 @@
 #pragma once
-#include <vector>
+#include <deque>
 
 
 namespace omnn::rt {
 
 template <typename ValueT>
 class Lookup
-    : public std::vector<ValueT>
+    : public std::deque<ValueT>
 {
-    using base_t = std::vector<ValueT>;
-    using value_t = ValueT;
-    using size_type = base_t::size_type;
+    using base_t = std::deque<ValueT>;
 
-    size_type lookup = [this]() { return size(); }();
     static const ValueT Empty;
 
 protected:
+    using value_t = ValueT;
+    using size_type = base_t::size_type;
+
     virtual void Generate(size_type index) = 0;
 
 public:

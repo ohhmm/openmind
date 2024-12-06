@@ -100,14 +100,8 @@ void PrimeLookupTable::emplace() {
 
 void PrimeLookupTable::Generate(prime_idx_t idx)
 {
-    if (size() <= idx) {
-        reserve(idx + 1);
-    }
-
     for (auto i = idx - size(); i-->0 ;)
-    {
         emplace();
-    }
 }
 
 auto NextToCheckForPrime() {
