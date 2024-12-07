@@ -1,10 +1,10 @@
-#include "QuantumFourierTransform.h"
-#include <cmath>
-
 #ifdef _MSC_VER
 #define _USE_MATH_DEFINES
-#include <math.h>
 #endif
+
+#include "QuantumFourierTransform.h"
+#include <cmath>
+#include <iostream>
 
 namespace omnn::math {
 
@@ -24,23 +24,62 @@ void QuantumFourierTransform::apply_qft_internal(QuantumRegister& reg,
     }
 
     const double sign = inverse ? -1.0 : 1.0;
+    std::cout << "Applying " << (inverse ? "inverse " : "") << "QFT on qubits ["
+              << start << ", " << end << ")" << std::endl;
 
-    // Apply QFT/inverse QFT transformation
-    for (size_t i = start; i < end; ++i) {
-        // Apply Hadamard to current qubit
-        reg.hadamard(i);
-
-        // Apply controlled phase rotations
-        for (size_t j = i + 1; j < end; ++j) {
-            double angle = sign * M_PI / (1ULL << (j - i));
-            controlled_phase(reg, j, i, angle);
+    if (inverse) {
+        for (size_t i = 0; i < (end - start) / 2; ++i) {
+            reg.swap(start + i, end - 1 - i);
+            std::cout << "Swapped qubits " << start + i << " and " << end - 1 - i << std::endl;
         }
     }
 
-    // Swap qubits if not inverse QFT
+    if (inverse) {
+        for (size_t i = end - 1; i != start - 1; --i) {
+            std::cout << "Processing qubit " << i << std::endl;
+
+            for (size_t j = start; j < i; ++j) {
+                double angle = -2.0 * M_PI / (1ULL << (i - j));
+                std::cout << "  Inverse: Applying controlled phase rotation between qubits "
+                         << j << " and " << i << " with angle " << angle << std::endl;
+                controlled_phase(reg, j, i, angle);
+            }
+
+            std::cout << "  Applying Hadamard to qubit " << i << std::endl;
+            reg.hadamard(i);
+
+            const auto& state = reg.get_state();
+            std::cout << "  Current state:" << std::endl;
+            for (size_t k = 0; k < state.size(); ++k) {
+                std::cout << "    |" << k << ">: " << state[k].value() << std::endl;
+            }
+        }
+    } else {
+        for (size_t i = start; i < end; ++i) {
+            std::cout << "Processing qubit " << i << std::endl;
+
+            std::cout << "  Applying Hadamard to qubit " << i << std::endl;
+            reg.hadamard(i);
+
+            for (size_t j = i + 1; j < end; ++j) {
+                double angle = 2.0 * M_PI / (1ULL << (j - i));
+                std::cout << "  Forward: Applying controlled phase rotation between qubits "
+                         << j << " and " << i << " with angle " << angle << std::endl;
+                controlled_phase(reg, j, i, angle);
+            }
+
+            const auto& state = reg.get_state();
+            std::cout << "  Current state:" << std::endl;
+            for (size_t k = 0; k < state.size(); ++k) {
+                std::cout << "    |" << k << ">: " << state[k].value() << std::endl;
+            }
+        }
+    }
+
     if (!inverse) {
         for (size_t i = 0; i < (end - start) / 2; ++i) {
             reg.swap(start + i, end - 1 - i);
+            std::cout << "Swapped qubits " << start + i << " and " << end - 1 - i << std::endl;
         }
     }
 }
@@ -50,11 +89,12 @@ void QuantumFourierTransform::controlled_phase(QuantumRegister& reg,
                                             size_t target,
                                             double angle) {
     if (control >= reg.get_num_qubits() || target >= reg.get_num_qubits()) {
+        std::cout << "Invalid control (" << control << ") or target (" << target
+                 << ") qubit for register size " << reg.get_num_qubits() << std::endl;
         throw std::invalid_argument("Invalid control or target qubit");
     }
 
-    // Apply controlled phase rotation
-    reg.phase(target, angle);
+    reg.controlled_phase(control, target, angle);
 }
 
 } // namespace omnn::math
