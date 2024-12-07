@@ -1,23 +1,29 @@
 #define BOOST_TEST_MODULE PeriodFinder test
 #include <boost/test/unit_test.hpp>
 #include "../PeriodFinder.h"
+#include <vector>
+#include <utility>
 
 using namespace omnn::math;
 
-BOOST_AUTO_TEST_CASE(PeriodFinder_small_numbers_test) {
-    // Test with known period: 2^4 mod 15 = 1, period = 4
-    auto period = PeriodFinder::findPeriod(Integer(2), Integer(15));
-    BOOST_REQUIRE(period.has_value());
-    BOOST_TEST(period.value() == 4);
+// Basic period finding tests
+BOOST_AUTO_TEST_CASE(PeriodFinder_known_periods_test) {
+    // Test cases with known periods
+    std::vector<std::tuple<Integer, Integer, Integer>> test_cases = {
+        {2, 15, 4},   // 2^4 mod 15 = 1
+        {7, 15, 4},   // 7^4 mod 15 = 1
+        {4, 21, 3},   // 4^3 mod 21 = 1
+        {2, 33, 10},  // 2^10 mod 33 = 1
+    };
+
+    for (const auto& [base, modulus, expected_period] : test_cases) {
+        auto period = PeriodFinder::findPeriod(base, modulus);
+        BOOST_REQUIRE(period.has_value());
+        BOOST_TEST(period.value() == expected_period);
+    }
 }
 
-BOOST_AUTO_TEST_CASE(PeriodFinder_coprime_test) {
-    // Test with coprime numbers: 7^r mod 15
-    auto period = PeriodFinder::findPeriod(Integer(7), Integer(15));
-    BOOST_REQUIRE(period.has_value());
-    BOOST_TEST(period.value() == 4);  // phi(15) = 8, period divides phi(15)
-}
-
+// Edge cases
 BOOST_AUTO_TEST_CASE(PeriodFinder_error_handling_test) {
     // Test invalid inputs
     BOOST_CHECK_THROW(
@@ -29,19 +35,62 @@ BOOST_AUTO_TEST_CASE(PeriodFinder_error_handling_test) {
         PeriodFinder::findPeriod(Integer(0), Integer(15)),
         std::invalid_argument
     );
+
+    BOOST_CHECK_THROW(
+        PeriodFinder::findPeriod(Integer(2), Integer(0)),
+        std::invalid_argument
+    );
 }
 
+// Prime modulus tests
 BOOST_AUTO_TEST_CASE(PeriodFinder_prime_modulus_test) {
-    // Test with prime modulus: 2^r mod 7
-    auto period = PeriodFinder::findPeriod(Integer(2), Integer(7));
-    BOOST_REQUIRE(period.has_value());
-    // Period should divide phi(7) = 6
-    BOOST_TEST(6 % period.value() == 0);
+    std::vector<std::pair<Integer, Integer>> prime_test_cases = {
+        {2, 7},   // Period should divide φ(7) = 6
+        {3, 11},  // Period should divide φ(11) = 10
+        {2, 13},  // Period should divide φ(13) = 12
+        {5, 17},  // Period should divide φ(17) = 16
+    };
+
+    for (const auto& [base, prime] : prime_test_cases) {
+        auto period = PeriodFinder::findPeriod(base, prime);
+        BOOST_REQUIRE(period.has_value());
+
+        // Period should divide φ(p) = p-1 for prime p
+        BOOST_TEST((prime - 1) % period.value() == 0);
+    }
 }
 
-BOOST_AUTO_TEST_CASE(PeriodFinder_power_of_two_test) {
-    // Test with power of two base: 4^r mod 15
-    auto period = PeriodFinder::findPeriod(Integer(4), Integer(15));
+// Quantum circuit integration tests
+BOOST_AUTO_TEST_CASE(PeriodFinder_quantum_circuit_test) {
+    // Test period finding with quantum circuit components
+    Integer base(2);
+    Integer modulus(15);
+
+    auto period = PeriodFinder::findPeriod(base, modulus);
     BOOST_REQUIRE(period.has_value());
-    BOOST_TEST(period.value() == 2);  // 4^2 mod 15 = 1
+
+    // Verify period using classical computation
+    Integer result = 1;
+    for (Integer i = 0; i < period.value(); ++i) {
+        result = (result * base) % modulus;
+    }
+    BOOST_TEST(result == 1);
+}
+
+// Performance tests
+BOOST_AUTO_TEST_CASE(PeriodFinder_multiple_attempts_test) {
+    // Test that period finding succeeds within reasonable attempts
+    Integer base(3);
+    Integer modulus(35);  // Period should be 12
+
+    bool success = false;
+    for (int attempt = 0; attempt < 5; ++attempt) {
+        auto period = PeriodFinder::findPeriod(base, modulus);
+        if (period && period.value() == 12) {
+            success = true;
+            break;
+        }
+    }
+
+    BOOST_TEST(success);
 }
