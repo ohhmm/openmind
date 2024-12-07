@@ -35,7 +35,10 @@ std::optional<std::pair<Integer, Integer>> ShorAlgorithm::factorize(const Intege
     // Main Shor's algorithm loop
     std::random_device rd;
     std::mt19937_64 gen(rd());
-    std::uniform_int_distribution<uint64_t> dist(2, N.to_size_t() - 1);
+
+    // Convert N to size_t for distribution
+    auto N_val = N.to_size_t();
+    std::uniform_int_distribution<uint64_t> dist(2, N_val - 1);
 
     for (int attempt = 0; attempt < 20; ++attempt) {
         // Choose random base a
@@ -68,25 +71,59 @@ bool ShorAlgorithm::isPrime(const Integer& n) {
     if (n <= 3) return true;
     if (n % 2 == 0 || n % 3 == 0) return false;
 
-    for (Integer i = 5; i * i <= n; i += 6) {
+    // Trial division up to sqrt(n)
+    // Use explicit operator< to avoid ambiguity
+    Integer i = 5;
+    while (!operator<(n/i, i)) {
         if (n % i == 0 || n % (i + 2) == 0) {
             return false;
         }
+        i += 6;
     }
     return true;
 }
 
 bool ShorAlgorithm::isPerfectPower(const Integer& n) {
-    double ln_n = std::log(n.to_double());
-    for (int b = 2; b <= std::log2(ln_n); ++b) {
-        double a = std::exp(ln_n / b);
-        Integer base(static_cast<uint64_t>(a));
-        Integer power = 1;
-        for (int i = 0; i < b; ++i) {
-            power *= base;
-            if (power > n) break;
+    // Check if n is a perfect power by trying all possible bases and exponents
+    // For a number n, the maximum possible exponent is log2(n)
+    Integer max_exp = 2;
+    Integer temp = n;
+    while (temp > 1) {
+        temp = temp / 2;
+        max_exp += 1;
+    }
+
+    // Try each possible exponent from 2 up to max_exp
+    for (Integer b = 2; b <= max_exp; ++b) {
+        // Binary search for the base
+        Integer left = 1;
+        Integer right = n;
+
+        while (left <= right) {
+            Integer mid = (left + right) / 2;
+            Integer power = 1;
+            bool overflow = false;
+
+            // Calculate mid^b using safer multiplication
+            for (Integer i = 0; i < b && !overflow; ++i) {
+                // Check if multiplying by mid would exceed n
+                if (n / mid < power) {
+                    overflow = true;
+                } else {
+                    power *= mid;
+                }
+            }
+
+            if (overflow) {
+                right = mid - 1;
+            } else if (power == n) {
+                return true;
+            } else if (power < n) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
         }
-        if (power == n) return true;
     }
     return false;
 }
@@ -114,12 +151,9 @@ std::optional<std::pair<Integer, Integer>> ShorAlgorithm::findFactorsFromPeriod(
         return std::nullopt;
     }
 
-
     // Calculate a^(r/2) mod N
-    Integer power = 1;
-    for (Integer i = 0; i < r/2; ++i) {
-        power = (power * a) % N;
-    }
+    Integer power = a.Power(r/2);
+    power = power % N;
 
     // Check if we found a non-trivial factor
     if (power == N-1) {

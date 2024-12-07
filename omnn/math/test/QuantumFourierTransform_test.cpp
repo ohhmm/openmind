@@ -23,10 +23,10 @@ BOOST_AUTO_TEST_CASE(QuantumFourierTransform_basic_test) {
     double inv_sqrt2 = 1.0 / std::sqrt(2.0);
 
     // Expected state after QFT of |01⟩
-    BOOST_TEST(std::abs(state[0] - std::complex<double>(inv_sqrt2, 0)) < 1e-10);
-    BOOST_TEST(std::abs(state[1] - std::complex<double>(0, -inv_sqrt2)) < 1e-10);
-    BOOST_TEST(std::abs(state[2] - std::complex<double>(-inv_sqrt2, 0)) < 1e-10);
-    BOOST_TEST(std::abs(state[3] - std::complex<double>(0, inv_sqrt2)) < 1e-10);
+    BOOST_TEST(std::abs(state[0].value().real() - inv_sqrt2) < 1e-10);
+    BOOST_TEST(std::abs(state[1].value().imag() + inv_sqrt2) < 1e-10);
+    BOOST_TEST(std::abs(state[2].value().real() + inv_sqrt2) < 1e-10);
+    BOOST_TEST(std::abs(state[3].value().imag() - inv_sqrt2) < 1e-10);
 }
 
 BOOST_AUTO_TEST_CASE(QuantumFourierTransform_inverse_test) {
@@ -43,10 +43,10 @@ BOOST_AUTO_TEST_CASE(QuantumFourierTransform_inverse_test) {
 
     // Should recover original state
     const auto& state = reg.get_state();
-    BOOST_TEST(std::abs(state[1] - std::complex<double>(1, 0)) < 1e-10);
-    BOOST_TEST(std::abs(state[0]) < 1e-10);
-    BOOST_TEST(std::abs(state[2]) < 1e-10);
-    BOOST_TEST(std::abs(state[3]) < 1e-10);
+    BOOST_TEST(std::abs(state[1].value().real() - 1.0) < 1e-10);
+    BOOST_TEST(std::abs(state[0].value().real()) < 1e-10);
+    BOOST_TEST(std::abs(state[2].value().real()) < 1e-10);
+    BOOST_TEST(std::abs(state[3].value().real()) < 1e-10);
 }
 
 BOOST_AUTO_TEST_CASE(QuantumFourierTransform_error_handling_test) {
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(QuantumFourierTransform_phase_estimation_test) {
     const auto& state = reg.get_state();
     double total_prob = 0.0;
     for (const auto& amp : state) {
-        total_prob += std::norm(amp);
+        total_prob += std::abs(amp.value()) * std::abs(amp.value());
     }
     BOOST_TEST(std::abs(total_prob - 1.0) < 1e-10);
 }

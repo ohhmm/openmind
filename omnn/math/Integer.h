@@ -7,8 +7,6 @@
 #include <omnn/math/ValuableDescendantContract.h>
 
 #include <iostream>
-#include <fstream>
-#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -156,6 +154,23 @@ public:
     }
     friend Integer operator<<(const Integer& a, size_t shift) {
         return Integer(a.arbitrary << shift);
+    }
+
+    // Power operation
+    Integer Power(const Integer& exp) const {
+        // For cpp_int, we need to implement power using multiplication
+        Integer result(1);
+        Integer base(*this);
+        Integer e(exp);
+
+        while (e > 0) {
+            if (e % 2 == 1) {
+                result *= base;
+            }
+            base *= base;
+            e /= 2;
+        }
+        return result;
     }
 
     vars_cont_t GetVaExps() const override { return {}; }

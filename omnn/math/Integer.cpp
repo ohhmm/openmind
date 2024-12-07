@@ -365,7 +365,7 @@ namespace math {
             return static_cast<int>(bit_test(arbitrary, N));
         }
         else
-            LOG_AND_IMPLEMENT(n << "th bit of " << *this);
+            throw std::runtime_error("Non-integer bit index not supported");
     }
 
     Valuable& Integer::shl()
@@ -403,14 +403,17 @@ namespace math {
     Valuable Integer::Shr(const Valuable& n) const
     {
         if (!n.IsInt()) {
-            IMPLEMENT
+            throw std::runtime_error("Non-integer shift amount not supported");
         }
         return Integer(decltype(arbitrary)(arbitrary>>static_cast<unsigned>(n)));
     }
 
     Valuable Integer::Or(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        if (v.IsInt() && n.IsInt()) {
+            return Integer(arbitrary | v.ca());
+        }
+        throw std::runtime_error("Non-integer operands not supported for Or operation");
     }
     Valuable Integer::And(const Valuable& n, const Valuable& v) const
     {
@@ -430,7 +433,10 @@ namespace math {
     }
     Valuable Integer::Xor(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        if (v.IsInt() && n.IsInt()) {
+            return Integer(arbitrary ^ v.ca());
+        }
+        throw std::runtime_error("Non-integer operands not supported for Xor operation");
     }
     Valuable Integer::Not(const Valuable& n) const
     {
