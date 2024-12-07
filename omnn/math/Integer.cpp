@@ -279,6 +279,45 @@ namespace math {
         return *this;
     }
 
+    Integer Integer::modular_inverse(const Integer& modulus) const {
+        if (arbitrary == 0) {
+            throw std::invalid_argument("Zero has no modular multiplicative inverse");
+        }
+
+        Integer a = arbitrary;
+        Integer b = modulus;
+        Integer x = 1, y = 0;
+        Integer last_x = 0, last_y = 1;
+        Integer temp;
+
+        while (b != 0) {
+            Integer quotient = a / b;
+
+            temp = b;
+            b = a % b;
+            a = temp;
+
+            temp = x;
+            x = last_x - quotient * x;
+            last_x = temp;
+
+            temp = y;
+            y = last_y - quotient * y;
+            last_y = temp;
+        }
+
+        if (a != 1) {
+            throw std::invalid_argument("Number and modulus are not coprime");
+        }
+
+        // Make sure we return a positive value
+        if (last_x < 0) {
+            last_x += modulus;
+        }
+
+        return last_x;
+    }
+
     Integer::operator int() const
     {
         return boost::numeric_cast<int>(arbitrary);
@@ -316,13 +355,14 @@ namespace math {
                 if (arbitrary == -1) {
                     return 1;
                 }
-                IMPLEMENT
+                // For negative numbers, use two's complement representation
+                return static_cast<int>(bit_test(-arbitrary - 1, static_cast<unsigned>(n))) ^ 1;
             }
             unsigned N = static_cast<unsigned>(n);
             return static_cast<int>(bit_test(arbitrary, N));
         }
         else
-            LOG_AND_IMPLEMENT(n << "th bit of " << *this);
+            throw std::runtime_error("Non-integer bit index not supported");
     }
 
     Valuable& Integer::shl()
@@ -360,14 +400,17 @@ namespace math {
     Valuable Integer::Shr(const Valuable& n) const
     {
         if (!n.IsInt()) {
-            IMPLEMENT
+            throw std::runtime_error("Non-integer shift amount not supported");
         }
         return Integer(decltype(arbitrary)(arbitrary>>static_cast<unsigned>(n)));
     }
 
     Valuable Integer::Or(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        if (v.IsInt() && n.IsInt()) {
+            return Integer(arbitrary | v.ca());
+        }
+        throw std::runtime_error("Non-integer operands not supported for Or operation");
     }
     Valuable Integer::And(const Valuable& n, const Valuable& v) const
     {
@@ -387,7 +430,10 @@ namespace math {
     }
     Valuable Integer::Xor(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        if (v.IsInt() && n.IsInt()) {
+            return Integer(arbitrary ^ v.ca());
+        }
+        throw std::runtime_error("Non-integer operands not supported for Xor operation");
     }
     Valuable Integer::Not(const Valuable& n) const
     {
@@ -665,7 +711,7 @@ namespace math {
         } else if (v.IsPrincipalSurd()) {
             return {};
         } else if (v.IsInt()) {
-            return *this > v;
+            return arbitrary > v.ca();
         } else {
             return v.FindVa() != nullptr;
         }
