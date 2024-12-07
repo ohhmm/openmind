@@ -13,9 +13,9 @@ BOOST_AUTO_TEST_CASE(QuantumRegister_initialization_test) {
     const auto& state = reg.get_state();
 
     BOOST_TEST(state.size() == 4);
-    BOOST_TEST(std::abs(state[0] - std::complex<double>(1, 0)) < 1e-10);
+    BOOST_TEST(std::abs(state[0].value().real() - 1.0) < 1e-10);
     for (size_t i = 1; i < 4; ++i) {
-        BOOST_TEST(std::abs(state[i]) < 1e-10);
+        BOOST_TEST(std::abs(state[i].value().real()) < 1e-10);
     }
 }
 
@@ -26,8 +26,8 @@ BOOST_AUTO_TEST_CASE(QuantumRegister_hadamard_test) {
     const auto& state = reg.get_state();
     double inv_sqrt2 = 1.0 / std::sqrt(2.0);
 
-    BOOST_TEST(std::abs(state[0] - std::complex<double>(inv_sqrt2, 0)) < 1e-10);
-    BOOST_TEST(std::abs(state[1] - std::complex<double>(inv_sqrt2, 0)) < 1e-10);
+    BOOST_TEST(std::abs(state[0].value().real() - inv_sqrt2) < 1e-10);
+    BOOST_TEST(std::abs(state[1].value().real() - inv_sqrt2) < 1e-10);
 }
 
 BOOST_AUTO_TEST_CASE(QuantumRegister_cnot_test) {
@@ -38,10 +38,10 @@ BOOST_AUTO_TEST_CASE(QuantumRegister_cnot_test) {
     const auto& state = reg.get_state();
     double inv_sqrt2 = 1.0 / std::sqrt(2.0);
 
-    BOOST_TEST(std::abs(state[0] - std::complex<double>(inv_sqrt2, 0)) < 1e-10);
-    BOOST_TEST(std::abs(state[3] - std::complex<double>(inv_sqrt2, 0)) < 1e-10);
-    BOOST_TEST(std::abs(state[1]) < 1e-10);
-    BOOST_TEST(std::abs(state[2]) < 1e-10);
+    BOOST_TEST(std::abs(state[0].value().real() - inv_sqrt2) < 1e-10);
+    BOOST_TEST(std::abs(state[3].value().real() - inv_sqrt2) < 1e-10);
+    BOOST_TEST(std::abs(state[1].value().real()) < 1e-10);
+    BOOST_TEST(std::abs(state[2].value().real()) < 1e-10);
 }
 
 BOOST_AUTO_TEST_CASE(QuantumRegister_measurement_test) {
@@ -72,6 +72,6 @@ BOOST_AUTO_TEST_CASE(QuantumRegister_phase_test) {
     const auto& state = reg.get_state();
     double inv_sqrt2 = 1.0 / std::sqrt(2.0);
 
-    BOOST_TEST(std::abs(state[0] - std::complex<double>(inv_sqrt2, 0)) < 1e-10);
-    BOOST_TEST(std::abs(state[1] - std::complex<double>(-inv_sqrt2, 0)) < 1e-10);
+    BOOST_TEST(std::abs(state[0].value().real() - inv_sqrt2) < 1e-10);
+    BOOST_TEST(std::abs(state[1].value().real() + inv_sqrt2) < 1e-10);
 }
