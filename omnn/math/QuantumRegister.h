@@ -1,7 +1,10 @@
 #pragma once
 
 #include <vector>
-#include <complex>
+#include <array>
+#include <bitset>
+#include <iostream>
+#include "Complex.h"
 #include "Valuable.h"
 #include "Variable.h"
 #include "Integer.h"
@@ -10,14 +13,17 @@ namespace omnn::math {
 
 class QuantumRegister : public Valuable {
 public:
-    using complex = std::complex<double>;
+    using complex = Complex;
     using state_vector = std::vector<complex>;
 
     explicit QuantumRegister(size_t num_qubits);
 
     // Basic quantum gates
+    void x(size_t qubit);  // NOT gate
     void hadamard(size_t qubit);
     void phase(size_t qubit, double angle);
+    void controlled_phase(size_t control, size_t target, double angle);
+    void controlled_hadamard(size_t control, size_t target);
     void cnot(size_t control, size_t target);
     void swap(size_t qubit1, size_t qubit2);
 
@@ -28,10 +34,13 @@ public:
     // State manipulation
     const state_vector& get_state() const { return state; }
     size_t get_num_qubits() const { return num_qubits; }
+    void print_state() const;
 
     // Valuable interface implementation
     bool operator==(const Valuable& v) const override;
-    size_t hash() const override;
+
+protected:
+    size_t getHash() const;
 
 private:
     size_t num_qubits;
