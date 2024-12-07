@@ -159,6 +159,23 @@ public:
         return Integer(a.arbitrary << shift);
     }
 
+    // Power operation
+    Integer Power(const Integer& exp) const {
+        // For cpp_int, we need to implement power using multiplication
+        Integer result(1);
+        Integer base(*this);
+        Integer e(exp);
+
+        while (e > 0) {
+            if (e % 2 == 1) {
+                result *= base;
+            }
+            base *= base;
+            e /= 2;
+        }
+        return result;
+    }
+
     vars_cont_t GetVaExps() const override { return {}; }
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result
     Valuable& d(const Variable& x) override;
