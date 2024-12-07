@@ -282,6 +282,45 @@ namespace math {
         return *this;
     }
 
+    Integer Integer::modular_inverse(const Integer& modulus) const {
+        if (arbitrary == 0) {
+            throw std::invalid_argument("Zero has no modular multiplicative inverse");
+        }
+
+        Integer a = arbitrary;
+        Integer b = modulus;
+        Integer x = 1, y = 0;
+        Integer last_x = 0, last_y = 1;
+        Integer temp;
+
+        while (b != 0) {
+            Integer quotient = a / b;
+
+            temp = b;
+            b = a % b;
+            a = temp;
+
+            temp = x;
+            x = last_x - quotient * x;
+            last_x = temp;
+
+            temp = y;
+            y = last_y - quotient * y;
+            last_y = temp;
+        }
+
+        if (a != 1) {
+            throw std::invalid_argument("Number and modulus are not coprime");
+        }
+
+        // Make sure we return a positive value
+        if (last_x < 0) {
+            last_x += modulus;
+        }
+
+        return last_x;
+    }
+
     Integer::operator int() const
     {
         return boost::numeric_cast<int>(arbitrary);

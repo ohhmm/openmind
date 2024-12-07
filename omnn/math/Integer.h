@@ -21,6 +21,7 @@
 #include <boost/archive/polymorphic_text_oarchive.hpp>
 #include <boost/archive/polymorphic_text_iarchive.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 
 namespace omnn::math {
 
@@ -126,6 +127,36 @@ public:
     bool SumIfSimplifiable(const Valuable&) override;
     std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable&) const override;
     std::pair<bool, Valuable> IsModSimplifiable(const Valuable&) const override;
+    size_t to_size_t() const { return boost::numeric_cast<size_t>(arbitrary); }
+    Integer modular_inverse(const Integer& modulus) const;
+
+    // Bit operations
+    size_t getBitLength() const {
+        return boost::multiprecision::msb(arbitrary) + 1;
+    }
+
+    // Conversion methods
+    double to_double() const {
+        return boost::numeric_cast<double>(arbitrary);
+    }
+
+    // Integer-int comparison operators to resolve ambiguity
+    //bool operator<=(int value) const { return arbitrary <= value; }
+    //bool operator>=(int value) const { return arbitrary >= value; }
+    //bool operator<(int value) const { return arbitrary < value; }
+    //bool operator>(int value) const { return arbitrary > value; }
+
+    // Bitwise operators
+    Integer operator&(const Integer& other) const { return Integer(arbitrary & other.arbitrary); }
+    Integer operator&(int value) const { return Integer(arbitrary & boost::multiprecision::cpp_int(value)); }
+
+    // Bit shift operators
+    friend Integer operator>>(const Integer& a, size_t shift) {
+        return Integer(a.arbitrary >> shift);
+    }
+    friend Integer operator<<(const Integer& a, size_t shift) {
+        return Integer(a.arbitrary << shift);
+    }
 
     vars_cont_t GetVaExps() const override { return {}; }
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result
@@ -133,10 +164,12 @@ public:
 
     Valuable Sign() const override;
     bool operator <(const Valuable& v) const override;
-    friend bool operator<(const Integer& _1, const Integer& _2) { return _1.arbitrary < _2.arbitrary; }
-    friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
-    friend bool operator<(const Integer& _1, int _2) { return _1.arbitrary < _2; }
-    bool operator ==(const Valuable&) const override;
+    bool operator<(const Integer& value) const { return arbitrary < value.arbitrary; }
+    bool operator<=(const Integer& value) const { return arbitrary <= value.arbitrary; }
+    bool operator>=(const Integer& value) const { return arbitrary >= value.arbitrary; }
+    bool operator<(int value) const { return arbitrary < value; }
+    bool operator<=(int value) const { return arbitrary <= value; }
+    bool operator==(const Valuable&) const override;
     bool operator ==(const Integer&) const;
     bool operator ==(const a_int&) const;
     bool operator ==(const int&) const;
