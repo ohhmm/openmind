@@ -31,8 +31,8 @@ public:
     // Constructors
     Complex() : value_(0.0, 0.0) {}
     Complex(double real, double imag = 0.0) : value_(real, imag) {}
-    Complex(const Complex& other) : value_(other.value_) {}
-    Complex(Complex&& other) noexcept : value_(std::move(other.value_)) {}
+    Complex(const Complex& other) : value_(other.value_), exact_phase_(other.exact_phase_) {}
+    Complex(Complex&& other) noexcept : value_(std::move(other.value_)), exact_phase_(std::move(other.exact_phase_)) {}
     Complex(const complex_type& c) : value_(c) {}
     explicit Complex(const Valuable& v) {
         if (auto* c = dynamic_cast<const Complex*>(&v)) {
@@ -52,15 +52,38 @@ public:
     double real() const { return value_.real(); }
     double imag() const { return value_.imag(); }
     double norm() const { return std::norm(value_); }
+    complex_type& value() { return value_; }
+    const complex_type& value() const { return value_; }
+
+    // Static factory methods for quantum operations
+    static Complex from_exact_phase(const Integer& k, const Integer& n) {
+        Complex result;
+        // Ensure k is normalized to [0, n) range and handle negative k
+        Integer normalized_k = k % n;
+        if (normalized_k < 0) {
+            normalized_k += n;
+        }
+        result.exact_phase_ = std::make_pair(normalized_k, n);
+
+        // Use consistent double precision for phase calculation
+        const double pi = M_PI;
+        const double k_val = normalized_k.to_double();
+        const double n_val = n.to_double();
+        const double phase = 2.0 * pi * (k_val / n_val);
+        result.value_ = std::polar(1.0, phase);
+        return result;
+    }
 
     // Assignment operators
     Complex& operator=(const Complex& other) {
         value_ = other.value_;
+        exact_phase_ = other.exact_phase_;
         return *this;
     }
 
     Complex& operator=(Complex&& other) noexcept {
         value_ = std::move(other.value_);
+        exact_phase_ = std::move(other.exact_phase_);
         return *this;
     }
 
@@ -137,46 +160,56 @@ public:
     // Required by ValuableDescendantBase
     bool operator==(const Valuable& v) const override {
         if (auto* c = dynamic_cast<const Complex*>(&v)) {
-            const double quantum_epsilon = 1e-10;  // Strict quantum state precision
-            const double general_epsilon = 1e-8;   // General complex arithmetic precision
+            const double base_epsilon = 1e-10;  // Base precision for general comparisons
+            const double quantum_epsilon = 1e-9;  // More lenient precision for quantum states
 
-            bool is_quantum_state = (std::abs(std::abs(value_) - 1.0) < quantum_epsilon ||
-                                   std::abs(value_) < quantum_epsilon ||
-                                   std::abs(std::abs(c->value_) - 1.0) < quantum_epsilon ||
-                                   std::abs(c->value_) < quantum_epsilon);
+            // First check if either number is exactly zero
+            if (std::abs(value_) < base_epsilon && std::abs(c->value_) < base_epsilon) {
+                return true;
+            }
+
+            // For quantum states (unit vectors), use absolute comparison with more lenient epsilon
+            bool is_quantum_state = std::abs(std::abs(value_) - 1.0) < base_epsilon ||
+                                  std::abs(std::abs(c->value_) - 1.0) < base_epsilon;
 
             if (is_quantum_state) {
                 return std::abs(value_.real() - c->value_.real()) < quantum_epsilon &&
                        std::abs(value_.imag() - c->value_.imag()) < quantum_epsilon;
-            } else {
-                const double abs1 = std::abs(value_);
-                const double abs2 = std::abs(c->value_);
-                const double scale = std::max(1.0, std::max(abs1, abs2));
-                return std::abs(value_.real() - c->value_.real()) < general_epsilon * scale &&
-                       std::abs(value_.imag() - c->value_.imag()) < general_epsilon * scale;
             }
+
+            // For non-quantum states, use relative comparison with base epsilon
+            const double abs1 = std::abs(value_);
+            const double abs2 = std::abs(c->value_);
+            const double scale = std::max(1.0, std::max(abs1, abs2));
+            const double rel_epsilon = base_epsilon * scale;
+
+            return std::abs(value_.real() - c->value_.real()) < rel_epsilon &&
+                   std::abs(value_.imag() - c->value_.imag()) < rel_epsilon;
         }
         return false;
     }
 
     bool IsComesBefore(const Valuable& v) const override {
         if (auto* c = dynamic_cast<const Complex*>(&v)) {
-            const double quantum_epsilon = 1e-10;
-            const double general_epsilon = 1e-8;
+            const double epsilon = 1e-10;
 
-            bool is_quantum_state = (std::abs(std::abs(value_) - 1.0) < quantum_epsilon ||
-                                   std::abs(value_) < quantum_epsilon ||
-                                   std::abs(std::abs(c->value_) - 1.0) < quantum_epsilon ||
-                                   std::abs(c->value_) < quantum_epsilon);
+            // First check if either number is exactly zero
+            if (std::abs(value_) < epsilon && std::abs(c->value_) < epsilon) {
+                return false;
+            }
+
+            // For quantum states, use absolute comparison
+            bool is_quantum_state = std::abs(std::abs(value_) - 1.0) < epsilon ||
+                                  std::abs(std::abs(c->value_) - 1.0) < epsilon;
 
             auto mag1 = std::abs(value_);
             auto mag2 = std::abs(c->value_);
 
             if (is_quantum_state) {
-                if (std::abs(mag1 - mag2) >= quantum_epsilon) return mag1 < mag2;
+                if (std::abs(mag1 - mag2) >= epsilon) return mag1 < mag2;
             } else {
                 const double scale = std::max(1.0, std::max(mag1, mag2));
-                if (std::abs(mag1 - mag2) >= general_epsilon * scale) return mag1 < mag2;
+                if (std::abs(mag1 - mag2) >= epsilon * scale) return mag1 < mag2;
             }
             return std::arg(value_) < std::arg(c->value_);
         }
@@ -254,8 +287,6 @@ public:
         return Complex(value_ * other.value_);
     }
 
-    // PLACEHOLDER: Other arithmetic operators
-
     // Implement operator+= for both Complex and complex_type
     Complex& operator+=(const Complex& other) {
         value_ += other.value_;
@@ -308,10 +339,6 @@ public:
         return os;
     }
 
-    // Value access
-    const complex_type& value() const { return value_; }
-    complex_type& value() { return value_; }
-
     friend bool operator==(const Complex& lhs, const Complex& rhs) {
         // Use exact phase comparison for quantum states if available
         if (lhs.is_exact_phase() && rhs.is_exact_phase()) {
@@ -322,45 +349,24 @@ public:
             return (lhs_num * rhs_denom) == (rhs_num * lhs_denom);
         }
 
-        const double quantum_epsilon = 1e-10;
-        const double general_epsilon = 1e-8;
-
-        bool is_quantum_state = (std::abs(std::abs(lhs.value_) - 1.0) < quantum_epsilon ||
-                               std::abs(lhs.value_) < quantum_epsilon ||
-                               std::abs(std::abs(rhs.value_) - 1.0) < quantum_epsilon ||
-                               std::abs(rhs.value_) < quantum_epsilon);
-
-        if (is_quantum_state) {
-            return std::abs(lhs.value_.real() - rhs.value_.real()) < quantum_epsilon &&
-                   std::abs(lhs.value_.imag() - rhs.value_.imag()) < quantum_epsilon;
-        }
-
+        const double quantum_epsilon = 1e-10;  // Stricter epsilon for quantum states
+        const double regular_epsilon = 1e-8;   // More relaxed epsilon for regular numbers
         const double abs1 = std::abs(lhs.value_);
         const double abs2 = std::abs(rhs.value_);
-        const double scale = std::max(1.0, std::max(abs1, abs2));
-        return std::abs(lhs.value_.real() - rhs.value_.real()) < general_epsilon * scale &&
-               std::abs(lhs.value_.imag() - rhs.value_.imag()) < general_epsilon * scale;
+
+        // Check if either number is a quantum state (magnitude close to 1)
+        const bool is_quantum_state = std::abs(abs1 - 1.0) < quantum_epsilon ||
+                                    std::abs(abs2 - 1.0) < quantum_epsilon;
+
+        // Use appropriate epsilon based on whether we're comparing quantum states
+        const double epsilon = is_quantum_state ? quantum_epsilon : regular_epsilon;
+
+        return std::abs(lhs.value_.real() - rhs.value_.real()) < epsilon &&
+               std::abs(lhs.value_.imag() - rhs.value_.imag()) < epsilon;
     }
 
     friend bool operator!=(const Complex& lhs, const Complex& rhs) {
         return !(lhs == rhs);
-    }
-
-    // New methods for exact phase representation
-    static Complex from_exact_phase(const omnn::math::Integer& numerator, const omnn::math::Integer& denominator) {
-        // Store exact phase information first
-        Complex result;
-        result.exact_phase_ = std::make_pair(numerator % denominator, denominator);
-        if (result.exact_phase_->first < 0) {
-            result.exact_phase_->first += denominator;
-        }
-
-        // Calculate phase using high-precision arithmetic
-        const double two_pi = 2.0 * M_PI;
-        double phase = two_pi * (result.exact_phase_->first.to_double() / result.exact_phase_->second.to_double());
-        result.value_ = std::polar(1.0, phase);
-
-        return result;
     }
 
     bool is_exact_phase() const {
@@ -376,7 +382,7 @@ public:
 
 private:
     complex_type value_;
-    std::optional<std::pair<omnn::math::Integer, omnn::math::Integer>> exact_phase_;  // numerator/denominator for exact phases
+    std::optional<std::pair<omnn::math::Integer, omnn::math::Integer>> exact_phase_;
 };
 
 // Free functions for std::complex compatibility

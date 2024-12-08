@@ -31,8 +31,7 @@ void QuantumRegister::hadamard(size_t qubit) {
 }
 
 void QuantumRegister::phase(size_t qubit, const Integer& numerator, const Integer& denominator) {
-    Integer k = numerator % denominator;  // Normalize to range [0, denominator)
-    if (k < 0) k += denominator;  // Ensure positive phase
+    Integer k = numerator % denominator;  // Preserve sign for phase calculation
 
     std::array<complex, 4> p_matrix;
     p_matrix[0] = complex(1.0, 0.0);
@@ -43,7 +42,22 @@ void QuantumRegister::phase(size_t qubit, const Integer& numerator, const Intege
     apply_single_qubit_gate(qubit, p_matrix);
 }
 
-// PLACEHOLDER: Empty space between phase() and controlled_controlled_phase() methods
+void QuantumRegister::controlled_phase(size_t control, size_t target, const Integer& numerator, const Integer& denominator) {
+    if (control >= num_qubits || target >= num_qubits || control == target) {
+        throw std::invalid_argument("Invalid control or target qubit");
+    }
+
+    // Calculate phase angle in radians
+    double angle = 2.0 * M_PI * numerator.to_double() / denominator.to_double();
+
+    // Create phase rotation matrix
+    std::array<complex, 4> p_matrix = {
+        complex(1.0, 0.0), complex(0.0, 0.0),
+        complex(0.0, 0.0), complex(std::cos(angle), std::sin(angle))
+    };
+
+    apply_controlled_gate(control, target, p_matrix);
+}
 
 void QuantumRegister::controlled_controlled_phase(size_t control1, size_t control2, size_t target,
                                                   const Integer& numerator, const Integer& denominator) {
@@ -52,9 +66,7 @@ void QuantumRegister::controlled_controlled_phase(size_t control1, size_t contro
         throw std::invalid_argument("Invalid control or target qubit");
     }
 
-    // Calculate exact phase using Integer arithmetic
-    Integer k = numerator % denominator;  // Normalize to range [0, denominator)
-    if (k < 0) k += denominator;  // Ensure positive phase
+    Integer k = numerator % denominator;
 
     std::array<complex, 4> p_matrix;
     p_matrix[0] = complex(1.0, 0.0);
@@ -128,7 +140,7 @@ void QuantumRegister::apply_single_qubit_gate(size_t qubit,
 }
 
 void QuantumRegister::apply_controlled_gate(size_t control, size_t target,
-                                        const std::array<complex, 4>& matrix) {
+                                          const std::array<complex, 4>& matrix) {
     if (control >= num_qubits || target >= num_qubits || control == target) {
         throw std::invalid_argument("Invalid control or target qubit");
     }
@@ -138,38 +150,38 @@ void QuantumRegister::apply_controlled_gate(size_t control, size_t target,
     const size_t target_mask = 1ULL << target;
     state_vector new_state = state;
 
-    // Pre-calculate matrix values for efficiency
-    const complex m00 = matrix[0];
-    const complex m01 = matrix[1];
-    const complex m10 = matrix[2];
-    const complex m11 = matrix[3];
-
-    // Process all states
+    // Process all basis states
     for (size_t i = 0; i < n; ++i) {
-        const size_t i1 = i ^ target_mask;
-        if ((i & target_mask) == 0) {  // Only process when looking at |0⟩ state of target
-            if ((i & control_mask) != 0) {  // Control qubit is |1⟩
-                // Apply controlled operation
-                new_state[i] = Complex(m00 * state[i].value() + m01 * state[i1].value());
-                new_state[i1] = Complex(m10 * state[i].value() + m11 * state[i1].value());
-            } else {  // Control qubit is |0⟩
-                // Keep amplitudes unchanged
-                new_state[i] = state[i];
-                new_state[i1] = state[i1];
+        // Only apply operation when control qubit is |1⟩
+        if ((i & control_mask) != 0) {
+            const bool target_is_one = (i & target_mask) != 0;
+            const size_t i_partner = target_is_one ? (i & ~target_mask) : (i | target_mask);
+
+            // Get current amplitudes
+            const complex& a = state[i];
+            const complex& b = state[i_partner];
+
+            // Apply controlled operation matrix
+            if (!target_is_one) {
+                new_state[i] = matrix[0] * a + matrix[1] * b;
+                new_state[i_partner] = matrix[2] * a + matrix[3] * b;
             }
         }
     }
 
-    // Normalize if needed
+    // Calculate normalization factor
     double norm_factor = 0.0;
+    const double epsilon = 1e-10;
+
     for (const auto& amp : new_state) {
-        norm_factor += amp.norm();
+        norm_factor += std::norm(amp.value());
     }
 
-    if (std::abs(norm_factor - 1.0) > 1e-10) {
+    // Normalize only if state is not zero
+    if (norm_factor > epsilon) {
         const double scale = 1.0 / std::sqrt(norm_factor);
         for (auto& amp : new_state) {
-            amp *= scale;
+            amp = Complex(amp.value() * scale);
         }
     }
 
@@ -442,24 +454,13 @@ void QuantumRegister::inverse_qft_range(size_t start, size_t end) {
     }
 }
 
-void QuantumRegister::controlled_phase(size_t control, size_t target,
-                                     const Integer& numerator, const Integer& denominator) {
-    if (control >= num_qubits || target >= num_qubits) {
-        throw std::invalid_argument("Invalid qubit indices");
+void QuantumRegister::apply_qft(size_t start_qubit, size_t end_qubit) {
+    if (start_qubit >= num_qubits || end_qubit >= num_qubits || start_qubit > end_qubit) {
+        throw std::invalid_argument("Invalid qubit range for QFT");
     }
 
-    // Calculate exact phase using Integer arithmetic
-    Integer k = numerator % denominator;  // Normalize to range [0, denominator)
-    if (k < 0) k += denominator;  // Ensure positive phase
-
-    // Create phase matrix using exact Integer arithmetic
-    std::array<complex, 4> p_matrix;
-    p_matrix[0] = complex(1.0, 0.0);
-    p_matrix[1] = complex(0.0, 0.0);
-    p_matrix[2] = complex(0.0, 0.0);
-    p_matrix[3] = complex::from_exact_phase(k, denominator);
-
-    apply_controlled_gate(control, target, p_matrix);
+    QuantumFourierTransform qft;
+    qft.apply(*this, start_qubit, end_qubit);
 }
 
 } // namespace omnn::math

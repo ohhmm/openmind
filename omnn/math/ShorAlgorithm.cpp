@@ -10,12 +10,12 @@ std::optional<std::pair<Integer, Integer>> ShorAlgorithm::factorize(const Intege
         throw std::invalid_argument("Number must be greater than 1");
     }
 
-    if (N % 2 == 0) {
-        return std::make_pair(Integer(2), N / 2);
-    }
-
     if (isPrime(N)) {
         return std::nullopt;
+    }
+
+    if (N % 2 == 0) {
+        return std::make_pair(Integer(2), N / 2);
     }
 
     if (isPerfectPower(N)) {
