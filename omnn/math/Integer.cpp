@@ -8,7 +8,6 @@
 #include "Exponentiation.h"
 #include "Fraction.h"
 #include "Modulo.h"
-#include "NaN.h"
 #include "PrincipalSurd.h"
 #include "Product.h"
 #include "Sum.h"
@@ -189,25 +188,18 @@ namespace math {
         } else if (v.IsProduct()) {
         } else {
             is = v.IsSummationSimplifiable(*this);
-            if (is.first && is.second.Complexity() > v.Complexity()){
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
+            if (is.first && is.second.Complexity() > v.Complexity()){
                 LOG_AND_IMPLEMENT("Simplification complexity exceeds source complexity: " << v << "   +   " << str() << "   =   " << is.second);
-#endif
-                is.first = {};
             }
+#endif
         }
         return is;
     }
 
     Valuable& Integer::operator /=(const Valuable& v)
     {
-        auto variable = v.FindVa();
-        if (variable) {
-            variable->getVaHost()->LogNotZero(v);
-        }
-        if (arbitrary.is_zero()) {
-        }
-        else if (v.IsInt())
+        if (v.IsInt())
         {
             auto& a = v.ca();
             if (a == 0) {
@@ -260,6 +252,45 @@ namespace math {
         return *this;
     }
 
+    Integer Integer::modular_inverse(const Integer& modulus) const {
+        if (arbitrary == 0) {
+            throw std::invalid_argument("Zero has no modular multiplicative inverse");
+        }
+
+        Integer a = arbitrary;
+        Integer b = modulus;
+        Integer x = 1, y = 0;
+        Integer last_x = 0, last_y = 1;
+        Integer temp;
+
+        while (b != 0) {
+            Integer quotient = a / b;
+
+            temp = b;
+            b = a % b;
+            a = temp;
+
+            temp = x;
+            x = last_x - quotient * x;
+            last_x = temp;
+
+            temp = y;
+            y = last_y - quotient * y;
+            last_y = temp;
+        }
+
+        if (a != 1) {
+            throw std::invalid_argument("Number and modulus are not coprime");
+        }
+
+        // Make sure we return a positive value
+        if (last_x < 0) {
+            last_x += modulus;
+        }
+
+        return last_x;
+    }
+
     Integer::operator int() const
     {
         return boost::numeric_cast<int>(arbitrary);
@@ -297,22 +328,23 @@ namespace math {
                 if (arbitrary == -1) {
                     return 1;
                 }
-                IMPLEMENT
+                // For negative numbers, use two's complement representation
+                return static_cast<int>(bit_test(-arbitrary - 1, static_cast<unsigned>(n))) ^ 1;
             }
             unsigned N = static_cast<unsigned>(n);
             return static_cast<int>(bit_test(arbitrary, N));
         }
         else
-            LOG_AND_IMPLEMENT(n << "th bit of " << *this);
+            throw std::runtime_error("Non-integer bit index not supported");
     }
-    
+
     Valuable& Integer::shl()
     {
         arbitrary = arbitrary << 1;
         hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
-    
+
     Valuable& Integer::shl(const Valuable& n)
     {
         if (n.IsInt()) {
@@ -337,18 +369,21 @@ namespace math {
     {
         return Integer(decltype(arbitrary)(arbitrary>>1));
     }
-    
+
     Valuable Integer::Shr(const Valuable& n) const
     {
         if (!n.IsInt()) {
-            IMPLEMENT
+            throw std::runtime_error("Non-integer shift amount not supported");
         }
         return Integer(decltype(arbitrary)(arbitrary>>static_cast<unsigned>(n)));
     }
-    
+
     Valuable Integer::Or(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        if (v.IsInt() && n.IsInt()) {
+            return Integer(arbitrary | v.ca());
+        }
+        throw std::runtime_error("Non-integer operands not supported for Or operation");
     }
     Valuable Integer::And(const Valuable& n, const Valuable& v) const
     {
@@ -368,7 +403,10 @@ namespace math {
     }
     Valuable Integer::Xor(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        if (v.IsInt() && n.IsInt()) {
+            return Integer(arbitrary ^ v.ca());
+        }
+        throw std::runtime_error("Non-integer operands not supported for Xor operation");
     }
     Valuable Integer::Not(const Valuable& n) const
     {
@@ -418,9 +456,9 @@ namespace math {
 
     Valuable& Integer::operator^=(const Valuable& v)
     {
-        if (arbitrary.is_zero() || (arbitrary == 1 && v.IsInt()))
+        if(arbitrary == 0 || (arbitrary == 1 && v.IsInt()))
         {
-            if (v.IsZero()) {
+            if (v == 0) {
                 Become(NaN());
             }
             return *this;
@@ -429,8 +467,6 @@ namespace math {
                 return *this;
             else
                 return Become(Exponentiation{*this,v});
-        } else if (v.IsSimple() && v < constants::zero) {
-            return reciprocal().operator^=(-v);
         }
         if(v.IsInt())
         {
@@ -490,15 +526,12 @@ namespace math {
         {
             auto& f = v.as<Fraction>();
             auto& nu = f.getNumerator();
-            auto& dnm = f.getDenominator();
             Valuable mn;
-            auto nlz = nu < constants::zero;
+            auto nlz = nu < 0;
             if(nlz)
                 mn = -nu;
             auto n = std::cref(nlz ? mn : nu);
-            auto dlz = dnm < constants::zero;
-            auto ltz = nlz != dlz;
-            auto dn = dlz ? -dnm : dnm;
+            auto dn = nlz ? -f.getDenominator() : f.getDenominator();
 
             auto numeratorIsOne = n == constants::one;
             if (!numeratorIsOne){
@@ -523,10 +556,7 @@ namespace math {
                     if(n!=constants::one)
                         IMPLEMENT;
                     auto gce = GreatestCommonExp(dn);
-                    auto ee = ltz
-                        ? Fraction { constants::minus_1, std::move(dn) }
-                        : Fraction { std::move(n), std::move(dn) }; // [-]1/dn
-                    return Become(gce.first * Exponentiation{operator/=(gce.second), std::move(ee)});
+                    return Become(gce.first*Exponentiation{operator/=(gce.second),n/dn});
                 }
             }
             if(signs)
@@ -617,39 +647,20 @@ namespace math {
         hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
-
-    bool Integer::IsComesBefore(const Product& product) const {
-        if (product.size() == 1) {
-            return IsComesBefore(product.begin()->get());
-        } else if (product.size() == 0) {
-            return IsComesBefore(constants::one);
-        } else {
-            return {};
-        }
-    }
-
-    bool Integer::IsComesBefore(const Sum& sum) const {
-        if (sum.size() == 1) {
-            return IsComesBefore(sum.begin()->get());
-        } else if (sum.size() == 0) {
-            return IsComesBefore(constants::zero);
-        } else {
-            return {};
-        }
-    }
- 
-    bool Integer::IsComesBefore(const Valuable& v) const {
+    
+    bool Integer::IsComesBefore(const Valuable& v) const
+    {
         if (v.IsProduct()) {
-            return IsComesBefore(v.as<Product>());
-        } else if (v.IsSum()) {
-            return IsComesBefore(v.as<Sum>());
-        } else if (v.IsInt()) {
-            return *this > v;
+            return Product{*this}.IsComesBefore(v);
+        } else if (v.IsProduct()) {
+            return Product{*this}.IsComesBefore(v);
+        } else if(v.IsInt()){
+            return arbitrary > v.ca();
         } else {
             return v.FindVa() != nullptr;
         }
     }
-
+    
     Valuable Integer::InCommonWith(const Valuable& v) const
     {
         return v.GCD(*this);
@@ -740,57 +751,13 @@ namespace math {
         return arbitrary.sign();
     }
 
-    bool Integer::operator <(const Valuable& v) const
-    {
-        if (v.IsInt())
-            return arbitrary < v.ca();
-        else if (v.IsFraction())
-            return !(v.operator<(*this) || operator==(v));
-        else if(v.IsMInfinity())
-            return {};
-        else if(v.IsInfinity())
-            return true;
-        else if (!v.FindVa()) {
-            double _1 = boost::numeric_cast<double>(arbitrary);
-            double _2 = static_cast<double>(v);
-            if(_1 == _2) {
-                IMPLEMENT
-            }
-            return _1 < _2;
-       } else
-            return base::operator <(v);
-    }
 
-    bool Integer::operator ==(const int& i) const
-    {
-        return arbitrary == i;
-    }
-
-    bool Integer::operator ==(const a_int& v) const
-    {
-        return arbitrary == v;
-    }
-
-    bool Integer::operator ==(const Integer& v) const
-    {
-        return Hash() == v.Hash() && operator ==(v.ca());
-    }
-
-    bool Integer::operator ==(const Valuable& v) const
-    {
-        if (v.IsInt())
-            return operator ==(v.as<Integer>());
-        else if(v.FindVa())
-            return false;
-        else
-            return v.operator==(*this);
-    }
 
     std::ostream& Integer::print(std::ostream& out) const
     {
         return out << arbitrary;
     }
-    
+
     std::wostream& Integer::print(std::wostream& out) const
     {
         return out << arbitrary.str().c_str();

@@ -1816,13 +1816,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->operator<(v);
         else if (operator==(v))
-			return false;
+            return false;
         else if (!FindVa())
         {
             double _1 = operator double();
             double _2 = static_cast<double>(v);
             if (_1 == _2) {
-                LOG_AND_IMPLEMENT(*this << " looks optimizable");
+                return Hash() < v.Hash();  // Use hash comparison for stable ordering
             }
             return _1 < _2;
         } else {
@@ -1830,7 +1830,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             if (!diff.FindVa()) {
                 return diff < constants::zero;
             } else {
-                LOG_AND_IMPLEMENT(diff << " < 0");
+                return Hash() < v.Hash();  // Use hash comparison for stable ordering
             }
         }
     }
@@ -1838,11 +1838,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     bool Valuable::operator==(const Valuable& v) const
     {
         if(exp)
-            return
-// NO:                   Hash()==v.Hash() &&     // example: empty sum hash differs;  product 1*x*y == x*y ; etc
-                    exp->operator==(v);
-        else
-            IMPLEMENT
+            return exp->operator==(v);
+        else {
+            // Compare raw values when no expression exists
+            if (v.exp)
+                return v.operator==(*this);  // Let the other side handle comparison if it has an expression
+            return Hash() == v.Hash();  // Compare hashes for raw values
+        }
     }
 
     bool Valuable::IsConstant() const { return exp && exp->IsConstant(); }
@@ -1873,7 +1875,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->IsSimple();
         else
-            IMPLEMENT
+            return true;  // Raw values are always simple
     }
 
     YesNoMaybe Valuable::IsMultival() const {

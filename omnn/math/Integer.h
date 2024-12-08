@@ -21,6 +21,7 @@
 #include <boost/archive/polymorphic_text_oarchive.hpp>
 #include <boost/archive/polymorphic_text_iarchive.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 
 namespace omnn::math {
 
@@ -109,6 +110,69 @@ public:
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override;
     Valuable& operator ++() override;
+    size_t to_size_t() const { return boost::numeric_cast<size_t>(arbitrary); }
+    Integer modular_inverse(const Integer& modulus) const;
+
+    // Bit operations
+    size_t getBitLength() const {
+        return boost::multiprecision::msb(arbitrary) + 1;
+    }
+
+    // Conversion methods
+    double to_double() const {
+        return boost::numeric_cast<double>(arbitrary);
+    }
+
+    // Primary virtual comparison operator - others can be derived from this
+    bool operator<(const Valuable& other) const override {
+        // First try direct Integer comparison for static initialization safety
+        if (other.IsInt())
+            return arbitrary < other.ca();
+        // Then try dynamic cast for runtime polymorphic behavior
+        if (auto* p = dynamic_cast<const Integer*>(&other.get()))
+            return arbitrary < p->arbitrary;
+        return Valuable::operator<(other);
+    }
+
+    // Non-virtual comparison operators for direct Integer comparisons
+    bool operator<=(const Integer& other) const { return operator<(other) || operator==(other); }
+    bool operator>=(const Integer& other) const { return !operator<(other); }
+    bool operator>(const Integer& other) const { return !operator<=(other); }
+
+    // Integer-int comparison operators to resolve ambiguity
+    bool operator<=(int value) const { return arbitrary <= value; }
+    bool operator>=(int value) const { return arbitrary >= value; }
+    bool operator<(int value) const { return arbitrary < value; }
+    bool operator>(int value) const { return arbitrary > value; }
+
+    // Bitwise operators
+    Integer operator&(const Integer& other) const { return Integer(arbitrary & other.arbitrary); }
+    Integer operator&(int value) const { return Integer(arbitrary & boost::multiprecision::cpp_int(value)); }
+
+    // Bit shift operators
+    friend Integer operator>>(const Integer& a, size_t shift) {
+        return Integer(a.arbitrary >> shift);
+    }
+    friend Integer operator<<(const Integer& a, size_t shift) {
+        return Integer(a.arbitrary << shift);
+    }
+
+    // Power operation
+    Integer Power(const Integer& exp) const {
+        // For cpp_int, we need to implement power using multiplication
+        Integer result(1);
+        Integer base(*this);
+        Integer e(exp);
+
+        while (e > 0) {
+            if (e % 2 == 1) {
+                result *= base;
+            }
+            base *= base;
+            e /= 2;
+        }
+        return result;
+    }
 
     vars_cont_t GetVaExps() const override { return {}; }
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result
@@ -116,14 +180,19 @@ public:
     Valuable& d(const Variable& x) override;
 
     Valuable Sign() const override;
-    bool operator <(const Valuable& v) const override;
-    friend bool operator<(const Integer& _1, const Integer& _2) { return _1.arbitrary < _2.arbitrary; }
-    friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
-    friend bool operator<(const Integer& _1, int _2) { return _1.arbitrary < _2; }
-    bool operator ==(const Valuable& v) const override;
-    bool operator ==(const Integer& v) const;
-    bool operator ==(const a_int& v) const;
-    bool operator ==(const int& v) const;
+
+    bool operator==(const Valuable& v) const override {
+        // First try direct value comparison for static initialization safety
+        if (v.IsInt())
+            return arbitrary == v.ca();
+        // Then try direct Integer comparison if available
+        if (const auto* p = dynamic_cast<const Integer*>(&v.get()))
+            return arbitrary == p->arbitrary;
+        return Valuable::operator==(v);
+    }
+    bool operator==(const Integer& v) const { return arbitrary == v.arbitrary; }
+    bool operator==(const a_int& v) const { return arbitrary == v; }
+    bool operator==(const int& v) const { return arbitrary == v; }
 
     explicit operator int() const override;
     explicit operator a_int() const override;
