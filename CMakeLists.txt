@@ -136,6 +136,10 @@ set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_
 if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
     message("Using Edit&Continue policy")
     cmake_policy(SET CMP0138 NEW)
+    add_compile_definitions(_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING _USE_MATH_DEFINES)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    # Ensure consistent runtime library settings across all components
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Debug>:DLL>")
 endif()
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19.0")
     cmake_policy(SET CMP0114 NEW)
