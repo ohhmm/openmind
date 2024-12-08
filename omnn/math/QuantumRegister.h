@@ -37,6 +37,7 @@ public:
     // Quantum Fourier Transform operations
     void qft_range(size_t start, size_t end);
     void inverse_qft_range(size_t start, size_t end);
+    void apply_qft(size_t start_qubit, size_t end_qubit);
 
     // Measurement
     Integer measure();

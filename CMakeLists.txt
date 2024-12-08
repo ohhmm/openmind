@@ -116,7 +116,7 @@ option(OPENMIND_USE_QT "Link Qt libs" OFF)
 
 include(intel)
 
-option(OPENMIND_USE_OPENCL "Use OpenCL calculations" ${OpenCL_FOUND})
+option(OPENMIND_USE_OPENCL "Use OpenCL calculations" OFF)
 if(OPENMIND_USE_OPENCL)
 	find_optional_pkg(OpenGL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
