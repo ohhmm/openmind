@@ -58,7 +58,9 @@ namespace math {
     
 	Valuable Fraction::operator -() const
     {
-        return Fraction(-getNumerator(), getDenominator());
+        auto frac = ptrs::make_shared<Fraction>(-getNumerator(), getDenominator());
+        frac->optimize();
+        return Valuable(std::move(frac));
     }
 
     bool Fraction::operator==(const Fraction& fraction) const {
