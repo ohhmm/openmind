@@ -73,7 +73,7 @@ public:
 
     explicit Integer(const Fraction& f);
 
-    const_base_int_ref as_const_base_int_ref() const {
+    constexpr const_base_int_ref as_const_base_int_ref() const {
         return arbitrary;
     }
 
@@ -81,15 +81,15 @@ public:
     constexpr bool IsPositivePowerOf2() const;
     explicit operator int64_t() const;
 
-    bool IsInt() const override { return true; }
-    bool IsZero() const override { return arbitrary == 0; }
-    bool IsSimple() const override { return true; }
+    constexpr bool IsInt() const override { return true; }
+    constexpr bool IsZero() const override { return arbitrary.is_zero(); }
+    constexpr bool IsSimple() const override { return true; }
     //bool IsConstant() const override { return true; }   The Integer object may be applied an arithmetic operation and this object value changed. Only Constant class objects should return IsConstant true.
-    bool is_optimized() const override { return true; }
+    constexpr bool is_optimized() const override { return true; }
     void optimize() override { MarkAsOptimized(); }
     YesNoMaybe IsEven() const override;
-    bool IsPolynomial(const Variable&) const override { return true; }
-    YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+    constexpr bool IsPolynomial(const Variable&) const override { return true; }
+    constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
 
     // virtual operators
