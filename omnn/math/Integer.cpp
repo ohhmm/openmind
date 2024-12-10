@@ -410,9 +410,9 @@ namespace math {
 
     Valuable& Integer::operator^=(const Valuable& v)
     {
-        if(arbitrary == 0 || (arbitrary == 1 && v.IsInt()))
+        if (arbitrary.is_zero() || (arbitrary == 1 && v.IsInt()))
         {
-            if (v == 0) {
+            if (v.IsZero()) {
                 Become(NaN());
             }
             return *this;
