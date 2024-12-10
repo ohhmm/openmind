@@ -421,6 +421,8 @@ namespace math {
                 return *this;
             else
                 return Become(Exponentiation{*this,v});
+        } else if (v.IsSimple() && v < constants::zero) {
+            return reciprocal().operator^=(-v);
         }
         if(v.IsInt())
         {
