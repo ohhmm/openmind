@@ -1048,7 +1048,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             }
         }
 
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+#if !defined(NDEBUG) && !defined(NOOMDEBUG) && defined(TEST_SRC_DIR)
         if (!SerializedStrEqual(str)) {
             LOG_AND_IMPLEMENT(
                 "Deserialization check failed. "
