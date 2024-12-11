@@ -26,6 +26,7 @@
 #include <iostream>
 #include <iterator>
 #include <numeric>
+#include <regex>
 #include <sstream>
 #include <stack>
 #include <type_traits>
@@ -528,6 +529,65 @@ struct hash_tokens_collection_t {
     }
 };
 
+namespace {
+// Function to convert a decimal number to a fraction
+std::string decimalToFraction(std::string_view decimal) {
+    // Split the number into integer and fractional parts
+    auto dotPos = decimal.find('.');
+    if (dotPos == std::string_view::npos) {
+        return std::string(decimal); // Not a decimal number, return as is
+    }
+
+    // Handle negative numbers
+    auto isNegative = decimal[0] == '-';
+    if (isNegative) {
+        decimal = decimal.substr(1); // Remove the negative sign for now
+    }
+
+
+    // Convert parts to cpp_int
+    a_int integerValue(decimal.substr(0, dotPos - 1));
+    auto fractionalPart = decimal.substr(dotPos);
+    a_int fractionalValue(fractionalPart);
+
+    // Calculate the denominator based on the number of digits in the fractional part
+    a_int denominator = 1;
+    for (size_t i = 0; i < fractionalPart.length(); ++i) {
+        denominator *= 10;
+    }
+
+    a_rational ratio(integerValue * denominator + fractionalValue, denominator);
+    a_int numerator = boost::multiprecision::numerator(ratio);
+    denominator = boost::multiprecision::denominator(ratio);
+
+    // Add back the negative sign if needed
+    std::stringstream result;
+    if (isNegative) {
+        result << "(-" << numerator << ')';
+    } else {
+        result << numerator;
+    }
+    result << '/' << denominator;
+
+    return result.str();
+}
+
+// Function to replace all decimal numbers in a string with their rational forms
+std::regex DecimalRegex(R"(-?\d+\.\d+)");
+std::string replaceDecimalsWithFractions(std::string_view input) {
+    std::string result(input); // Make a copy of the input string
+    std::smatch match;
+
+    // Find all matches and replace them
+    while (std::regex_search(result, match, DecimalRegex)) {
+        auto decimalNumber = match.str();
+        auto fraction = decimalToFraction(decimalNumber);
+        result.replace(match.position(), match.length(), fraction);
+    }
+
+    return result;
+}
+}
 bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     auto _ = str();
     auto same = s == _ || (_.front() == '(' && _.back() == ')' && s == _.substr(1, _.length() - 2));
@@ -573,6 +633,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             auto svSet1 = str2set(_1);
             auto svSet2 = str2set(_2);
             same = svSet1 == svSet2;
+        }
+        if (!same && _2.find('.') != std::string::npos) {
+            same = SerializedStrEqual(replaceDecimalsWithFractions(_2));
         }
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (!same) {
