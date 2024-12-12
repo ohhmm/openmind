@@ -208,7 +208,7 @@ namespace omnn::math {
     {
         if (Same(i))
             return *this;
-        auto newWasView = GetView(); // TODO: fix it, supervise all View usages
+        auto newWasView = this->GetView();
         i.SetView(newWasView);
         auto h = i.Hash();
         auto e = i.exp;
@@ -267,7 +267,6 @@ namespace omnn::math {
         }
         if(GetView() != newWasView){
             SetView(newWasView);
-            IMPLEMENT
         }
 
         return *this;
@@ -1471,12 +1470,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     const PrincipalSurd* Valuable::PrincipalSurdFactor() const { // TODO : use Devisor<T>()
         auto surd = As<PrincipalSurd>();
-        if (IsProduct()) {
-            auto& product = as<Product>();
-            auto surdIt = product.GetFirstOccurence<PrincipalSurd>();
-            if (surdIt != product.end()) {
-                surd = surdIt->As<PrincipalSurd>();
-            }
+        if (!surd && IsProduct()) {
+            surd = as<Product>().Divisor<PrincipalSurd>();
         }
         return surd;
     }

@@ -81,7 +81,7 @@ namespace fs = boost::filesystem;
             using base::base;
             using base::operator bool;
 //            Cached(base&& b);
-            operator Valuable();
+            operator Valuable&();
         };
         
         using val_set_t = Valuable::solutions_t;
@@ -131,11 +131,11 @@ namespace fs = boost::filesystem;
     auto s = str();
 
 #define CHECK_CACHED_READY if (cached) { \
-    return Become(cached); \
-}
+    return Become(std::move(static_cast<Valuable&>(cached)));                                                      \
+    }
 
 #define CHECK_OPTIMIZATION_CACHE if (cached) { \
-    Become(cached); \
+    Become(std::move(static_cast<Valuable&>(cached))); \
     return; \
 }
 
