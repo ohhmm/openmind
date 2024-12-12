@@ -453,34 +453,21 @@ namespace
 
             if (IsEquation()) {
                 auto e = members.end();
-                auto Surd = [](auto it) {
-                    auto surd = it->template As<PrincipalSurd>();
-                    if (it->IsProduct()) {
-                        auto& product = it->template as<Product>();
-                        auto surdIt = product.template GetFirstOccurence<PrincipalSurd>();
-                        if (surdIt != product.end()) {
-                            surd = surdIt->template As<PrincipalSurd>();
-                        }
-                    }
-                    return surd;
-                };
                 for (auto it = members.begin(); it != e;) {
                     auto SurdIsReducable = [&](auto& it) {
-                        auto is = size() == 1; // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is different from x+1=0 (x=-1)
+                        auto is = size() == 1 // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is different from x+1=0 (x=-1)
                                     // this means that only equality to zero which has zero sign can be squared (not for odd powers)
                                     // reducing surd makes new consistent equation which roots might be considered for the source equation but it is not equivalent
-                                    // TODO: if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation
-
+                                    // if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation:
+                            || (GetView() == View::SupersetOfRoots && size() == 2);
                         if (!is) {
-                            auto isThereSurd = Surd(it);
+                            auto isThereSurd = it->PrincipalSurdFactor();
                             if (isThereSurd) {
                                 auto& index = isThereSurd->Index();
                                 if (index.IsEven() == YesNoMaybe::No) {
                                     auto next = it;
                                     ++next;
-                                    is = std::none_of(next, e,
-                                            [this](auto& m) { return VarSurdFactor(m); }
-                                        );
+                                    is = std::none_of(next, e, &Sum::VarSurdFactor);
                                 }
                             }
                         }
@@ -499,7 +486,7 @@ namespace
                         }
                     }
                     else if(it->IsProduct()) {
-                        auto isThereSurd = Surd(it);
+                        auto isThereSurd = it->PrincipalSurdFactor();
                         if (isThereSurd) {
                             if (SurdIsReducable(it)) {
                                 auto& idx = isThereSurd->Index();
@@ -2029,30 +2016,40 @@ namespace
         IMPLEMENT
 
     }
-    
+
     void Sum::solve(const Variable& va, solutions_t& solutions) const
     {
         std::vector<Valuable> coefficients;
-        auto grade = FillPolyCoeff(coefficients, va);
-//        if(grade > 2)
-//        {
-//            Valuable t = *this;
-//            auto intSol = GetIntegerSolution(va);
-//            for(auto is : intSol)
-//                if(Test(va,is))
-//                {
-//                    solutions.insert(is);
-//                    t /= va.Equals(is);
-//                }
-//            if(intSol.size()) {
-//                t.optimize();
-//                t.solve(va,solutions);
-//            } else {
-//                solve(va, solutions, coefficients, grade);
-//            }
-//        }
-//        else
+        auto isNormalizedPolynomial = IsPolynomial(va);
+        if (isNormalizedPolynomial) {
+            auto grade = FillPolyCoeff(coefficients, va);
+            //        if(grade > 2)
+            //        {
+            //            Valuable t = *this;
+            //            auto intSol = GetIntegerSolution(va);
+            //            for(auto is : intSol)
+            //                if(Test(va,is))
+            //                {
+            //                    solutions.insert(is);
+            //                    t /= va.Equals(is);
+            //                }
+            //            if(intSol.size()) {
+            //                t.optimize();
+            //                t.solve(va,solutions);
+            //            } else {
+            //                solve(va, solutions, coefficients, grade);
+            //            }
+            //        }
+            //        else
             solve(va, solutions, coefficients, grade);
+        } else {
+            auto potentialSolutionCandidates = Optimized(View::SupersetOfRoots).solve(va);
+            for (auto& candidate : potentialSolutionCandidates) {
+                if (Test(va, candidate)) {
+                    solutions.insert(candidate);
+                }
+            }
+        }
     }
     
     void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const

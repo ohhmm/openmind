@@ -1462,6 +1462,25 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
+    Valuable::solutions_t Valuable::solve(const Variable& variable) const
+    {
+        solutions_t solutions;
+        solve(variable, solutions);
+        return solutions;
+    }
+
+    const PrincipalSurd* Valuable::PrincipalSurdFactor() const { // TODO : use Devisor<T>()
+        auto surd = As<PrincipalSurd>();
+        if (IsProduct()) {
+            auto& product = as<Product>();
+            auto surdIt = product.GetFirstOccurence<PrincipalSurd>();
+            if (surdIt != product.end()) {
+                surd = surdIt->As<PrincipalSurd>();
+            }
+        }
+        return surd;
+    }
+
     Valuable Valuable::operator()(const Variable& va) const
     {
         if(exp) {
@@ -1910,7 +1929,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             exp->SetView(v);
         else {
-            if (view == View::Solving
+            if (IsEquation()
                 && v == View::Equation
             ) {
                 std::swap(view, v);
@@ -3096,13 +3115,18 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
             : optimized;
     }
 
-    Valuable Valuable::Optimized() const {
+    Valuable Valuable::Optimized(Valuable::View view) const {
         Valuable copy(Clone());
+        copy.SetView(view);
         if (!copy.is_optimized()) {
             OptimizeOn on;
             copy.optimize();
         }
         return copy;
+    }
+
+    Valuable Valuable::Optimized() const {
+        return Optimized(GetView());
     }
 
     std::string Valuable::str() const

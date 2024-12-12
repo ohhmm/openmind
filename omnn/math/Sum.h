@@ -78,8 +78,8 @@ public:
         return [](const auto& _1st, const auto& _2nd) { return _1st + _2nd; };
     }
 
-	const cont& GetConstCont() const override { return members; }
-    bool IsSum() const override { return true; }
+	constexpr const cont& GetConstCont() const override { return members; }
+    constexpr bool IsSum() const override { return true; }
     bool IsZero() const override;
 
 	// virtual operators
