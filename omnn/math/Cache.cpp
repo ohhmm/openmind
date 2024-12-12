@@ -196,7 +196,7 @@ void Cache::AsyncSetSet(const Valuable& key, const val_set_t& v) {
   AsyncSet(key.str(), std::move(s));
 }
 
-Cache::Cached::operator Valuable() {
+Cache::Cached::operator Valuable&() {
   assert(operator bool());
   auto& got = Get();
 #ifndef NDEBUG

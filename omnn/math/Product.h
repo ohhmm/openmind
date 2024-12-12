@@ -59,7 +59,14 @@ public:
     template <typename T> // override 
     const T* Divisor() const {
         auto it = GetFirstOccurence<T>();
-        return it != end() ? it->template As<T>() : nullptr;
+        auto divisor = it != end() ? it->template As<T>() : nullptr;
+        if (!divisor) {
+            it = GetFirstOccurence<Product>();
+            if (it != end()) {
+                divisor = it->template as<Product>().template Divisor<T>();
+            }
+        }
+        return divisor;
     }
 
     using base::Add;

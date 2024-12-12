@@ -302,15 +302,13 @@ namespace
                     : std::move(copy);
             }
         }
-        auto b = members.begin();
-        auto e = members.end();
-        auto it = b;
-        auto gcd = it == e // empty sum
-            ? constants::zero
-            : size() == 1 // single element
-            ? *it
-            : b->GCD(*++it);
-        if (size() > 1) {
+        auto beg = members.begin();
+        auto num = members.size();
+        auto gcd = num == 0 ? constants::zero : *beg;
+        if (num > 1) {
+            auto e = members.end();
+            auto it = beg;
+            gcd.gcd(*++it);
             for (; gcd != constants::one && it != e; ++it) {
                 if (it->IsZero()) {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
@@ -477,6 +475,7 @@ namespace
                         if (SurdIsReducable(it)) {
                             auto ps = Extract(it);
                             auto& surd = ps.as<PrincipalSurd>();
+                            ViewOptimizePause flat(this);
                             operator^=(surd.Index());
                             operator-=(surd.Radicand());
                             break;
@@ -491,8 +490,9 @@ namespace
                             if (SurdIsReducable(it)) {
                                 auto& idx = isThereSurd->Index();
                                 auto product = Extract(it);
+                                ViewOptimizePause flat(this);
                                 operator^=(idx);
-                                product.operator^=(idx);
+                                product ^= idx;
                                 operator-=(product);
                                 break;
                             }
@@ -509,7 +509,12 @@ namespace
                     CHECK_OPTIMIZATION_CACHE
                 }
 
-                if (IsSum()) {
+                if (this->IsSum()) {
+                    if (exp) {
+                        auto shptr = std::move(exp);
+                        Become(std::move(shptr->get()));
+                    }
+
                     auto common = GCDofMembers().varless();
                     if (common != constants::one) {
                         operator/=(common);
@@ -2023,27 +2028,31 @@ namespace
         auto isNormalizedPolynomial = IsPolynomial(va);
         if (isNormalizedPolynomial) {
             auto grade = FillPolyCoeff(coefficients, va);
-            //        if(grade > 2)
-            //        {
-            //            Valuable t = *this;
-            //            auto intSol = GetIntegerSolution(va);
-            //            for(auto is : intSol)
-            //                if(Test(va,is))
-            //                {
-            //                    solutions.insert(is);
-            //                    t /= va.Equals(is);
-            //                }
-            //            if(intSol.size()) {
-            //                t.optimize();
-            //                t.solve(va,solutions);
-            //            } else {
-            //                solve(va, solutions, coefficients, grade);
-            //            }
-            //        }
-            //        else
+//        if(grade > 2)
+//        {
+//            Valuable t = *this;
+//            auto intSol = GetIntegerSolution(va);
+//            for(auto is : intSol)
+//                if(Test(va,is))
+//                {
+//                    solutions.insert(is);
+//                    t /= va.Equals(is);
+//                }
+//            if(intSol.size()) {
+//                t.optimize();
+//                t.solve(va,solutions);
+//            } else {
+//                solve(va, solutions, coefficients, grade);
+//            }
+//        }
+//        else
             solve(va, solutions, coefficients, grade);
-        } else {
-            auto potentialSolutionCandidates = Optimized(View::SupersetOfRoots).solve(va);
+        } else if (GetView() != View::SupersetOfRoots) {
+            auto rootSupersetOptimization = Optimized(View::SupersetOfRoots);
+            if (operator==(rootSupersetOptimization)) {
+                IMPLEMENT
+            }
+            auto potentialSolutionCandidates = rootSupersetOptimization.solve(va);
             for (auto& candidate : potentialSolutionCandidates) {
                 if (Test(va, candidate)) {
                     solutions.insert(candidate);
@@ -2115,7 +2124,7 @@ namespace
                         DbSumSolutionsAllRootsCache.AsyncSetSet(*this, solutions);
                 };
                 if (asyncCheckAnyRootCached) {
-                    SolveTheRest(asyncCheckAnyRootCached);
+                    SolveTheRest(std::move(static_cast<Valuable&>(asyncCheckAnyRootCached)));
                     return;
                 }
 
