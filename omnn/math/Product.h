@@ -54,6 +54,14 @@ public:
 	const cont& GetConstCont() const override { return members; }
     iterator Had(iterator it) override;
     static bool VarSurdFactor(const Valuable&);
+
+    // FIXME : waiting for virtual template methods to override as polymprphic method https://github.com/ohhmm/llvm-project/pull/1
+    template <typename T> // override 
+    const T* Divisor() const {
+        auto it = GetFirstOccurence<T>();
+        return it != end() ? it->template As<T>() : nullptr;
+    }
+
     using base::Add;
     const iterator Add(Valuable&& item, const iterator hint) override;
     const iterator Add(const Valuable& item, const iterator hint) override;

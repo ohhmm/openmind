@@ -47,6 +47,7 @@ class Variable;
 class Integer;
 class Exponentiation;
 class Fraction;
+class PrincipalSurd;
 class Sum;
 size_t hash_value(const omnn::math::Valuable& v);
 } // namespace math
@@ -170,7 +171,8 @@ public:
         Equation = 4,
         Flat = 8,
 		Fraction = 16,
-        Solving = 36, // Equation | 32
+        Solving = 32 | Equation,
+        SupersetOfRoots = 64 | Solving
     };
 
     friend std::ostream& operator<<(std::ostream& os, View v) {
@@ -429,6 +431,7 @@ public:
     bool IsUnivariable() const;
 
     virtual void solve(const Variable& va, solutions_t&) const;
+    solutions_t solve(const Variable&) const;
     virtual solutions_t Distinct() const;
     virtual Valuable Univariate() const;
     virtual bool IsPolynomial(const Variable&) const;
@@ -439,6 +442,16 @@ public:
     solutions_t GetIntegerSolution() const;
     virtual solutions_t GetIntegerSolution(const Variable& va) const;
     bool Test(const Variable& va, const Valuable& v) const;
+
+    // FIXME : waiting for virtual template method https://github.com/ohhmm/llvm-project/pull/1
+    //virtual template <typename T> 
+    //const T* Divisor() const {
+    //    if (exp)
+    //        return exp->Divisor<T>();
+    //    else
+    //        IMPLEMENT
+    //}
+    const PrincipalSurd* PrincipalSurdFactor() const;
 
     virtual Valuable SumOfRoots() const;
     virtual Valuable ProductOfRoots() const;
@@ -723,6 +736,7 @@ public:
 
     [[nodiscard]] virtual bool is_optimized() const;
     [[nodiscard]] Valuable Optimized() const;
+    [[nodiscard]] Valuable Optimized(View) const;
 
 protected:
     friend class boost::serialization::access;
