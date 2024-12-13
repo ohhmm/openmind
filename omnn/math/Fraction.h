@@ -47,6 +47,7 @@ namespace math {
         Valuable& operator +=(const Valuable& v) override;
         Valuable& operator *=(const Valuable& v) override;
         Valuable& operator *=(const Fraction& v);
+        bool MultiplyIfSimplifiable(const Fraction&);
         bool MultiplyIfSimplifiable(const Valuable& v) override;
         std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
         bool SumIfSimplifiable(const Valuable& v) override;

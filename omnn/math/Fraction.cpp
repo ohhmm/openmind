@@ -343,21 +343,45 @@ namespace math {
         }
     }
 
+    bool Fraction::MultiplyIfSimplifiable(const Fraction& fraction) {
+        auto isNumeratorsMultiplicationSimplifiable = numerator().IsMultiplicationSimplifiable(fraction.numerator());
+        auto isDenominatorsMultiplicationSimplifiable = denominator().IsMultiplicationSimplifiable(fraction.denominator());
+        auto simplifiable = isNumeratorsMultiplicationSimplifiable.first || isDenominatorsMultiplicationSimplifiable.first;
+        if (simplifiable) {
+            if (isNumeratorsMultiplicationSimplifiable.first) {
+                setNumerator(std::move(isNumeratorsMultiplicationSimplifiable.second));
+            } else {
+                numerator() *= fraction.numerator();
+                optimized = {};
+            }
+
+            if (isDenominatorsMultiplicationSimplifiable.first) {
+                setDenominator(std::move(isDenominatorsMultiplicationSimplifiable.second));
+            } else {
+                denominator() *= fraction.denominator();
+                optimized = {};
+            }
+
+            optimize();
+        }
+        return simplifiable;
+    }
+
     bool Fraction::MultiplyIfSimplifiable(const Valuable& v)
     {
-        auto is = IsSimpleFraction() && v.IsSimple() && !v.IsRadical();
-        if(is){
+        auto simplifiable = IsSimpleFraction() && v.IsSimple() && !v.IsRadical();
+        if(simplifiable){
             *this *= v;
-        } else if (!v.IsFraction()) {
+        } else if (v.IsFraction()) {
+            simplifiable = MultiplyIfSimplifiable(v.as<Fraction>());
+        } else {
             auto s = v.IsMultiplicationSimplifiable(*this);
-            is = s.first;
-            if (is) {
+            simplifiable = s.first;
+            if (simplifiable) {
                 Become(std::move(s.second));
             }
-        } else {
-            IMPLEMENT
         }
-        return is;
+        return simplifiable;
     }
 
     std::pair<bool,Valuable> Fraction::IsMultiplicationSimplifiable(const Valuable& v) const
