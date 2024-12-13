@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(sq_System_test
                      )
 {
     System s;
-    Variable a,b,x;
+    DECL_VARS(a, b, x);
     s << a - b - 3
         << a + b - x
         << a * b * 4 - (49 - 9)
@@ -233,8 +233,10 @@ BOOST_AUTO_TEST_CASE(sq_System_test
 
     auto _ = s.Solve(x);
     BOOST_TEST(_.size()==1);
-    auto sqx = *_.begin();
-    BOOST_TEST(sqx == 7);
+    if (_.size() >= 1) {
+        auto sqx = *_.begin();
+        BOOST_TEST(sqx == 7);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :

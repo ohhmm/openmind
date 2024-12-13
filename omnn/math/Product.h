@@ -85,8 +85,10 @@ public:
     max_exp_t findMaxVaExp();
     bool IsComesBefore(const Valuable& v) const override;
     Valuable calcFreeMember() const override;
-
-    Valuable& operator +=(const Valuable& v) override;
+    Valuable GCD(const Valuable&) const override;
+    Valuable& gcd(const Product&);
+    Valuable& gcd(const Valuable&) override;
+    Valuable& operator+=(const Valuable&) override;
     std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
     Valuable& operator*=(const Valuable& v) override;
