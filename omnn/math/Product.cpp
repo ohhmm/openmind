@@ -17,7 +17,9 @@
 #include <omnn/rt/antiloop.hpp>
 #include <rt/find.hpp>
 
+#include <algorithm>
 #include <type_traits>
+#include <ranges>
 
 #include <boost/multiprecision/cpp_int.hpp>
 
@@ -711,6 +713,63 @@ namespace math {
             IMPLEMENT
     }
     
+    Valuable& Product::gcd(const Product& product)
+    {
+        auto it1 = begin();
+        auto it2 = product.begin();
+        auto end1 = end();
+        auto end2 = product.end();
+        Product gcd;
+        constexpr cont::key_compare cmp;
+        while (it1 != end1 && it2 != end2) {
+            if (cmp(*it1, *it2)) {
+                ++it1;
+            } else if (cmp(*it2, *it1)) {
+                ++it2;
+            } else if(*it1 == *it2) {
+                gcd.Add(Extract(it1++));
+                ++it2;
+            } else {
+                LOG_AND_IMPLEMENT("Check Product ordering comparator: " << *it1 << " <=> " << *it2);
+            }
+        }
+        if (gcd == constants::one) {
+            Become(base::GCD(product));
+        } else {
+            auto remainder1 = Optimized(View::Flat);
+            auto remainder2 = product / gcd;
+            if (remainder1.IsProduct()) {
+                remainder1.as<Product>().base::gcd(remainder2);
+            } else {
+                remainder1.gcd(remainder2);
+            }
+            gcd.Add(std::move(remainder1));
+            Become(std::move(gcd));
+        }
+        return *this;
+    }
+    
+    Valuable& Product::gcd(const Valuable& value) {
+        if (value.IsProduct()) {
+            gcd(value.as<Product>());
+        }
+        else {
+            auto it = std::find(begin(), end(), value);
+            if (it != end()) {
+                Become(Extract(it));
+            } else {
+                Become(base::GCD(value));
+            }
+        }
+        return *this;
+    }
+
+    Valuable Product::GCD(const Valuable& value) const {
+        auto copy = ptrs::make_shared<Product>(*this);
+        copy->gcd(value);
+        return Valuable(copy);
+    }
+
     Valuable& Product::operator +=(const Valuable& v)
     {
         if(v.IsZero())

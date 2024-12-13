@@ -2050,7 +2050,7 @@ namespace
         } else if (GetView() != View::SupersetOfRoots) {
             auto rootSupersetOptimization = Optimized(View::SupersetOfRoots);
             if (operator==(rootSupersetOptimization)) {
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Solving " << rootSupersetOptimization);
             }
             auto potentialSolutionCandidates = rootSupersetOptimization.solve(va);
             for (auto& candidate : potentialSolutionCandidates) {

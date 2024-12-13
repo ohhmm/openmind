@@ -1380,7 +1380,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable& Valuable::gcd(const Valuable& v) {
-        return Become(GCD(v));
+        if (exp) {
+            exp->gcd(v);
+        } else {
+            Become(GCD(v));
+        }
+        return *this;
     }
 
     Valuable Valuable::LCM(const Valuable& v) const {
@@ -1552,13 +1557,23 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable::solutions_t Valuable::IntSolutions() const
     {
+        Valuable::solutions_t solutions;
         std::set<Variable> vars;
         CollectVa(vars);
-        if (vars.size() == 1) {
-            return IntSolutions(*vars.begin());
-        }
-        else
+        switch (vars.size()) {
+        case 0:
+            if (IsZero()) {
+                LOG_AND_IMPLEMENT("Implement Any value");
+                // return Any();
+            }
+            break;
+        case 1:
+            solutions = IntSolutions(*vars.begin());
+            break;
+        default:
             IMPLEMENT
+        }
+        return solutions;
     }
 
     Valuable::solutions_t Valuable::IntSolutions(const Variable& v) const

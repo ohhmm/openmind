@@ -124,7 +124,7 @@ namespace math {
             if (numerator().IsZero()) {
                 auto& dn = denominator();
                 if (dn.IsZero()) {
-                    throw "NaN";
+                    Become(NaN());
                 } else {
                     auto variable = dn.FindVa();
                     if (variable)
@@ -142,12 +142,26 @@ namespace math {
             }
 
             auto gcd = numerator().GCD(denominator());
-            reoptimize_the_fraction = !gcd.IsZero() && gcd != 1;
-            if (reoptimize_the_fraction) {
-				numerator() /= gcd;
-				denominator() /= gcd;
-				continue;
-			}
+            auto gcdIsMultival = gcd.IsMultival() == YesNoMaybe::Yes;
+            if (gcdIsMultival) {
+                if (gcd == constants::plus_minus_1) {
+                    if (gcd == denominator()) {
+                        Become(std::move(numerator()));
+                        break;
+                    } else if (denominator().IsProduct()) {
+                        denominator().as<Product>().Delete(gcd);
+                        reoptimize_the_fraction = true;
+                        continue;
+                    }
+                }
+            } else {
+                reoptimize_the_fraction = !gcd.IsZero() && gcd != 1;
+                if (reoptimize_the_fraction) {
+                    numerator() /= gcd;
+                    denominator() /= gcd;
+                    continue;
+                }
+            }
 
             if (!FindVa() // TODO: variables reduction from denominator should log non-zero expression for post-check
                 && numerator() == denominator()
@@ -221,7 +235,7 @@ namespace math {
                 auto dni = denom.IsInt();
                 if (n == 0) {
                     if (dni && denom.IsZero())
-                        throw "NaN";
+                        Become(NaN());
                     Become(std::move(numerator()));
                     break;
                 }

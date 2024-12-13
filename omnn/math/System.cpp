@@ -205,26 +205,19 @@ bool System::Fetch(const Variable& va)
             try {
                 e.CollectVa(vars);
                 if (e.HasVa(va)) {
-                    if (e.IsSum()) {
-                        std::vector<Valuable> coefficients;
-                        auto grade = e.as<Sum>().FillPolyCoeff(coefficients, va);
-                        if (coefficients.size() == grade && grade == 0) {
-                            continue;
-                        }
-                    }
-                    if (!e.IsSum() || e.as<Sum>().IsPolynomial(va)) {
-                        auto _ = e(va);
-                        modified = Add(va, _) || modified;
-                        if (_.Vars().size() == 0) {
+                    bool evaluated = {};
+                    for (auto& sol : e.solve(va)) {
+                        auto addedNewOne = Add(va, sol);
+                        modified = addedNewOne || modified;
+                        if (sol.Vars().size() == 0) {
                             fetched = true;
                         }
-
-                        auto evaluated = Eval(va, _);
+                        evaluated = (addedNewOne && Eval(va, sol)) || evaluated;
                         modified = evaluated || modified;
-                        if (evaluated) {
-                            again = !fetched;
-                            break;
-                        }
+                    }
+                    if (evaluated) {
+                        again = !fetched;
+                        break;
                     }
                 }
             } catch (...) {
