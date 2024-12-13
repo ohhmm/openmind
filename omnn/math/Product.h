@@ -74,6 +74,8 @@ public:
     const iterator Add(const Valuable& item, const iterator hint) override;
     using base::Delete;
     void Delete(typename cont::iterator& it) override;
+    void Update(iterator&, Valuable&&) override;
+    void Update(iterator&, const Valuable&) override;
 
     const vars_cont_t& getCommonVars() const override;
     vars_cont_t getCommonVars(const vars_cont_t& with) const;

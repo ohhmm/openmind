@@ -268,6 +268,22 @@ namespace math {
             addToVars();
     }
 
+    void Product::Update(iterator& it, Valuable&& value) {
+        if (value == constants::one) {
+            Delete(it);
+        } else {
+            base::Update(it, std::move(value));
+        }
+    }
+
+    void Product::Update(iterator& it, const Valuable& value) {
+        if (value == constants::one) {
+            Delete(it);
+        } else {
+            base::Update(it, value);
+        }
+    }
+
     void Product::optimize()
     {
         if (!optimizations || optimized)
@@ -897,23 +913,20 @@ namespace math {
 
     Valuable& Product::operator *=(const Valuable& v)
     {
-        if ((size() == 1 && *begin() == 1) || size() == 0)
-            return Become(Valuable(v));
+        if ((size() == 1 && *begin() == constants::one) || size() == 0)
+           return Become(Valuable(v));
 
         if (v.IsInt()){
-            if (v==0) {
+            if (v.IsZero()) {
                 return Become(0);
-            } else if (v==1) {
-                goto yes;
+            } else if (v == constants::one) {
+                return *this;
             } else {
                 auto b = begin();
                 if(b->IsSimple()){
-                    auto up = *b * v;
-                    if(up == 1)
-                        Delete(b);
-                    else
-                        Update(b, up);
-                    goto yes;
+                    Update(b, *b * v);
+                    optimize();
+                    return *this;
                 }
             }
         }
@@ -928,14 +941,16 @@ namespace math {
             {
                 if (it->Same(v)) {
                     Update(it, Exponentiation(va, 2));
-                    goto yes;
+                    optimize();
+                    return *this;
                 }
                 else if (it->IsExponentiation())
                 {
                     auto& e = it->as<Exponentiation>();
                     if (e.getBase() == va) {
                         Update(it, va ^ (e.getExponentiation()+1));
-                        goto yes;
+                        optimize();
+                        return *this;
                     }
                 }
             }
@@ -950,12 +965,14 @@ namespace math {
                     it->as<Exponentiation>().getBase() == vExpBase)
                 {
                     Update(it, *it*v);
-                    goto yes;
+                    optimize();
+                    return *this;
                 }
                 else if (vExpBase == *it)
                 {
                     Update(it, vExpBase ^ (exponentiation.getExponentiation() + 1));
-                    goto yes;
+                    optimize();
+                    return *this;
                 }
                 else
                     ++it;
@@ -968,20 +985,17 @@ namespace math {
             else
                 for(auto& m : v.as<Product>())
                     base::Add(m);
-            goto yes;
+            optimize();
+            return *this;
         }
         else
         {
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->OfSameType(v)) {
-                    auto up = *it * v;
-                    if(up == 1){
-                        Delete(it);
-                    } else {
-                        Update(it, up);
-                    }
-                    goto yes;
+                    Update(it, *it * v);
+                    optimize();
+                    return *this;
                 }
                 else
                     ++it;
@@ -991,7 +1005,6 @@ namespace math {
         // add new member
         Add(v);
         
-    yes:
         optimize();
         return *this;
     }
@@ -1003,7 +1016,6 @@ namespace math {
                 OptimizeOff off;
                 for (auto& i : v.as<Product>())
                     *this /= i;
-                optimized = {};
             }
             optimize();
             return *this;
@@ -1021,13 +1033,7 @@ namespace math {
             }
             auto first = begin();
             if (first->IsSimple()) {
-                auto _ = (*first) / v;
-                if (_.IsInt() && _.ca() == 1)
-                    Delete(first);
-                else {
-                    Update(first, _);
-                    optimized = {};
-                }
+                Update(first, *first / v);
                 optimize();
                 return *this;
             }
