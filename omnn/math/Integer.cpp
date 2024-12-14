@@ -199,7 +199,13 @@ namespace math {
 
     Valuable& Integer::operator /=(const Valuable& v)
     {
-        if (v.IsInt())
+        auto variable = v.FindVa();
+        if (variable) {
+            variable->getVaHost()->LogNotZero(v);
+        }
+        if (arbitrary.is_zero()) {
+        }
+        else if (v.IsInt())
         {
             auto& a = v.ca();
             if (a == 0) {
