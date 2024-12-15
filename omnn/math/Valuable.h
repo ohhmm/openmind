@@ -318,6 +318,7 @@ public:
     virtual std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
     virtual bool SumIfSimplifiable(const Valuable& v);
     virtual std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const;
+    virtual std::pair<bool, Valuable> IsModSimplifiable(const Valuable&) const;
     virtual Valuable& operator /=(const Valuable&);
     virtual Valuable& operator %=(const Valuable&);
     virtual Valuable& operator--();
