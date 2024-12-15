@@ -29,6 +29,7 @@ void DeleteDB(const Cache::path_str_t& path) {
 }
 
 Cache::Cached Cache::TaskNoCache;
+Cache::CachedSet Cache::TaskCachedSetNoCache;
 
 
 void Cache::DbOpen() {
@@ -139,10 +140,14 @@ Cache::CheckCacheResult Cache::GetOne(std::string&& key,
 }
 
 Cache::CachedSet Cache::AsyncFetchSet(const Valuable& v, bool itIsOptimized){
+#ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
   using self_t = std::remove_reference<decltype(*this)>::type;
   auto&& task = std::async(std::launch::async, &self_t::GetSet,
                            this, v.str(), v.VaNames(), itIsOptimized);
   return std::move(task);
+#else
+  return TaskCachedSetNoCache;
+#endif
 }
 
 namespace {

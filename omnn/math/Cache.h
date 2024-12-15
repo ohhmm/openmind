@@ -30,10 +30,11 @@ namespace fs = boost::filesystem;
         using path_str_t = fs::path;
         using CheckCacheResult = std::pair<bool,Valuable>;
         class Cached;
+        class CachedSet;
         using cache_get_value_task_queue_t = ::omnn::rt::StoringTasksQueue<CheckCacheResult, Cached>;
 
         static Cached TaskNoCache;
-
+        static CachedSet TaskCachedSetNoCache;
 
         template <typename ResultT>
         class CachedValueBase
