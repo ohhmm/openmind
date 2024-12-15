@@ -726,9 +726,7 @@ BOOST_AUTO_TEST_CASE(VirtualIterationTest
     std::cout << 6 << " : " << forSix << std::endl;
 }
 
-BOOST_AUTO_TEST_CASE(GCDTest
-    , *disabled()
-) {
+BOOST_AUTO_TEST_CASE(GCDTest) {
     DECL_VARS(a, b, c, d);
     auto _1 = -4 * (a ^ 2) + -4 * (b ^ 2) + -4 * (c ^ 2) + -8 * b * c + 280 * b + 280 * c + 40 * a + -5000;
     auto varless1 = _1.varless();

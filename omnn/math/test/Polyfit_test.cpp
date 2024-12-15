@@ -11,6 +11,10 @@
 #include "SymmetricDouble.h"
 #include "Polyfit.h"
 
+#include <boost/version.hpp>
+#define BOOSTS_OWN_VERSION_NUMBER(major, minor, patch) ((major) * 100 * 1000 + (minor) * 100 + (patch))
+
+
 // #define BOOST_MP_USE_FLOAT128
 // #include <boost/multiprecision/float128.hpp>
 
@@ -218,11 +222,8 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
     }
 }
 
-
-BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
-//, *tolerance(0.1)
-, *disabled()
-)
+#if BOOST_VERSION >= BOOSTS_OWN_VERSION_NUMBER(1, 85, 0) && defined(NDEBUG)
+BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification)
 {
     using polyfit_value_type = Valuable;
     // generate the data
@@ -273,5 +274,6 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
         BOOST_TEST(oY[i] == oFittedY[i]);
     }
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_empty){}
