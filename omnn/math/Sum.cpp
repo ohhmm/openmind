@@ -1102,12 +1102,14 @@ namespace
             auto& i = value.as<Sum>();
             if(!value.FindVa())
             {
+                auto b = value.Optimized();
                 for (auto& a : members) {
                     CHECK_CACHED_READY
-                    for (auto& b : i.members) {
-                        sum += a / b;
-                    }
+                    // TODO: IsModSimplifiable
+                    //auto isModSimpl = a.IsModSimplifiable(b);
+                    sum += a % b;
                 }
+                sum = Modulo(sum, b);
             }
             else
             {
