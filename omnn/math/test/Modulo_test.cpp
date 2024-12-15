@@ -94,3 +94,16 @@ BOOST_AUTO_TEST_CASE(Modulo_Ordering_test) {
     auto _2 = "((-4 * (Y ^ 3)) % ((Y ^ 4)))"_v;
     InequalOrderCheck(_1, _2);
 }
+
+BOOST_AUTO_TEST_CASE(IsModSimplifiable_test)
+{
+    Variable va;
+    auto _1 = va + 5;
+    auto _2 = va + 1;
+    auto mod = _1 % _2;
+
+    // Test IsModSimplifiable with default implementation
+    auto result = mod.IsModSimplifiable(_2);
+    BOOST_TEST(!result.first);
+    BOOST_TEST(result.second == Valuable());
+}

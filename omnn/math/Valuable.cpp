@@ -1320,6 +1320,19 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
+    std::pair<bool, Valuable> Valuable::IsModSimplifiable(const Valuable& value) const
+    {
+        if (!optimizations)
+            return {};
+        else if(exp)
+            return exp->IsModSimplifiable(value);
+        else {
+            LOG_AND_IMPLEMENT(*this << " IsModSimplifiable " << value);
+            auto mod = *this % value;
+            return {mod.Complexity() < Complexity() + value.Complexity(), mod};
+        }
+    }
+
     VALUABLE_POLYMORPHIC_METHOD(operator/=)
 
     VALUABLE_POLYMORPHIC_METHOD(operator%=) // a - (n * int(a/n)) https://math.stackexchange.com/a/2027475/118612
