@@ -1640,7 +1640,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 //            std::cout << t << '\n';
 //        }
 //#endif
-        return t == 0
+        return t.IsZero()
             && va.getVaHost()->TestRootConsistencyWithNonZeroLog(va, v);
     }
 
@@ -2500,29 +2500,35 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return Become(va - (logic_and(with)(va))); // logic_and(with)(va).equals(va)
     }
     Valuable Valuable::Intersect(const Valuable& with, const Variable& va) const {
+        VarHost::NonZeroLogOffScope off;
         auto intersection = Intersect(with);
         if(!intersection.HasVa(va))
             intersection = va.Equals(GCD(with)(va));
         return intersection;
     }
     Valuable& Valuable::intersect(const Valuable& with) {
+        VarHost::NonZeroLogOffScope off;
         return gcd(with);
     }
     Valuable Valuable::Intersect(const Valuable& with) const {
+        VarHost::NonZeroLogOffScope off;
         return GCD(with);
     }
 
     Valuable& Valuable::unionize(const Valuable& with) {
-		auto intersection = Intersect(with);
+        VarHost::NonZeroLogOffScope off;
+        auto intersection = Intersect(with);
 		return operator*=(with) /= intersection;
 	}
 
     Valuable Valuable::Union(const Valuable& with) const {
-		auto intersection = Intersect(with);
-		return *this * with / intersection;
-	}
+        VarHost::NonZeroLogOffScope off;
+        auto intersection = Intersect(with);
+        return *this * with / intersection;
+    }
 
     Valuable& Valuable::remove(const Valuable& v) {
+        VarHost::NonZeroLogOffScope off;
         for (auto gcd = GCD(v);
             !gcd.IsZero() && gcd != constants::one;
             gcd.gcd(*this))

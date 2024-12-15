@@ -21,7 +21,9 @@ using namespace std::string_literals;
 
 namespace omnn::math {
 
-const ::std::any& omnn::math::VarHost::GetId(const Variable& va) const { return va.GetId(); }
+thread_local bool VarHost::add_non_zero_mode_on = true;
+
+const ::std::any& VarHost::GetId(const Variable& va) const { return va.GetId(); }
 
 Variable VarHost::New(const ::std::any& id) {
     Variable v(sh());
@@ -74,7 +76,9 @@ void VarHost::inc<>(std::string&)
 }
 
 void VarHost::LogNotZero(const Valuable& v) {
-    if (v.IsZero()) {
+    if (!add_non_zero_mode_on) {
+    }
+    else if (v.IsZero()) {
         throw std::runtime_error("Variable is zero");
     }
     else if (v.IsSimple() && v.is_optimized()) {

@@ -715,6 +715,7 @@ namespace math {
     
     Valuable& Product::gcd(const Product& product)
     {
+        VarHost::NonZeroLogOffScope off;
         auto it1 = begin();
         auto it2 = product.begin();
         auto end1 = end();
@@ -750,6 +751,7 @@ namespace math {
     }
     
     Valuable& Product::gcd(const Valuable& value) {
+        VarHost::NonZeroLogOffScope off;
         if (value.IsProduct()) {
             gcd(value.as<Product>());
         }

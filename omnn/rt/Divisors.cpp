@@ -16,11 +16,16 @@ void DivisorsLookupTable::Generate(size_type num) {
     auto& divisors = base_container_t::operator[](num);
     divisors = factors;
     auto half = num >> 1;
-    for (auto& factor : factors) {
+    auto factorsBegin = factors.begin();
+    auto factorsEnd = factors.end();
+    if (*factorsBegin == 1) {
+        ++factorsBegin;
+    }
+    for (auto factor = factorsBegin; factor != factorsEnd; ++factor) {
         auto begin = divisors.begin();
         auto end = divisors.end();
         divisors_set_t new_divisors;
-        for (auto exp = factor; exp <= half; exp *= factor) {
+        for (auto exp = *factor; exp <= half; exp *= *factor) {
 
             for (auto it = begin;
                 it != end && *it <= half;

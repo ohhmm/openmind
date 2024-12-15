@@ -32,12 +32,23 @@ namespace math {
     {
         using non_zero_log_t = std::map<Valuable::var_set_t, Valuable::solutions_t>;
         non_zero_log_t nonZeroItems;
+        static thread_local bool add_non_zero_mode_on;
 
     public:
         using ptr = std::shared_ptr<VarHost>;
         using cptr = std::shared_ptr<const VarHost>;
         using cref = const VarHost&;
         using hosted_storage_t = std::pair<Variable, std::string>;
+
+        class [[maybe_unused]] NonZeroLogOffScope
+        {
+            bool opts;
+        public:
+            MSVC_CONSTEXPR
+            NonZeroLogOffScope() : opts(add_non_zero_mode_on) { add_non_zero_mode_on = {}; }
+            MSVC_CONSTEXPR
+            ~NonZeroLogOffScope() { add_non_zero_mode_on = opts; }
+        };
 
         virtual ~VarHost() = default;
 
