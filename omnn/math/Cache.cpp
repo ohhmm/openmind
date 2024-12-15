@@ -70,6 +70,7 @@ omnn::math::Cache::~Cache() {
 }
 
 Cache::Cached Cache::AsyncFetch(const Valuable &value, bool itIsOptimized) {
+#ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
   using self_t = std::remove_reference<decltype(*this)>::type;
   static cache_get_value_task_queue_t Tasks;
   auto key = value.str();
@@ -80,6 +81,9 @@ Cache::Cached Cache::AsyncFetch(const Valuable &value, bool itIsOptimized) {
         : this->GetOneUsingVarHost(decltype(key)(key), std::move(host), itIsOptimized);
   };
   return IsProcessExit() ? TaskNoCache : Tasks.AddTask(std::move(task));
+#else
+  return TaskNoCache;
+#endif
 }
 
 Cache::CheckCacheResult Cache::GetOneUsingVarHost(std::string&& key, VarHost::ptr host, bool itIsOptimized) {
