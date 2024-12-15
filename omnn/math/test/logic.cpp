@@ -535,12 +535,10 @@ BOOST_AUTO_TEST_CASE(intersect_with_not_tests, *disabled()) {
     BOOST_TEST(intersection == _2or3);
 }
 
-BOOST_AUTO_TEST_CASE(test_logic_intersection
-    , *disabled() // FIXME:
-) {
-    DECL_VA(x);
+BOOST_AUTO_TEST_CASE(test_logic_intersection) {
+    Variable x;
     auto _1 = x.Abet({1, 2, 3, 3});
-    auto _2 = x.Abet({2,3,3});
+    auto _2 = x.Abet({2, 3, 3});
     auto _ = _1.Intersect(_2, x);
 
     auto solutions = _.IntSolutions(x);

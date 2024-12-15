@@ -115,7 +115,7 @@ class Valuable
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
-    const encapsulated_instance& getInst() const { return exp; }
+    constexpr const encapsulated_instance& getInst() const { return exp; }
 
     virtual bool IsSubObject(const Valuable& o) const;
     virtual Valuable* Clone() const;

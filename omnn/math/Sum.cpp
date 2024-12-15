@@ -2115,7 +2115,11 @@ namespace
                 auto SolveTheRest = [&](Valuable&& oneRoot){
                     if(asyncCheckAnyRootCached.NotInCache())
                         DbSumSolutionsARootCache.AsyncSet(str(), oneRoot.str());
-                    auto restToSolve = *this / va.Equals(oneRoot);
+                    auto restToSolve = *this;
+                    {
+                        VarHost::NonZeroLogOffScope off;
+                        restToSolve /= va.Equals(oneRoot);
+                    }
                     if(asyncCheckAllRootsCached){
                         solutions = asyncCheckAllRootsCached;
                         return;

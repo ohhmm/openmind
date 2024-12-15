@@ -23,6 +23,7 @@ void FactorsLookupTable::Generate(size_type num)
             factors.emplace(std::move(prn));
         }
     }
+    factors.emplace(1);
 }
 
 const FactorsLookupTable::value_t& FactorsLookupTable::Factors(const number_t& num) {
