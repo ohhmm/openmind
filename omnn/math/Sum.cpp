@@ -354,8 +354,13 @@ namespace
         if (v.IsInt())
             return v.GCD(GCDofMembers()); 
         auto gcd = base::GCD(v);
-        if (gcd == constants::one)
-            gcd = v.GCD(GCDofMembers());
+        if (gcd == constants::one) {
+            auto gcdm = GCDofMembers();
+            gcd = v.GCD(gcdm);
+            if (gcd == constants::one && v.IsSum()) {
+                gcd = gcdm.gcd(v.as<Sum>().GCDofMembers());
+            }
+        }
         return gcd;
     }
 
@@ -428,10 +433,10 @@ namespace
                     continue;
                 }
                 else if (it->IsZero()) {
-					Delete(it);
-					continue;
-				} else
-					++it;
+                    Delete(it);
+                    continue;
+                } else
+                    ++it;
             }
 
             //if (isBalancing)
@@ -470,7 +475,7 @@ namespace
                             }
                         }
                         return is;
-					};
+                    };
                     if (it->IsPrincipalSurd()) {
                         if (SurdIsReducable(it)) {
                             auto ps = Extract(it);
@@ -498,10 +503,10 @@ namespace
                             }
                             else {
                                 ++it;
-							}
+                            }
                         } else {
-							break;
-						}
+                            break;
+                        }
                     }
                     else
                         ++it;
@@ -538,29 +543,29 @@ namespace
                     Delete(it);
                     continue;
                 }
-                
+
                 auto it2 = it;
                 ++it2;
                 Valuable c = *it;
                 Valuable mc, inc;
-                
+
                 auto up = [&](){
                     mc = -c;
                 };
 
                 up();
-                
+
                 auto comVaEq = [&]() {
                     auto& ccv = c.getCommonVars();
                     auto ccvsz = ccv.size();
                     auto& itcv = it2->getCommonVars();
                     auto itcvsz = itcv.size();
                     return ccvsz
-                        && ccvsz == itcvsz 
+                        && ccvsz == itcvsz
                         && std::equal(//TODO:std::execution::par,
                             ccv.cbegin(), ccv.cend(), itcv.cbegin());
                 };
-                
+
                 for (; it2 != members.end();)
                 {
                     CHECK_OPTIMIZATION_CACHE
