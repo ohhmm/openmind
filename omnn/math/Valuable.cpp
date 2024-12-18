@@ -496,10 +496,44 @@ namespace omnn::math {
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(s.size() > 1){
+            std::stringstream ss;
             OptimizeOn oo;
             auto distinct = Distinct();
             if (distinct != s) {
-                std::stringstream ss;
+                ss << '(';
+                for (auto& v : s)
+                    ss << ' ' << v;
+                ss << " ) <> (";
+                for (auto& v : distinct)
+                    ss << ' ' << v;
+                ss << " ), ";
+                std::cout << ss.str();
+
+                constexpr auto isMultival = [](auto& item) {
+                    return item.IsMultival() == YesNoMaybe::Yes;
+                };
+                auto someWasMultival = std::any_of(s.begin(), s.end(), isMultival);
+                if (someWasMultival) {
+                    solutions_t sDistinct;
+                    while (s.size()) {
+                        auto item = std::move(s.extract(s.begin()).value());
+                        item.optimize();
+                        if (item.IsMultival() == YesNoMaybe::Yes) {
+                            auto itemDistinct = item.Distinct();
+                            while (itemDistinct.size()) {
+                                auto subitem = std::move(itemDistinct.extract(itemDistinct.begin()).value());
+                                subitem.optimize();
+                                sDistinct.emplace(std::move(subitem));
+                            }
+                        } else {
+                            sDistinct.emplace(std::move(item));
+                        }
+                    }
+                    s = std::move(sDistinct);
+                }
+            }
+
+            if (distinct != s) {
                 ss << '(';
                 for (auto& v : s)
                     ss << ' ' << v;
