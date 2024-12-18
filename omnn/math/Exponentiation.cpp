@@ -596,8 +596,8 @@ namespace omnn::math {
         } else if (!FindVa() && IsMultival() == YesNoMaybe::Yes && !v.FindVa()) {
             solutions_t values;
             auto distinct = Distinct();
-            for (auto& value : distinct) {
-                auto& extract = distinct.extract(value).value();
+            while(distinct.size()) {
+                auto extract = std::move(distinct.extract(distinct.begin()).value());
                 if (extract.MultiplyIfSimplifiable(v)) {
                     is = true;
                 } else {
