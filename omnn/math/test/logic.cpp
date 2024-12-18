@@ -526,9 +526,12 @@ BOOST_AUTO_TEST_CASE(not_tests) {
 }
 
 BOOST_AUTO_TEST_CASE(intersect_with_not_tests, *disabled()) {
-    DECL_VA(x);
+    Variable x;
     auto x_is_1 = x.Equals(1);
-    auto x_either_123 = x_is_1.logic_or(x.Equals(2)).logic_or(x.Equals(3));
+    auto x_either_123 = x_is_1 || x.Equals(2) || x.Equals(3);
+    auto _123 = Valuable::Abet(x, {1, 2, 3});
+    BOOST_TEST(x_either_123 == _123);
+
     auto x_isnt_1 = !x_is_1;
     auto intersection = x_either_123 && x_isnt_1;
     auto _2or3 = x.Equals(2) || x.Equals(3);
