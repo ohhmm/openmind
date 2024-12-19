@@ -26,6 +26,16 @@ void ohashes(const Valuable& v)
     }
 }
 
+BOOST_AUTO_TEST_CASE(SumBalancingTest
+    , *timeout(2)
+    * disabled()
+) {
+    DECL_VARS(a);
+    auto _1 = 2*a + constants::plus_minus_1 - 3;
+    _1.SetView(Valuable::View::Solving);
+    _1.optimize();
+}
+
 BOOST_AUTO_TEST_CASE(SumCopy_test) {
     Sum sum;
     Valuable::OptimizeOff off; // ensure sum type not polimorphed into Integer
