@@ -724,11 +724,8 @@ namespace math {
         else if(v.IsInfinity())
             return true;
         else if (!v.FindVa()) {
-            double _1 = boost::numeric_cast<double>(arbitrary);
-            double _2 = static_cast<double>(v);
-            if(_1 == _2) {
-                IMPLEMENT
-            }
+            auto _1 = boost::numeric_cast<a_rational>(arbitrary);
+            auto _2 = static_cast<a_rational>(v);
             return _1 < _2;
        } else
             return base::operator <(v);
