@@ -139,9 +139,8 @@ BOOST_AUTO_TEST_CASE(logic_or_tests
     BOOST_TEST(_1 == _2);
 }
 
-BOOST_AUTO_TEST_CASE(merge_or_tests
-    , *disabled()
-) {
+#ifdef MSVC // FIXME: fix for other compilers
+BOOST_AUTO_TEST_CASE(merge_or_tests) {
     DECL_VA(x);
     auto _1 = x.Equals(1) || x.Equals(2) || x.Equals(3);
     auto express1 = _1(x);
@@ -150,7 +149,7 @@ BOOST_AUTO_TEST_CASE(merge_or_tests
     auto set2 = Valuable({1_v, 2_v, 3_v});
     BOOST_TEST(set1 == set2);
 }
-
+#endif
 
 BOOST_AUTO_TEST_CASE(IsNegativeThan_comparator_test) {
     auto IsNegativeThan = X.IsNegativeThan(Y);

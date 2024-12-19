@@ -65,6 +65,7 @@ public:
     using base::emplace;
     using base::empty;
     using base::erase;
+    using base::find;
     using base::size;
 
 

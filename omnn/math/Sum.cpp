@@ -19,6 +19,7 @@
 #include <omnn/rt/antiloop.hpp>
 #include <rt/cl.h>
 #include <rt/each.hpp>
+#include <rt/Divisors.hpp>
 
 //TODO:
 //import std;
@@ -2177,33 +2178,48 @@ namespace
                 }
                 if(a.IsInt() && k.IsInt()) {
                     Valuable test;
-                    auto& ai = a.as<Integer>();
-                    auto& ki = k.as<Integer>();
-                    std::set<Valuable> kiFactors;
+                    auto& aFactors = omnn::rt::DivisorsLookupTable::Divisors(a.ca());
+
                     if(asyncCheckAllRootsCached){
                         solutions = asyncCheckAllRootsCached;
                         return;
                     }
-                    auto found = ai.Factorization([&](const auto& i){
-                            auto iz = i != 0;
-                            auto checkValues = [&](const auto& ik) -> bool {
-                                kiFactors.insert(ik);
-                                test = ik / i;
-                                return Test(va, test) || Test(va, test = -test);
-                            };
-                            if (iz) {
-                                if (kiFactors.empty())
-                                    iz = ki.Factorization(checkValues, Infinity());
-                                else
-                                    iz = std::any_of(kiFactors.begin(), kiFactors.end(), checkValues);
-							}
-                            return iz;
-                        }, Infinity());
+
+                    auto& kFactors = omnn::rt::DivisorsLookupTable::Divisors(k.ca());
+
+                    if(asyncCheckAllRootsCached){
+                        solutions = asyncCheckAllRootsCached;
+                        return;
+                    }
+
+                    bool found = {};
+                    for (auto& i : aFactors) {
+                        for (auto& ik : kFactors) {
+                            test = a_rational(ik, i);
+                            found = Test(va, test);
+                            if (!found) {
+                                test = -test;
+                                found = Test(va, test);
+                            }
+                            if (found) {
+                                break;
+                            }
+                            if(asyncCheckAllRootsCached){
+                                solutions = asyncCheckAllRootsCached;
+                                return;
+                            }
+                        }
+                        if (found) {
+                            break;
+                        }
+                    }
+
                     if(asyncCheckAllRootsCached){
                         solutions = asyncCheckAllRootsCached;
                         return;
                     }
                     if(found) {
+                        solutions.insert(test);
                         SolveTheRest(std::move(test));
                         return;
                     }
