@@ -27,8 +27,6 @@ void ohashes(const Valuable& v)
 }
 
 BOOST_AUTO_TEST_CASE(SumBalancingTest
-    , *timeout(2)
-    * disabled()
 ) {
     DECL_VARS(a);
     auto _1 = 2*a + constants::plus_minus_1 - 3;

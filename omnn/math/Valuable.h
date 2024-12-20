@@ -568,8 +568,9 @@ public:
 	//Valuable& unionize(const Valuable&, const Variable& va);
     Valuable& operator|=(const Valuable& v) { return unionize(v); }
 	//Valuable Union(const Valuable& with, const Variable& va) const;
-
     Valuable& remove(const Valuable&);
+    Valuable Remove(const Valuable&) const;
+
     Valuable RootSetDifference(const Valuable&) const;
     Valuable RootsSymetricDifference(const Valuable&) const;
 
