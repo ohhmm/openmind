@@ -15,7 +15,7 @@ std::string l(const omnn::math::Valuable& v)
     return ss.str();
 }
 
-BOOST_AUTO_TEST_CASE(Fraction_cmp_tests, *disabled()) {
+BOOST_AUTO_TEST_CASE(Fraction_cmp_tests) {
     Valuable::OptimizeOff off;
     auto equal = 1_v / 2 == 2_v / 4_v;
     BOOST_TEST(equal);
