@@ -617,7 +617,7 @@ namespace math {
         } else if (v.IsProduct()) {
             return Product{*this}.IsComesBefore(v);
         } else if(v.IsInt()){
-            return operator<(v);
+            return *this > v;
         } else {
             return v.FindVa() != nullptr;
         }

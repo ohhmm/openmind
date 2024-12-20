@@ -208,10 +208,6 @@ namespace omnn::math {
                 && _1.IsSimple() && _2.IsSimple();
         }
 
-        YesNoMaybe IsRational() const override {
-            return _1.IsRational() && _2.IsRational();
-        }
-
         bool IsNaN() const override {
             return _1.IsNaN() || _2.IsNaN();
         }
