@@ -26,12 +26,42 @@ void ohashes(const Valuable& v)
     }
 }
 
-BOOST_AUTO_TEST_CASE(SumBalancingTest
-) {
+BOOST_AUTO_TEST_CASE(SumBalancingTest) {
     DECL_VARS(a);
     auto _1 = 2*a + constants::plus_minus_1 - 3;
     _1.SetView(Valuable::View::Solving);
     _1.optimize();
+}
+
+BOOST_AUTO_TEST_CASE(SumMultivalTestRootTest
+    , *disabled()
+) {
+    DECL_VARS(a);
+    auto _1 = 2 * a + constants::plus_minus_1 - 3;
+    auto isRoot = _1.Test(a, -1);
+    BOOST_TEST(isRoot);
+    isRoot = _1.Test(a, 2);
+    BOOST_TEST(isRoot);
+    auto roots1 = _1.solve(a);
+    auto ok = roots1.size() == 2;
+    BOOST_TEST(ok);
+
+    auto _2 = _1;
+    _2.SetView(Valuable::View::Equation);
+    _2.optimize();
+    auto roots2 = _2.solve(a);
+    BOOST_TEST(roots1 == roots2);
+
+    _2 = _1;
+    _2.SetView(Valuable::View::SupersetOfRoots);
+    _2.optimize();
+    _2.solve(a);
+
+    _2 = _1;
+    _2.SetView(Valuable::View::Solving);
+    _2.optimize();
+    roots2 = _2.solve(a);
+    BOOST_TEST(roots1 == roots2);
 }
 
 BOOST_AUTO_TEST_CASE(SumCopy_test) {
