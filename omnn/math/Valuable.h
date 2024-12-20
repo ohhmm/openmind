@@ -383,7 +383,7 @@ public:
     virtual bool IsZero() const;
 
     virtual bool IsSimple() const;
-
+    virtual YesNoMaybe IsRational() const;
     virtual YesNoMaybe IsEven() const;
     virtual YesNoMaybe IsMultival() const;
     virtual void Values(const std::function<bool(const Valuable&)>&) const; /// split multival to distinct values and return those using visitor pattern

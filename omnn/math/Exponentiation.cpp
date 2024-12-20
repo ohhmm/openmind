@@ -922,6 +922,11 @@ namespace omnn::math {
         return is;
     }
 
+    YesNoMaybe Exponentiation::IsRational() const { // FIXME: no Yes scenarios
+        return base::IsRational() &&
+               (IsMultival() == YesNoMaybe::Yes ? YesNoMaybe::No : YesNoMaybe::Maybe);
+    }
+
     void Exponentiation::Values(const std::function<bool(const Valuable&)>& fun) const
     {
         if (fun) {

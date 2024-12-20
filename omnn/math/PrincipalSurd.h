@@ -30,6 +30,9 @@ public:
     bool IsPrincipalSurd() const override { return true; }
     bool IsRadical() const override { return true; }
     bool IsSurd() const override { return is_optimized(); }
+    YesNoMaybe IsRational() const override {
+        return base::IsRational() && (IsSurd() ? YesNoMaybe::No : YesNoMaybe::Maybe); // FIXME: no Yes scenarios
+    }
     constexpr bool IsZero() const override { return Radicand().IsZero(); }
     constexpr const Valuable& Degree() const { return _2; }
     constexpr const Valuable& Index() const { return _2; }
