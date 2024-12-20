@@ -36,26 +36,30 @@ template <class Chld>
         bool IsConstant() const override { return true; }
         bool IsSimple() const override { return true; }
         bool IsPolynomial(const Variable&) const override { return true; }
-        YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+        constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+        constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::No; }
 
-        const Variable* FindVa() const override {
+        constexpr const Variable* FindVa() const override {
             return {};
         }
 
-        bool HasVa(const Variable& va) const override {
+        constexpr bool HasVa(const Variable& va) const override {
             return {};
         }
 
-        void CollectVa(std::set<Variable>& s) const override
+        constexpr void CollectVa(std::set<Variable>& s) const override
         { }
-        void CollectVaNames(Valuable::va_names_t& s) const override
+        constexpr void CollectVaNames(Valuable::va_names_t& s) const override
         { }
 
-        bool eval(const Valuable::vars_cont_t&) override {
+        constexpr bool eval(const Valuable::vars_cont_t&) override {
             return {};
         }
-        void Eval(const Variable& va, const Valuable& v) override
+        constexpr void Eval(const Variable& va, const Valuable& v) override
         { }
+
+        [[nodiscard]]
+        NO_APPLE_CONSTEXPR
         Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
             return [](Valuable::universal_lambda_params_t) -> Valuable {
                 return GlobalObject;
@@ -104,6 +108,8 @@ template <class Chld>
 
         Valuable::vars_cont_t GetVaExps() const override { return {}; }
 
+        [[nodiscard]]
+        NO_APPLE_CONSTEXPR
         a_int Complexity() const override { return 1; }
 
         typename base::solutions_t Distinct() const override { return { *this }; }

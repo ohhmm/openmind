@@ -79,6 +79,7 @@ public:
 
     Valuable FirstFactor() const override;
     constexpr bool IsPositivePowerOf2() const;
+    constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::Yes; }
     explicit operator int64_t() const;
 
     constexpr bool IsInt() const override { return true; }

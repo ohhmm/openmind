@@ -50,6 +50,8 @@ public:
     Valuable Sign() const override;
     bool IsMultiSign() const;
     YesNoMaybe IsMultival() const override;
+    [[nodiscard]]
+    YesNoMaybe IsRational() const override;
     void Values(const std::function<bool(const Valuable&)>&) const override;
     const Valuable& getBase() const { return _1; }
     const Valuable& ebase() const { return _1; }

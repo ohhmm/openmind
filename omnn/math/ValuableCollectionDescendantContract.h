@@ -219,7 +219,13 @@ namespace omnn::math {
             return std::all_of(begin(), end(), [](auto& m){return m.IsSimple();});
         }
 
-        bool Same(const Valuable& value) const override {
+        YesNoMaybe IsRational() const override {
+            auto isRational = YesNoMaybe::Yes;
+            return std::accumulate(begin(), end(), isRational,
+                               [](auto a, auto& m) { return a && m.IsRational(); });
+        }
+
+       bool Same(const Valuable& value) const override {
             auto same = this->OfSameType(value) && this->Hash() == value.Hash();
             if (same) {
                 auto& other = value.as<ChildT>();
