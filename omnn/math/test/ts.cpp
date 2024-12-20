@@ -22,7 +22,7 @@ T bits_in_use(T v){
 /// Control theory generalization hints are here: finds best moves/goods for single dimension
 BOOST_AUTO_TEST_CASE(TS_1d) {
     std::cout << "TS_1d test case - Start" << std::endl;
-    //    System s;
+    //System s;
     //    s.MakeTotalEqu(true);
     // y=f(x), where x is code of sequence
     DECL_VARS(time, price);
