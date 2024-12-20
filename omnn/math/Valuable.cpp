@@ -2572,6 +2572,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return *this;
     }
 
+    Valuable Valuable::Remove(const Valuable& expression) const {
+        auto copy = *this;
+        return copy.remove(expression);
+    }
+
     Valuable Valuable::RootSetDifference(const Valuable& v) const {
 		auto t = *this;
 		t.remove(v);

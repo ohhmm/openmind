@@ -36,7 +36,7 @@ System& System::operator<<(const Valuable& v)
 
 bool System::Add(const Variable& va, const Valuable& v)
 {
-    auto& es = vEs[va];
+    auto& es = Yarns(va);
     return !v.IsZero()
         && es[v.Vars()].insert(v).second
         && Add(va.Equals(v));
@@ -209,7 +209,7 @@ bool System::Fetch(const Variable& va)
                     for (auto& sol : e.solve(va)) {
                         auto addedNewOne = Add(va, sol);
                         modified = addedNewOne || modified;
-                        if (sol.Vars().size() == 0) {
+                        if (sol.FindVa() == nullptr) {
                             fetched = true;
                         }
                         evaluated = (addedNewOne && Eval(va, sol)) || evaluated;
@@ -372,7 +372,7 @@ System::solutions_t System::Solve(const Variable& va)
                 modified = {};
                 auto otherVars = CollectVarsFromEquationsWithThisVar(va);
                 if (otherVars.empty()) {
-                    auto& solved = vEs[va][{}];
+                    auto& solved = Yarns(va)[{}];
                     if (solved.size()) {
                         return solved;
                     }

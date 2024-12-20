@@ -725,8 +725,16 @@ namespace
                                         else if (ee.IsFraction()) {
                                             auto& f = ee.as<Fraction>();
                                             auto& d = f.getDenominator();
-                                            auto wo = p / e;
-                                            Become(((e.getBase() ^ f.getNumerator()) * (wo^d)) - ((-(*this - p)) ^ d));
+
+                                            auto wo = p;
+                                            wo.Delete(e);
+
+                                            auto nop = *this;
+                                            nop.Delete(p);
+
+                                            auto balanced =
+                                                ((e.getBase() ^ f.getNumerator()) * (wo ^ d)) - ((-nop) ^ d);
+                                            Become(std::move(balanced));
                                             scan = true;
                                             break;
                                         }
