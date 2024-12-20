@@ -1849,7 +1849,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->IsRational();
         else
-            LOG_AND_IMPLEMENT(*this << "IsRational method");
+            LOG_AND_IMPLEMENT(*this << " IsRational method");
     }
 
     YesNoMaybe Valuable::IsEven() const {
