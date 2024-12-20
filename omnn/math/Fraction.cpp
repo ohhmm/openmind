@@ -64,19 +64,47 @@ namespace math {
     }
 
     bool Fraction::operator==(const Fraction& fraction) const {
-        return base::operator ==(fraction);
+        auto equal = base::operator==(fraction);
+        if (!equal) {
+            auto optimized1 = is_optimized();
+            auto optimized2 = fraction.is_optimized();
+            auto bothOptimized = optimized1 && optimized2;
+            if (!bothOptimized) {
+                auto rational1 = IsRational();
+                auto rational2 = fraction.IsRational();
+                if (rational1 == rational2) {
+                    auto bothAreRational = (IsRational() && fraction.IsRational()) == YesNoMaybe::Yes;
+                    if (bothAreRational) {
+                        equal = operator a_rational() == static_cast<a_rational>(fraction);
+                    } else { // TODO: FIXME: both irrationals hangs on macos
+                        //OptimizeOn on;
+                        //equal = numerator() * fraction.denominator() == fraction.numerator() * denominator();
+                    }
+                }
+            }
+        }
+        return equal;
     }
 
-    bool Fraction::operator ==(const Valuable& v) const
-    {
-        auto eq = v.IsFraction() && Hash()==v.Hash();
-        if(eq){
+    bool Fraction::operator==(const Valuable& v) const {
+        auto eq = v.IsFraction();
+        if (eq) {
             eq = operator==(v.as<Fraction>());
         } else if (v.IsExponentiation() || v.IsSum() || v.IsProduct()) {
             eq = v.operator==(*this);
         } else if (v.IsInt()) {
-			eq = getNumerator() == v && getDenominator() == constants::one;
+            eq = getNumerator() == v && getDenominator() == constants::one;
+        } else if (!is_optimized()) {
+            eq = denominator() == constants::one && numerator() == v;
+        } else if (v.IsVa()) {
+        } else if (v.IsPrincipalSurd()) {
+        } else if (v.IsConstant()) {
+        } else if (v.IsLogarithm()) {
+        } else if (v.IsModulo()) {
+        } else {
+            LOG_AND_IMPLEMENT(*this << " =?= " << v);
         }
+    
         return eq;
     }
 
@@ -696,7 +724,9 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
 
     bool Fraction::IsComesBefore(const Fraction& fraction) const {
         bool is;
-        if(IsSimple()) {
+        if (operator==(fraction)) {
+            is = numerator().IsComesBefore(fraction.numerator());
+        } else if(IsSimple()) {
             is = fraction.IsSimple() && operator<(fraction);
         } else {
             if (numerator() == fraction.numerator()) {
