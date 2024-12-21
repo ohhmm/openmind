@@ -3256,6 +3256,13 @@ namespace std
     {
         return base ^ exp;
     }
+
+    bool equal_to<::omnn::math::Valuable>::operator()(const ::omnn::math::Valuable& v1,
+                                                      const ::omnn::math::Valuable& v2) const
+    {
+        return v1.Same(v2);
+    }
+
 } // namespace std
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)

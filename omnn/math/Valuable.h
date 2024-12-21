@@ -65,6 +65,11 @@ struct hash<omnn::math::Valuable> {
     size_t operator()(const omnn::math::Valuable& v) const { return hash_value(v); }
 };
 
+template <>
+struct equal_to<::omnn::math::Valuable> {
+    bool operator()(const ::omnn::math::Valuable& v1, const ::omnn::math::Valuable& v2) const;
+};
+
 } // namespace std
 
 namespace omnn{
