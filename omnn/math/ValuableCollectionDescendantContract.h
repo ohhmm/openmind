@@ -442,6 +442,13 @@ namespace omnn::math {
                 });
         }
 
+        operator a_rational() const override {
+            static const a_rational InitialValue = static_cast<a_rational>(ChildT().Optimized());
+            return std::accumulate(begin(), end(), InitialValue, [](auto m1, auto& m2) {
+                return static_cast<a_rational>(ChildT::GetBinaryOperationLambdaTemplate()(static_cast<a_rational>(m1), static_cast<a_rational>(m2)));
+            });
+        }
+
     private:
         friend class boost::serialization::access;
 
