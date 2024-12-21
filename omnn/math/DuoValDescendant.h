@@ -199,7 +199,11 @@ namespace omnn::math {
                 };
         }
 
-        max_exp_t getMaxVaExp()  const override {
+        operator a_rational() const override {
+            return static_cast<a_rational>(Chld::GetBinaryOperationLambdaTemplate()(_1, _2));
+        }
+
+        max_exp_t getMaxVaExp() const override {
             return Chld::getMaxVaExp(_1, _2);
         }
 
