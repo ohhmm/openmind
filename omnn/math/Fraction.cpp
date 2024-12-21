@@ -100,6 +100,8 @@ namespace math {
         } else if (v.IsPrincipalSurd()) {
         } else if (v.IsConstant()) {
         } else if (v.IsLogarithm()) {
+        } else if (v.IsInfinity()) {
+        } else if (v.IsNaN()) {
         } else if (v.IsModulo()) {
         } else {
             LOG_AND_IMPLEMENT(*this << " =?= " << v);

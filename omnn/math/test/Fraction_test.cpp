@@ -116,7 +116,6 @@ BOOST_AUTO_TEST_CASE(Fraction_optimization_no_hang_test
 
 BOOST_AUTO_TEST_CASE(Balancing_no_hang_test
     , *timeout(2)
-    * disabled()
 ) {
     DECL_VARS(x, y, z);
     auto _ = (constants::minus_1 / 4) * ((-16 * (y ^ 2) + 160 * y - 8 * x - 200) ^ constants::half) + z - 35;
