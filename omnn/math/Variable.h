@@ -65,10 +65,11 @@ public:
     std::ostream& code(std::ostream& out) const override { return print(out); }
     universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const override;
 
-    bool IsVa() const override { return true; }
-    bool is_optimized() const override { return true; }
-    YesNoMaybe IsMultival() const override { return YesNoMaybe::Maybe; }
-    bool IsSimple() const override { return {}; }
+    [[nodiscard]] constexpr bool IsVa() const override { return true; }
+    [[nodiscard]] constexpr bool is_optimized() const override { return true; }
+    [[nodiscard]] constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::Maybe; }
+    [[nodiscard]] constexpr bool IsSimple() const override { return {}; }
+    [[nodiscard]] constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::Maybe; }
     bool IsComesBefore(const Valuable& v) const override;
     a_int Complexity() const override { return 1; }
 

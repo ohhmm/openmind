@@ -141,6 +141,21 @@ void TestBooleanExpression(const Valuable& expressionX, auto function) {
     }
 }
 
+void EqualOrderCheck(const Valuable& _1, const Valuable& _2)
+{
+    BOOST_TEST(_1 == _2);
+    auto before = _1.IsComesBefore(_2);
+    auto after = _2.IsComesBefore(_1);
+    if (_1.Same(_2)) {
+        BOOST_TEST(before == after);
+        BOOST_TEST(before == false);
+    } else {
+        BOOST_TEST(before != after);
+    }
+    Product{_1, _2};
+    Sum{_1, _2};
+}
+
 void InequalOrderCheck(const Valuable& _1, const Valuable& _2)
 {
     BOOST_TEST(_1 != _2);
