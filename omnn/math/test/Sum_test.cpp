@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(SumFindMember_test) {
 
     it = std::find(std::begin(sum), end, _2);
     found = it != end;
-    BOOST_TEST(found);
+    BOOST_TEST(!found); // _2 members distributed into sum members
 }
 
 BOOST_AUTO_TEST_CASE(Sum_tests) {

@@ -757,7 +757,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             c++;
         }
         if (!st.empty())
-            throw "parentneses relation missmatch";
+            throw "parentheses relation mismatch";
         auto ok = bracketsmap.empty();
         if (ok)
         {
@@ -3267,8 +3267,10 @@ namespace std
 
 ::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)
 {
-    static auto StrVaHost = ::omnn::math::VarHost::Global<std::string>().shared_from_this();
-    return {{v, l}, StrVaHost, true};
+    using namespace ::omnn::math;
+    static auto StrVaHost = VarHost::Global<std::string>().shared_from_this();
+    Valuable::OptimizeOff off;
+    return {{v, l}, StrVaHost, {}};
 }
 
 const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l)

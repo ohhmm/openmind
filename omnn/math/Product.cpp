@@ -661,7 +661,8 @@ namespace math {
                 return vaExpsSum > p->vaExpsSum;
             }
             
-            if (members == p->members)
+            auto collectionsAreSame = std::equal(begin(), end(), p->begin(), p->end(), std::equal_to<Valuable>());
+            if (collectionsAreSame)
                 return false;
             
             if (members.size() != p->members.size()) {
@@ -684,7 +685,7 @@ namespace math {
             }
 
             for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
-                if (*i1 != *i2) {
+                if (!i1->Same(i2->get())) {
                     auto cmp12 = poc(*i1, *i2);
                     auto cmp21 = poc(*i2, *i1);
                     if (cmp12 == cmp21)
@@ -694,20 +695,20 @@ namespace math {
             }
 
             for (auto i1 = beg, i2 = pbeg; i1 != members.end(); ++i1, ++i2) {
-                if (*i1 != *i2) {
+                if (!i1->Same(i2->get())) {
                     return i1->IsComesBefore(*i2);
                 }
             }
 
             // same types set, compare by value
             for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
-                if (*i1 != *i2) {
+                if (!i1->Same(i2->get())) {
                     return toc(*i1, *i2);
                 }
             }
             
             // everything is equal, should not be so
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Specify ordering: " << *this << " <=> " << v);
         }
         else
             IMPLEMENT
@@ -1375,12 +1376,14 @@ namespace math {
                     }
                 }
             }
-        } else if (v.IsProduct()
-            && IsMultival() == YesNoMaybe::Yes
-            && v.IsMultival() == YesNoMaybe::Yes)
+        } else if (v.IsProduct()) {
+            same = operator==(v.as<Product>());
+            if (IsMultival() == YesNoMaybe::Yes && v.IsMultival() == YesNoMaybe::Yes)
         {
             // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
-            //LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in coefficient: " << *this << " == " << v);
+                // LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in
+                // coefficient: " << *this << " == " << v);
+            }
         }
         return same;
     }

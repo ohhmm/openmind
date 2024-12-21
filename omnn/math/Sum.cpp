@@ -85,8 +85,8 @@ namespace
     // store order operator
     bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
     {
-        if (v1 == v2) {
-            return false;  // Equal elements are never ordered before each other
+        if (v1.Same(v2)) {
+            return false;  // Same elements are never ordered before each other
         }
 
         // If types are different, use type ordering
