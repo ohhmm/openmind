@@ -46,15 +46,9 @@ BOOST_AUTO_TEST_CASE(Product_comparision_test) {
 
 BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
     Valuable::OptimizeOff off;
-
     auto _1 = "-2*(1^5)"_v;
     auto _2 = "(1 ^ 6)"_v;
     InequalOrderCheck(_1, _2);
-    auto after = _1.IsComesBefore(_2);
-    BOOST_TEST(after);
-    auto before = _2.IsComesBefore(_1);
-    BOOST_TEST(!before);
-    BOOST_TEST(after != before);
 
     bool less = _1 < _2;
     BOOST_TEST(less);
@@ -64,6 +58,10 @@ BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
     _1 = 1;
     _2 = "(-4 * (Y ^ 3))"_v;
     InequalOrderCheck(_1, _2);
+
+    _1 = "((-1)/32)*(32r2)*(64r5)"_v;
+    _2 = "((-4)/128)*(32r2)*(64r5)"_v;
+    EqualOrderCheck(_1, _2);
 }
 
 BOOST_AUTO_TEST_CASE(Product_tests)
