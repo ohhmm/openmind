@@ -174,6 +174,14 @@ public:
 
     void solve(const Variable&, solutions_t&) const override {}
     Valuable::solutions_t GetIntegerSolution(const Variable& va) const override;
+
+    /// <summary>
+    /// Enumerate Integer factors
+    /// </summary>
+    /// <param name="f">functor factors visitor</param>
+    /// <param name="max">upper gauge limit for factor to check</param>
+    /// <param name="zz">specific value ranges for factors to check</param>
+    /// <returns>true for the first found value for which f functor param returned true</returns>
     bool Factorization(const std::function<bool(const Valuable&)>& f,
                        const Valuable& max,
                        const ranges_t& zz = empty_zero_zone) const;
