@@ -3,9 +3,12 @@
 
 namespace omnn::rt {
 
-template <typename ValueT>
-class OptimizationLoopDetect {
-    static thread_local std::unordered_set<ValueT> LoopDetectionStack;
+template <typename ValueT,
+        typename ComparatorT = std::equal_to<ValueT>, 
+        typename ContainerT = std::unordered_set<ValueT, std::hash<ValueT>, ComparatorT>
+>
+    class OptimizationLoopDetect {
+    static thread_local ContainerT LoopDetectionStack;
     bool isLoop;
     const ValueT* value;
 
@@ -24,8 +27,8 @@ public:
     auto isLoopDetected() const { return isLoop; }
 };
 
-template <typename ValueT>
-thread_local std::unordered_set<ValueT> OptimizationLoopDetect<ValueT>::LoopDetectionStack;
+template <typename ValueT, typename ComparatorT, typename ContainerT>
+thread_local ContainerT OptimizationLoopDetect<ValueT, ComparatorT, ContainerT>::LoopDetectionStack;
 
 }
 
