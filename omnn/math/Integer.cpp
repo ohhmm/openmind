@@ -488,12 +488,15 @@ namespace math {
         {
             auto& f = v.as<Fraction>();
             auto& nu = f.getNumerator();
+            auto& dnm = f.getDenominator();
             Valuable mn;
-            auto nlz = nu < 0;
+            auto nlz = nu < constants::zero;
             if(nlz)
                 mn = -nu;
             auto n = std::cref(nlz ? mn : nu);
-            auto dn = nlz ? -f.getDenominator() : f.getDenominator();
+            auto dlz = dnm < constants::zero;
+            auto ltz = nlz != dlz;
+            auto dn = dlz ? -dnm : dnm;
 
             auto numeratorIsOne = n == constants::one;
             if (!numeratorIsOne){
@@ -518,7 +521,10 @@ namespace math {
                     if(n!=constants::one)
                         IMPLEMENT;
                     auto gce = GreatestCommonExp(dn);
-                    return Become(gce.first*Exponentiation{operator/=(gce.second),n/dn});
+                    auto ee = ltz
+                        ? Fraction { constants::minus_1, std::move(dn) }
+                        : Fraction { std::move(n), std::move(dn) }; // [-]1/dn
+                    return Become(gce.first * Exponentiation{operator/=(gce.second), std::move(ee)});
                 }
             }
             if(signs)
