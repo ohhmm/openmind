@@ -245,10 +245,10 @@ bool System::Fetch(const Variable& va)
 
 System::solutions_t System::Solve(const Variable& va)
 {
-    solutions_t solution;
+    solutions_t solutions;
     InProgress SolvingInProgress(solving, va);
     if (SolvingInProgress)
-        return solution;
+        return solutions;
 
 //    auto it = vEs.find(va);
 //    if(it!=vEs.end()){
@@ -274,7 +274,7 @@ System::solutions_t System::Solve(const Variable& va)
                     if (v != va) {
                         sqs.Eval(v, *solved.begin());
                     } else {
-                        solution = solved;
+                        solutions = solved;
                         break;
                     }
                 } else {
@@ -287,13 +287,13 @@ System::solutions_t System::Solve(const Variable& va)
         }
         sqs.optimize();
         if (sqs.HasVa(va))
-			solution = sqs.Solutions(va);
+			solutions = sqs.Solutions(va);
         // else ?
     }
     
-    if (solution.size()) {
+    if (solutions.size()) {
         Valuable::var_set_t vars;
-        for(auto& s : solution)
+        for(auto& s : solutions)
         {
             auto vaSzWas = vars.size();
             s.CollectVa(vars);
@@ -303,9 +303,9 @@ System::solutions_t System::Solve(const Variable& va)
         }
         
         if (!vars.size()) {
-            return solution;
+            return solutions;
         } else {
-            solution.clear();
+            solutions.clear();
         }
 //        
 //   -     if(vars.size()==1 && solution.size()==2)
@@ -422,7 +422,7 @@ System::solutions_t System::Solve(const Variable& va)
                 if(esi.first.size() == 0)
                 {
                     for(auto& s : esi.second)
-                        solution.insert(s);
+                        solutions.insert(s);
                     break;
                 }
                 else if(esi.first.size() == 1)
@@ -447,7 +447,7 @@ System::solutions_t System::Solve(const Variable& va)
                 
             }
             
-            if(!solution.size())
+            if(!solutions.size())
             {
                 for(auto& v : singleVars)
                 {
@@ -459,7 +459,7 @@ System::solutions_t System::Solve(const Variable& va)
                     if(esi.first.size() == 0)
                     {
                         for(auto& _ : esi.second)
-                            solution.insert(_);
+                            solutions.insert(_);
                     }
                 }
             }
@@ -470,7 +470,12 @@ System::solutions_t System::Solve(const Variable& va)
         throw "Contradiction!";
     }
     
-    return solution;
+    if (solutions.empty() && !makeTotalEqu) {
+        auto total = CalculateTotalExpression();
+        total.solve(va, solutions);
+    }
+
+    return solutions;
 }
 
 Valuable System::CalculateTotalExpression() const {
