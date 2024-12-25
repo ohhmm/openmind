@@ -199,32 +199,22 @@ bool System::Fetch(const Variable& va)
     bool again;
     do {
         again = {};
-        //std::all_of(Expressions(), [&](auto it) { // todo: multithread System::Eval
-            //auto& e = *it;
         for (auto& e : Expressions()) {
-            try {
-                e.CollectVa(vars);
-                if (e.HasVa(va)) {
-                    bool evaluated = {};
-                    for (auto& sol : e.solve(va)) {
-                        auto addedNewOne = Add(va, sol);
-                        modified = addedNewOne || modified;
-                        if (sol.FindVa() == nullptr) {
-                            fetched = true;
-                        }
-                        evaluated = (addedNewOne && Eval(va, sol)) || evaluated;
-                        modified = evaluated || modified;
-                    }
-                    if (evaluated) {
-                        again = !fetched;
-                        break;
-                    }
-                }
-            } catch (...) {
+            e.CollectVa(vars);
+            if (e.HasVa(va)) {
+                bool evaluated = {};
+                try {
+                    auto expressed = e(va);
+                    modified = Add(va, expressed) || modified;
+                    fetched = fetched || expressed.FindVa() == nullptr;
 
+                    auto evaluated = Eval(va, expressed);
+                    modified = evaluated || modified;
+                    again = evaluated && !fetched;
+                } catch (...) {
+                }
             }
         }
-		//);
     } while (again);
     
     if (!fetched) {
