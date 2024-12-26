@@ -25,8 +25,10 @@
 namespace omnn::math {
 
     class Fraction;
+    class Product;
+    class Sum;
 
-class Integer
+    class Integer
     : public ValuableDescendantContract<Integer>
 {
     using base = ValuableDescendantContract<Integer>;
@@ -160,7 +162,9 @@ public:
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
     Valuable& sq() override { return *this *= *this; }
     Valuable Sqrt() const override;
-    bool IsComesBefore(const Valuable& v) const override;
+    bool IsComesBefore(const Product&) const;
+    bool IsComesBefore(const Sum&) const;
+    bool IsComesBefore(const Valuable&) const override;
     Valuable InCommonWith(const Valuable& v) const override;
     Valuable GCD(const Valuable& v) const override;
     Valuable LCM(const Valuable& v) const override;
