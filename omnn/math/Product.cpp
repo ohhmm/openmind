@@ -718,20 +718,7 @@ namespace math {
         auto it2 = product.begin();
         auto end1 = end();
         auto end2 = product.end();
-        Product gcd;
-        constexpr cont::key_compare cmp;
-        while (it1 != end1 && it2 != end2) {
-            if (cmp(*it1, *it2)) {
-                ++it1;
-            } else if (cmp(*it2, *it1)) {
-                ++it2;
-            } else if(*it1 == *it2) {
-                gcd.Add(Extract(it1++));
-                ++it2;
-            } else {
-                LOG_AND_IMPLEMENT("Check Product ordering comparator: " << *it1 << " <=> " << *it2);
-            }
-        }
+        auto gcd = InCommonWith(product);
         if (gcd == constants::one) {
             Become(base::GCD(product));
         } else {
@@ -742,7 +729,11 @@ namespace math {
             } else {
                 remainder1.gcd(remainder2);
             }
-            gcd.Add(std::move(remainder1));
+            if (gcd.IsProduct()) {
+                gcd.as<Product>().Add(std::move(remainder1));
+            } else {
+                gcd *= remainder1;
+            }
             Become(std::move(gcd));
         }
         return *this;
