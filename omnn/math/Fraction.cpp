@@ -728,17 +728,25 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
         bool is;
         if (operator==(fraction)) {
             is = numerator().IsComesBefore(fraction.numerator());
-        } else if(IsSimple()) {
+        } else {
+            auto numBefore = numerator().IsComesBefore(fraction.numerator());
+            auto denomBefore = denominator().IsComesBefore(fraction.denominator());
+            if (numBefore == denomBefore) {
+                is = numBefore;
+            } else if (numerator() == fraction.numerator()) {
+                is = denomBefore;
+            } else if (denominator() == fraction.denominator()) {
+                is = numBefore;
+            } else {
+                if (IsSimple()) {
             is = fraction.IsSimple() && operator<(fraction);
         } else {
-            if (numerator() == fraction.numerator()) {
-                is = denominator().IsComesBefore(fraction.denominator());
-            } else {
-                is = numerator().IsComesBefore(fraction.numerator());
-            }
+                    is = numBefore;
 //            auto lhs = numerator() * fraction.denominator();
 //            auto rhs = fraction.numerator() * denominator();
 //            is = lhs != rhs && lhs.IsComesBefore(rhs);
+        }
+            }
         }
         return is;
     }

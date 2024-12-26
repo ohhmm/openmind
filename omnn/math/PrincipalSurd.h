@@ -27,8 +27,8 @@ public:
     {
     }
 
-    bool IsPrincipalSurd() const override { return true; }
-    bool IsRadical() const override { return true; }
+    constexpr bool IsPrincipalSurd() const override { return true; }
+    constexpr bool IsRadical() const override { return true; }
     bool IsSurd() const override { return is_optimized(); }
     YesNoMaybe IsRational() const override {
         return base::IsRational() && (IsSurd() ? YesNoMaybe::No : YesNoMaybe::Maybe); // FIXME: no Yes scenarios

@@ -82,30 +82,31 @@ bool System::Has(const Valuable& equation) const
     auto b = begin();
     auto e = end();
     return equation.IsZero() ||
-           std::find(PAR b, e, equation) != e ||
-           std::find(PAR b, e, -equation) != e;
+           find(equation) != e ||
+           find(-equation) != e;
 }
 
 bool System::Add(const Valuable& v)
 {
     auto isNew = !Has(v);
     if (isNew) {
-        auto _ = v;
-        if (!_.IsEquation() || !Valuable::optimizations) {
-            _.SetView(Valuable::View::Equation); // TODO : start optimizing from Unification
-            try {
-                Valuable::OptimizeOn o;
-                _.optimize();
-            } catch (...) {
-                _ = v;
-            }
+        Valuable _;
+        try {
+            _ = v.Optimized(Valuable::View::Equation);
+        } catch (...) {
+            _ = v;
         }
         
         auto vars = _.Vars();
         if(vars.size() == 1){
             auto& va = *vars.begin();
-            _.solve(va, vEs[va][{}]);
-        } 
+            _.solve(va, Yarns(va)[{}]);
+        } else {
+            for (auto& va : vars) {
+                auto& es = Yarns(va);
+                es[vars].insert(_.Link());
+            }
+        }
 
         emplace(_);
         if (makeTotalEqu) {
@@ -200,21 +201,50 @@ bool System::Fetch(const Variable& va)
     do {
         again = {};
         for (auto& e : Expressions()) {
-            e.CollectVa(vars);
-            if (e.HasVa(va)) {
-                bool evaluated = {};
-                try {
-                    auto expressed = e(va);
-                    modified = Add(va, expressed) || modified;
-                    fetched = fetched || expressed.FindVa() == nullptr;
+            try {
+                e.CollectVa(vars);
+                if (e.HasVa(va)) {
 
-                    auto evaluated = Eval(va, expressed);
-                    modified = evaluated || modified;
-                    again = evaluated && !fetched;
-                } catch (...) {
+
+
+                    //if (!e.IsSum() || e.as<Sum>().IsPolynomial(va)) {
+                    //    auto _ = e(va);
+                    //    modified = Add(va, _) || modified;
+                    //    if (_.FindVa() == nullptr) {
+                    //        fetched = true;
+                    //    }
+
+                    //    auto evaluated = Eval(va, _);
+                    //    modified = evaluated || modified;
+                    //    if (evaluated) {
+                    //        again = !fetched;
+                    //        break;
+                    //    }
+                    //}
+
+
+
+
+                    bool evaluated = {};
+                    for (auto& sol : e.solve(va)) {
+                        auto addedNewOne = Add(va, sol);
+                        modified = addedNewOne || modified;
+                        if (sol.FindVa() == nullptr) {
+                            fetched = true;
+                        }
+                        evaluated = (addedNewOne && Eval(va, sol)) || evaluated;
+                        modified = evaluated || modified;
+                    }
+                    if (evaluated) {
+                        again = !fetched;
+                        break;
+                    }
                 }
+            } catch (...) {
+
             }
         }
+		//);
     } while (again);
     
     if (!fetched) {
@@ -369,7 +399,7 @@ System::solutions_t System::Solve(const Variable& va)
                 }
                 else for(auto& v : otherVars)
                 {
-                    auto& vaFuncs = vEs[v];
+                    auto& vaFuncs = *vEs[v];
                     auto toSolve = vaFuncs.size();
                     if (!toSolve) {
                         auto numKnownSolutions = Known(v).size();
@@ -474,4 +504,12 @@ Valuable System::CalculateTotalExpression() const {
 		total.Add(e.Sq());
 	}
     return total;
+}
+
+System::es_t& System::Yarns(const Variable& variable) {
+    auto& pyarn = vEs[variable];
+    if (!pyarn) {
+        pyarn = ptrs::make_shared<es_t>();
+    }
+    return *pyarn;
 }

@@ -74,7 +74,7 @@ namespace omnn::math {
             return {};
         }
 
-        const Valuable& get1() const { return _1; }
+        constexpr const Valuable& get1() const { return _1; }
         template<class T>
         void set1(T&& p) {
             _1 = std::forward<T>(p);
@@ -232,7 +232,7 @@ namespace omnn::math {
                     return;
                 }
 
-                // TODO: multival caching (inspect all optimized and optimization transisions)
+                // TODO: multivalve caching (inspect all optimized and optimization transitions)
 
 
                 Valuable::solutions_t vals, thisValues;
