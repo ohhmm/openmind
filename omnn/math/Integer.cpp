@@ -189,11 +189,12 @@ namespace math {
         } else if (v.IsProduct()) {
         } else {
             is = v.IsSummationSimplifiable(*this);
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
             if (is.first && is.second.Complexity() > v.Complexity()){
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
                 LOG_AND_IMPLEMENT("Simplification complexity exceeds source complexity: " << v << "   +   " << str() << "   =   " << is.second);
-            }
 #endif
+                is.first = {};
+            }
         }
         return is;
     }
