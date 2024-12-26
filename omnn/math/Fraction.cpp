@@ -466,12 +466,12 @@ bool Fraction::SumIfSimplifiable(const Valuable& v)
 std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value) const
 {
     std::pair<bool,Valuable> is;
-    auto simple = IsSimpleFraction();
-    is.first = simple && value.IsSimple();
+    is.first = IsSimple() && value.IsSimpleFraction();
     if(is.first){
         is.second = *this + value;
+        is.first = is.second.Complexity() <= Complexity() + value.Complexity();
     } else if (value.IsVa()) {
-        is.first = !simple && HasVa(value.as<Variable>());
+        is.first = HasVa(value.as<Variable>());
         if (is.first) {
             LOG_AND_IMPLEMENT("Optimize summation of " << *this << " with " << value);
         }
@@ -729,44 +729,37 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
 
     bool Fraction::IsComesBefore(const Fraction& fraction) const {
         bool is;
-        if (operator==(fraction)) {
+        auto numBefore = numerator().IsComesBefore(fraction.numerator());
+        auto denomBefore = denominator().IsComesBefore(fraction.denominator());
+        if (numBefore == denomBefore) {
+            is = numBefore;
+        } else if (numerator() == fraction.numerator()) {
+            is = denomBefore;
+        } else if (denominator() == fraction.denominator()) {
+            is = numBefore;
+        } else if (operator==(fraction)) {
             is = numerator().IsComesBefore(fraction.numerator());
-        } else if(IsSimple()) {
-            is = fraction.IsSimple() && operator<(fraction);
+        } else if (fraction.IsSimpleFraction() && IsSimpleFraction()) {
+            is = operator<(fraction);
         } else {
-            if (numerator() == fraction.numerator()) {
-                is = denominator().IsComesBefore(fraction.denominator());
-            } else {
-                is = numerator().IsComesBefore(fraction.numerator());
-            }
-//            auto lhs = numerator() * fraction.denominator();
-//            auto rhs = fraction.numerator() * denominator();
-//            is = lhs != rhs && lhs.IsComesBefore(rhs);
+            // FIXME: uncomment once LCM/GCD cache is ready
+            //OptimizeOn on;
+            //VarHost::NonZeroLogOffScope zeroLogOff;
+            //auto denominatorsLCM = denominator().LCM(fraction.denominator());
+            //auto lhs = numerator() * denominatorsLCM / denominator();
+            //auto rhs = fraction.numerator() * denominatorsLCM / fraction.denominator();
+            //is = lhs != rhs && lhs.IsComesBefore(rhs);
+            // MEANWHILE:
+            is = numBefore;
         }
         return is;
     }
 
     bool Fraction::IsComesBefore(const Valuable& v) const
     {
-        auto is = !IsSimple() && v.IsSimple();
-//        auto va1 = FindVa();
-//        auto va2 = v.FindVa();
-//        return !va1 && !va2
-//            ? (IsSimple() && (v.IsInt() || (v.IsFraction() && Fraction::cast(v)->IsSimple())) ? operator<(v) : str().length() < v.str().length())
-//                : (va1 && va2
-//                   ? str().length() < v.str().length()
-//                   : va1!=nullptr );
-        if (is)
-        { }
-        else if (auto degreeDiff = base::getMaxVaExp() - v.getMaxVaExp();
-            degreeDiff != 0)
-        {
-            is = degreeDiff > 0;
-        }
-        else if (v.IsFraction())
+        bool is;
+        if (v.IsFraction())
             is = IsComesBefore(v.as<Fraction>());
-        else if (v.IsProduct() && v.as<Product>().size() == 1)
-            is = IsComesBefore(v.as<Product>().begin()->get());
         else if (v.IsProduct()) {
             auto& prod = v.as<Product>();
             if (prod.size() == 1)
@@ -775,17 +768,20 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
                 is = IsComesBefore(constants::one);
             else
                 is = Product{*this}.IsComesBefore(prod);
-        }
-        else if(v.IsSum())
+        } else if (v.IsSum())
             is = Sum{*this}.IsComesBefore(v);
-        else if(v.IsVa())
+        else if (v.IsVa())
             is = FindVa();
-        else if(v.IsInt())
+        else if (v.IsInt())
             is = true;
         else if (IsSimple() && v.IsExponentiation())
             is = {};
-        else
-            IMPLEMENT
+        else {
+            auto degreeDiff = base::getMaxVaExp() - v.getMaxVaExp();
+            if (!degreeDiff.is_zero()) {
+                is = degreeDiff.sign() >= 0;
+            }
+        }
 
         return is;
     }
