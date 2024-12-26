@@ -463,12 +463,12 @@ bool Fraction::SumIfSimplifiable(const Valuable& v)
 std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value) const
 {
     std::pair<bool,Valuable> is;
-    auto simple = IsSimpleFraction();
-    is.first = simple && value.IsSimple();
+    is.first = IsSimple() && value.IsSimpleFraction();
     if(is.first){
         is.second = *this + value;
+        is.first = is.second.Complexity() <= Complexity() + value.Complexity();
     } else if (value.IsVa()) {
-        is.first = !simple && HasVa(value.as<Variable>());
+        is.first = HasVa(value.as<Variable>());
         if (is.first) {
             LOG_AND_IMPLEMENT("Optimize summation of " << *this << " with " << value);
         }
@@ -739,13 +739,12 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
                 is = numBefore;
             } else {
                 if (IsSimple()) {
-            is = fraction.IsSimple() && operator<(fraction);
-        } else {
-                    is = numBefore;
-//            auto lhs = numerator() * fraction.denominator();
-//            auto rhs = fraction.numerator() * denominator();
-//            is = lhs != rhs && lhs.IsComesBefore(rhs);
-        }
+                    is = fraction.IsSimple() && operator<(fraction);
+                } else {
+                    auto lhs = numerator() * fraction.denominator();
+                    auto rhs = fraction.numerator() * denominator();
+                    is = lhs != rhs && lhs.IsComesBefore(rhs);
+                }
             }
         }
         return is;
@@ -753,7 +752,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
 
     bool Fraction::IsComesBefore(const Valuable& v) const
     {
-        auto is = !IsSimple() && v.IsSimple();
+        bool is;
 //        auto va1 = FindVa();
 //        auto va2 = v.FindVa();
 //        return !va1 && !va2
@@ -761,17 +760,13 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
 //                : (va1 && va2
 //                   ? str().length() < v.str().length()
 //                   : va1!=nullptr );
-        if (is)
-        { }
-        else if (auto degreeDiff = base::getMaxVaExp() - v.getMaxVaExp();
+        if (auto degreeDiff = base::getMaxVaExp() - v.getMaxVaExp();
             degreeDiff != 0)
         {
             is = degreeDiff > 0;
         }
         else if (v.IsFraction())
             is = IsComesBefore(v.as<Fraction>());
-        else if (v.IsProduct() && v.as<Product>().size() == 1)
-            is = IsComesBefore(v.as<Product>().begin()->get());
         else if (v.IsProduct()) {
             auto& prod = v.as<Product>();
             if (prod.size() == 1)
