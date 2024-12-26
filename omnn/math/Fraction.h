@@ -71,8 +71,9 @@ namespace math {
         Valuable InCommonWith(const Valuable& v) const override;
         bool IsComesBefore(const Fraction&) const;
         bool IsComesBefore(const Valuable& v) const override;
-        bool IsFraction() const override { return true; }
-        bool IsSimpleFraction() const override { return IsSimple(); }
+        constexpr bool IsFraction() const override { return true; }
+        bool IsSimpleFraction() const override { return _1.IsInt() && _2.IsInt(); }
+        //bool IsSimpleRatio() const override { return _1.IsInt() && _2.IsInt(); }
         bool IsZero() const override { return _1.IsZero() && !_2.IsZero() && !_2.IsInfinity(); }
         YesNoMaybe IsMultival() const override { return _1.IsMultival() || _2.IsMultival(); }
         bool IsPolynomial(const Variable& x) const override {
