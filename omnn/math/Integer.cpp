@@ -615,20 +615,39 @@ namespace math {
         hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
-    
-    bool Integer::IsComesBefore(const Valuable& v) const
-    {
+
+    bool Integer::IsComesBefore(const Product& product) const {
+        if (product.size() == 1) {
+            return IsComesBefore(product.begin()->get());
+        } else if (product.size() == 0) {
+            return IsComesBefore(constants::one);
+        } else {
+            return {};
+        }
+    }
+
+    bool Integer::IsComesBefore(const Sum& sum) const {
+        if (sum.size() == 1) {
+            return IsComesBefore(sum.begin()->get());
+        } else if (sum.size() == 0) {
+            return IsComesBefore(constants::zero);
+        } else {
+            return true;
+        }
+    }
+ 
+    bool Integer::IsComesBefore(const Valuable& v) const {
         if (v.IsProduct()) {
-            return Product{*this}.IsComesBefore(v);
-        } else if (v.IsProduct()) {
-            return Product{*this}.IsComesBefore(v);
-        } else if(v.IsInt()){
+            return IsComesBefore(v.as<Product>());
+        } else if (v.IsSum()) {
+            return IsComesBefore(v.as<Sum>());
+        } else if (v.IsInt()) {
             return *this > v;
         } else {
             return v.FindVa() != nullptr;
         }
     }
-    
+
     Valuable Integer::InCommonWith(const Valuable& v) const
     {
         return v.GCD(*this);
