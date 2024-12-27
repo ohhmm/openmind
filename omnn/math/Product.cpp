@@ -318,17 +318,13 @@ namespace math {
         it = GetFirstOccurence<Integer>();
         if (it != end()) {
             if (it->IsZero()) {
-                Become(0);
+                Become(Extract(it));
                 return;
-            }
-
-			TryBePositive(it);
-
-        // one
-            if (it->Same(1) && size() > 1) {
+            } else if (it->Same(constants::one) && size() > 1) {
                 Delete(it);
             }
 
+			TryBePositive(it);
         }
 
         if (IsEquation()) {
@@ -432,8 +428,10 @@ namespace math {
                 ++it2;
                 while (it2 != members.end())
                 {
-                    if (c.MultiplyIfSimplifiable(*it2)) {
+                    auto simplifiable = it2->IsMultiplicationSimplifiable(c);
+                    if (simplifiable.first) {
                         Delete(it2);
+                        std::swap(c, simplifiable.second);
                         if (c.IsProduct()) {
                             auto& cAsP = c.as<Product>();
                             if(cAsP.size() == 2 && cAsP.begin()->IsSimple()) {

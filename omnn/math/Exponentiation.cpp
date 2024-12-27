@@ -1219,6 +1219,9 @@ namespace omnn::math {
         if (eexp().IsSimpleFraction()){
             auto& f = eexp().as<Fraction>();
             auto& denom = f.denominator();
+            if (denom.IsZero() || IsNaN()) {
+                return { NaN() };
+            }
             if (denom.IsEven() == YesNoMaybe::Yes) {
                 // TODO : de-recoursefy:
 //                auto branchesSz = boost::multiprecision::msb(denom); // the largest bit
