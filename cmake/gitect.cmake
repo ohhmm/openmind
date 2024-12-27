@@ -95,8 +95,7 @@ if(GIT_EXECUTABLE)
 		add_custom_target(delete-merged-branches
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
-			COMMAND ${GIT_EXECUTABLE} checkout --merge main
-			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+			COMMAND ${GIT_EXECUTABLE} rebase --autostash origin/main main
 			COMMAND powershell -Command "${PS_GIT_CMD}"
 			COMMENT "Deleting branches that already are in main using powershell."
 		)
@@ -104,8 +103,7 @@ if(GIT_EXECUTABLE)
 		add_custom_target(delete-merged-branches
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
-			COMMAND ${GIT_EXECUTABLE} checkout --merge main
-			COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main
+			COMMAND ${GIT_EXECUTABLE} rebase --autostash origin/main main
 			COMMAND ${GIT_EXECUTABLE} branch --merged origin/main | grep -v "^* main" | xargs -n 1 -r ${GIT_EXECUTABLE} branch -d
 			COMMENT "Deleting branches that already are in main using bash."
 		)
