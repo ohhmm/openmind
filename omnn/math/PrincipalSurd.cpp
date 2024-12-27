@@ -109,6 +109,7 @@ void PrincipalSurd::optimize() {
 
     if (IsPrincipalSurd()) {
         MarkAsOptimized();
+        hash = Index().Hash() ^ Radicand().Hash();
     }
 }
 
