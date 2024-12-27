@@ -305,7 +305,9 @@ namespace math {
                     if (e.getExponentiation() > 0) {
                         c = *this;
                     }
-                } else {
+                } else if (e.IsMultival()==YesNoMaybe::Yes) {
+                }
+                else {
                     IMPLEMENT
                 }
             }
