@@ -421,9 +421,9 @@ namespace math {
                     continue;
                 }
 
-                if (*it == 0)
+                if (it->IsZero())
                 {
-                    Become(0);
+                    Become(Extract(it));
                     return;
                 }
 
@@ -433,6 +433,7 @@ namespace math {
                 while (it2 != members.end())
                 {
                     if (c.MultiplyIfSimplifiable(*it2)) {
+                        Delete(it2);
                         if (c.IsProduct()) {
                             auto& cAsP = c.as<Product>();
                             if(cAsP.size() == 2 && cAsP.begin()->IsSimple()) {
@@ -441,8 +442,6 @@ namespace math {
                                 IMPLEMENT
                             }
                         }
-                        Delete(it2);
-                        continue;
                     }
                     else
                         ++it2;
