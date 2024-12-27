@@ -319,10 +319,11 @@ public:
     virtual Valuable& operator +=(const Valuable&);
     virtual Valuable& operator +=(int);
     virtual Valuable& operator *=(const Valuable&);
-    virtual bool MultiplyIfSimplifiable(const Valuable& v);
-    virtual std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
-    virtual bool SumIfSimplifiable(const Valuable& v);
-    virtual std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const;
+    virtual bool MultiplyIfSimplifiable(const Valuable&);
+    virtual bool MultiplyIfSimplifiable(const Integer&);
+    virtual std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable&) const;
+    virtual bool SumIfSimplifiable(const Valuable&);
+    virtual std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable&) const;
     virtual std::pair<bool, Valuable> IsModSimplifiable(const Valuable&) const;
     virtual Valuable& operator /=(const Valuable&);
     virtual Valuable& operator %=(const Valuable&);

@@ -1307,6 +1307,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         IMPLEMENT
     }
 
+    bool Valuable::MultiplyIfSimplifiable(const Integer& integer) {
+        return MultiplyIfSimplifiable(static_cast<const Valuable&>(integer));
+    }
 
     bool Valuable::MultiplyIfSimplifiable(const Valuable& v)
     {

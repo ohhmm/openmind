@@ -7,6 +7,8 @@
 
 namespace omnn::math {
 
+    class Integer;
+
 class Exponentiation
     : public DuoValDescendant<Exponentiation>
 {
@@ -91,13 +93,14 @@ public:
     max_exp_t getMaxVaExp() const override;
 
     // virtual operators
-    Valuable& operator +=(const Valuable& v) override;
-    Valuable& operator *=(const Valuable& v) override;
-    bool MultiplyIfSimplifiable(const Valuable& v) override;
-    std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
-    bool SumIfSimplifiable(const Valuable& v) override;
-    std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
-    Valuable& operator /=(const Valuable& v) override;
+    Valuable& operator +=(const Valuable&) override;
+    Valuable& operator *=(const Valuable&) override;
+    bool MultiplyIfSimplifiable(const Integer&) override;
+    bool MultiplyIfSimplifiable(const Valuable&) override;
+    std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
+    bool SumIfSimplifiable(const Valuable&) override;
+    std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable&) const override;
+    Valuable& operator /=(const Valuable&) override;
     Valuable& operator ^=(const Valuable&) override;
     bool operator==(const Exponentiation&) const;
     bool operator ==(const Valuable&) const override;
