@@ -11,12 +11,14 @@
 #include "Sum.h"
 #include "Euler.h"
 #include "Exponentiation.h"
+#include "Logarithm.h"
 
 #include <algorithm>
 #include <typeindex>
 
 
 using namespace omnn::math;
+
 
 //static
 ProductOrderComparator::index_t ProductOrderComparator::Order(const Valuable& value) {
@@ -35,6 +37,7 @@ ProductOrderComparator::index_t ProductOrderComparator::Order(const Valuable& va
         typeid(Fraction),
         typeid(PrincipalSurd),
         typeid(Exponentiation),
+        typeid(Logarithm),
         typeid(Variable),
         typeid(Modulo),
     };
