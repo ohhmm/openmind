@@ -584,6 +584,18 @@ namespace omnn::math {
         return *this;
     }
 
+    bool Exponentiation::MultiplyIfSimplifiable(const Integer& integer) {
+        bool is = {};
+        if (integer == constants::one) {
+            is = true;
+        } else if (integer.IsZero()) {
+            Become(0);
+            is = true;
+        } 
+
+        return is;
+    }
+
     bool Exponentiation::MultiplyIfSimplifiable(const Valuable& v)
     {
         auto is = v == getBase();
@@ -591,8 +603,8 @@ namespace omnn::math {
             ++eexp();
             optimized = {};
             optimize();
-        } else if (v == constants::one) {
-            is = true;
+        } else if (v.IsInt()) {
+            is = MultiplyIfSimplifiable(v.as<Integer>());
         } else if (!FindVa() && IsMultival() == YesNoMaybe::Yes && !v.FindVa()) {
             solutions_t values;
             auto distinct = Distinct();
@@ -628,10 +640,6 @@ namespace omnn::math {
             }
         } else if (v.IsMultival() == YesNoMaybe::Yes) {
             LOG_AND_IMPLEMENT(str() << " Exponentiation::MultiplyIfSimplifiable " << v);
-        } else if (v.IsInt()) {
-            IMPLEMENT
-        } else {
-//            std::cout << str() << " * " << v.str() << std::endl;
         }
         return is;
     }
