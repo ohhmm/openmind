@@ -27,55 +27,13 @@
 namespace omnn{
 namespace math {
     
-    using namespace std;
     
-    // constexpr 
-    static const std::type_index order[] = {
-        // for fast optimizing
-        typeid(NaN),
-        typeid(MInfinity),
-        typeid(Infinity),
-        typeid(Sum),
-        typeid(Product),
-        // general order
-        typeid(Integer),
-        typeid(MinusOneSurd),
-        typeid(Euler),
-        typeid(Pi),
-        typeid(Fraction),
-        typeid(PrincipalSurd),
-        typeid(Exponentiation),
-        typeid(Variable),
-        typeid(Modulo),
-    };
-
-    auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
+    constexpr auto ValueOrderComparator = [](const Valuable& x, const Valuable& y)
     {
-        static auto ob = std::begin(order);
-        static auto oe = std::end(order);
-
-        auto it1 = std::find(ob, oe, x.Type());
-        assert(it1 != oe); // IMPLEMENT
-        auto it2 = std::find(ob, oe, y.Type());
-        assert(it2 != oe); // IMPLEMENT
+        auto it1 = ProductOrderComparator::Order(x);
+        auto it2 = ProductOrderComparator::Order(y);
         return it1 == it2 ? x > y : it1 < it2;
     };
-
-    bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const
-    {
-        static const auto ob = std::cbegin(order);
-        static const auto oe = std::cend(order);
-
-        auto it1 = std::find(ob, oe, x.Type());
-        if (it1 == oe)
-            LOG_AND_IMPLEMENT(x << " =?= " << y);
-
-        auto it2 = std::find(ob, oe, y.Type());
-        if (it2 == oe)
-            LOG_AND_IMPLEMENT(x << " =?= " << y);
-
-        return it1 == it2 ? x.IsComesBefore(y) : it1 < it2;
-    }
 
     static constexpr ProductOrderComparator poc;
 
@@ -639,8 +597,7 @@ namespace math {
         auto isSameType = v.IsProduct();
         if(!isSameType)
         {
-            static const ProductOrderComparator oc;
-            return oc(*this,v);
+            return poc(*this, v);
         }
         auto p = isSameType ? &v.as<Product>() : new(vp) Product{v};
         auto d = [isSameType](const Product* _){
@@ -673,13 +630,8 @@ namespace math {
             auto beg = begin();
             auto pbeg = p->begin();
             for (auto i1 = beg, i2 = pbeg; i1 != members.end(); ++i1, ++i2) {
-                static const auto ob = std::cbegin(order);
-                static const auto oe = std::cend(order);
-
-                auto it1 = std::find(ob, oe, i1->Type());
-                assert(it1!=oe); // IMPLEMENT, add to order table
-                auto it2 = std::find(ob, oe, i2->Type());
-                assert(it2!=oe); // IMPLEMENT
+                auto it1 = ProductOrderComparator::Order(*i1);
+                auto it2 = ProductOrderComparator::Order(*i2);
                 if (it1 != it2) {
                     return it1 < it2;
                 }
@@ -704,7 +656,7 @@ namespace math {
             // same types set, compare by value
             for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
                 if (!i1->Same(i2->get())) {
-                    return toc(*i1, *i2);
+                    return ValueOrderComparator(*i1, *i2);
                 }
             }
             

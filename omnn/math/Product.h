@@ -3,20 +3,20 @@
 //
 
 #pragma once
+
+#include <omnn/math/ValuableCollectionDescendantContract.h>
+#include <omnn/math/Integer.h>
+#include <omnn/math/Fraction.h>
+#include <omnn/math/ProductOrderComparator.h>
+#include <omnn/math/Variable.h>
+
 #include <set>
 #include <unordered_set>
-#include "ValuableCollectionDescendantContract.h"
-#include "Integer.h"
-#include "Fraction.h"
-#include "Variable.h"
+
 
 namespace omnn{
 namespace math {
     
-    struct ProductOrderComparator
-    {
-        bool operator()(const Valuable&, const Valuable&) const;
-    };
     
     using product_container =
         //std::multiset<Valuable, ProductOrderComparator>
