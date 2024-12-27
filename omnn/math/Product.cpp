@@ -343,6 +343,10 @@ namespace math {
             for (auto it = GetFirstOccurence<Fraction>(); it != end(); ++it) {
                 if (it->IsFraction()) {
                     TryBePositive(it);
+                    updated = it == end();
+                    if (updated) {
+                        break;
+                    }
                     if (it->FindVa()) {
                         auto& f = it->as<Fraction>();
                         auto& dn = f.getDenominator();
