@@ -48,8 +48,17 @@ namespace
     CACHE(DbSumSolutionsAllRootsCache);
     CACHE(DbSumSolutionsARootCache);
     CACHE(DbSumSqCache);
+
+    constexpr SumOrderComparator soc;
 }
 
+    Sum::Sum(const Valuable& v) {
+        Add(v);
+    }
+
+    Sum::Sum(Valuable&& v) {
+        Add(std::move(v));
+    }
 
     Sum::iterator Sum::Had(iterator it)
     {
@@ -69,12 +78,24 @@ namespace
     auto HwC = std::thread::hardware_concurrency();
     auto Thr = ::std::min<decltype(HwC)>(HwC << 3, 128);
 
-    const Sum::iterator Sum::Add(const Valuable& item, const iterator hint) {
+    Sum::Sum(const std::initializer_list<Valuable>& l) {
+        for (const auto& v : l) {
+            Add(v);
+        }
+    }
+
+    Sum::Sum(std::initializer_list<Valuable>&& l) {
+        for (auto&& v : l) {
+            Add(std::move(v));
+        }
+    }
+
+    const Sum::iterator Sum::Add(const Valuable& item, iterator hint) {
         auto copy = item;
         return this->Add(std::move(copy), hint);
     }
 
-    const Sum::iterator Sum::Add(Valuable&& item, const iterator hint)
+    const Sum::iterator Sum::Add(Valuable&& item, iterator hint)
     {
         iterator it = hint;
         if (item.IsZero())
@@ -107,7 +128,8 @@ namespace
             else
                 it = end();
         } else if (item.IsSum()) {
-            for(auto& i : item.as<Sum>()) {
+            auto& sum = item.as<Sum>();
+            for(auto& i : sum) {
                 it = Add(i, it);
             }
         }
@@ -1229,20 +1251,6 @@ namespace
         return Become(std::move(sum));
     }
 
-    Sum::Sum(std::initializer_list<Valuable> l)
-    {
-        for (const auto& arg : l)
-        {
-            if(arg.IsSum()) {
-                auto& a = arg.as<Sum>();
-                for(auto& m: a)
-                    this->Add(m, end());
-            }
-            else
-                this->Add(arg, end());
-        }
-    }
-
     bool Sum::IsComesBefore(const Valuable& v) const
     {
         if (v.IsSum()) {
@@ -1703,7 +1711,7 @@ namespace
         return Valuable(std::move(solutions));
     }
     
-    bool Sum::IsPowerX(const std::vector<Valuable>& coefficients){
+    bool Sum::IsPowerX(const std::vector<Valuable>& coefficients) const {
         auto coefIdx = coefficients.size() - 1;
         auto is = coefficients[coefIdx] != 0;
         for(; is && coefIdx --> 1; )
