@@ -25,37 +25,39 @@ namespace {
     bool type_order_comparator(const Valuable& x, const Valuable& y) // type order comparator
     {
         using namespace std;
-        static type_index order[] = {
-            typeid(omnn::math::NaN),
-            typeid(MInfinity),
-            typeid(Sum),
-            typeid(Product),
-            typeid(Exponentiation),
-            typeid(Variable),
-            typeid(Euler),
-            typeid(Pi),
-            typeid(MinusOneSurd),
-            typeid(Integer),
-            typeid(Fraction),
-            typeid(PrincipalSurd),
+static type_index order[] = {
+    typeid(NaN),
+    typeid(MInfinity),
+    typeid(Sum),
+    typeid(Product),
+    typeid(Exponentiation),
+    typeid(Variable),
+    typeid(Euler),
+    typeid(Pi),
+    typeid(MinusOneSurd),
+    typeid(Integer),
+    typeid(Fraction),
+    typeid(PrincipalSurd),
             typeid(Logarithm),
-            typeid(Modulo),
-            typeid(Infinity),
-        };
+    typeid(Modulo),
+    typeid(Infinity),
+};
 
-        static auto ob = std::begin(order);
-        static auto oe = std::end(order);
+static auto ob = std::begin(order);
+static auto oe = std::end(order);
 
-        auto it1 = std::find(ob, oe, x.Type());
-        assert(it1!=oe); // IMPLEMENT
-        auto it2 = std::find(ob, oe, y.Type());
-        assert(it2!=oe); // IMPLEMENT
-        return it1 == it2 ? x > y : it1 < it2;
-    }
+static bool toc(const Valuable& x, const Valuable& y) {
+    auto it1 = std::find(ob, oe, x.Type());
+    assert(it1!=oe); // IMPLEMENT
+    auto it2 = std::find(ob, oe, y.Type());
+    assert(it2!=oe); // IMPLEMENT
+    return it1 == it2 ? x > y : it1 < it2;
+}
 }
 
 const SumOrderComparator::TypeOrderComparator SumOrderComparator::toc = type_order_comparator;
 
+namespace omnn::math {
 
 bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const {
     if (v1.Same(v2)) {
@@ -63,6 +65,7 @@ bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) cons
     }
 
     // If types are different, use type ordering
+    // Handle type differences using type ordering
     if (v1.Type() != v2.Type()) {
         if (v1.IsSum()) {
             auto& sum1 = v1.as<Sum>();
@@ -99,11 +102,14 @@ bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) cons
 
     // For same types, delegate to IsComesBefore
     // This maintains antisymmetry since IsComesBefore is designed for same-type comparison
-    if (v1.IsComesBefore(v2)) {
-        return true;
-    }
-    if (v2.IsComesBefore(v1)) {
-        return false;
+    // For same types, use IsComesBefore for consistent ordering
+    if (v1.Type() == v2.Type()) {
+        if (v1.IsComesBefore(v2)) {
+            return true;
+        }
+        if (v2.IsComesBefore(v1)) {
+            return false;
+        }
     }
 
     // If neither comes before the other and they're not equal, MSVC considering it as inconsistent ordering
