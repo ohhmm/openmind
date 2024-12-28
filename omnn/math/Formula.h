@@ -9,6 +9,8 @@
 #include <map>
 #include "Product.h"
 #include "Variable.h"
+#include "Exponentiation.h"
+#include "Variable.h"
 
 namespace omnn {
 namespace math {

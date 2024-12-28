@@ -113,6 +113,7 @@ public:
     bool IsZero() const override;
     std::pair<Valuable, Valuable> SplitSimplePart() const;
     std::pair<Valuable, Valuable> split_simple_part();
+    Valuable LCMofMemberFractionDenominators() const override;
   
     Valuable operator()(const Variable& va) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
