@@ -2,7 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
-#include "Exponentiation.h"
+#include "ValuableDescendantContract.h"
 #include <algorithm>
 #include <future>
 #include <iterator>
@@ -12,15 +12,23 @@
 
 
 namespace omnn::math {
+    class Exponentiation;
+}
+
+namespace omnn::math {
 
     template <class ChildT, class ContT>
     class ValuableCollectionDescendantContract : public ValuableDescendantContract<ChildT>
     {
         using base = ValuableDescendantContract<ChildT>;
+        friend ChildT;
 
     protected:
         using cont = ContT;
         virtual cont& GetCont() = 0;
+        virtual Valuable LCMofMemberFractionDenominators() const = 0;
+
+    protected:
         [[nodiscard]]
         bool IsSubObject(const Valuable& o) const override {
             auto is = this == &o.get();
@@ -37,12 +45,7 @@ namespace omnn::math {
     public:
         using iterator = typename cont::iterator;
         using const_reference = typename ContT::const_reference;
-
-        using base::base;
-        ValuableCollectionDescendantContract(ValuableCollectionDescendantContract&&)=default;
-        ValuableCollectionDescendantContract(const ValuableCollectionDescendantContract&)=default;
-        ValuableCollectionDescendantContract& operator=(ValuableCollectionDescendantContract&&)=default;
-        ValuableCollectionDescendantContract& operator=(const ValuableCollectionDescendantContract&)=default;
+        using base::operator=;
 
         virtual const cont& GetConstCont() const = 0;
 
@@ -111,7 +114,7 @@ namespace omnn::math {
         template <class ItemT>
         const iterator Add(ItemT&& item)
         {
-            return this->Add(std::forward<ItemT>(item), end());
+            return static_cast<ChildT*>(this)->Add(std::forward<ItemT>(item), this->end());
         }
 
         auto GetFirstOccurence(const std::function <bool(const Valuable&)> pred) const {
@@ -440,12 +443,12 @@ namespace omnn::math {
             static Valuable::universal_lambda_t getInitialValue = [](Valuable::universal_lambda_params_t) {
                 return Valuable(ChildT());
             };
-            return std::reduce(PAR
+            return std::reduce(
                 range.begin(), range.end(), getInitialValue,
-                [&]<typename LambdaFwd1, typename LambdaFwd2>(LambdaFwd1&& item1, LambdaFwd2&& item2) {
+                [](auto&& item1, auto&& item2) {
                     return [
-                        lambda1 = std::forward<LambdaFwd1>(item1),
-                        lambda2 = std::forward<LambdaFwd2>(item2)
+                        lambda1 = std::forward<decltype(item1)>(item1),
+                        lambda2 = std::forward<decltype(item2)>(item2)
                     ]
                     (auto params) -> Valuable
                     {
@@ -456,18 +459,30 @@ namespace omnn::math {
 
         [[nodiscard]]
         operator a_rational() const override {
-            static const a_rational InitialValue = static_cast<a_rational>(ChildT().Optimized());
-            return std::accumulate(begin(), end(), InitialValue, [](auto m1, auto& m2) {
-                return static_cast<a_rational>(ChildT::GetBinaryOperationLambdaTemplate()(static_cast<a_rational>(m1), static_cast<a_rational>(m2)));
-            });
+            const auto& cont = GetConstCont();
+            if (cont.empty()) {
+                return static_cast<a_rational>(0);
+            }
+            auto it = cont.begin();
+            a_rational result = static_cast<a_rational>(*it);
+            while (++it != cont.end()) {
+                result = static_cast<a_rational>(ChildT::GetBinaryOperationLambdaTemplate()(result, static_cast<a_rational>(*it)));
+            }
+            return result;
         }
 
         [[nodiscard]]
         Valuable varless() const override {
-            static const auto InitialValue = ChildT().Optimized();
-            return std::accumulate(begin(), end(), InitialValue, [](auto m1, auto& m2) {
-                return ChildT::GetBinaryOperationLambdaTemplate()(m1.varless(),  m2.varless());
-            });
+            const auto& cont = GetConstCont();
+            if (cont.empty()) {
+                return Valuable(0);
+            }
+            auto it = cont.begin();
+            Valuable result = it->varless();
+            while (++it != cont.end()) {
+                result = ChildT::GetBinaryOperationLambdaTemplate()(result, it->varless());
+            }
+            return result;
         }
 
     private:
