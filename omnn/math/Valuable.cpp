@@ -150,16 +150,14 @@ namespace omnn::math {
     {
         if (exp)
             return exp->Clone();
-        else
-            IMPLEMENT
+        LOG_AND_IMPLEMENT("Clone() must be implemented by derived classes");
     }
 
     Valuable* Valuable::Move()
     {
         if (exp)
             return exp->Move();
-        else
-            IMPLEMENT
+        return new Valuable(std::move(*this));  // Base implementation for construction
     }
 
     void Valuable::New(void*, Valuable&&)
