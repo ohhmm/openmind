@@ -35,7 +35,7 @@ namespace math {
         if (g<3)
         {
             solutions_t solutions;
-            sum.solve(getVa(), solutions, coefficients, g);
+            sum.solve(getVa(), solutions);
 
             if(solutions.size() == 1)
             {
