@@ -38,6 +38,7 @@ namespace math {
         void Values(const std::function<bool(const Valuable&)> &) const override;
 
         Valuable Univariate() const override;
+        virtual Valuable LCMofMemberFractionDenominators() const { return constants::one; }
     };
 
     template <class Chld>
