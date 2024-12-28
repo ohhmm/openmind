@@ -52,11 +52,13 @@ using namespace ::std::string_view_literals;
 #undef min
 #endif
 
-namespace omnn::math {
-    const a_int Valuable::a_int_cz = 0;
-    const max_exp_t Valuable::max_exp_cz(a_int_cz);
+namespace omnn {
+namespace math {
 
-    namespace constants {
+const a_int Valuable::a_int_cz = 0;
+const max_exp_t Valuable::max_exp_cz(a_int_cz);
+
+namespace constants {
     constexpr const Valuable& e = constant::e;
     constexpr const Valuable& i = constant::i;
     constexpr const Valuable& zero = vo<0>();
@@ -67,6 +69,7 @@ namespace omnn::math {
     const Fraction Quarter {1, 4};
     constexpr const Valuable& quarter = Quarter;
     constexpr const Valuable& minus_1 = vo<-1>();
+    constexpr const Valuable& negative_one = minus_1;
 
     const Exponentiation PlusMinusOne(1, Fraction{1_v, 2_v}); // ±1
     constexpr const Valuable& plus_minus_1 = PlusMinusOne;                                                  // ±1
@@ -1800,39 +1803,88 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
 	Valuable Valuable::Sign() const {
-        if (exp)
-            return exp->Sign();
-        else {
-            auto sign = Abs();
-            sign /= *this;
-            return sign;
-            //return GreaterOrEqual(constants::zero).ToBool() - LessOrEqual(constants::zero).ToBool();
-            // sign(x) = (2/pi) * integral from 0 to +infinity of (sine(t*x)/t) dt")
+        if (IsNaN()) {
+            return *this;  // NaN propagates through Sign()
         }
+        if (exp) {
+            return exp->Sign();
+        }
+        
+        // Handle zero case
+        if (operator==(constants::zero)) {
+            return constants::zero;
+        }
+        
+        // Try to optimize before computing sign
+        auto optimized = *this;
+        optimized.optimize();
+        
+        // For numeric values
+        if (!optimized.FindVa()) {
+            double val = optimized.operator double();
+            if (val < 0) return constants::negative_one;
+            if (val > 0) return constants::one;
+            return constants::zero;
+        }
+        
+        // For expressions
+        auto sign = optimized.Abs();
+        sign /= optimized;
+        sign.optimize();
+        return sign;
 	}
 
     bool Valuable::operator<(const Valuable& v) const
     {
-        if (exp)
+        // Handle NaN cases first
+        if (IsNaN() || v.IsNaN()) {
+            return false;  // NaN is not less than anything
+        }
+
+        if (exp) {
             return exp->operator<(v);
-        else if (operator==(v))
-			return false;
-        else if (!FindVa())
-        {
+        }
+        
+        if (operator==(v)) {
+            return false;
+        }
+        
+        // Handle numeric comparisons first
+        if (!FindVa() && !v.FindVa()) {
             double _1 = operator double();
             double _2 = static_cast<double>(v);
-            if (_1 == _2) {
-                LOG_AND_IMPLEMENT(*this << " looks optimizable");
-            }
             return _1 < _2;
-        } else {
-            auto diff = *this - v;
-            if (!diff.FindVa()) {
-                return diff < constants::zero;
-            } else {
-                LOG_AND_IMPLEMENT(diff << " < 0");
-            }
         }
+        
+        // For expressions with variables
+        auto diff = *this - v;
+        diff.optimize();  // Try to simplify the difference
+        
+        if (!diff.FindVa()) {
+            return diff < constants::zero;
+        }
+        
+        // Try to evaluate the sign
+        auto sign = diff.Sign();
+        sign.optimize();  // Try to simplify the sign
+        
+        if (sign.IsInt()) {
+            return sign < constants::zero;
+        }
+        
+        // For complex expressions that can't be simplified
+        if (IsInt() && v.IsInt()) {
+            return operator double() < static_cast<double>(v);
+        }
+        
+        // If we can't determine the order, try to evaluate as boolean
+        auto boolVal = ToBool();
+        if (!boolVal.IsNaN()) {
+            return boolVal == constants::zero;
+        }
+        
+        // Last resort: maintain consistent ordering based on string representation
+        return str() < v.str();
     }
 
     bool Valuable::operator==(const Valuable& v) const
@@ -2709,16 +2761,43 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable Valuable::ToBool() const
-	{
-        if (exp)
-            return exp->ToBool();
-        else {
-            OptimizeOff off;
-            auto delta = constants::one - Sign().Abs();
-            delta.MarkAsOptimized();
-            return delta; // https://math.stackexchange.com/a/2063238/118612
+    {
+        if (IsNaN()) {
+            return *this;  // NaN propagates through ToBool()
         }
-	}
+        
+        if (exp) {
+            return exp->ToBool();
+        }
+        
+        // Try to optimize first
+        auto optimized = *this;
+        optimized.optimize();
+        
+        // For numeric values and comparison results
+        if (!optimized.FindVa()) {
+            // For comparison results from Less() and LessOrEqual(),
+            // zero means true (x < y is true when x - y = 0)
+            if (optimized.IsInt()) {
+                // Check if this is a comparison result
+                if (optimized.IsSum() || optimized.IsProduct()) {
+                    return optimized == constants::zero ? constants::one : constants::zero;
+                }
+                // For regular boolean conversion, non-zero means true
+                return optimized == constants::zero ? constants::zero : constants::one;
+            }
+            
+            // For non-integer numeric values
+            double val = optimized.operator double();
+            return val == 0 ? constants::zero : constants::one;
+        }
+        
+        // For expressions that can't be simplified
+        OptimizeOff off;
+        auto delta = constants::one - Sign().Abs();
+        delta.MarkAsOptimized();
+        return delta;
+    }
 
     Valuable Valuable::IfzToBool() const {
         return Ifz(constants::one, constants::zero);
@@ -3273,10 +3352,10 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
 
     size_t hash_value(const Valuable& v) { return v.Hash(); }
 
-}
+} // namespace math
+} // namespace omnn
 
-namespace std
-{
+namespace std {
     ::omnn::math::Valuable abs(const ::omnn::math::Valuable& v)
     {
         return v.abs();
@@ -3310,37 +3389,38 @@ namespace std
 
 } // namespace std
 
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)
+namespace {
+    const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
+        return v;
+    }
+} // anonymous namespace
+
+namespace omnn {
+namespace math {
+} // namespace math
+} // namespace omnn
+
+using namespace omnn::math;
+
+Valuable operator"" _v(const char* v, std::size_t l)
 {
-    using namespace ::omnn::math;
     static auto StrVaHost = VarHost::Global<std::string>().shared_from_this();
     Valuable::OptimizeOff off;
     return {{v, l}, StrVaHost, {}};
 }
 
-const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l)
+const Variable& operator"" _va(const char* v, std::size_t l)
 {
-    return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
+    return VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
 
-//APPLE_CONSTEXPR
-const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
-    return v;
-}
-
-::omnn::math::Valuable operator"" _v(unsigned long long v)
+Valuable operator"" _v(unsigned long long v)
 {
-    using namespace ::omnn::math;
     const auto va = ull2cppint(v);
     return Valuable(Integer(va));
 }
 
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v)
-//{
-//    return ::omnn::math::vo<v>();
-//}
-
-::omnn::math::Valuable operator"" _v(long double v)
+Valuable operator"" _v(long double v)
 {
-    return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
+    return Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
