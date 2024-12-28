@@ -57,7 +57,6 @@ public:
     }
 
     explicit
-    constexpr
     Integer(const std::string& s)
         : arbitrary(s)
     {
@@ -65,7 +64,6 @@ public:
     }
 
     explicit
-    constexpr
     Integer(const std::string_view& s)
 		: arbitrary(s)
     {
@@ -80,7 +78,7 @@ public:
 
     Valuable FirstFactor() const override;
     constexpr bool IsPositivePowerOf2() const;
-    constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::Yes; }
+    YesNoMaybe IsRational() const override { return YesNoMaybe::Yes; }
     explicit operator int64_t() const;
 
     [[nodiscard]]

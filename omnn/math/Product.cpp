@@ -27,7 +27,18 @@
 
 
 using namespace omnn::math;
-    
+
+    Valuable Product::LCMofMemberFractionDenominators() const {
+        Valuable lcm = constants::one;
+        for (const auto& member : members) {
+            if (member.IsFraction()) {
+                const auto& f = member.as<Fraction>();
+                lcm *= f.getDenominator();
+            }
+        }
+        return lcm;
+    }
+
     
     constexpr auto ValueOrderComparator = [](const Valuable& x, const Valuable& y)
     {
