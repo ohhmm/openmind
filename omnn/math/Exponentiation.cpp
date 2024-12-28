@@ -1342,9 +1342,9 @@ using namespace omnn::math;
         if (!IsPolynomial(v)) {
             IMPLEMENT
         }
-        auto& base = getBase();
+        auto& base = ebase();
         if (base == v) {
-            auto& exp = getExponentiation();
+            auto& exp = eexp();
             if (!exp.IsInt()) {
                 IMPLEMENT
             }
@@ -1356,7 +1356,7 @@ using namespace omnn::math;
             return i;
         } else if (base.HasVa(v)) {
             IMPLEMENT
-        } else if (getExponentiation().HasVa(v)) {
+        } else if (eexp().HasVa(v)) {
             IMPLEMENT
         } else if (coefficients.size() < 1) {
             coefficients.resize(1);
