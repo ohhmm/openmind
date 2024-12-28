@@ -26,7 +26,7 @@ namespace {
     {
         using namespace std;
         static type_index order[] = {
-            typeid(omnn::math::NaN),
+            typeid(NaN),
             typeid(MInfinity),
             typeid(Sum),
             typeid(Product),
@@ -99,11 +99,14 @@ bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) cons
 
     // For same types, delegate to IsComesBefore
     // This maintains antisymmetry since IsComesBefore is designed for same-type comparison
-    if (v1.IsComesBefore(v2)) {
-        return true;
-    }
-    if (v2.IsComesBefore(v1)) {
-        return false;
+    // For same types, use IsComesBefore for consistent ordering
+    if (v1.Type() == v2.Type()) {
+        if (v1.IsComesBefore(v2)) {
+            return true;
+        }
+        if (v2.IsComesBefore(v1)) {
+            return false;
+        }
     }
 
     // If neither comes before the other and they're not equal, MSVC considering it as inconsistent ordering

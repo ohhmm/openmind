@@ -135,10 +135,13 @@ protected:
     void clone_on_write();
 
     virtual bool IsSubObject(const Valuable& o) const;
-    virtual Valuable* Clone() const;
-    virtual Valuable* Move();
+    virtual Valuable* Clone() const = 0;
     virtual void New(void*, Valuable&&);
     static constexpr size_t DefaultAllocSize = 768;
+
+public:
+    virtual Valuable* Move();
+protected:
     constexpr virtual size_t getTypeSize() const { return sizeof(Valuable); }
     constexpr virtual size_t getAllocSize() const { return sz; }
     constexpr virtual void setAllocSize(size_t sz) { this->sz = sz; }

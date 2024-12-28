@@ -22,20 +22,12 @@ namespace math {
         bool haveMin = false;
         _.optimize();
 
-        if (!_.IsSum()) {
-            // Handle non-sum case by converting to sum form
-            _ = Sum{_};
-        }
-
         std::vector<Valuable> coefficients;
-
-        //auto isMultival = IsMultival()== YesNoMaybe::Yes;
-        auto& sum = _.as<Sum>();
         auto g = sum.FillPolynomialCoefficients(coefficients,getVa());
         if (g<3)
         {
             solutions_t solutions;
-            sum.solve(getVa(), solutions, coefficients, g);
+            _.solve(getVa(), solutions, coefficients, g);
 
             if(solutions.size() == 1)
             {
