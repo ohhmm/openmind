@@ -3,6 +3,7 @@
 #include "Sum.h"
 #include "Infinity.h"
 #include "Variable.h"
+#include "SumOrderComparator.h"
 
 
 using namespace omnn::math;
