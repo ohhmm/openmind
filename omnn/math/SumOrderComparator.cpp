@@ -26,7 +26,7 @@ namespace {
     {
         using namespace std;
         static type_index order[] = {
-            typeid(omnn::math::NaN),
+            typeid(NaN),
             typeid(MInfinity),
             typeid(Sum),
             typeid(Product),
