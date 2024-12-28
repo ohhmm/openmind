@@ -149,8 +149,7 @@ namespace omnn::math {
     {
         if (exp)
             return exp->Clone();
-        else
-            IMPLEMENT
+        LOG_AND_IMPLEMENT("Clone() must be implemented by derived classes");
     }
 
     Valuable* Valuable::Move()

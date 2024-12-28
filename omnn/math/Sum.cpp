@@ -47,99 +47,15 @@ namespace
     CACHE(DbSumSolutionsARootCache);
     CACHE(DbSumSqCache);
 
+    constexpr SumOrderComparator soc;
+}
 
-        // inequality should cover all cases
-        auto toc = [](const Valuable& x, const Valuable& y) // type order comparator
-        {
-			using namespace std;
-            static type_index order[] = {
-                typeid(NaN),
-                typeid(MInfinity),
-                typeid(Sum),
-                typeid(Product),
-                typeid(Exponentiation),
-                typeid(Variable),
-                typeid(Euler),
-                typeid(Pi),
-                typeid(MinusOneSurd),
-                typeid(Integer),
-                typeid(Fraction),
-                typeid(PrincipalSurd),
-                typeid(Modulo),
-                typeid(Infinity),
-            };
-
-            static auto ob = std::begin(order);
-            static auto oe = std::end(order);
-
-            auto it1 = std::find(ob, oe, x.Type());
-            assert(it1!=oe); // IMPLEMENT
-            auto it2 = std::find(ob, oe, y.Type());
-            assert(it2!=oe); // IMPLEMENT
-            return it1 == it2 ? x > y : it1 < it2;
-        };
-
-        constexpr SumOrderComparator soc;
+    Sum::Sum(const Valuable& v) {
+        Add(v);
     }
 
-    // store order operator
-    bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
-    {
-        if (v1.Same(v2)) {
-            return false;  // Same elements are never ordered before each other
-        }
-
-        // If types are different, use type ordering
-        if (v1.Type() != v2.Type()) {
-            if (v1.IsSum()) {
-                auto &sum1 = v1.as<Sum>();
-                if (sum1.size() == 1) {
-                    return operator()(sum1.begin()->get(), v2);
-                }
-            }
-
-            if (v2.IsSum()) {
-                auto &sum2 = v2.as<Sum>();
-                if (sum2.size() == 1) {
-                    return operator()(v1, sum2.begin()->get());
-                }
-            }
-
-            if (v1.IsProduct()) {
-                auto &prod1 = v1.as<Product>();
-                if (prod1.size() == 1) {
-                    return operator()(prod1.begin()->get(), v2);
-                }
-            }
-
-            if (v2.IsProduct()) {
-                auto &prod2 = v2.as<Product>();
-                if (prod2.size() == 1) {
-                    return operator()(v1, prod2.begin()->get());
-                }
-            }
-
-            if (!((v1.IsProduct() && v2.IsExponentiation())
-                  || (v2.IsProduct() && v1.IsExponentiation()))
-                    ) {
-                return toc(v1, v2);
-            }
-        }
-
-        // For same types, delegate to IsComesBefore
-        // This maintains antisymmetry since IsComesBefore is designed for same-type comparison
-        if (v1.IsComesBefore(v2)) {
-            return true;
-        }
-        if (v2.IsComesBefore(v1)) {
-            return false;
-        }
-
-        // If neither comes before the other and they're not equal, MSVC considering it as inconsistent ordering
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        LOG_AND_IMPLEMENT("FIXME: inconsistent ordering, SumOrderComparator failed for not equal values: " << v1 << " and " << v2);
-#endif
-        return {};
+    Sum::Sum(Valuable&& v) {
+        Add(std::move(v));
     }
 
     Sum::iterator Sum::Had(iterator it)
@@ -160,12 +76,24 @@ namespace
     auto HwC = std::thread::hardware_concurrency();
     auto Thr = ::std::min<decltype(HwC)>(HwC << 3, 128);
 
-    const Sum::iterator Sum::Add(const Valuable& item, const iterator hint) {
+    Sum::Sum(const std::initializer_list<Valuable>& l) {
+        for (const auto& v : l) {
+            Add(v);
+        }
+    }
+
+    Sum::Sum(std::initializer_list<Valuable>&& l) {
+        for (auto&& v : l) {
+            Add(std::move(v));
+        }
+    }
+
+    const Sum::iterator Sum::Add(const Valuable& item, iterator hint) {
         auto copy = item;
         return this->Add(std::move(copy), hint);
     }
 
-    const Sum::iterator Sum::Add(Valuable&& item, const iterator hint)
+    const Sum::iterator Sum::Add(Valuable&& item, iterator hint)
     {
         iterator it = hint;
         if (item.IsZero())
@@ -198,7 +126,8 @@ namespace
             else
                 it = end();
         } else if (item.IsSum()) {
-            for(auto& i : item.as<Sum>()) {
+            auto& sum = item.as<Sum>();
+            for(auto& i : sum) {
                 it = Add(i, it);
             }
         }
@@ -1263,20 +1192,6 @@ namespace
         return Become(std::move(sum));
     }
 
-    Sum::Sum(std::initializer_list<Valuable> l)
-    {
-        for (const auto& arg : l)
-        {
-            if(arg.IsSum()) {
-                auto& a = arg.as<Sum>();
-                for(auto& m: a)
-                    this->Add(m, end());
-            }
-            else
-                this->Add(arg, end());
-        }
-    }
-
     bool Sum::IsComesBefore(const Valuable& v) const
     {
         if (v.IsSum()) {
@@ -1301,7 +1216,7 @@ namespace
 
             for (auto i1 = beg, i2 = sbeg; i1 != end(); ++i1, ++i2) {
                 if (*i1 != *i2) {
-                    return toc(*i1, *i2);
+                    return soc(*i1, *i2);
                 }
             }
         }
@@ -1310,7 +1225,7 @@ namespace
             return begin()->IsComesBefore(v);
         }
 
-        return toc(*this, v);
+        return soc(*this, v);
     }
 
 	std::ostream& Sum::print(std::ostream& out) const
@@ -1743,7 +1658,7 @@ namespace
         return Valuable(std::move(solutions));
     }
     
-    bool Sum::IsPowerX(const std::vector<Valuable>& coefficients){
+    bool Sum::IsPowerX(const std::vector<Valuable>& coefficients) const {
         auto coefIdx = coefficients.size() - 1;
         auto is = coefficients[coefIdx] != 0;
         for(; is && coefIdx --> 1; )

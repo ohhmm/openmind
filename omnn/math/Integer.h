@@ -56,7 +56,6 @@ public:
     }
 
     explicit
-    constexpr
     Integer(const std::string& s)
         : arbitrary(s)
     {
@@ -64,7 +63,6 @@ public:
     }
 
     explicit
-    constexpr
     Integer(const std::string_view& s)
 		: arbitrary(s)
     {
@@ -79,14 +77,14 @@ public:
 
     Valuable FirstFactor() const override;
     constexpr bool IsPositivePowerOf2() const;
-    constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::Yes; }
+    YesNoMaybe IsRational() const override { return YesNoMaybe::Yes; }
     explicit operator int64_t() const;
 
-    constexpr bool IsInt() const override { return true; }
-    constexpr bool IsZero() const override { return arbitrary.is_zero(); }
-    constexpr bool IsSimple() const override { return true; }
+    bool IsInt() const override { return true; }
+    bool IsZero() const override { return arbitrary.is_zero(); }
+    bool IsSimple() const override { return true; }
     //bool IsConstant() const override { return true; }   The Integer object may be applied an arithmetic operation and this object value changed. Only Constant class objects should return IsConstant true.
-    constexpr bool is_optimized() const override { return true; }
+    bool is_optimized() const override { return true; }
     void optimize() override { MarkAsOptimized(); }
     YesNoMaybe IsEven() const override;
     constexpr bool IsPolynomial(const Variable&) const override { return true; }

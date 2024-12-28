@@ -14,17 +14,20 @@
 #include <utility>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
 #if !defined(__APPLE__) && !defined(NDEBUG)
 #include <boost/stacktrace.hpp>
 #endif
+#include "Exponentiation.h"
 
+namespace omnn::math {
 
-namespace omnn{
-namespace math {
-	Fraction::Fraction(const Integer& n)
-		: base(n, 1)
-	{
-	}
+using boost::multiprecision::cpp_dec_float_100;
+
+Fraction::Fraction(const Integer& n)
+    : base(n, 1)
+{
+}
 
     Fraction::Fraction(const boost::multiprecision::cpp_dec_float_100& f)
     {
@@ -438,7 +441,7 @@ namespace math {
         } else if (!v.IsFraction()) {
             is = v.IsMultiplicationSimplifiable(*this);
         } else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Not implemented case in IsMultiplicationSimplifiable");
         }
         return is;
     }
@@ -455,7 +458,7 @@ bool Fraction::SumIfSimplifiable(const Valuable& v)
             Become(std::move(s.second));
         }
     } else {
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("Not implemented case in SumIfSimplifiable");
     }
     return is;
 }
@@ -604,7 +607,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
         if (IsSimpleFraction()) {
             Become(0);
         } else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Not implemented case in d() method");
             optimized = {};
         }
         return *this;
@@ -782,8 +785,7 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
         else if (IsSimple() && v.IsExponentiation())
             is = {};
         else
-            IMPLEMENT
-
+            LOG_AND_IMPLEMENT("Not implemented case in IsComesBefore");
         return is;
     }
     
@@ -804,17 +806,17 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
         return static_cast<a_int>(numerator())/static_cast<a_int>(denominator());
     }
     
-    Fraction::operator boost::multiprecision::cpp_dec_float_100() const
+    Fraction::operator cpp_dec_float_100() const
     {
         if (IsSimple())
         {
-            boost::multiprecision::cpp_dec_float_100 f(numerator().ca());
-            f /= boost::multiprecision::cpp_dec_float_100(denominator().ca());
+            cpp_dec_float_100 f(numerator().ca());
+            f /= cpp_dec_float_100(denominator().ca());
             // TODO : check validity
             return f;
         }
-        else
-            IMPLEMENT;
+        LOG_AND_IMPLEMENT("Not implemented case in cpp_dec_float_100 conversion");
+        return cpp_dec_float_100(0);
     }
     
     Valuable Fraction::operator()(const Variable& v, const Valuable& augmentation) const
@@ -843,4 +845,4 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
             : std::abs(numerator()) / std::abs(denominator());
     }
 
-}}
+} // namespace omnn::math
