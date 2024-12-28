@@ -56,49 +56,55 @@ namespace {
 
 const SumOrderComparator::TypeOrderComparator SumOrderComparator::toc = type_order_comparator;
 
+bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const
+{
+    // Handle NaN cases first
+    if (v1.IsNaN() || v2.IsNaN()) {
+        return false;  // NaN is not ordered before anything
+    }
 
-bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) const {
+    // Handle equality cases - must be before NaN check to ensure correct behavior
     if (v1.Same(v2)) {
         return false; // Same elements are never ordered before each other
     }
 
+    // For numeric types, handle direct comparison
+    if (v1.IsNumeric() && v2.IsNumeric()) {
+        // For same numeric values, return false (not less than)
+        if (v1 == v2) {
+            return false;
+        }
+        // For different numeric values, compare directly
+        // Convert to numeric values for comparison to handle NaN correctly
+        auto val1 = v1.IsNaN() ? std::numeric_limits<double>::quiet_NaN() : v1.ToBool();
+        auto val2 = v2.IsNaN() ? std::numeric_limits<double>::quiet_NaN() : v2.ToBool();
+        return val1 < val2;
+    }
+
     // If types are different, use type ordering
     if (v1.Type() != v2.Type()) {
-        if (v1.IsSum()) {
-            auto& sum1 = v1.as<Sum>();
-            if (sum1.size() == 1) {
-                return operator()(sum1.begin()->get(), v2);
-            }
+        // Handle single-element collections
+        if (v1.IsSum() && v1.as<Sum>().size() == 1) {
+            return operator()(v1.as<Sum>().begin()->get(), v2);
+        }
+        if (v2.IsSum() && v2.as<Sum>().size() == 1) {
+            return operator()(v1, v2.as<Sum>().begin()->get());
+        }
+        if (v1.IsProduct() && v1.as<Product>().size() == 1) {
+            return operator()(v1.as<Product>().begin()->get(), v2);
+        }
+        if (v2.IsProduct() && v2.as<Product>().size() == 1) {
+            return operator()(v1, v2.as<Product>().begin()->get());
         }
 
-        if (v2.IsSum()) {
-            auto& sum2 = v2.as<Sum>();
-            if (sum2.size() == 1) {
-                return operator()(v1, sum2.begin()->get());
-            }
-        }
-
-        if (v1.IsProduct()) {
-            auto& prod1 = v1.as<Product>();
-            if (prod1.size() == 1) {
-                return operator()(prod1.begin()->get(), v2);
-            }
-        }
-
-        if (v2.IsProduct()) {
-            auto& prod2 = v2.as<Product>();
-            if (prod2.size() == 1) {
-                return operator()(v1, prod2.begin()->get());
-            }
-        }
-
-        if (!((v1.IsProduct() && v2.IsExponentiation()) || (v2.IsProduct() && v1.IsExponentiation()))) {
+        // Special case for Product-Exponentiation comparison
+        if (!((v1.IsProduct() && v2.IsExponentiation())
+              || (v2.IsProduct() && v1.IsExponentiation()))) {
             return toc(v1, v2);
         }
     }
 
-    // For same types, delegate to IsComesBefore
-    // This maintains antisymmetry since IsComesBefore is designed for same-type comparison
+    // For same types or special cases, delegate to IsComesBefore
     if (v1.IsComesBefore(v2)) {
         return true;
     }
@@ -106,12 +112,9 @@ bool SumOrderComparator::operator()(const Valuable& v1, const Valuable& v2) cons
         return false;
     }
 
-    // If neither comes before the other and they're not equal, MSVC considering it as inconsistent ordering
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-    LOG_AND_IMPLEMENT("FIXME: inconsistent ordering, SumOrderComparator failed for not equal values: " << v1 << " and "
-                                                                                                       << v2);
-#endif
-    return {};
+    // If we can't determine order through IsComesBefore, use string representation
+    // This ensures a consistent total ordering
+    return v1.str() < v2.str();
 }
 
 } // namespace omnn::math

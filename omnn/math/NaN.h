@@ -18,7 +18,7 @@ public:
     bool IsNaN() const override { return true; }
 
     constexpr bool IsSimple() const override { return {}; }
-    Valuable ToBool() const override { return {}; }
+    Valuable ToBool() const override { return false; }  // NaN should evaluate to false in boolean context
 
     Valuable* Clone() const override {
         auto inst = reason.getInst();

@@ -2,6 +2,7 @@
 // Created by Сергей Кривонос on 25.09.17.
 //
 #include "Sum.h"
+#include "SumOrderComparator.h"
 #include "Euler.h"
 #include "Formula.h"
 #include "Fraction.h"
@@ -22,8 +23,6 @@
 #include "omnn/rt/each.hpp"
 #include "omnn/rt/Divisors.hpp"
 
-//TODO:
-//import std;
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -34,11 +33,9 @@
 #include <thread>
 #include <type_traits>
 
-
 namespace omnn::math {
 
-namespace
-{
+namespace {
     CACHE(DbSumBalancingCache);
     CACHE(DbSumGCDCache);
     CACHE(DbSumModCache);
