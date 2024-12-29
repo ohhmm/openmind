@@ -115,6 +115,12 @@ void Modulo::optimize() {
                 CHECK_OPTIMIZATION_CACHE
                 Become(std::move(_1 %= _2));
             }
+        } else if (_1.IsSimple() && _1.IsRational() == YesNoMaybe::Yes) {
+            auto rational_a = static_cast<a_rational>(_1);
+            auto denominator = boost::multiprecision::denominator(rational_a);
+            auto result = boost::multiprecision::numerator(rational_a) % (_2.ca() * denominator);
+            auto modulo = a_rational(result, denominator);
+            Become(std::move(modulo));
         }
     }
 
