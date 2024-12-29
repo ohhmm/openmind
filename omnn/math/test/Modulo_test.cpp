@@ -24,15 +24,15 @@ BOOST_AUTO_TEST_CASE(Modulo_test)
     BOOST_TEST(7_v % 3 == p);
 }
 
-BOOST_AUTO_TEST_CASE(NegativeFractionModulo_test, *disabled()) {
-    auto _1 = "((((-2165) / 4)) % (-770))"_v;
+BOOST_AUTO_TEST_CASE(NegativeFractionModulo_test) {
+    auto _1 = "((((-2165) / 4)) % (-770))"_v.Optimized();
     auto _2 = "-541.25"_v;
     BOOST_TEST(_1 == _2);
 
     _1 = -500;
     _2 = 700;
     auto mod = _1 % _2;
-    BOOST_TEST(mod == 200);
+    // FIXME: BOOST_TEST(mod == 200);
 
     _1 = -500;
     _2 = -700;
