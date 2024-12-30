@@ -187,13 +187,9 @@ namespace omnn::math {
 
     std::type_index Valuable::Type() const
     {
-    	if (exp)
-    		return exp->Type();
-#ifdef __APPLE__
-        LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
-        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
+        if (exp)
+            return exp->Type();
+        return typeid(*this);
     }
 
     void Valuable::DispatchDispose(encapsulated_instance&& e) {
