@@ -28,7 +28,7 @@ public:
     // using base::base;
 
     template <class BaseT, class ExponentiationT>
-    Exponentiation(BaseT&& b, ExponentiationT&& e)
+    constexpr Exponentiation(BaseT&& b, ExponentiationT&& e)
         : base(std::forward<BaseT>(b), std::forward<ExponentiationT>(e))
     {
         InitVars();

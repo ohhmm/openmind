@@ -8,6 +8,7 @@
 #include "Exponentiation.h"
 #include "Fraction.h"
 #include "Modulo.h"
+#include "NaN.h"
 #include "PrincipalSurd.h"
 #include "Product.h"
 #include "Sum.h"

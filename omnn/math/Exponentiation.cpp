@@ -8,6 +8,7 @@
 #include "Infinity.h"
 #include "pi.h"
 #include "Integer.h"
+#include "NaN.h"
 #include "PrincipalSurd.h"
 #include "Product.h"
 #include "Sum.h"

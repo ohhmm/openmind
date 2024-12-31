@@ -10,6 +10,7 @@
 #include "Sum.h"
 #include "Euler.h"
 #include "i.h"
+#include "NaN.h"
 #include "pi.h"
 #include "PrincipalSurd.h"
 #include "VarHost.h"

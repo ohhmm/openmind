@@ -6,6 +6,7 @@
 #include "Euler.h"
 #include "i.h"
 #include "Infinity.h"
+#include "NaN.h"
 #include "pi.h"
 #include "Fraction.h"
 #include "Modulo.h"
@@ -67,8 +68,8 @@ namespace omnn::math {
     constexpr const Valuable& quarter = Quarter;
     constexpr const Valuable& minus_1 = vo<-1>();
 
-    const auto PlusMinusOne = Exponentiation{1_v, Fraction{1_v, 2_v}};                          // ±1
-    const Valuable& plus_minus_1 = PlusMinusOne;                          // ±1
+    const Exponentiation PlusMinusOne(1, Fraction{1_v, 2_v}); // ±1
+    constexpr const Valuable& plus_minus_1 = PlusMinusOne;                                                  // ±1
     const auto ZeroOrOne = Sum{Exponentiation{Fraction{1_v, 4_v}, Fraction{1_v, 2_v}}, Fraction{1_v, 2_v}}; // (1±1)/2
     const Valuable& zero_or_1 = ZeroOrOne; // (1±1)/2
     constexpr const Valuable& pi = constant::pi;
@@ -76,7 +77,7 @@ namespace omnn::math {
     constexpr const Valuable& minfinity = MInfinity::GlobalObject;
     const Variable& integration_result_constant = "integration_result_constant"_va;
 
-    std::map<std::string_view, Valuable> Constants = {
+    const std::map<std::string_view, Valuable> Constants = {
         {Euler::SerializationName, constant::e},
         {MinusOneSurd::SerializationName, constant::i},
         {Pi::SerializationName, constant::pi},
