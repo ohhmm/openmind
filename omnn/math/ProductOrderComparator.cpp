@@ -5,6 +5,7 @@
 #include "Integer.h"
 #include "Infinity.h"
 #include "Modulo.h"
+#include "NaN.h"
 #include "PrincipalSurd.h"
 #include "pi.h"
 #include "i.h"

@@ -120,7 +120,6 @@ class Valuable
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
-    constexpr const encapsulated_instance& getInst() const { return exp; }
 
     virtual bool IsSubObject(const Valuable& o) const;
     virtual Valuable* Clone() const;
@@ -156,6 +155,7 @@ protected:
     void MarkAsOptimized();
 
 public:
+    constexpr const encapsulated_instance& getInst() const { return exp; }
     void MarkNotOptimized();
 
 
@@ -201,7 +201,9 @@ public:
     T& as() {
         auto& the = get();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        assert(the.Is<T>());
+        if (!the.Is<T>()) {
+            LOG_AND_IMPLEMENT("Attempt to cast " << Type().name() << ' ' << *this << " to " << typeid(T).name());
+        }
 #endif
         return static_cast<T&>(the);
     }

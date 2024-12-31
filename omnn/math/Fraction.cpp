@@ -5,6 +5,7 @@
 #include "Infinity.h"
 #include "Integer.h"
 #include "Modulo.h"
+#include "NaN.h"
 #include "Sum.h"
 #include "Product.h"
 #include "PrincipalSurd.h"
@@ -263,10 +264,12 @@ namespace math {
                 auto& n = numerator().ca();
                 auto& denom = denominator();
                 auto dni = denom.IsInt();
-                if (n == 0) {
-                    if (dni && denom.IsZero())
-                        Become(NaN());
-                    Become(std::move(numerator()));
+                if (n.is_zero()) {
+                    if (dni && denom.IsZero()) {
+                        Become(NaN(SharedFromThis()));
+                    } else {
+                        Become(std::move(numerator()));
+                    }
                     break;
                 }
                 if (dni) {

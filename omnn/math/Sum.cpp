@@ -9,6 +9,7 @@
 #include "Infinity.h"
 #include "Integer.h"
 #include "Modulo.h"
+#include "NaN.h"
 #include "Product.h"
 #include "PrincipalSurd.h"
 #include "pi.h"

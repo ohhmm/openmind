@@ -1,4 +1,5 @@
 #include "Infinity.h"
+#include "NaN.h"
 
 using namespace omnn;
 using namespace math;
@@ -63,7 +64,7 @@ std::pair<bool, Valuable> omnn::math::Infinity::IsSummationSimplifiable(const Va
     if ((value.is_optimized() && value.IsMInfinity())
     || (!value.is_optimized() && value.Optimized().IsMInfinity())
     ) {
-        is.second = NaN(); // FIXME: check if value is optimized
+        is.second = NaN();
     } else {
         is.second = *this;
     }
@@ -101,7 +102,7 @@ Valuable& MInfinity::operator +=(const Valuable& v)
     return *this;
 }
 
-std::pair<bool, Valuable> omnn::math::MInfinity::IsMultiplicationSimplifiable(const Valuable& value) const {
+std::pair<bool, Valuable> MInfinity::IsMultiplicationSimplifiable(const Valuable& value) const {
     std::pair<bool, Valuable> is;
     is.first = value.IsSimple();
     if (is.first) {
@@ -165,7 +166,3 @@ Valuable& MInfinity::d(const Variable& x)
     IMPLEMENT
 }
 
-
-// NaN
-
-constinit std::string_view NaN::SerializationName = "NaN";

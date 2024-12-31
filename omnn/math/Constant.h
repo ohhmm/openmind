@@ -31,11 +31,11 @@ template <class Chld>
 
     public:
         using base::base;
-        static const /*init*/ Chld GlobalObject;
+        static const/*init*/ Chld GlobalObject;
 
-        bool IsConstant() const override { return true; }
-        bool IsSimple() const override { return true; }
-        bool IsPolynomial(const Variable&) const override { return true; }
+        constexpr bool IsConstant() const override { return true; }
+        constexpr bool IsSimple() const override { return true; }
+        constexpr bool IsPolynomial(const Variable&) const override { return true; }
         constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
         constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::No; }
 
@@ -43,19 +43,21 @@ template <class Chld>
             return {};
         }
 
+        NO_CLANG_CONSTEXPR Valuable* Clone() const override { return new Chld(); }
+
         constexpr bool HasVa(const Variable& va) const override {
             return {};
         }
 
-        constexpr void CollectVa(std::set<Variable>& s) const override
+        constexpr void CollectVa(std::set<Variable>&) const override
         { }
-        constexpr void CollectVaNames(Valuable::va_names_t& s) const override
+        constexpr void CollectVaNames(Valuable::va_names_t&) const override
         { }
 
         constexpr bool eval(const Valuable::vars_cont_t&) override {
             return {};
         }
-        constexpr void Eval(const Variable& va, const Valuable& v) override
+        constexpr void Eval(const Variable&, const Valuable&) override
         { }
 
         [[nodiscard]]

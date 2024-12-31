@@ -64,38 +64,4 @@ public:
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
 };
 
-class NaN : public Constant<NaN> {
-    using base = Constant<NaN>;
-
-public:
-    using base::base;
-
-    static /*constinit*/ std::string_view SerializationName;
-
-    constexpr
-    bool IsNaN() const override { return true; }
-
-    bool IsSimple() const override { return {}; }
-    Valuable ToBool() const override { return {}; }
-
-    Valuable operator-() const override { return *this; }
-    Valuable& operator+=(const Valuable& v) override { return *this; }
-    Valuable& operator*=(const Valuable& v) override { return *this; }
-    Valuable& operator/=(const Valuable& v) override { return *this; }
-    Valuable& operator%=(const Valuable& v) override { return *this; }
-    Valuable& operator --() override { return *this; }
-    Valuable& operator ++() override { return *this; }
-    Valuable& operator^=(const Valuable&) override { return *this; }
-    Valuable& d(const Variable& x) override { return *this; }
-    Valuable& sqrt() override { return *this; }
-    Valuable Sqrt() const override { return *this; }
-    bool IsComesBefore(const Valuable& v) const override { return true; }
-
-    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable&) const override { return {true, *this}; }
-};
-
-namespace constant {
-static const NaN nan;
-}
-
 }}
