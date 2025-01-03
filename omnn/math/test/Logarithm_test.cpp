@@ -26,3 +26,28 @@ BOOST_AUTO_TEST_CASE(Logarithm_base_equal_target_optimization) {
     log.optimize(); 
     BOOST_TEST(log == 1);
 }
+
+// Test string parsing for logarithm expressions
+BOOST_AUTO_TEST_CASE(Logarithm_string_parse_test) {
+    // Test basic numeric case
+    Valuable v("log(2,8)");
+    v.optimize();
+    BOOST_TEST(v == 3);
+
+    // Test with spaces
+    v = Valuable("log( 2 , 8 )");
+    v.optimize();
+    BOOST_TEST(v == 3);
+
+    // Test with variables
+    v = Valuable("log(x, x^2)");
+    BOOST_TEST(v.IsLogarithm());
+    auto& log = v.as<Logarithm>();
+    BOOST_TEST(log.getBase().str() == "x");
+    BOOST_TEST(log.getTarget().str() == "(x^2)");
+
+    // Test with expressions
+    v = Valuable("log(2+1, (2+1)^2)");
+    v.optimize();
+    BOOST_TEST(v == 2);
+}
