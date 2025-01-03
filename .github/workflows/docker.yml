@@ -1,6 +1,6 @@
 name: C/C++ CI Docker
 
-on: [push]
+on: []  # Workflow disabled
 
 jobs:
   build:
