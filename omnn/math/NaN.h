@@ -9,7 +9,6 @@ class NaN : public Constant<NaN> {
 
 public:
     using base::base;
-    using base::Clone;
 
     NaN();
     NaN(encapsulated_instance&& reason);

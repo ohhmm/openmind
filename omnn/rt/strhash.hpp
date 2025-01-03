@@ -12,13 +12,13 @@ namespace omnn::rt {
 [[nodiscard]]
 brackets_map_t BracketsMap(const std::string_view&);
 
-constexpr std::string_view& Trim(std::string_view& s) {
-    s.remove_prefix(::std::min(s.find_first_not_of(" \t\r\v\n"), s.size()));
-    s.remove_suffix((s.size() - 1) - ::std::min(s.find_last_not_of(" \t\r\v\n"), s.size() - 1));
-    return s;
+constexpr std::string_view& Trim(std::string_view& str) {
+    str.remove_prefix(::std::min(str.find_first_not_of(" \t\r\v\n"), str.size()));
+    str.remove_suffix((str.size() - 1) - ::std::min(str.find_last_not_of(" \t\r\v\n"), str.size() - 1));
+    return str;
 }
 
-std::string_view Trim(std::string& str);
+std::string_view Trim(std::string&);
 
 [[nodiscard]]
 auto OmitOuterBrackets(auto& str) {

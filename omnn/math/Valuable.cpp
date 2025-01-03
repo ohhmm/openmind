@@ -1055,6 +1055,30 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                             if (id == "sqrt"sv) {
                                 auto next = to + 1;
                                 o(PrincipalSurd{Valuable(str.substr(next, cb - next), host, itIsOptimized)});
+                            } else if (id == "log"sv) {
+                                auto next = to + 1;
+                                auto args = str.substr(next, cb - next);
+                                auto comma = args.find(',');
+                                if (comma == std::string::npos) {
+                                    LOG_AND_IMPLEMENT("Missing comma in logarithm arguments");
+                                }
+
+                                // Extract and trim base and target strings
+                                auto baseStr = args.substr(0, comma);
+                                Trim(baseStr);
+                                auto targetStr = args.substr(comma + 1);
+                                Trim(targetStr);
+                                if (baseStr.empty() && targetStr.empty()) {
+                                    LOG_AND_IMPLEMENT("Empty base and target during logarithm parsing");
+                                } else if (baseStr.empty()) {
+                                    LOG_AND_IMPLEMENT("Empty base in logarithm: Log("<<baseStr<<", "<<targetStr<<")");
+                                } else if (targetStr.empty()) {
+                                    LOG_AND_IMPLEMENT("Empty target in logarithm: Log("<<baseStr<<", "<<targetStr<<")");
+                                }
+                                
+                                auto base = Valuable(baseStr, host, itIsOptimized);
+                                auto target = Valuable(targetStr, host, itIsOptimized);
+                                o(Logarithm{std::move(base), std::move(target)});
                             }
 							i = cb;
                             continue;
