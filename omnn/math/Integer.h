@@ -219,7 +219,7 @@ public:
     /// (this < 0) - the int is negative
     /// </summary>
     /// <returns>bool</returns>
-    Valuable IntMod_Negative() const override { return ca() < 0 ? 0 : 1; }
+    Valuable IntMod_Negative() const override { return ca() < 0 ? 1 : 0; }
 
     /// <summary>
     /// Getting sign of the assumed integer
