@@ -1470,7 +1470,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp) {
             return exp->LCM(v);
         } else {
-            LOG_AND_IMPLEMENT(*this << " LCM " << v);
+            auto copy = *this;
+            copy.lcm(v);
+            return copy;
         }
     }
 
@@ -1481,13 +1483,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 exp = o.exp;
             }
         } else if (IsZero() || v.IsZero()) {
-        } else if (operator==(v)) {
             Become(0);
+        } else if (operator==(v)) {
         } else {
             auto gcd = GCD(v);
             operator*=(v);
-            sq();
-            sqrt();
+            abs();
             operator/=(gcd);
         }
         return *this;
