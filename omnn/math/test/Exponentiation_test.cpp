@@ -110,6 +110,14 @@ BOOST_AUTO_TEST_CASE(Exponentiation_Simplification_tests)
     BOOST_TEST(varless == constants::one);
 }
 
+BOOST_AUTO_TEST_CASE(Exponentiation_Deserialization_tests, *disabled()) {
+
+    auto _1 = "sqrt(((x^2) - 16*x + 64)) ^ -1"_v;
+    DECL_VA(x);
+    auto _2 = (x.Sq() - 16 * x + 64).sqrt() ^ -1;
+    BOOST_TEST(_1 == _2);
+}
+
 BOOST_AUTO_TEST_CASE(Sqrt_test)
 {
     auto a = 25_v;
