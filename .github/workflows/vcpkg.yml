@@ -22,9 +22,9 @@ jobs:
           !${{github.workspace}}/vcpkg/packages
           !${{github.workspace}}/vcpkg/downloads
           ${{ github.workspace }}/build/bin/Db*.solutions
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+        key: ${{ runner.os }}-vcpkg-v2-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
-          ${{ runner.os }}-vcpkg-
+          ${{ runner.os }}-vcpkg-v2-
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
@@ -63,7 +63,7 @@ jobs:
         vcpkgJsonGlob: '**/vcpkg.json'
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DOPENMIND_BUILD_TESTS=ON || cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DOPENMIND_BUILD_TESTS=ON
+      run: cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_VCPKG=ON
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build

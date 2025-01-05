@@ -144,12 +144,12 @@ function(apply_target_commons this_target)
 			NO_MSVC_CONSTEXPR=
 			MSVC
 			)
-		if(NOT OPENMIND_USE_VCPKG)
+		if(NOT OPENMIND_USE_VCPKG AND NOT BUILD_TESTS AND NOT OPENMIND_BUILD_TESTS)
 			target_compile_definitions(${this_target} PUBLIC
-				$<$<CONFIG:DEBUG>:BOOST_ALL_STATIC_LINK>
-				$<$<CONFIG:Release>:BOOST_ALL_STATIC_LINK>
-				$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_STATIC_LINK>
-				$<$<CONFIG:MinSizeRel>:BOOST_ALL_STATIC_LINK>
+				$<$<CONFIG:DEBUG>:BOOST_ALL_DYN_LINK>
+				$<$<CONFIG:Release>:BOOST_ALL_DYN_LINK>
+				$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_DYN_LINK>
+				$<$<CONFIG:MinSizeRel>:BOOST_ALL_DYN_LINK>
 				)
 		endif()
 		if(OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
@@ -266,10 +266,9 @@ function(test)
 	glob_source_files()
 	message("test_libs ${test_libs}")
 	set(libs ${test_libs} ${TEST_DEPS})
-	if(Boost_FOUND)
-		if(NOT MSVC OR OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
-			set(libs ${libs} ${BOOST_TEST_LINK_LIBS})
-		endif()
+	
+	if(OPENMIND_USE_VCPKG)
+		set(libs ${libs} Boost::unit_test_framework)
 	endif()
     if(OPENMIND_USE_QT)
 		qtect()
@@ -298,31 +297,18 @@ function(test)
 		set(this_target ${TEST_NAME})
 		apply_target_commons(${TEST_NAME})
 
-		foreach(dir
-			/usr/local/lib
-			${Boost_INCLUDE_DIR}/stage/lib
-			${Boost_INCLUDE_DIR}/../../lib
-			${EXTERNAL_FETCHED_BOOST}/stage/lib
-			${EXTERNAL_FETCHED_BOOST}/../../lib
-			${CMAKE_BINARY_DIR}/lib
-			${CMAKE_BINARY_DIR}/lib64
-			)
-
-			if(EXISTS ${dir})
-				target_link_directories(${TEST_NAME} PUBLIC ${dir})
-			endif()
-
-		endforeach()
-
-		if(Boost_FOUND)
-			message("Boost_FOUND: ${Boost_FOUND}")
-			if(NOT MSVC OR OPENMIND_USE_CONAN)
-				message("NOT MSVC OR OPENMIND_USE_CONAN, using deps ${BOOST_TEST_LINK_LIBS}")
-				deps(${BOOST_TEST_LINK_LIBS})
-			endif()
-		endif()
+		# Add dependencies first
 		message("using deps ${libs}")
 		deps(${libs})
+
+		# Then ensure Boost.Test is linked after dependencies
+		if(TARGET Boost::unit_test_framework)
+			message("Linking ${TEST_NAME} with Boost::unit_test_framework")
+			target_compile_definitions(${TEST_NAME} PRIVATE BOOST_ALL_NO_LIB)
+			target_link_libraries(${TEST_NAME} PUBLIC Boost::unit_test_framework)
+		else()
+			message(FATAL_ERROR "Boost::unit_test_framework target not found. Make sure Boost.Test is properly configured.")
+		endif()
 
 		set_target_properties(${TEST_NAME} PROPERTIES
 			FOLDER "test"
