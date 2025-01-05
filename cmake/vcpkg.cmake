@@ -36,34 +36,24 @@ macro(find_vcpkg)
 endmacro()
 
 macro(fetch_vcpkg)
-    include(gitect)
+    include(${CMAKE_CURRENT_LIST_DIR}/gitect.cmake)
     include(FetchContent)
     FetchContent_Populate(	VCPKG
         GIT_REPOSITORY https://github.com/microsoft/vcpkg.git
         GIT_TAG        2024.08.23
-        SOURCE_DIR     "$ENV{USERPROFILE}$ENV{HOME}/vcpkg"
+        SOURCE_DIR     "${CMAKE_CURRENT_BINARY_DIR}/vcpkg"
     )
-
-    if(GIT_EXECUTABLE)
-        set(VCPKG_ROOT "$ENV{USERPROFILE}$ENV{HOME}/vcpkg" CACHE PATH "Path to vcpkg installation")
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT}
-            RESULT_VARIABLE GIT_RESULT
-        )
-        if(NOT GIT_RESULT EQUAL 0)
-            message(FATAL_ERROR "Failed to clone vcpkg repository")
-        endif()
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} -E chdir ${VCPKG_ROOT} ${VCPKG_ROOT}/bootstrap-vcpkg.sh
-            RESULT_VARIABLE BOOTSTRAP_RESULT
-        )
-        if(NOT BOOTSTRAP_RESULT EQUAL 0)
-            message(WARNING "Failed to bootstrap vcpkg")
-        endif()
-        set(VCPKG_EXECUTABLE "${VCPKG_ROOT}/vcpkg" CACHE FILEPATH "Path to vcpkg executable" FORCE)
-        set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file" FORCE)
-        set(VCPKG_FOUND TRUE CACHE BOOL "VCPKG found" FORCE)
+    set(VCPKG_ROOT "${CMAKE_CURRENT_BINARY_DIR}/vcpkg" CACHE PATH "Path to vcpkg installation")
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E chdir ${VCPKG_ROOT} ${VCPKG_ROOT}/bootstrap-vcpkg.sh
+        RESULT_VARIABLE BOOTSTRAP_RESULT
+    )
+    if(NOT BOOTSTRAP_RESULT EQUAL 0)
+        message(WARNING "Failed to bootstrap vcpkg")
     endif()
+    set(VCPKG_EXECUTABLE "${VCPKG_ROOT}/vcpkg" CACHE FILEPATH "Path to vcpkg executable" FORCE)
+    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file" FORCE)
+    set(VCPKG_FOUND TRUE CACHE BOOL "VCPKG found" FORCE)
 endmacro()
 
 if(NOT VCPKG_FOUND)

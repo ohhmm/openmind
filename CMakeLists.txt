@@ -78,16 +78,9 @@ if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 	if(MSVC)
 		add_compile_options($<$<CONFIG:Debug>:/constexpr:steps1000000000>)
 		add_link_options(/stack:1000000000)
-	elseif(NOT OPENMIND_USE_VCPKG)
-		add_definitions(-DBOOST_ALL_DYN_LINK)
 	endif()
 else()
 	set(_IS_DEBUG FALSE)
-	set(Boost_USE_STATIC_LIBS ON)
-	SET(BUILD_SHARED_LIBS OFF)
-	if(NOT OPENMIND_USE_VCPKG)
-		add_definitions(-DBOOST_ALL_STATIC_LINK)
-	endif()
 	if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
 		set(OPENMIND_PRIME_TABLE Bundled CACHE STRING "Table of predefined prime numbers")
 		option(OPENMIND_USE_CPACK "Build an installer" ON)
@@ -165,11 +158,24 @@ set(_BOOST_USED_COMPONENTS
 	thread
 	CACHE STRING "Components" FORCE)
 if(OPENMIND_USE_VCPKG)
-#	set(Boost_USE_STATIC_LIBS        ON)
-#	set(Boost_USE_DEBUG_LIBS        OFF)
-#	set(Boost_USE_RELEASE_LIBS       ON)
-#	set(Boost_USE_MULTITHREADED      ON)
-#	set(Boost_USE_STATIC_RUNTIME     ON)
+	# Configure Boost options before any find_package calls
+	set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries" FORCE)
+	set(Boost_USE_STATIC_LIBS OFF CACHE BOOL "Use dynamic Boost libraries" FORCE)
+	set(Boost_USE_MULTITHREADED ON CACHE BOOL "Use multithreaded Boost libraries" FORCE)
+	set(Boost_USE_STATIC_RUNTIME OFF CACHE BOOL "Don't use static runtime" FORCE)
+	
+	# Ensure proper Boost dynamic linking
+	add_compile_definitions(
+		BOOST_TEST_NO_LIB
+		BOOST_ALL_NO_LIB
+	)
+	
+	# Set runtime library to shared for MSVC
+	if(MSVC)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+		# Add vcpkg's CMake config directory to prefix path for Windows
+		list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/share/boost")
+	endif()
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 		compute
 		multiprecision
@@ -181,11 +187,8 @@ if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 	set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 		unit_test_framework
 		CACHE STRING "Components" FORCE)
-	if(NOT OPENMIND_USE_VCPKG)
-		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
-			test_exec_monitor
-			CACHE STRING "Components" FORCE)
-	endif()
+	# Use unit_test_framework which includes necessary test components
+	# test_exec_monitor is part of boost-test and doesn't need explicit listing
 endif()
 list(REMOVE_DUPLICATES _BOOST_USED_COMPONENTS)
 set(BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS} CACHE STRING "Components" FORCE)
@@ -221,7 +224,21 @@ if (NOT Boost_FOUND)
 	if (OPENMIND_USE_VCPKG)
 		unset(Boost_DIR CACHE)
 		unset(Boost_INCLUDE_DIR CACHE)
-		find_package(Boost CONFIG COMPONENTS ${BOOST_USED_COMPONENTS} REQUIRED)
+		# First try to find Boost as a whole package (for vcpkg wrapper compatibility)
+		find_package(Boost CONFIG COMPONENTS ${BOOST_USED_COMPONENTS})
+		if(NOT Boost_FOUND)
+			# If monolithic approach fails, try component-based approach
+			find_package(boost_headers CONFIG REQUIRED)
+			if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
+				find_package(boost_unit_test_framework CONFIG REQUIRED)
+			endif()
+			foreach(_module ${BOOST_USED_COMPONENTS})
+				if(NOT _module STREQUAL "unit_test_framework")
+					string(REPLACE "_" "-" _vcpkg_module ${_module})
+					find_package(boost_${_module} CONFIG REQUIRED)
+				endif()
+			endforeach()
+		endif()
 	else()
 		set(BOOST_PATHS_HINTS
 				C:/Boost
@@ -385,15 +402,23 @@ endif()
 
 set(BOOST_TEST_LINK_LIBS
 	${BOOST_LINK_LIBS}
-	Boost::unit_test_framework
 )
 if(OPENMIND_USE_VCPKG)
-    list(APPEND BOOST_LINK_LIBS
-        Boost::headers
-    )
-endif()
-if(NOT MSVC AND NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)
-	list(APPEND BOOST_TEST_LINK_LIBS Boost::test_exec_monitor)
+    list(APPEND BOOST_LINK_LIBS Boost::headers)
+    if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
+        # Add manual-link directory to library search paths for test_exec_monitor
+        link_directories(
+            "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib/manual-link"
+            "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/debug/lib/manual-link"
+        )
+        list(APPEND BOOST_TEST_LINK_LIBS 
+            Boost::unit_test_framework
+            boost_test_exec_monitor
+        )
+    endif()
+else()
+    list(APPEND BOOST_TEST_LINK_LIBS Boost::unit_test_framework)
+    # Unit test framework includes necessary test components
 endif()
 
 IF (Boost_FOUND)
