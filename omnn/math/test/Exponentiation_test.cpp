@@ -188,46 +188,33 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test) {
     BOOST_TEST(!is.first);
 }
 
-BOOST_AUTO_TEST_CASE(Polynomial_Exp_test
-    , *boost::unit_test::disabled()
-) {
+BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
+{
     DECL_VARS(a, b, v);
     
-    auto _ = (4_v*(v^2) + 2048)^(1_v/2);
-    _.SetView(Valuable::View::Solving);
-    _.optimize();
+    auto _1 = (4_v*(v^2) + 2048)^(1_v/2);
+    _1.SetView(Valuable::View::Solving);
+    _1.optimize();
+    auto _2 = (v ^ 2) + 512;
+    BOOST_TEST(_1 == _2);
     
+
     auto t=4_v;
     auto c=2048_v;
     auto _2ab=2_v*a*b;
     auto d = (-_2ab).sq() + 4_v*(t-a.Sq())*(b.Sq()-c);
     auto x = (_2ab+(d^(1_v/2)))/(2_v*(t-a.Sq()));
-    _.eval({{v,x}});
+    _1.eval({{v,x}});
     auto ab = 0_v;
-    _.eval({{b,ab}});
+    _1.eval({{b,ab}});
+   // FIXME : BOOST_TEST(_1 == "(512 x ^ 2) / (x ^ 2 - 4)"_v);  // or x  (Valuable::View::Solving)
     
-    auto& ebs = _.as<Exponentiation>().getBase().as<Sum>();
-    for(auto& m: ebs){
-//        if (m.) {
-//            <#statements#>
-//        }
-    }
-    auto it = ebs.begin();
-    auto m1 = *it;
-    for(auto& v: it->getCommonVars())
-        std::cout << v.first.str() << '^' << v.second.str() << std::endl;
-    auto m2 =*++it;
-    auto ms = m1+m2;
-//    Valuable f = Fraction{
-    
-//    auto av = _(a);
-    _.optimize();
 
     {
     DECL_VA(x);
-    auto _ = ((-18_v*(x^2) + 108*x -180)^((1/3)));
-    _.SetView(Valuable::View::Equation);
-    _.optimize();
+    _1 = ((-18_v*(x^2) + 108*x -180)^((1/3)));
+    _1.SetView(Valuable::View::Equation);
+    _1.optimize();
     }
 }
 
