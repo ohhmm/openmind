@@ -39,7 +39,7 @@ public:
     }
 
     [[nodiscard]]
-    bool IsExponentiation() const override { return true; }
+    constexpr bool IsExponentiation() const override { return true; }
     [[nodiscard]]
     bool IsVaExp() const override { return ebase().IsVa(); }
     [[nodiscard]]
@@ -55,8 +55,10 @@ public:
     [[nodiscard]]
     YesNoMaybe IsRational() const override;
     void Values(const std::function<bool(const Valuable&)>&) const override;
-    const Valuable& getBase() const { return _1; }
-    const Valuable& ebase() const { return _1; }
+    [[nodiscard]]
+    constexpr const Valuable& getBase() const { return _1; }
+    [[nodiscard]]
+    constexpr const Valuable& ebase() const { return _1; }
     template<class T>
     void setBase(T&& b)
     {
@@ -72,8 +74,10 @@ public:
         optimized = {};
     }
 
-    const Valuable& eexp() const { return _2; }
-    const Valuable& getExponentiation() const { return _2; }
+    [[nodiscard]]
+    constexpr const Valuable& eexp() const { return _2; }
+    [[nodiscard]]
+    constexpr const Valuable& getExponentiation() const { return _2; }
     template<class T>
     void setExponentiation(T&& exponentiation)
     {
