@@ -225,35 +225,23 @@ namespace omnn::math {
         auto newWasView = this->GetView();
         i.SetView(newWasView);
         auto h = i.Hash();
-        if (i.exp)
+        auto e = i.exp;
+        if(e)
         {
-            auto impl = std::move(i.exp);
-            while (impl->exp) {
-                impl = std::move(impl->exp);
+            while (e->exp) {
+                e = e->exp;
             }
 
-            auto isEncapsulatedInstance = Is<Valuable>();
-            if (exp
-                || isEncapsulatedInstance
-                || impl->getTypeSize() > getAllocSize()
-                )
+            if (exp || Is<Valuable>())
             {
-                if (isEncapsulatedInstance) {
-                    DispatchDispose(std::move(exp));
-                    exp = std::move(impl);
-                } else {
-                    auto allocSize = getAllocSize();
-                    this->~Valuable();
-                    new (this) Valuable(std::move(impl));
-                    setAllocSize(allocSize);
-                }
+                exp = e;
                 if (Hash() != h) {
                     LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
                 }
             }
             else
             {
-                Become(std::move(*impl));
+                Become(std::move(*e));
             }
         }
         else
@@ -1504,9 +1492,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp) {
             return exp->LCM(v);
         } else {
-            auto copy = *this;
-            copy.lcm(v);
-            return copy;
+            LOG_AND_IMPLEMENT(*this << " LCM " << v);
         }
     }
 
@@ -1522,8 +1508,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         } else {
             auto gcd = GCD(v);
             operator*=(v);
-            // FIXME : abs();
-            Become(abs());
+            abs();
             operator/=(gcd);
         }
         return *this;
