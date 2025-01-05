@@ -18,6 +18,46 @@ BOOST_AUTO_TEST_CASE(PrincipalSurd_test) {
     _1.sqrt();
     _2 = PrincipalSurd(6) * 2 * constants::i;
     BOOST_TEST(_1 == _2);
+
+    _1 = PrincipalSurd(1);
+    BOOST_TEST(_1 == constants::one);
+    _1 = PrincipalSurd(2);
+    _2 = PrincipalSurd(2);
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(3);
+    _2 = PrincipalSurd(3);
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) * PrincipalSurd(3);
+    _2 = PrincipalSurd(6);
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) / PrincipalSurd(3);
+    _2 = PrincipalSurd(2) / PrincipalSurd(3);
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) / 3;
+    _2 = PrincipalSurd(2) / 3;
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) / 3;
+    _2 = PrincipalSurd(2) / 3;
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) + 3;
+    _2 = PrincipalSurd(2) + 3;
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) - 3;
+    _2 = PrincipalSurd(2) - 3;
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) / 3;
+    _2 = PrincipalSurd(2) / 3;
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) + 3;
+    _2 = PrincipalSurd(2) + 3;
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) - 3;
+    _2 = PrincipalSurd(2) - 3;
+    BOOST_TEST(_1 == _2);
+    _1 = PrincipalSurd(2) ^ 3;
+    _2 = PrincipalSurd(8);
+    BOOST_TEST(_1 == _2);
+    
 }
 
 BOOST_AUTO_TEST_CASE(RadicalExpressions_noHang_test
