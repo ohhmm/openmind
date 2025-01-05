@@ -181,6 +181,11 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test) {
     BOOST_TEST(_2 != -2); // 3 * y - 2 * x  == -2
     BOOST_TEST(_1 == _2.Sq());
     BOOST_TEST(_1.Sqrt() == _2);
+
+    _1 = "sqrt(((x^2) - 16*x + 64)) ^ (-1)"_v;
+    _2 = -1;
+    auto is = _1.IsMultiplicationSimplifiable(_2);
+    BOOST_TEST(!is.first);
 }
 
 BOOST_AUTO_TEST_CASE(Polynomial_Exp_test
