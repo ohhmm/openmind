@@ -128,6 +128,10 @@ Valuable PrincipalSurd::Sign() const {
     return constants::one; // See https://github.com/ohhmm/openmind/blob/011305e988292473919a523736cf6e913dbb55ef/omnn/math/i.cpp#L66
 }
 
+Valuable PrincipalSurd::abs() const {
+    return PrincipalSurd {_1.abs(), _2};
+}
+
 PrincipalSurd::operator double() const {
     auto d = static_cast<double>(_1);
     return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<double>(_2));

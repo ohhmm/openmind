@@ -1488,7 +1488,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         } else {
             auto gcd = GCD(v);
             operator*=(v);
-            abs();
+            // FIXME : abs();
+            Become(abs());
             operator/=(gcd);
         }
         return *this;

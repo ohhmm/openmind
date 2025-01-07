@@ -12,8 +12,8 @@ class PrincipalSurd /// Also known as principal root of Nth index
     mutable vars_cont_t commonVars;
 
 protected:
-    Valuable& radicand() { return base::_1; }
-    Valuable& index() { return base::_2; }
+    constexpr Valuable& radicand() { return base::_1; }
+    constexpr Valuable& index() { return base::_2; }
 
     std::ostream& print(std::ostream&) const override;
     std::ostream& print_sign(std::ostream&) const override;
@@ -27,8 +27,8 @@ public:
     {
     }
 
-    bool IsPrincipalSurd() const override { return true; }
-    bool IsRadical() const override { return true; }
+    constexpr bool IsPrincipalSurd() const override { return true; }
+    constexpr bool IsRadical() const override { return true; }
     bool IsSurd() const override { return is_optimized(); }
     YesNoMaybe IsRational() const override {
         return base::IsRational() && (IsSurd() ? YesNoMaybe::No : YesNoMaybe::Maybe); // FIXME: no Yes scenarios
@@ -50,8 +50,8 @@ public:
 
     Valuable& sq() override;
     Valuable Sqrt() const override;
-
     Valuable Sign() const override;
+    Valuable abs() const override;
 
     std::ostream& code(std::ostream&) const override;
 

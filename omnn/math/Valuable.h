@@ -405,27 +405,42 @@ public:
 
     virtual a_int Complexity() const;
     virtual Valuable& sq();
+    [[nodiscard]]
     virtual Valuable Sq() const;
+    [[nodiscard]]
     virtual Valuable Sign() const;
+    [[nodiscard]]
     virtual Valuable abs() const;
+    [[nodiscard]]
     virtual Valuable Abs() const;
+    [[nodiscard]]
     virtual Valuable Cos() const;
+    [[nodiscard]]
     virtual Valuable Sin() const;
+    [[nodiscard]]
     virtual Valuable Sqrt() const;
     virtual Valuable& sqrt();
+    [[nodiscard]]
     virtual Valuable Tg() const;
+    [[nodiscard]]
     virtual Valuable Tanh() const;
     virtual void gamma(); // https://en.wikipedia.org/wiki/Gamma_function
+    [[nodiscard]]
     virtual Valuable Gamma() const;
     virtual Valuable& factorial();
+    [[nodiscard]]
     virtual Valuable Factorial() const;
     Valuable Factors(const Variable& factor) const;
+    [[nodiscard]]
     virtual Valuable FirstFactor() const;
+    [[nodiscard]]
     Valuable LastFactor() const;
 
+    [[nodiscard]]
     virtual Valuable calcFreeMember() const;
 
     virtual Valuable& reciprocal();
+    [[nodiscard]]
     virtual Valuable Reciprocal() const;
 
     using expressions_t = std::unordered_set<Valuable>;
@@ -437,6 +452,7 @@ public:
     explicit Valuable(solutions_t&&);
     virtual Valuable operator()(const Variable&) const;
     virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;
+    [[nodiscard]]
     bool IsUnivariable() const;
 
     virtual void solve(const Variable& va, solutions_t&) const;
