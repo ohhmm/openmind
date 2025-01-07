@@ -742,15 +742,11 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
         } else if (fraction.IsSimpleFraction() && IsSimpleFraction()) {
             is = operator<(fraction);
         } else {
-            // FIXME: uncomment once LCM/GCD cache is ready
-            //OptimizeOn on;
-            //VarHost::NonZeroLogOffScope zeroLogOff;
-            //auto denominatorsLCM = denominator().LCM(fraction.denominator());
-            //auto lhs = numerator() * denominatorsLCM / denominator();
-            //auto rhs = fraction.numerator() * denominatorsLCM / fraction.denominator();
-            //is = lhs != rhs && lhs.IsComesBefore(rhs);
-            // MEANWHILE:
-            is = numBefore;
+            VarHost::NonZeroLogOffScope zeroLogOff;
+            auto denominatorsLCM = denominator().LCM(fraction.denominator());
+            auto lhs = numerator() * denominatorsLCM / denominator();
+            auto rhs = fraction.numerator() * denominatorsLCM / fraction.denominator();
+            is = lhs != rhs && lhs.IsComesBefore(rhs);
         }
         return is;
     }

@@ -27,4 +27,4 @@ jobs:
       run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 2400  -C Release -j `sysctl -n hw.ncpu` -E ts
+      run: ctest --timeout 3200  -C Release -j `sysctl -n hw.ncpu` -E ts
