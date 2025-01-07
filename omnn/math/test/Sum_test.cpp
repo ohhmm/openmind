@@ -678,7 +678,6 @@ BOOST_AUTO_TEST_CASE(Containers_test)
 
 BOOST_AUTO_TEST_CASE(PolynomialDivHang_test_no_hang
                      ,*timeout(2)
-    *disabled()
                      )
 {
     Variable va;
