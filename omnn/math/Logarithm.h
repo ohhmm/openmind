@@ -38,7 +38,7 @@ public:
         };
     }
 
-    bool IsLogarithm() const override { return true; }
+    constexpr bool IsLogarithm() const override { return true; }
     void optimize() override;
 
     const Valuable& getBase() const { return _1; }
@@ -69,6 +69,8 @@ public:
         //InitVars();
         optimized = {};
     }
+
+    static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
 
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator *=(const Valuable& v) override;
