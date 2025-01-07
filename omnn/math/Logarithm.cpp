@@ -8,6 +8,10 @@
 namespace omnn {
 namespace math {
 
+    max_exp_t Logarithm::getMaxVaExp(const Valuable& _1, const Valuable&) {
+        return _1.getMaxVaExp();
+    }
+
     std::ostream& Logarithm::print(std::ostream& out) const
     {
         out << "log(" << _1 << ", " << _2 << ')';
