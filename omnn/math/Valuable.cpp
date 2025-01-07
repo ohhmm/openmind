@@ -212,23 +212,35 @@ namespace omnn::math {
         auto newWasView = this->GetView();
         i.SetView(newWasView);
         auto h = i.Hash();
-        auto e = i.exp;
-        if(e)
+        if (i.exp)
         {
-            while (e->exp) {
-                e = e->exp;
+            auto impl = std::move(i.exp);
+            while (impl->exp) {
+                impl = std::move(impl->exp);
             }
 
-            if (exp || Is<Valuable>())
+            auto isEncapsulatedInstance = Is<Valuable>();
+            if (exp
+                || isEncapsulatedInstance
+                || impl->getTypeSize() > getAllocSize()
+                )
             {
-                exp = e;
+                if (isEncapsulatedInstance) {
+                    DispatchDispose(std::move(exp));
+                    exp = std::move(impl);
+                } else {
+                    auto allocSize = getAllocSize();
+                    this->~Valuable();
+                    new (this) Valuable(std::move(impl));
+                    setAllocSize(allocSize);
+                }
                 if (Hash() != h) {
                     IMPLEMENT
                 }
             }
             else
             {
-                Become(std::move(*e));
+                Become(std::move(*impl));
             }
         }
         else
