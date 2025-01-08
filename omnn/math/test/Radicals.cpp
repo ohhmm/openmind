@@ -3,12 +3,24 @@
 
 #include "PrincipalSurd.h"
 
+#include "generic.hpp"
+
 
 using namespace omnn::math;
 using namespace boost::unit_test;
 using namespace std;
 
-BOOST_AUTO_TEST_CASE(PrincipalSurd_test) {
+
+BOOST_AUTO_TEST_CASE(PrincipalSurdOrder_test, *disabled())
+{
+    DECL_VA(x);
+    auto _1 = PrincipalSurd(2);
+    auto _2 = PrincipalSurd(x + 2);
+    InequalOrderCheck(_1, _2);
+}
+
+BOOST_AUTO_TEST_CASE(PrincipalSurd_test)
+{
 	auto _1 = Valuable(0.000144).sqrt();
 	BOOST_TEST(_1 == 0.012);
     auto _2 = 12_v / 1000;
