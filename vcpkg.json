@@ -17,6 +17,7 @@
     "boost-system",
     "boost-test",
     "boost-thread",
+    "boost-ublas",
     "boost-uuid",
     "leveldb",
     {
