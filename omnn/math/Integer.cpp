@@ -634,7 +634,7 @@ namespace math {
         } else if (sum.size() == 0) {
             return IsComesBefore(constants::zero);
         } else {
-            return true;
+            return {};
         }
     }
  

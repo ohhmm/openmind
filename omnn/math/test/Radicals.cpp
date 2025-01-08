@@ -11,7 +11,7 @@ using namespace boost::unit_test;
 using namespace std;
 
 
-BOOST_AUTO_TEST_CASE(PrincipalSurdOrder_test, *disabled())
+BOOST_AUTO_TEST_CASE(PrincipalSurdOrder_test)
 {
     DECL_VA(x);
     auto _1 = PrincipalSurd(2);
