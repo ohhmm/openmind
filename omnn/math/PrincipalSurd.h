@@ -68,9 +68,10 @@ public:
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
     bool operator <(const Valuable&) const override;
     Valuable& operator^=(const Valuable&) override;
+    bool IsComesBefore(const PrincipalSurd&) const;
     bool IsComesBefore(const Valuable&) const override;
-    Valuable InCommonWith(const Valuable&) const override;
     Valuable InCommonWith(const PrincipalSurd&) const;
+    Valuable InCommonWith(const Valuable&) const override;
     const Valuable::vars_cont_t& getCommonVars() const override;
     Valuable varless() const override;
 
