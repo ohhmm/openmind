@@ -1373,7 +1373,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
-
     bool Valuable::SumIfSimplifiable(const Valuable& v)
     {
         if(exp)
@@ -1817,13 +1816,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return exp->operator<(v);
         else if (operator==(v))
 			return false;
-        else if (!FindVa())
+        else if ((IsRational() && v.IsRational()) == YesNoMaybe::Yes)
         {
-            double _1 = operator double();
-            double _2 = static_cast<double>(v);
-            if (_1 == _2) {
-                LOG_AND_IMPLEMENT(*this << " looks optimizable");
-            }
+            auto _1 = operator a_rational();
+            auto _2 = static_cast<a_rational>(v);
             return _1 < _2;
         } else {
             auto diff = *this - v;

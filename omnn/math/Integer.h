@@ -84,35 +84,42 @@ public:
     constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::Yes; }
     explicit operator int64_t() const;
 
+    [[nodiscard]]
     constexpr bool IsInt() const override { return true; }
+    [[nodiscard]]
     constexpr bool IsZero() const override { return arbitrary.is_zero(); }
+    [[nodiscard]]
     constexpr bool IsSimple() const override { return true; }
     //bool IsConstant() const override { return true; }   The Integer object may be applied an arithmetic operation and this object value changed. Only Constant class objects should return IsConstant true.
+    [[nodiscard]]
     constexpr bool is_optimized() const override { return true; }
     void optimize() override { MarkAsOptimized(); }
     YesNoMaybe IsEven() const override;
+    [[nodiscard]]
     constexpr bool IsPolynomial(const Variable&) const override { return true; }
+    [[nodiscard]]
     constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
 
     // virtual operators
     Valuable operator -() const override;
-    Valuable& operator +=(const Valuable& v) override;
-    Valuable& operator +=(int v) override;
-    Valuable& operator *=(const Valuable& v) override;
-    a_int Complexity() const override { return 1; }
-    bool MultiplyIfSimplifiable(const Valuable& v) override;
-    std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
-    bool SumIfSimplifiable(const Valuable& v) override;
-    std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
-    Valuable& operator /=(const Valuable& v) override;
-    Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override;
     Valuable& operator ++() override;
+    Valuable& operator +=(int) override;
+    Valuable& operator +=(const Valuable&) override;
+    Valuable& operator *=(const Valuable&) override;
+    Valuable& operator ^=(const Valuable&) override;
+    Valuable& operator /=(const Valuable&) override;
+    Valuable& operator %=(const Valuable&) override;
+    [[nodiscard]]
+    a_int Complexity() const override { return 1; }
+    bool MultiplyIfSimplifiable(const Valuable&) override;
+    std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
+    bool SumIfSimplifiable(const Valuable&) override;
+    std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable&) const override;
 
     vars_cont_t GetVaExps() const override { return {}; }
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result
-    Valuable& operator^=(const Valuable&) override;
     Valuable& d(const Variable& x) override;
 
     Valuable Sign() const override;
@@ -120,10 +127,10 @@ public:
     friend bool operator<(const Integer& _1, const Integer& _2) { return _1.arbitrary < _2.arbitrary; }
     friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
     friend bool operator<(const Integer& _1, int _2) { return _1.arbitrary < _2; }
-    bool operator ==(const Valuable& v) const override;
-    bool operator ==(const Integer& v) const;
-    bool operator ==(const a_int& v) const;
-    bool operator ==(const int& v) const;
+    bool operator ==(const Valuable&) const override;
+    bool operator ==(const Integer&) const;
+    bool operator ==(const a_int&) const;
+    bool operator ==(const int&) const;
 
     explicit operator int() const override;
     explicit operator a_int() const override;
