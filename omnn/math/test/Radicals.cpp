@@ -69,7 +69,6 @@ BOOST_AUTO_TEST_CASE(PrincipalSurd_test)
     _1 = PrincipalSurd(2) ^ 3;
     _2 = PrincipalSurd(8);
     BOOST_TEST(_1 == _2);
-    
 }
 
 BOOST_AUTO_TEST_CASE(RadicalExpressions_noHang_test
@@ -79,4 +78,11 @@ BOOST_AUTO_TEST_CASE(RadicalExpressions_noHang_test
     Valuable _1("((sqrt(111))*((-6)/37) + ((-35)/((sqrt(111))*2)))");
     Valuable _2("((-17)/111)*sqrt(111)");
     auto _ = _1 + _2;
+}
+
+BOOST_AUTO_TEST_CASE(RadicalExponentiationExpressions_test, *disabled()) {
+    DECL_VA(x);
+    Valuable _1("sqrt(7)^((2*x)/3)=49");
+    auto _2 = _1.Solutions(x).begin()->get();
+    BOOST_TEST(_2 == 6);
 }

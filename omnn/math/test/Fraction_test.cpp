@@ -104,6 +104,10 @@ BOOST_AUTO_TEST_CASE(FractionSimplification_tests){
 	_1 =(-1_v)^x;
 	_2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
     BOOST_TEST(_1 != _2);
+
+    _1 = (x^2) / (x^1);
+    _2 = x;
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Fraction_optimization_no_hang_test
