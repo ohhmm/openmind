@@ -64,39 +64,39 @@ namespace math {
     Integer::Integer(const Fraction& f)
     : arbitrary(f.getNumerator().ca() / f.getDenominator().ca())
     {
-        
+
     }
-    
+
     Integer::operator a_int() const {
         return arbitrary;
     }
-    
+
     a_int& Integer::a() {
         return arbitrary;
     }
-    
+
     const a_int& Integer::ca() const {
         return arbitrary;
     }
-    
+
     Integer::operator int64_t() const {
         return boost::numeric_cast<int64_t>(arbitrary);
     }
-    
+
     Integer::operator uint64_t() const {
         return boost::numeric_cast<uint64_t>(arbitrary);
     }
-    
+
     YesNoMaybe Integer::IsEven() const {
         return (arbitrary >= 0 ? arbitrary : -arbitrary) & 1 ? YesNoMaybe::No : YesNoMaybe::Yes;
     }
 
-    
+
     Valuable Integer::operator -() const
     {
         return Integer(-arbitrary);
     }
-    
+
     Valuable& Integer::operator +=(const Valuable& v)
     {
         if (v.IsInt())
@@ -132,7 +132,7 @@ namespace math {
         }
         return *this;
     }
-    
+
     bool Integer::MultiplyIfSimplifiable(const Valuable& v)
     {
         auto is = v.IsInt();
@@ -246,6 +246,25 @@ namespace math {
         return *this;
     }
 
+    std::pair<bool,Valuable> Integer::IsModSimplifiable(const Valuable& v) const
+    {
+        if (v.IsZero()) {
+            return {}; // Not simplifiable with zero divisor
+        }
+        if (v.IsInt()) {
+            auto mod = *this % v;
+            return {true, mod}; // Integer modulo is always simplifiable with integers
+        }
+        if (v.IsFraction() || v.IsVa() || v.IsExponentiation()) {
+            return {};
+        }
+        auto is = v.IsModSimplifiable(*this);
+        if (is.first && is.second.Complexity() > v.Complexity()) {
+            is.first = false;
+        }
+        return is;
+    }
+
     Valuable& Integer::operator --()
     {
         --arbitrary;
@@ -269,7 +288,7 @@ namespace math {
     {
         return boost::numeric_cast<uint32_t>(arbitrary);
     }
-    
+
     Integer::operator double() const
     {
         return boost::numeric_cast<double>(arbitrary);
@@ -279,12 +298,12 @@ namespace math {
     {
         return boost::numeric_cast<long double>(arbitrary);
     }
-    
+
     Integer::operator a_rational() const
     {
         return a_rational(arbitrary);
     }
-    
+
     Integer::operator unsigned char() const
     {
         return boost::numeric_cast<unsigned char>(arbitrary);
@@ -305,14 +324,14 @@ namespace math {
         else
             LOG_AND_IMPLEMENT(n << "th bit of " << *this);
     }
-    
+
     Valuable& Integer::shl()
     {
         arbitrary = arbitrary << 1;
         hash = std::hash<base_int>()(arbitrary);
         return *this;
     }
-    
+
     Valuable& Integer::shl(const Valuable& n)
     {
         if (n.IsInt()) {
@@ -337,7 +356,7 @@ namespace math {
     {
         return Integer(decltype(arbitrary)(arbitrary>>1));
     }
-    
+
     Valuable Integer::Shr(const Valuable& n) const
     {
         if (!n.IsInt()) {
@@ -345,7 +364,7 @@ namespace math {
         }
         return Integer(decltype(arbitrary)(arbitrary>>static_cast<unsigned>(n)));
     }
-    
+
     Valuable Integer::Or(const Valuable& n, const Valuable& v) const
     {
         IMPLEMENT
@@ -374,7 +393,7 @@ namespace math {
     {
         return Integer(~arbitrary);
     }
-    
+
     constexpr bool Integer::IsPositivePowerOf2() const {
         return arbitrary > 0
             && (arbitrary & (arbitrary - 1)) == 0;
@@ -531,7 +550,7 @@ namespace math {
             }
             if(signs)
                 hash = std::hash<base_int>()(arbitrary);
-            
+
             auto dnSubZ = dn < 0;
             if(dnSubZ)
                 dn = -dn;
@@ -571,7 +590,7 @@ namespace math {
                 Valuable nroot;
                 bool rootFound = false;
                 Valuable left =0, right = *this;
-                
+
                 while (!rootFound)
                 {
                     auto d = right - left;
@@ -610,7 +629,7 @@ namespace math {
         optimize();
         return *this;
     }
-    
+
     Valuable& Integer::d(const Variable& x)
     {
         arbitrary = 0;
@@ -637,7 +656,7 @@ namespace math {
             return {};
         }
     }
- 
+
     bool Integer::IsComesBefore(const Valuable& v) const {
         if (v.IsProduct()) {
             return IsComesBefore(v.as<Product>());
@@ -785,7 +804,7 @@ namespace math {
     {
         return out << arbitrary;
     }
-    
+
     std::wostream& Integer::print(std::wostream& out) const
     {
         return out << arbitrary.str().c_str();
@@ -942,22 +961,13 @@ namespace math {
         StoringTasksQueue factorizationTasks;
     }
     bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, const Valuable& max, const ranges_t& zz) const
-    //{
-    //    std::set<Integer> factors;
-    //    return Factorization(f, max, factors, zz);
-    //}
-
-    //bool Integer::Factorization(const std::function<bool(const Valuable&)>& f, 
-    //    const Valuable& max,
-    //    std::set<Integer>& factors,
-    //    const ranges_t& zz) const
     {   // check division by primes
-        // iterate by primes to find factor and store it in factors set 
+        // iterate by primes to find factor and store it in factors set
         // togather with lowest factor found highest factor as result of division
         // the highest factor reduces the search range to its value exclusively (1)
         // after scan all the primes, need to scan permutations
-        // 
-        // starting from smallest prime factor, 
+        //
+        // starting from smallest prime factor,
         //   new set of non-prime factors is enreached with muiltiple multiplications to current prime to self and to each member of the new set
         //   new set iterating starting from smallest too and until range out of upper bound (1)
         //  ...
@@ -1157,45 +1167,6 @@ namespace math {
             }
 
         }
-        //        }
-//        else
-//        {
-//            // build OpenCL kernel
-//            using namespace boost::compute;
-//            auto copy = *this;
-//            copy.optimize();
-//            std::stringstream source;
-//            source << "__kernel void f(__global long16 a, __global long16 *c) {"
-//                << "    const uint i = get_global_id(0);"
-//                << "    c[i] = a/i;"
-//                << ";}";
-//
-//            device cuwinner = system::default_device();
-//            for(auto& p: system::platforms())
-//                for(auto& d: p.devices())
-//                    if (d.compute_units() > cuwinner.compute_units())
-//                        cuwinner = d;
-//            auto wgsz = cuwinner.max_work_group_size();
-//            context context(cuwinner);
-//
-//            kernel k(program::build_with_source(source.str(), context), "f");
-//            auto sz = wgsz * sizeof(cl_long16);
-//            buffer c(context, sz);
-//            k.set_arg(0, c);
-//
-//            command_queue queue(context, cuwinner);
-//            // run the add kernel
-//            queue.enqueue_1d_range_kernel(k, 0, wgsz, 0);
-//
-//            // transfer results to the host array 'c'
-//            std::vector<cl_long> z(wgsz);
-//            queue.enqueue_read_buffer(c, 0, sz, &z[0]);
-//            queue.finish();
-        
-//        }
-
-        
-//#pragma omp for
         return false;
     }
 
