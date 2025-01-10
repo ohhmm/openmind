@@ -112,15 +112,15 @@ public:
     Valuable& d(const Variable& x) override;
     Valuable& integral(const Variable& x, const Variable& C) override;
 
-    bool operator <(const Valuable& v) const override;
+    bool operator <(const Valuable&) const override;
     void optimize() override;
 
     Valuable varless() const override;
     const vars_cont_t& getCommonVars() const override;
     vars_cont_t GetVaExps() const override;
-    Valuable InCommonWith(const Valuable& v) const override;
-    bool IsComesBefore(const Exponentiation& v) const;
-    bool IsComesBefore(const Valuable& v) const override;
+    Valuable InCommonWith(const Valuable&) const override;
+    bool IsComesBefore(const Exponentiation&) const;
+    bool IsComesBefore(const Valuable&) const override;
     Valuable calcFreeMember() const override;
 
     Valuable& reciprocal() override;

@@ -49,19 +49,20 @@ class Exponentiation;
 class Fraction;
 class PrincipalSurd;
 class Sum;
-size_t hash_value(const omnn::math::Valuable& v);
+size_t hash_value(const omnn::math::Valuable&);
 } // namespace math
 } // namespace omnn
 
 namespace std {
-omnn::math::Valuable abs(const omnn::math::Valuable& v);
+omnn::math::Valuable abs(const omnn::math::Valuable&);
 omnn::math::Valuable log(const omnn::math::Valuable&);
 omnn::math::Valuable pow(const omnn::math::Valuable&, const omnn::math::Valuable&);
-omnn::math::Valuable sqrt(const omnn::math::Valuable& v);
+omnn::math::Valuable sqrt(const omnn::math::Valuable&);
 omnn::math::Valuable tanh(const omnn::math::Valuable&);
 
 template <>
 struct hash<omnn::math::Valuable> {
+    [[nodiscard]]
     size_t operator()(const omnn::math::Valuable& v) const { return hash_value(v); }
 };
 
@@ -265,8 +266,8 @@ public:
     virtual std::type_index Type() const;
     const Valuable Link() const; // TODO : handle simulteneous values changes
 
-    Valuable& operator =(const Valuable& v);
-    Valuable& operator =(Valuable&& v);
+    Valuable& operator =(const Valuable&);
+    Valuable& operator =(Valuable&&);
 
     template <typename ValuableT>
         requires(std::derived_from<ValuableT, Valuable>)
@@ -276,7 +277,7 @@ public:
 
     bool SerializedStrEqual(const std::string_view& s) const;
 
-    Valuable(const Valuable& v);
+    Valuable(const Valuable&);
 
     template<class T,
             typename = typename std::enable_if<std::is_convertible<T&, Valuable&>::value>::type>
@@ -321,11 +322,12 @@ public:
     virtual Valuable& operator +=(const Valuable&);
     virtual Valuable& operator +=(int);
     virtual Valuable& operator *=(const Valuable&);
-    virtual bool MultiplyIfSimplifiable(const Valuable& v);
-    virtual std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
-    virtual bool SumIfSimplifiable(const Valuable& v);
-    virtual std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const;
-    virtual std::pair<bool,Valuable> IsModSimplifiable(const Valuable& v) const { return {}; }
+    virtual bool MultiplyIfSimplifiable(const Valuable&);
+    virtual bool MultiplyIfSimplifiable(const Integer& i);
+    virtual std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable&) const;
+    virtual bool SumIfSimplifiable(const Valuable&);
+    virtual std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable&) const;
+    virtual std::pair<bool,Valuable> IsModSimplifiable(const Valuable&) const;
     virtual Valuable& operator /=(const Valuable&);
     virtual Valuable& operator %=(const Valuable&);
     virtual Valuable& operator--();
@@ -333,12 +335,12 @@ public:
     virtual Valuable& operator^=(const Valuable&);
 
     // returns the greatest common divisor (GCD) with the given object
-    virtual Valuable GCD(const Valuable& v) const;
-    virtual Valuable& gcd(const Valuable& v);
+    virtual Valuable GCD(const Valuable&) const;
+    virtual Valuable& gcd(const Valuable&);
 
     // returns the least common multiple (LCM) with the given object
-    virtual Valuable LCM(const Valuable& v) const;
-    virtual Valuable& lcm(const Valuable& v);
+    virtual Valuable LCM(const Valuable&) const;
+    virtual Valuable& lcm(const Valuable&);
 
     virtual Valuable& d(const Variable& x);
     struct IntegrationParams {
@@ -461,11 +463,11 @@ public:
     virtual bool IsPolynomial(const Variable&) const;
     solutions_t Solutions() const;
     solutions_t IntSolutions() const;
-    solutions_t Solutions(const Variable& v) const;
-    solutions_t IntSolutions(const Variable& v) const;
+    solutions_t Solutions(const Variable&) const;
+    solutions_t IntSolutions(const Variable&) const;
     solutions_t GetIntegerSolution() const;
     virtual solutions_t GetIntegerSolution(const Variable& va) const;
-    bool Test(const Variable& va, const Valuable& v) const;
+    bool Test(const Variable& va, const Valuable&) const;
 
     // FIXME : waiting for virtual template method https://github.com/ohhmm/llvm-project/pull/1
     //virtual template <typename T> 
@@ -500,10 +502,10 @@ public:
     virtual vars_cont_t GetVaExps() const;
     virtual const vars_cont_t& getCommonVars() const;
     virtual vars_cont_t calcCommonVars() const;
-    virtual Valuable InCommonWith(const Valuable& v) const;
+    virtual Valuable InCommonWith(const Valuable&) const;
     static const vars_cont_t& emptyCommonVars();
     virtual Valuable varless() const;
-    static Valuable VaVal(const vars_cont_t& v);
+    static Valuable VaVal(const vars_cont_t&);
     Valuable getVaVal() const;
     virtual bool eval(const vars_cont_t& with);
     Valuable Eval(const vars_cont_t& with) const;
@@ -518,12 +520,12 @@ public:
     virtual std::shared_ptr<VarHost> getVaHost() const;
 
     var_set_t Vars() const;
-    virtual void Eval(const Variable& va, const Valuable& v);
-    virtual bool IsComesBefore(const Valuable& v) const; /// accepts same type as param
+    virtual void Eval(const Variable& va, const Valuable&);
+    virtual bool IsComesBefore(const Valuable&) const; /// accepts same type as param
 
-    virtual bool Same(const Valuable& v) const;
-    bool OfSameType(const Valuable& v) const;
-    bool HasSameVars(const Valuable& v) const;
+    virtual bool Same(const Valuable&) const;
+    bool OfSameType(const Valuable&) const;
+    bool HasSameVars(const Valuable&) const;
     bool IsMonic() const;
 
     Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
@@ -545,9 +547,9 @@ public:
     // bits
     virtual Valuable bit(const Valuable& n = constants::zero) const;
     virtual Valuable bits(int n, int l) const;
-    virtual Valuable Or(const Valuable& n, const Valuable& v) const;
-    virtual Valuable And(const Valuable& n, const Valuable& v) const;
-    virtual Valuable Xor(const Valuable& n, const Valuable& v) const;
+    virtual Valuable Or(const Valuable& n, const Valuable&) const;
+    virtual Valuable And(const Valuable& n, const Valuable&) const;
+    virtual Valuable Xor(const Valuable& n, const Valuable&) const;
     virtual Valuable Not(const Valuable& n) const;
     virtual Valuable& shl();
     virtual Valuable& shl(const Valuable& n);
@@ -567,13 +569,13 @@ public:
 //        SetView(View::Equation);  // FIXME: see ifz test
         return operator -=(std::forward<Fwd>(v));
     }
-    Valuable Equals(const Valuable& v) const;
-    Valuable NotEquals(const Valuable& v) const;
+    Valuable Equals(const Valuable&) const;
+    Valuable NotEquals(const Valuable&) const;
 //    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
 //    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
-    Valuable LogicAnd(const Valuable& v) const;
+    Valuable LogicAnd(const Valuable&) const;
     Valuable operator&&(const Valuable& v) const { return LogicAnd(v); }
-    Valuable LogicOr(const Valuable& v) const;
+    Valuable LogicOr(const Valuable&) const;
     Valuable operator||(const Valuable& v) const { return LogicOr(v); }
     Valuable& logic_or(const Valuable&); // inplace
     Valuable& logic_and(const Valuable&);
@@ -586,7 +588,7 @@ public:
     Valuable Intersect(const Valuable& with, const Variable& va) const;
 
     Valuable Union(const Valuable& with) const;
-	//Valuable operator|(const Valuable& v) const { return Union(v); }
+	//Valuable operator|(const Valuable&) const { return Union(v); }
 	Valuable& unionize(const Valuable&); // inplace
 	//Valuable& unionize(const Valuable&, const Variable& va);
     Valuable& operator|=(const Valuable& v) { return unionize(v); }
@@ -832,6 +834,7 @@ namespace std {
 template <class T>
     requires std::derived_from<T, ::omnn::math::Valuable>
 struct hash<T> {
+    [[nodiscard]]
     constexpr size_t operator()(const T& v) const { return static_cast<const omnn::math::Valuable&>(v).Hash(); }
 };
 

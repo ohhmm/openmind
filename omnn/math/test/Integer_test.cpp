@@ -359,3 +359,37 @@ BOOST_AUTO_TEST_CASE(Integer_sqrt_test)
     _2 = PrincipalSurd(6) * 2;
     BOOST_TEST(_1 == _2);
 }
+
+BOOST_AUTO_TEST_CASE(Integer_IsModSimplifiable_test)
+{
+    Integer i(10);
+
+    // Test with integer divisor
+    auto result = i.IsModSimplifiable(3);
+    BOOST_TEST(result.first);
+    BOOST_TEST(result.second == 1);  // 10 % 3 = 1
+
+    // Test with zero divisor (by Knuth's definition, 10 % 0 = 10)
+    result = i.IsModSimplifiable(0);
+    BOOST_TEST(result.first);
+    BOOST_TEST(result.second == i); // 10 % 0 = 10
+
+    // Test with variable (should defer to variable's implementation)
+    Variable va;
+    result = i.IsModSimplifiable(va);
+    BOOST_TEST(!result.first);
+
+    // Test with fraction (should not be simplifiable directly)
+    result = i.IsModSimplifiable(Fraction(1, 2));
+    BOOST_TEST(!result.first);
+
+    // Test with negative integer divisor
+    result = i.IsModSimplifiable(-3);
+    BOOST_TEST(result.first);
+    BOOST_TEST(result.second == 1);  // 10 % (-3) = 1
+
+    // Test with larger divisor
+    result = i.IsModSimplifiable(15);
+    BOOST_TEST(result.first);
+    BOOST_TEST(result.second == 10);  // 10 % 15 = 10
+}
