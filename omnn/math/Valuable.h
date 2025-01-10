@@ -672,7 +672,7 @@ public:
     /// <summary>
     /// This > 0
     /// </summary>
-    /// <returns>filter expression to have roots when this expreesion is positive</returns>
+    /// <returns>filter expression to have roots when this expression is positive</returns>
     virtual Valuable IsPositive() const;
 
     /// <summary>
