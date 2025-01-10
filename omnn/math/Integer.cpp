@@ -249,11 +249,10 @@ namespace math {
     std::pair<bool,Valuable> Integer::IsModSimplifiable(const Valuable& v) const
     {
         if (v.IsZero()) {
-            return {}; // Not simplifiable with zero divisor
+            return {true, *this};
         }
         if (v.IsInt()) {
-            auto mod = *this % v;
-            return {true, mod}; // Integer modulo is always simplifiable with integers
+            return {true, *this % v};
         }
         if (v.IsFraction() || v.IsVa() || v.IsExponentiation()) {
             return {};
