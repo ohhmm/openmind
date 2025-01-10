@@ -46,12 +46,33 @@ macro(fetch_vcpkg)
 
     if(GIT_EXECUTABLE)
         set(VCPKG_ROOT "$ENV{USERPROFILE}$ENV{HOME}/vcpkg" CACHE PATH "Path to vcpkg installation")
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT}
-            RESULT_VARIABLE GIT_RESULT
-        )
-        if(NOT GIT_RESULT EQUAL 0)
-            message(FATAL_ERROR "Failed to clone vcpkg repository")
+        if(EXISTS ${VCPKG_ROOT})
+        # Ensure we are on a branch before pulling
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} -C ${VCPKG_ROOT} checkout master
+                RESULT_VARIABLE GIT_CHECKOUT_RESULT
+            )
+            if(NOT GIT_CHECKOUT_RESULT EQUAL 0)
+                message(FATAL_ERROR "Failed to checkout master branch in vcpkg repository")
+            endif()
+
+            # Pull the latest changes
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} -C ${VCPKG_ROOT} pull
+                RESULT_VARIABLE GIT_PULL_RESULT
+            )
+            if(NOT GIT_PULL_RESULT EQUAL 0)
+                message(FATAL_ERROR "Failed to pull latest changes from vcpkg repository")
+            endif()
+        else()
+            # Clone the repository if it doesn't exist
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT}
+                RESULT_VARIABLE GIT_RESULT
+            )
+            if(NOT GIT_RESULT EQUAL 0)
+                message(FATAL_ERROR "Failed to clone vcpkg repository")
+            endif()
         endif()
         execute_process(
             COMMAND ${CMAKE_COMMAND} -E chdir ${VCPKG_ROOT} ${VCPKG_ROOT}/bootstrap-vcpkg.sh
