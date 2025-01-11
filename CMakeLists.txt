@@ -395,6 +395,7 @@ endif()
 if(NOT MSVC AND NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)
 	list(APPEND BOOST_TEST_LINK_LIBS Boost::test_exec_monitor)
 endif()
+set(BOOST_TEST_LINK_LIBS ${BOOST_TEST_LINK_LIBS} CACHE STRING "Boost test libraries" FORCE)
 
 IF (Boost_FOUND)
     message(STATUS "Boost found:")
