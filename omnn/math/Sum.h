@@ -7,16 +7,11 @@
 #include <unordered_set>
 #include "ValuableCollectionDescendantContract.h"
 #include "Formula.h"
+#include "SumOrderComparator.h"
 //#include <boost/container/set.hpp>
 //#include <boost/unordered_set.hpp>
 
-namespace omnn{
-namespace math {
-
-    struct SumOrderComparator
-    {
-        bool operator()(const Valuable&, const Valuable&) const;
-    };
+namespace omnn::math {
 
     using sum_cont = // ensure Add/Update/Delete validness if you change this structure
         std::set<Valuable, SumOrderComparator>
@@ -156,5 +151,4 @@ public:
     Valuable Sign() const override;
 };
 
-
-}}
+} // namespace omnn::math
