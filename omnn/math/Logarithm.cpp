@@ -4,6 +4,7 @@
 #include "Fraction.h"
 
 #include <cmath>
+#include <boost/math/special_functions/log1p.hpp>
 
 namespace omnn {
 namespace math {

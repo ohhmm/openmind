@@ -40,6 +40,10 @@ BOOST_AUTO_TEST_CASE(Exponentiation_tests)
     _1 = x^3;
     _2 = _1.getVaVal();
     BOOST_TEST(_1 == _2);
+
+    _1 = Fraction{Exponentiation{x, 2}, Exponentiation{x, 1}};
+    _2 = x;
+    BOOST_TEST(_1 == _2);
 }
 
 BOOST_AUTO_TEST_CASE(Compare_test)
@@ -254,4 +258,17 @@ BOOST_AUTO_TEST_CASE(Multival_test)
     //
     //BOOST_TEST(!!a.IsMultival() == true);
     //BOOST_TEST(a == x/x);
+}
+
+BOOST_AUTO_TEST_CASE(Exponentiation_InCommonWith_test) {
+    DECL_VA(x);
+    auto _1 = 16^x;
+    auto _2 = 16^x.Sqrt();
+    auto common = _1.InCommonWith(_2);
+    BOOST_TEST(common == _2);
+
+    _1 = x ^ 3;
+    _2 = x ^ 2;
+    common = _1.InCommonWith(_2);
+    BOOST_TEST(common == _2);
 }

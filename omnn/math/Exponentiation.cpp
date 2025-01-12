@@ -1172,6 +1172,19 @@ namespace omnn::math {
                     c = e.InCommonWith(*this);
                 } else if (e.getExponentiation().IsProduct()) {
                     c = ebase() ^ e.eexp().InCommonWith(eexp());
+                } else if (getExponentiation().IsPrincipalSurd()) {
+                    auto& surd = getExponentiation().as<PrincipalSurd>();
+                    auto isSumSimpl = e.getExponentiation().IsSummationSimplifiable(-surd);
+                    if (isSumSimpl.first) {
+                        IMPLEMENT
+                    } else {
+                        c = surd.InCommonWith(e.getExponentiation());
+                        if (c != constants::one) {
+                            c = Exponentiation{getBase(), std::move(c)};
+                        }
+                    }
+                } else if (e.getExponentiation().IsPrincipalSurd()) {
+                    c = e.InCommonWith(*this);
                 } else {
                     IMPLEMENT
                 }
