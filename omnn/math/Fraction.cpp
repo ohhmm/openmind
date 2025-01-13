@@ -436,13 +436,17 @@ using namespace omnn::math;
     {
         std::pair<bool,Valuable> is;
         is.first = IsSimpleFraction() && v.IsSimple();
-        if(is.first){
+        if (!is.first) {
+            auto gcd = denominator().GCD(v);
+            is.first = gcd != constants::one;
+        }
+        if (is.first) {
             is.second = *this * v;
-        } else if (v.IsConstant()) {
-        } else if (!v.IsFraction()) {
-            is = v.IsMultiplicationSimplifiable(*this);
         } else {
-            IMPLEMENT
+            is = numerator().IsMultiplicationSimplifiable(v);
+            if (is.first) {
+                is.second /= denominator();
+            }
         }
         return is;
     }

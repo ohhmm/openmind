@@ -155,8 +155,9 @@ namespace math {
         is.first = v.IsInt() || v.IsFraction();
         if (is.first) {
             is.second = v * *this;
-            if (is.second.Complexity() > v.Complexity())
-                IMPLEMENT; // TODO: not a simple fraction
+            if (is.second.Complexity() > v.Complexity()) {
+                LOG_AND_IMPLEMENT("Simplification failure: " << *this << "  *  " << v << " resulted in " << is.second);
+            }
         } else if (v.IsVa() || v.IsExponentiation()) {
         } else {
             is = v.IsMultiplicationSimplifiable(*this);
