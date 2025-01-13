@@ -17,7 +17,7 @@ namespace omnn::math {
         static constinit std::string_view SerializationName;
 
         [[nodiscard]]
-        constexpr bool Is_pi() const override { return true; }
+        bool Is_pi() const override { return true; }
 
         [[nodiscard]]
         bool operator<(const Valuable&) const override;
@@ -25,11 +25,25 @@ namespace omnn::math {
         Valuable IsPositive() const override { return {}; }
         Valuable Sign() const override;
         
-		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
-        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
-        bool MultiplyIfSimplifiable(const Valuable& v) override { return {}; }
+		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { 
+            return {}; 
+        }
+        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { 
+            return {}; 
+        }
+        bool MultiplyIfSimplifiable(const Valuable& v) override { 
+            return {}; 
+        }
 
         explicit operator double() const override;
+        Valuable operator^(const Valuable& exp) const;
+        Valuable operator/(const Valuable& v) const;
+        
+        // Core virtual method implementations
+        bool IsSimple() const override { return true; }       // Treat as simple numeric type
+        YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }  // Single-valued constant
+        bool is_optimized() const override { return true; }   // Always optimized
+        void optimize() override {}                           // Nothing to optimize
     };
 
     namespace constant {

@@ -8,6 +8,12 @@ namespace {
 
 auto ComputeUnitsWinner = []() -> boost::compute::device {
     try {
+        // Skip OpenCL initialization if tests are running
+        const char* skip_tests = std::getenv("SKIP_OPENCL_TESTS");
+        if (skip_tests && *skip_tests == '1') {
+            return {};
+        }
+
         auto devices = boost::compute::system::devices();
         if (devices.size() == 0) {
             std::cerr << "Warning: No OpenCL driver installed. Some computations may be slower." << std::endl;
