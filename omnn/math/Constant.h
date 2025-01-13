@@ -93,8 +93,9 @@ template <class Chld>
             return is;
         }
 
+        [[nodiscard]]
         bool operator==(const Valuable& v) const override {
-            return this->OfSameType(v);
+            return this->OfSameType(v) || v.operator==(*this);
         }
 
         Valuable& operator/=(const Valuable& v) override {
