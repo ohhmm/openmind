@@ -1179,7 +1179,7 @@ using namespace omnn::math;
                     } else {
                         c = surd.InCommonWith(e.getExponentiation());
                         if (c != constants::one) {
-                            c = Exponentiation{getBase(), std::move(c)};
+                            c = Exponentiation{getBase(), std::move(c)}; // NOTE: this is not strictly common form (not GCD)
                         }
                     }
                 } else if (e.getExponentiation().IsPrincipalSurd()) {
