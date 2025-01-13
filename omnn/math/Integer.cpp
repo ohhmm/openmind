@@ -768,10 +768,12 @@ namespace math {
             return {};
         else if(v.IsInfinity())
             return true;
-        else if (v.IsRational() == YesNoMaybe::Yes) {
+        else if (v.IsRational() == YesNoMaybe::Yes) 
             return arbitrary < static_cast<a_rational>(v);
-       } else
-            return base::operator <(v);
+        else if (v.Is_pi())
+            return arbitrary < 4;
+        else
+            return v > *this;
     }
 
     bool Integer::operator ==(const int& i) const
@@ -793,8 +795,8 @@ namespace math {
     {
         if (v.IsInt())
             return operator ==(v.as<Integer>());
-        else if(v.FindVa())
-            return false;
+        else if(v.FindVa() || v.IsConstant())
+            return {};
         else
             return v.operator==(*this);
     }

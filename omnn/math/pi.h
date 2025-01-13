@@ -16,10 +16,13 @@ namespace omnn::math {
 
         static constinit std::string_view SerializationName;
 
-        bool Is_pi() const override { return true; }
+        [[nodiscard]]
+        constexpr bool Is_pi() const override { return true; }
+
+        [[nodiscard]]
+        bool operator<(const Valuable&) const override;
+
         Valuable IsPositive() const override { return {}; }
-        bool operator==(const Valuable& v) const override
-        { return v.Is_pi(); }
         
 		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
         std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
