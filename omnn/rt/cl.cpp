@@ -8,10 +8,19 @@ namespace {
 
 auto ComputeUnitsWinner = []() -> boost::compute::device {
     try {
+        // Skip OpenCL initialization if tests are running
+        const char* skip_tests = std::getenv("SKIP_OPENCL_TESTS");
+        if (skip_tests && *skip_tests == '1') {
+            return {};
+        }
+
         auto devices = boost::compute::system::devices();
         if (devices.size() == 0) {
             std::cout << "Please, install an OpenCL driver." << std::endl;
-            exit(-1);
+            if (!skip_tests) {
+                exit(-1);
+            }
+            return {};
         } else if (devices.size() == 1) {
             auto& device = *devices.begin();
             std::cout << device.name() << " max_work_group_size=" << device.max_work_group_size() << std::endl;
