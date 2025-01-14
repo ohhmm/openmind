@@ -75,10 +75,14 @@ void VarHost::inc<>(std::string&)
     IMPLEMENT
 }
 
-void VarHost::LogNotZero(const Valuable& v) {
-    if (!add_non_zero_mode_on) {
+void VarHost::LogNotZero(const Valuable& value) {
+    if (add_non_zero_mode_on) {
+        LogNotZeroBypassScopes(value);
     }
-    else if (v.IsZero()) {
+}
+
+void VarHost::LogNotZeroBypassScopes(const Valuable& v) {
+    if (v.IsZero()) {
         throw std::runtime_error("Variable is zero");
     }
     else if (v.IsSimple() && v.is_optimized()) {

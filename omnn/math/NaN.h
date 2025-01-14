@@ -10,7 +10,6 @@ class NaN : public Constant<NaN> {
 public:
     using base::base;
 
-    NaN();
     NaN(encapsulated_instance&& reason);
 
     static /*constinit*/ std::string_view SerializationName;

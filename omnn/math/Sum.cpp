@@ -513,16 +513,19 @@ namespace
                         up();
                     }
                     else if ((inc = it2->InCommonWith(c)) != constants::one
-                             && inc.IsMultival() != YesNoMaybe::Yes) {
-                            auto sum = (c / inc).IsSummationSimplifiable(*it2 / inc);
-                            if(sum.first)
-                            {
-                                sum.second *= inc;
-                                c = sum.second;
-                                Delete(it2);
-                                up();
-                            } else
-                                ++it2;
+                             && inc.IsMultival() != YesNoMaybe::Yes)
+                    {
+                        VarHost::NonZeroLogOffScope off;
+                        auto sum = (c / inc).IsSummationSimplifiable(*it2 / inc);
+                        if(sum.first)
+                        {
+                            getVaHost()->LogNotZeroBypassScopes(inc);
+                            sum.second *= inc;
+                            c = sum.second;
+                            Delete(it2);
+                            up();
+                        } else
+                            ++it2;
                     }
                     else if (c.IsFraction() && it2->IsFraction()
                              && c.as<Fraction>().getDenominator() == it2->as<Fraction>().getDenominator())

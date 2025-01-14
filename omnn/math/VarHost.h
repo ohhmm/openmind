@@ -112,6 +112,7 @@ namespace math {
         virtual Integer Stored() const = 0;
 
         void LogNotZero(const Valuable&);
+        void LogNotZeroBypassScopes(const Valuable&);
         bool TestRootConsistencyWithNonZeroLog(const Variable& variable, const Valuable& value) const;
         bool TestRootConsistencyWithNonZeroLog(const Valuable::vars_cont_t&) const;
     };
