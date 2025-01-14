@@ -31,4 +31,12 @@ BOOST_AUTO_TEST_CASE(test_pi_comparison) {
     BOOST_TEST((pi < v) == false);
     v = Valuable(-10);
     BOOST_TEST((pi < v) == false);
+    
+    // Test comparison with fractions
+    BOOST_TEST((pi < Fraction(22, 7)) == true);  // π < 22/7
+    BOOST_TEST((pi < Fraction(19, 6)) == false); // π > 19/6
+    
+    // Test comparison with negative fractions
+    BOOST_TEST((pi < Fraction(-22, 7)) == false);
+    BOOST_TEST((pi < Fraction(-19, 6)) == false);
 }

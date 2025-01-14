@@ -91,6 +91,7 @@ public:
     bool IsPolynomial(const Variable&) const override;
 
     Valuable Abet(const std::initializer_list<Valuable>) const;
+    Valuable Intersect(const Valuable& other, const Variable& var) const override;
 
     vars_cont_t GetVaExps() const override;
 };
