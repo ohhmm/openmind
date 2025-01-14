@@ -1,24 +1,39 @@
-name: C/C++ CI macOS
+name: C/C++ CI Ubuntu
 
 on: [push]
 
 jobs:
-  build-in-macos:
-    runs-on: macos-latest
+  build-in-ubuntu:
+    runs-on: ubuntu-22.04
     env:
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
-      VCPKG_DEFAULT_TRIPLET: arm64-osx
+      VCPKG_DEFAULT_TRIPLET: x64-linux
       CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
-      
+    
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Cache vcpkg
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/vcpkg
+          !${{ github.workspace }}/vcpkg/buildtrees
+          !${{ github.workspace }}/vcpkg/packages
+          !${{ github.workspace }}/vcpkg/downloads
+          ${{ github.workspace }}/build/bin/Db*.solutions
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
 
     - name: Install dependencies
       run: |
-        brew install cmake ninja autoconf automake autoconf-archive
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive
         cmake --version
         ninja --version
-        clang --version
+        gcc --version
+        g++ --version
 
     - name: Setup vcpkg
       run: |
@@ -28,6 +43,12 @@ jobs:
         $VCPKG_ROOT/vcpkg integrate install
         echo "VCPKG_ROOT=$VCPKG_ROOT" >> $GITHUB_ENV
         echo "CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+        
+        # Verify vcpkg installation
+        if [ ! -f "$VCPKG_ROOT/vcpkg" ]; then
+          echo "Error: vcpkg executable not found"
+          exit 1
+        fi
 
     - name: Install vcpkg dependencies
       run: |
@@ -48,6 +69,14 @@ jobs:
           echo "Error: vcpkg installation directory not found"
           exit 1
         fi
+        
+        # Verify boost installation specifically
+        for component in chrono filesystem system thread serialization test; do
+          if ! $VCPKG_ROOT/vcpkg list | grep -q "boost-${component}"; then
+            echo "Error: boost-${component} not found in installed packages"
+            exit 1
+          fi
+        done
 
     - name: Verify vcpkg setup
       run: |
@@ -64,7 +93,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       env:
         VCPKG_ROOT: ${{ github.workspace }}/vcpkg
-        VCPKG_DEFAULT_TRIPLET: arm64-osx
+        VCPKG_DEFAULT_TRIPLET: x64-linux
         CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
       run: |
         # Verify environment variables
@@ -90,8 +119,8 @@ jobs:
 
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . -j $(sysctl -n hw.ncpu)
+      run: cmake --build . -j $(nproc)
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest . -j $(sysctl -n hw.ncpu) -E "ts" --rerun-failed --output-on-failure
+      run: ctest . -j $(nproc) -E "ts" --rerun-failed --output-on-failure
