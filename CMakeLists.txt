@@ -55,12 +55,202 @@ else()
   endif()
 endif()
 
-list(APPEND CMAKE_MODULE_PATH
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/"
-	"${CMAKE_BINARY_DIR}/lib/cmake"
-	"${CMAKE_SOURCE_DIR}/cmake"
-)
+# Configure vcpkg
+if(DEFINED ENV{VCPKG_ROOT})
+    # Convert paths to CMake format and verify VCPKG_ROOT
+    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}" VCPKG_ROOT)
+    if(NOT EXISTS "${VCPKG_ROOT}")
+        message(FATAL_ERROR "VCPKG_ROOT directory not found: ${VCPKG_ROOT}")
+    endif()
+
+    # Set up toolchain file
+    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+        set(VCPKG_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+        if(EXISTS "${VCPKG_TOOLCHAIN_FILE}")
+            set(CMAKE_TOOLCHAIN_FILE "${VCPKG_TOOLCHAIN_FILE}"
+                CACHE STRING "Vcpkg toolchain file")
+        else()
+            message(FATAL_ERROR "Vcpkg toolchain file not found: ${VCPKG_TOOLCHAIN_FILE}")
+        endif()
+    endif()
+    
+    # Determine triplet
+    if(APPLE)
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+            set(VCPKG_TARGET_TRIPLET "arm64-osx")
+        else()
+            set(VCPKG_TARGET_TRIPLET "x64-osx")
+        endif()
+    elseif(WIN32)
+        set(VCPKG_TARGET_TRIPLET "x64-windows")
+    else()
+        set(VCPKG_TARGET_TRIPLET "x64-linux")
+    endif()
+    
+    # Override with environment variable if set
+    if(DEFINED ENV{VCPKG_DEFAULT_TRIPLET})
+        set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}")
+    endif()
+    
+    message(STATUS "Using vcpkg triplet: ${VCPKG_TARGET_TRIPLET}")
+    
+    # Set up vcpkg paths
+    set(VCPKG_INSTALLED_DIR "${VCPKG_ROOT}/installed/${VCPKG_TARGET_TRIPLET}")
+    set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include")
+    set(VCPKG_LIB_DIR "${VCPKG_INSTALLED_DIR}/lib")
+    
+    # Run vcpkg bootstrap if needed
+    if(NOT EXISTS "${VCPKG_ROOT}/vcpkg" AND NOT EXISTS "${VCPKG_ROOT}/vcpkg.exe")
+        message(STATUS "Bootstrapping vcpkg...")
+        if(WIN32)
+            execute_process(
+                COMMAND ${CMAKE_COMMAND} -E env --unset=VCPKG_ROOT
+                ${VCPKG_ROOT}/bootstrap-vcpkg.bat
+                WORKING_DIRECTORY ${VCPKG_ROOT}
+                RESULT_VARIABLE VCPKG_BOOTSTRAP_RESULT
+            )
+        else()
+            execute_process(
+                COMMAND ${CMAKE_COMMAND} -E env --unset=VCPKG_ROOT
+                ${VCPKG_ROOT}/bootstrap-vcpkg.sh
+                WORKING_DIRECTORY ${VCPKG_ROOT}
+                RESULT_VARIABLE VCPKG_BOOTSTRAP_RESULT
+            )
+        endif()
+        if(NOT VCPKG_BOOTSTRAP_RESULT EQUAL 0)
+            message(FATAL_ERROR "vcpkg bootstrap failed with error code: ${VCPKG_BOOTSTRAP_RESULT}")
+        endif()
+    endif()
+
+    # Install dependencies if needed
+    if(NOT EXISTS "${VCPKG_INSTALLED_DIR}")
+        message(STATUS "Installing vcpkg dependencies for triplet ${VCPKG_TARGET_TRIPLET}...")
+        
+        # Ensure manifest mode is enabled
+        set(ENV{VCPKG_FEATURE_FLAGS} "manifests,versions")
+        
+        # Set up installation command
+        set(VCPKG_INSTALL_CMD 
+            ${CMAKE_COMMAND} -E env
+            "VCPKG_DEFAULT_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+            "VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+            ${VCPKG_ROOT}/vcpkg)
+        
+        if(WIN32)
+            string(APPEND VCPKG_INSTALL_CMD ".exe")
+        endif()
+        
+        # Run installation
+        execute_process(
+            COMMAND ${VCPKG_INSTALL_CMD}
+            install
+            --triplet ${VCPKG_TARGET_TRIPLET}
+            --x-install-root=${VCPKG_INSTALLED_DIR}
+            --clean-after-build
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            RESULT_VARIABLE VCPKG_INSTALL_RESULT
+            ERROR_VARIABLE VCPKG_INSTALL_ERROR
+            OUTPUT_VARIABLE VCPKG_INSTALL_OUTPUT
+        )
+        
+        if(NOT VCPKG_INSTALL_RESULT EQUAL 0)
+            message(STATUS "vcpkg install output: ${VCPKG_INSTALL_OUTPUT}")
+            message(STATUS "vcpkg install error: ${VCPKG_INSTALL_ERROR}")
+            message(FATAL_ERROR "vcpkg install failed with error code: ${VCPKG_INSTALL_RESULT}")
+        endif()
+        
+        # Verify installation
+        if(NOT EXISTS "${VCPKG_INSTALLED_DIR}")
+            message(FATAL_ERROR "vcpkg installation completed but directory still not found: ${VCPKG_INSTALLED_DIR}")
+        endif()
+    endif()
+
+    # Add to module path
+    list(APPEND CMAKE_MODULE_PATH
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules"
+        "${CMAKE_BINARY_DIR}/lib/cmake"
+        "${VCPKG_ROOT}/scripts/buildsystems/vcpkg"
+        "${VCPKG_ROOT}/scripts/cmake"
+    )
+    
+    # Add vcpkg paths to prefix path
+    list(APPEND CMAKE_PREFIX_PATH
+        "${VCPKG_INSTALLED_DIR}"
+        "${VCPKG_INSTALLED_DIR}/lib/cmake"
+    )
+    
+    # Configure Boost
+    set(Boost_USE_STATIC_LIBS ON)
+    set(Boost_USE_MULTITHREADED ON)
+    set(Boost_NO_SYSTEM_PATHS ON)
+    set(Boost_NO_BOOST_CMAKE OFF)
+    
+    # Set Boost paths
+    set(BOOST_ROOT "${VCPKG_INSTALLED_DIR}")
+    set(BOOST_INCLUDEDIR "${VCPKG_INCLUDE_DIR}")
+    set(BOOST_LIBRARYDIR "${VCPKG_LIB_DIR}")
+    
+    # Set environment variables
+    set(ENV{BOOST_ROOT} "${VCPKG_INSTALLED_DIR}")
+    set(ENV{BOOST_INCLUDEDIR} "${VCPKG_INCLUDE_DIR}")
+    set(ENV{BOOST_LIBRARYDIR} "${VCPKG_LIB_DIR}")
+    
+    # Add system include directories
+    include_directories(SYSTEM "${VCPKG_INCLUDE_DIR}")
+    
+    # Platform-specific settings
+    if(APPLE)
+        add_compile_options(-isystem "${BOOST_INCLUDEDIR}")
+    endif()
+    
+    # Debug output
+    message(STATUS "VCPKG Configuration:")
+    message(STATUS "  VCPKG_ROOT: ${VCPKG_ROOT}")
+    message(STATUS "  VCPKG_INSTALLED_DIR: ${VCPKG_INSTALLED_DIR}")
+    message(STATUS "  VCPKG_INCLUDE_DIR: ${VCPKG_INCLUDE_DIR}")
+    message(STATUS "  VCPKG_LIB_DIR: ${VCPKG_LIB_DIR}")
+    message(STATUS "  CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+    message(STATUS "Boost Configuration:")
+    message(STATUS "  BOOST_ROOT: ${BOOST_ROOT}")
+    message(STATUS "  BOOST_INCLUDEDIR: ${BOOST_INCLUDEDIR}")
+    message(STATUS "  BOOST_LIBRARYDIR: ${BOOST_LIBRARYDIR}")
+else()
+    list(APPEND CMAKE_MODULE_PATH
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules"
+        "${CMAKE_BINARY_DIR}/lib/cmake"
+    )
+endif()
+
+# Skip optional dependencies in CI
+# Configure CI environment
+if(DEFINED ENV{CI})
+    # Skip optional dependencies in CI
+    set(ENV{SKIP_OPENCL_CHECK} "1")
+    set(ENV{SKIP_CUDA_CHECK} "1")
+    set(ENV{SKIP_DPCPP_CHECK} "1")
+    
+    # Configure vcpkg triplet
+    if(NOT DEFINED ENV{VCPKG_DEFAULT_TRIPLET})
+        if(APPLE)
+            if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+                set(VCPKG_TARGET_TRIPLET "arm64-osx")
+            else()
+                set(VCPKG_TARGET_TRIPLET "x64-osx")
+            endif()
+        elseif(WIN32)
+            set(VCPKG_TARGET_TRIPLET "x64-windows")
+        else()
+            set(VCPKG_TARGET_TRIPLET "x64-linux")
+        endif()
+        set(ENV{VCPKG_DEFAULT_TRIPLET} "${VCPKG_TARGET_TRIPLET}")
+        message(STATUS "Setting VCPKG_DEFAULT_TRIPLET to ${VCPKG_TARGET_TRIPLET}")
+    endif()
+endif()
+
 if(OPENMIND_USE_CONAN)
 	list(PREPEND CMAKE_MODULE_PATH
 		"${CMAKE_CURRENT_SOURCE_DIR}"
@@ -130,16 +320,99 @@ if(OPENMIND_USE_OPENCL)
 	option(OPENMIND_USE_OPENGL "Use OpenGL viewport" ${OpenGL_FOUND})
 endif()
 
+# Find TBB package
 if(NOT WIN32)
-	find_package(TBB)
-	option(OPENMIND_USE_TBB "Link TBB" ${TBB_FOUND})
-	if(OPENMIND_USE_TBB)
-		add_definitions(-DOPENMIND_USE_TBB)
-	endif()
+    # Try to find TBB using vcpkg first
+    find_package(TBB CONFIG QUIET)
+    
+    # If not found via config, try module mode
+    if(NOT TBB_FOUND)
+        # Add vcpkg paths to module search
+        if(DEFINED ENV{VCPKG_ROOT})
+            list(APPEND CMAKE_PREFIX_PATH 
+                "$ENV{VCPKG_ROOT}/installed/${VCPKG_TARGET_TRIPLET}"
+                "$ENV{VCPKG_ROOT}/packages/tbb_${VCPKG_TARGET_TRIPLET}/share/tbb"
+            )
+        endif()
+        
+        find_package(TBB MODULE)
+    endif()
+    
+    option(OPENMIND_USE_TBB "Link TBB" ${TBB_FOUND})
+    if(OPENMIND_USE_TBB)
+        add_definitions(-DOPENMIND_USE_TBB)
+        
+        # Create TBB target if it doesn't exist
+        if(TBB_FOUND AND NOT TARGET TBB::tbb)
+            add_library(TBB::tbb UNKNOWN IMPORTED GLOBAL)
+            
+            # Handle vcpkg paths
+            if(DEFINED ENV{VCPKG_ROOT})
+                set(TBB_LIB_DIR "$ENV{VCPKG_ROOT}/installed/${VCPKG_TARGET_TRIPLET}/lib")
+                set(TBB_INCLUDE_DIR "$ENV{VCPKG_ROOT}/installed/${VCPKG_TARGET_TRIPLET}/include")
+                
+                if(EXISTS "${TBB_LIB_DIR}" AND EXISTS "${TBB_INCLUDE_DIR}")
+                    set_target_properties(TBB::tbb PROPERTIES
+                        IMPORTED_LOCATION "${TBB_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}tbb${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIR}"
+                    )
+                else()
+                    message(WARNING "TBB directories not found in vcpkg: ${TBB_LIB_DIR}, ${TBB_INCLUDE_DIR}")
+                endif()
+            else()
+                set_target_properties(TBB::tbb PROPERTIES
+                    IMPORTED_LOCATION "${TBB_LIBRARIES}"
+                    INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIRS}"
+                )
+            endif()
+            
+            # Platform-specific settings
+            if(APPLE)
+                set_target_properties(TBB::tbb PROPERTIES
+                    INSTALL_RPATH "@loader_path/../lib"
+                    BUILD_WITH_INSTALL_RPATH TRUE
+                )
+            endif()
+        endif()
+    endif()
 endif()
 set(OPENMIND_PREFERRED_BOOST_VERSION 1.87.0 CACHE STRING "Boost library version to use")
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
+
+# Set Boost configuration
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+
+if(DEFINED ENV{CI})
+    set(Boost_NO_SYSTEM_PATHS ON)
+    set(Boost_NO_BOOST_CMAKE OFF)
+endif()
+
+# Set CMake policy for Boost
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
+# Find required Boost components
+if(OPENMIND_BUILD_TESTS)
+    set(BOOST_COMPONENTS unit_test_framework)
+endif()
+
+list(APPEND BOOST_COMPONENTS
+    filesystem
+    system
+    thread)
+
+if(OPENMIND_BUILD_SAMPLES)
+    list(APPEND BOOST_COMPONENTS program_options regex)
+endif()
+
+find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION} REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+
+# Create modules directory if it doesn't exist
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
     message("Using Edit&Continue policy")
