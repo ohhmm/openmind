@@ -10,9 +10,9 @@ add_definitions(-DDISABLE_OPENCL_TESTS)
 # Configure Boost for testing
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME ON)
 
 if(APPLE)
-    set(Boost_USE_STATIC_RUNTIME OFF)
     set(CMAKE_FIND_FRAMEWORK LAST)
     set(CMAKE_FIND_APPBUNDLE LAST)
 endif()
@@ -31,9 +31,8 @@ if(NOT Boost_FOUND)
     message(FATAL_ERROR "Boost not found. Please install Boost development libraries.")
 endif()
 
-# Add Boost include directories and define test macros
-add_definitions(-DBOOST_TEST_DYN_LINK)
-add_definitions(-DBOOST_ALL_DYN_LINK)
+# Add Boost include directories
+# Using static linking, so we don't need dynamic link definitions
 
 if(DEFINED ENV{CI})
     # Use parent scope variables
@@ -183,6 +182,11 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    
+    # Add Boost Test definitions
+    target_compile_definitions(${TEST_NAME} PRIVATE
+        BOOST_TEST_MAIN
     )
 
     # Register with CTest
