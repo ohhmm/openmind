@@ -199,15 +199,28 @@ namespace math {
             }
             return varSetHost->CompareIdsLess(varId, i.varId);
         }
+        else if (v.IsInt() || v.IsFraction() || v.IsConstant())
+        {
+            // For numeric types, compare using evaluation
+            auto thisVal = varSetHost->Host(varId);
+            return thisVal < v;
+        }
         
-        // not implemented comparison to this Valuable descent
+        // For other types, use base class comparison
         return base::operator <(v);
     }
 
     bool Variable::operator==(const Valuable& value) const
     {
-        return (value.IsVa() && operator==(value.as<Variable>()))
-            || (Hash() == value.Hash() && value.operator==(*this));
+        if (value.IsVa()) {
+            return operator==(value.as<Variable>());
+        }
+        else if (value.IsInt() || value.IsFraction() || value.IsConstant()) {
+            // For numeric types, compare using evaluation
+            auto thisVal = varSetHost->Host(varId);
+            return thisVal == value;
+        }
+        return Hash() == value.Hash() && value.operator==(*this);
     }
 
     bool Variable::Same(const Variable& variable) const
@@ -358,6 +371,21 @@ namespace math {
         for (auto& item : l)
             a.Add(Equals(item));
         return Valuable(a.Move());
+    }
+
+    Valuable Variable::Intersect(const Valuable& other, const Variable& var) const {
+        if (operator==(var)) {
+            auto solutions1 = IntSolutions(var);
+            auto solutions2 = other.IntSolutions(var);
+            solutions_t intersection;
+            for (const auto& sol : solutions1) {
+                if (solutions2.find(sol) != solutions2.end()) {
+                    intersection.insert(sol);
+                }
+            }
+            return Valuable(std::move(intersection));
+        }
+        return base::Intersect(other, var);
     }
 
     bool Variable::IsPolynomial(const Variable& v) const {

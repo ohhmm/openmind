@@ -103,6 +103,7 @@ public:
     size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const override;
 
     Valuable Abet(const std::initializer_list<Valuable>) const;
+    Valuable Intersect(const Valuable& other, const Variable& var) const override;
 
     vars_cont_t GetVaExps() const override;
     Valuable varless() const override { return constants::one; }
