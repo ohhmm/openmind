@@ -446,8 +446,7 @@ namespace omnn::math {
                         else { // zero
                             if (ebase().IsZero())
                             {
-                                IMPLEMENT
-                                throw "NaN"; // feel free to handle this properly
+                                Become(NaN());
                             }
                             else
                             {
