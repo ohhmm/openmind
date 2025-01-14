@@ -1,0 +1,71 @@
+name: C/C++ CI macOS
+
+on: [push]
+
+jobs:
+  build-in-macos:
+    runs-on: macos-latest
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_DEFAULT_TRIPLET: arm64-osx
+      CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        brew install cmake ninja autoconf automake autoconf-archive
+        cmake --version
+        ninja --version
+        clang --version
+
+    - name: Setup vcpkg
+      run: |
+        rm -rf $VCPKG_ROOT || true
+        git clone https://github.com/Microsoft/vcpkg.git $VCPKG_ROOT
+        $VCPKG_ROOT/bootstrap-vcpkg.sh
+        $VCPKG_ROOT/vcpkg integrate install
+        echo "VCPKG_ROOT=$VCPKG_ROOT" >> $GITHUB_ENV
+        echo "CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+
+    - name: Install vcpkg dependencies
+      run: |
+        echo "Installing dependencies from vcpkg.json manifest..."
+        $VCPKG_ROOT/vcpkg install --triplet=$VCPKG_DEFAULT_TRIPLET
+        echo "Verifying installations..."
+        $VCPKG_ROOT/vcpkg list
+
+    - name: Verify vcpkg setup
+      run: |
+        ls -la ${{github.workspace}}/vcpkg
+        ls -la ${{github.workspace}}/vcpkg/installed || true
+        vcpkg list
+        echo "Using vcpkg triplet: ${{env.VCPKG_DEFAULT_TRIPLET}}"
+        echo "VCPKG_ROOT location: ${{env.VCPKG_ROOT}}"
+
+    - name: Create Build Dir
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake ${{github.workspace}} \
+          -G Ninja \
+          -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TOOLCHAIN_FILE}} \
+          -DVCPKG_ROOT=${{env.VCPKG_ROOT}} \
+          -DVCPKG_TARGET_TRIPLET=${{env.VCPKG_DEFAULT_TRIPLET}} \
+          -DOPENMIND_BUILD_SAMPLES=OFF \
+          -DOPENMIND_BUILD_TESTS=ON \
+          -DOPENMIND_USE_OPENCL=OFF \
+          -DOPENMIND_USE_CUDA=OFF \
+          -DOPENMIND_USE_DPCPP=OFF \
+          -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . -j $(sysctl -n hw.ncpu)
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest . -j $(sysctl -n hw.ncpu) -E "ts" --rerun-failed --output-on-failure
