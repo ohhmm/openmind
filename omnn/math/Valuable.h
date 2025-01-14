@@ -354,6 +354,36 @@ public:
     virtual Valuable& operator++();
     virtual Valuable& operator^=(const Valuable&);
 
+    // returns the intersection of this valuable with another valuable for a given variable
+    virtual Valuable Intersect(const Valuable& other, const Variable& var) const {
+        if (exp) {
+            return exp->Intersect(other, var);
+        }
+        if (IsVa()) {
+            if (operator==(var)) {
+                auto solutions1 = IntSolutions(var);
+                auto solutions2 = other.IntSolutions(var);
+                solutions_t intersection;
+                for (const auto& sol : solutions1) {
+                    if (solutions2.find(sol) != solutions2.end()) {
+                        intersection.insert(sol);
+                    }
+                }
+                return Valuable(std::move(intersection));
+            }
+            return *this;
+        }
+        solutions_t solutions1 = IntSolutions(var);
+        solutions_t solutions2 = other.IntSolutions(var);
+        solutions_t intersection;
+        for (const auto& sol : solutions1) {
+            if (solutions2.find(sol) != solutions2.end()) {
+                intersection.insert(sol);
+            }
+        }
+        return Valuable(std::move(intersection));
+    }
+
     // returns the greatest common divisor (GCD) with the given object
     virtual Valuable GCD(const Valuable&) const;
     virtual Valuable& gcd(const Valuable&);
