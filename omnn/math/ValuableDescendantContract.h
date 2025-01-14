@@ -19,6 +19,8 @@ namespace math {
         Valuable& operator*=(const Valuable &v) override;
         Valuable& operator/=(const Valuable &v) override;
         Valuable& operator%=(const Valuable &v) override;
+        
+        // Removed duplicate Intersect declaration - already handled by base class
 
         Valuable operator -() const override;
 

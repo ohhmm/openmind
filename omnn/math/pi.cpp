@@ -9,23 +9,22 @@ using namespace omnn::math;
 constinit std::string_view Pi::SerializationName = "pi";
 
 bool Pi::operator<(const Valuable& v) const {
+    // Handle self-comparison and other Pi instances
     if (v.Is_pi()) {
-        return false;  // π = π, so π < π is false
+        return false;  // π is never less than itself
     }
+    
     // Handle numeric types (integers and fractions)
     if (v.IsInt() || v.IsFraction()) {
-        // Special case: if comparing with itself or another π, use direct comparison
-        if (v.Is_pi()) {
-            return false;  // π is never less than itself
+        // π is a positive constant, so it's never less than non-positive numbers
+        if (v <= constants::zero) {
+            return false;
         }
-        
-        // Convert to double for comparison, but handle negative numbers carefully
-        auto dval = static_cast<double>(v);
-        if (dval <= 0) {
-            return false;  // π is positive, never less than non-positive numbers
-        }
-        return std::numbers::pi < dval;
+        // For positive numbers, compare with π ≈ 3.14159...
+        return std::numbers::pi < static_cast<double>(v);
     }
+    
+    // For all other types, delegate to base class comparison
     return base::operator<(v);
 }
 
