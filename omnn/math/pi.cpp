@@ -12,11 +12,19 @@ bool Pi::operator<(const Valuable& v) const {
     if (v.Is_pi()) {
         return false;  // π = π, so π < π is false
     }
+    // Handle numeric types (integers and fractions)
     if (v.IsInt() || v.IsFraction()) {
-        if (v.IsNegative().ToBool()) {
-            return false;  // π is positive, never less than negative numbers
+        // Special case: if comparing with itself or another π, use direct comparison
+        if (v.Is_pi()) {
+            return false;  // π is never less than itself
         }
-        return std::numbers::pi < static_cast<double>(v);
+        
+        // Convert to double for comparison, but handle negative numbers carefully
+        auto dval = static_cast<double>(v);
+        if (dval <= 0) {
+            return false;  // π is positive, never less than non-positive numbers
+        }
+        return std::numbers::pi < dval;
     }
     return base::operator<(v);
 }
