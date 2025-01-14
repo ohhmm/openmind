@@ -30,4 +30,5 @@ if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
     endif()
 endif()
 
+# Tests are handled by bins.cmake
 #add_library(OpenMind::math ALIAS math)
