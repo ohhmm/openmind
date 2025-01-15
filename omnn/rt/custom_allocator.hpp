@@ -68,6 +68,10 @@ public:
     bool operator==(const custom_allocator&) const noexcept { return true; }
     bool operator!=(const custom_allocator&) const noexcept { return false; }
 
+    // Required by boost::ublas
+    template<class U>
+    custom_allocator& operator=(const custom_allocator<U>&) { return *this; }
+
     // Propagate on container copy assignment
     using propagate_on_container_copy_assignment = std::false_type;
     // Propagate on container move assignment

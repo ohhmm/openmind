@@ -11,10 +11,13 @@ using namespace omnn;
 using namespace math;
 
 
-auto det_fast(extrapolator_base_matrix matrix)
+auto det_fast(const Extrapolator& matrix)
 {
-    using T = extrapolator_base_matrix::value_type;
-    ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
+    using T = Extrapolator::value_type;
+    using allocator_type = omnn::rt::custom_allocator<std::size_t>;
+    using array_type = ublas::unbounded_array<std::size_t, allocator_type>;
+    using perm_matrix_type = ublas::permutation_matrix<std::size_t, array_type>;
+    perm_matrix_type pivots(matrix.size1());
 
     auto isSingular = ublas::lu_factorize(matrix, pivots);
     if (isSingular)
