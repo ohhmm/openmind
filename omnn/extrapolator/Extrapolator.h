@@ -23,41 +23,64 @@ namespace omnn::math {
     namespace ublas = boost::numeric::ublas;
     //using extrapolator_value_type = a_rational;
     using extrapolator_value_type = Valuable;
-    using extrapolator_base_matrix = boost::numeric::ublas::matrix<extrapolator_value_type>;
+    using extrapolator_allocator = omnn::rt::custom_allocator<extrapolator_value_type>;
+    using extrapolator_array = ublas::unbounded_array<extrapolator_value_type, extrapolator_allocator>;
+    using extrapolator_base_matrix = ublas::matrix<extrapolator_value_type, ublas::row_major, extrapolator_array>;
+    using extrapolator_vector_array = ublas::unbounded_array<extrapolator_value_type, extrapolator_allocator>;
+    using extrapolator_vector = ublas::vector<extrapolator_value_type, extrapolator_vector_array>;
 
 
 class Extrapolator
         : public extrapolator_base_matrix
 {
     using base = extrapolator_base_matrix;
-    using T = extrapolator_base_matrix::value_type;
+public:
+    using T = extrapolator_value_type;
+    using this_type = Extrapolator;
+    using value_type = T;
+    using size_type = typename base::size_type;
+    using const_reference = typename base::const_reference;
+    using reference = typename base::reference;
+    using matrix_type = base;
 
-    using solution_t = typename ublas::matrix_vector_solve_traits<base, ublas::vector<T>>::result_type;
+public:
+    using base::operator();
+    using base::size1;
+    using base::size2;
+    using base::operator=;
+
+public:
+    using vector_type = extrapolator_vector;
+    using solution_t = typename boost::numeric::ublas::matrix_vector_solve_traits<matrix_type, vector_type>::result_type;
+    
+    using base::base;  // Inherit constructors
+    
+    // Add constructor from initializer list
+    Extrapolator(std::initializer_list<std::vector<T>> dependancy_matrix);
+    
+    // Add constructor for size
+    Extrapolator(size_t rows, size_t cols) : base(rows, cols) {}
 
     mutable solution_t solution;
 
 public:
-    using base::base;
-
 	Extrapolator() = default;
 
-    Extrapolator(std::initializer_list<std::vector<T>> dependancy_matrix);
+    solution_t Solve(const vector_type& augment) const;
 
-    solution_t Solve(const ublas::vector<T>& augment) const;
-
-    T Determinant() const;
+    auto Determinant() const -> T;
 
     /**
      * If possible, make the matrix consistent
      * @return true if it is
      * **/
-    bool Consistent(const ublas::vector<T>& augment);
+    bool Consistent(const vector_type& augment);
 
     /**
      * If possible, make the matrix consistent
      * @return true if it is
      * **/
-    bool Consistent(const extrapolator_base_matrix& augment);
+    bool Consistent(const this_type& augment);
 
     /**
      * this is to complete it with other deducible variables
@@ -100,7 +123,7 @@ public:
      */
     operator Formula() const;
 
-    Valuable Equation(const ublas::vector<T>& augmented);
+    Valuable Equation(const vector_type& augmented);
 };
 
 }

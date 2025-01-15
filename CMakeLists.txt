@@ -129,8 +129,8 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.85.0 CACHE STRING "Boost library version to use")
-set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.74.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_REQUIRED_BOOST_VERSION 1.74.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
 if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
@@ -329,24 +329,9 @@ elseif(OPENMIND_BUILD_BOOST)
         separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
     endif()
 
-    message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
-    ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
-        GIT_TAG boost-${OPENMIND_PREFERRED_BOOST_VERSION}
-        GIT_SHALLOW ON
-        BUILD_IN_SOURCE 1
-        CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE} --without-icu
-        BUILD_COMMAND ${BOOST_BUILD_COMMAND}
-        INSTALL_COMMAND ${BOOST_INSTALL_COMMAND}
-        UPDATE_COMMAND ""
-        )
-    set(EXTERNAL_FETCHED_BOOST ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
-    set(Boost_INCLUDE_DIR ${EXTERNAL_FETCHED_BOOST} CACHE PATH "Path" FORCE)
-    build_command(BOOST_BUILD_CMD TARGET boost)
-    message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
-    message("BOOST_BUILD_CMD ${BOOST_BUILD_CMD}")
-    execute_process(COMMAND ${BOOST_BUILD_CMD}
-        WORKING_DIRECTORY ${EXTERNAL_FETCHED_BOOST}
-        )
+    # Use system-installed Boost instead of building from source
+    find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION} REQUIRED COMPONENTS ${BOOST_USED_COMPONENTS})
+    # System Boost will be used instead
     if(WIN32)
         find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
             PATHS C:/Boost

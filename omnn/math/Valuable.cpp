@@ -1053,11 +1053,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     o = o_exp;
                 }
                 else if (c == '!') {
-                    v = v.Factorial();
                     if (mulByNeg) {
                         v *= -1;
                         mulByNeg = {};
                     }
+                    v = v.Factorial();
                 }
                 else if (c == ' ') {
                 }
