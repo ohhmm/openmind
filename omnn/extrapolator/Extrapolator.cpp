@@ -18,10 +18,11 @@ namespace {
         using allocator_type = omnn::rt::custom_allocator<std::size_t>;
         using array_type = ublas::unbounded_array<std::size_t, allocator_type>;
         using perm_matrix_type = ublas::permutation_matrix<std::size_t, array_type>;
-        perm_matrix_type pivots(matrix.size1());
-
-        matrix_type tmp(matrix);
-    auto isSingular = ublas::lu_factorize(tmp, pivots);
+        using matrix_type = typename Extrapolator::matrix_type;
+        
+        matrix_type tmp(matrix);  // Create a copy since lu_factorize modifies the input
+        perm_matrix_type pivots(tmp.size1());
+        auto isSingular = ublas::lu_factorize(tmp, pivots);
         if (isSingular)
             return T(0);
 
@@ -88,7 +89,7 @@ Extrapolator::operator Formula() const
         return s.FormulaOfVa(vv);
 }
 
-Extrapolator::Extrapolator(std::initializer_list<std::vector<T>> dependancy_matrix)
+Extrapolator::Extrapolator(std::initializer_list<std::vector<value_type>> dependancy_matrix)
     : base(dependancy_matrix.size(), dependancy_matrix.begin()->size())
 {
     using size_type = typename base::size_type;
@@ -100,10 +101,9 @@ Extrapolator::Extrapolator(std::initializer_list<std::vector<T>> dependancy_matr
         }
     }
 }
-Extrapolator::solution_t Extrapolator::Solve(const extrapolator_vector& augment) const
+Extrapolator::solution_t Extrapolator::Solve(const vector_type& augment) const
 {
     using size_type = typename extrapolator_base_matrix::size_type;
-    using vector_type = extrapolator_vector;
     auto e = *this;
     size_type sz1 = this->size1();
     size_type sz2 = this->size2();
@@ -134,11 +134,32 @@ Extrapolator::solution_t Extrapolator::Solve(const extrapolator_vector& augment)
         }
         au = &a;
     }
-    solution = ublas::solve(e, *au, ublas::upper_tag());
+    // Create temporary matrices/vectors with consistent allocator types
+    matrix_type tmp_matrix(e);
+    
+    // Create vector with same allocator type as matrix
+    vector_type tmp_vector(au->size());
+    std::copy(au->begin(), au->end(), tmp_vector.begin());
+    
+    // Create permutation matrix with consistent allocator
+    using size_allocator_type = omnn::rt::custom_allocator<std::size_t>;
+    using size_array_type = ublas::unbounded_array<std::size_t, size_allocator_type>;
+    using perm_matrix_type = ublas::permutation_matrix<std::size_t, size_array_type>;
+    perm_matrix_type pm(tmp_matrix.size1());
+    
+    // Perform LU decomposition and substitution
+    int singular = ublas::lu_factorize(tmp_matrix, pm);
+    if (!singular) {
+        ublas::lu_substitute(tmp_matrix, pm, tmp_vector);
+        solution = std::move(tmp_vector);
+    } else {
+        // Handle singular matrix case
+        solution = extrapolator_vector_type(tmp_vector.size());
+    }
     return solution;
 }
 
-Extrapolator::T Extrapolator::Determinant() const
+Extrapolator::value_type Extrapolator::Determinant() const
 {
     using allocator_type = omnn::rt::custom_allocator<std::size_t>;
     using array_type = ublas::unbounded_array<std::size_t, allocator_type>;
@@ -148,12 +169,12 @@ Extrapolator::T Extrapolator::Determinant() const
     matrix_type tmp(mLu);
     auto isSingular = ublas::lu_factorize(tmp, pivots);
     if (isSingular)
-        return static_cast<T>(0);
+        return value_type(0);
 
-    T det = static_cast<T>(1);
+    value_type det = value_type(1);
     for (std::size_t i = 0; i < pivots.size(); ++i) {
         if (pivots(i) != i)
-            det *= static_cast<T>(-1);
+            det *= value_type(-1);
 
         det *= mLu(i, i);
     }
@@ -161,7 +182,7 @@ Extrapolator::T Extrapolator::Determinant() const
     return det;
 }
 
-bool Extrapolator::Consistent(const extrapolator_vector& augment)
+bool Extrapolator::Consistent(const vector_type& augment)
 {
     using size_type = typename extrapolator_base_matrix::size_type;
     auto sz = augment.size();
@@ -229,4 +250,5 @@ Valuable Extrapolator::Equation(const vector_type& augmented)
     }
     v.optimize();
     return v;
-} // namespace omnn::math
+}  // namespace math
+}  // namespace omnn
