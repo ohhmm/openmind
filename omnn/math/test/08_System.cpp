@@ -69,6 +69,18 @@ BOOST_AUTO_TEST_CASE(Basic_System_tests) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(NonLinear_System_tests
+    , *disabled() // FIXME:
+) {
+    DECL_VARS(x, y, z);
+    System sys;
+    sys << "(x^2)+(y^2)=8"_v
+        << "x*y=7"_v
+        << "(x+y)^2=z"_v;
+    auto _ = sys.Solve(z);
+}
+
+
 BOOST_AUTO_TEST_CASE(System_tests
     , *disabled() // FIXME:
 ) {
