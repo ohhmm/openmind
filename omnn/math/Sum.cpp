@@ -619,10 +619,10 @@ namespace
                     scan = {};
                     if (IsSum())
                     {
-                        for (auto& m : members)
+                        for (auto& member : members)
                         {
-                            if (m.IsProduct()) {
-                                auto& p = m.as<Product>();
+                            if (member.IsProduct()) {
+                                auto& p = member.as<Product>();
                                 for (auto& m : p) {
                                     if (m.IsFraction()) {
                                         operator*=(m.as<Fraction>().getDenominator());
@@ -658,14 +658,12 @@ namespace
                                 }
                                 if (scan)
                                     break;
-                            }
-                            else if (m.IsFraction()) {
-                                operator*=(m.as<Fraction>().getDenominator());
+                            } else if (member.IsFraction()) {
+                                operator*=(member.as<Fraction>().getDenominator());
                                 scan = true;
                                 break;
-                            }
-                            else if (m.IsExponentiation()) {
-                                auto& e = m.as<Exponentiation>();
+                            } else if (member.IsExponentiation()) {
+                                auto& e = member.as<Exponentiation>();
                                 auto& ee = e.getExponentiation();
                                 if (ee.IsInt() && ee < 0) {
                                     operator*=(e.getBase() ^ (-ee));
@@ -674,7 +672,7 @@ namespace
                                 }
                                 else if (ee.IsFraction()) {
                                     auto& f = ee.as<Fraction>();
-                                    Become((e.getBase() ^ f.getNumerator()) - ((-(*this - m)) ^ f.getDenominator()));
+                                    Become((e.getBase() ^ f.getNumerator()) - ((-(*this - member)) ^ f.getDenominator()));
                                     scan = true;
                                     break;
                                 }
@@ -686,8 +684,16 @@ namespace
                 if(IsSum())
                 {
                     auto gcd = GCDofMembers();
-                    if(gcd != constants::one){
-                        operator/=(gcd);
+                    if(gcd != constants::one && !gcd.IsPrincipalSurd()){
+                        if (gcd.IsProduct()) {
+                            for (auto& member : gcd.as<Product>()) {
+                                if (member.FindVa() == nullptr || !member.IsPrincipalSurd()) {
+                                    operator/=(member);
+                                }
+                            }
+                        } else {
+                            operator/=(gcd);
+                        }
                     }
 
                     if(IsMultival()== YesNoMaybe::Yes){
