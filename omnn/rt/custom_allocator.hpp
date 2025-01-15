@@ -54,94 +54,88 @@ public:
         return std::numeric_limits<size_type>::max() / sizeof(T);
     }
 
-    // C++17 allocator interface
-    template <class U>
-    struct rebind {
-        using other = custom_allocator<U>;
-    };
-
-    // Boost.uBLAS compatibility methods
-    template <class U>
-    void construct(U* p) {
-        ::new(static_cast<void*>(p)) U();
-    }
-
-    template <class U>
-    void construct(U* p, const U& val) {
-        ::new(static_cast<void*>(p)) U(val);
-    }
-
-    template <class U>
-    void construct(U* p, U&& val) {
-        ::new(static_cast<void*>(p)) U(std::move(val));
-    }
-
-    template <class U, class... Args>
-    void construct(U* p, Args&&... args) {
-        ::new(static_cast<void*>(p)) U(std::forward<Args>(args)...);
-    }
-
-    // Support for constructing const objects
-    template <class U>
-    void construct(const U* p) {
-        ::new(const_cast<void*>(static_cast<const void*>(p))) U();
-    }
-
-    template <class U>
-    void construct(const U* p, const U& val) {
-        ::new(const_cast<void*>(static_cast<const void*>(p))) U(val);
-    }
-
-    template <class U>
-    void destroy(U* p) {
-        p->~U();
-    }
-
-    // Boost.uBLAS specific typedefs and traits
+    // Type definitions for Boost.uBLAS compatibility
     using self_type = custom_allocator<T>;
     using const_reference_type = const_reference;
     using pointer_type = pointer;
     using const_pointer_type = const_pointer;
 
-    // Standard allocator traits
-    using propagate_on_container_copy_assignment = std::false_type;
-    using propagate_on_container_move_assignment = std::true_type;
-    using propagate_on_container_swap = std::false_type;
-    using is_always_equal = std::true_type;
+    // Rebind allocator to different type (required by both std:: and boost::)
+    template <typename U>
+    struct rebind {
+        using other = custom_allocator<U>;
+    };
 
-    // Boost.uBLAS comparison operators
-    bool operator==(const custom_allocator&) const noexcept { return true; }
-    bool operator!=(const custom_allocator&) const noexcept { return false; }
-    
-    // Required by boost::ublas
+    // Construction/destruction methods with C++23 compatibility
+    template <typename U>
+    constexpr void construct(U* p) noexcept(std::is_nothrow_default_constructible_v<U>) {
+        ::new(static_cast<void*>(p)) U();
+    }
+
+    template <typename U>
+    constexpr void construct(U* p, const U& value) noexcept(std::is_nothrow_copy_constructible_v<U>) {
+        ::new(static_cast<void*>(p)) U(value);
+    }
+
+    template <typename U, typename... Args>
+    constexpr void construct(U* p, Args&&... args)
+        noexcept(std::is_nothrow_constructible_v<U, Args...>) {
+        ::new(static_cast<void*>(p)) U(std::forward<Args>(args)...);
+    }
+
+    template <typename U>
+    constexpr void destroy(U* p) noexcept {
+        if (p != nullptr) {
+            p->~U();
+        }
+    }
+
+    // C++23 allocator requirements
+    using is_always_equal = std::true_type;
+    using propagate_on_container_move_assignment = std::true_type;
+    using propagate_on_container_copy_assignment = std::false_type;
+    using propagate_on_container_swap = std::false_type;
+
+    // C++23 comparison operators
+    [[nodiscard]] constexpr bool operator==(const custom_allocator&) const noexcept { return true; }
+    [[nodiscard]] constexpr bool operator!=(const custom_allocator&) const noexcept { return false; }
+
+    // Assignment operator
     template<class U>
     custom_allocator& operator=(const custom_allocator<U>&) noexcept { return *this; }
 
-    // Container construction behavior
+    // Container behavior
     static custom_allocator select_on_container_copy_construction(const custom_allocator&) noexcept {
         return custom_allocator();
     }
 
-    // Required by boost::ublas for zero initialization
-    void initialize(size_type size) {
-        if (size > 0) {
-            pointer p = allocate(size);
-            for (size_type i = 0; i < size; ++i) {
-                construct(p + i);
-            }
-        }
-    }
-
-    // Required by boost::ublas for array-like access
+    // Memory management
     pointer data() noexcept { return nullptr; }
     const_pointer data() const noexcept { return nullptr; }
     size_type size() const noexcept { return 0; }
 
-    // Required by boost::ublas for resizing
-    void resize(size_type) noexcept {}
+    // Container operations
+    void initialize(size_type size) {
+        if (size > 0) {
+            pointer p = allocate(size);
+            for (size_type i = 0; i < size; ++i) {
+                construct(p + i, value_type());
+            }
+        }
+    }
 
-    // Required by boost::ublas for swapping
-    void swap(custom_allocator&) noexcept {}
+    void resize(size_type new_size) {
+        if (new_size > 0) {
+            pointer p = allocate(new_size);
+            for (size_type i = 0; i < new_size; ++i) {
+                construct(p + i, value_type());
+            }
+        }
+    }
+
+    void swap(custom_allocator& other) noexcept {
+        std::swap(*this, other);
+    }
 };
 
 // Wrapper class for unbounded_array

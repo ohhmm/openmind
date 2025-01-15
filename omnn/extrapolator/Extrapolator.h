@@ -21,27 +21,45 @@
 namespace omnn::math {
 
     namespace ublas = boost::numeric::ublas;
-    //using extrapolator_value_type = a_rational;
+    
+    // Base value type
     using extrapolator_value_type = Valuable;
-    using extrapolator_allocator = omnn::rt::custom_allocator<extrapolator_value_type>;
-    using extrapolator_array = ublas::unbounded_array<extrapolator_value_type, extrapolator_allocator>;
-    using extrapolator_base_matrix = ublas::matrix<extrapolator_value_type, ublas::row_major, extrapolator_array>;
-    using extrapolator_vector_array = ublas::unbounded_array<extrapolator_value_type, extrapolator_allocator>;
-    using extrapolator_vector = ublas::vector<extrapolator_value_type, extrapolator_vector_array>;
+
+ 
+    // Allocator and container types
+    using extrapolator_allocator_type = omnn::rt::custom_allocator<extrapolator_value_type>;
+    using extrapolator_array_type = ublas::unbounded_array<extrapolator_value_type, extrapolator_allocator_type>;
+    
+    // Matrix and vector types
+    using extrapolator_base_matrix = ublas::matrix<extrapolator_value_type, ublas::row_major, extrapolator_array_type>;
+    using extrapolator_vector_type = ublas::vector<extrapolator_value_type, extrapolator_array_type>;
+    using vector_type = extrapolator_vector_type;
+
+    
 
 
 class Extrapolator
         : public extrapolator_base_matrix
 {
-    using base = extrapolator_base_matrix;
 public:
-    using T = extrapolator_value_type;
-    using this_type = Extrapolator;
-    using value_type = T;
-    using size_type = typename base::size_type;
-    using const_reference = typename base::const_reference;
-    using reference = typename base::reference;
+    // Type definitions
+    using base = extrapolator_base_matrix;
     using matrix_type = base;
+    using vector_type = extrapolator_vector_type;
+    using value_type = typename base::value_type;
+    using size_type = typename base::size_type;
+    using reference = typename base::reference;
+    using const_reference = typename base::const_reference;
+    using this_type = Extrapolator;
+    using iterator1 = typename base::iterator1;
+    using iterator2 = typename base::iterator2;
+    using const_iterator1 = typename base::const_iterator1;
+    using const_iterator2 = typename base::const_iterator2;
+    using solution_t = vector_type;
+    using extrapolator_vector = vector_type;
+
+private:
+    mutable solution_t solution;
     
     // Add const-correct swap operation
     friend void swap(Extrapolator& lhs, Extrapolator& rhs) noexcept {
@@ -51,31 +69,46 @@ public:
     }
 
 public:
+    // Inherit base matrix functionality
     using base::operator();
     using base::size1;
     using base::size2;
     using base::operator=;
+    using base::operator+=;
+    using base::operator-=;
+    using base::operator*=;
+    using base::operator/=;
+    using base::find1;
+    using base::find2;
+    using base::data;
 
-public:
-    using vector_type = extrapolator_vector;
-    using solution_t = typename boost::numeric::ublas::matrix_vector_solve_traits<matrix_type, vector_type>::result_type;
+    // Iterator support
+    iterator1 begin1() { return base::begin1(); }
+    const_iterator1 begin1() const { return base::begin1(); }
+    iterator1 end1() { return base::end1(); }
+    const_iterator1 end1() const { return base::end1(); }
     
-    using base::base;  // Inherit constructors
+    iterator2 begin2() { return base::begin2(); }
+    const_iterator2 begin2() const { return base::begin2(); }
+    iterator2 end2() { return base::end2(); }
+    const_iterator2 end2() const { return base::end2(); }
+    
+    // Inherit constructors
+    using base::base;
     
     // Add constructor from initializer list
-    Extrapolator(std::initializer_list<std::vector<T>> dependancy_matrix);
+    Extrapolator(std::initializer_list<std::vector<value_type>> dependancy_matrix);
     
-    // Add constructor for size
-    Extrapolator(size_t rows, size_t cols) : base(rows, cols) {}
-
-    mutable solution_t solution;
-
+    // Constructors
+    Extrapolator() = default;
+    
 public:
-	Extrapolator() = default;
+    // Constructor for size
+    Extrapolator(size_t rows, size_t cols) : base(rows, cols) {}
 
     solution_t Solve(const vector_type& augment) const;
 
-    auto Determinant() const -> T;
+    auto Determinant() const -> value_type;
 
     /**
      * If possible, make the matrix consistent
@@ -129,6 +162,26 @@ public:
      * @returns formula from two params
      */
     operator Formula() const;
+
+    // Vector conversion operators
+    template<typename OtherAlloc>
+    operator ublas::vector<extrapolator_value_type, ublas::unbounded_array<extrapolator_value_type, OtherAlloc>>() const {
+        using other_vector = ublas::vector<extrapolator_value_type, ublas::unbounded_array<extrapolator_value_type, OtherAlloc>>;
+        other_vector result(this->size1());
+        for (size_type i = 0; i < this->size1(); ++i) {
+            result(i) = (*this)(i);
+        }
+        return result;
+    }
+    
+    template<typename OtherAlloc>
+    Extrapolator& operator=(const ublas::vector<extrapolator_value_type, ublas::unbounded_array<extrapolator_value_type, OtherAlloc>>& other) {
+        this->resize(other.size(), 1);
+        for (size_type i = 0; i < other.size(); ++i) {
+            (*this)(i, 0) = other(i);
+        }
+        return *this;
+    }
 
     Valuable Equation(const vector_type& augmented);
 };
