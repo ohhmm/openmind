@@ -47,35 +47,49 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     nDegree++;
 
     auto nCount =  oX.size();
-    matrix<T> oXMatrix( nCount, nDegree );
-    matrix<T> oYMatrix( nCount, 1 );
+    using allocator_type = custom_allocator<T>;
+    using array_type = unbounded_array<T, allocator_type>;
+    using matrix_type = matrix<T, row_major, array_type>;
+    matrix_type oXMatrix(nCount, nDegree);
+    matrix_type oYMatrix(nCount, 1);
+    
+    // Initialize matrices with zero values first
+    for(size_t i = 0; i < nCount; i++) {
+        for(size_t j = 0; j < nDegree; j++) {
+            oXMatrix(i,j) = T();
+        }
+        oYMatrix(i,0) = T();
+    }
 
     // copy y matrix
     for ( size_t i = 0; i < nCount; i++ )
     {
-        new (&oYMatrix(i, 0)) T(oY[i]);
+        oYMatrix(i, 0) = oY[i];
     }
 
     // create the X matrix
     for ( size_t nRow = 0; nRow < nCount; nRow++ )
     {
-        T nVal = 1.0f;
+        T nVal = T(1);
         for (size_t nCol = 0; nCol < nDegree; nCol++)
         {
-            new (&oXMatrix(nRow, nCol)) T(nVal);
+            oXMatrix(nRow, nCol) = nVal;
             nVal *= oX[nRow];
         }
     }
 
     // transpose X matrix
-    matrix<T> oXtMatrix( trans(oXMatrix) );
+    matrix_type oXtMatrix(trans(oXMatrix));
     // multiply transposed X matrix with X matrix
-    matrix<T> oXtXMatrix( prec_prod(oXtMatrix, oXMatrix) );
+    matrix_type oXtXMatrix(prec_prod(oXtMatrix, oXMatrix));
     // multiply transposed X matrix with Y matrix
-    matrix<T> oXtYMatrix( prec_prod(oXtMatrix, oYMatrix) );
+    matrix_type oXtYMatrix(prec_prod(oXtMatrix, oYMatrix));
 
     // lu decomposition
-    permutation_matrix<int> pert(oXtXMatrix.size1());
+    using perm_allocator_type = custom_allocator<std::size_t>;
+    using perm_array_type = unbounded_array<std::size_t, perm_allocator_type>;
+    using perm_matrix_type = permutation_matrix<std::size_t, perm_array_type>;
+    perm_matrix_type pert(oXtXMatrix.size1());
     auto singular = lu_factorize(oXtXMatrix, pert);
     // must be singular
     BOOST_ASSERT( singular == 0 );

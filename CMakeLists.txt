@@ -338,24 +338,9 @@ elseif(OPENMIND_BUILD_BOOST)
         separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
     endif()
 
-    message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
-    ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
-        GIT_TAG boost-${OPENMIND_PREFERRED_BOOST_VERSION}
-        GIT_SHALLOW ON
-        BUILD_IN_SOURCE 1
-        CONFIGURE_COMMAND ${BOOST_EXT_CONFIGURE} --without-icu
-        BUILD_COMMAND ${BOOST_BUILD_COMMAND}
-        INSTALL_COMMAND ${BOOST_INSTALL_COMMAND}
-        UPDATE_COMMAND ""
-        )
-    set(EXTERNAL_FETCHED_BOOST ${PROJECT_BINARY_DIR}/boost-prefix/src/boost CACHE PATH "Path" FORCE)
-    set(Boost_INCLUDE_DIR ${EXTERNAL_FETCHED_BOOST} CACHE PATH "Path" FORCE)
-    build_command(BOOST_BUILD_CMD TARGET boost)
-    message("EXTERNAL_FETCHED_BOOST: ${EXTERNAL_FETCHED_BOOST}")
-    message("BOOST_BUILD_CMD ${BOOST_BUILD_CMD}")
-    execute_process(COMMAND ${BOOST_BUILD_CMD}
-        WORKING_DIRECTORY ${EXTERNAL_FETCHED_BOOST}
-        )
+    # Use system-installed Boost instead of building from source
+    find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION} REQUIRED COMPONENTS ${BOOST_USED_COMPONENTS})
+    # System Boost will be used instead
     if(WIN32)
         find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
             PATHS C:/Boost

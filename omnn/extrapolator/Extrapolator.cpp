@@ -7,44 +7,50 @@
 #include "omnn/math/Integer.h"
 #include "omnn/math/Sum.h"
 
-using namespace omnn;
-using namespace math;
+namespace omnn::math {
 
+namespace ublas = boost::numeric::ublas;
 
-auto det_fast(extrapolator_base_matrix matrix)
-{
-    using T = extrapolator_base_matrix::value_type;
-    ublas::permutation_matrix<std::size_t> pivots(matrix.size1());
-
-    auto isSingular = ublas::lu_factorize(matrix, pivots);
-    if (isSingular)
-        return T(0);
-
-    T det = 1;
-    for (std::size_t i = 0; i < pivots.size(); ++i)
+namespace {
+    auto det_fast(const Extrapolator& matrix)
     {
-        if (pivots(i) != i)
-            det *= static_cast<double>(-1);
+        using T = Extrapolator::value_type;
+        using allocator_type = omnn::rt::custom_allocator<std::size_t>;
+        using array_type = ublas::unbounded_array<std::size_t, allocator_type>;
+        using perm_matrix_type = ublas::permutation_matrix<std::size_t, array_type>;
+        perm_matrix_type pivots(matrix.size1());
 
-        det *= matrix(i, i);
+        auto isSingular = ublas::lu_factorize(matrix, pivots);
+        if (isSingular)
+            return T(0);
+
+        T det = 1;
+        for (std::size_t i = 0; i < pivots.size(); ++i)
+        {
+            if (pivots(i) != i)
+                det *= static_cast<double>(-1);
+
+            det *= matrix(i, i);
+        }
+
+        return det;
     }
+} // anonymous namespace
 
-    return det;
-}
-
-bool Extrapolator::Consistent(const extrapolator_base_matrix& augment)
+bool Extrapolator::Consistent(const this_type& augment)
 {
     return Determinant() == det_fast(augment);
 }
 
 Valuable Extrapolator::Factors(const Variable& row, const Variable& col, const Variable& val) const
 {
+    using size_type = typename base::size_type;
     Product e;
-    auto szy = size1();
-    auto szx = size2();
+    size_type szy = this->size1();
+    size_type szx = this->size2();
     Valuable::OptimizeOff off;
-    for (auto y = 0; y < szy; ++y) {
-        for (auto x = 0; x < szx; ++x) {
+    for (size_type y = 0; y < szy; ++y) {
+        for (size_type x = 0; x < szx; ++x) {
             e.Add(((row-y)^2)
                   +((col-x)^2)
                   +((val-(*this)(y,x))^2));
@@ -60,7 +66,8 @@ Extrapolator::operator Formula() const
     Valuable e = 1_v;
     Variable vx,vy,vv;
     Valuable::optimizations = false;
-    for (auto i = vm.size1(); i--; ) {
+    using size_type = typename base::size_type;
+    for (size_type i = 0; i < vm.size1(); ++i) {
         Valuable v = vm(i,2);
         integers = integers && v.IsInt();
         auto e1 = vx - vm(i,0);
@@ -83,45 +90,44 @@ Extrapolator::operator Formula() const
 Extrapolator::Extrapolator(std::initializer_list<std::vector<T>> dependancy_matrix)
     : base(dependancy_matrix.size(), dependancy_matrix.begin()->size())
 {
-    auto rows = dependancy_matrix.size();
-    auto r = dependancy_matrix.begin();
-    auto columns = r->size();
-    for (unsigned i = 0; i < rows; ++i) {
-        auto c = r->begin();
-        for (unsigned j = 0; j < columns; ++j) {
-            (*this)(i, j) = *c;
-            ++c;
+    using size_type = typename base::size_type;
+    auto it = dependancy_matrix.begin();
+    for (size_type i = 0; i < dependancy_matrix.size(); ++i, ++it) {
+        const auto& row = *it;
+        for (size_type j = 0; j < row.size(); ++j) {
+            (*this)(i, j) = row[j];
         }
-        ++r;
     }
 }
-Extrapolator::solution_t Extrapolator::Solve(const ublas::vector<T>& augment) const
+Extrapolator::solution_t Extrapolator::Solve(const extrapolator_vector& augment) const
 {
+    using size_type = typename extrapolator_base_matrix::size_type;
+    using vector_type = extrapolator_vector;
     auto e = *this;
-    auto sz1 = size1();
-    auto sz2 = size2();
+    size_type sz1 = this->size1();
+    size_type sz2 = this->size2();
 
-    ublas::vector<T> a(sz2);
-    const ublas::vector<T>* au = &augment;
+    vector_type a(sz2);
+    const vector_type* au = &augment;
     if (sz1 > sz2 + 1 /*augment*/) {
         // make square matrix to make it solvable by boost ublas
         e = Extrapolator(sz2, sz2);
         // sum first equations
         a[0] = 0;
-        for (auto i = sz2; i--;) {
+        for (size_type i = 0; i < sz2; ++i) {
             e(0, i) = 0;
         }
         auto d = sz1 - sz2;
-        for (auto i = d; i--;) {
-            for (auto j = sz2; j--;) {
-                e(0, j) += operator()(i, j);
+        for (size_type i = 0; i < d; ++i) {
+            for (size_type j = 0; j < sz2; ++j) {
+                e(0, j) += (*this)(i, j);
             }
             a[0] += augment[i];
         }
 
-        for (auto i = d; i < sz1; ++i) {
-            for (auto j = sz2; j--;) {
-                e(i - d, j) = operator()(i, j);
+        for (size_type i = d; i < sz1; ++i) {
+            for (size_type j = 0; j < sz2; ++j) {
+                e(i - d, j) = (*this)(i, j);
             }
             a[i - d] = augment[i];
         }
@@ -133,13 +139,16 @@ Extrapolator::solution_t Extrapolator::Solve(const ublas::vector<T>& augment) co
 
 Extrapolator::T Extrapolator::Determinant() const
 {
-    ublas::permutation_matrix<std::size_t> pivots(this->size1());
+    using allocator_type = omnn::rt::custom_allocator<std::size_t>;
+    using array_type = ublas::unbounded_array<std::size_t, allocator_type>;
+    using perm_matrix_type = ublas::permutation_matrix<std::size_t, array_type>;
+    perm_matrix_type pivots(this->size1());
     auto mLu = *this;
     auto isSingular = ublas::lu_factorize(mLu, pivots);
     if (isSingular)
         return static_cast<T>(0);
 
-    auto det = static_cast<T>(1);
+    T det = static_cast<T>(1);
     for (std::size_t i = 0; i < pivots.size(); ++i) {
         if (pivots(i) != i)
             det *= static_cast<T>(-1);
@@ -150,11 +159,12 @@ Extrapolator::T Extrapolator::Determinant() const
     return det;
 }
 
-bool Extrapolator::Consistent(const ublas::vector<T>& augment)
+bool Extrapolator::Consistent(const extrapolator_vector& augment)
 {
+    using size_type = typename extrapolator_base_matrix::size_type;
     auto sz = augment.size();
-    extrapolator_base_matrix augmentedMatrix(sz, 1);
-    for (auto i = sz; i-- > 0;) {
+    Extrapolator augmentedMatrix(sz, 1);
+    for (size_type i = 0; i < sz; ++i) {
         augmentedMatrix(i, 0) = augment[i];
     }
     return Consistent(augmentedMatrix);
@@ -168,16 +178,16 @@ Valuable Extrapolator::Complete(const Valuable& e)
 
 Extrapolator Extrapolator::ViewMatrix() const
 {
-    auto szy = size1();
-    auto szx = size2();
-    auto len = szx * szy;
-    size_t i = 0;
+    const auto szy = this->size1();
+    const auto szx = this->size2();
+    const auto len = szx * szy;
+    size_type i = 0;
     Extrapolator e(len, 3); // column, row, value
-    for (auto y = 0; y < szy; ++y) {
-        for (auto x = 0; x < szx; ++x) {
-            e(i, 0) = y;
-            e(i, 1) = x;
-            e(i, 2) = operator()(y, x);
+    for (size_type y = 0; y < szy; ++y) {
+        for (size_type x = 0; x < szx; ++x) {
+            e(i, 0) = value_type(y);
+            e(i, 1) = value_type(x);
+            e(i, 2) = (*this)(y, x);
             ++i;
         }
     }
@@ -187,35 +197,34 @@ Extrapolator Extrapolator::ViewMatrix() const
 Extrapolator::operator Valuable() const
 {
     Valuable v = 0_v;
-    auto szy = size1();
-    auto szx = size2();
+    const auto szy = this->size1();
+    const auto szx = this->size2();
     std::vector<Variable> vars(szx);
-    for (; szy--;) {
+    for (size_type y = 0; y < szy; ++y) {
         Valuable s = 0_v;
-        for (auto c = szx; c--;) {
-            s += vars[c] * operator()(szy, c);
+        for (size_type c = 0; c < szx; ++c) {
+            s += vars[c] * (*this)(y, c);
         }
         v += s * s;
     }
     v.optimize();
-
     return v;
 }
 
-Valuable Extrapolator::Equation(const ublas::vector<T>& augmented)
+Valuable Extrapolator::Equation(const vector_type& augmented)
 {
     Valuable v = 0_v;
-    auto szy = size1();
-    auto szx = size2();
+    const auto szy = this->size1();
+    const auto szx = this->size2();
     std::vector<Variable> vars(szx);
-    for (; szy--;) {
+    for (size_type y = 0; y < szy; ++y) {
         Valuable s = 0_v;
-        for (auto c = szx; c--;) {
-            s += vars[c] * operator()(szy, c);
+        for (size_type c = 0; c < szx; ++c) {
+            s += vars[c] * (*this)(y, c);
         }
-        s -= augmented[szy];
+        s -= augmented[y];
         v += s * s;
     }
     v.optimize();
     return v;
-}
+} // namespace omnn::math
