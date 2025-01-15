@@ -129,8 +129,21 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.74.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.83.0 CACHE STRING "Boost library version to use")
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.74.0 CACHE STRING "Boost library minimum compatible version to use")
+
+# Ensure Boost is found
+find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION} REQUIRED COMPONENTS 
+    system 
+    filesystem 
+    program_options
+    serialization
+    thread
+    regex
+    date_time
+    chrono
+    atomic
+)
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
 if(MSVC AND ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
@@ -329,9 +342,14 @@ elseif(OPENMIND_BUILD_BOOST)
         separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
     endif()
 
-    # Use system-installed Boost instead of building from source
+    # Use vcpkg-installed Boost
+    if(WIN32)
+        set(BOOST_ROOT ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows)
+        set(BOOST_INCLUDEDIR ${BOOST_ROOT}/include)
+        set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib)
+    endif()
     find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION} REQUIRED COMPONENTS ${BOOST_USED_COMPONENTS})
-    # System Boost will be used instead
+    # System/vcpkg Boost will be used
     if(WIN32)
         find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
             PATHS C:/Boost
