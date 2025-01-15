@@ -41,7 +41,7 @@ namespace omnn::rt {
 template<typename T>
 auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree )
 {
-    using namespace boost::numeric::ublas;
+    namespace ublas = boost::numeric::ublas;
 
     if ( oX.size() != oY.size() )
         throw std::invalid_argument( "X and Y vector sizes do not match" );
@@ -50,9 +50,9 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     nDegree++;
 
     auto nCount =  oX.size();
-    using allocator_type = custom_allocator<T>;
-    using array_type = unbounded_array<T, allocator_type>;
-    using matrix_type = matrix<T, row_major, array_type>;
+    using allocator_type = omnn::rt::custom_allocator<T>;
+    using array_type = ublas::unbounded_array<T, allocator_type>;
+    using matrix_type = ublas::matrix<T, ublas::row_major, array_type>;
     matrix_type oXMatrix(nCount, nDegree);
     matrix_type oYMatrix(nCount, 1);
     
@@ -89,9 +89,9 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     matrix_type oXtYMatrix(prec_prod(oXtMatrix, oYMatrix));
 
     // lu decomposition
-    using perm_allocator_type = custom_allocator<std::size_t>;
-    using perm_array_type = unbounded_array<std::size_t, perm_allocator_type>;
-    using perm_matrix_type = permutation_matrix<std::size_t, perm_array_type>;
+    using perm_allocator_type = omnn::rt::custom_allocator<std::size_t>;
+    using perm_array_type = ublas::unbounded_array<std::size_t, perm_allocator_type>;
+    using perm_matrix_type = ublas::permutation_matrix<std::size_t, perm_array_type>;
     perm_matrix_type pert(oXtXMatrix.size1());
     auto singular = lu_factorize(oXtXMatrix, pert);
     // must be singular
