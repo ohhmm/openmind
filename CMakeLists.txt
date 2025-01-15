@@ -158,11 +158,14 @@ endif()
 set(_BOOST_USED_COMPONENTS
 	${BOOST_USED_COMPONENTS}
 	${BOOST_ADDITIONAL_COMPONENTS}
+    atomic
 	chrono
 	date_time
 	filesystem
 	iostreams
 	locale
+    program_options
+    regex
 	serialization
 	system
 	thread
@@ -332,9 +335,14 @@ elseif(OPENMIND_BUILD_BOOST)
         separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
     endif()
 
-    # Use system-installed Boost instead of building from source
+    # Use vcpkg-installed Boost
+    if(WIN32)
+        set(BOOST_ROOT ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows)
+        set(BOOST_INCLUDEDIR ${BOOST_ROOT}/include)
+        set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib)
+    endif()
     find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION} REQUIRED COMPONENTS ${BOOST_USED_COMPONENTS})
-    # System Boost will be used instead
+    # System/vcpkg Boost will be used
     if(WIN32)
         find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
             PATHS C:/Boost
