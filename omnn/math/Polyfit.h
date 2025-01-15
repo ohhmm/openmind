@@ -36,7 +36,7 @@
 
  */
 template<typename T>
-auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree )
+auto polyfit(const std::vector<T>& oX, const std::vector<T>& oY, std::size_t nDegree)
 {
     namespace ublas = boost::numeric::ublas;
 
@@ -46,32 +46,38 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     // more intuitive this way
     nDegree++;
 
-    auto nCount =  oX.size();
+    auto nCount = oX.size();
     using allocator_type = omnn::rt::custom_allocator<T>;
     using array_type = ublas::unbounded_array<T, allocator_type>;
     using matrix_type = ublas::matrix<T, ublas::row_major, array_type>;
-    matrix_type oXMatrix(nCount, nDegree);
-    matrix_type oYMatrix(nCount, 1);
     
-    // Initialize matrices with zero values first
-    for(size_t i = 0; i < nCount; i++) {
-        for(size_t j = 0; j < nDegree; j++) {
+    // Declare matrices
+    matrix_type oXMatrix;
+    matrix_type oYMatrix;
+    
+    // Resize matrices
+    oXMatrix.resize(nCount, nDegree);
+    oYMatrix.resize(nCount, 1);
+    
+    // Initialize matrices with zero values
+    for(std::size_t i = 0; i < nCount; i++) {
+        for(std::size_t j = 0; j < nDegree; j++) {
             oXMatrix(i,j) = T();
         }
         oYMatrix(i,0) = T();
     }
 
     // copy y matrix
-    for ( size_t i = 0; i < nCount; i++ )
+    for (std::size_t i = 0; i < nCount; i++)
     {
         oYMatrix(i, 0) = oY[i];
     }
 
     // create the X matrix
-    for ( size_t nRow = 0; nRow < nCount; nRow++ )
+    for (std::size_t nRow = 0; nRow < nCount; nRow++)
     {
         T nVal = T(1);
-        for (size_t nCol = 0; nCol < nDegree; nCol++)
+        for (std::size_t nCol = 0; nCol < nDegree; nCol++)
         {
             oXMatrix(nRow, nCol) = nVal;
             nVal *= oX[nRow];
@@ -79,23 +85,28 @@ auto polyfit( const std::vector<T>& oX, const std::vector<T>& oY, size_t nDegree
     }
 
     // transpose X matrix
-    matrix_type oXtMatrix(trans(oXMatrix));
+    matrix_type oXtMatrix;
+    oXtMatrix = ublas::trans(oXMatrix);
+    
     // multiply transposed X matrix with X matrix
-    matrix_type oXtXMatrix(prec_prod(oXtMatrix, oXMatrix));
+    matrix_type oXtXMatrix;
+    oXtXMatrix = ublas::prec_prod(oXtMatrix, oXMatrix);
+    
     // multiply transposed X matrix with Y matrix
-    matrix_type oXtYMatrix(prec_prod(oXtMatrix, oYMatrix));
+    matrix_type oXtYMatrix;
+    oXtYMatrix = ublas::prec_prod(oXtMatrix, oYMatrix);
 
     // lu decomposition
     using perm_allocator_type = omnn::rt::custom_allocator<std::size_t>;
     using perm_array_type = ublas::unbounded_array<std::size_t, perm_allocator_type>;
     using perm_matrix_type = ublas::permutation_matrix<std::size_t, perm_array_type>;
     perm_matrix_type pert(oXtXMatrix.size1());
-    auto singular = lu_factorize(oXtXMatrix, pert);
+    auto singular = ublas::lu_factorize(oXtXMatrix, pert);
     // must be singular
     BOOST_ASSERT( singular == 0 );
 
     // backsubstitution
-    lu_substitute(oXtXMatrix, pert, oXtYMatrix);
+    ublas::lu_substitute(oXtXMatrix, pert, oXtYMatrix);
 
     // copy the result to coeff
     return std::vector<T>( oXtYMatrix.data().begin(), oXtYMatrix.data().end() );
@@ -120,12 +131,12 @@ auto polyval( const std::vector<T>& oCoeff, const std::vector<T>& oX )
     auto nDegree = oCoeff.size();
     std::vector<T>	oY( nCount );
 
-    for ( size_t i = 0; i < nCount; i++ )
+    for (std::size_t i = 0; i < nCount; i++)
     {
-        T nY = 0;
-        T nXT = 1;
+        T nY = T(0);
+        T nXT = T(1);
         T nX = oX[i];
-        for ( size_t j = 0; j < nDegree; j++ )
+        for (std::size_t j = 0; j < nDegree; j++)
         {
             // multiply current x by a coefficient
             nY += oCoeff[j] * nXT;
