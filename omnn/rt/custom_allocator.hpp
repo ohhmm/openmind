@@ -69,9 +69,25 @@ public:
         ::new(static_cast<void*>(p)) U(val);
     }
 
+    template <class U>
+    void construct(U* p, U&& val) {
+        ::new(static_cast<void*>(p)) U(std::move(val));
+    }
+
     template <class U, class... Args>
     void construct(U* p, Args&&... args) {
         ::new(static_cast<void*>(p)) U(std::forward<Args>(args)...);
+    }
+
+    // Support for constructing const objects
+    template <class U>
+    void construct(const U* p) {
+        ::new(const_cast<void*>(static_cast<const void*>(p))) U();
+    }
+
+    template <class U>
+    void construct(const U* p, const U& val) {
+        ::new(const_cast<void*>(static_cast<const void*>(p))) U(val);
     }
 
     template <class U>

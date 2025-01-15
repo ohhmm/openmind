@@ -42,6 +42,13 @@ public:
     using const_reference = typename base::const_reference;
     using reference = typename base::reference;
     using matrix_type = base;
+    
+    // Add const-correct swap operation
+    friend void swap(Extrapolator& lhs, Extrapolator& rhs) noexcept {
+        using std::swap;
+        swap(static_cast<base&>(lhs), static_cast<base&>(rhs));
+        swap(lhs.solution, rhs.solution);
+    }
 
 public:
     using base::operator();

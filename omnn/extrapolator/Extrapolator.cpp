@@ -20,7 +20,8 @@ namespace {
         using perm_matrix_type = ublas::permutation_matrix<std::size_t, array_type>;
         perm_matrix_type pivots(matrix.size1());
 
-        auto isSingular = ublas::lu_factorize(matrix, pivots);
+        matrix_type tmp(matrix);
+    auto isSingular = ublas::lu_factorize(tmp, pivots);
         if (isSingular)
             return T(0);
 
@@ -144,7 +145,8 @@ Extrapolator::T Extrapolator::Determinant() const
     using perm_matrix_type = ublas::permutation_matrix<std::size_t, array_type>;
     perm_matrix_type pivots(this->size1());
     auto mLu = *this;
-    auto isSingular = ublas::lu_factorize(mLu, pivots);
+    matrix_type tmp(mLu);
+    auto isSingular = ublas::lu_factorize(tmp, pivots);
     if (isSingular)
         return static_cast<T>(0);
 
