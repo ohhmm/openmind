@@ -20,6 +20,9 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
+
+namespace omnn::rt {
+
 /*
 	Finds the coefficients of a polynomial p(x) of degree n that fits the data,
 	p(x(i)) to y(i), in a least squares sense. The result p is a row vector of
@@ -152,3 +155,5 @@ std::string polystr(const std::vector<T>& coeff)
     }
     return boost::replace_all_copy(s.str(), "e", "*10^");
 }
+
+} // namespace omnn::rt

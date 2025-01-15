@@ -163,12 +163,15 @@ endif()
 set(_BOOST_USED_COMPONENTS
 	${BOOST_USED_COMPONENTS}
 	${BOOST_ADDITIONAL_COMPONENTS}
+    atomic
 	chrono
 	date_time
 	filesystem
 	iostreams
 	locale
+    program_options
 	python
+    regex
 	serialization
 	system
 	thread
@@ -340,7 +343,7 @@ elseif(OPENMIND_BUILD_BOOST)
 
     # Use system-installed Boost instead of building from source
     find_package(Boost ${OPENMIND_PREFERRED_BOOST_VERSION} REQUIRED COMPONENTS ${BOOST_USED_COMPONENTS})
-    # System Boost will be used instead
+    # System/vcpkg Boost will be used
     if(WIN32)
         find_package(Boost ${OPENMIND_REQUIRED_BOOST_VERSION}
             PATHS C:/Boost

@@ -21,6 +21,7 @@
 using namespace std;
 using namespace boost::unit_test;
 using namespace omnn::math;
+using namespace omnn::rt;
 
 
 auto TestPrecision = 0.0002;

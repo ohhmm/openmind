@@ -97,62 +97,55 @@ public:
         p->~U();
     }
 
-    // Additional methods for Boost compatibility
+    // Boost.uBLAS specific typedefs and traits
+    using self_type = custom_allocator<T>;
+    using const_reference_type = const_reference;
+    using pointer_type = pointer;
+    using const_pointer_type = const_pointer;
+
+    // Standard allocator traits
+    using propagate_on_container_copy_assignment = std::false_type;
+    using propagate_on_container_move_assignment = std::true_type;
+    using propagate_on_container_swap = std::false_type;
+    using is_always_equal = std::true_type;
+
+    // Boost.uBLAS comparison operators
     bool operator==(const custom_allocator&) const noexcept { return true; }
     bool operator!=(const custom_allocator&) const noexcept { return false; }
     
     // Required by boost::ublas
     template<class U>
-    custom_allocator& operator=(const custom_allocator<U>&) { return *this; }
+    custom_allocator& operator=(const custom_allocator<U>&) noexcept { return *this; }
 
-    // Propagate on container copy assignment
-    using propagate_on_container_copy_assignment = std::false_type;
-    // Propagate on container move assignment
-    using propagate_on_container_move_assignment = std::false_type;
-    // Propagate on container swap
-    using propagate_on_container_swap = std::false_type;
-
-    // Is always equal
-    using is_always_equal = std::true_type;
-
-    // Select on container copy construction
-    static custom_allocator select_on_container_copy_construction(const custom_allocator&) { return custom_allocator(); }
+    // Container construction behavior
+    static custom_allocator select_on_container_copy_construction(const custom_allocator&) noexcept {
+        return custom_allocator();
+    }
 
     // Required by boost::ublas for zero initialization
     void initialize(size_type size) {
-        storage.resize(size);
-        std::fill(storage.begin(), storage.end(), T());
+        if (size > 0) {
+            pointer p = allocate(size);
+            for (size_type i = 0; i < size; ++i) {
+                construct(p + i);
+            }
+        }
     }
 
-    // Required methods for Boost compatibility
-    T* data() { return storage.data(); }
-    const T* data() const { return storage.data(); }
-    size_type size() const noexcept { return storage.size(); }
+    // Required by boost::ublas for array-like access
+    pointer data() noexcept { return nullptr; }
+    const_pointer data() const noexcept { return nullptr; }
+    size_type size() const noexcept { return 0; }
 
-    // Implement operator[] for compatibility with Boost's containers
-    T& operator[](size_type i) {
-        return storage[i];
-    }
-    const T& operator[](size_type i) const {
-        return storage[i];
-    }
+    // Required by boost::ublas for resizing
+    void resize(size_type) noexcept {}
 
-    // Implement resize method for Boost compatibility
-    void resize(size_type n) {
-        storage.resize(n);
-    }
-
-    // Implement swap method for Boost compatibility
-    void swap(custom_allocator& other) noexcept {
-        storage.swap(other.storage);
-    }
-
-private:
-    std::vector<T> storage;
+    // Required by boost::ublas for swapping
+    void swap(custom_allocator&) noexcept {}
 };
 
 // Wrapper class for unbounded_array
-template <typename T, typename Allocator = custom_allocator<T>>
+template <typename T, typename Allocator = omnn::rt::custom_allocator<T>>
 class unbounded_array_wrapper {
 public:
     using size_type = typename Allocator::size_type;
