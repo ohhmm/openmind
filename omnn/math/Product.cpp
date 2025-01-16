@@ -679,7 +679,7 @@ namespace math {
         if (gcd == constants::one) {
             Become(base::GCD(product));
         } else {
-            auto remainder1 = Optimized(View::Flat);
+            auto remainder1 = Optimized(View::Flat) / gcd;
             auto remainder2 = product / gcd;
             if (remainder1.IsProduct()) {
                 remainder1.as<Product>().base::gcd(remainder2);
