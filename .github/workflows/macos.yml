@@ -4,27 +4,54 @@ on: [push]
 
 jobs:
   build-in-macos:
-
     runs-on: macos-latest
+    env:
+      CACHE_KEY: cache-v1
     
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Install Ninja
+      run: brew install ninja
+
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
-    - name: Pre-Install Boost, LevelDB
-      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && ( brew install boost-python3 snappy leveldb || brew install boost-python3 snappy leveldb )
-    - name: Configure
+
+    - name: Install vcpkg
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git ${{github.workspace}}/vcpkg
+        cd ${{github.workspace}}/vcpkg
+        git fetch origin
+        git checkout 96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df
+        ./bootstrap-vcpkg.sh
+        ./vcpkg install boost-test:arm64-osx boost-filesystem:arm64-osx boost-system:arm64-osx boost-thread:arm64-osx boost-program-options:arm64-osx boost-serialization:arm64-osx boost-chrono:arm64-osx boost-date-time:arm64-osx boost-iostreams:arm64-osx boost-locale:arm64-osx boost-atomic:arm64-osx leveldb:arm64-osx opencl:arm64-osx
+
+    - name: Set environment variables
+      run: |
+        echo "VCPKG_ROOT=${{github.workspace}}/vcpkg" >> $GITHUB_ENV
+        echo "CMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+        echo "VCPKG_DEFAULT_TRIPLET=arm64-osx" >> $GITHUB_ENV
+        echo "VCPKG_INSTALLED_DIR=${{github.workspace}}/vcpkg/installed" >> $GITHUB_ENV
+
+    - name: Configure CMake
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
-    - name: Install prerequisites
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu` --config Release
-    - name: Reconfigure to detect newly installed prerequisites
-      working-directory: ${{github.workspace}}/build
-      run: cmake .
+      run: |
+        cmake ${{github.workspace}} \
+          -G Ninja \
+          -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DVCPKG_TARGET_TRIPLET=arm64-osx \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DOPENMIND_USE_VCPKG=ON \
+          -DOPENMIND_USE_CONAN=OFF \
+          -DOPENMIND_BUILD_SAMPLES=OFF \
+          -DOPENMIND_BUILD_TESTS=ON \
+          -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF \
+          -DOPENMIND_STORAGE_LEVELDB=OFF
+
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
-    - name: Check
+      run: cmake --build . --config Release -j $(sysctl -n hw.ncpu)
+
+    - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 3200  -C Release -j `sysctl -n hw.ncpu` -E ts
+      run: ctest --timeout 3200 -C Release -j $(sysctl -n hw.ncpu) -E ts
