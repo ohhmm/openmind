@@ -27,10 +27,16 @@ jobs:
       uses: lukka/run-vcpkg@v7
       with:
         vcpkgGitCommitId: 96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df
-        vcpkgArguments: '--triplet x64-windows boost-test boost-filesystem boost-system boost-thread boost-program-options boost-serialization boost-chrono boost-date-time boost-iostreams boost-locale leveldb'
+        vcpkgArguments: '--triplet x64-windows boost-test boost-filesystem boost-system boost-thread boost-program-options boost-serialization boost-chrono boost-date-time boost-iostreams boost-locale boost-atomic leveldb opencl'
         vcpkgTriplet: x64-windows
         vcpkgDirectory: ${{ github.workspace }}/vcpkg
         appendedCacheKey: vcpkg-${{ hashFiles('**/vcpkg.json') }}
+        
+    - name: Set environment variables
+      run: |
+        echo "VCPKG_ROOT=${{ github.workspace }}/vcpkg" >> $GITHUB_ENV
+        echo "CMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+        echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $GITHUB_ENV
 
     - name: Configure
       working-directory: ${{github.workspace}}/build
@@ -38,9 +44,10 @@ jobs:
         CC: cl
         VCPKG_ROOT: ${{ github.workspace }}/vcpkg
         VCPKG_DEFAULT_TRIPLET: x64-windows
+        CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
       run: |
         cmake ${{github.workspace}} `
-          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake `
+          -DCMAKE_TOOLCHAIN_FILE=${{ env.CMAKE_TOOLCHAIN_FILE }} `
           -DVCPKG_TARGET_TRIPLET=x64-windows `
           -DCMAKE_BUILD_TYPE=Release `
           -DOPENMIND_USE_VCPKG=ON `
@@ -50,6 +57,8 @@ jobs:
           -G "Ninja Multi-Config" `
           -DCMAKE_C_COMPILER="cl.exe" `
           -DCMAKE_CXX_COMPILER="cl.exe" `
+          -DCMAKE_PREFIX_PATH=${{ env.VCPKG_ROOT }}/installed/x64-windows `
+          -DVCPKG_INSTALLED_DIR=${{ env.VCPKG_ROOT }}/installed `
           -Dleveldb_TAG:STRING="1.23" `
           -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO `
           -DOPENMIND_STORAGE_LEVELDB=NO
