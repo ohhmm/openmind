@@ -34,6 +34,7 @@ foreach(test_target
         find_package(leveldb CONFIG REQUIRED)
         target_link_libraries(${test_target} PRIVATE leveldb::leveldb)
     else()
+        find_package(leveldb REQUIRED)
         target_link_libraries(${test_target} PRIVATE leveldb)
     endif()
     target_link_libraries(${test_target} PRIVATE ${Boost_LIBRARIES})
