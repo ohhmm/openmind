@@ -14,8 +14,12 @@ endif()
 
 # Create library with dependencies
 lib(${DEPENDENCIES})
-find_package(leveldb CONFIG REQUIRED)
-target_link_libraries(${this_target} PUBLIC leveldb::leveldb)
+if(WIN32)
+    find_package(leveldb CONFIG REQUIRED)
+    target_link_libraries(${this_target} PUBLIC leveldb::leveldb)
+else()
+    target_link_libraries(${this_target} PUBLIC leveldb)
+endif()
 
 if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
     if(OPENMIND_MATH_USE_LEVELDB_CACHE)

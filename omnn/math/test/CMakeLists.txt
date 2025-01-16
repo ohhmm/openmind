@@ -3,9 +3,6 @@ set(CMAKE_POLICY_DEFAULT_CMP0074 NEW)
 
 test()
 
-# Find LevelDB package
-find_package(leveldb CONFIG REQUIRED)
-
 # Link test targets with required libraries
 foreach(test_target
     08_System
@@ -33,7 +30,12 @@ foreach(test_target
     serialization
     sh_test
     ts)
-    target_link_libraries(${test_target} PRIVATE leveldb::leveldb)
+    if(WIN32)
+        find_package(leveldb CONFIG REQUIRED)
+        target_link_libraries(${test_target} PRIVATE leveldb::leveldb)
+    else()
+        target_link_libraries(${test_target} PRIVATE leveldb)
+    endif()
     target_link_libraries(${test_target} PRIVATE ${Boost_LIBRARIES})
 endforeach()
 
