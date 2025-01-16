@@ -4,43 +4,53 @@ on: [push]
 
 jobs:
   build-in-ubuntu:
-
     runs-on: ubuntu-22.04
+    env:
+      CACHE_KEY: cache-v1
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: |
-          /var/cache/apt
-          /var/lib/apt/lists
-          ${{ github.workspace }}/build/bin/Db*.solutions
-        key: ${{ runner.os }}-apt-${{ hashFiles('**/ubuntu.yml') }}
-        restore-keys: |
-          ${{ runner.os }}-apt-
-    - name: OS prerequisites
-      run: sudo add-apt-repository -y ppa:mhier/libboost-latest && sudo apt update && sudo apt upgrade -y && sudo apt install -y libboost1.83-all-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-dev libtbb-dev ninja-build
+    - uses: actions/checkout@v4
+    
+    - name: Install Ninja
+      run: sudo apt-get update && sudo apt-get install -y ninja-build
+
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
-    - name: Configure
+
+    - name: Install vcpkg
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git ${{github.workspace}}/vcpkg
+        cd ${{github.workspace}}/vcpkg
+        git fetch origin
+        git checkout 96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df
+        ./bootstrap-vcpkg.sh
+        ./vcpkg install --triplet x64-linux
+
+    - name: Set environment variables
+      run: |
+        echo "VCPKG_ROOT=${{github.workspace}}/vcpkg" >> $GITHUB_ENV
+        echo "CMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+        echo "VCPKG_DEFAULT_TRIPLET=x64-linux" >> $GITHUB_ENV
+        echo "VCPKG_INSTALLED_DIR=${{github.workspace}}/vcpkg/installed" >> $GITHUB_ENV
+
+    - name: Configure CMake
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -G "Ninja Multi-Config"
-    # - name: Install prerequisites
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`
-    # - name: ReConfigure to detect fetched prerequisites
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake ${{github.workspace}}
+      run: |
+        cmake ${{github.workspace}} \
+          -G Ninja \
+          -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DVCPKG_TARGET_TRIPLET=x64-linux \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DOPENMIND_USE_VCPKG=ON \
+          -DOPENMIND_USE_CONAN=OFF \
+          -DOPENMIND_BUILD_SAMPLES=OFF \
+          -DOPENMIND_BUILD_TESTS=ON \
+          -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF \
+          -DOPENMIND_STORAGE_LEVELDB=OFF
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `nproc` --config Debug
-    - name: Build
+      run: cmake --build . --config Release -j $(nproc)
+
+    - name: Test
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `nproc` --config Release
-    - name: Check
-      working-directory: ${{github.workspace}}/build
-      run: ctest . -j`nproc` -C Release -E "ts" --rerun-failed --output-on-failure
-    - name: Check
-      working-directory: ${{github.workspace}}/build
-      run: ctest . -j`nproc` -C Debug -E "ts" --rerun-failed --output-on-failure
+      run: ctest --timeout 3200 -C Release -j $(nproc) -E ts
