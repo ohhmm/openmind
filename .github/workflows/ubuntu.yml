@@ -21,8 +21,9 @@ jobs:
       run: |
         git clone https://github.com/Microsoft/vcpkg.git ${{github.workspace}}/vcpkg
         cd ${{github.workspace}}/vcpkg
-        git fetch origin
+        git fetch --all --tags --prune --unshallow
         git checkout 96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df
+        git clean -fxd
         ./bootstrap-vcpkg.sh
         ./vcpkg install --triplet x64-linux
 
