@@ -96,6 +96,28 @@ BOOST_AUTO_TEST_CASE(Integer_Factorial) {
     BOOST_TEST(i == 24);
 }
 
+BOOST_AUTO_TEST_CASE(Integer_ParseFactorial) {
+    // Basic factorial parsing
+    Valuable expr("3!");
+    BOOST_TEST(expr == 6);
+    
+    // Nested expression factorial
+    Valuable nested("(2+1)!");
+    BOOST_TEST(nested == 6);
+    
+    // Multiple factorials
+    Valuable multi("2! + 3!");
+    BOOST_TEST(multi == 8);  // 2! + 3! = 2 + 6 = 8
+    
+    // Negative number factorial
+    Valuable neg("-3!");
+    BOOST_TEST(neg == -6);  // -(3!) = -6
+    
+    // Zero factorial
+    Valuable zero("0!");
+    BOOST_TEST(zero == 1);
+}
+
 BOOST_AUTO_TEST_CASE(Integer_exptests)
 {
 	auto a = 25_v;
