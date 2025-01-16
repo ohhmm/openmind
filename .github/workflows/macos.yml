@@ -18,8 +18,10 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/build
 
     - name: Install vcpkg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git clone https://github.com/Microsoft/vcpkg.git ${{github.workspace}}/vcpkg
+        git clone https://x-access-token:${GITHUB_TOKEN}@github.com/Microsoft/vcpkg.git ${{github.workspace}}/vcpkg
         cd ${{github.workspace}}/vcpkg
         git checkout f176b58f35a75f9f8f54099cd9df97d2e2793a2e
         ./bootstrap-vcpkg.sh
@@ -30,6 +32,11 @@ jobs:
         echo "CMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
         echo "VCPKG_DEFAULT_TRIPLET=arm64-osx" >> $GITHUB_ENV
         echo "VCPKG_INSTALLED_DIR=${{github.workspace}}/vcpkg/installed" >> $GITHUB_ENV
+
+    - name: Install vcpkg dependencies
+      working-directory: ${{github.workspace}}/vcpkg
+      run: |
+        ./vcpkg install --triplet arm64-osx
 
     - name: Configure CMake
       working-directory: ${{github.workspace}}/build
