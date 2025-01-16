@@ -21,10 +21,8 @@ jobs:
       run: |
         git clone https://github.com/Microsoft/vcpkg.git ${{github.workspace}}/vcpkg
         cd ${{github.workspace}}/vcpkg
-        git fetch origin
-        git checkout 96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df
+        git checkout f176b58f35a75f9f8f54099cd9df97d2e2793a2e
         ./bootstrap-vcpkg.sh
-        ./vcpkg install --triplet arm64-osx
 
     - name: Set environment variables
       run: |
