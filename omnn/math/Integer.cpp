@@ -837,8 +837,12 @@ namespace math {
     Valuable& Integer::factorial() {
         if (arbitrary == 0)
             arbitrary = 1;
-        else for (auto i = arbitrary; i-- > 1;)
-            arbitrary *= i;
+        else {
+            for (decltype(arbitrary) i = boost::multiprecision::abs(arbitrary); i-->1 ;)
+            {
+                arbitrary *= i;
+            }
+        }
         hash = std::hash<base_int>()(arbitrary);
         return *this;
     }

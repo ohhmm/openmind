@@ -713,7 +713,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 }
 
     namespace {
-        constexpr char SupportedOps[] = " */%+-^()";
+        constexpr char SupportedOps[] = " */%+-^()!";
     }
     Valuable::Valuable(const std::string_view& str
         , std::shared_ptr<VarHost> host // = nullptr
@@ -1051,6 +1051,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
                 else if (c == '^') {
                     o = o_exp;
+                }
+                else if (c == '!') {
+                    v = v.Factorial();
+                    if (mulByNeg) {
+                        v *= -1;
+                        mulByNeg = {};
+                    }
                 }
                 else if (c == ' ') {
                 }
