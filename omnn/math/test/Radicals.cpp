@@ -86,3 +86,14 @@ BOOST_AUTO_TEST_CASE(RadicalExponentiationExpressions_test, *disabled()) {
     auto _2 = _1.Solutions(x).begin()->get();
     BOOST_TEST(_2 == 6);
 }
+
+BOOST_AUTO_TEST_CASE(RadicalSolving_test, *disabled()) {
+    Valuable _1("sqrt(8-(x^2))-4");
+    auto solutions = _1.Solutions();
+    BOOST_TEST(solutions.size() == 2);
+    auto _ = PrincipalSurd{2} * constants::i;
+    _1 = Product{2, _.Link()};
+    auto _2 = Product{-2, _.Link()};
+    decltype(solutions) expected = {std::move(_1), std::move(_2)};
+    BOOST_TEST(solutions == expected);
+}
