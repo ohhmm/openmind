@@ -24,7 +24,7 @@ jobs:
         git fetch origin
         git checkout 96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df
         ./bootstrap-vcpkg.sh
-        ./vcpkg install boost-test:arm64-osx boost-filesystem:arm64-osx boost-system:arm64-osx boost-thread:arm64-osx boost-program-options:arm64-osx boost-serialization:arm64-osx boost-chrono:arm64-osx boost-date-time:arm64-osx boost-iostreams:arm64-osx boost-locale:arm64-osx boost-atomic:arm64-osx leveldb:arm64-osx opencl:arm64-osx
+        ./vcpkg install --triplet arm64-osx
 
     - name: Set environment variables
       run: |
