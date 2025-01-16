@@ -1,24 +1,66 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "builtin-baseline": "96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df",
+  "builtin-baseline": "b322364f06308bdd24823f9",
   "name": "openmind",
   "version": "1.0.0",
   "description": "OpenMind",
   "dependencies": [
-    "boost",
-    "boost-chrono",
-    "boost-compute",
-    "boost-date-time",
-    "boost-filesystem",
-    "boost-iostreams",
-    "boost-locale",
-    "boost-multiprecision",
-    "boost-serialization",
-    "boost-system",
-    "boost-test",
-    "boost-thread",
-    "boost-ublas",
-    "boost-uuid",
+    {
+      "name": "boost",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-chrono",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-compute",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-date-time",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-filesystem",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-iostreams",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-locale",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-multiprecision",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-serialization",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-system",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-test",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-thread",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-ublas",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "boost-uuid",
+      "version>=": "1.84.0"
+    },
     "leveldb",
     {
       "name": "vcpkg-cmake",
