@@ -14,7 +14,7 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build autoconf automake libtool pkg-config
+        sudo apt-get install -y ninja-build autoconf automake libtool pkg-config python3-dev python3-pip python3-setuptools python3-venv build-essential libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev libffi-dev
 
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
