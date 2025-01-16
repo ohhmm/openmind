@@ -404,17 +404,20 @@ if(WIN32)
     find_package(leveldb CONFIG REQUIRED)
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 else()
-    # On Unix systems, fetch and build LevelDB
-    include(FetchContent)
-    FetchContent_Declare(
-        leveldb
-        GIT_REPOSITORY https://github.com/google/leveldb.git
-        GIT_TAG 1.23
-    )
-    set(LEVELDB_BUILD_TESTS OFF CACHE BOOL "Disable leveldb tests" FORCE)
-    set(LEVELDB_BUILD_BENCHMARKS OFF CACHE BOOL "Disable leveldb benchmarks" FORCE)
-    set(LEVELDB_BUILD_SHARED_LIBS OFF CACHE BOOL "Build static leveldb libraries" FORCE)
-    FetchContent_MakeAvailable(leveldb)
+    # On Unix systems, use system LevelDB or fetch and build if not found
+    find_package(leveldb)
+    if(NOT leveldb_FOUND)
+        include(FetchContent)
+        FetchContent_Declare(
+            leveldb
+            GIT_REPOSITORY https://github.com/google/leveldb.git
+            GIT_TAG 1.23
+        )
+        set(LEVELDB_BUILD_TESTS OFF CACHE BOOL "Disable leveldb tests" FORCE)
+        set(LEVELDB_BUILD_BENCHMARKS OFF CACHE BOOL "Disable leveldb benchmarks" FORCE)
+        set(LEVELDB_BUILD_SHARED_LIBS OFF CACHE BOOL "Build static leveldb libraries" FORCE)
+        FetchContent_MakeAvailable(leveldb)
+    endif()
 endif()
 
 IF (Boost_FOUND)

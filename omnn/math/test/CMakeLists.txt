@@ -66,7 +66,11 @@ foreach(test_target
     serialization
     sh_test
     ts)
-    target_link_libraries(${test_target} PUBLIC leveldb::leveldb)
+    if(WIN32)
+        target_link_libraries(${test_target} PUBLIC leveldb::leveldb)
+    else()
+        target_link_libraries(${test_target} PUBLIC leveldb)
+    endif()
 endforeach()
 
 # Link test executables with Boost test framework
