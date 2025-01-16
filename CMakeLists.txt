@@ -398,6 +398,18 @@ endif()
 set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS} CACHE STRING "Boost libraries" FORCE)
 set(BOOST_TEST_LINK_LIBS ${BOOST_TEST_LINK_LIBS} CACHE STRING "Boost test libraries" FORCE)
 
+# Add LevelDB
+include(FetchContent)
+FetchContent_Declare(
+    leveldb
+    GIT_REPOSITORY https://github.com/google/leveldb.git
+    GIT_TAG 1.23
+)
+set(LEVELDB_BUILD_TESTS OFF CACHE BOOL "Disable leveldb tests" FORCE)
+set(LEVELDB_BUILD_BENCHMARKS OFF CACHE BOOL "Disable leveldb benchmarks" FORCE)
+set(LEVELDB_BUILD_SHARED_LIBS OFF CACHE BOOL "Build static leveldb libraries" FORCE)
+FetchContent_MakeAvailable(leveldb)
+
 IF (Boost_FOUND)
     message(STATUS "Boost found:")
     message(STATUS "  Boost_DIR: ${Boost_DIR}")

@@ -21,6 +21,8 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB)
 endif(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB)
 
 lib(${DEPENDENCIES})
+find_package(leveldb CONFIG REQUIRED)
+target_link_libraries(${this_target} PUBLIC leveldb::leveldb)
 
 if(OPENMIND_STORAGE_LEVELDB)
 	target_compile_definitions(${this_target} PUBLIC OPENMIND_STORAGE_LEVELDB)
