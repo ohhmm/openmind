@@ -23,20 +23,22 @@ jobs:
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
 
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v7
-      with:
-        vcpkgGitCommitId: 96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df
-        vcpkgArguments: '--triplet x64-windows boost-test boost-filesystem boost-system boost-thread boost-program-options boost-serialization boost-chrono boost-date-time boost-iostreams boost-locale boost-atomic leveldb opencl'
-        vcpkgTriplet: x64-windows
-        vcpkgDirectory: ${{ github.workspace }}/vcpkg
-        appendedCacheKey: vcpkg-${{ hashFiles('**/vcpkg.json') }}
+    - name: Install vcpkg
+      shell: pwsh
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git ${{ github.workspace }}/vcpkg
+        cd ${{ github.workspace }}/vcpkg
+        git checkout 96dbba1e03d1ecc7c7096e97d5a09ff3c58e21df
+        .\bootstrap-vcpkg.bat
+        .\vcpkg.exe install boost-test:x64-windows boost-filesystem:x64-windows boost-system:x64-windows boost-thread:x64-windows boost-program-options:x64-windows boost-serialization:x64-windows boost-chrono:x64-windows boost-date-time:x64-windows boost-iostreams:x64-windows boost-locale:x64-windows boost-atomic:x64-windows leveldb:x64-windows opencl:x64-windows
         
     - name: Set environment variables
+      shell: pwsh
       run: |
-        echo "VCPKG_ROOT=${{ github.workspace }}/vcpkg" >> $GITHUB_ENV
-        echo "CMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
-        echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $GITHUB_ENV
+        "VCPKG_ROOT=${{ github.workspace }}/vcpkg" >> $env:GITHUB_ENV
+        "CMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
+        "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+        "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg/installed" >> $env:GITHUB_ENV
 
     - name: Configure
       working-directory: ${{github.workspace}}/build
