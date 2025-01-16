@@ -606,13 +606,6 @@ namespace
                 Become(std::move(const_cast<Valuable&>(*b)));
             }
             else {
-                if (IsSum()) {
-                    auto& coVa = getCommonVars();
-                    if (coVa.size()) {
-                        *this /= VaVal(coVa); // TODO : Add test: zero root disappeared
-                    }
-                }
-
                 // make coefficients int to use https://simple.wikipedia.org/wiki/Rational_root_theorem
                 bool scan;
                 do {
