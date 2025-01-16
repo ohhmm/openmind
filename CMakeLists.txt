@@ -402,6 +402,7 @@ set(BOOST_TEST_LINK_LIBS ${BOOST_TEST_LINK_LIBS} CACHE STRING "Boost test librar
 if(WIN32)
     # On Windows, use vcpkg to find LevelDB
     find_package(leveldb CONFIG REQUIRED)
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 else()
     # On Unix systems, fetch and build LevelDB
     include(FetchContent)
