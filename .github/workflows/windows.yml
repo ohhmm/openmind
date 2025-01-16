@@ -64,9 +64,8 @@ jobs:
           -DCMAKE_CXX_COMPILER="cl.exe" `
           -DCMAKE_PREFIX_PATH=${{ env.VCPKG_ROOT }}/installed/x64-windows `
           -DVCPKG_INSTALLED_DIR=${{ env.VCPKG_ROOT }}/installed `
-          -Dleveldb_TAG:STRING="1.23" `
-          -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO `
-          -DOPENMIND_STORAGE_LEVELDB=NO
+          -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF `
+          -DOPENMIND_STORAGE_LEVELDB=OFF
 
     - name: Get number of CPU cores
       uses: SimenB/github-actions-cpu-cores@v2
