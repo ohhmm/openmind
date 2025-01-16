@@ -11,8 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install Ninja
-      run: sudo apt-get update && sudo apt-get install -y ninja-build
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build autoconf automake libtool pkg-config
 
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
