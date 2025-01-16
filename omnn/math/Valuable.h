@@ -510,6 +510,7 @@ public:
     virtual bool eval(const vars_cont_t& with);
     Valuable Eval(const vars_cont_t& with) const;
 
+    // virtual template <class T> const Valuable* Find<T>() const;   // FIXME : check for virtual template methods in new C++ standards https://www.quora.com/profile/Serg-Kryvonos/Template-virtual-method-into-C
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;
     using var_set_t = std::set<Variable>;

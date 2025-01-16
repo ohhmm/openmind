@@ -1324,8 +1324,8 @@ namespace math {
         } else if (v.IsProduct()) {
             same = operator==(v.as<Product>());
             if (IsMultival() == YesNoMaybe::Yes && v.IsMultival() == YesNoMaybe::Yes)
-        {
-            // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
+            {
+                // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
                 // LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in
                 // coefficient: " << *this << " == " << v);
             }
