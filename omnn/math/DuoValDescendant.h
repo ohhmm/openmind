@@ -269,6 +269,11 @@ namespace omnn::math {
             }
             return branches;
         }
+
+        [[nodiscard]]
+        Valuable varless() const override {
+            return Chld::GetBinaryOperationLambdaTemplate()(_1.varless(), _2.varless());
+        }
     };
 }
 
