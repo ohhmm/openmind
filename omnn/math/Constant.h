@@ -33,11 +33,19 @@ template <class Chld>
         using base::base;
         static const/*init*/ Chld GlobalObject;
 
+        [[nodiscard]]
         constexpr bool IsConstant() const override { return true; }
+        [[nodiscard]]
         constexpr bool IsSimple() const override { return true; }
+        [[nodiscard]]
         constexpr bool IsPolynomial(const Variable&) const override { return true; }
+        [[nodiscard]]
         constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+        [[nodiscard]]
         constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::No; }
+        [[nodiscard]]
+        constexpr bool is_optimized() const override { return true; }
+        constexpr void optimize() override {}     
 
         constexpr const Variable* FindVa() const override {
             return {};
@@ -45,6 +53,7 @@ template <class Chld>
 
         NO_CLANG_CONSTEXPR Valuable* Clone() const override { return new Chld(); }
 
+        [[nodiscard]]
         constexpr bool HasVa(const Variable& va) const override {
             return {};
         }
@@ -105,10 +114,12 @@ template <class Chld>
                 return base::operator/=(v);
         }
 
+        [[nodiscard]]
         const Valuable::vars_cont_t& getCommonVars() const override {
             return Valuable::emptyCommonVars();
         }
 
+        [[nodiscard]]
         Valuable::vars_cont_t GetVaExps() const override { return {}; }
 
         [[nodiscard]]
@@ -117,8 +128,10 @@ template <class Chld>
 
         typename base::solutions_t Distinct() const override { return { *this }; }
         void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
+        [[nodiscard]]
         Valuable Univariate() const override { return *this; }
 
+        [[nodiscard]]
         Valuable InCommonWith(const Valuable& v) const override {
             return v.IsConstant() && this->OfSameType(v) ? v
                 : ((v.IsSimple() || v.IsVa()) ? constants::one
