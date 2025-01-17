@@ -18,7 +18,7 @@
 
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace omnn::math {
+using namespace omnn::math;
 
     max_exp_t Exponentiation::getMaxVaExp(const Valuable& b, const Valuable& e)
     {
@@ -1332,4 +1332,6 @@ namespace omnn::math {
         return ebase().Sign() ^ eexp();
     }
 
+const PrincipalSurd* Exponentiation::PrincipalSurdFactor() const {
+    return ebase().PrincipalSurdFactor();
 }

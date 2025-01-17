@@ -40,6 +40,8 @@ template <class Chld>
         [[nodiscard]]
         constexpr bool IsPolynomial(const Variable&) const override { return true; }
         [[nodiscard]]
+        constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
+        [[nodiscard]]
         constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
         [[nodiscard]]
         constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::No; }

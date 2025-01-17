@@ -114,25 +114,37 @@ namespace omnn::math {
             return this->Add(std::forward<ItemT>(item), end());
         }
 
-        template<class T>
-        auto GetFirstOccurence() const
-        {
+        auto GetFirstOccurence(const std::function <bool(const Valuable&)> pred) const {
             auto& c = GetConstCont();
-            auto i = c.begin();
-            for(auto e = c.end(); i != e; ++i)
-                if(i->template Is<T>())
+            auto i = c.cbegin();
+            for (auto e = c.cend(); i != e; ++i)
+                if (pred(i->get()))
                     break;
             return i;
         }
 
-        template <class T>
-        auto GetFirstOccurence() {
+        auto GetFirstOccurence(const std::function <bool(const Valuable&)> pred) {
             auto& c = GetCont();
             auto i = c.begin();
             for (auto e = c.end(); i != e; ++i)
-                if (i->template Is<T>())
+                if (pred(i->get()))
                     break;
             return i;
+        }
+
+        template<class T>
+        auto GetFirstOccurence() const
+        {
+            return GetFirstOccurence([](auto& item) { return item.template Is<T>(); });
+        }
+
+        template <class T>
+        auto GetFirstOccurence() {
+            return GetFirstOccurence([](auto& item) { return item.template Is<T>(); });
+        }
+
+        auto FirstItemWithPrincipalSurd() const {
+            return GetFirstOccurence([](auto& item) { return item.PrincipalSurdFactor(); });
         }
 
         a_int Complexity() const override {

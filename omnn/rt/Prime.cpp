@@ -132,7 +132,11 @@ bool GrowPrime(const number_t& upto,
 
     auto range = upto;
     range -= prev;
-    auto chunks = std::thread::hardware_concurrency() - 1; // One thread left free for GC
+    auto chunks = std::thread::hardware_concurrency()
+#ifdef OPENMIND_BUILD_GC
+                    -1 // One thread left free for GC
+#endif
+        ;
     auto chunk = range;
     chunk /= chunks;
     if (from + chunk * chunks < upto) {

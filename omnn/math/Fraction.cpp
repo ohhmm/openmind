@@ -20,8 +20,9 @@
 #endif
 
 
-namespace omnn{
-namespace math {
+using namespace omnn::math;
+
+
 	Fraction::Fraction(const Integer& n)
 		: base(n, 1)
 	{
@@ -838,4 +839,10 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
             : std::abs(numerator()) / std::abs(denominator());
     }
 
-}}
+
+const PrincipalSurd* Fraction::PrincipalSurdFactor() const {
+    auto hasPrincipalSurd = numerator().PrincipalSurdFactor();
+    if (!hasPrincipalSurd)
+        hasPrincipalSurd = denominator().PrincipalSurdFactor();
+    return hasPrincipalSurd;
+}
