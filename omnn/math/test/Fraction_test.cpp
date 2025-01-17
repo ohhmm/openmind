@@ -4,6 +4,7 @@
 #include "Fraction.h"
 #include "Variable.h"
 #include "Sum.h"
+#include "generic.hpp"
 
 using namespace omnn::math;
 using namespace boost::unit_test_framework;
@@ -24,9 +25,13 @@ BOOST_AUTO_TEST_CASE(Fraction_cmp_tests) {
 BOOST_AUTO_TEST_CASE(Fraction_ordering_tests) {
     auto _1 = "((-16/25)*(1r5) + (16/5))^(1/2)"_v;
     auto _2 = "(3/5)*sqrt(5)"_v;
-    auto cmp21 = _1.IsComesBefore(_2);
-    auto cmp12 = _2.IsComesBefore(_1);
-    BOOST_TEST(cmp12 != cmp21);
+    InequalOrderCheck(_1, _2);
+    {
+        Valuable::OptimizeOff off;
+        _1 = "((sqrt((-4*(caterpillar^2) + 40*caterpillar + -100)))/4)"_v;
+        _2 = Fraction{26, 4};
+        InequalOrderCheck(_1, _2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(Fraction_tests)

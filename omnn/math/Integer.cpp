@@ -661,6 +661,8 @@ namespace math {
             return IsComesBefore(v.as<Product>());
         } else if (v.IsSum()) {
             return IsComesBefore(v.as<Sum>());
+        } else if (v.IsPrincipalSurd()) {
+            return {};
         } else if (v.IsInt()) {
             return *this > v;
         } else {
