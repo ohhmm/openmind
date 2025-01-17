@@ -371,7 +371,7 @@ namespace
                                     // this means that only equality to zero which has zero sign can be squared (not for odd powers)
                                     // reducing surd makes new consistent equation which roots might be considered for the source equation but it is not equivalent
                                     // if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation:
-                            || (GetView() == View::SupersetOfRoots && size() == 2);
+                            || GetView() == View::SupersetOfRoots;
                         if (!is) {
                             auto isThereSurd = it->PrincipalSurdFactor();
                             if (isThereSurd) {
@@ -413,8 +413,9 @@ namespace
                             else {
                                 ++it;
                             }
-                        } else {
-                            break;
+                        }
+                        else {
+                            ++it;
                         }
                     }
                     else
