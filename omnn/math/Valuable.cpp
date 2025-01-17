@@ -1571,12 +1571,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return solutions;
     }
 
-    const PrincipalSurd* Valuable::PrincipalSurdFactor() const { // TODO : use Devisor<T>()
-        auto surd = As<PrincipalSurd>();
-        if (!surd && IsProduct()) {
-            surd = as<Product>().Divisor<PrincipalSurd>();
+    const PrincipalSurd* Valuable::PrincipalSurdFactor() const {
+        if (exp) {
+            return exp->PrincipalSurdFactor();
+        } else {
+            LOG_AND_IMPLEMENT("PrincipalSurdFactor " << str());
         }
-        return surd;
     }
 
     Valuable Valuable::operator()(const Variable& va) const

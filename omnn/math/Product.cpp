@@ -25,8 +25,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 
 
-namespace omnn{
-namespace math {
+using namespace omnn::math;
     
     
     constexpr auto ValueOrderComparator = [](const Valuable& x, const Valuable& y)
@@ -1513,4 +1512,11 @@ namespace math {
         return vaExps;
     }
 
-}}
+    const PrincipalSurd* Product::PrincipalSurdFactor() const {
+        const PrincipalSurd* surd = nullptr;
+        GetFirstOccurence([&](auto& item) {
+            surd = item.PrincipalSurdFactor();
+            return surd != nullptr;
+        });
+        return surd;
+    }

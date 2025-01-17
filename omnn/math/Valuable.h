@@ -477,7 +477,7 @@ public:
     //    else
     //        IMPLEMENT
     //}
-    const PrincipalSurd* PrincipalSurdFactor() const;
+    virtual const PrincipalSurd* PrincipalSurdFactor() const;
 
     virtual Valuable SumOfRoots() const;
     virtual Valuable ProductOfRoots() const;

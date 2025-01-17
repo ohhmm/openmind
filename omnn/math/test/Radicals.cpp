@@ -83,8 +83,14 @@ BOOST_AUTO_TEST_CASE(RadicalExpressions_noHang_test
 BOOST_AUTO_TEST_CASE(RadicalExponentiationExpressions_test, *disabled()) {
     DECL_VA(x);
     Valuable _1("sqrt(7)^((2*x)/3)=49");
-    auto _2 = _1.Solutions(x).begin()->get();
-    BOOST_TEST(_2 == 6);
+    auto solved = _1.Solutions(x);
+    auto ok = solved.size() > 0;
+    if (ok) {
+        auto _2 = solved.begin()->get();
+        BOOST_TEST(_2 == 6);
+    } else {
+        BOOST_TEST(ok);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(RadicalSolving_test, *disabled()) {

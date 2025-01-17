@@ -108,6 +108,7 @@ public:
     Valuable& sq() override;
     Valuable abs() const override;
     Valuable& reciprocal() override;
+    const PrincipalSurd* PrincipalSurdFactor() const override;
 
     bool IsProduct() const override { return true; }
     bool IsZero() const override;

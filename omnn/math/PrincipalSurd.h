@@ -28,6 +28,7 @@ public:
     }
 
     constexpr bool IsPrincipalSurd() const override { return true; }
+    constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return this; }
     constexpr bool IsRadical() const override { return true; }
     bool IsSurd() const override { return is_optimized(); }
     YesNoMaybe IsRational() const override {

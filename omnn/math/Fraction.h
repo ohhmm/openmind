@@ -79,6 +79,7 @@ namespace math {
         bool IsPolynomial(const Variable& x) const override {
             return _1.IsPolynomial(x) && _2.IsSimple();
         }
+        const PrincipalSurd* PrincipalSurdFactor() const override;
 
         using base::base;
 

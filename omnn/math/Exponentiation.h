@@ -123,6 +123,8 @@ public:
     bool IsComesBefore(const Valuable&) const override;
     Valuable calcFreeMember() const override;
 
+    const PrincipalSurd* PrincipalSurdFactor() const override;
+
     Valuable& reciprocal() override;
     Valuable& sq() override;
     Valuable Sqrt() const override;

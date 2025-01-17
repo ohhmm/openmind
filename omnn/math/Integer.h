@@ -99,6 +99,8 @@ public:
     constexpr bool IsPolynomial(const Variable&) const override { return true; }
     [[nodiscard]]
     constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+    [[nodiscard]]
+    constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
 
     // virtual operators
