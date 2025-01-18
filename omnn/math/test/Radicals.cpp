@@ -106,13 +106,26 @@ BOOST_AUTO_TEST_CASE(RadicalSimplificationWithVariable_test) {
 
 BOOST_AUTO_TEST_CASE(RadicalSolving_test) {
     Valuable _1("sqrt(8-(x^2))-4");
+    // First verify optimization reduces surd term
+    _1.SetView(Valuable::View::SupersetOfRoots);
+    _1.optimize();
+    auto expected = Valuable("(8-(x^2))-16");
+    BOOST_TEST(_1 == expected); // After optimization: sqrt(8-(x^2)) = 4 -> 8-(x^2) = 16
+
+    // Then verify solutions
     auto solutions = _1.Solutions();
     BOOST_TEST(solutions.size() == 2);
     auto _ = PrincipalSurd{2} * constants::i;
     _1 = Product{2, _.Link()};
     auto _2 = Product{-2, _.Link()};
-    decltype(solutions) expected = {std::move(_1), std::move(_2)};
-    BOOST_TEST(solutions == expected);
+    // Compare individual solutions since set comparison operators are not yet implemented
+    bool found1 = false, found2 = false;
+    for (const auto& sol : solutions) {
+        if (sol == _1) found1 = true;
+        if (sol == _2) found2 = true;
+    }
+    BOOST_TEST(found1);
+    BOOST_TEST(found2);
 }
 
 BOOST_AUTO_TEST_CASE(RadicalSimplificationAndSolving_test)
