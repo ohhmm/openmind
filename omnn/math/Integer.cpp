@@ -416,7 +416,11 @@ namespace math {
                 auto value = divisor;
                 for (auto power = e; power > constants::one;) {
                     power.shr();
-                    value = boost::multiprecision::sqrt(value);
+                    // Convert to concrete type and use two-parameter sqrt
+                    boost::multiprecision::cpp_int concrete_value = value;
+                    boost::multiprecision::cpp_int sqrt_result;
+                    boost::multiprecision::sqrt(concrete_value, sqrt_result);
+                    value = sqrt_result;
                 }
                 auto divisorPowerE = value ^ e;
                 if (divisorPowerE == divisor) {
@@ -528,10 +532,12 @@ namespace math {
             auto signs = 0; //dimmensions
             while(dn.IsEven() == YesNoMaybe::Yes) {
                 auto minus = arbitrary < 0;
-                auto _ = boost::multiprecision::sqrt(minus ? -arbitrary : arbitrary);
-                auto _sq = _ * _;
-                if (_sq == boost::multiprecision::abs(arbitrary)){
-                    arbitrary = _;
+                boost::multiprecision::cpp_int abs_value = minus ? -arbitrary : arbitrary;
+                boost::multiprecision::cpp_int sqrt_result;
+                boost::multiprecision::sqrt(abs_value, sqrt_result);
+                auto sq = sqrt_result * sqrt_result;
+                if (sq == boost::multiprecision::abs(arbitrary)){
+                    arbitrary = sqrt_result;
                     hash = std::hash<base_int>()(arbitrary);
     //                Become(isNeg ? -operator-().Sqrt() : Sqrt());
                     dn /= 2;
@@ -701,9 +707,12 @@ namespace math {
 
     Valuable Integer::Sqrt() const
     {
-        auto arbitraryAbsoluteValue = boost::multiprecision::abs(arbitrary);
-        auto sqrtIntegerPart = boost::multiprecision::sqrt(arbitraryAbsoluteValue); // integer square root
-        if (sqrtIntegerPart * sqrtIntegerPart != arbitraryAbsoluteValue) { // no integer square root
+        // Convert expression template to concrete number type and compute integer square root
+        boost::multiprecision::cpp_int absValue = boost::multiprecision::abs(arbitrary);
+        boost::multiprecision::cpp_int sqrtIntegerPart;
+        using boost::multiprecision::sqrt;
+        sqrt(absValue, sqrtIntegerPart); // integer square root
+        if (sqrtIntegerPart * sqrtIntegerPart != absValue) { // no integer square root
             auto d = GreatestCommonExp(constants::two);
             if (d.second != constants::one) {
                 std::cout << *this << ".GreatestCommonExp(2): " << d.first << " , " << d.second << " ; sqrtIntegerPart=" << sqrtIntegerPart << std::endl;
