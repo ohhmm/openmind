@@ -2020,9 +2020,43 @@ namespace
             solve(va, solutions, coefficients, grade);
         } else if (GetView() != View::SupersetOfRoots) {
             auto rootSupersetOptimization = Optimized(View::SupersetOfRoots);
-            if (operator==(rootSupersetOptimization)) {
-                LOG_AND_IMPLEMENT("Solving " << rootSupersetOptimization);
+            // Handle surd term transformation
+            for (const auto& member : members) {
+                if (member.IsPrincipalSurd()) {
+                    const auto& surd = member.as<PrincipalSurd>();
+                    // Create a copy without the surd term
+                    Sum otherTerms;
+                    otherTerms.SetView(View::Flat);
+                    for (const auto& m : members) {
+                        if (!m.Same(member)) {
+                            otherTerms.Add(m);
+                        }
+                    }
+                    otherTerms.optimize();
+                    
+                    // Transform sqrt(a) = b to a = b^2
+                    auto rhs = -otherTerms;
+                    auto result = surd.Radicand() - (rhs ^ 2);
+                    result.SetView(View::Flat);
+                    result.optimize();
+                    
+                    // Handle complex roots if result is negative
+                    if (result.IsNegative()) {
+                        auto absValue = result.abs();
+                        auto sqrtAbs = absValue.Sqrt();
+                        auto imagSolution = Product{sqrtAbs, constants::i};
+                        solutions.insert(imagSolution);
+                        solutions.insert(-imagSolution);
+                        return;
+                    }
+                    
+                    // Solve the transformed equation
+                    result.solve(va, solutions);
+                    return;
+                }
             }
+            
+            // If no surd terms found, try regular optimization
             auto potentialSolutionCandidates = rootSupersetOptimization.solve(va);
             for (auto& candidate : potentialSolutionCandidates) {
                 if (Test(va, candidate)) {
