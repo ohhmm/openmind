@@ -365,13 +365,14 @@ namespace
 
             if (IsEquation()) {
                 auto e = members.end();
-                for (auto it = members.begin(); it != e;) {
+                auto isSurdReduceCommonlyAllowed = size() == 1 // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is different from x+1=0 (x=-1)
+                            // this means that only equality to zero which has zero sign can be squared (not for odd powers)
+                            // reducing surd makes new consistent equation which roots might be considered for the source equation but it is not equivalent
+                            // if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation:
+                    || GetView() == View::SupersetOfRoots;
+                for (auto it = members.begin(); it != e; ++it) {
                     auto SurdIsReducable = [&](auto& it) {
-                        auto is = size() == 1 // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is different from x+1=0 (x=-1)
-                                    // this means that only equality to zero which has zero sign can be squared (not for odd powers)
-                                    // reducing surd makes new consistent equation which roots might be considered for the source equation but it is not equivalent
-                                    // if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation:
-                            || GetView() == View::SupersetOfRoots;
+                        auto is = isSurdReduceCommonlyAllowed;
                         if (!is) {
                             auto isThereSurd = it->PrincipalSurdFactor();
                             if (isThereSurd) {
@@ -385,41 +386,36 @@ namespace
                         }
                         return is;
                     };
-                    if (it->IsPrincipalSurd()) {
-                        if (SurdIsReducable(it)) {
+                    auto isThereSurd = it->PrincipalSurdFactor();
+                    if (isThereSurd && SurdIsReducable(it)) {
+                        if (it->IsPrincipalSurd()) {
                             auto ps = Extract(it);
                             auto& surd = ps.as<PrincipalSurd>();
                             ViewOptimizePause flat(this);
                             operator^=(surd.Index());
                             operator-=(surd.Radicand());
                             break;
-                        }
-                        else {
-                            ++it;
+                        } else if (it->IsProduct()) {
+                            auto& idx = isThereSurd->Index();
+                            auto product = Extract(it);
+                            ViewOptimizePause flat(this);
+                            operator^=(idx);
+                            product ^= idx;
+                            operator-=(product);
+                            break;
+                        } else if (it->IsExponentiation()) {
+                            auto& exponentiation = it->as<Exponentiation>();
+                            auto& base = exponentiation.ebase();
+                            if (base.IsPrincipalSurd()) {
+                                IMPLEMENT
+                            } else {
+                                IMPLEMENT
+                            }
+                            break;
+                        } else {
+                            LOG_AND_IMPLEMENT("Surd reduction for " << it->get());
                         }
                     }
-                    else if(it->IsProduct()) {
-                        auto isThereSurd = it->PrincipalSurdFactor();
-                        if (isThereSurd) {
-                            if (SurdIsReducable(it)) {
-                                auto& idx = isThereSurd->Index();
-                                auto product = Extract(it);
-                                ViewOptimizePause flat(this);
-                                operator^=(idx);
-                                product ^= idx;
-                                operator-=(product);
-                                break;
-                            }
-                            else {
-                                ++it;
-                            }
-                        }
-                        else {
-                            ++it;
-                        }
-                    }
-                    else
-                        ++it;
 
                     CHECK_OPTIMIZATION_CACHE
                 }
