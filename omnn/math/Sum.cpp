@@ -367,11 +367,24 @@ namespace
                 auto e = members.end();
                 for (auto it = members.begin(); it != e;) {
                     auto SurdIsReducable = [&](auto& it) {
-                        auto is = size() == 1 // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is different from x+1=0 (x=-1)
-                                    // this means that only equality to zero which has zero sign can be squared (not for odd powers)
-                                    // reducing surd makes new consistent equation which roots might be considered for the source equation but it is not equivalent
-                                    // if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation:
-                            || GetView() == View::SupersetOfRoots;
+                        // Check if reduction is possible:
+                        // 1. Single term surd (sqrt(x)=0 equivalent to x=0)
+                        // 2. SupersetOfRoots view allows reduction of surds
+                        auto is = size() == 1 || GetView() == View::SupersetOfRoots;
+                        
+                        // For non-trivial cases, verify surd properties
+                        if (!is) {
+                            auto isThereSurd = it->PrincipalSurdFactor();
+                            if (isThereSurd) {
+                                auto& index = isThereSurd->Index();
+                                // Only reduce if index is not odd (to preserve sign)
+                                if (index.IsEven() == YesNoMaybe::No) {
+                                    auto next = it;
+                                    ++next;
+                                    is = std::none_of(next, e, &Sum::VarSurdFactor);
+                                }
+                            }
+                        }
                         if (!is) {
                             auto isThereSurd = it->PrincipalSurdFactor();
                             if (isThereSurd) {
@@ -1995,9 +2008,43 @@ namespace
             solve(va, solutions, coefficients, grade);
         } else if (GetView() != View::SupersetOfRoots) {
             auto rootSupersetOptimization = Optimized(View::SupersetOfRoots);
-            if (operator==(rootSupersetOptimization)) {
-                LOG_AND_IMPLEMENT("Solving " << rootSupersetOptimization);
+            // Handle surd term transformation
+            for (const auto& member : members) {
+                if (member.IsPrincipalSurd()) {
+                    const auto& surd = member.as<PrincipalSurd>();
+                    // Create a copy without the surd term
+                    Sum otherTerms;
+                    otherTerms.SetView(View::Flat);
+                    for (const auto& m : members) {
+                        if (!m.Same(member)) {
+                            otherTerms.Add(m);
+                        }
+                    }
+                    otherTerms.optimize();
+                    
+                    // Transform sqrt(a) = b to a = b^2
+                    auto rhs = -otherTerms;
+                    auto result = surd.Radicand() - (rhs ^ 2);
+                    result.SetView(View::Flat);
+                    result.optimize();
+                    
+                    // Handle complex roots if result is negative
+                    if (result.IsNegative()) {
+                        auto absValue = result.abs();
+                        auto sqrtAbs = absValue.Sqrt();
+                        auto imagSolution = Product{sqrtAbs, constants::i};
+                        solutions.insert(imagSolution);
+                        solutions.insert(-imagSolution);
+                        return;
+                    }
+                    
+                    // Solve the transformed equation
+                    result.solve(va, solutions);
+                    return;
+                }
             }
+            
+            // If no surd terms found, try regular optimization
             auto potentialSolutionCandidates = rootSupersetOptimization.solve(va);
             for (auto& candidate : potentialSolutionCandidates) {
                 if (Test(va, candidate)) {

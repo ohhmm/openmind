@@ -701,9 +701,12 @@ namespace math {
 
     Valuable Integer::Sqrt() const
     {
-        auto arbitraryAbsoluteValue = boost::multiprecision::abs(arbitrary);
-        auto sqrtIntegerPart = boost::multiprecision::sqrt(arbitraryAbsoluteValue); // integer square root
-        if (sqrtIntegerPart * sqrtIntegerPart != arbitraryAbsoluteValue) { // no integer square root
+        // Convert expression template to concrete number type and compute integer square root
+        boost::multiprecision::cpp_int absValue = boost::multiprecision::abs(arbitrary);
+        boost::multiprecision::cpp_int sqrtIntegerPart;
+        using boost::multiprecision::sqrt;
+        sqrt(absValue, sqrtIntegerPart); // integer square root
+        if (sqrtIntegerPart * sqrtIntegerPart != absValue) { // no integer square root
             auto d = GreatestCommonExp(constants::two);
             if (d.second != constants::one) {
                 std::cout << *this << ".GreatestCommonExp(2): " << d.first << " , " << d.second << " ; sqrtIntegerPart=" << sqrtIntegerPart << std::endl;
