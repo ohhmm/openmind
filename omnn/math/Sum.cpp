@@ -363,76 +363,8 @@ namespace
                 CHECK_OPTIMIZATION_CACHE
             }
 
-            if (IsEquation()) {
-                auto e = members.end();
-                auto isSurdReduceCommonlyAllowed = size() == 1 // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is different from x+1=0 (x=-1)
-                            // this means that only equality to zero which has zero sign can be squared (not for odd powers)
-                            // reducing surd makes new consistent equation which roots might be considered for the source equation but it is not equivalent
-                            // if size > 1, where expression under surd is not zero, it may be used for root finding routine, not for equation transformation:
-                    || GetView() == View::SupersetOfRoots;
-                for (auto it = members.begin(); it != e; ++it) {
-                    auto SurdIsReducable = [&](auto& it) {
-                        auto is = isSurdReduceCommonlyAllowed;
-                        if (!is) {
-                            auto isThereSurd = it->PrincipalSurdFactor();
-                            if (isThereSurd) {
-                                auto& index = isThereSurd->Index();
-                                if (index.IsEven() == YesNoMaybe::No) {
-                                    auto next = it;
-                                    ++next;
-                                    is = std::none_of(next, e, &Sum::VarSurdFactor);
-                                }
-                            }
-                        }
-                        return is;
-                    };
-                    auto isThereSurd = it->PrincipalSurdFactor();
-                    if (isThereSurd && SurdIsReducable(it)) {
-                        if (it->IsPrincipalSurd()) {
-                            auto ps = Extract(it);
-                            auto& surd = ps.as<PrincipalSurd>();
-                            ViewOptimizePause flat(this);
-                            operator^=(surd.Index());
-                            operator-=(surd.Radicand());
-                            break;
-                        } else if (it->IsProduct()) {
-                            auto& idx = isThereSurd->Index();
-                            auto product = Extract(it);
-                            ViewOptimizePause flat(this);
-                            operator^=(idx);
-                            product ^= idx;
-                            operator-=(product);
-                            break;
-                        } else if (it->IsExponentiation()) {
-                            auto& exponentiation = it->as<Exponentiation>();
-                            auto& base = exponentiation.ebase();
-                            if (base.IsPrincipalSurd()) {
-                                IMPLEMENT
-                            } else {
-                                IMPLEMENT
-                            }
-                            break;
-                        } else {
-                            LOG_AND_IMPLEMENT("Surd reduction for " << it->get());
-                        }
-                    }
+            PerformSurdReduce();
 
-                    CHECK_OPTIMIZATION_CACHE
-                }
-
-                if (this->IsSum()) {
-                    if (exp) {
-                        auto shptr = std::move(exp);
-                        Become(std::move(shptr->get()));
-                    }
-
-                    auto common = GCDofMembers().varless();
-                    if (common != constants::one) {
-                        operator/=(common);
-                    }
-                }
-            }
-            
             CHECK_OPTIMIZATION_CACHE
             
             if (!IsSum()) {
@@ -692,6 +624,80 @@ namespace
                             Become(std::move(uni));
                         }
                     }
+                }
+            }
+        }
+    }
+
+    void Sum::PerformSurdReduce()
+    {
+        if (IsEquation()) {
+            auto isSurdReduceCommonlyAllowed =
+                size() ==
+                    1 // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is
+                      // different from x+1=0 (x=-1) this means that only equality to zero which has zero sign can be
+                      // squared (not for odd powers) reducing surd makes new consistent equation which roots might be
+                      // considered for the source equation but it is not equivalent if size > 1, where expression under
+                      // surd is not zero, it may be used for root finding routine, not for equation transformation:
+                || GetView() == View::SupersetOfRoots;
+            auto e = members.end();
+            for (auto it = members.begin(); it != e; ++it) {
+                auto SurdIsReducable = [&](auto& it) {
+                    auto is = isSurdReduceCommonlyAllowed;
+                    if (!is) {
+                        auto isThereSurd = it->PrincipalSurdFactor();
+                        if (isThereSurd) {
+                            auto& index = isThereSurd->Index();
+                            if (index.IsEven() == YesNoMaybe::No) {
+                                auto next = it;
+                                ++next;
+                                is = std::none_of(next, e, &Sum::VarSurdFactor);
+                            }
+                        }
+                    }
+                    return is;
+                };
+                auto isThereSurd = it->PrincipalSurdFactor();
+                if (isThereSurd && SurdIsReducable(it)) {
+                    if (it->IsPrincipalSurd()) {
+                        auto ps = Extract(it);
+                        auto& surd = ps.as<PrincipalSurd>();
+                        ViewOptimizePause flat(this);
+                        operator^=(surd.Index());
+                        operator-=(surd.Radicand());
+                        break;
+                    } else if (it->IsProduct()) {
+                        auto& idx = isThereSurd->Index();
+                        auto product = Extract(it);
+                        ViewOptimizePause flat(this);
+                        operator^=(idx);
+                        product ^= idx;
+                        operator-=(product);
+                        break;
+                    } else if (it->IsExponentiation()) {
+                        auto& exponentiation = it->as<Exponentiation>();
+                        auto& base = exponentiation.ebase();
+                        if (base.IsPrincipalSurd()) {
+                            IMPLEMENT
+                        } else {
+                            IMPLEMENT
+                        }
+                        break;
+                    } else {
+                        LOG_AND_IMPLEMENT("Surd reduction for " << it->get());
+                    }
+                }
+            }
+
+            if (this->IsSum()) {
+                if (exp) {
+                    auto shptr = std::move(exp);
+                    Become(std::move(shptr->get()));
+                }
+
+                auto common = GCDofMembers().varless();
+                if (common != constants::one) {
+                    operator/=(common);
                 }
             }
         }
