@@ -101,6 +101,7 @@ public:
     constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     [[nodiscard]]
     constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
+    std::pair<bool,Valuable> IsModSimplifiable(const Valuable& v) const override;
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
 
     // virtual operators
@@ -119,7 +120,6 @@ public:
     std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
     bool SumIfSimplifiable(const Valuable&) override;
     std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable&) const override;
-    std::pair<bool, Valuable> IsModSimplifiable(const Valuable&) const override;
 
     vars_cont_t GetVaExps() const override { return {}; }
     std::pair<Valuable,Valuable> GreatestCommonExp(const Valuable& e) const; // exp,result

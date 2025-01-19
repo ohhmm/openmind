@@ -393,8 +393,7 @@ BOOST_AUTO_TEST_CASE(Integer_IsModSimplifiable_test)
 
     // Test with zero divisor (by Knuth's definition, 10 % 0 = 10)
     result = i.IsModSimplifiable(0);
-    BOOST_TEST(result.first);
-    BOOST_TEST(result.second == i); // 10 % 0 = 10
+    BOOST_TEST(!result.first);
 
     // Test with variable (should defer to variable's implementation)
     Variable va;

@@ -246,24 +246,6 @@ namespace math {
         return *this;
     }
 
-    std::pair<bool,Valuable> Integer::IsModSimplifiable(const Valuable& v) const
-    {
-        if (v.IsZero()) {
-            return {true, *this};
-        }
-        if (v.IsInt()) {
-            return {true, *this % v};
-        }
-        if (v.IsFraction() || v.IsVa() || v.IsExponentiation()) {
-            return {};
-        }
-        auto is = v.IsModSimplifiable(*this);
-        if (is.first && is.second.Complexity() > v.Complexity()) {
-            is.first = false;
-        }
-        return is;
-    }
-
     Valuable& Integer::operator --()
     {
         --arbitrary;
@@ -1180,6 +1162,25 @@ namespace math {
     Valuable::solutions_t Integer::GetIntegerSolution(const Variable &va) const
     {
         return {};
+    }
+
+    std::pair<bool,omnn::math::Valuable> omnn::math::Integer::IsModSimplifiable(const omnn::math::Valuable& v) const
+    {
+        if (v.IsZero()) {
+            return {}; // Not simplifiable with zero divisor
+        }
+        if (v.IsInt()) {
+            auto mod = *this % v;
+            return {true, mod}; // Integer modulo is always simplifiable with integers
+        }
+        if (v.IsFraction() || v.IsVa() || v.IsExponentiation()) {
+            return {};
+        }
+        auto is = v.IsModSimplifiable(*this);
+        if (is.first && is.second.Complexity() > v.Complexity()) {
+            is.first = false;
+        }
+        return is;
     }
 
 }
