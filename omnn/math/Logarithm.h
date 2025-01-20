@@ -32,6 +32,8 @@ public:
         //InitVars();
     }
 
+    Logarithm(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized);
+
     static constexpr auto GetBinaryOperationLambdaTemplate() {
         return [](const auto& base, const auto& target) {
             return ::std::log(target) / ::std::log(base);
