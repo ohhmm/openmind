@@ -2,6 +2,9 @@
 
 #include "Exponentiation.h"
 #include "Fraction.h"
+#include "Euler.h"
+
+#include "rt/strhash.hpp"
 
 #include <cmath>
 #include <boost/math/special_functions/log1p.hpp>
@@ -23,6 +26,33 @@ namespace math {
     {
         out << 'l';
         return out;
+    }
+
+    Logarithm::Logarithm(const std::string_view& str, std::shared_ptr<VarHost> host, bool itIsOptimized) {
+        auto comma = str.find(',');
+        auto isLn = comma == std::string::npos;
+
+        // Extract and trim base and target strings
+        auto baseStr = str.substr(0, comma);
+        rt::Trim(baseStr);
+        auto targetStr = str.substr(comma + 1);
+        rt::Trim(targetStr);
+
+        auto baseIsEmpty = !isLn && baseStr.empty();
+        if (baseIsEmpty && targetStr.empty()) {
+            LOG_AND_IMPLEMENT("Empty base and target during logarithm parsing");
+        } else if (baseIsEmpty) {
+            LOG_AND_IMPLEMENT("Empty base in logarithm: Log(" << baseStr << ", " << targetStr << ")");
+        } else if (targetStr.empty()) {
+            LOG_AND_IMPLEMENT("Empty target in logarithm: Log(" << baseStr << ", " << targetStr << ")");
+        }
+
+        auto base = isLn ? Euler() : Valuable(baseStr, host, itIsOptimized);
+        setBase(std::move(base));
+        setTarget(Valuable(targetStr, host, itIsOptimized));
+
+        Valuable::hash = _1.Hash() ^ _2.Hash();
+        Valuable::optimized = itIsOptimized;
     }
 
     void Logarithm::optimize()
