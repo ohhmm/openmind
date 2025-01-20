@@ -629,6 +629,20 @@ namespace
         }
     }
 
+    const PrincipalSurd* Sum::PrincipalSurdFactor() const
+    {
+        auto isTherePrincipalSurdFactor = size() == 1 ? begin()->PrincipalSurdFactor() : nullptr;
+        if (!isTherePrincipalSurdFactor)
+        {
+            auto areAllPrincipalSurdFactors = std::all_of(begin(), end(),
+                [](auto& m) { return m.PrincipalSurdFactor() != nullptr; });
+            if (areAllPrincipalSurdFactors) {
+                IMPLEMENT
+            }
+        }
+        return isTherePrincipalSurdFactor;
+    }
+
     void Sum::PerformSurdReduce()
     {
         if (IsEquation()) {

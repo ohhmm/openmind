@@ -95,6 +95,7 @@ public:
 
     void optimize() override;
     void balance();
+    const PrincipalSurd* PrincipalSurdFactor() const override;
     void PerformSurdReduce();
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
