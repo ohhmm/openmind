@@ -64,6 +64,24 @@ namespace math {
         // Simplify logarithm if base and target are the same
         else if (_1 == _2) {
             Become(1);
+        } else if (_1.IsInt() && _2.IsInt() && getTarget() > constants::zero && getBase() > constants::one) {
+            auto base = getBase().ca();
+            auto target = getTarget().ca();
+            // Use binary search for initial approximation
+            auto high = target;
+            decltype(high) low = 0;
+            while (low < high) {
+                decltype(high) mid = (low + high) / 2;
+                if ((getBase() ^ mid) <= getTarget()) {
+                    low = mid + 1;
+                } else {
+                    high = mid;
+                }
+            }
+            decltype(high) x = low - 1;
+            if ((getBase() ^ x) == getTarget()) {
+                Become(std::move(x));
+            }
         }
         // Add more simplification rules as needed
     }

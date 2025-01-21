@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(Logarithm_base_equal_target_optimization) {
 }
 
 // Test string parsing for logarithm expressions
-BOOST_AUTO_TEST_CASE(Logarithm_string_parse_test, *boost::unit_test::disabled()) {
+BOOST_AUTO_TEST_CASE(Logarithm_string_parse_int_test) {
     // Test basic numeric case
     Valuable v("log(2,8)");
     v.optimize();
@@ -38,13 +38,13 @@ BOOST_AUTO_TEST_CASE(Logarithm_string_parse_test, *boost::unit_test::disabled())
     v = Valuable("log( 2 , 8 )");
     v.optimize();
     BOOST_TEST(v == 3);
+}
 
+BOOST_AUTO_TEST_CASE(Logarithm_string_parse_var_test)
+{
     // Test with variables
-    v = Valuable("log(x, x^2)");
-    BOOST_TEST(v.IsLogarithm());
-    auto& log = v.as<Logarithm>();
-    BOOST_TEST(log.getBase().str() == "x");
-    BOOST_TEST(log.getTarget().str() == "(x^2)");
+    auto v = Valuable("log(x, x^2)");
+    BOOST_TEST(v == 2);
 
     // Test with expressions
     v = Valuable("log(2+1, (2+1)^2)");
