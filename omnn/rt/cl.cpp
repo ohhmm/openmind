@@ -10,8 +10,8 @@ auto ComputeUnitsWinner = []() -> boost::compute::device {
     try {
         auto devices = boost::compute::system::devices();
         if (devices.size() == 0) {
-            std::cout << "Please, install an OpenCL driver." << std::endl;
-            exit(-1);
+            std::cerr << "Warning: No OpenCL driver installed. Some computations may be slower." << std::endl;
+            return {};
         } else if (devices.size() == 1) {
             auto& device = *devices.begin();
             std::cout << device.name() << " max_work_group_size=" << device.max_work_group_size() << std::endl;
