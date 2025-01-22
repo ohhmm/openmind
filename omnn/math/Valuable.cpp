@@ -1053,11 +1053,15 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     o = o_exp;
                 }
                 else if (c == '!') {
-                    v.factorial();
-                    if (mulByNeg) {
-                        v *= -1;
-                        mulByNeg = {};
+                    bool isNegative = mulByNeg || v < 0;
+                    if (v < 0) {
+                        v *= -1;  // Make positive for factorial
                     }
+                    v = v.Factorial();
+                    if (isNegative) {
+                        v *= -1;  // Apply negation if either condition was true
+                    }
+                    mulByNeg = {};  // Clear any pending negation
                 }
                 else if (c == ' ') {
                 }
@@ -1087,6 +1091,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                 auto next = to + 1;
                                 auto args = str.substr(next, cb - next);
                                 o(Logarithm(args, host, itIsOptimized));
+                            } else if (id == "factorial"sv) {
+                                auto next = to + 1;
+                                auto arg = Valuable(str.substr(next, cb - next), host, itIsOptimized);
+                                if (mulByNeg) {
+                                    arg *= -1;
+                                    mulByNeg = {};
+                                }
+                                o(arg.Factorial());
                             }
 							i = cb;
                             continue;
@@ -1560,12 +1572,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return solutions;
     }
 
-    const PrincipalSurd* Valuable::PrincipalSurdFactor() const {
-        if (exp) {
-            return exp->PrincipalSurdFactor();
-        } else {
-            LOG_AND_IMPLEMENT("PrincipalSurdFactor " << str());
+    const PrincipalSurd* Valuable::PrincipalSurdFactor() const { // TODO : use Devisor<T>()
+        auto surd = As<PrincipalSurd>();
+        if (!surd && IsProduct()) {
+            surd = as<Product>().Divisor<PrincipalSurd>();
         }
+        return surd;
     }
 
     Valuable Valuable::operator()(const Variable& va) const
