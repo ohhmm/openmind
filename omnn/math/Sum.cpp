@@ -174,9 +174,9 @@ namespace
                 }
             } else if (m.IsExponentiation()) {
                 auto& e = m.as<Exponentiation>();
-                auto& ee = e.getExponentiation();
+                auto& ee = e.eexp();
                 if (ee == constants::minus_1) {
-                    lcm.lcm(e.getBase());
+                    lcm.lcm(e.ebase());
                 }
             } else if (m.IsProduct()) {
                 auto& p = m.as<Product>();
@@ -190,9 +190,9 @@ namespace
                     }
                     else if (m.IsExponentiation()) {
 						auto& e = m.as<Exponentiation>();
-						auto& ee = e.getExponentiation();
+						auto& ee = e.eexp();
                         if (ee == constants::minus_1) {
-							lcm.lcm(e.getBase());
+							lcm.lcm(e.ebase());
 						}
 					}
 				}
@@ -495,14 +495,14 @@ namespace
                 auto copy = it->Optimized();
                 
                 CHECK_OPTIMIZATION_CACHE
-                
+
                 if (!it->Same(copy)) {
                     Update(it, copy);
                 }
                 else
                     ++it;
             }
-            
+
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
 //            if (w!=*this) {
 //                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
@@ -558,9 +558,9 @@ namespace
                                     }
                                     else if (m.IsExponentiation()) {
                                         auto& e = m.as<Exponentiation>();
-                                        auto& ee = e.getExponentiation();
+                                        auto& ee = e.eexp();
                                         if (ee.IsInt() && ee.ca() < 0) {
-                                            operator*=(e.getBase() ^ (-ee)); // FIXME: (-1*((-1*percentWaterDehydrated + 100)^(-1))*potatoKgDehydrated + (percentWaterDehydrated^(-1))*weightWaterDehydrated)  *  (-1*percentWaterDehydrated + 100)
+                                            operator*=(e.ebase() ^ (-ee)); // FIXME: (-1*((-1*percentWaterDehydrated + 100)^(-1))*potatoKgDehydrated + (percentWaterDehydrated^(-1))*weightWaterDehydrated)  *  (-1*percentWaterDehydrated + 100)
 
                                             scan = true;
                                             break;
@@ -576,7 +576,7 @@ namespace
                                             nop.Delete(p);
 
                                             auto balanced =
-                                                ((e.getBase() ^ f.getNumerator()) * (wo ^ d)) - ((-nop) ^ d);
+                                                ((e.ebase() ^ f.getNumerator()) * (wo ^ d)) - ((-nop) ^ d);
                                             Become(std::move(balanced));
                                             scan = true;
                                             break;
@@ -591,15 +591,15 @@ namespace
                                 break;
                             } else if (member.IsExponentiation()) {
                                 auto& e = member.as<Exponentiation>();
-                                auto& ee = e.getExponentiation();
+                                auto& ee = e.eexp();
                                 if (ee.IsInt() && ee < 0) {
-                                    operator*=(e.getBase() ^ (-ee));
+                                    operator*=(e.ebase() ^ (-ee));
                                     scan = true;
                                     break;
                                 }
                                 else if (ee.IsFraction()) {
                                     auto& f = ee.as<Fraction>();
-                                    Become((e.getBase() ^ f.getNumerator()) - ((-(*this - member)) ^ f.getDenominator()));
+                                    Become((e.ebase() ^ f.getNumerator()) - ((-(*this - member)) ^ f.getDenominator()));
                                     scan = true;
                                     break;
                                 }
@@ -642,7 +642,7 @@ namespace
             auto areAllPrincipalSurdFactors = std::all_of(begin(), end(),
                 [](auto& m) { return m.PrincipalSurdFactor() != nullptr; });
             if (areAllPrincipalSurdFactors) {
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("All members have PrincipalSurdFactors but no implementation for handling this case")
             }
         }
         return isTherePrincipalSurdFactor;
@@ -1431,7 +1431,7 @@ namespace
         if(IsMultival() == YesNoMaybe::Yes){
             auto univariate = Univariate();
             if (!univariate.IsSum()) {
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Univariate is not a sum")
             } else {
                 grade = univariate.as<Sum>().FillPolynomialCoefficients(coefficients, v);
                 return grade;
@@ -1460,7 +1460,7 @@ namespace
         //#pragma omp parallel default(none) shared(grade,coefficients)
         {
             OptimizeOff off;
-        //#pragma omp for 
+        //#pragma omp for
         for (auto& m : members)
         {
             if(!m.HasVa(v))
@@ -1487,14 +1487,14 @@ namespace
                             coefficients.clear();
                             return s.as<Sum>().FillPolynomialCoefficients(coefficients, v);
                         } else {
-                            IMPLEMENT
-						}
+                            LOG_AND_IMPLEMENT("Normalized polynomial required")
+                        }
                     }
                 }
 
                 auto vcnt = noVa ? constants::zero : it->second; // exponentation of va
                 if (!vcnt.IsInt()) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Exponentiation is not an integer")
                 }
                 int ie = static_cast<int>(vcnt);
                 if (ie < 0)
@@ -1504,7 +1504,7 @@ namespace
                         coefficients.clear();
                         return normalized.as<Sum>().FillPolynomialCoefficients(coefficients, v);
                     } else {
-                        IMPLEMENT
+                        LOG_AND_IMPLEMENT("Normalization failed")
                     }
                 }
                 else if (ie > grade) {
@@ -1527,9 +1527,9 @@ namespace
             else if(m.IsExponentiation())
             {
                 auto& e = m.as<Exponentiation>();
-                if (e.getBase() == v)
+                if (e.ebase() == v)
                 {
-                    auto& ee = e.getExponentiation();
+                    auto& ee = e.eexp();
                     if (ee.IsInt()) {
                         auto i = static_cast<decltype(grade)>(ee.ca());
                         if (i > grade) {
@@ -1541,13 +1541,13 @@ namespace
                         add(i, 1);
                     }
                     else
-                        IMPLEMENT
+                        LOG_AND_IMPLEMENT("Exponentiation is not an integer")
                 }
 
             }
             else {
                 std::cout << m << std::endl;
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Unhandled case in FillPolyCoeff")
             }
         }
         }
