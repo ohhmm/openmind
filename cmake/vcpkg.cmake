@@ -38,22 +38,58 @@ endmacro()
 macro(fetch_vcpkg)
     include(${CMAKE_CURRENT_LIST_DIR}/gitect.cmake)
     include(FetchContent)
-    FetchContent_Populate(	VCPKG
-        GIT_REPOSITORY https://github.com/microsoft/vcpkg.git
-        GIT_TAG        2024.08.23
-        SOURCE_DIR     "${CMAKE_CURRENT_BINARY_DIR}/vcpkg"
-    )
+    
+    # Use CMAKE_CURRENT_BINARY_DIR for consistent path handling
     set(VCPKG_ROOT "${CMAKE_CURRENT_BINARY_DIR}/vcpkg" CACHE PATH "Path to vcpkg installation")
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E chdir ${VCPKG_ROOT} ${VCPKG_ROOT}/bootstrap-vcpkg.sh
-        RESULT_VARIABLE BOOTSTRAP_RESULT
-    )
-    if(NOT BOOTSTRAP_RESULT EQUAL 0)
-        message(WARNING "Failed to bootstrap vcpkg")
+    
+    if(GIT_EXECUTABLE)
+        if(EXISTS ${VCPKG_ROOT})
+            # Ensure we are on a branch before pulling
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} -C ${VCPKG_ROOT} checkout master
+                RESULT_VARIABLE GIT_CHECKOUT_RESULT
+            )
+            if(NOT GIT_CHECKOUT_RESULT EQUAL 0)
+                message(FATAL_ERROR "Failed to checkout master branch in vcpkg repository")
+            endif()
+
+            # Pull the latest changes
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} -C ${VCPKG_ROOT} pull
+                RESULT_VARIABLE GIT_PULL_RESULT
+            )
+            if(NOT GIT_PULL_RESULT EQUAL 0)
+                message(FATAL_ERROR "Failed to pull latest changes from vcpkg repository")
+            endif()
+        else()
+            # Clone the repository if it doesn't exist
+            FetchContent_Populate(VCPKG
+                GIT_REPOSITORY https://github.com/microsoft/vcpkg.git
+                GIT_TAG        2024.08.23
+                SOURCE_DIR     "${VCPKG_ROOT}"
+            )
+        endif()
+
+        # Use platform-specific bootstrap script
+        if(WIN32)
+            set(BOOTSTRAP_SCRIPT "${VCPKG_ROOT}/bootstrap-vcpkg.bat")
+            set(VCPKG_EXECUTABLE "${VCPKG_ROOT}/vcpkg.exe" CACHE FILEPATH "Path to vcpkg executable" FORCE)
+        else()
+            set(BOOTSTRAP_SCRIPT "${VCPKG_ROOT}/bootstrap-vcpkg.sh")
+            set(VCPKG_EXECUTABLE "${VCPKG_ROOT}/vcpkg" CACHE FILEPATH "Path to vcpkg executable" FORCE)
+        endif()
+
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E chdir ${VCPKG_ROOT} ${BOOTSTRAP_SCRIPT}
+            RESULT_VARIABLE BOOTSTRAP_RESULT
+        )
+        if(NOT BOOTSTRAP_RESULT EQUAL 0)
+            message(WARNING "Failed to bootstrap vcpkg using ${BOOTSTRAP_SCRIPT}")
+        endif()
+
+        set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file" FORCE)
+        set(VCPKG_FOUND TRUE CACHE BOOL "VCPKG found" FORCE)
     endif()
-    set(VCPKG_EXECUTABLE "${VCPKG_ROOT}/vcpkg" CACHE FILEPATH "Path to vcpkg executable" FORCE)
-    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file" FORCE)
-    set(VCPKG_FOUND TRUE CACHE BOOL "VCPKG found" FORCE)
 endmacro()
 
 if(NOT VCPKG_FOUND)

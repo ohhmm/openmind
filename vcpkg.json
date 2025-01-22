@@ -22,7 +22,7 @@
     {
       "name": "leveldb",
       "version>=": "1.23"
-    }
+    },
     {
       "name": "vcpkg-cmake",
       "host": true
