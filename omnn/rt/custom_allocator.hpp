@@ -54,26 +54,9 @@ public:
         return std::numeric_limits<size_type>::max() / sizeof(T);
     }
 
-    // C++17 allocator interface
-    template <class U>
-    struct rebind {
-        using other = custom_allocator<U>;
-    };
-
-    // Boost.uBLAS compatibility methods
-    template <class U>
-    void construct(U* p) {
-        ::new(static_cast<void*>(p)) U();
-    }
-
-    template <class U>
-    void construct(U* p, const U& val) {
-        ::new(static_cast<void*>(p)) U(val);
-    }
-
     template <class U, class... Args>
     void construct(U* p, Args&&... args) {
-        ::new(static_cast<void*>(p)) U(std::forward<Args>(args)...);
+        new(static_cast<void*>(p)) U(std::forward<Args>(args)...);
     }
 
     template <class U>
@@ -102,11 +85,11 @@ public:
     // Select on container copy construction
     static custom_allocator select_on_container_copy_construction(const custom_allocator&) { return custom_allocator(); }
 
-    // Required by boost::ublas for zero initialization
-    void initialize(size_type size) {
-        storage.resize(size);
-        std::fill(storage.begin(), storage.end(), T());
-    }
+    // Allocator traits
+    template <typename U>
+    struct rebind {
+        using other = custom_allocator<U>;
+    };
 
     // Required methods for Boost compatibility
     T* data() { return storage.data(); }
