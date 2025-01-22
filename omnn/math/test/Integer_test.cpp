@@ -118,6 +118,32 @@ BOOST_AUTO_TEST_CASE(Integer_ParseFactorial) {
     BOOST_TEST(zero == 1);
 }
 
+BOOST_AUTO_TEST_CASE(Integer_ParseFunctionFactorial) {
+    // Basic function-style factorial
+    Valuable expr("factorial(3)");
+    BOOST_TEST(expr == 6);
+    
+    // Nested expression factorial
+    Valuable nested("factorial(2+1)");
+    BOOST_TEST(nested == 6);
+    
+    // Multiple factorials in expression
+    Valuable multi("factorial(2) + factorial(3)");
+    BOOST_TEST(multi == 8);  // 2! + 3! = 2 + 6 = 8
+    
+    // Negative number factorial
+    Valuable neg("factorial(-3)");
+    BOOST_TEST(neg == -6);  // -(3!) = -6
+    
+    // Zero factorial
+    Valuable zero("factorial(0)");
+    BOOST_TEST(zero == 1);
+    
+    // Nested factorial calls
+    Valuable nested_calls("factorial(factorial(2))");
+    BOOST_TEST(nested_calls == 2);  // factorial(2) = 2, then factorial(2) = 2
+}
+
 BOOST_AUTO_TEST_CASE(Integer_exptests)
 {
 	auto a = 25_v;
