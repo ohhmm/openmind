@@ -1808,10 +1808,20 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     bool Valuable::operator<(const Valuable& v) const
     {
+        // Handle NaN cases first (IEEE 754-2019 section 6.2.1)
+        // NaN comparison behavior is fundamental to expression consolidation:
+        // 1. "When either operand of a relational operation is NaN, the result is false"
+        // 2. This includes cases like 0^0 where the result's definedness is contextual
+        // 3. By ensuring NaN values are incomparable (neither less than nor equal to
+        //    any value), we maintain consistent ordering in expression trees
+        // 4. This consistency is crucial for the project's goal of total consolidability,
+        //    as it prevents undefined/indeterminate values from creating invalid orderings
+        if (IsNaN() || v.IsNaN())
+            return false;
         if (exp)
             return exp->operator<(v);
         else if (operator==(v))
-			return false;
+            return false;
         else if ((IsRational() && v.IsRational()) == YesNoMaybe::Yes)
         {
             auto _1 = operator a_rational();
@@ -1829,10 +1839,21 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     bool Valuable::operator==(const Valuable& v) const
     {
+        // Handle NaN cases first (IEEE 754-2019 section 6.2.1)
+        // NaN equality semantics are essential for expression consolidation:
+        // 1. "When either operand of an equality operation is NaN, the result is false"
+        // 2. This includes NaN == NaN, which must return false per the standard
+        // 3. The mathematical justification for NaN != NaN stems from the nature of
+        //    undefined or indeterminate forms (like 0^0, 0/0, ∞-∞):
+        //    - These forms can have different limiting behaviors depending on approach
+        //    - Two expressions yielding NaN may represent different undefined forms
+        //    - Treating them as unequal preserves this distinction in consolidation
+        // 4. This behavior ensures that expressions containing undefined subexpressions
+        //    maintain proper consolidation properties without false equivalences
+        if (IsNaN() || v.IsNaN())
+            return false;
         if(exp)
-            return
-// NO:                   Hash()==v.Hash() &&     // example: empty sum hash differs;  product 1*x*y == x*y ; etc
-                    exp->operator==(v);
+            return exp->operator==(v);
         else
             IMPLEMENT
     }

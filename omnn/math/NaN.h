@@ -36,7 +36,7 @@ public:
     constexpr Valuable& d(const Variable& x) override { return *this; }
     constexpr Valuable& sqrt() override { return *this; }
     Valuable Sqrt() const override { return *this; }
-    constexpr bool IsComesBefore(const Valuable& v) const override { return !v.IsNaN(); }  // NaN comes before non-NaN values, but not before other NaNs
+    constexpr bool IsComesBefore(const Valuable& v) const override { return false; }  // IEEE 754-2019: NaN is unordered relative to all values
 
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable&) const override { return {true, *this}; }
 };
