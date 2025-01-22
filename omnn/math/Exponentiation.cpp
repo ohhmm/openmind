@@ -346,21 +346,29 @@ using namespace omnn::math;
         }
         else if (ebz)
         {
-            if (exz)
-                throw "NaN";
+            if (exz) {
+                Become(NaN{});
+                return;
+            }
             Become(0_v);
             return;
         }
         else if (ebase().IsInfinity())
         {
-            if (eexp() > 0) {
+            if (eexp() > 0) { // FIXME: ^(1/2) = ±Infinity
                 Become(std::move(ebase()));
-            } else
-                IMPLEMENT
+            } else if (eexp() < 0) {
+                Become(0_v);
+            } else {
+                Become(NaN{});
+            }
         }
         else if (ebase().IsMInfinity())
         {
-            if (eexp() > 0) {
+            if (eexp().IsZero()) {
+                Become(NaN{});
+                return;
+            } else if (eexp() > 0) {
                 if ((eexp() % 2) > 0) // TODO : test with non-ints
                     Become(std::move(ebase()));
                 else
