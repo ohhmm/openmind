@@ -27,10 +27,11 @@ BOOST_AUTO_TEST_CASE(test_one_base_edge_cases)
     auto result3 = exp1 * Fraction(1, -1);
     BOOST_CHECK_EQUAL(result2, result3);
 
-    // Test with zero exponent
+    // Test with zero exponent - NaN comparison behavior
     auto zero = Valuable(0);
-    auto exp2 = one ^ zero;
-    auto result4 = exp2 * constants::two;
-    auto result5 = exp2 * Fraction(1, 2);
-    BOOST_CHECK_EQUAL(result4, result5);
+    auto exp2 = one ^ zero;  // 1^0 = NaN
+    auto result4 = exp2 * constants::two;  // NaN * 2 = NaN
+    auto result5 = exp2 * Fraction(1, 2);  // NaN * 1/2 = NaN
+    // IEEE 754-2019: NaN values never compare equal, even to themselves
+    BOOST_CHECK(!(result4 == result5));  // NaN != NaN
 }
