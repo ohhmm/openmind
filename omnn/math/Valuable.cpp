@@ -1903,10 +1903,20 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     bool Valuable::operator<(const Valuable& v) const
     {
+        // Handle NaN cases first (IEEE 754-2019 section 6.2.1)
+        // NaN comparison behavior is fundamental to expression consolidation:
+        // 1. "When either operand of a relational operation is NaN, the result is false"
+        // 2. This includes cases like 0^0 where the result's definedness is contextual
+        // 3. By ensuring NaN values are incomparable (neither less than nor equal to
+        //    any value), we maintain consistent ordering in expression trees
+        // 4. This consistency is crucial for the project's goal of total consolidability,
+        //    as it prevents undefined/indeterminate values from creating invalid orderings
+        if (IsNaN() || v.IsNaN())
+            return false;
         if (exp)
             return exp->operator<(v);
         else if (operator==(v))
-			return false;
+            return false;
         else if ((IsRational() && v.IsRational()) == YesNoMaybe::Yes)
         {
             auto _1 = operator a_rational();
@@ -2419,7 +2429,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return exp->Same(value);
         if (Is<Valuable>())
             return {};
-        
+
         return Hash() == value.Hash()
             && OfSameType(value)
             && operator==(value);
