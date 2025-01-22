@@ -327,12 +327,15 @@ using namespace omnn::math;
         bool exz = eexp().IsZero();
         if(exz)
         {
-            if (ebase().IsInfinity() || ebase().IsMInfinity()) {
-                IMPLEMENT
+            // When exponent is zero:
+            // 1. Return NaN for infinite base (IEEE 754 compliance)
+            // 2. Return NaN for zero base (0^0 is undefined)
+            if (ebase().IsInfinity() || ebase().IsMInfinity() || ebz) {
+                Become(NaN{});
+                return;
             }
-            if(ebz)
-                throw "NaN";
 
+            // x^0 = 1 for all other x
             Become(1_v);
             return;
         }
