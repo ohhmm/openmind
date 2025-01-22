@@ -1053,7 +1053,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     o = o_exp;
                 }
                 else if (c == '!') {
-                    v = v.Factorial();
+                    v.factorial();
                     if (mulByNeg) {
                         v *= -1;
                         mulByNeg = {};
@@ -1074,6 +1074,15 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                             if (id == "sqrt"sv) {
                                 auto next = to + 1;
                                 o(PrincipalSurd{Valuable(str.substr(next, cb - next), host, itIsOptimized)});
+                            } else if (id == "factorial"sv) {
+                                auto next = to + 1;
+                                auto arg = Valuable(str.substr(next, cb - next), host, itIsOptimized);
+                                arg.factorial();
+                                if (mulByNeg) {
+                                    arg *= -1;
+                                    mulByNeg = {};
+                                }
+                                o(std::move(arg));
                             } else if (id == "log"sv) {
                                 auto next = to + 1;
                                 auto args = str.substr(next, cb - next);
