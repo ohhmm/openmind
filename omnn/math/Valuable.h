@@ -49,7 +49,11 @@ class Exponentiation;
 class Fraction;
 class PrincipalSurd;
 class Sum;
-size_t hash_value(const omnn::math::Valuable&);
+size_t hash_value(const omnn::math::Valuable& valuable);
+
+using vars_cont_t = std::map<Variable, Valuable>;
+std::ostream& operator<<(std::ostream& out, const vars_cont_t& vars);
+
 } // namespace math
 } // namespace omnn
 
@@ -63,12 +67,13 @@ omnn::math::Valuable tanh(const omnn::math::Valuable&);
 template <>
 struct hash<omnn::math::Valuable> {
     [[nodiscard]]
-    size_t operator()(const omnn::math::Valuable& v) const { return hash_value(v); }
+    size_t operator()(const omnn::math::Valuable& valuable) const { return hash_value(valuable); }
 };
 
 template <>
 struct equal_to<::omnn::math::Valuable> {
-    bool operator()(const ::omnn::math::Valuable& v1, const ::omnn::math::Valuable& v2) const;
+    [[nodiscard]]
+    bool operator()(const ::omnn::math::Valuable&, const ::omnn::math::Valuable&) const;
 };
 
 } // namespace std
@@ -471,7 +476,7 @@ public:
     bool Test(const Variable& va, const Valuable&) const;
 
     // FIXME : waiting for virtual template method https://github.com/ohhmm/llvm-project/pull/1
-    //virtual template <typename T> 
+    //virtual template <typename T>
     //const T* Divisor() const {
     //    if (exp)
     //        return exp->Divisor<T>();
@@ -567,52 +572,52 @@ public:
     // logic
     static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
     template <class Fwd>
-    constexpr Valuable& equals(Fwd&& v) {
+    constexpr Valuable& equals(Fwd&& valuable) {
 //        SetView(View::Equation);  // FIXME: see ifz test
-        return operator -=(std::forward<Fwd>(v));
+        return operator -=(std::forward<Fwd>(valuable));
     }
     Valuable Equals(const Valuable&) const;
     Valuable NotEquals(const Valuable&) const;
 //    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
 //    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
-    Valuable LogicAnd(const Valuable&) const;
-    Valuable operator&&(const Valuable& v) const { return LogicAnd(v); }
-    Valuable LogicOr(const Valuable&) const;
-    Valuable operator||(const Valuable& v) const { return LogicOr(v); }
-    Valuable& logic_or(const Valuable&); // inplace
-    Valuable& logic_and(const Valuable&);
+    Valuable LogicAnd(const Valuable& valuable) const;
+    Valuable operator&&(const Valuable& valuable) const { return LogicAnd(valuable); }
+    Valuable LogicOr(const Valuable& valuable) const;
+    Valuable operator||(const Valuable& valuable) const { return LogicOr(valuable); }
+    Valuable& logic_or(const Valuable& valuable); // inplace
+    Valuable& logic_and(const Valuable& valuable);
 
-    Valuable Intersect(const Valuable& with) const;
-    Valuable operator&(const Valuable& v) const { return Intersect(v); }
-    Valuable& intersect(const Valuable& with, const Variable& va);
-    Valuable& operator&=(const Valuable& v) { return intersect(v); }
-    Valuable& intersect(const Valuable& with);
-    Valuable Intersect(const Valuable& with, const Variable& va) const;
+    Valuable Intersect(const Valuable& valuable) const;
+    Valuable operator&(const Valuable& valuable) const { return Intersect(valuable); }
+    Valuable& intersect(const Valuable& valuable, const Variable& va);
+    Valuable& operator&=(const Valuable& valuable) { return intersect(valuable); }
+    Valuable& intersect(const Valuable& valuable);
+    Valuable Intersect(const Valuable& valuable, const Variable& va) const;
 
-    Valuable Union(const Valuable& with) const;
-	//Valuable operator|(const Valuable&) const { return Union(v); }
-	Valuable& unionize(const Valuable&); // inplace
-	//Valuable& unionize(const Valuable&, const Variable& va);
-    Valuable& operator|=(const Valuable& v) { return unionize(v); }
-	//Valuable Union(const Valuable& with, const Variable& va) const;
-    Valuable& remove(const Valuable&);
-    Valuable Remove(const Valuable&) const;
+    Valuable Union(const Valuable& valuable) const;
+    //Valuable operator|(const Valuable& valuable) const { return Union(valuable); }
+    Valuable& unionize(const Valuable& valuable); // inplace
+    //Valuable& unionize(const Valuable& valuable, const Variable& va);
+    Valuable& operator|=(const Valuable& valuable) { return unionize(valuable); }
+    //Valuable Union(const Valuable& valuable, const Variable& va) const;
+    Valuable& remove(const Valuable& valuable);
+    Valuable Remove(const Valuable& valuable) const;
 
-    Valuable RootSetDifference(const Valuable&) const;
-    Valuable RootsSymetricDifference(const Valuable&) const;
+    Valuable RootSetDifference(const Valuable& valuable) const;
+    Valuable RootsSymetricDifference(const Valuable& valuable) const;
 
-	/// conditional operators
-	//
+    /// conditional operators
+    //
     Valuable Ifz(const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression is zero and @Else otherwise
     Valuable IfNZ(const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression is not zero and @Else if it is zero
     Valuable IfEq(const Valuable& v, const Valuable& Then,
                   const Valuable& Else) const; /// returns an expression which equals to @Then when this expression
                                                /// equals to @v param and @Else otherwise
 
-	/// <summary>
-	/// bool is 0 or 1
-	/// </summary>
-	/// <returns>0->1 or 1->0</returns>
+    /// <summary>
+    /// bool is 0 or 1
+    /// </summary>
+    /// <returns>0->1 or 1->0</returns>
     virtual Valuable BoolNot() const;
 
     /// <summary>
@@ -837,14 +842,14 @@ template <class T>
     requires std::derived_from<T, ::omnn::math::Valuable>
 struct hash<T> {
     [[nodiscard]]
-    constexpr size_t operator()(const T& v) const { return static_cast<const omnn::math::Valuable&>(v).Hash(); }
+    constexpr size_t operator()(const T& valuable) const { return static_cast<const omnn::math::Valuable&>(valuable).Hash(); }
 };
 
 } // namespace std
 
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t);
-const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t);
+::omnn::math::Valuable operator"" _v(const char*, std::size_t);
+const ::omnn::math::Variable& operator"" _va(const char*, std::size_t);
 //constexpr
-::omnn::math::Valuable operator"" _v(unsigned long long v);
-//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long v);
-::omnn::math::Valuable operator"" _v(long double v);
+::omnn::math::Valuable operator"" _v(unsigned long long);
+//constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long);
+::omnn::math::Valuable operator"" _v(long double);
