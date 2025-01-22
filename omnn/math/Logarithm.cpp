@@ -58,28 +58,28 @@ namespace math {
     void Logarithm::optimize()
     {
         // Simplify logarithm if the target is a power of the base
-        if (_2.IsExponentiation() && _2.as<Exponentiation>().getBase() == _1) {
+        if (_2.IsExponentiation() && _2.as<Exponentiation>().ebase() == _1) {
             Become(std::move(_2.as<Exponentiation>().eexp()));
         }
         // Simplify logarithm if base and target are the same
         else if (_1 == _2) {
             Become(1);
-        } else if (_1.IsInt() && _2.IsInt() && getTarget() > constants::zero && getBase() > constants::one) {
-            auto base = getBase().ca();
+        } else if (_1.IsInt() && _2.IsInt() && getTarget() > constants::zero && lbase() > constants::one) {
+            auto base = lbase().ca();
             auto target = getTarget().ca();
             // Use binary search for initial approximation
             auto high = target;
             decltype(high) low = 0;
             while (low < high) {
                 decltype(high) mid = (low + high) / 2;
-                if ((getBase() ^ mid) <= getTarget()) {
+                if ((lbase() ^ mid) <= getTarget()) {
                     low = mid + 1;
                 } else {
                     high = mid;
                 }
             }
             decltype(high) x = low - 1;
-            if ((getBase() ^ x) == getTarget()) {
+            if ((lbase() ^ x) == getTarget()) {
                 Become(std::move(x));
             }
         }
@@ -89,7 +89,7 @@ namespace math {
     Valuable& Logarithm::operator +=(const Valuable& v)
     {
         // Implement addition of logarithms
-        if (v.IsLogarithm() && v.as<Logarithm>().getBase() == _1) {
+        if (v.IsLogarithm() && v.as<Logarithm>().lbase() == _1) {
             // If bases are the same, add the targets
             _2 += v.as<Logarithm>().getTarget();
             optimize();
@@ -103,7 +103,7 @@ namespace math {
     Valuable& Logarithm::operator *=(const Valuable& v)
     {
         // Implement multiplication of logarithms
-        if (v.IsLogarithm() && v.as<Logarithm>().getBase() == _1) {
+        if (v.IsLogarithm() && v.as<Logarithm>().lbase() == _1) {
             // If bases are the same, multiply the targets
             _2 *= v.as<Logarithm>().getTarget();
             optimize();
@@ -117,7 +117,7 @@ namespace math {
     bool Logarithm::MultiplyIfSimplifiable(const Valuable& v)
     {
         // Check if multiplication can be simplified
-        if (v.IsLogarithm() && v.as<Logarithm>().getBase() == _1) {
+        if (v.IsLogarithm() && v.as<Logarithm>().lbase() == _1) {
             // If bases are the same, multiply the targets and simplify
             _2 *= v.as<Logarithm>().getTarget();
             optimize();
@@ -129,7 +129,7 @@ namespace math {
     std::pair<bool, Valuable> Logarithm::IsMultiplicationSimplifiable(const Valuable& v) const
     {
         // Check if multiplication can be simplified and return the result
-        if (v.IsLogarithm() && v.as<Logarithm>().getBase() == _1) {
+        if (v.IsLogarithm() && v.as<Logarithm>().lbase() == _1) {
             // If bases are the same, return true and the multiplied targets
             Valuable newTarget = _2 * v.as<Logarithm>().getTarget();
             return {true, Logarithm(_1, newTarget)};
@@ -140,7 +140,7 @@ namespace math {
     bool Logarithm::SumIfSimplifiable(const Valuable& v)
     {
         // Check if summation can be simplified
-        if (v.IsLogarithm() && v.as<Logarithm>().getBase() == _1) {
+        if (v.IsLogarithm() && v.as<Logarithm>().lbase() == _1) {
             // If bases are the same, add the targets and simplify
             _2 += v.as<Logarithm>().getTarget();
             optimize();
@@ -152,7 +152,7 @@ namespace math {
     std::pair<bool, Valuable> Logarithm::IsSummationSimplifiable(const Valuable& v) const
     {
         // Check if summation can be simplified and return the result
-        if (v.IsLogarithm() && v.as<Logarithm>().getBase() == _1) {
+        if (v.IsLogarithm() && v.as<Logarithm>().lbase() == _1) {
             // If bases are the same, return true and the added targets
             Valuable newTarget = _2 + v.as<Logarithm>().getTarget();
             return {true, Logarithm(_1, newTarget)};
@@ -165,19 +165,20 @@ namespace math {
     }
 
     Valuable& Logarithm::operator^=(const Valuable& value) {
-	return Become(Exponentiation{*this, value}); }
+        return Become(Exponentiation{*this, value});
+    }
 
     Logarithm::operator double() const {
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("double conversion for Logarithm")
     }
 
     Valuable& Logarithm::d(const Variable& x) {
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("derivative of Logarithm with respect to " << x)
         return *this;
     }
 
     Valuable& Logarithm::integral(const Variable& x, const Variable& C) {
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("integral of Logarithm with respect to " << x << " with constant " << C)
         return *this;
     }
 

@@ -53,6 +53,18 @@ using namespace ::std::string_view_literals;
 #endif
 
 namespace omnn::math {
+    std::ostream& operator<<(std::ostream& out, const vars_cont_t& vars) {
+        out << "{";
+        bool first = true;
+        for (const auto& [var, val] : vars) {
+            if (!first) out << ", ";
+            out << var << ": " << val;
+            first = false;
+        }
+        out << "}";
+        return out;
+    }
+
     const a_int Valuable::a_int_cz = 0;
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
@@ -137,13 +149,13 @@ namespace omnn::math {
         if (exp)
             return exp->IsSubObject(o);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("IsSubObject for " << *this)
     }
 
     const Valuable Valuable::Link() const {
         if(exp)
             return Valuable(exp);
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("Link for " << *this)
     }
 
     Valuable* Valuable::Clone() const
@@ -151,7 +163,7 @@ namespace omnn::math {
         if (exp)
             return exp->Clone();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Clone for " << *this)
     }
 
     Valuable* Valuable::Move()
@@ -159,19 +171,19 @@ namespace omnn::math {
         if (exp)
             return exp->Move();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Move for " << *this)
     }
 
     void Valuable::New(void*, Valuable&&)
     {
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("New for " << *this)
     }
 
     Valuable::encapsulated_instance Valuable::SharedFromThis() {
         if (exp)
             return exp;
         else
-            IMPLEMENT;
+            LOG_AND_IMPLEMENT("SharedFromThis for " << *this);
     }
 
     Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
@@ -235,7 +247,7 @@ namespace omnn::math {
                     setAllocSize(allocSize);
                 }
                 if (Hash() != h) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
                 }
             }
             else
@@ -257,7 +269,7 @@ namespace omnn::math {
                 bufv.New(this, std::move(bufv));
                 setAllocSize(sizeWas);
                 if (Hash() != h) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
                 }
                 SetView(newWasView);
                 optimize();
@@ -273,7 +285,7 @@ namespace omnn::math {
                 new(this) Valuable(moved);
                 setAllocSize(sizeWas);
                 if (Hash() != h) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
                 }
                 optimize();
             }
@@ -424,7 +436,7 @@ namespace omnn::math {
         std::cout << ']' << std::endl;
 #endif
         switch (s.size()) {
-        case 0: IMPLEMENT; break;
+        case 0: LOG_AND_IMPLEMENT("Empty solutions set"); break;
         case 1: operator=(*it); break;
         case 2: {
             auto& _1 = *it++;
@@ -1068,7 +1080,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         id = str.substr(i, to - i);
                         if (str[to] == '(') { // functions
                             if (to == 0) {
-                                IMPLEMENT
+                                LOG_AND_IMPLEMENT("Function call at position 0 in " << str)
                             }
                             auto cb = bracketsmap[to];
                             if (id == "sqrt"sv) {
@@ -1137,7 +1149,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
       if (s.empty()) {
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("Empty string in Valuable constructor")
       }
 #endif // NOOMDEBUG
 
@@ -1683,7 +1695,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return GetIntegerSolution(*vars.begin());
         }
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("GetIntegerSolution for multiple variables in " << *this)
     }
 
     Valuable::solutions_t Valuable::GetIntegerSolution(const Variable& va) const
@@ -1692,7 +1704,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return exp->GetIntegerSolution(va);
         }
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("GetIntegerSolution for " << *this << " with variable " << va)
     }
 
     bool Valuable::Test(const Variable& va, const Valuable& v) const
@@ -1713,14 +1725,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp) {
             return exp->SumOfRoots();
         } else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("SumOfRoots for " << *this)
     }
 
     Valuable Valuable::ProductOfRoots() const {
         if (exp) {
             return exp->ProductOfRoots();
         } else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("ProductOfRoots for " << *this)
     }
 
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
@@ -1768,7 +1780,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             else if (val == 0) {
                 some.insert(e);
             } else {
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Unexpected case in get_zeros_zones for " << *this)
             }
             prev = to;
             valPrevious = val;
@@ -1825,7 +1837,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 // NO:                   Hash()==v.Hash() &&     // example: empty sum hash differs;  product 1*x*y == x*y ; etc
                     exp->operator==(v);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("operator== for " << *this << " and " << v)
     }
 
     bool Valuable::IsConstant() const { return exp && exp->IsConstant(); }
@@ -1856,21 +1868,21 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->IsSimple();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("IsSimple for " << *this)
     }
 
     YesNoMaybe Valuable::IsMultival() const {
         if(exp)
             return exp->IsMultival();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("IsMultival for " << *this)
     }
 
     void Valuable::Values(const std::function<bool(const Valuable&)>& f) const {
         if(exp)
             exp->Values(f);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Values for " << *this)
     }
 
     YesNoMaybe Valuable::IsRational() const {
@@ -1884,13 +1896,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->IsEven();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("IsEven for " << *this)
     }
 
     bool Valuable::is(const std::type_index& ti) const {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if(exp)
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("is() for " << *this << " with type " << ti.name())
 #endif
         return ti == std::type_index(typeid(Valuable));
     }
@@ -1913,14 +1925,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->print(out);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("print(std::wostream&) for " << *this)
     }
 
     std::ostream& Valuable::code(std::ostream& out) const {
         if (exp)
             return exp->code(out);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("code(std::ostream&) for " << *this)
     }
 
     Valuable::universal_lambda_t Valuable::CompileIntoLambda(variables_for_lambda_t variablesOfParams) const {
@@ -2221,7 +2233,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             exp->CollectVaNames(s);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("CollectVaNames for " << *this)
     }
 
     Valuable::va_names_t Valuable::VaNames() const {
@@ -2256,7 +2268,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->eval(with);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("eval for " << *this << " with " << with)
     }
 
     Valuable Valuable::Eval(const vars_cont_t& with) const {
@@ -2279,7 +2291,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             }
             return;
         }
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("Eval for " << *this << " with variable " << va << " and value " << v)
     }
 
     bool Valuable::OfSameType(const Valuable& v) const
@@ -2331,7 +2343,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->IsComesBefore(v);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("IsComesBefore for " << *this << " and " << v)
     }
 
     const Valuable::vars_cont_t& Valuable::getCommonVars() const
@@ -2339,7 +2351,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->getCommonVars();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("getCommonVars for " << *this)
     }
 
     Valuable::vars_cont_t Valuable::calcCommonVars() const
@@ -2369,7 +2381,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     if (!m.FindVa()) {
                         p.Add(std::move(m));
                     } else {
-                        IMPLEMENT
+                        LOG_AND_IMPLEMENT("varless for " << *this << " with FindVa in Product")
                     }
                 }
                 _ = std::move(p);
@@ -2419,7 +2431,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->operator int();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("int conversion for " << *this)
     }
 
     Valuable::operator a_int() const
@@ -2427,7 +2439,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->operator a_int();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("a_int conversion for " << *this)
     }
 
     a_int& Valuable::a()
@@ -2435,7 +2447,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->a();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("a() for " << *this)
     }
 
     const a_int& Valuable::ca() const
@@ -2451,7 +2463,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->operator uint64_t();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("uint64_t conversion for " << *this)
     }
 
     Valuable::operator double() const
@@ -2467,7 +2479,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->operator double();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("long double conversion for " << *this)
     }
 
     Valuable::operator a_rational() const
@@ -2483,7 +2495,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->operator uint32_t();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("uint32_t conversion for " << *this)
     }
 
     Valuable::operator unsigned char() const
@@ -2491,7 +2503,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->operator unsigned char();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("unsigned char conversion for " << *this)
     }
 
     Valuable Valuable::Equals(const Valuable& v) const {
@@ -2841,7 +2853,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable Valuable::For(const Valuable& initialValue, const Valuable& lambda) const
     {
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("For loop with initialValue " << initialValue << " and lambda " << lambda)
     }
 
     Valuable Valuable::MustBeInt() const {
@@ -2860,7 +2872,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->Functor();
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Functor for " << *this)
     }
 
     Valuable Valuable::bit(const Valuable& n) const
@@ -2884,13 +2896,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             bit0 /= -2;
             return bit0;
         }else
-            IMPLEMENT;
+            LOG_AND_IMPLEMENT("bit(" << n << ") for " << *this);
     }
 
     Valuable Valuable::bits(int n, int l) const
     {
         if(n<0)
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("bits(" << n << ", " << l << ") for negative n in " << *this)
         return Shr(n).And(l, -1);
     }
 

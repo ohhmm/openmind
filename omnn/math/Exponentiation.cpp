@@ -49,7 +49,7 @@ using namespace omnn::math;
 
     max_exp_t Exponentiation::getMaxVaExp() const
     {
-        return getMaxVaExp(getBase(), getExponentiation());
+        return getMaxVaExp(ebase(), eexp());
     }
 
     Valuable Exponentiation::varless() const
@@ -203,7 +203,7 @@ using namespace omnn::math;
             if (_.IsExponentiation()) {
                 auto& e = _.as<Exponentiation>();
                 if (!(e.ebase()==ebase() && eexp()==e.eexp())) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Exponentiation::operator== not implemented for different base/exponent")
                 }
             } else {
                 Become(std::move(_));
@@ -301,14 +301,14 @@ using namespace omnn::math;
                     Become(std::move(ebase()));
                     return;
                 } else
-                    IMPLEMENT;
+                    LOG_AND_IMPLEMENT("Exponentiation::optimize not implemented for this case");
             } else if (ebase() == -1 && eexp().IsInt() && eexp() > 0 && eexp() != 1) {
                     eexp() = eexp().bit(0);
             } else if (eexp()==-1) {
                 Become(Fraction{1,ebase()});
                 return;
             } else if (eexp().IsInfinity()) {
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Exponentiation::optimize not implemented for infinity exponent");
             } else if (eexp().IsFraction()) {
                 auto& f = eexp().as<Fraction>();
                 auto& n = f.getNumerator();
@@ -328,7 +328,7 @@ using namespace omnn::math;
         if(exz)
         {
             if (ebase().IsInfinity() || ebase().IsMInfinity()) {
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Exponentiation::optimize not implemented for infinity base")
             }
             if(ebz)
                 throw "NaN";
@@ -422,7 +422,7 @@ using namespace omnn::math;
                                 {
                                     bool isInt = n.IsInt();
                                     if (!isInt)
-                                        IMPLEMENT
+                                        LOG_AND_IMPLEMENT("Exponentiation::optimize not implemented for non-integer n")
                                     if (isInt && n.bit().IsZero())
                                     {
                                         x.sq();
@@ -478,11 +478,11 @@ using namespace omnn::math;
         if(IsExponentiation() && ebase().IsExponentiation())
         {
             auto& e = ebase().as<Exponentiation>();
-            auto& eeexp = e.getExponentiation();
+            auto& eeexp = e.eexp();
             if ((eeexp.FindVa() == nullptr) == (eexp().FindVa() == nullptr)) {
                 eexp() *= eeexp;
                 // todo : copy if it shared
-                ebase() = std::move(const_cast<Valuable&>((e.getBase())));
+                ebase() = std::move(const_cast<Valuable&>((e.ebase())));
             }
 
             if (eexp() == constants::one || IsEquation()) {
@@ -514,7 +514,7 @@ using namespace omnn::math;
             for(auto& it : *p){
                 if (it.IsExponentiation()) {
                     auto& e = it.as<Exponentiation>();
-                    if (ebase() == e.getBase()) {
+                    if (ebase() == e.ebase()) {
                         return &e;
                     }
                 }
@@ -523,12 +523,12 @@ using namespace omnn::math;
         };
         auto& b = ebase();
         if (v.IsExponentiation()
-            && b == (e = &v.as<Exponentiation>())->getBase()
+            && b == (e = &v.as<Exponentiation>())->ebase()
             && (eexp().IsInt() || eexp().IsSimpleFraction())
             && (e->eexp().IsInt() || e->eexp().IsSimpleFraction())
             )
         {
-            updateExponentiation(eexp() + e->getExponentiation());
+            updateExponentiation(eexp() + e->eexp());
         }
         else if(v.IsFraction()
                 && (f = &v.as<Fraction>())->getDenominator() == ebase())
@@ -550,7 +550,7 @@ using namespace omnn::math;
         else if(fdn
                 && (fdne = isProdHasExpWithSameBase(fdn)))
         {
-            eexp() -= fdne->getExponentiation();
+            eexp() -= fdne->eexp();
             optimized={};
             optimize();
             return *this *= f->getNumerator() / (*fdn / *fdne);
@@ -598,7 +598,7 @@ using namespace omnn::math;
 
     bool Exponentiation::MultiplyIfSimplifiable(const Valuable& v)
     {
-        auto is = v == getBase();
+        auto is = v == ebase();
         if (is) {
             ++eexp();
             optimized = {};
@@ -620,17 +620,17 @@ using namespace omnn::math;
             Become(Valuable(std::move(values)));
         } else if (v.IsExponentiation()) {
             auto& vexpo = v.as<Exponentiation>();
-            is = vexpo.getBase() == getBase();
+            is = vexpo.ebase() == ebase();
             if (is) {
                 eexp() += vexpo.eexp();
                 optimized = {};
                 optimize();
             } // TODO : else if ? (base^2 == v.base)
             else {
-                is = vexpo.getExponentiation() == getExponentiation();
+                is = vexpo.eexp() == eexp();
                 if (is) {
                     auto wasBaseHash = ebase().Hash();
-                    is = ebase().MultiplyIfSimplifiable(vexpo.getBase());
+                    is = ebase().MultiplyIfSimplifiable(vexpo.ebase());
                     if (is) {
                         Valuable::hash ^= wasBaseHash ^ ebase().Hash();
                         optimized = {};
@@ -647,23 +647,23 @@ using namespace omnn::math;
     std::pair<bool,Valuable> Exponentiation::IsMultiplicationSimplifiable(const Valuable& v) const
     {
         std::pair<bool,Valuable> is, expSumSimplifiable = {};
-        is.first = v == getBase()
+        is.first = v == ebase()
             && (expSumSimplifiable = eexp().IsSummationSimplifiable(constants::one)).first;
         if (is.first) {
-            is.second = getBase() ^ expSumSimplifiable.second;
+            is.second = ebase() ^ expSumSimplifiable.second;
         } else if (v.IsExponentiation()) {
             auto& vexpo = v.as<Exponentiation>();
-            is.first = vexpo.getBase() == getBase();
+            is.first = vexpo.ebase() == ebase();
             if (is.first) {
                 is.second = ebase() ^ (eexp() + vexpo.eexp());
             } // TODO : else if ? (base^2 == v.base)
         } else if (v.IsSimple()) {
-            auto& ee = getExponentiation();
+            auto& ee = eexp();
             //is = v.IsExponentiationSimplifiable(ee);  // TODO: Implement IsExponentiationSimplifiable
             // FIXME: Until IsExponentiationSimplifiable ready:
             //if (ee.IsSimpleFraction()) {
             //    is.second = v ^ ee.as<Fraction>().Reciprocal(); // v.IsExponentiationSimplifiable(ee)
-            //    is.first = is.second.MultiplyIfSimplifiable(getBase());
+            //    is.first = is.second.MultiplyIfSimplifiable(ebase());
             //    if(is.first){
             //        auto copy = *this;
             //        copy.updateBase(std::move(is.second));
@@ -678,7 +678,7 @@ using namespace omnn::math;
                     is.second = (v/gcd)/(ebase()/gcd);
                 } else {
                     is.second = v ^ constants::minus_1; // v.IsExponentiationSimplifiable(ee)
-                    is.first = is.second.MultiplyIfSimplifiable(getBase());
+                    is.first = is.second.MultiplyIfSimplifiable(ebase());
                     if (is.first) {
                         auto copy = *this;
                         copy.updateBase(std::move(is.second));
@@ -689,18 +689,18 @@ using namespace omnn::math;
             else if (ee.IsInt() && (ee > constants::zero)) // TODO: ee < 0 too
             {
 //                is.second = v ^ (ee ^ constants::minus_1); // v.IsExponentiationSimplifiable(ee)
-//                is.first = is.second.MultiplyIfSimplifiable(getBase());
+//                is.first = is.second.MultiplyIfSimplifiable(ebase());
 //                if(is.first){
 //                    auto copy = *this;
 //                    copy.updateBase(std::move(is.second));
 //                    is.second = copy;
 //                }
             }
-//            if (getBase().IsVa()) {
-//            } else if (getExponentiation().IsSimpleFraction()) {
+//            if (ebase().IsVa()) {
+//            } else if (eexp().IsSimpleFraction()) {
 //                auto
 //                is.first = IsMultiplicationSimplifiable()
-//            } else if (getExponentiation().IsSimple()) {
+//            } else if (eexp().IsSimple()) {
 //                is = base::IsMultiplicationSimplifiable(v);
 //            } else {
 //                IMPLEMENT
@@ -711,7 +711,7 @@ using namespace omnn::math;
             is=v.IsMultiplicationSimplifiable(*this);
         } else if (v.IsSum()) {
             auto& sum=v.as<Sum>();
-            is.first=sum==getBase()||-sum==getBase();
+            is.first=sum==ebase()||-sum==ebase();
             if(is.first){
                 is.second=*this*sum;
             }else{
@@ -721,11 +721,11 @@ using namespace omnn::math;
             is = {true, v};
         } else if (v.IsPrincipalSurd()) {
             auto& surd = v.as<PrincipalSurd>();
-            if (surd.Radicand() == getBase() && surd.Index().IsEven() == YesNoMaybe::No) {
-                is = surd.Index().Reciprocal().IsSummationSimplifiable(getExponentiation());
+            if (surd.Radicand() == ebase() && surd.Index().IsEven() == YesNoMaybe::No) {
+                is = surd.Index().Reciprocal().IsSummationSimplifiable(eexp());
                 if (is.first) {
                     is.second = std::static_pointer_cast<Valuable>(
-                        std::make_shared<Exponentiation>(getBase(), std::move(is.second)));
+                        std::make_shared<Exponentiation>(ebase(), std::move(is.second)));
                 }
             }
         } else {
@@ -893,7 +893,7 @@ using namespace omnn::math;
                 Become(std::move(p.integral(x, C)));
             }
         } else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Exponentiation::integral not implemented for non-x base")
         }
 
         return *this;
@@ -904,10 +904,10 @@ using namespace omnn::math;
         if (v.IsExponentiation())
         {
             auto& e = v.as<Exponentiation>();
-            if (e.getBase() == getBase())
-                return getExponentiation() < e.getExponentiation();
-            if (e.getExponentiation() == getExponentiation())
-                return getBase() < e.getBase();
+            if (e.ebase() == ebase())
+                return eexp() < e.eexp();
+            if (e.eexp() == eexp())
+                return ebase() < e.ebase();
         }
 
         return base::operator <(v);
@@ -967,7 +967,7 @@ using namespace omnn::math;
                         if(value.IsMultival()==YesNoMaybe::No)
                             vals.insert(value);
                         else {
-                            IMPLEMENT
+                            LOG_AND_IMPLEMENT("Exponentiation::Values not implemented for multival case")
                         }
                     }
                 }
@@ -982,46 +982,46 @@ using namespace omnn::math;
 
     std::ostream& Exponentiation::code(std::ostream& out) const
     {
-        if (getExponentiation().IsInt()) {
+        if (eexp().IsInt()) {
             out << "(1";
-            for (auto i = getExponentiation(); i-- > 0;) {
+            for (auto i = eexp(); i-- > 0;) {
                 out << '*';
-                getBase().code(out);
+                ebase().code(out);
             }
             out << ')';
         } else {
             out << "pow(";
-            getBase().code(out) << ',';
-            getExponentiation().code(out) << ')';
+            ebase().code(out) << ',';
+            eexp().code(out) << ')';
         }
         return out;
     }
 
     bool Exponentiation::IsComesBefore(const Exponentiation& e) const {
         bool is = {};
-        bool baseIsVa = getBase().IsVa();
-        bool vbaseIsVa = e.getBase().IsVa();
+        bool baseIsVa = ebase().IsVa();
+        bool vbaseIsVa = e.ebase().IsVa();
         if (baseIsVa && vbaseIsVa)
-            is = getExponentiation() == e.getExponentiation() ? getBase().IsComesBefore(e.getBase())
-                                                              : getExponentiation() > e.getExponentiation();
+            is = eexp() == e.eexp() ? ebase().IsComesBefore(e.ebase())
+                                    : eexp() > e.eexp();
         else if (baseIsVa)
             is = false;
         else if (vbaseIsVa)
             is = true;
-        else if (getBase() == e.ebase())
-            is = getExponentiation().IsComesBefore(e.getExponentiation());
-        else if (getExponentiation() == e.getExponentiation())
-            is = getBase().IsComesBefore(e.getBase());
+        else if (ebase() == e.ebase())
+            is = eexp().IsComesBefore(e.eexp());
+        else if (eexp() == e.eexp())
+            is = ebase().IsComesBefore(e.ebase());
         else {
             auto c = Complexity();
             auto ec = e.Complexity();
             if (c != ec)
                 is = c > ec;
             else {
-                is = getBase().IsComesBefore(e.getBase()) ||
+                is = ebase().IsComesBefore(e.ebase()) ||
                      (!e.ebase().IsComesBefore(ebase()) &&
-                      getExponentiation().IsComesBefore(
-                          e.getExponentiation())); //  || str().length() > e->str().length();
+                      eexp().IsComesBefore(
+                          e.eexp())); //  || str().length() > e->str().length();
                 //                auto expComesBefore = eexp().IsComesBefore(e->eexp());
                 //                auto ebase()ComesBefore = ebase().IsComesBefore(e->ebase());
                 //                is = expComesBefore==ebase()ComesBefore || str().length() > e->str().length();
@@ -1058,7 +1058,7 @@ using namespace omnn::math;
         else if(value.IsSum())
             is = IsComesBefore(*value.as<Sum>().begin());
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Exponentiation::IsComesBefore not implemented for non-sum value")
 
         return is;
     }
@@ -1066,12 +1066,12 @@ using namespace omnn::math;
     Valuable Exponentiation::calcFreeMember() const
     {
         Valuable c;
-        if(getBase().IsSum() && getExponentiation().IsInt()){
-            c = getBase().calcFreeMember() ^ getExponentiation();
-        } else if(getBase().IsVa()) {
+        if(ebase().IsSum() && eexp().IsInt()){
+            c = ebase().calcFreeMember() ^ eexp();
+        } else if(ebase().IsVa()) {
             c = 0_v;
         } else
-            IMPLEMENT;
+            LOG_AND_IMPLEMENT("Exponentiation::calcFreeMember not implemented for this case");
         return c;
     }
 
@@ -1121,8 +1121,8 @@ using namespace omnn::math;
 
     Valuable::vars_cont_t Exponentiation::GetVaExps() const
     {
-        auto vaExps = getBase().GetVaExps();
-        auto& e = getExponentiation();
+        auto vaExps = ebase().GetVaExps();
+        auto& e = eexp();
         for (auto& ve : vaExps) {
             ve.second *= e;
         }
@@ -1141,63 +1141,63 @@ using namespace omnn::math;
             }
         } else if (v.IsExponentiation()) {
             auto& e = v.as<Exponentiation>();
-            if (e.getBase() == getBase()) {
-                if (e.getExponentiation() == getExponentiation()) {
+            if (e.ebase() == ebase()) {
+                if (e.eexp() == eexp()) {
                     c = e;
-                } else if (getExponentiation().IsSimple() && e.getExponentiation().IsSimple()) {
-                    if (getExponentiation() > 0 || e.getExponentiation() > 0) {
-                        if (e.getExponentiation() >= getExponentiation()) {
+                } else if (eexp().IsSimple() && e.eexp().IsSimple()) {
+                    if (eexp() > 0 || e.eexp() > 0) {
+                        if (e.eexp() >= eexp()) {
                             c = *this;
                         } else
                             c = e;
-                    } else if (getExponentiation() < 0 || e.getExponentiation() < 0) {
-                        if (e.getExponentiation() >= getExponentiation()) {
+                    } else if (eexp() < 0 || e.eexp() < 0) {
+                        if (e.eexp() >= eexp()) {
                             c = e;
                         } else
                             c = *this;
                     } else {
-                        IMPLEMENT
+                        LOG_AND_IMPLEMENT("Exponentiation::InCommonWith not implemented for this case");
                     }
-                } else if (getExponentiation().IsSimpleFraction() && e.getExponentiation().IsSimpleFraction()) {
-                    if (getExponentiation()<0 == e.getExponentiation()<0) {
-                        c = getBase() ^ getExponentiation().InCommonWith(e.getExponentiation());
+                } else if (eexp().IsSimpleFraction() && e.eexp().IsSimpleFraction()) {
+                    if (eexp()<0 == e.eexp()<0) {
+                        c = ebase() ^ eexp().InCommonWith(e.eexp());
                     }
-                } else if (getExponentiation().IsSum()) {
-                    auto sz = getExponentiation().as<Sum>().size();
-                    auto diff = getExponentiation() - e.getExponentiation();
+                } else if (eexp().IsSum()) {
+                    auto sz = eexp().as<Sum>().size();
+                    auto diff = eexp() - e.eexp();
                     if (!diff.IsSum() || diff.as<Sum>().size() < sz)
                         c = v;
-                } else if (e.getExponentiation().IsSum()) {
+                } else if (e.eexp().IsSum()) {
                     c = e.InCommonWith(*this);
-                } else if (e.getExponentiation().IsProduct()) {
+                } else if (e.eexp().IsProduct()) {
                     c = ebase() ^ e.eexp().InCommonWith(eexp());
-                } else if (getExponentiation().IsPrincipalSurd()) {
-                    auto& surd = getExponentiation().as<PrincipalSurd>();
-                    auto isSumSimpl = e.getExponentiation().IsSummationSimplifiable(-surd);
+                } else if (eexp().IsPrincipalSurd()) {
+                    auto& surd = eexp().as<PrincipalSurd>();
+                    auto isSumSimpl = e.eexp().IsSummationSimplifiable(-surd);
                     if (isSumSimpl.first) {
-                        IMPLEMENT
+                        LOG_AND_IMPLEMENT("Exponentiation::InCommonWith not implemented for sum simplifiable case");
                     } else {
-                        c = surd.InCommonWith(e.getExponentiation());
+                        c = surd.InCommonWith(e.eexp());
                         if (c != constants::one) {
-                            c = Exponentiation{getBase(), std::move(c)}; // NOTE: this is not strictly common form (not GCD)
+                            c = Exponentiation{ebase(), std::move(c)}; // NOTE: this is not strictly common form (not GCD)
                         }
                     }
-                } else if (e.getExponentiation().IsPrincipalSurd()) {
+                } else if (e.eexp().IsPrincipalSurd()) {
                     c = e.InCommonWith(*this);
                 } else {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Exponentiation::InCommonWith not implemented for this exponentiation case");
                 }
             }
-        } else if (getExponentiation().IsInt()) {
-            if(getExponentiation() > 0)
-                c = getBase().InCommonWith(v);
-        } else if (getExponentiation().IsFraction()) {
+        } else if (eexp().IsInt()) {
+            if(eexp() > 0)
+                c = ebase().InCommonWith(v);
+        } else if (eexp().IsFraction()) {
         } else if (v.IsVa()) {
             c = v.InCommonWith(*this);
         } else if (v.IsInt() || v.IsSimpleFraction()) {
         } else if (v.IsModulo()) {
-        } else if (getExponentiation().IsVa()) {
-        } else if (getExponentiation().IsModulo()) {
+        } else if (eexp().IsVa()) {
+        } else if (eexp().IsModulo()) {
         } else if (v.IsPrincipalSurd()) {
             auto commonWithBase = v.InCommonWith(ebase());
             if (commonWithBase != constants::one) {
@@ -1216,13 +1216,13 @@ using namespace omnn::math;
 
     Valuable Exponentiation::operator()(const Variable& v, const Valuable& augmentation) const
     {
-        if (!getExponentiation().FindVa() && getExponentiation()!=0 && augmentation==0) {
-            return getBase()(v,augmentation);
-        } else if (getExponentiation().IsSimpleFraction()) {
-            auto& f = getExponentiation().as<Fraction>();
-            return (getBase()^f.getNumerator())(v,augmentation^f.getDenominator());
+        if (!eexp().FindVa() && eexp()!=0 && augmentation==0) {
+            return ebase()(v,augmentation);
+        } else if (eexp().IsSimpleFraction()) {
+            auto& f = eexp().as<Fraction>();
+            return (ebase()^f.getNumerator())(v,augmentation^f.getDenominator());
         } else {
-            IMPLEMENT
+            LOG_AND_IMPLEMENT("Exponentiation::operator() not implemented for this case");
         }
     }
 

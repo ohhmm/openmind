@@ -394,14 +394,14 @@ BOOST_AUTO_TEST_CASE(Integer_IsModSimplifiable_test)
     // Test with zero divisor (by Knuth's definition, 10 % 0 = 10)
     result = i.IsModSimplifiable(0);
     BOOST_TEST(result.first);
-    BOOST_TEST(result.second == i); // 10 % 0 = 10
+    BOOST_TEST(result.second == i);  // 10 % 0 = 10
 
-    // Test with variable (should defer to variable's implementation)
+    // Test with variable (should not be simplifiable)
     Variable va;
     result = i.IsModSimplifiable(va);
     BOOST_TEST(!result.first);
 
-    // Test with fraction (should not be simplifiable directly)
+    // Test with fraction (should not be simplifiable)
     result = i.IsModSimplifiable(Fraction(1, 2));
     BOOST_TEST(!result.first);
 

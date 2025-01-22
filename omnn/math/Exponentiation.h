@@ -16,14 +16,16 @@ class Exponentiation
     vars_cont_t v;
     void InitVars();
 
-protected:
-    friend Logarithm;
+public:
     constexpr Valuable& ebase() { return base::_1; }
     constexpr Valuable& eexp() { return base::_2; }
-    std::ostream& print_sign(std::ostream& out) const override;
-public:
     std::ostream& code(std::ostream& out) const override;
 
+protected:
+    friend Logarithm;
+    std::ostream& print_sign(std::ostream& out) const override;
+
+public:
     // DONT: overrides behaviour (calls InitVars)
     // using base::base;
 
@@ -56,8 +58,6 @@ public:
     YesNoMaybe IsRational() const override;
     void Values(const std::function<bool(const Valuable&)>&) const override;
     [[nodiscard]]
-    constexpr const Valuable& getBase() const { return _1; }
-    [[nodiscard]]
     constexpr const Valuable& ebase() const { return _1; }
     template<class T>
     void setBase(T&& b)
@@ -76,8 +76,6 @@ public:
 
     [[nodiscard]]
     constexpr const Valuable& eexp() const { return _2; }
-    [[nodiscard]]
-    constexpr const Valuable& getExponentiation() const { return _2; }
     template<class T>
     void setExponentiation(T&& exponentiation)
     {
@@ -97,22 +95,22 @@ public:
     max_exp_t getMaxVaExp() const override;
 
     // virtual operators
-    Valuable& operator +=(const Valuable&) override;
-    Valuable& operator *=(const Valuable&) override;
-    bool MultiplyIfSimplifiable(const Integer&) override;
-    bool MultiplyIfSimplifiable(const Valuable&) override;
-    std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
-    bool SumIfSimplifiable(const Valuable&) override;
-    std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable&) const override;
-    Valuable& operator /=(const Valuable&) override;
-    Valuable& operator ^=(const Valuable&) override;
-    bool operator==(const Exponentiation&) const;
-    bool operator ==(const Valuable&) const override;
+    Valuable& operator +=(const Valuable& valuable) override;
+    Valuable& operator *=(const Valuable& valuable) override;
+    bool MultiplyIfSimplifiable(const Integer& integer) override;
+    bool MultiplyIfSimplifiable(const Valuable& valuable) override;
+    std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& valuable) const override;
+    bool SumIfSimplifiable(const Valuable& valuable) override;
+    std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& valuable) const override;
+    Valuable& operator /=(const Valuable& valuable) override;
+    Valuable& operator ^=(const Valuable& valuable) override;
+    bool operator==(const Exponentiation& other) const;
+    bool operator ==(const Valuable& valuable) const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
     Valuable& integral(const Variable& x, const Variable& C) override;
 
-    bool operator <(const Valuable&) const override;
+    bool operator <(const Valuable& valuable) const override;
     void optimize() override;
 
     Valuable varless() const override;
