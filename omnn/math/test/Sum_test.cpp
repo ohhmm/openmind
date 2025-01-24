@@ -39,6 +39,16 @@ BOOST_AUTO_TEST_CASE(SumBalancingTest) {
     BOOST_TEST(_.size() == 2);
 }
 
+BOOST_AUTO_TEST_CASE(SumSurdReduce_test) {
+    auto equation = "-4 + sqrt(-1*(x^2) + 8)"_v;
+    auto reduced = equation.Optimized(Valuable::View::SupersetOfRoots);
+    auto& variable = *equation.FindVa();
+    auto roots = reduced.solve(variable);
+    BOOST_TEST(roots.size() == 2);
+    roots = equation.solve(variable);
+    BOOST_TEST(roots.size() == 2);
+}
+
 BOOST_AUTO_TEST_CASE(SumMultivalTestRootTest
     , *disabled()
 ) {
