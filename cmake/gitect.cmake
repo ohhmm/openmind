@@ -137,7 +137,7 @@ if(GIT_EXECUTABLE)
 		set(CMD_ITERATE_BRANCHES "for /f \"usebackq tokens=*\" %b in ( branches.txt ) do ( ${CMD_REBASE_BRANCH} )")
 		set(CMD_LINE_SUFFIX " ^|^| ${GIT_EXE_CMD} rebase --abort")
 		add_custom_target(rebase-all-branches
-			DEPENDS append-each-line
+			DEPENDS process-cmd-rebase-or-abort
 
             COMMAND ${CMAKE_COMMAND} -E echo "Rebasing all branches onto origin/main"
 			COMMAND ${GIT_EXECUTABLE} fetch --all || echo git fetch error
@@ -145,10 +145,7 @@ if(GIT_EXECUTABLE)
 			COMMAND cmd /c ${CMD_LIST_BRANCHES} > branches.txt
 			COMMAND type NUL > rebase.cmd
 			COMMAND cmd /c ( for /f "usebackq tokens=*" %b in ( branches.txt ) do @echo ${CMD_REBASE_BRANCH} ) >> rebase.cmd
-			COMMAND echo echo rebasing all branches > rebase-or-abort.cmd
-			#COMMAND cmd /c ( for /f "usebackq tokens=*" %a in ( rebase.cmd ) do  echo %a ^|^| ${GIT_EXE_CMD} rebase --abort ) >> rebase-or-abort.cmd 
-			COMMAND $<TARGET_FILE:append-each-line> rebase.cmd "${CMD_LINE_SUFFIX}"
-            COMMAND cmd /c rebase.cmd
+			COMMAND $<TARGET_FILE:process-cmd-rebase-or-abort>
 
             COMMENT "Rebasing all branches onto origin/main using cmd with improved branch handling."
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
