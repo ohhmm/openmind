@@ -73,6 +73,7 @@ public:
     }
 
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
+    vars_cont_t GetVaExps() const override;
 
     Valuable& operator +=(const Valuable& v) override;
     Valuable& operator *=(const Valuable& v) override;

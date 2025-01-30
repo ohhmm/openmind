@@ -53,5 +53,5 @@ BOOST_AUTO_TEST_CASE(Logarithm_string_parse_var_test)
 }
 
 BOOST_AUTO_TEST_CASE(Logarithm_equation_test, *boost::unit_test::disabled()) {
-    auto equation = "(10^(log(2, x))+(10^(log(2, (x^2))) = 10^(log(2, (x^3)))"_v;
+    auto equation = "(10^(log(2, x)))+(10^(log(2, (x^2)))) = 10^(log(2, (x^3)))"_v;
 }
