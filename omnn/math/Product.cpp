@@ -82,15 +82,11 @@ using namespace omnn::math;
             vaExpsSum += exponentiation.as<Integer>().ca();
         } else if (exponentiation.IsSimpleFraction()) {
             vaExpsSum += static_cast<decltype(vaExpsSum)>(exponentiation);
+        } else if (!exponentiation.is_optimized()) {
+            AddToVars(va, exponentiation.Optimized());
+            return;
         } else {
-            if (!optimizations) {
-                OptimizeOn oo;
-                auto copy = exponentiation;
-                copy.optimize();
-                AddToVars(va, copy);
-                return;
-            }
-            LOG_AND_IMPLEMENT("estimate in to be greater for those which you want to see first in sum sequence:"
+            LOG_AND_IMPLEMENT("estimate in to be greater for those which you want to see first in product sequence:"
                               << va.str() << " ^ " << exponentiation.str());
         }
         
@@ -104,7 +100,7 @@ using namespace omnn::math;
             maxVaExp = re;
         }
         
-        if (e == 0) {
+        if (e.IsZero()) {
             vars.erase(va);
         }
         
