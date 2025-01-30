@@ -791,7 +791,7 @@ namespace math {
 
     bool Integer::operator ==(const Integer& v) const
     {
-        return Hash() == v.Hash() && operator ==(v.ca());
+        return operator ==(v.ca());
     }
 
     bool Integer::operator ==(const Valuable& v) const

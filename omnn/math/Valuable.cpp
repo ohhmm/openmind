@@ -110,7 +110,7 @@ namespace omnn::math {
             }
             if (obj.exp) {
                 auto dispose = std::move(exp);
-                exp = obj.exp;
+                exp = std::move(obj.exp);
                 DispatchDispose(std::move(dispose));
             }
             if (exp->getAllocSize() <= getAllocSize()) {
@@ -1093,6 +1093,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                 auto next = to + 1;
                                 auto args = str.substr(next, cb - next);
                                 o(Logarithm(args, host, itIsOptimized));
+                            } else if (id == "ln"sv) {
+                                auto next = to + 1;
+                                auto arg = str.substr(next, cb - next);
+                                o(Logarithm(Euler(), Valuable(arg, host, itIsOptimized)));
                             }
 							i = cb;
                             continue;
@@ -1307,7 +1311,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->operator-();
         else
-            IMPLEMENT
+            return Product{constants::minus_1, *this}; // Default negation
     }
 
     VALUABLE_POLYMORPHIC_METHOD(operator+=)

@@ -100,6 +100,7 @@ public:
     Valuable Abet(const std::initializer_list<Valuable>) const;
 
     vars_cont_t GetVaExps() const override;
+    Valuable varless() const override { return constants::one; }
 };
 
 }}

@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(RadicalSimplificationAndSolving_test)
 {
     Valuable _1 = "x - (sqrt(90) - sqrt(40))/sqrt(10)"sv;
     auto solutions = _1.Solutions();
-    // FIXME: _1.GetIntegerSolution();
+    BOOST_TEST(solutions == _1.GetIntegerSolution());
     auto numSolutions = solutions.size();
     BOOST_TEST(numSolutions == 1);
     if (numSolutions > 0) {
