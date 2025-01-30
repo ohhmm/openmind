@@ -61,13 +61,11 @@ void Logarithm::optimize() {
     _1.optimize();
     _2.optimize();
 
-    // Simplify logarithm if the target is a power of the base
-    if (_2.IsExponentiation() && _2.as<Exponentiation>().getBase() == _1) {
-        Become(std::move(_2.as<Exponentiation>().eexp()));
-    }
     // Simplify logarithm if base and target are the same
-    else if (_1 == _2) {
+    if (_1 == _2) {
         Become(1);
+    } else if (_2.IsExponentiation() && _2.as<Exponentiation>().getBase() == _1) { // Simplify logarithm if the target is a power of the base
+        Become(std::move(_2.as<Exponentiation>().eexp()));
     } else if (_1.IsInt() && _2.IsInt() && getTarget() > constants::zero && getBase() > constants::one) {
         auto base = getBase().ca();
         auto target = getTarget().ca();
@@ -92,6 +90,11 @@ void Logarithm::optimize() {
         auto surdIndex = surd.extractIndex();
         setBase(std::move(surdRadicand));
         Become(Product{std::move(surdIndex), std::move(*this)});
+    } else if (lbase().Is_e()) { // Simplify natural logarithm
+        if (_2 == constants::one) {
+            Become(0);
+            return;
+        }
     } else if ((_1.IsRational() && _2.IsRational()) == YesNoMaybe::Yes) {
         auto rational1 = static_cast<a_rational>(_1);
         auto rational2 = static_cast<a_rational>(_2);
@@ -175,15 +178,35 @@ Valuable& Logarithm::operator/=(const Valuable& value) { return Become(Fraction{
 
 Valuable& Logarithm::operator^=(const Valuable& value) { return Become(Exponentiation{*this, value}); }
 
-Logarithm::operator double() const {IMPLEMENT}
+Logarithm::operator double() const {
+    return std::log(static_cast<double>(_2)) / std::log(static_cast<double>(_1));
+}
 
 Valuable& Logarithm::d(const Variable& x) {
-    IMPLEMENT
+    // For natural logarithm (base e), d/dx(ln(x)) = 1/x
+    if (lbase().Is_e() && _2 == x) {
+        Become(Exponentiation(x, -1));
+    }
+    // For natural logarithm (base e), d/dx(ln(u)) = (1/u) * du/dx
+    else if (lbase().Is_e()) {
+        auto u = _2;
+        Become(u.d(x) * Exponentiation(_2, -1));
+    }
+    // For other bases, d/dx(log_b(u)) = (1/u) * du/dx * (1/ln(b))
+    else {
+        auto u = _2;
+        Become(u.d(x) * Exponentiation(_2, -1) / Logarithm(Euler(), lbase()));
+    }
     return *this;
 }
 
 Valuable& Logarithm::integral(const Variable& x, const Variable& C) {
-    IMPLEMENT
+    // Integral of ln(x) is x*ln(x) - x + C
+    if (_1.Is_e() && _2 == x) {
+        return Become(x * Logarithm(Euler(), x) - x + C);
+    }
+    // For other cases, we need more complex integration rules
+    LOG_AND_IMPLEMENT("Integration of general logarithm not yet implemented");
     return *this;
 }
 

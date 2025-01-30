@@ -871,17 +871,25 @@ using namespace omnn::math;
         bool bhx = ebase().HasVa(x);
         bool ehx = eexp().HasVa(x);
         if(ehx) {
-            IMPLEMENT
-            if(bhx){
-
-            }else{
-
+            // Chain rule: d/dx(f(x)^g(x)) = f(x)^g(x) * (g'(x)*ln(f(x)) + g(x)*f'(x)/f(x))
+            auto baseDeriv = ebase();
+            baseDeriv.d(x);
+            auto expDeriv = eexp();
+            expDeriv.d(x);
+            auto lnBase = Logarithm(Euler(), ebase());
+            if (bhx) {
+                Become(*this * (expDeriv * lnBase + eexp() * baseDeriv / ebase()));
+            } else {
+                Become(*this * lnBase * expDeriv);
             }
         } else if (bhx) {
             if(ebase() == x)
                 Become(eexp() * (ebase() ^ (eexp()-1)));
-            else
-                IMPLEMENT
+            else {
+                auto baseDeriv = ebase();
+                baseDeriv.d(x);
+                Become(eexp() * (ebase() ^ (eexp()-1)) * baseDeriv);
+            }
         } else
             Become(0_v);
         optimize();
@@ -892,7 +900,7 @@ using namespace omnn::math;
     {
         if (ebase()==x) {
             auto& ee = eexp();
-            if ((ee.IsInt() || ee.IsSimpleFraction())) {
+            if (ee.IsInt() || ee.IsSimpleFraction()) {
                 updateExponentiation(ee + 1);
                 operator/=(eexp());
                 operator+=(C);
