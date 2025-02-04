@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(Basic_System_tests) {
         // FIXME: BOOST_TEST(sysTotal == both);
 
         auto solSys = sys.Solve(a);
-        auto solSysIt = solSys.find(*solExp.begin()); 
+        auto solSysIt = solSys.find(*solExp.begin());
         auto sysHasTheSolution = solSysIt != solSys.end();
         BOOST_TEST(sysHasTheSolution);
         if (sysHasTheSolution) {
@@ -69,15 +69,96 @@ BOOST_AUTO_TEST_CASE(Basic_System_tests) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(Multivariable_System_tests
+    , *disabled() // FIXME:
+) {
+        DECL_VARS(x, y, z);
+        System sys;
+        sys << x - 3*y + 3*z + 4;
+        sys << 2*x + 3*y - z - 15;
+        sys << 4*x - 3*y - z - 19;
+        auto sol = sys.Solve(x);
+        BOOST_TEST(sol.size() == 1);
+        if (sol.size()) {
+            auto _ = *sol.begin();
+            BOOST_TEST(_ == 5);
+        }
+        sol = sys.Solve(y);
+        BOOST_TEST(sol.size() == 1);
+        if (sol.size()) {
+            auto _ = *sol.begin();
+            BOOST_TEST(_ == 1);
+        }
+        sol = sys.Solve(z);
+        BOOST_TEST(sol.size() == 1);
+        if (sol.size()) {
+            auto _ = *sol.begin();
+            BOOST_TEST(_ == -2);
+        }
+
+}
+
 BOOST_AUTO_TEST_CASE(NonLinear_System_tests
     , *disabled() // FIXME:
 ) {
-    DECL_VARS(x, y, z);
-    System sys;
-    sys << "(x^2)+(y^2)=8"_v
-        << "x*y=7"_v
-        << "(x+y)^2=z"_v;
-    auto _ = sys.Solve(z);
+    {
+        DECL_VARS(x, y, z);
+        System sys;
+        sys << "(x^2)+(y^2)=8"_v
+            << "x*y=7"_v
+            << "(x+y)^2=z"_v;
+        auto _ = sys.Solve(z);
+    }
+    {
+        DECL_VARS(a, b, c);
+        System sys;
+        sys << a + b + c - 6;
+        sys << (a ^ 2) + (b ^ 2) + (c ^ 2) - 14;
+        sys << (a ^ 3) + (b ^ 3) + (c ^ 3) - 36;
+        auto _ = sys.Solve(a);
+        BOOST_TEST(_.size() == 1);
+    }
+    {
+        DECL_VARS(a, b, c);
+        System sys;
+        sys << a + b + c - 6;
+        sys << (a ^ 2) + (b ^ 2) + (c ^ 2) - 14;
+        sys << (a ^ 3) + (b ^ 3) + (c ^ 3) - 36;
+        sys << a * b * c - 6;
+        auto _ = sys.Solve(a);
+        BOOST_TEST(_.size() == 1);
+    }
+    {
+        DECL_VARS(a, b, c);
+        System sys;
+        sys << a + b + c - 6;
+        sys << (a ^ 2) + (b ^ 2) + (c ^ 2) - 14;
+        sys << (a ^ 3) + (b ^ 3) + (c ^ 3) - 36;
+        sys << a * b * c - 6;
+        sys << a + b - 4;
+        auto _ = sys.Solve(a);
+        BOOST_TEST(_.size() == 1);
+    }
+    {
+        DECL_VARS(a, b, c);
+        System sys;
+        sys << a + b + c - 6;
+        sys << (a ^ 2) + (b ^ 2) + (c ^ 2) - 14;
+        sys << (a ^ 3) + (b ^ 3) + (c ^ 3) - 36;
+        sys << a * b * c - 6;
+        sys << a + b - 4;
+        sys << a - 2;
+        auto _ = sys.Solve(a);
+        BOOST_TEST(_.size() == 1);
+    }
+    {
+        DECL_VARS(x, y, z);
+        System sys;
+        sys << "(x^2)+(y^2)=8"_v
+            << "x*y=7"_v
+            << "(x+y)^2=z"_v;
+        auto _ = sys.Solve(z);
+    }
 }
 
 
