@@ -107,6 +107,7 @@ public:
 
     es_t& Yarns(const Variable& v);
     const solutions_t& Known(const Variable& v) { return Yarns(v)[{}]; }
+    bool EvalInvariantKnowns(Valuable&);
 
 private:
     v_es_t vEs;

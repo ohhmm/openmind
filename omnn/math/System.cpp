@@ -252,7 +252,7 @@ bool System::Fetch(const Variable& va)
         rt::each(vars,
 			[&](auto& v){
 				auto fetchModified = Fetch(v);
-				modified = fetchModified || modified;
+				modified |= fetchModified;
 				return fetchModified;
 			});
     }
@@ -265,27 +265,12 @@ bool System::Fetch(const Variable& va)
 
 System::solutions_t System::Solve(const Variable& va)
 {
-    solutions_t solutions;
+    auto solutions = Known(va);
     InProgress SolvingInProgress(solving, va);
     if (SolvingInProgress)
         return solutions;
 
-//    auto it = vEs.find(va);
-//    if(it!=vEs.end()){
-//        auto sit = it->second.find({});
-//        if (sit!=it->second.end()) {
-//            solution = sit->second;
-//            if (solution.size()) {
-//                return solution;
-//            }
-//        }
-//    }
-
     if (makeTotalEqu) {
-        auto& solved = Known(va);
-        if (solved.size())
-            return solved;
-
         auto vars = sqs.Vars();
         for (auto& v : vars) {
             auto& solved = Known(v);
@@ -492,7 +477,13 @@ System::solutions_t System::Solve(const Variable& va)
     
     if (solutions.empty() && !makeTotalEqu) {
         auto total = CalculateTotalExpression();
-        total.solve(va, solutions);
+        EvalInvariantKnowns(total);
+        total.optimize();
+        auto vars = total.Vars();
+        if (vars.size() == 1 && vars.begin()->Same(va)) {
+            total.solve(va, solutions);
+            // TODO: add to system found solutions
+        }
     }
 
     return solutions;
@@ -512,4 +503,17 @@ System::es_t& System::Yarns(const Variable& variable) {
         pyarn = ptrs::make_shared<es_t>();
     }
     return *pyarn;
+}
+
+bool System::EvalInvariantKnowns(Valuable& expression) {
+    Valuable::vars_cont_t evaluate;
+    auto vars = expression.Vars();
+    for (auto& variable : vars) {
+        auto& known = Known(variable);
+        if (known.size() == 1) {
+            evaluate.emplace(variable, known.begin()->Link());
+        }
+    }
+    return evaluate.size() > 0
+        && expression.eval(evaluate);
 }
