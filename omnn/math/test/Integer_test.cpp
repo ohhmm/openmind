@@ -441,3 +441,28 @@ BOOST_AUTO_TEST_CASE(Integer_IsModSimplifiable_test)
     BOOST_TEST(result.first);
     BOOST_TEST(result.second == 10);  // 10 % 15 = 10
 }
+
+BOOST_AUTO_TEST_CASE(Complex_Expression_Test
+    , *disabled()
+) {
+    auto numerator = "sqrt(16) + 25/5"_v;
+    auto denominator = "5!/4! + 2^2"_v;
+    auto expression = numerator / denominator;
+    expression.optimize();
+    BOOST_TEST(expression == 1);
+    
+    auto sqrt16 = "sqrt(16)"_v;
+    BOOST_TEST(sqrt16 == 4);
+    
+    auto div25_5 = "25/5"_v;
+    BOOST_TEST(div25_5 == 5);
+    
+    auto fact5 = "5!"_v;
+    BOOST_TEST(fact5 == 120);
+    
+    auto fact4 = "4!"_v;
+    BOOST_TEST(fact4 == 24);
+    
+    auto pow2_2 = "2^2"_v;
+    BOOST_TEST(pow2_2 == 4);
+}
