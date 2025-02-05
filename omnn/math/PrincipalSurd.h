@@ -47,7 +47,7 @@ public:
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
     bool IsPolynomial(const Variable&) const override { return IsSimple(); }
 
-    void optimize() override;
+    Valuable& optimize() override;
 
     Valuable& sq() override;
     Valuable Sqrt() const override;
@@ -76,7 +76,7 @@ public:
     const Valuable::vars_cont_t& getCommonVars() const override;
     Valuable varless() const override;
 
-    void solve(const Variable&, solutions_t&) const override;
+    Valuable& solve(const Variable&, solutions_t&) const override;
 };
 
 }

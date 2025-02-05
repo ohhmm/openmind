@@ -43,6 +43,6 @@ thread_local ContainerT OptimizationLoopDetect<ValueT, ComparatorT, ContainerT>:
 #define ANTILOOP(Type)                                                                                                 \
     ::omnn::rt::OptimizationLoopDetect<Type> antilooper(*this);                                                        \
     if (antilooper.isLoopDetected()) {                                                                                 \
-        return;                                                                                                        \
+        return *this;                                                                                                  \
     }
 #endif

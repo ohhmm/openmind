@@ -60,10 +60,17 @@ namespace math {
         bool operator ==(const Valuable& v) const override;
         bool operator <(const Valuable& v) const override;
         explicit operator double() const override;
-        void solve(const Variable& va, solutions_t&) const override;
+        Valuable& solve(const Variable& va, solutions_t& s) const override {
+            numerator().solve(va, s);
+            solutions_t exclude;
+            denominator().solve(va, exclude);
+            for(auto& so:exclude)
+                s.erase(so);
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
+        }
         Valuable::solutions_t Distinct() const override;
 
-        void optimize() override;
+        Valuable& optimize() override;
         Valuable& sqrt() override;
         Valuable Sqrt() const override;
         const vars_cont_t& getCommonVars() const override;

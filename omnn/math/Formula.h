@@ -57,7 +57,7 @@ public:
     const Valuable& getEx() const { return e; }
     const std::list<Variable>& getVaSequenceForOp() const { return s; }
     
-    void optimize() override { e.optimize(); }
+    Valuable& optimize() override { e.optimize(); MarkAsOptimized(); return *this; }
     Valuable calcFreeMember() const override { return e.calcFreeMember(); }
     
     template<class... T>

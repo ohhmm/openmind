@@ -112,13 +112,7 @@ using namespace omnn::math;
         return eq;
     }
 
-    void Fraction::solve(const Variable& va, solutions_t& s) const {
-        numerator().solve(va, s);
-        solutions_t exclude;
-        denominator().solve(va, exclude);
-        for(auto& so:exclude)
-            s.erase(so);
-    }
+
     
     Valuable::solutions_t Fraction::Distinct() const {
         Valuable::solutions_t branches;
@@ -130,7 +124,7 @@ using namespace omnn::math;
         return branches;
     }
 
-    void Fraction::optimize()
+    Valuable& Fraction::optimize()
     {
         DUO_OPT_PFX
 
@@ -143,7 +137,7 @@ using namespace omnn::math;
             if (denominator() == numerator() && IsMultival() != YesNoMaybe::Yes) {
                 if (denominator().IsZero()) {
                     Become(NaN());
-                    return;
+                    return *this;
                 } else {
                     auto variable = denominator().FindVa();
                     if (variable)
@@ -389,6 +383,7 @@ using namespace omnn::math;
                 hash = numerator().Hash() ^ denominator().Hash();
             }
         }
+        return *this;
     }
 
     bool Fraction::MultiplyIfSimplifiable(const Fraction& fraction) {

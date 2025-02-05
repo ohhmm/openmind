@@ -54,14 +54,16 @@ Logarithm::Logarithm(const std::string_view& str, std::shared_ptr<VarHost> host,
     Valuable::optimized = itIsOptimized;
 }
 
-void Logarithm::optimize() {
+Valuable& Logarithm::optimize() {
     // Simplify logarithm if the target is a power of the base
     if (_2.IsExponentiation() && _2.as<Exponentiation>().getBase() == _1) {
         Become(std::move(_2.as<Exponentiation>().eexp()));
+        return *this;
     }
     // Simplify logarithm if base and target are the same
     else if (_1 == _2) {
         Become(1);
+        return *this;
     } else if (_1.IsInt() && _2.IsInt() && getTarget() > constants::zero && getBase() > constants::one) {
         auto base = getBase().ca();
         auto target = getTarget().ca();
@@ -79,6 +81,7 @@ void Logarithm::optimize() {
         decltype(high) x = low - 1;
         if ((getBase() ^ x) == getTarget()) {
             Become(std::move(x));
+            return *this;
         }
     } else if ((_1.IsRational() && _2.IsRational()) == YesNoMaybe::Yes) {
         auto rational1 = static_cast<a_rational>(_1);
@@ -87,6 +90,7 @@ void Logarithm::optimize() {
         // boost::math::
     }
     // Add more simplification rules as needed
+    return *this;
 }
 
 Valuable& Logarithm::operator+=(const Valuable& v) {

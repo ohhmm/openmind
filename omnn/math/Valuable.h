@@ -115,17 +115,19 @@ class Valuable
     static const a_int a_int_cz;
     static const max_exp_t max_exp_cz;
 
-    typedef Valuable& (Valuable::*method_t)(const Valuable&);
-    self& call_polymorphic_method(method_t, const self& arg);
+    using method_t = Valuable& (Valuable::*)(const Valuable&);
+    self& call_polymorphic_method(method_t m, const self& arg);
 
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
 
     virtual bool IsSubObject(const Valuable& o) const;
+    virtual void New(void*, Valuable&&);
+
+public:
     virtual Valuable* Clone() const;
     virtual Valuable* Move();
-    virtual void New(void*, Valuable&&);
     static constexpr size_t DefaultAllocSize = 768;
     constexpr virtual size_t getTypeSize() const { return sizeof(Valuable); }
     constexpr virtual size_t getAllocSize() const { return sz; }
@@ -156,6 +158,40 @@ protected:
     void MarkAsOptimized();
 
 public:
+    using expressions_t = std::unordered_set<Valuable>;
+    using solutions_t = expressions_t;
+
+    explicit Valuable(solutions_t&& solutions) {
+        if (solutions.empty()) {
+            exp = std::make_shared<Valuable>();
+            return;
+        }
+        if (solutions.size() == 1) {
+            exp = std::make_shared<Valuable>(std::move(*solutions.begin()));
+            return;
+        }
+        auto first = std::move(*solutions.begin());
+        exp = std::make_shared<Valuable>(std::move(first));
+        for (auto it = std::next(solutions.begin()); it != solutions.end(); ++it) {
+            *this = MergeOr(*this, std::move(*it));
+        }
+        SetMultival(YesNoMaybe::Yes);
+    }
+    explicit Valuable(const solutions_t& solutions) {
+        if (solutions.empty()) {
+            exp = std::make_shared<Valuable>();
+            return;
+        }
+        if (solutions.size() == 1) {
+            exp = std::make_shared<Valuable>(*solutions.begin());
+            return;
+        }
+        exp = std::make_shared<Valuable>(*solutions.begin());
+        for (auto it = std::next(solutions.begin()); it != solutions.end(); ++it) {
+            *this = MergeOr(*this, *it);
+        }
+        SetMultival(YesNoMaybe::Yes);
+    }
     constexpr const encapsulated_instance& getInst() const { return exp; }
     void MarkNotOptimized();
 
@@ -196,16 +232,20 @@ public:
     Valuable& get() { return exp ? exp->get() : *this; }
 
     template<class T>
-    const T& as() const;
+    const T& as() const {
+        auto& the = get();
+        if (!the.Is<T>()) {
+            throw std::runtime_error(std::string("Invalid const cast from ") + typeid(the).name() + " to " + typeid(T).name());
+        }
+        return static_cast<const T&>(the);
+    }
 
     template<class T>
     T& as() {
         auto& the = get();
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (!the.Is<T>()) {
-            LOG_AND_IMPLEMENT("Attempt to cast " << Type().name() << ' ' << *this << " to " << typeid(T).name());
+            throw std::runtime_error(std::string("Invalid cast from ") + typeid(the).name() + " to " + typeid(T).name());
         }
-#endif
         return static_cast<T&>(the);
     }
 
@@ -224,11 +264,10 @@ public:
     class [[maybe_unused]] OptimizeOn {
         bool opts;
     public:
-        MSVC_CONSTEXPR
-        OptimizeOn() : opts(optimizations) {
+        OptimizeOn() noexcept : opts(optimizations) {
             optimizations = true;
         }
-        ~OptimizeOn(){
+        ~OptimizeOn() noexcept {
             optimizations = opts;
         }
     };
@@ -236,11 +275,10 @@ public:
     class [[maybe_unused]] OptimizeOff {
         bool opts;
     public:
-        MSVC_CONSTEXPR
-        OptimizeOff() : opts(optimizations) {
-			optimizations = {};
+        OptimizeOff() noexcept : opts(optimizations) {
+            optimizations = false;
         }
-        ~OptimizeOff(){
+        ~OptimizeOff() noexcept {
             optimizations = opts;
         }
     };
@@ -270,7 +308,7 @@ public:
     Valuable& operator =(Valuable&&);
 
     template <typename ValuableT>
-        requires(std::derived_from<ValuableT, Valuable>)
+        requires std::derived_from<ValuableT, Valuable>
     Valuable& operator=(ptrs::shared_ptr<ValuableT>&& ptr) {
         return operator=(Valuable(std::move(std::static_pointer_cast<Valuable>(ptr))));
     }
@@ -279,30 +317,18 @@ public:
 
     Valuable(const Valuable&);
 
-    template<class T,
-            typename = typename std::enable_if<std::is_convertible<T&, Valuable&>::value>::type>
-    Valuable(const T&& t)
-    : exp(t.Clone())
-    {
-    }
-
-    template<class T,
-        typename = typename std::enable_if<
-            !std::is_const<T>::value &&
-            std::is_base_of<Valuable, T>::value
-        >::type
-    >
+    template<class T>
+        requires std::derived_from<std::remove_cvref_t<T>, Valuable>
     Valuable(T&& t)
-    : exp(t.Move())
-    { }
+        : exp(t.Clone())
+    {}
 
     MSVC_CONSTEXPR Valuable(Valuable&&) = default;
     Valuable();
     Valuable(double d);
 
-    template<class T,
-        typename = typename std::enable_if<!std::is_rvalue_reference<T>::value && std::is_integral<T>::value>::type
-    >
+    template<class T>
+        requires (!std::is_rvalue_reference_v<T> && std::is_integral_v<T>)
     constexpr Valuable(T i = 0) : Valuable(a_int(i)) {}
 
     Valuable(const a_int&);
@@ -348,7 +374,7 @@ public:
         const Valuable& to = constants::infinity;
         const Variable& C = constants::integration_result_constant;
     };
-    void integral(); // expects to be single-variable
+    Valuable& integral(); // expects to be single-variable
     virtual Valuable& integral(const Variable& x, const Variable& C);
     Valuable& integral(const Variable& x) { return integral(x, constants::integration_result_constant); }
     Valuable& integral(const Variable& x, const Valuable& from, const Valuable& to, const Variable& C);
@@ -360,9 +386,9 @@ public:
 
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
-    virtual void optimize(); /// if it simplifies than it should become the type
+    virtual Valuable& optimize(); /// if it simplifies than it should become the type
     View GetView() const;
-    void SetView(View v);
+    Valuable& SetView(View v);
     MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
@@ -395,9 +421,10 @@ public:
     virtual YesNoMaybe IsRational() const;
     virtual YesNoMaybe IsEven() const;
     virtual YesNoMaybe IsMultival() const;
-    virtual void Values(const std::function<bool(const Valuable&)>&) const; /// split multival to distinct values and return those using visitor pattern
-
-    virtual bool is(const std::type_index&) const;
+    virtual Valuable& Values(const std::function<bool(const Valuable&)>&) const; /// split multival to distinct values and return those using visitor pattern
+    virtual solutions_t MultiValues() const { return {*this}; }
+    virtual void SetMultival(YesNoMaybe) {}
+    virtual bool is(const std::type_index& t) const { return typeid(*this) == t; }
 
     template<class T>
     bool Is() const {
@@ -425,7 +452,7 @@ public:
     virtual Valuable Tg() const;
     [[nodiscard]]
     virtual Valuable Tanh() const;
-    virtual void gamma(); // https://en.wikipedia.org/wiki/Gamma_function
+    virtual Valuable& gamma(); // https://en.wikipedia.org/wiki/Gamma_function
     [[nodiscard]]
     virtual Valuable Gamma() const;
     virtual Valuable& factorial();
@@ -443,20 +470,16 @@ public:
     virtual Valuable& reciprocal();
     [[nodiscard]]
     virtual Valuable Reciprocal() const;
-
-    using expressions_t = std::unordered_set<Valuable>;
-    using solutions_t = expressions_t;
     static Valuable MergeAnd(const Valuable&, const Valuable&); /// conjunctive merge of two values
     static Valuable MergeOr(const Valuable&, const Valuable&); /// disjunctive merge algorithm deduced from square equation solutions formula, works for integers
     static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&); /// algorithm is to be deduced from cubic equation solutions formula
     static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&, const Valuable&); /// double merge
-    explicit Valuable(solutions_t&&);
     virtual Valuable operator()(const Variable&) const;
     virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;
     [[nodiscard]]
     bool IsUnivariable() const;
 
-    virtual void solve(const Variable& va, solutions_t&) const;
+    virtual Valuable& solve(const Variable& va, solutions_t&) const { return const_cast<Valuable&>(*this); }
     solutions_t solve(const Variable&) const;
     virtual solutions_t Distinct() const;
     virtual Valuable Univariate() const;
@@ -514,14 +537,14 @@ public:
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;
     using var_set_t = std::set<Variable>;
-    virtual void CollectVa(var_set_t& s) const;
+    virtual Valuable& CollectVa(var_set_t& s) const;
     using va_names_t = std::map<std::string_view, Variable>;
-    virtual void CollectVaNames(va_names_t& s) const;
+    virtual Valuable& CollectVaNames(va_names_t& s) const;
     va_names_t VaNames() const;
     virtual std::shared_ptr<VarHost> getVaHost() const;
 
     var_set_t Vars() const;
-    virtual void Eval(const Variable& va, const Valuable&);
+    virtual Valuable& Eval(const Variable& va, const Valuable&);
     virtual bool IsComesBefore(const Valuable&) const; /// accepts same type as param
 
     virtual bool Same(const Valuable&) const;
@@ -787,16 +810,7 @@ protected:
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(Valuable)
 
-template<class T>
-const T& Valuable::as() const {
-    auto& the = get();
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-    if (!the.Is<T>()) {
-        IMPLEMENT
-    }
-#endif
-    return static_cast<const T&>(the);
-}
+
 
 template <const long long I>
 class vo {

@@ -54,6 +54,10 @@ protected:
 	constexpr cont& GetCont() override { return members; }
 	std::ostream& print(std::ostream& out) const override;
     
+	template <typename T>
+	const Sum::iterator SumAddImpl(T&& item, const iterator hint);
+
+public:
     [[nodiscard]]
     MSVC_CONSTEXPR
     Sum* Clone() const override
@@ -62,9 +66,6 @@ protected:
         sum->isOptimizing = {};
         return sum;
     }
-
-	template <typename T>
-	const Sum::iterator SumAddImpl(T&& item, const iterator hint);
 
 public:
     std::ostream& code(std::ostream& out) const override;
@@ -93,10 +94,10 @@ public:
 
     bool operator ==(const Valuable& v) const override;
 
-    void optimize() override;
-    void balance();
+    Valuable& optimize() override;
+    Valuable& balance();
     const PrincipalSurd* PrincipalSurdFactor() const override;
-    void PerformSurdReduce();
+    Valuable& PerformSurdReduce();
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;
     max_exp_t findMaxVaExp();
@@ -105,8 +106,8 @@ public:
     Valuable& sq() override;
     Valuable calcFreeMember() const override;
     solutions_t GetIntegerSolution(const Variable& va) const override;
-    void solve(const Variable& va, solutions_t& solutions) const override;
-    void solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const;
+    Valuable& solve(const Variable& va, solutions_t& solutions) const override;
+    Valuable& solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const;
     Valuable SumOfRoots() const override;
     Valuable ProductOfRoots() const override;
     solutions_t Distinct() const override;

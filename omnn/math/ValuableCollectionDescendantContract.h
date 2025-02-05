@@ -207,17 +207,20 @@ namespace omnn::math {
             return false;
         }
 
-        void CollectVa(std::set<Variable>& s) const override {
+        Valuable& CollectVa(std::set<Variable>& s) const override {
             for (auto& i : GetConstCont())
                 i.CollectVa(s);
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
         }
-        void CollectVaNames(Valuable::va_names_t& s) const override {
+        Valuable& CollectVaNames(Valuable::va_names_t& s) const override {
             for (auto& i : GetConstCont())
                 i.CollectVaNames(s);
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
         }
 
-        void CallForEach(const std::function<void (const Valuable&)>& call) const {
+        Valuable& CallForEach(const std::function<void (const Valuable&)>& call) const {
             rt::each(GetConstCont(), call);
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
         }
 
         Valuable Each(const std::function<Valuable(const Valuable&)>& m) const {
@@ -270,7 +273,7 @@ namespace omnn::math {
             return is;
         }
 
-        void Values(const std::function<bool(const Valuable&)>& fun) const override {
+        Valuable& Values(const std::function<bool(const Valuable&)>& fun) const override {
             auto sharedValuesProjection = std::vector<std::vector<Valuable>>();
             for (auto& m : GetConstCont()) {
                 if (m.IsMultival() == YesNoMaybe::Yes) {
@@ -308,6 +311,7 @@ namespace omnn::math {
                 }
                 fun(value);
             }
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
         }
 
         bool eval(const std::map<Variable, Valuable>& with) override {
@@ -343,7 +347,7 @@ namespace omnn::math {
             return evaluated;
         }
 
-        void Eval(const Variable& va, const Valuable& v) override
+        Valuable& Eval(const Variable& va, const Valuable& v) override
         {
             Valuable::SetView(Valuable::View::Calc);
             auto& c = GetCont();
@@ -368,26 +372,29 @@ namespace omnn::math {
 
 //            if(!FindVa())
 //                this->optimize();
+            return *this;
         }
 
-        virtual void Update(iterator& it, Valuable&& v)
+        virtual Valuable& Update(iterator& it, Valuable&& v)
         {
             Valuable moved;
             moved = std::move(v);
             this->Delete(it); // original v may be [sub]object of *it
             it = this->Add(std::move(moved), it);
             Valuable::optimized = {};
+            return *this;
         }
 
-        virtual void Update(iterator& it, const Valuable& v)
+        virtual Valuable& Update(iterator& it, const Valuable& v)
         {
             auto copy = v;
             this->Delete(it);
             it = this->Add(std::move(copy), it);
             Valuable::optimized = {};
+            return *this;
         }
 
-        virtual void Delete(iterator& it) {
+        virtual Valuable& Delete(iterator& it) {
             Valuable::hash ^= it->Hash();
             auto& c = GetCont();
             auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
@@ -395,20 +402,23 @@ namespace omnn::math {
             Valuable::optimized &= c.size() > 1;
             if (findNewMaxVaExp)
                 Valuable::maxVaExp = this->Ptr()->findMaxVaExp(); // TODO: consider heap structure
+            return *this;
         }
 
-        void Delete(const Valuable& value) {
+        Valuable& Delete(const Valuable& value) {
             auto& c = GetCont();
             auto delIt = std::find(c.begin(), c.end(), value);
             if (delIt != c.end())
                 Delete(delIt);
+            return *this;
         }
 
         template<class PredFnT>
         requires(std::predicate<PredFnT>)
-        void Delete(PredFnT&& pred) {
+        Valuable& Delete(PredFnT&& pred) {
             auto delIt = std::remove_if(begin(), end(), std::forward<PredFnT>(pred));
             Delete(delIt);
+            return *this;
         }
 
         virtual Valuable Extract(const iterator it)
@@ -428,27 +438,23 @@ namespace omnn::math {
             return Extract(begin());
         }
 
-        virtual void Update(iterator& it) {
+        virtual Valuable& Update(iterator& it) {
             auto e = this->Extract(it++);
             it = Add(e, it);
+            return *this;
         }
 
         [[nodiscard]]
         Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t vars) const override {
             auto range = GetConstCont()
                 | std::ranges::views::transform([&](auto& value){return value.CompileIntoLambda(vars);});
-            static Valuable::universal_lambda_t getInitialValue = [](Valuable::universal_lambda_params_t) {
-                return Valuable(ChildT());
-            };
-            return std::reduce(PAR
-                range.begin(), range.end(), getInitialValue,
-                [&]<typename LambdaFwd1, typename LambdaFwd2>(LambdaFwd1&& item1, LambdaFwd2&& item2) {
-                    return [
-                        lambda1 = std::forward<LambdaFwd1>(item1),
-                        lambda2 = std::forward<LambdaFwd2>(item2)
-                    ]
-                    (auto params) -> Valuable
-                    {
+            auto initialLambda = Valuable::universal_lambda_t([](Valuable::universal_lambda_params_t) -> Valuable {
+                return ChildT();
+            });
+            return std::accumulate(
+                range.begin(), range.end(), initialLambda,
+                [](const auto& lambda1, const auto& lambda2) {
+                    return [lambda1, lambda2](const auto& params) -> Valuable {
                         return ChildT::GetBinaryOperationLambdaTemplate()(lambda1(params), lambda2(params));
                     };
                 });
@@ -474,9 +480,10 @@ namespace omnn::math {
         friend class boost::serialization::access;
 
         template<class Archive>
-        void serialize(Archive & archive, const unsigned int version) {
+        Valuable& serialize(Archive & archive, const unsigned int version) {
             archive & boost::serialization::base_object<base>(*this);
             archive & GetCont();
+            return *this;
         }
     };
 }

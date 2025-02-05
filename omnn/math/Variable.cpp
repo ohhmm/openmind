@@ -244,13 +244,15 @@ namespace math {
         }
     }
     
-    void Variable::CollectVa(std::set<Variable>& s) const
+    Valuable& Variable::CollectVa(std::set<Variable>& s) const
     {
         s.emplace(*this);
+        return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
     }
 
-    void Variable::CollectVaNames(Valuable::va_names_t&  s) const{
+    Valuable& Variable::CollectVaNames(Valuable::va_names_t&  s) const {
         s.emplace(varSetHost->GetName(varId), *this);
+        return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
     }
 
     bool Variable::eval(const std::map<Variable, Valuable>& with) {
@@ -263,19 +265,21 @@ namespace math {
         return evaluated;
     }
     
-    void Variable::Eval(const Variable& va, const Valuable& v)
+    Valuable& Variable::Eval(const Variable& va, const Valuable& v)
     {
         if(va==*this)
         {
             auto copy = v;
             Become(std::move(copy));
         }
+        return *this;
     }
     
-    void Variable::solve(const Variable& va, solutions_t& solutions) const
+    Valuable& Variable::solve(const Variable& va, solutions_t& solutions) const
 	{
 		if (operator==(va))
 			solutions.emplace(constants::zero);
+        return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
     }
     
     const Valuable::vars_cont_t& Variable::getCommonVars() const

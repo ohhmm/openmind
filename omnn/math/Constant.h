@@ -47,7 +47,7 @@ template <class Chld>
         constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::No; }
         [[nodiscard]]
         constexpr bool is_optimized() const override { return true; }
-        constexpr void optimize() override {}     
+        constexpr Valuable& optimize() override { this->MarkAsOptimized(); return *this; }
 
         constexpr const Variable* FindVa() const override {
             return {};
@@ -60,16 +60,16 @@ template <class Chld>
             return {};
         }
 
-        constexpr void CollectVa(std::set<Variable>&) const override
-        { }
-        constexpr void CollectVaNames(Valuable::va_names_t&) const override
-        { }
+        constexpr Valuable& CollectVa(std::set<Variable>&) const override
+        { return const_cast<Valuable&>(static_cast<const Valuable&>(*this)); }
+        constexpr Valuable& CollectVaNames(Valuable::va_names_t&) const override
+        { return const_cast<Valuable&>(static_cast<const Valuable&>(*this)); }
 
         constexpr bool eval(const Valuable::vars_cont_t&) override {
             return {};
         }
-        constexpr void Eval(const Variable&, const Valuable&) override
-        { }
+        constexpr Valuable& Eval(const Variable&, const Valuable&) override
+        { return *this; }
 
         [[nodiscard]]
         NO_APPLE_CONSTEXPR
@@ -129,7 +129,10 @@ template <class Chld>
         a_int Complexity() const override { return 1; }
 
         typename base::solutions_t Distinct() const override { return { *this }; }
-        void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
+        Valuable& Values(const std::function<bool(const Valuable&)>& f) const override { 
+            if (f) f(*this); 
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
+        }
         [[nodiscard]]
         Valuable Univariate() const override { return *this; }
 

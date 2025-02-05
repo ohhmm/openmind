@@ -69,51 +69,58 @@ namespace omnn::math {
         }
 
         static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
-            if(_1.FindVa() || _2.FindVa())
-                IMPLEMENT // in Child
+            if(_1.FindVa() || _2.FindVa()) {
+                IMPLEMENT; // in Child
+            }
             return {};
         }
 
         constexpr const Valuable& get1() const { return _1; }
         template<class T>
-        void set1(T&& p) {
+        Valuable& set1(T&& p) {
             _1 = std::forward<T>(p);
             Valuable::hash = _1.Hash() ^ _2.Hash();
             Valuable::optimized = {};
+            return *this;
         }
         template<class T>
-        void update1(T&& p) {
+        Valuable& update1(T&& p) {
             Valuable::hash ^= _1.Hash();
             _1 = std::forward<T>(p);
             Valuable::hash ^= _1.Hash();
             Valuable::optimized = {};
+            return *this;
         }
-        void update1(std::function<void(decltype(_1)&)>& f) {
+        Valuable& update1(std::function<void(decltype(_1)&)>& f) {
             Valuable::hash ^= _1.Hash();
             f(_1);
             Valuable::hash ^= _1.Hash();
             Valuable::optimized = {};
+            return *this;
         }
 
         const Valuable& get2() const { return _2; }
         template<class T>
-        void set2(T&& p) {
+        Valuable& set2(T&& p) {
             _2 = std::forward<T>(p);
             Valuable::hash = _1.Hash() ^ _2.Hash();
             Valuable::optimized = {};
+            return *this;
         }
         template<class T>
-        void update2(T&& p) {
+        Valuable& update2(T&& p) {
             Valuable::hash ^= _2.Hash();
             _2 = std::forward<T>(p);
             Valuable::hash ^= _2.Hash();
             Valuable::optimized = {};
+            return *this;
         }
-        void update2(std::function<void(decltype(_2)&)>& f) {
+        Valuable& update2(std::function<void(decltype(_2)&)>& f) {
             Valuable::hash ^= _2.Hash();
             f(_2);
             Valuable::hash ^= _2.Hash();
             Valuable::optimized = {};
+            return *this;
         }
         constexpr auto extract1() { return std::move(_1); }
         constexpr auto extract2() { return std::move(_2); }
@@ -138,14 +145,20 @@ namespace omnn::math {
         }
 
         bool operator==(const Valuable& other) const override {
-            return (other.Is<Chld>() && operator==(other.as<Chld>()))
-                || ((other.IsSum() || other.IsProduct()) && other.operator==(*this));
+            if (other.template Is<Chld>()) {
+                auto& o = other.template as<Chld>();
+                return (_1 == o._1 && _2 == o._2) || (_1 == o._2 && _2 == o._1);
+            }
+            if (other.IsSum() || other.IsProduct()) {
+                return other.operator==(*this);
+            }
+            return false;
         }
 
         bool Same(const Valuable& value) const override {
             auto same = this->OfSameType(value) && this->Hash() == value.Hash();
             if (same) {
-                auto& other = value.as<type>();
+                auto& other = value.template as<type>();
                 same = _1.Same(other._1) && _2.Same(other._2);
             }
             return same;
@@ -160,13 +173,15 @@ namespace omnn::math {
             return _1.HasVa(va) || _2.HasVa(va);
         }
 
-        void CollectVa(std::set<Variable>& s) const override {
+        Valuable& CollectVa(std::set<Variable>& s) const override {
             _1.CollectVa(s);
             _2.CollectVa(s);
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
         }
-        void CollectVaNames(Valuable::va_names_t& s) const override {
+        Valuable& CollectVaNames(Valuable::va_names_t& s) const override {
             _1.CollectVaNames(s);
             _2.CollectVaNames(s);
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
         }
 
         bool eval(const std::map<Variable, Valuable>& with) override {
@@ -179,13 +194,41 @@ namespace omnn::math {
             return evaluated;
         }
 
-        void Eval(const Variable& va, const Valuable& v) override {
+        Valuable& Values(const std::function<bool(const Valuable&)>& f) const override
+        {
+            if (f) {
+                if(this->IsSimpleFraction()){
+                    f(*this);
+                    return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
+                }
+
+                Valuable::solutions_t vals, thisValues;
+                _1.Values([&](auto& thisVal){
+                    thisValues.insert(thisVal);
+                    return true;
+                });
+
+                _2.Values([&](auto&vVal){
+                    for(auto& tv:thisValues){
+                        Valuable v = Chld{tv,vVal};
+                        v.optimize();
+                        vals.insert(std::move(v));
+                    }
+                    return true;
+                });
+
+                for(auto& v:vals)
+                    f(v);
+            }
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
+        }
+
+        Valuable& Eval(const Variable& va, const Valuable& v) override {
             Valuable::optimized={};
             _1.Eval(va, v);
             _2.Eval(va, v);
-    //        optimize();
-           // or
             Valuable::hash = _1.Hash() ^ _2.Hash();
+            return *this;
         }
 
         Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t vars) const override {
@@ -224,37 +267,6 @@ namespace omnn::math {
             return _1.IsMultival() || _2.IsMultival();
         }
 
-        void Values(const std::function<bool(const Valuable&)>& f) const override
-        {
-            if (f) {
-                if(this->IsSimpleFraction()){
-                    f(*this);
-                    return;
-                }
-
-                // TODO: multivalve caching (inspect all optimized and optimization transitions)
-
-
-                Valuable::solutions_t vals, thisValues;
-                _1.Values([&](auto& thisVal){
-                    thisValues.insert(thisVal);
-                    return true;
-                });
-
-                _2.Values([&](auto&vVal){
-                    for(auto& tv:thisValues){
-                        Valuable v = Chld{tv,vVal};
-                        v.optimize();
-                        vals.insert(std::move(v));
-                    }
-                    return true;
-                });
-
-                for(auto& v:vals)
-                    f(v);
-            }
-        }
-
         a_int Complexity() const override {
             return _1.Complexity() + _2.Complexity();
         }
@@ -281,24 +293,24 @@ namespace omnn::math {
 #define DUO_OPT_PFX                                                                                                    \
     if (!optimizations && !IsSimple()) {                                                                               \
         hash = _1.Hash() ^ _2.Hash();                                                                                  \
-        return;                                                                                                        \
+        return *this;                                                                                                  \
     }                                                                                                                  \
     if (optimized) {                                                                                                   \
         auto h = _1.Hash() ^ _2.Hash();                                                                                \
         if (h != hash) {                                                                                               \
             LOG_AND_IMPLEMENT("Fix hash updating for " << *this);                                                      \
         }                                                                                                              \
-        return;                                                                                                        \
+        return *this;                                                                                                  \
     }                                                                                                                  \
     ANTILOOP(base::type)
 #else
 #define DUO_OPT_PFX                                                                                                    \
     if (!optimizations && !IsSimple()) {                                                                               \
         hash = _1.Hash() ^ _2.Hash();                                                                                  \
-        return;                                                                                                        \
+        return *this;                                                                                                  \
     }                                                                                                                  \
     if (optimized) {                                                                                                   \
-        return;                                                                                                        \
+        return *this;                                                                                                  \
     }                                                                                                                  \
     ANTILOOP(base::type)
 #endif

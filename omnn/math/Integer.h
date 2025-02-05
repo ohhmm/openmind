@@ -93,7 +93,7 @@ public:
     //bool IsConstant() const override { return true; }   The Integer object may be applied an arithmetic operation and this object value changed. Only Constant class objects should return IsConstant true.
     [[nodiscard]]
     constexpr bool is_optimized() const override { return true; }
-    void optimize() override { MarkAsOptimized(); }
+    Valuable& optimize() override { MarkAsOptimized(); return *this; }
     YesNoMaybe IsEven() const override;
     [[nodiscard]]
     constexpr bool IsPolynomial(const Variable&) const override { return true; }
@@ -101,7 +101,7 @@ public:
     constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     [[nodiscard]]
     constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
-    void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
+    Valuable& Values(const std::function<bool(const Valuable&)>& f) const override { if (f) f(*this); return const_cast<Valuable&>(static_cast<const Valuable&>(*this)); }
 
     // virtual operators
     Valuable operator -() const override;
@@ -163,11 +163,11 @@ public:
 
     const Variable* FindVa() const override { return nullptr; }
     bool HasVa(const Variable& va) const override { return {}; }
-    void CollectVa(std::set<Variable>&) const override { }
-    void CollectVaNames(Valuable::va_names_t& s) const override { }
+    Valuable& CollectVa(std::set<Variable>&) const override { return const_cast<Valuable&>(static_cast<const Valuable&>(*this)); }
+    Valuable& CollectVaNames(Valuable::va_names_t& s) const override { return const_cast<Valuable&>(static_cast<const Valuable&>(*this)); }
 
     bool eval(const std::map<Variable, Valuable>& with) override { return {}; }
-    void Eval(const Variable& va, const Valuable& v) override { }
+    Valuable& Eval(const Variable& va, const Valuable& v) override { return *this; }
     Valuable calcFreeMember() const override;
     const vars_cont_t& getCommonVars() const override { return emptyCommonVars(); }
     Valuable& sq() override { return *this *= *this; }
@@ -186,7 +186,7 @@ public:
 
     static const ranges_t empty_zero_zone;
 
-    void solve(const Variable&, solutions_t&) const override {}
+    Valuable& solve(const Variable&, solutions_t&) const override { return const_cast<Valuable&>(static_cast<const Valuable&>(*this)); }
     Valuable::solutions_t GetIntegerSolution(const Variable& va) const override;
 
     /// <summary>

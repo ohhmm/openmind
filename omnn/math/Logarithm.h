@@ -41,7 +41,7 @@ public:
     }
 
     constexpr bool IsLogarithm() const override { return true; }
-    void optimize() override;
+    Valuable& optimize() override;
 
     const Valuable& getBase() const { return _1; }
     const Valuable& lbase() const { return _1; }

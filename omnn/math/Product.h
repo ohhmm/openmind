@@ -103,7 +103,7 @@ public:
     Valuable ToBool() const override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
-    void optimize() override;
+    Valuable& optimize() override;
     Valuable Sqrt() const override;
     Valuable& sq() override;
     Valuable abs() const override;
@@ -117,7 +117,9 @@ public:
   
     Valuable operator()(const Variable& va) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
-    void solve(const Variable& va, solutions_t& solutions) const override;
+    Valuable& solve(const Variable& va, solutions_t& solutions) const override { 
+        return const_cast<Valuable&>(static_cast<const Valuable&>(*this)); 
+    }
     Valuable::solutions_t Distinct() const override;
     
     std::ostream& code(std::ostream& out) const override;

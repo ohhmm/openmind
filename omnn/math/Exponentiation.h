@@ -54,40 +54,36 @@ public:
     YesNoMaybe IsMultival() const override;
     [[nodiscard]]
     YesNoMaybe IsRational() const override;
-    void Values(const std::function<bool(const Valuable&)>&) const override;
+    Valuable& Values(const std::function<bool(const Valuable&)>& f) const override;
+    Valuable& optimize() override;
     [[nodiscard]]
     constexpr const Valuable& getBase() const { return _1; }
     [[nodiscard]]
     constexpr const Valuable& ebase() const { return _1; }
     template<class T>
-    void setBase(T&& b)
-    {
+    void setBase(T&& b) {
         set1(::std::forward<T>(b));
         InitVars();
         optimized = {};
     }
     template<class T>
-    void updateBase(T&& b)
-    {
+    void updateBase(T&& b) {
         update1(std::forward<T>(b));
         InitVars();
         optimized = {};
     }
-
     [[nodiscard]]
     constexpr const Valuable& eexp() const { return _2; }
     [[nodiscard]]
     constexpr const Valuable& getExponentiation() const { return _2; }
     template<class T>
-    void setExponentiation(T&& exponentiation)
-    {
+    void setExponentiation(T&& exponentiation) {
         set2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
     }
     template<class T>
-    void updateExponentiation(T&& exponentiation)
-    {
+    void updateExponentiation(T&& exponentiation) {
         update2(std::forward<T>(exponentiation));
         InitVars();
         optimized = {};
@@ -113,7 +109,6 @@ public:
     Valuable& integral(const Variable& x, const Variable& C) override;
 
     bool operator <(const Valuable&) const override;
-    void optimize() override;
 
     Valuable varless() const override;
     const vars_cont_t& getCommonVars() const override;
@@ -136,7 +131,7 @@ public:
     solutions_t Distinct() const override;
 
     bool IsPolynomial(const Variable&) const override;
-    void solve(const Variable& va, solutions_t&) const override;
+    Valuable& solve(const Variable& va, solutions_t& s) const override;
 };
 
 }

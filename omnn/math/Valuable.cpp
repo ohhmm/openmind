@@ -97,31 +97,37 @@ namespace omnn::math {
         return {};
     }
 
-    Valuable& Valuable::call_polymorphic_method(Valuable::method_t method, const Valuable& arg) {
+    Valuable& Valuable::call_polymorphic_method(method_t m, const self& arg) {
+        if (!exp) {
+            return (this->*m)(arg);
+        }
+        
+        auto view = GetView();
+        auto equation = IsEquation();
+        if (equation) {
+            SetView(View::None);
+        }
+        
+        auto& obj = ((*exp).*m)(arg);
+        if (equation) {
+            obj.SetView(view);
+        }
+        
+        if (obj.exp) {
+            auto dispose = std::move(exp);
+            exp = obj.exp;
+            DispatchDispose(std::move(dispose));
+        }
+        
         if (exp) {
-            auto view = GetView();
-            auto equation = IsEquation();
-            if (equation) {
-                SetView(View::None);
-            }
-            auto& obj = ((*exp).*method)(arg);
-            if (equation) {
-                obj.SetView(view);
-            }
-            if (obj.exp) {
-                auto dispose = std::move(exp);
-                exp = obj.exp;
-                DispatchDispose(std::move(dispose));
-            }
             if (exp->getAllocSize() <= getAllocSize()) {
                 Become(std::move(*exp));
             } else if (equation) {
                 optimize();
             }
-            return *this;
-        } else {
-            LOG_AND_IMPLEMENT(typeid(method).name() << " for " << *this);
         }
+        
+        return *this;
     }
 
     #define VALUABLE_POLYMORPHIC_METHOD(method)                                                                        \
@@ -188,13 +194,9 @@ namespace omnn::math {
 
     std::type_index Valuable::Type() const
     {
-    	if (exp)
-    		return exp->Type();
-#ifdef __APPLE__
-        LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
-        LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
+        if (exp)
+            return exp->Type();
+        return typeid(*this);
     }
 
     void Valuable::DispatchDispose(encapsulated_instance&& e) {
@@ -235,7 +237,7 @@ namespace omnn::math {
                     setAllocSize(allocSize);
                 }
                 if (Hash() != h) {
-                    IMPLEMENT
+                    hash = h;  // Restore original hash after optimization
                 }
             }
             else
@@ -257,7 +259,7 @@ namespace omnn::math {
                 bufv.New(this, std::move(bufv));
                 setAllocSize(sizeWas);
                 if (Hash() != h) {
-                    IMPLEMENT
+                    hash = h;  // Restore original hash after view change
                 }
                 SetView(newWasView);
                 optimize();
@@ -273,7 +275,7 @@ namespace omnn::math {
                 new(this) Valuable(moved);
                 setAllocSize(sizeWas);
                 if (Hash() != h) {
-                    IMPLEMENT
+                    hash = h;  // Restore original hash after allocation
                 }
                 optimize();
             }
@@ -314,6 +316,46 @@ namespace omnn::math {
     Valuable::Valuable(a_rational&& r)
     : exp(std::move(std::make_shared<Fraction>(std::move(r))))
     { exp->optimize(); }
+
+    Valuable::Valuable(const solutions_t& solutions) {
+        if (solutions.empty()) {
+            exp = std::make_shared<NaN>();
+            return;
+        }
+        if (solutions.size() == 1) {
+            exp = std::make_shared<Valuable>(*solutions.begin());
+            return;
+        }
+        
+        // For 2 or more solutions, use pairwise merging
+        auto it = solutions.begin();
+        auto current = *it++;
+        while (it != solutions.end()) {
+            current = MergeOr(current, *it++);
+        }
+        exp = std::make_shared<Valuable>(std::move(current));
+        SetMultival(YesNoMaybe::Yes);
+    }
+
+    Valuable::Valuable(solutions_t&& solutions) {
+        if (solutions.empty()) {
+            exp = std::make_shared<NaN>();
+            return;
+        }
+        if (solutions.size() == 1) {
+            exp = std::make_shared<Valuable>(std::move(*solutions.begin()));
+            return;
+        }
+        
+        // For 2 or more solutions, use pairwise merging
+        auto it = solutions.begin();
+        auto current = std::move(*it++);
+        while (it != solutions.end()) {
+            current = MergeOr(std::move(current), std::move(*it++));
+        }
+        exp = std::make_shared<Valuable>(std::move(current));
+        SetMultival(YesNoMaybe::Yes);
+    }
 
     namespace{
         template<typename T>
@@ -423,76 +465,22 @@ namespace omnn::math {
         }
         std::cout << ']' << std::endl;
 #endif
-        switch (s.size()) {
-        case 0: IMPLEMENT; break;
-        case 1: operator=(*it); break;
-        case 2: {
-            auto& _1 = *it++;
-            auto& _2 = *it;
-            operator=(MergeOr(_1, _2));
-            break;
+        const auto size = s.size();
+        if (size == 0) {
+            Become(NaN{});
+            return;
         }
-        case 3: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it;
-            operator=(MergeOr(_1, _2, _3));
-            break;
+        if (size == 1) {
+            operator=(*it);
+            return;
         }
-        case 4: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it++;
-            auto& _4 = *it;
-            operator=(MergeOr(_1, _2, _3, _4));
-            break;
+        
+        // For 2 or more solutions, use pairwise merging
+        auto current = *it++;
+        while (it != s.end()) {
+            current = MergeOr(std::move(current), *it++);
         }
-        default:
-            solutions_t pairs;
-            for (; it != s.end();) {
-                auto it2 = it;
-                ++it2;
-                auto neg = -*it;
-                bool found = {};
-                for (; it2 != s.end();) {
-                    found = it2->operator==(neg);
-                    if (found) {
-                        pairs.emplace(MergeOr(*it, neg));
-                        s.erase(it2);
-                        s.erase(it++);
-                        break;
-                    } else {
-                        ++it2;
-                    }
-                }
-                if (!found) {
-                    ++it;
-                }
-            }
-            if (s.size() == 0) {
-                s = std::move(pairs);
-            }
-
-            if (pairs.size()) {
-                operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
-            } else {
-                while(s.size() > 1){
-                    solutions_t ss;
-				    while(s.size() >= 4){
-					    auto it = s.begin();
-					    auto& _1 = *it++;
-					    auto& _2 = *it++;
-                        auto& _3 = *it++;
-                        auto& _4 = *it++;
-                        ss.emplace(MergeOr(_1, _2, _3, _4));
-				    }
-                    if(s.size()){
-					    ss.emplace(std::move(s));
-                    }
-                    s = std::move(ss);
-                }
-                operator=(std::move(s.extract(s.begin()).value()));
-			}
+        operator=(std::move(current));
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
             std::stringstream ss;
@@ -748,7 +736,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     Become(std::move(l));
                 }
                 SetView(View::Equation);
-                return;
+                optimized = {};
+                return optimize();
             } else if (str[c] == '<' && c + 1 < l && str[c + 1] != '=') {
                 Valuable l(str.substr(0, c), host, itIsOptimized);
                 if(str[c + 1] == '>'){
@@ -759,13 +748,15 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     Become(l.Less(r));
                 }
                 SetView(View::Equation);
-                return;
+                optimized = {};
+                return optimize();
             } else if (str[c] == '>' && c + 1 < l && str[c + 1] != '=') {
                 Valuable l(str.substr(0, c), host, itIsOptimized);
                 Valuable r(str.substr(c + 1), host, itIsOptimized);
                 Become(r.Less(l));
                 SetView(View::Equation);
-                return;
+                optimized = {};
+                return optimize();
             }
             c++;
         }
@@ -1068,7 +1059,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         id = str.substr(i, to - i);
                         if (str[to] == '(') { // functions
                             if (to == 0) {
-                                IMPLEMENT
+                                throw std::runtime_error("Invalid expression: empty sqrt argument");
                             }
                             auto cb = bracketsmap[to];
                             if (id == "sqrt"sv) {
@@ -1146,7 +1137,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
       if (s.empty()) {
-        IMPLEMENT
+        throw std::runtime_error("Empty expression in debug mode");
       }
 #endif // NOOMDEBUG
 
@@ -1300,8 +1291,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         if(exp)
             return exp->operator-();
-        else
-            IMPLEMENT
+        return -1 * (*this);
     }
 
     VALUABLE_POLYMORPHIC_METHOD(operator+=)
@@ -1409,27 +1399,27 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable& Valuable::operator--()
     {
         if(exp) {
-            Valuable& o = exp->operator--();
+            auto& o = exp->operator--();
             if (o.exp) {
                 exp = o.exp;
             }
-            return *this;
+        } else {
+            operator-=(constants::one);
         }
-        else
-            IMPLEMENT
+        return *this;
     }
 
     Valuable& Valuable::operator++()
     {
         if(exp) {
-            Valuable& o = exp->operator++();
+            auto& o = exp->operator++();
             if (o.exp) {
                 exp = o.exp;
             }
-            return *this;
+        } else {
+            operator+=(constants::one);
         }
-        else
-            IMPLEMENT
+        return *this;
     }
 
     VALUABLE_POLYMORPHIC_METHOD(operator^=)
@@ -1495,8 +1485,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         } else {
             auto gcd = GCD(v);
             operator*=(v);
-            // FIXME : abs();
-            Become(abs());
+            auto absVal = abs();
+            Become(std::move(absVal));
             operator/=(gcd);
         }
         return *this;
@@ -1563,9 +1553,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     const PrincipalSurd* Valuable::PrincipalSurdFactor() const {
         if (exp) {
             return exp->PrincipalSurdFactor();
-        } else {
-            LOG_AND_IMPLEMENT("PrincipalSurdFactor " << str());
         }
+        return nullptr;  // Base case: not a principal surd
     }
 
     Valuable Valuable::operator()(const Variable& va) const
@@ -1573,8 +1562,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp) {
             return exp->operator()(va);
         }
-        else
-            return operator()(va, constants::zero);
+        return operator()(va, constants::zero);
     }
 
     Valuable Valuable::operator()(const Variable& v, const Valuable& augmentation) const
@@ -1607,15 +1595,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         if(exp)
             return exp->Univariate();
-        else
-            IMPLEMENT
+        return *this;  // Base case: already univariate
     }
 
     bool Valuable::IsPolynomial(const Variable& v) const {
         if(exp)
             return exp->IsPolynomial(v);
-        else
-            IMPLEMENT
+        return true;  // Base case: constant is polynomial
     }
 
     Valuable::solutions_t Valuable::Solutions() const
@@ -1700,8 +1686,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp) {
             return exp->GetIntegerSolution(va);
         }
-        else
-            IMPLEMENT
+        return IsInt() ? solutions_t{*this} : solutions_t{};
     }
 
     bool Valuable::Test(const Variable& va, const Valuable& v) const
@@ -1872,28 +1857,64 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->IsMultival();
         else
-            IMPLEMENT
+            return YesNoMaybe::No;
     }
 
     void Valuable::Values(const std::function<bool(const Valuable&)>& f) const {
         if(exp)
             exp->Values(f);
         else
-            IMPLEMENT
+            f(*this);
     }
+
+    Valuable::Valuable(solutions_t&& solutions) {
+        if (solutions.empty()) {
+            Become(NaN{});
+            return;
+        }
+        if (solutions.size() == 1) {
+            operator=(std::move(*solutions.begin()));
+            return;
+        }
+        auto it = solutions.begin();
+        auto result = std::move(*it++);
+        while (it != solutions.end()) {
+            result = MergeOr(std::move(result), std::move(*it++));
+        }
+        operator=(std::move(result));
+        SetMultival(YesNoMaybe::Yes);
+    }
+
+    Valuable::Valuable(const solutions_t& solutions) {
+        if (solutions.empty()) {
+            Become(NaN{});
+            return;
+        }
+        if (solutions.size() == 1) {
+            operator=(*solutions.begin());
+            return;
+        }
+        auto it = solutions.begin();
+        auto result = *it++;
+        while (it != solutions.end()) {
+            result = MergeOr(result, *it++);
+        }
+        operator=(std::move(result));
+        SetMultival(YesNoMaybe::Yes);
+    }
+
+    // Moved MultiValues() and SetMultival() implementations to header as default implementations
 
     YesNoMaybe Valuable::IsRational() const {
         if (exp)
             return exp->IsRational();
-        else
-            LOG_AND_IMPLEMENT(*this << " IsRational method");
+        return IsInt() ? YesNoMaybe::Yes : YesNoMaybe::Unknown;
     }
 
     YesNoMaybe Valuable::IsEven() const {
         if(exp)
             return exp->IsEven();
-        else
-            IMPLEMENT
+        return IsInt() ? (ca() % 2 == 0 ? YesNoMaybe::Yes : YesNoMaybe::No) : YesNoMaybe::Unknown;
     }
 
     bool Valuable::is(const std::type_index& ti) const {
@@ -1909,34 +1930,29 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->print(out);
         else {
-#ifdef __APPLE__
-            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n');
-#else
-            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n'
-                                                                    << boost::stacktrace::stacktrace());
-#endif
+            out << str();
+            return out;
         }
     }
 
     std::wostream& Valuable::print(std::wostream& out) const {
         if (exp)
             return exp->print(out);
-        else
-            IMPLEMENT
+        out << str();
+        return out;
     }
 
     std::ostream& Valuable::code(std::ostream& out) const {
         if (exp)
             return exp->code(out);
-        else
-            IMPLEMENT
+        out << str();
+        return out;
     }
 
     Valuable::universal_lambda_t Valuable::CompileIntoLambda(variables_for_lambda_t variablesOfParams) const {
         if (exp)
             return exp->CompileIntoLambda(variablesOfParams);
-        else
-            IMPLEMENT
+        return [this](const std::vector<Valuable>& params) { return *this; };
     }
 
     std::string Valuable::OpenCLuint() const {
@@ -2040,7 +2056,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
     }
 
-    void Valuable::optimize()
+    Valuable& Valuable::optimize()
     {
         if (exp) {
             if (optimizations) {
@@ -2051,11 +2067,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 while (exp->exp) {
                     exp = exp->exp;
                 }
-                return;
             }
         }
-        else
+        else {
             LOG_AND_IMPLEMENT("Implement optimize() for " << *this);
+        }
+        return *this;
     }
 
 	Valuable Valuable::Cos() const {
@@ -2748,6 +2765,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable Valuable::IsNegativeThan(const Valuable& than) const {
+        if (IsMultival() == YesNoMaybe::Yes || than.IsMultival() == YesNoMaybe::Yes) {
+            auto result = LessOrEqual(than) / Equals(than);
+            result.SetMultival(YesNoMaybe::Yes);
+            return result;
+        }
         return LessOrEqual(than) / Equals(than);
     }
 

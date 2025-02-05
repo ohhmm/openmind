@@ -27,7 +27,7 @@ namespace math {
 
         Valuable& sq() override;
 
-        void optimize() override { }
+        virtual Valuable& optimize() { MarkAsOptimized(); return *this; }
         //void expand() override { }
         Valuable Sqrt() const override;
 
@@ -35,7 +35,10 @@ namespace math {
 
         bool IsComesBefore(const Valuable& v) const override;
 
-        void Values(const std::function<bool(const Valuable&)> &) const override;
+        Valuable& Values(const std::function<bool(const Valuable&)> &f) const override {
+            if (f) f(*this);
+            return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
+        }
 
         Valuable Univariate() const override;
     };

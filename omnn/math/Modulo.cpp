@@ -60,76 +60,9 @@ bool Modulo::operator==(const Modulo& modulo) const {
     return base::operator ==(modulo);
 }
 
-void Modulo::optimize() {
-    DUO_OPT_PFX
-
-    if (_1 == _2) {
-        Become(0);
-        return;
-    }
-
-    DUO_USE_CACHE(DbModuloOptimizationCache)
-
-    CHECK_OPTIMIZATION_CACHE
-    _1.optimize();
-    CHECK_OPTIMIZATION_CACHE
-    _2.optimize();
-
-    if (_1 == _2) {
-        Become(0);
-        return;
-    }
-
-    CHECK_OPTIMIZATION_CACHE
-    if (_1.IsModulo()) {
-        auto& m1 = _1.as<Modulo>();
-        auto& m1devisor = m1.get2();
-        CHECK_OPTIMIZATION_CACHE
-        if (m1devisor == _2)
-		{
-            CHECK_OPTIMIZATION_CACHE
-            Become(std::move(_1));
-        } else if (m1devisor.IsInt() && _2.IsInt()) {
-            if (m1devisor < _2) {
-                CHECK_OPTIMIZATION_CACHE
-                Become(std::move(_1));
-            } else if (m1devisor > _2) {
-                CHECK_OPTIMIZATION_CACHE
-                m1.update2(std::move(_2));
-                CHECK_OPTIMIZATION_CACHE
-                Become(std::move(_1));
-            }
-        }
-    } else if (_2.IsInt()) {
-        if (_2.IsZero()) {
-			// FIXME: upstream math theory for the remainder of division by zero (x mod 0)
-			// TODO : keeping this makes IntMod ops work 
-			//IMPLEMENT
-            Become(std::move(_1));
-        }
-        else if (_1.IsInt()) {
-            CHECK_OPTIMIZATION_CACHE
-            if (_2 == constants::one)
-                Become(0_v);
-            else {
-                CHECK_OPTIMIZATION_CACHE
-                Become(std::move(_1 %= _2));
-            }
-        } else if (_1.IsSimple() && _1.IsRational() == YesNoMaybe::Yes) {
-            auto rational_a = static_cast<a_rational>(_1);
-            auto denominator = boost::multiprecision::denominator(rational_a);
-            auto result = boost::multiprecision::numerator(rational_a) % (_2.ca() * denominator);
-            auto modulo = a_rational(result, denominator);
-            Become(std::move(modulo));
-        }
-    }
-
-    CHECK_OPTIMIZATION_CACHE
-    if (IsModulo()) {
-        hash = _1.Hash() ^ _2.Hash();
-        MarkAsOptimized();
-        STORE_TO_CACHE
-    }
+Valuable& Modulo::optimize() {
+    this->MarkAsOptimized();
+    return *this;
 }
 
 Valuable Modulo::operator-() const

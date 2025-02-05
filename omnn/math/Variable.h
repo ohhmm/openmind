@@ -83,12 +83,12 @@ public:
     [[nodiscard]]
     bool HasVa(const Variable& va) const override { return operator==(va); }
 
-    void CollectVa(std::set<Variable>& s) const override;
-    void CollectVaNames(Valuable::va_names_t& s) const override;
+    Valuable& CollectVa(std::set<Variable>& s) const override;
+    Valuable& CollectVaNames(Valuable::va_names_t& s) const override;
 
     bool eval(const std::map<Variable, Valuable>& with) override;
-    void Eval(const Variable& va, const Valuable& v) override;
-    void solve(const Variable& va, solutions_t& solutions) const override;
+    Valuable& Eval(const Variable& va, const Valuable& v) override;
+    Valuable& solve(const Variable& va, solutions_t& solutions) const override;
 
     const vars_cont_t& getCommonVars() const override;
     Valuable InCommonWith(const Valuable& v) const override;

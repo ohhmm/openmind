@@ -1,3 +1,6 @@
+/*
+ * PrincipalSurd.cpp
+ */
 #include "PrincipalSurd.h"
 #include "Product.h"
 #include "Sum.h"
@@ -58,32 +61,32 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
     return is;
 }
 
-void PrincipalSurd::optimize() {
+Valuable& PrincipalSurd::optimize() {
     if (!optimizations || is_optimized())
-        return;
+        return *this;
 
     _1.optimize();
     _2.optimize();
 
     if (index() == constants::one || IsEquation()) {
         Become(std::move(radicand()));
-        return;
+        return *this;
     }
 
     if (_1.IsInt()) {
         auto& rdcnd = _1.ca();
         if (rdcnd < 0) {
             Become(Product{constants::i, {PrincipalSurd{-_1, _2}}});
-            return;
+            return *this;
         } else if (_1.IsZero() || _2 == constants::one) {
             Become(std::move(_1));
-            return;
+            return *this;
         } else {
             auto& index = Index();
             if (index.IsInt()) {
                 if (index == constants::one) {
                     Become(std::move(_1));
-                    return;
+                    return *this;
                 }
                 auto& idx = Index().ca();
                 if (idx == 0) {
@@ -104,13 +107,14 @@ void PrincipalSurd::optimize() {
 
     if(index()==constants::one || IsEquation()){
         Become(std::move(radicand()));
-        return;
+        return *this;
     }
 
     if (IsPrincipalSurd()) {
         MarkAsOptimized();
         hash = Index().Hash() ^ Radicand().Hash();
     }
+    return *this;
 }
 
 Valuable& PrincipalSurd::sq() {
@@ -125,7 +129,7 @@ Valuable PrincipalSurd::Sqrt() const {
 }
 
 Valuable PrincipalSurd::Sign() const {
-    return constants::one; // See https://github.com/ohhmm/openmind/blob/011305e988292473919a523736cf6e913dbb55ef/omnn/math/i.cpp#L66
+    return constants::one;
 }
 
 Valuable PrincipalSurd::abs() const {
@@ -276,6 +280,7 @@ Valuable PrincipalSurd::varless() const {
     return variablesless;
 }
 
-void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
+Valuable& PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
     Radicand().solve(va, solutions);
+    return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
 }

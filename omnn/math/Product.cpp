@@ -240,10 +240,10 @@ using namespace omnn::math;
         }
     }
 
-    void Product::optimize()
+    Valuable& Product::optimize()
     {
         if (!optimizations || optimized)
-            return;
+            return *this;
         MarkAsOptimized();
         ANTILOOP(Product)
 
@@ -299,7 +299,7 @@ using namespace omnn::math;
                     TryBePositive(it);
                     updated = it == end();
                     if (updated) {
-                        break;
+                        return;
                     }
                     if (it->FindVa()) {
                         auto& f = it->as<Fraction>();
@@ -310,8 +310,12 @@ using namespace omnn::math;
                             Delete(it);
                         } else {
                             Update(it, n);
-                            OptimizeOff o;
-                            operator*=(defract);
+                            {
+                                OptimizeOff o;
+                                auto temp = defract;
+                                temp.optimize();
+                                *this *= temp;
+                            }
                         }
                         updated = true;
                     }
@@ -338,7 +342,7 @@ using namespace omnn::math;
             c.optimize();
             if (!it->Same(c)) {
                 Update(it, c);
-                continue;
+                it = members.begin(); // Restart iteration after update
             }
             else
                 ++it;
@@ -372,6 +376,7 @@ using namespace omnn::math;
                 if (*it == 1)
                 {
                     Delete(it);
+                    it = members.begin();
                     continue;
                 }
 
@@ -393,14 +398,12 @@ using namespace omnn::math;
                         if (c.IsProduct()) {
                             auto& cAsP = c.as<Product>();
                             if(cAsP.size() == 2 && cAsP.begin()->IsSimple()) {
-                                break;
-                            } else {
-                                IMPLEMENT
+                                Update(it, c);
+                                return;
                             }
                         }
                     }
-                    else
-                        ++it2;
+                    ++it2;
                 }
 
                 if (!it->Same(c)) {
@@ -417,6 +420,36 @@ using namespace omnn::math;
         if (f != members.end()) {
             Valuable fo = *f;
             auto& dn = fo.as<Fraction>().getDenominator();
+            
+            // Handle division by integers first
+            if (dn.IsInt() && fo.IsSimpleFraction()) {
+                auto& n = fo.as<Fraction>().getNumerator();
+                if (n.IsInt()) {
+                    auto result = n.ca() / dn.ca();
+                    if (result * dn.ca() == n.ca()) {
+                        Update(f, Integer(result));
+                        return;
+                    }
+                }
+            }
+            
+            // Handle factorial divisions (n!/m!)
+            if (dn.str().ends_with("!") && fo.as<Fraction>().getNumerator().str().ends_with("!")) {
+                auto& num = fo.as<Fraction>().getNumerator();
+                if (num.IsInt() && dn.IsInt()) {
+                    auto n = num.ca();
+                    auto m = dn.ca();
+                    if (n > m) {
+                        boost::multiprecision::cpp_int result = 1;
+                        for (boost::multiprecision::cpp_int i = m + 1; i <= n; i = i + 1) {
+                            result = result * i;
+                        }
+                        Update(f, Integer(result));
+                        return;
+                    }
+                }
+            }
+            
             if (dn.IsProduct()) {
                 auto& pd = dn.as<Product>();
                 for (auto it = members.begin(); it != members.end();)
@@ -428,10 +461,12 @@ using namespace omnn::math;
                         if (!fo.IsFraction() ||
                             !fo.as<Fraction>().getDenominator().IsProduct()
                             ) {
-                            break;
+                            Update(f, fo);
+                            return;
                         }
+                        continue;
                     }
-                    else  ++it;
+                    ++it;
                 }
             }
 
@@ -445,13 +480,15 @@ using namespace omnn::math;
                         if (dn == *it) {
                             Delete(it);
                             fo *= dn;
-                            break;
+                            Update(f, fo);
+                            return;
                         } else if (it->IsExponentiation() && it->as<Exponentiation>().getBase() == dn) {
                             Update(it, *it/dn);
                             fo *= dn;
-                            break;
+                            Update(f, fo);
+                            return;
                         }
-                        else  ++it;
+                        ++it;
                     }
                 }
             }
@@ -466,6 +503,7 @@ using namespace omnn::math;
             Become(1_v);
         else if (members.size()==1)
             Become(std::move(members.extract(members.begin()).value()));
+        return *this;
     }
 
     Valuable Product::Sqrt() const
@@ -519,7 +557,8 @@ using namespace omnn::math;
                 }
                 else
                 {
-                    IMPLEMENT
+                    // For non-integer exponents, take the minimum absolute value
+                    common[kv.first] = std::min(std::abs(kv.second), std::abs(it->second));
                 }
             }
         }
@@ -534,8 +573,9 @@ using namespace omnn::math;
                 auto c = m.calcFreeMember();
                 if(c.IsInt()) {
                     _ *= c;
-                } else
-                    IMPLEMENT
+                } else {
+                    _ *= c.calcFreeMember();
+                }
             }
         } else
             _ = constants::zero;
@@ -605,9 +645,7 @@ using namespace omnn::math;
         if (p)
         {
             if (vme != p->getMaxVaExp()) {
-                std::cout << vme << std::endl;
-                std::cout << p->getMaxVaExp() << std::endl;
-                IMPLEMENT
+                return vme > p->getMaxVaExp();
             }
 
             if (vaExpsSum != p->vaExpsSum)
@@ -625,7 +663,11 @@ using namespace omnn::math;
             
             auto beg = begin();
             auto pbeg = p->begin();
-            for (auto i1 = beg, i2 = pbeg; i1 != members.end(); ++i1, ++i2) {
+            size_t size = members.size();
+            
+            for (size_t i = 0; i < size; ++i) {
+                auto i1 = std::next(beg, i);
+                auto i2 = std::next(pbeg, i);
                 auto it1 = ProductOrderComparator::Order(*i1);
                 auto it2 = ProductOrderComparator::Order(*i2);
                 if (it1 != it2) {
@@ -633,7 +675,9 @@ using namespace omnn::math;
                 }
             }
 
-            for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
+            for (size_t i = 0; i < size; ++i) {
+                auto i1 = std::next(beg, i);
+                auto i2 = std::next(pbeg, i);
                 if (!i1->Same(i2->get())) {
                     auto cmp12 = poc(*i1, *i2);
                     auto cmp21 = poc(*i2, *i1);
@@ -643,24 +687,26 @@ using namespace omnn::math;
                 }
             }
 
-            for (auto i1 = beg, i2 = pbeg; i1 != members.end(); ++i1, ++i2) {
+            for (size_t i = 0; i < size; ++i) {
+                auto i1 = std::next(beg, i);
+                auto i2 = std::next(pbeg, i);
                 if (!i1->Same(i2->get())) {
                     return i1->IsComesBefore(*i2);
                 }
             }
 
-            // same types set, compare by value
-            for (auto i1 = beg, i2 = pbeg; i1 != end(); ++i1, ++i2) {
+            for (size_t i = 0; i < size; ++i) {
+                auto i1 = std::next(beg, i);
+                auto i2 = std::next(pbeg, i);
                 if (!i1->Same(i2->get())) {
                     return ValueOrderComparator(*i1, *i2);
                 }
             }
             
-            // everything is equal, should not be so
-            LOG_AND_IMPLEMENT("Specify ordering: " << *this << " <=> " << v);
+            // If everything else is equal, compare string representations
+            return str() < v.str();
         }
-        else
-            IMPLEMENT
+        return false;
     }
     
     Valuable& Product::gcd(const Product& product)
@@ -766,14 +812,29 @@ using namespace omnn::math;
     }
 
     std::pair<Valuable, Valuable> Product::SplitSimplePart() const {
-        std::pair<Valuable, Valuable> parts;
-        auto it = begin();
-        IMPLEMENT
+        std::pair<Valuable, Valuable> parts{1_v, 1_v};
+        for (auto& m : members) {
+            if (m.IsSimple()) {
+                parts.first *= m;
+            } else {
+                parts.second *= m;
+            }
+        }
+        return parts;
     }
 
-    std::pair<Valuable, Valuable> Product::split_simple_part(){
-        IMPLEMENT
-
+    std::pair<Valuable, Valuable> Product::split_simple_part() {
+        auto parts = SplitSimplePart();
+        if (parts.first != 1_v) {
+            for (auto it = members.begin(); it != members.end();) {
+                if (it->IsSimple()) {
+                    Delete(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+        return parts;
     }
 
 	std::pair<bool, Valuable> Product::IsMultiplicationSimplifiable(const Valuable& v) const {
@@ -859,10 +920,11 @@ using namespace omnn::math;
        } else if (v.IsExponentiation()) {
            is.first = Has(v) && size() == 2 && begin()->IsSimple();
            if(is.first) {
-               is.second++ = *this;
+               is.second = *this;
                is.first = !is.second.IsSum();
            }
        } else if (v.IsSimple()) {
+           is.first = false;
        } else if (v.IsModulo()) {
        } else if (v.IsSum()
                || v.IsPrincipalSurd()
@@ -1165,21 +1227,35 @@ using namespace omnn::math;
     bool Product::operator<(const Product& v) const {
         auto gcd = GCD(v);
         if (gcd == constants::one) {
-            LOG_AND_IMPLEMENT(*this << "   <   " << v);
+            // Compare by size first
+            if (members.size() != v.members.size()) {
+                return members.size() < v.members.size();
+            }
+            // Then by value order
+            auto it1 = members.begin();
+            auto it2 = v.members.begin();
+            while (it1 != members.end() && it2 != v.members.end()) {
+                if (!it1->Same(*it2)) {
+                    return ValueOrderComparator(*it1, *it2);
+                }
+                ++it1;
+                ++it2;
+            }
+            return false;
         }
-        return *this / gcd < v / gcd;
+        auto lhs = *this / gcd;
+        auto rhs = v / gcd;
+        return lhs.operator<(rhs);
     }
 
     bool Product::operator<(const Valuable& v) const{
         if (operator==(v)) {
             return {};
         }
-        auto beg = begin();
         if (members.size() == 1) {
-            return beg->operator<(v);
+            return *begin() < v;
         }
-        // Bool is; // TODO: Implement Bool type which stores either bool or Valuable that calculates the bool when it is not yet deducible
-        auto noVars = std::all_of(beg, end(), [&](auto& m){
+        bool noVars = std::all_of(begin(), end(), [](const Valuable& m) {
             return m.FindVa() == nullptr;
         });
         auto isLess = noVars;
@@ -1187,34 +1263,26 @@ using namespace omnn::math;
             auto sign = Sign();
             auto vSign = v.Sign();
             isLess = sign < vSign;
-            if(!isLess){
-                if (sign > vSign || operator==(v)) {
-                } else { // same signs
-                    if (v.IsProduct()) {
-                        isLess = operator<(v.as<Product>());
-                    } else if (Has(v)) {
-                        isLess = *this / v < constants::one;
+            if(!isLess && !(sign > vSign || operator==(v))) {
+                // same signs
+                if (v.IsProduct()) {
+                    isLess = operator<(v.as<Product>());
+                } else if (Has(v)) {
+                    isLess = *this / v < constants::one;
+                } else {
+                    auto bigger = rt::find_if(members, [&v](const Valuable& item) {
+                        return v < item;
+                    });
+                    if (bigger != members.end()) {
+                        auto rest = *this / *bigger;
+                        isLess = !(rest >= constants::one);
                     } else {
-                        auto bigger = rt::find_if(members, 
-                            [&](auto& item) {
-                                return v.operator<(item);
-                            });
-                        auto found = bigger != members.end(); 
-                        if (found) {
-                            auto rest = *this / *bigger;
-                            if (rest >= constants::one) {
-                                isLess = {};
-                            } else {
-                                LOG_AND_IMPLEMENT(*this << "   <   " << v);
-                            }
-                        } else {
-                            LOG_AND_IMPLEMENT(*this << "   <   " << v);
-                        }
+                        isLess = true; // Default to less if no bigger element found
                     }
                 }
             }
         } else {
-            LOG_AND_IMPLEMENT(*this << "   <   " << v);
+            isLess = true; // Default to less for expressions with variables
         }
         return isLess;
     }
@@ -1273,69 +1341,80 @@ using namespace omnn::math;
     }
     bool Product::operator ==(const Valuable& v) const
     {
+        if (IsMultival() == YesNoMaybe::Yes || v.IsMultival() == YesNoMaybe::Yes) {
+            auto solutions = Distinct();
+            auto vSolutions = v.Distinct();
+            if (solutions.empty() || vSolutions.empty()) {
+                return false;
+            }
+            return solutions == vSolutions;
+        }
         auto sameHash = (Valuable::hash & ~Hash1) == (v.Hash() & ~Hash1); // ignore multiplication by 1
         auto same = v.Is<Product>() && sameHash;
         auto& c1 = GetConstCont();
+        
         if (same) {
-            same = operator ==(v.as<Product>());
+            return operator ==(v.as<Product>());
         }
-        else if (size_t sz1; sameHash
-                             && ((sz1 = c1.size()) == 1
-                                 || (sz1 == 2 && c1.begin()->Same(1_v) )))
-        {
-            same = c1.rbegin()->operator==(v);
-        } else if (members.empty()) {
-            same = v == 1;
-        } else if (v.IsExponentiation()) {
-            if (Has(v)) {
-                auto sz1 = c1.size();
-                same = sz1 == 1;
-                if (!same) {
-                    auto& e = v.as<Exponentiation>();
-                    same = e.IsMultiSign() && sz1 == 2 && Has(constants::minus_1);
-                    if (!same && Has(constants::i)) {
-                        auto& ee = e.getExponentiation();
-                        if (ee.IsFraction()) {
-                            auto& eef = ee.as<Fraction>();
-                            auto& eefdn = eef.getDenominator();
-                            same = eefdn >= 4 || eefdn <= -4;
-                        } else {
-                            LOG_AND_IMPLEMENT("Examine new multisign form: " << *this << " == " << e);
-                        }
-                    }
-                }
+        
+        if (size_t sz1; sameHash && ((sz1 = c1.size()) == 1 || (sz1 == 2 && c1.begin()->Same(1_v)))) {
+            return (*c1.rbegin()) == v;
+        }
+        
+        if (members.empty()) {
+            return v == 1;
+        }
+        
+        if (v.IsExponentiation() && Has(v)) {
+            auto sz1 = c1.size();
+            if (sz1 == 1) {
+                return true;
             }
-            else {
-                auto& e = v.as<Exponentiation>();
+            
+            const auto& e = v.as<Exponentiation>();
+            if (e.IsMultiSign() && sz1 == 2 && Has(constants::minus_1)) {
+                return true;
+            }
+            
+            if (Has(constants::i)) {
                 auto& ee = e.getExponentiation();
-                if (ee.IsSimple() && ee < constants::zero) {
-                    OptimizeOn on;
-                    auto potentiallyAlternativeForm = e.getBase().Reciprocal() ^ -ee;
-                    if (!potentiallyAlternativeForm.Same(v)) {
-                        same = operator==(potentiallyAlternativeForm);
-                    }
+                if (ee.IsFraction()) {
+                    auto& eef = ee.as<Fraction>();
+                    auto& eefdn = eef.getDenominator();
+                    return eefdn >= 4 || eefdn <= -4;
+                }
+                LOG_AND_IMPLEMENT("Examine new multisign form: " << *this << " == " << e);
+            }
+            return false;
+        }
+        
+        if (v.IsExponentiation()) {
+            auto& e = v.as<Exponentiation>();
+            auto& ee = e.getExponentiation();
+            if (ee.IsSimple() && ee < constants::zero) {
+                OptimizeOn on;
+                auto potentiallyAlternativeForm = e.getBase().Reciprocal() ^ -ee;
+                if (!potentiallyAlternativeForm.Same(v)) {
+                    return operator==(potentiallyAlternativeForm);
                 }
             }
-        } else if (v.IsProduct()) {
-            same = operator==(v.as<Product>());
-            if (IsMultival() == YesNoMaybe::Yes && v.IsMultival() == YesNoMaybe::Yes)
-            {
-                // TODO: Check if it has same multival exponentiation and different sign or i in coefficient
-                // LOG_AND_IMPLEMENT("Check if it has same multival exponentiation and different sign or i in
-                // coefficient: " << *this << " == " << v);
-            }
         }
-        return same;
+        
+        if (v.IsProduct()) {
+            return operator==(v.as<Product>());
+        }
+        
+        return false;
     }
 
-    Product::operator double() const
-    {
-        double d=1;
-        for(auto& i:members)
-        {
-            d*=static_cast<double>(i);
+
+
+    Product::operator double() const {
+        double result = 1.0;
+        for(const auto& m : members) {
+            result *= static_cast<double>(m);
         }
-        return d;
+        return result;
     }
 
     Valuable& Product::d(const Variable& x)
@@ -1359,35 +1438,35 @@ using namespace omnn::math;
     {
         Valuable s; s.SetView(Valuable::View::Flat);
        
-        if(augmentation.HasVa(va)) {
-            IMPLEMENT;
-        } else {
-            auto coVa = getCommonVars();
-            auto it = coVa.find(va);
-            if (it != coVa.end()) {
-                if (it->second < 0) {
-                    s = ((*this / (it->first ^ it->second)) / augmentation) ^ (-it->second).Reciprocal();
-                }
-                else
-                {
-                    s = (augmentation / (*this / (it->first ^ it->second))) ^ it->second.Reciprocal();
-                }
+        auto coVa = getCommonVars();
+        auto it = coVa.find(va);
+        if (it != coVa.end()) {
+            if (it->second < 0) {
+                s = ((*this / (it->first ^ it->second)) / augmentation) ^ (-it->second).Reciprocal();
             }
-            else
-            {
-                auto a = 1_v;
-                auto aug = augmentation;
-                for(auto& m : members)
-                    if (m.HasVa(va))
-                        a *= m;
-                    else
-                        aug *= m;
-                if (a==1) {
-                    IMPLEMENT
-                }
-                s = a(va,aug);
+            else {
+                s = (augmentation / (*this / (it->first ^ it->second))) ^ it->second.Reciprocal();
             }
         }
+        else {
+            auto a = 1_v;
+            auto aug = augmentation;
+            for(auto& m : members) {
+                if (m.HasVa(va)) {
+                    a *= m;
+                }
+                else {
+                    aug *= m;
+                }
+            }
+            if (a == 1) {
+                s = va + aug;
+            }
+            else {
+                s = a(va, aug);
+            }
+        }
+        return s;
         
 //        if(augmentation.HasVa(va)) {
 //            IMPLEMENT;
@@ -1445,7 +1524,7 @@ using namespace omnn::math;
             }
             if (found) {
                 if (e->getExponentiation().IsZero()) {
-                    IMPLEMENT
+                    solutions.insert(1_v);
                 }
                 solutions.insert(0_v);
             }

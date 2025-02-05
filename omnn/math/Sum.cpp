@@ -294,13 +294,13 @@ namespace
                 || (IsZero() && v.IsZero());
     }
     
-    void Sum::optimize()
+    Valuable& Sum::optimize()
     {
         if (is_optimized() || !optimizations)
-            return;
+            return *this;
 
         if (isOptimizing)
-            return;
+            return *this;
 
         ANTILOOP(Sum)
 
@@ -323,11 +323,11 @@ namespace
 
             if (members.size() == 0) {
                 Become(0_v);
-                return;
+                return *this;
             }
             if (members.size() == 1) {
                 Become(Extract(members.begin()));
-                return;
+                return *this;
             }
 
             CHECK_OPTIMIZATION_CACHE
@@ -518,9 +518,10 @@ namespace
         if (doCheckCache && cached.NotInCache()) {
             db.AsyncSet(std::move(s), str());
         }
+        return *this;
     }
 
-    void Sum::balance()
+    Valuable& Sum::balance()
     {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         std::cout << "Balancing " << *this << std::endl;
@@ -627,6 +628,7 @@ namespace
                 }
             }
         }
+        return *this;
     }
 
     const PrincipalSurd* Sum::PrincipalSurdFactor() const
@@ -643,7 +645,7 @@ namespace
         return isTherePrincipalSurdFactor;
     }
 
-    void Sum::PerformSurdReduce()
+    Valuable& Sum::PerformSurdReduce()
     {
         if (IsEquation()) {
             auto isSurdReduceCommonlyAllowed =
@@ -715,6 +717,7 @@ namespace
                 }
             }
         }
+        return *this;
     }
 
     const Valuable::vars_cont_t& Sum::getCommonVars() const
@@ -1984,8 +1987,7 @@ namespace
 
     }
 
-    void Sum::solve(const Variable& va, solutions_t& solutions) const
-    {
+    Valuable& Sum::solve(const Variable& va, solutions_t& solutions) const {
         std::vector<Valuable> coefficients;
         auto isNormalizedPolynomial = IsPolynomial(va);
         if (isNormalizedPolynomial) {
@@ -2021,13 +2023,13 @@ namespace
                 }
             }
         }
+        return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
     }
     
-    void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const
-    {
+    Valuable& Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const {
         if(coefficients.size() == grade && grade == 0)
 		{
-			return;
+			return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
 		}
         if(coefficients.size() != grade + 1) {
             std::cout << "Solving grade " << grade << " equation: " << str() << std::endl;
@@ -2065,12 +2067,12 @@ namespace
                 auto asyncCheckAllRootsCached = DbSumSolutionsAllRootsCache.AsyncFetchSet(*this);
                 if(asyncCheckAllRootsCached){
                     solutions = asyncCheckAllRootsCached;
-                    return;
+                    return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
                 }
                 auto asyncCheckAnyRootCached = DbSumSolutionsARootCache.AsyncFetch(*this, true);
                 if(asyncCheckAllRootsCached){
                     solutions = asyncCheckAllRootsCached;
-                    return;
+                    return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
                 }
                 auto SolveTheRest = [&](Valuable&& oneRoot){
                     if(asyncCheckAnyRootCached.NotInCache())
@@ -2091,7 +2093,7 @@ namespace
                 };
                 if (asyncCheckAnyRootCached) {
                     SolveTheRest(std::move(static_cast<Valuable&>(asyncCheckAnyRootCached)));
-                    return;
+                    return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
                 }
 
                 auto isNormalizedPolynomial = true;
@@ -2382,6 +2384,7 @@ namespace
                 break;
             }
             case 4: { // TODO: convert to sqrt-less form
+                return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
                 // four grade equation ax^4+bx^3+cx^2+dx+e=0
                 // see https://math.stackexchange.com/questions/785/is-there-a-general-formula-for-solving-4th-degree-equations-quartic
                 auto& a = coefficients[4];
@@ -2423,7 +2426,7 @@ namespace
                     solutions.emplace(xp1 + xp2 - xp3_2);
                     solutions.emplace(xp1 + xp2 + xp3_2);
                 }
-                break;
+                return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
             }
             default: {
                 // build OpenCL kernel
@@ -2575,6 +2578,7 @@ namespace
 #endif
             }
         }
+        return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         for (auto& s : solutions) {
@@ -2583,6 +2587,7 @@ namespace
             }
         }
 #endif
+        return const_cast<Valuable&>(static_cast<const Valuable&>(*this));
     }
     
     Valuable Sum::SumOfRoots() const

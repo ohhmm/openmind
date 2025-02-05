@@ -137,7 +137,7 @@ namespace fs = boost::filesystem;
 
 #define CHECK_OPTIMIZATION_CACHE if (cached) { \
     Become(std::move(static_cast<Valuable&>(cached))); \
-    return; \
+    return *this; \
 }
 
 #define CHECK_IN_CACHE if (doCheckCache && cached.NotInCache())

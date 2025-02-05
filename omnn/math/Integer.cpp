@@ -437,6 +437,27 @@ namespace math {
 
     Valuable& Integer::operator^=(const Valuable& v)
     {
+        if (v.IsInt() && v.str().ends_with("!")) {
+            auto n = v.ca();
+            if (n < 0) {
+                Become(NaN());
+                return *this;
+            }
+            if (n == 0 || n == 1) {
+                Become(Integer(1));
+                return *this;
+            }
+            boost::multiprecision::cpp_int result = 1;
+            for (boost::multiprecision::cpp_int i = 2; i <= n; i = i + 1) {
+                result = result * i;
+                if (result < 0) {
+                    Become(NaN());
+                    return *this;
+                }
+            }
+            Become(Integer(result));
+            return *this;
+        }
         if (arbitrary.is_zero() || (arbitrary == 1 && v.IsInt()))
         {
             if (v.IsZero()) {
