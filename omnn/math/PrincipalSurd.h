@@ -43,6 +43,9 @@ public:
         set1(std::forward<T>(p));
     }
 
+    auto extractRadicand() { return base::extract1(); }
+    auto extractIndex() { return base::extract2(); }
+
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
     bool IsPolynomial(const Variable&) const override { return IsSimple(); }

@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(RadicalExpressions_noHang_test
     auto _ = _1 + _2;
 }
 
-BOOST_AUTO_TEST_CASE(RadicalExponentiationExpressions_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(RadicalExponentiationExpressions_test) {
     DECL_VA(x);
     Valuable _1("sqrt(7)^((2*x)/3)=49");
     auto solved = _1.Solutions(x);
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(RadicalExponentiationExpressions_test, *disabled()) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(RadicalSolving_test, *disabled()) {
+BOOST_AUTO_TEST_CASE(RadicalSolving_test) {
     Valuable _1("sqrt(8-(x^2))-4");
     auto solutions = _1.Solutions();
     BOOST_TEST(solutions.size() == 2);

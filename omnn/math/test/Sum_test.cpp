@@ -43,6 +43,7 @@ BOOST_AUTO_TEST_CASE(SumSurdReduce_test) {
     auto equation = "-4 + sqrt(-1*(x^2) + 8)"_v;
     auto reduced = equation.Optimized(Valuable::View::SupersetOfRoots);
     auto& variable = *equation.FindVa();
+    BOOST_TEST(reduced == "(x^2) + 8"_v);
     auto roots = reduced.solve(variable);
     BOOST_TEST(roots.size() == 2);
     roots = equation.solve(variable);
