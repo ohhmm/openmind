@@ -20,10 +20,12 @@ protected:
 
 	std::ostream& print(std::ostream&) const override;
 	std::ostream& print_sign(std::ostream&) const override;
+    Valuable& lbase() { return _1; }
 
 public:
 	using base::base;
     using base::operator=;
+    using base::operator==;
 
 	template <class BaseT, class TargetT>
     constexpr Logarithm(BaseT&& b, TargetT&& t)

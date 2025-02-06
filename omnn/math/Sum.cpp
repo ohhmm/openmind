@@ -44,6 +44,7 @@ namespace
     CACHE(DbSumModCache);
     CACHE(DbSumOptimizationCache);
     CACHE(DbSumSolutionsOptimizedCache);
+    CACHE(DbSumOptimizationSupersetOfRootsCache);
     CACHE(DbSumSolutionsAllRootsCache);
     CACHE(DbSumSolutionsARootCache);
     CACHE(DbSumSqCache);
@@ -309,7 +310,11 @@ namespace
         auto s = str();
         auto doCheckCache = s.length() > 10;
         auto isBalancing = IsEquation();
-        auto& db = isBalancing ? DbSumBalancingCache : DbSumOptimizationCache;
+        auto& db = view == View::SupersetOfRoots
+            ? DbSumOptimizationSupersetOfRootsCache
+            : (isBalancing
+            ? DbSumBalancingCache
+            : DbSumOptimizationCache);
         auto cached = doCheckCache ? db.AsyncFetch(*this, true) : Cache::TaskNoCache;
 
         Valuable w;
@@ -674,16 +679,16 @@ namespace
                 auto isThereSurd = it->PrincipalSurdFactor();
                 if (isThereSurd && SurdIsReducable(it)) {
                     if (it->IsPrincipalSurd()) {
+                        ViewOptimizePause flat(this);
                         auto ps = Extract(it);
                         auto& surd = ps.as<PrincipalSurd>();
-                        ViewOptimizePause flat(this);
                         operator^=(surd.Index());
                         operator-=(surd.Radicand());
                         break;
                     } else if (it->IsProduct()) {
                         auto& idx = isThereSurd->Index();
-                        auto product = Extract(it);
                         ViewOptimizePause flat(this);
+                        auto product = Extract(it);
                         operator^=(idx);
                         product ^= idx;
                         operator-=(product);
@@ -692,7 +697,17 @@ namespace
                         auto& exponentiation = it->as<Exponentiation>();
                         auto& base = exponentiation.ebase();
                         if (base.IsPrincipalSurd()) {
-                            IMPLEMENT
+                            auto variable = base.FindVa();
+                            if (variable == nullptr) {
+                                ViewOptimizePause flat(this);
+                                auto extracted = Extract(it);
+                                auto& extractedExponentiation = extracted.as<Exponentiation>();
+                                auto logBase = extractedExponentiation.extractBase();
+                                Logarithm log{std::move(logBase), -*this};
+                                Become(log - extractedExponentiation.extractExponentiation());
+                            } else {
+                                LOG_AND_IMPLEMENT("Surd reduction for " << it->get());
+                            }
                         } else {
                             IMPLEMENT
                         }

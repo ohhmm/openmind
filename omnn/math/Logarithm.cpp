@@ -4,6 +4,7 @@
 #include "Fraction.h"
 #include "Euler.h"
 #include "NaN.h"
+#include "PrincipalSurd.h"
 
 #include "rt/strhash.hpp"
 
@@ -55,6 +56,11 @@ Logarithm::Logarithm(const std::string_view& str, std::shared_ptr<VarHost> host,
 }
 
 void Logarithm::optimize() {
+    DUO_OPT_PFX
+
+    _1.optimize();
+    _2.optimize();
+
     // Simplify logarithm if the target is a power of the base
     if (_2.IsExponentiation() && _2.as<Exponentiation>().getBase() == _1) {
         Become(std::move(_2.as<Exponentiation>().eexp()));
@@ -80,6 +86,12 @@ void Logarithm::optimize() {
         if ((getBase() ^ x) == getTarget()) {
             Become(std::move(x));
         }
+    } else if (lbase().IsPrincipalSurd()) {
+        auto& surd = lbase().as<PrincipalSurd>();
+        auto surdRadicand = surd.extractRadicand();
+        auto surdIndex = surd.extractIndex();
+        setBase(std::move(surdRadicand));
+        Become(Product{std::move(surdIndex), std::move(*this)});
     } else if ((_1.IsRational() && _2.IsRational()) == YesNoMaybe::Yes) {
         auto rational1 = static_cast<a_rational>(_1);
         auto rational2 = static_cast<a_rational>(_2);

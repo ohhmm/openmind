@@ -93,6 +93,9 @@ public:
         optimized = {};
     }
 
+    auto extractBase() { return base::extract1(); }
+    auto extractExponentiation() { return base::extract2(); }
+
     static max_exp_t getMaxVaExp(const Valuable& b, const Valuable& e);
     max_exp_t getMaxVaExp() const override;
 

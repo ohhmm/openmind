@@ -6,6 +6,7 @@
 #include "Variable.h"
 #include "Integer.h"
 #include "Fraction.h"
+#include "Logarithm.h"
 #include "PrincipalSurd.h"
 #include "Modulo.h"
 #include "Infinity.h"
@@ -37,6 +38,7 @@ namespace {
             typeid(Integer),
             typeid(Fraction),
             typeid(PrincipalSurd),
+            typeid(Logarithm),
             typeid(Modulo),
             typeid(Infinity),
         };
