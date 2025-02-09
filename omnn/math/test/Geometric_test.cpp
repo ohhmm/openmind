@@ -1,13 +1,11 @@
 #define BOOST_TEST_MODULE Geometric test
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
 #include "pi.h"
 #include "Variable.h"
 
 using namespace omnn::math;
-using namespace boost::unit_test;
+using namespace boost::unit_test_framework;
 
 BOOST_AUTO_TEST_CASE(Semicircle_area_test, *disabled()) {
     // Calculate area of semicircle with radius 3
