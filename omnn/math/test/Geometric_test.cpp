@@ -1,5 +1,4 @@
 #define BOOST_TEST_MODULE Geometric test
-#define BOOST_TEST_DYN_LINK
 #include <boost/test/included/unit_test.hpp>
 
 #include "pi.h"
