@@ -272,3 +272,19 @@ BOOST_AUTO_TEST_CASE(Exponentiation_InCommonWith_test) {
     common = _1.InCommonWith(_2);
     BOOST_TEST(common == _2);
 }
+
+BOOST_AUTO_TEST_CASE(Cube_Root_Test)
+{
+    // Left side: ³√(10·100)
+    auto left = (10_v * 100)^(1_v/3);
+    
+    // Right side: (10-2³)
+    auto right = 10_v - (2_v^3);
+    
+    // Verify both sides separately
+    BOOST_TEST(left == 10);
+    BOOST_TEST(right == 2);
+    
+    // Verify equality
+    BOOST_TEST(left == right);
+}
