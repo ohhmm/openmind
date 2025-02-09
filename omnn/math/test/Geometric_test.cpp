@@ -1,4 +1,3 @@
-#define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Geometric test
 #include <boost/test/unit_test.hpp>
 
@@ -6,6 +5,7 @@
 #include "Variable.h"
 
 using namespace omnn::math;
+using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(Semicircle_area_test)
 {
