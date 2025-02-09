@@ -1,12 +1,10 @@
 #define BOOST_TEST_MODULE Geometric test
-#define BOOST_TEST_MAIN
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "pi.h"
 #include "Variable.h"
 
 using namespace omnn::math;
-using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(Semicircle_area_test)
 {
