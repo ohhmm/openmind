@@ -103,3 +103,10 @@ BOOST_AUTO_TEST_CASE(RadicalSolving_test) {
     decltype(solutions) expected = {std::move(_1), std::move(_2)};
     BOOST_TEST(solutions == expected);
 }
+
+BOOST_AUTO_TEST_CASE(RadicalSimplification_test)
+{
+    Valuable _1("(sqrt(90) - sqrt(40))/sqrt(10)");
+    Valuable _2(1);
+    BOOST_TEST(_1 == _2);
+}
