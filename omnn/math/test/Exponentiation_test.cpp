@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(Exponentiation_tests)
 	_1 = constants::i ^ constants::zero;
     _2 = constants::one;
     BOOST_TEST(_1==_2);
-    
+
     _1 = constants::plus_minus_1;
     _1 *= constants::half;
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(Compare_test)
         for(auto&a:_2.as<Product>())
             std::cout << a.Hash() << std::endl;
     BOOST_TEST(_1 == _2);
-    
+
     DECL_VA(x);
     _1 =(-1_v)^x;
     _2 = (-1_v)^((1_v/2)*x + _1/4 + ((-1_v)/4));
@@ -202,13 +202,13 @@ BOOST_AUTO_TEST_CASE(Polynomial_Sqrt_test) {
 BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
 {
     DECL_VARS(a, b, v);
-    
+
     auto _1 = (4_v*(v^2) + 2048)^(1_v/2);
     _1.SetView(Valuable::View::Solving);
     _1.optimize();
     auto _2 = (v ^ 2) + 512;
     BOOST_TEST(_1 == _2);
-    
+
 
     auto t=4_v;
     auto c=2048_v;
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(Polynomial_Exp_test)
     auto ab = 0_v;
     _1.eval({{b,ab}});
    // FIXME : BOOST_TEST(_1 == "(512 x ^ 2) / (x ^ 2 - 4)"_v);  // or x  (Valuable::View::Solving)
-    
+
 
     {
     DECL_VA(x);
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE(Multival_test)
     //DECL_VA(x);
     //BOOST_TEST(!!x.IsMultival() == true);
     //a = x / x;
-    
+
     // Waht is the value of a?
     // first impression is that x/x is allways 1
     // what about multivalue expressions like this?
@@ -271,4 +271,15 @@ BOOST_AUTO_TEST_CASE(Exponentiation_InCommonWith_test) {
     _2 = x ^ 2;
     common = _1.InCommonWith(_2);
     BOOST_TEST(common == _2);
+}
+
+BOOST_AUTO_TEST_CASE(Cube_Root_Test)
+{
+    // This test verifies the simplification of the fraction ³√(10·100)/(10-2³)
+    auto numerator = (10_v * 100)^(1_v/3);    // ³√(10·100) = ³√1000 = 10
+    auto denominator = 10_v - (2_v^3);        // (10-2³) = 10-8 = 2
+
+    // The fraction simplifies to 10/2 = 5
+    auto fraction = numerator / denominator;
+    BOOST_TEST(fraction == 5);
 }
