@@ -1,5 +1,4 @@
 #define BOOST_TEST_MODULE Geometric test
-#define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
 #include "pi.h"
@@ -7,14 +6,6 @@
 
 using namespace omnn::math;
 using namespace boost::unit_test;
-
-bool init_unit_test() {
-    return true;
-}
-
-int main(int argc, char* argv[]) {
-    return ::boost::unit_test::unit_test_main(&init_unit_test, argc, argv);
-}
 
 BOOST_AUTO_TEST_SUITE(Geometric_test_suite)
 
