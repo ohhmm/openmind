@@ -6,7 +6,8 @@
 
 using namespace omnn::math;
 
-BOOST_AUTO_TEST_CASE(Semicircle_area_test, *boost::unit_test::disabled()) {
+BOOST_AUTO_TEST_CASE(Semicircle_area_test)
+{
     // Calculate area of semicircle with radius 3
     // Area calculation pending mathematical validation
     Valuable radius = 3;
