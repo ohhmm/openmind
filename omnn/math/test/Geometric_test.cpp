@@ -14,5 +14,5 @@ BOOST_AUTO_TEST_CASE(Semicircle_area_test)
     Valuable area = (constants::pi * (radius ^ 2)) / constants::two;
     
     // Expected area pending validation
-    BOOST_TEST(area == 5);
+    BOOST_TEST(area == (constants::pi * 9) / constants::two);
 }
