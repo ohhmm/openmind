@@ -93,6 +93,17 @@ BOOST_AUTO_TEST_CASE(RadicalExponentiationExpressions_test) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(RadicalSimplification_test) {
+    Valuable _1("(sqrt(90) - sqrt(40))/sqrt(10)");
+    BOOST_TEST(_1 == 1);
+}
+
+BOOST_AUTO_TEST_CASE(RadicalSimplificationWithVariable_test) {
+    Valuable _1("x - (sqrt(90) - sqrt(40))/sqrt(10)");
+    DECL_VA(x);
+    BOOST_TEST(_1 == x-1);
+}
+
 BOOST_AUTO_TEST_CASE(RadicalSolving_test) {
     Valuable _1("sqrt(8-(x^2))-4");
     auto solutions = _1.Solutions();
@@ -104,9 +115,15 @@ BOOST_AUTO_TEST_CASE(RadicalSolving_test) {
     BOOST_TEST(solutions == expected);
 }
 
-BOOST_AUTO_TEST_CASE(RadicalSimplification_test)
+BOOST_AUTO_TEST_CASE(RadicalSimplificationAndSolving_test)
 {
-    Valuable _1("(sqrt(90) - sqrt(40))/sqrt(10)");
-    Valuable _2(1);
-    BOOST_TEST(_1 == _2);
+    Valuable _1 = "x - (sqrt(90) - sqrt(40))/sqrt(10)"sv;
+    auto solutions = _1.Solutions();
+    // FIXME: _1.GetIntegerSolution();
+    auto numSolutions = solutions.size();
+    BOOST_TEST(numSolutions == 1);
+    if (numSolutions > 0) {
+        auto& solution = solutions.begin()->get();
+        BOOST_TEST(solution == 1);
+    }
 }

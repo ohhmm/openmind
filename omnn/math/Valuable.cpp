@@ -1073,7 +1073,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                             auto cb = bracketsmap[to];
                             if (id == "sqrt"sv) {
                                 auto next = to + 1;
-                                o(PrincipalSurd{Valuable(str.substr(next, cb - next), host, itIsOptimized)});
+                                Valuable value(str.substr(next, cb - next), host, itIsOptimized);
+                                value = PrincipalSurd{std::move(value)};
+                                if (mulByNeg) {
+                                    value *= -1;
+                                    mulByNeg = {};
+                                }
+                                o(std::move(value));
                             } else if (id == "factorial"sv) {
                                 auto next = to + 1;
                                 auto arg = Valuable(str.substr(next, cb - next), host, itIsOptimized);
