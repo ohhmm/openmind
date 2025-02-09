@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE Geometric test
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include "pi.h"
 #include "Variable.h"
