@@ -332,6 +332,42 @@ BOOST_AUTO_TEST_CASE(sq_System_test
     }
 }
 
+BOOST_AUTO_TEST_CASE(Quadratic_System_test
+    , *disabled() // Enable after review
+) {
+    DECL_VARS(l);
+    System sys;
+    
+    // 9l^2 - 2 = 16
+    // Rearranged to: 9l^2 - 18 = 0
+    sys << 9*(l^2) - 18;
+    
+    auto solutions = sys.Solve(l);
+    BOOST_TEST(solutions.size() == 2);  // Should have both +√2 and -√2
+    
+    if (solutions.size() == 2) {
+        // Get both solutions
+        auto it = solutions.begin();
+        auto sol1 = *it++;
+        auto sol2 = *it;
+        
+        // Verify solutions satisfy l^2 = 2
+        BOOST_TEST((sol1^2) == 2);
+        BOOST_TEST((sol2^2) == 2);
+        
+        // Verify one is positive and one is negative
+        BOOST_TEST((sol1 * sol2) == -2);
+        
+        // Calculate l^3 for both solutions
+        auto l1_cubed = sol1^3;
+        auto l2_cubed = sol2^3;
+        
+        // l^3 should be ±2√2
+        BOOST_TEST(l1_cubed == 2*sol1);
+        BOOST_TEST(l2_cubed == 2*sol2);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(ComplexSystem_test, *disabled()) // TODO :
 {
     // https://github.com/ohhmm/openmind/issues/8
