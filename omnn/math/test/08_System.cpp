@@ -338,10 +338,13 @@ BOOST_AUTO_TEST_CASE(Quadratic_System_test
     DECL_VARS(l);
     System sys;
     
+    DECL_VARS(x);
     // 9l^2 - 2 = 16
     // Rearranged to: 9l^2 - 18 = 0
     sys << 9*(l^2) - 18;
+    sys << (l^3) - x;  // Add equation for l^3
     
+    // First solve for l
     auto solutions = sys.Solve(l);
     BOOST_TEST(solutions.size() == 2);  // Should have both +√2 and -√2
     
@@ -358,13 +361,17 @@ BOOST_AUTO_TEST_CASE(Quadratic_System_test
         // Verify one is positive and one is negative
         BOOST_TEST((sol1 * sol2) == -2);
         
-        // Calculate l^3 for both solutions
-        auto l1_cubed = sol1^3;
-        auto l2_cubed = sol2^3;
+        // Now solve for x (l^3) for each solution
+        auto x_solutions = sys.Solve(x);
+        BOOST_TEST(x_solutions.size() == 2);  // Should have both ±2√2
         
-        // l^3 should be ±2√2
-        BOOST_TEST(l1_cubed == 2*sol1);
-        BOOST_TEST(l2_cubed == 2*sol2);
+        // Verify x values match l^3 for both solutions
+        auto x_it = x_solutions.begin();
+        auto x1 = *x_it++;
+        auto x2 = *x_it;
+        
+        BOOST_TEST(x1 == sol1^3);
+        BOOST_TEST(x2 == sol2^3);
     }
 }
 
