@@ -43,7 +43,7 @@ Limit::Limit(const std::string_view& str, std::shared_ptr<VarHost> host, bool it
 
     // Parse components
     limitVar = Variable(host);
-    limitVar.SetName(std::string(varStr));
+    // Variable name is set through VarHost
     approachValue = Valuable(approachStr, host, itIsOptimized);
     _2 = Valuable(exprStr, host, itIsOptimized);
 
