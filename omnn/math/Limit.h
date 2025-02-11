@@ -17,17 +17,17 @@ protected:
     std::ostream& print_sign(std::ostream& out) const override;
 
 public:
-    using base::base;
+    using base::DuoValDescendant;
     using base::operator=;
     using base::operator==;
-
+    
+    Limit(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized);
+    
     template <class VarT, class ExprT>
     constexpr Limit(VarT&& v, ExprT&& e)
-    : base(std::forward<VarT>(v), std::forward<ExprT>(e))
+    : DuoValDescendant<Limit>(std::forward<VarT>(v), std::forward<ExprT>(e))
     {
     }
-
-    Limit(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized);
 
     static constexpr auto GetBinaryOperationLambdaTemplate() {
         return [](const auto& var, const auto& expr) {
