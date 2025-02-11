@@ -330,46 +330,60 @@ BOOST_AUTO_TEST_CASE(sq_System_test
     }
 }
 
-BOOST_AUTO_TEST_CASE(Quadratic_System_test
-    , *disabled() // Enable after review
-) {
-    DECL_VARS(l);
+BOOST_AUTO_TEST_CASE(Quadratic_System_test) {
+    DECL_VARS(l, x);
     System sys;
     
-    DECL_VARS(x);
-    // 9l^2 - 2 = 16
-    // Rearranged to: 9l^2 - 18 = 0
-    sys << 9*(l^2) - 18;
-    sys << (l^3) - x;  // Add equation for l^3
-    
-    // First solve for l
+    // Add equations using string literals (from PR #751)
+    sys << "9*(l^2) - 18"_v;  // 9l^2 - 2 = 16 => 9l^2 - 18 = 0
+    sys << "(l^3) - x"_v;     // l^3 = x
+
+    // Test edge case with separate variables to avoid interference
+    {
+        DECL_VARS(test_l);
+        System edge_sys;
+        Valuable eq;
+        eq.SetView(Valuable::View::Equation);
+        eq = (test_l^2).Equals(0);
+        eq.optimize();
+        edge_sys << eq;
+        auto solutions = edge_sys.Solve(test_l);
+        BOOST_TEST(solutions.size() == 1);
+        if (solutions.size() == 1) {
+            BOOST_TEST(*solutions.begin() == 0);
+        }
+    }
+
+    // Solve for l
     auto solutions = sys.Solve(l);
     BOOST_TEST(solutions.size() == 2);  // Should have both +√2 and -√2
     
     if (solutions.size() == 2) {
-        // Get both solutions
-        auto it = solutions.begin();
-        auto sol1 = *it++;
-        auto sol2 = *it;
+        // Verify solutions satisfy 9l^2 - 18 = 0
+        for (const auto& sol : solutions) {
+            auto eq1_value = 9*(sol^2) - 18;  // 9l^2 - 18 = 0
+            BOOST_TEST(eq1_value.IsZero());
+        }
         
-        // Verify solutions satisfy l^2 = 2
-        BOOST_TEST((sol1^2) == 2);
-        BOOST_TEST((sol2^2) == 2);
-        
-        // Verify one is positive and one is negative
-        BOOST_TEST((sol1 * sol2) == -2);
-        
-        // Now solve for x (l^3) for each solution
+        // Verify one positive, one negative solution
+        auto solution_product = 1_v;
+        for (const auto& sol : solutions) {
+            solution_product *= sol;
+        }
+        BOOST_TEST(solution_product == -2);
+
+        // Verify solutions satisfy l^3 = x
         auto x_solutions = sys.Solve(x);
         BOOST_TEST(x_solutions.size() == 2);  // Should have both ±2√2
         
-        // Verify x values match l^3 for both solutions
-        auto x_it = x_solutions.begin();
-        auto x1 = *x_it++;
-        auto x2 = *x_it;
-        
-        BOOST_TEST(x1 == sol1^3);
-        BOOST_TEST(x2 == sol2^3);
+        // Verify each x solution corresponds to a valid l solution
+        for (const auto& x_sol : x_solutions) {
+            bool matches_any = false;
+            for (const auto& l_sol : solutions) {
+                matches_any |= (x_sol == l_sol^3);  // Direct comparison
+            }
+            BOOST_TEST(matches_any);
+        }
     }
 }
 
