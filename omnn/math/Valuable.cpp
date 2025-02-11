@@ -1862,6 +1862,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     bool Valuable::IsFormula() const { return exp && exp->IsFormula(); }
     bool Valuable::IsExponentiation() const { return exp && exp->IsExponentiation(); }
     bool Valuable::IsLogarithm() const { return exp && exp->IsLogarithm(); }
+    bool Valuable::IsLimit() const { return exp && exp->IsLimit(); }
     bool Valuable::IsVa() const { return exp && exp->IsVa(); }
     bool Valuable::IsVaExp() const { return exp && exp->IsVaExp(); }
     bool Valuable::IsProduct() const { return exp && exp->IsProduct(); }
