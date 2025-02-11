@@ -12,7 +12,7 @@ using namespace boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(Limit_basic_test, *disabled()) {
     // Test basic limit evaluation
-    auto v = Valuable("lim(x->0, ((x^2)-4)/((x^2)+x-6))");
+    auto v = Valuable("lim(x->2, ((x^2)-4)/((x^2)+x-6))");
     v.optimize();
     BOOST_TEST(v == Fraction(4, 5));
 }

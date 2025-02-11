@@ -378,6 +378,7 @@ public:
     virtual bool IsFormula() const;
     virtual bool IsExponentiation() const;
     virtual bool IsLogarithm() const;
+    virtual bool IsLimit() const;
     virtual bool IsVa() const;
     virtual bool IsVaExp() const;
     virtual bool IsProduct() const;

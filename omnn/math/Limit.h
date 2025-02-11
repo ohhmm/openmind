@@ -22,9 +22,9 @@ public:
     using base::operator==;
     using base::update1;
     using base::update2;
-    
+
     Limit(const std::string_view&, std::shared_ptr<VarHost>, bool itIsOptimized);
-    
+
     template <class VarT, class ApproachT, class ExprT>
     constexpr Limit(const Variable& v, ApproachT&& a, ExprT&& e)
         : variable(v)
@@ -37,7 +37,7 @@ public:
         };
     }
 
-    constexpr bool IsLimit() const { return true; }
+    constexpr bool IsLimit() const override { return true; }
     void optimize() override;
 
     constexpr const Variable& getLimitVar() const { return variable; }

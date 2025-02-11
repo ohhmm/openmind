@@ -54,8 +54,9 @@ Limit::Limit(const std::string_view& str, std::shared_ptr<VarHost> host, bool it
 }
 
 void Limit::optimize() {
+
     if (!optimizations && !IsSimple()) {
-        hash = _1.Hash() ^ _2.Hash();
+        hash = variable.Hash() ^ _1.Hash() ^ _2.Hash();
         return;
     }
     if (optimized) {
