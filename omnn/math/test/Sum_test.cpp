@@ -795,16 +795,22 @@ BOOST_AUTO_TEST_CASE(VirtualIterationTest
 }
 
 BOOST_AUTO_TEST_CASE(GCDTest) {
-    DECL_VARS(a, b, c, d);
+    DECL_VARS(x, a, b, c, d);
     auto _1 = -4 * (a ^ 2) + -4 * (b ^ 2) + -4 * (c ^ 2) + -8 * b * c + 280 * b + 280 * c + 40 * a + -5000;
     auto varless1 = _1.varless();
     BOOST_TEST(varless1 == 4_v);
     auto _2 = -4 * (a ^ 2) + -4 * (d ^ 2) + 280 * d + 40 * a + -5000;
     auto varless2 = _2.varless();
     BOOST_TEST(varless2 == 4_v);
-    auto gcd = 4;
+    Valuable gcd = 4;
     auto _ = _1.GCD(_2);
     BOOST_TEST(_ == gcd);
     _ = _2.GCD(_1);
     BOOST_TEST(_ == gcd);
+
+    _1 = (x ^ 2) - 4;
+    _2 = (x ^ 2) + x - 6;
+    gcd = x - 2;
+    // FIXME : _ = _1.GCD(_2);
+    //BOOST_TEST(_ == gcd);
 }

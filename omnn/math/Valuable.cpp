@@ -15,6 +15,7 @@
 #include "Sum.h"
 #include "PrincipalSurd.h"
 #include "StateProxyComparator.h"
+#include "Limit.h"
 #include "Logarithm.h"
 
 #include <omnn/rt/GC.h>
@@ -760,7 +761,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 }
                 SetView(View::Equation);
                 return;
-            } else if (str[c] == '>' && c + 1 < l && str[c + 1] != '=') {
+            } else if (str[c] == '>' && c + 1 < l && str[c + 1] != '=' && str[c - 1] != '-') {
                 Valuable l(str.substr(0, c), host, itIsOptimized);
                 Valuable r(str.substr(c + 1), host, itIsOptimized);
                 Become(r.Less(l));
@@ -1097,6 +1098,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                 auto next = to + 1;
                                 auto arg = str.substr(next, cb - next);
                                 o(Logarithm(Euler(), Valuable(arg, host, itIsOptimized)));
+                            } else if (id == "lim"sv || id == "limit"sv) {
+                                auto next = to + 1;
+                                auto args = str.substr(next, cb - next);
+                                o(Limit(args, host, itIsOptimized));
                             }
 							i = cb;
                             continue;

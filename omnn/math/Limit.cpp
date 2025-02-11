@@ -7,8 +7,9 @@
 
 using namespace omnn::math;
 
+
 std::ostream& Limit::print(std::ostream& out) const {
-    out << "lim(" << limitVar << "->" << approachValue << ", " << _2 << ')';
+    out << "lim(" << variable << "->" << _1 << ", " << _2 << ')';
     return out;
 }
 
@@ -42,12 +43,13 @@ Limit::Limit(const std::string_view& str, std::shared_ptr<VarHost> host, bool it
     }
 
     // Parse components
-    limitVar = Variable(host);
+    auto variable = Valuable(varStr, host, itIsOptimized);
+    variable = std::move(variable.as<Variable>());
     // Variable name is set through VarHost
-    approachValue = Valuable(approachStr, host, itIsOptimized);
+    _1 = Valuable(approachStr, host, itIsOptimized);
     _2 = Valuable(exprStr, host, itIsOptimized);
 
-    hash = _1.Hash() ^ _2.Hash();
+    hash = variable.Hash() ^ _1.Hash() ^ _2.Hash();
     optimized = itIsOptimized;
 }
 
@@ -70,8 +72,8 @@ void Limit::optimize() {
     auto evalPlus = expr;
     auto evalMinus = expr;
     
-    evalPlus.Eval(limitVar, approachValue + delta);
-    evalMinus.Eval(limitVar, approachValue - delta);
+    evalPlus.Eval(variable, _1 + delta);
+    evalMinus.Eval(variable, _1 - delta);
     
     evalPlus.optimize();
     evalMinus.optimize();
@@ -83,8 +85,8 @@ void Limit::optimize() {
         // Handle special cases (0/0, ∞/∞)
         if (evalPlus.IsZero() && evalMinus.IsZero()) {
             // Use L'Hôpital's rule
-            auto num = expr.d(limitVar);
-            auto den = expr.d(limitVar);
+            auto num = expr.d(variable);
+            auto den = expr.d(variable);
             num.optimize();
             den.optimize();
             if (!den.IsZero()) {
@@ -111,8 +113,8 @@ Valuable::vars_cont_t Limit::GetVaExps() const {
 bool Limit::operator==(const Valuable& other) const {
     if (other.Is<Limit>()) {
         auto& o = other.as<Limit>();
-        return limitVar == o.limitVar && 
-               approachValue == o.approachValue && 
+        return variable == o.variable && 
+               _1 == o._1 && 
                _2 == o._2;
     }
     return false;
@@ -128,7 +130,7 @@ Valuable& Limit::d(const Variable& x) {
     // Derivative of a limit is the limit of the derivative
     auto expr = _2;
     expr.d(x);
-    Limit result(std::move(limitVar), std::move(approachValue));
+    Limit result(std::move(variable), std::move(_1));
     result._2 = std::move(expr);
     return Become(std::move(result));
 }
@@ -137,7 +139,7 @@ Valuable& Limit::integral(const Variable& x, const Variable& C) {
     // Integral of a limit is the limit of the integral
     auto expr = _2;
     expr.integral(x, C);
-    Limit result(std::move(limitVar), std::move(approachValue));
+    Limit result(std::move(variable), std::move(_1));
     result._2 = std::move(expr);
     return Become(std::move(result));
 }

@@ -50,28 +50,20 @@ public:
     template <class T>
     void setBase(T&& b) {
         set1(::std::forward<T>(b));
-        //InitVars();
-        optimized = {};
     }
     template <class T>
     void updateBase(T&& b) {
         update1(std::forward<T>(b));
-        //InitVars();
-        optimized = {};
     }
 
     const Valuable& getTarget() const { return _2; }
     template <class T>
     void setTarget(T&& target) {
         set2(std::forward<T>(target));
-        //InitVars();
-        optimized = {};
     }
     template <class T>
     void updateTarget(T&& target) {
         update2(std::forward<T>(target));
-        //InitVars();
-        optimized = {};
     }
 
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
