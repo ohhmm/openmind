@@ -118,8 +118,11 @@ BOOST_AUTO_TEST_CASE(FractionSimplification_tests){
 BOOST_AUTO_TEST_CASE(Fraction_optimization_no_hang_test
     , *timeout(2)
 ) {
-    DECL_VARS(X);
-    auto _ = constants::one / (2 * X);
+    DECL_VARS(x);
+    auto _ = constants::one / (2 * x);
+    _.optimize();
+
+    // FIXME : _ = Valuable("((x^2)-4)/((x^2)+2*x-6)");
     _.optimize();
 }
 
