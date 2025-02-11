@@ -35,7 +35,7 @@ public:
         };
     }
 
-    constexpr bool IsLimit() const override { return true; }
+    constexpr bool IsLimit() const { return true; }
     void optimize() override;
 
     const Variable& getLimitVar() const { return limitVar; }

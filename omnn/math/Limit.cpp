@@ -42,12 +42,13 @@ Limit::Limit(const std::string_view& str, std::shared_ptr<VarHost> host, bool it
     }
 
     // Parse components
-    limitVar = Variable(varStr, host);
+    limitVar = Variable(host);
+    limitVar.SetName(std::string(varStr));
     approachValue = Valuable(approachStr, host, itIsOptimized);
     _2 = Valuable(exprStr, host, itIsOptimized);
 
-    Valuable::hash = _1.Hash() ^ _2.Hash();
-    Valuable::optimized = itIsOptimized;
+    hash = _1.Hash() ^ _2.Hash();
+    optimized = itIsOptimized;
 }
 
 void Limit::optimize() {
@@ -77,7 +78,7 @@ void Limit::optimize() {
     
     // If values are close enough, we've found the limit
     if (evalPlus == evalMinus) {
-        Become(evalPlus);
+        Become(std::move(evalPlus));
     } else {
         // Handle special cases (0/0, ∞/∞)
         if (evalPlus.IsZero() && evalMinus.IsZero()) {
@@ -87,7 +88,7 @@ void Limit::optimize() {
             num.optimize();
             den.optimize();
             if (!den.IsZero()) {
-                Become(Fraction(num, den));
+                Become(Fraction(std::move(num), std::move(den)));
             }
         }
     }
@@ -127,12 +128,16 @@ Valuable& Limit::d(const Variable& x) {
     // Derivative of a limit is the limit of the derivative
     auto expr = _2;
     expr.d(x);
-    return Become(Limit(limitVar, approachValue, expr));
+    Limit result(std::move(limitVar), std::move(approachValue));
+    result._2 = std::move(expr);
+    return Become(std::move(result));
 }
 
 Valuable& Limit::integral(const Variable& x, const Variable& C) {
     // Integral of a limit is the limit of the integral
     auto expr = _2;
     expr.integral(x, C);
-    return Become(Limit(limitVar, approachValue, expr));
+    Limit result(std::move(limitVar), std::move(approachValue));
+    result._2 = std::move(expr);
+    return Become(std::move(result));
 }
