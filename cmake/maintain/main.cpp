@@ -10,6 +10,8 @@
 #include "stl-waitwrap-generator.hpp"
 
 // used for maintain target
+#define GIT_STASH "\"" GIT_EXECUTABLE_PATH "\" stash"
+#define GIT_STASH_POP "\"" GIT_EXECUTABLE_PATH "\" stash pop"
 #define GIT_REBASE_ABORT "\"" GIT_EXECUTABLE_PATH "\" rebase --abort"
 #define GIT_FETCH_ALL "\"" GIT_EXECUTABLE_PATH "\" fetch --all"
 #define CMD_LIST_LOCAL_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/heads/ --no-contains main"
@@ -72,18 +74,21 @@ bool rebase(std::string_view branch, std::string_view onto = "origin/main") {
 
 void push(std::string_view branch) {
     std::stringstream cmd;
-    cmd << "\"" GIT_EXECUTABLE_PATH "\" push origin HEAD:";
-    cmd << branch;
+    cmd << "\"" GIT_EXECUTABLE_PATH "\" push -f origin HEAD:" << branch;
     auto line = cmd.str();
 
-    boost::process::child(line).join();
+    boost::process::child pushing(line);
+    std::cout << "Pushing " << branch << " to origin: " << line << std::endl;
+    pushing.join();
 }
 
 void rebase_remote_branches() {
     std::cout << "rebasing origin branches: " << std::endl;
+    constexpr std::string_view origin_prefix = "origin/";
+    constexpr size_t origin_prefix_len = origin_prefix.size();
     for (auto& branch : list_origin_branches()) {
         if (rebase(branch)) {
-            push(branch.substr(7));
+            push(branch.substr(origin_prefix_len));
         }
     }
 }
@@ -96,10 +101,14 @@ void rebase_local_branches() {
 }
 
 int main(int argc, char* argv[]) {
-    boost::process::child(GIT_FETCH_ALL).join();
+    boost::process::child fetch(GIT_FETCH_ALL);
+    boost::process::child(GIT_STASH).join();
+    fetch.join();
 
     rebase_remote_branches();
     rebase_local_branches();
 
+    rebase("main");
+    boost::process::child(GIT_STASH_POP).join();
     return 0;
 }

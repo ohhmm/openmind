@@ -127,6 +127,8 @@ if(GIT_EXECUTABLE)
 	add_git_target(force-push-head push -f)
 	add_git_target(force-push-origin push -f origin)
 
+	add_git_target(rebase-continue rebase --continue)
+
 	foreach(NUM RANGE 0 9)
 		add_force_push_head_to_develop_target(${NUM})
 	endforeach()
