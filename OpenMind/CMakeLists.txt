@@ -140,6 +140,4 @@ target_include_directories(${this_target} PUBLIC
 
 target_link_libraries(${this_target} PUBLIC math)
 
-
-
-
+install(TARGETS ${this_target})

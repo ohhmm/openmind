@@ -86,7 +86,7 @@ void rebase_remote_branches() {
     std::cout << "rebasing origin branches: " << std::endl;
     constexpr std::string_view origin_prefix = "origin/";
     constexpr size_t origin_prefix_len = origin_prefix.size();
-    for (auto& branch : list_origin_branches()) {
+    for (auto branch : list_origin_branches()) {
         if (rebase(branch)) {
             push(branch.substr(origin_prefix_len));
         }
@@ -95,7 +95,7 @@ void rebase_remote_branches() {
 
 void rebase_local_branches() {
     std::cout << "rebasing local branches: " << std::endl;
-    for (auto& branch : list_local_branches()) {
+    for (auto branch : list_local_branches()) {
         rebase(branch);
     }
 }
