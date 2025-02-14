@@ -1,6 +1,6 @@
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/process.hpp>
+
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -9,17 +9,23 @@
 #include <coroutine>
 #include "stl-waitwrap-generator.hpp"
 
+
 // used for maintain target
 #define GIT_STASH "\"" GIT_EXECUTABLE_PATH "\" stash"
 #define GIT_STASH_POP "\"" GIT_EXECUTABLE_PATH "\" stash pop"
 #define GIT_REBASE_ABORT "\"" GIT_EXECUTABLE_PATH "\" rebase --abort"
-#define GIT_FETCH_ALL "\"" GIT_EXECUTABLE_PATH "\" fetch --all"
+#define GIT_REBASE_CONTINUE "\"" GIT_EXECUTABLE_PATH "\" rebase --continue"
+#define GIT_FETCH_ALL "\"" GIT_EXECUTABLE_PATH "\" fetch --all --prune"
 #define CMD_LIST_LOCAL_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/heads/ --no-contains main"
 #define CMD_LIST_ORIGIN_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/remotes/origin/ --no-contains main"
 
 
 using namespace std;
 
+
+namespace {
+bool silent = {};
+}
 
 generator<std::string_view> list_local_branches() {
     boost::process::ipstream pipe; // Create a pipe for stdout
@@ -58,6 +64,32 @@ bool rebase(std::string_view branch, std::string_view onto = "origin/main") {
     auto code = rebase.exit_code();
     std::cout << "exit code: " << code << ' ' << line << std::endl;
     auto ok = code == 0;
+
+    while (!ok && !silent) {
+        std::cout << "Would you like to resolve?" << std::endl;
+        std::string line;
+        if (std::getline(std::cin, line))
+        {
+            std::for_each(line.begin(), line.end(), [](auto ch) { return std::tolower(ch); });
+            std::string_view response = line;
+            response.remove_prefix(::std::min(response.find_first_not_of(" \t\r\v\n"), response.size()));
+            response.remove_suffix((response.size() - 1) - ::std::min(response.find_last_not_of(" \t\r\v\n"), response.size() - 1));
+            if (response != "n" && response != "no" && response != "skip")
+            {
+                boost::process::child continius(GIT_REBASE_CONTINUE);
+                std::cout << "Continue rebasing " << branch << " onto " << onto << std::endl;
+                continius.join();
+                code = continius.exit_code();
+                std::cout << "exit code: " << code << ' ' << line << std::endl;
+                ok = code == 0;
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+
     if (!ok) {
         boost::process::child abort(GIT_REBASE_ABORT);
         abort.join();
@@ -102,8 +134,10 @@ void rebase_local_branches() {
 
 int main(int argc, char* argv[]) {
     boost::process::child fetch(GIT_FETCH_ALL);
-    boost::process::child(GIT_STASH).join();
+    boost::process::child stash(GIT_STASH);
+    silent = argc > 1;
     fetch.join();
+    stash.join();
 
     rebase_remote_branches();
     rebase_local_branches();

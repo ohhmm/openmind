@@ -168,7 +168,7 @@ if(GIT_EXECUTABLE)
 	add_custom_target(origin-remote-maintain
 		DEPENDS maintain
 		COMMAND ${CMAKE_COMMAND} -E echo "Maintain branches including origin remote"
-		COMMAND $<TARGET_FILE:maintain>
+		COMMAND $<TARGET_FILE:maintain> --silent
 
 		COMMENT "Maintain branches including origin remote"
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
