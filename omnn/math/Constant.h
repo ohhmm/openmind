@@ -92,7 +92,7 @@ template <class Chld>
                 return this->Become(Product{*this,v});
         }
 
-        Valuable& sq() noexcept override {
+        Valuable& sq() override {
             return this->Become(Exponentiation{*this, 2});
         }
 
