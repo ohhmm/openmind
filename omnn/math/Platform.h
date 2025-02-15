@@ -1,10 +1,12 @@
 #pragma once
 
 // Define platform-specific function attributes
-#if defined(_MSC_VER)
-    #define MSVC_CONSTEXPR inline
-#else
-    #define MSVC_CONSTEXPR constexpr
+#ifndef MSVC_CONSTEXPR
+    #if defined(_MSC_VER)
+        #define MSVC_CONSTEXPR inline
+    #else
+        #define MSVC_CONSTEXPR constexpr
+    #endif
 #endif
 
 #if defined(__APPLE__) && !defined(__clang__)
