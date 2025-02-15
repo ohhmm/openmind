@@ -234,7 +234,7 @@ public:
     class [[maybe_unused]] OptimizeOn {
         bool opts;
     public:
-        MSVC_CONSTEXPR
+        PLATFORM_INLINE
         OptimizeOn() : opts(optimizations) {
             optimizations = true;
         }
