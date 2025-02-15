@@ -197,8 +197,11 @@ namespace math {
         }
 
         bool Has(const ::std::any& id) const override {
-            IMPLEMENT
-            return varIds.find(::std::any_cast<T>(id)) != varIds.end();
+            try {
+                return varIds.find(::std::any_cast<T>(id)) != varIds.end();
+            } catch (const std::bad_any_cast&) {
+                return false;
+            }
         }
 
         size_t Hash(const ::std::any& id) const override {
