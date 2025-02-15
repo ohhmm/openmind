@@ -247,7 +247,6 @@ public:
     class [[maybe_unused]] OptimizeOff {
         bool opts;
     public:
-        MSVC_CONSTEXPR
         OptimizeOff() : opts(optimizations) {
 			optimizations = {};
         }
