@@ -7,6 +7,12 @@
 
 #pragma once
 
+// Platform macros must be defined before any other includes
+#include <omnn/math/Platform.h>
+
+// Other includes
+#include <omnn/math/Valuable.h>
+
 //#include <any>
 #include <list>
 #include <map>
@@ -44,9 +50,7 @@ namespace math {
         {
             bool opts;
         public:
-            MSVC_CONSTEXPR
             NonZeroLogOffScope() : opts(add_non_zero_mode_on) { add_non_zero_mode_on = {}; }
-            MSVC_CONSTEXPR
             ~NonZeroLogOffScope() { add_non_zero_mode_on = opts; }
         };
 
@@ -193,8 +197,11 @@ namespace math {
         }
 
         bool Has(const ::std::any& id) const override {
-            IMPLEMENT
-            return varIds.find(::std::any_cast<T>(id)) != varIds.end();
+            try {
+                return varIds.find(::std::any_cast<T>(id)) != varIds.end();
+            } catch (const std::bad_any_cast&) {
+                return false;
+            }
         }
 
         size_t Hash(const ::std::any& id) const override {

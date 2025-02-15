@@ -34,52 +34,51 @@ template <class Chld>
         static const/*init*/ Chld GlobalObject;
 
         [[nodiscard]]
-        constexpr bool IsConstant() const override { return true; }
+        bool IsConstant() const noexcept override { return true; }
         [[nodiscard]]
-        constexpr bool IsSimple() const override { return true; }
+        bool IsSimple() const noexcept override { return true; }
         [[nodiscard]]
-        constexpr bool IsPolynomial(const Variable&) const override { return true; }
+        bool IsPolynomial(const Variable&) const noexcept override { return true; }
         [[nodiscard]]
-        constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
+        const PrincipalSurd* PrincipalSurdFactor() const noexcept override { return {}; }
         [[nodiscard]]
-        constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+        YesNoMaybe IsMultival() const noexcept override { return YesNoMaybe::No; }
         [[nodiscard]]
-        constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::No; }
+        YesNoMaybe IsRational() const noexcept override { return YesNoMaybe::No; }
         [[nodiscard]]
-        constexpr bool is_optimized() const override { return true; }
-        constexpr void optimize() override {}     
+        bool is_optimized() const noexcept override { return true; }
+        void optimize() noexcept override {}    
 
-        constexpr const Variable* FindVa() const override {
+        const Variable* FindVa() const noexcept override {
             return {};
         }
 
-        NO_CLANG_CONSTEXPR Valuable* Clone() const override { return new Chld(); }
+        Valuable* Clone() const noexcept override { return new Chld(); }
 
         [[nodiscard]]
-        constexpr bool HasVa(const Variable& va) const override {
+        bool HasVa(const Variable& va) const noexcept override {
             return {};
         }
 
-        constexpr void CollectVa(std::set<Variable>&) const override
+        void CollectVa(std::set<Variable>&) const override
         { }
-        constexpr void CollectVaNames(Valuable::va_names_t&) const override
+        void CollectVaNames(Valuable::va_names_t&) const override
         { }
 
-        constexpr bool eval(const Valuable::vars_cont_t&) override {
+        bool eval(const Valuable::vars_cont_t&) override {
             return {};
         }
-        constexpr void Eval(const Variable&, const Valuable&) override
+        void Eval(const Variable&, const Valuable&) override
         { }
 
         [[nodiscard]]
-        NO_APPLE_CONSTEXPR
-        Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
+        Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const noexcept override {
             return [](Valuable::universal_lambda_params_t) -> Valuable {
                 return GlobalObject;
             };
         }
 
-        Valuable& operator *=(const Valuable& v) override {
+        Valuable& operator *=(const Valuable& v) noexcept override {
             if(v.IsProduct())
                 return this->Become(v**this);
             else
@@ -110,10 +109,10 @@ template <class Chld>
         }
 
         Valuable& operator/=(const Valuable& v) override {
-            if (v == *this)
+            if (v == *this) {
                 return this->Become(1);
-            else
-                return base::operator/=(v);
+            }
+            return base::operator/=(v);
         }
 
         [[nodiscard]]
@@ -125,8 +124,7 @@ template <class Chld>
         Valuable::vars_cont_t GetVaExps() const override { return {}; }
 
         [[nodiscard]]
-        NO_APPLE_CONSTEXPR
-        a_int Complexity() const override { return 1; }
+        a_int Complexity() const noexcept override { return 1; }
 
         typename base::solutions_t Distinct() const override { return { *this }; }
         void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }

@@ -2,6 +2,11 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
+
+// Platform macros must be defined before any other includes
+#include <omnn/math/Platform.h>
+
+// Other includes
 #include <omnn/math/OpenOps.h>
 #include <omnn/math/YesNoMaybe.h>
 
@@ -115,8 +120,8 @@ class Valuable
     static const a_int a_int_cz;
     static const max_exp_t max_exp_cz;
 
-    typedef Valuable& (Valuable::*method_t)(const Valuable&);
-    self& call_polymorphic_method(method_t, const self& arg);
+    using method_t = Valuable& (Valuable::*)(const Valuable&);
+    self& call_polymorphic_method(method_t method, const self& arg);
 
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
@@ -127,14 +132,14 @@ protected:
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
     static constexpr size_t DefaultAllocSize = 768;
-    constexpr virtual size_t getTypeSize() const { return sizeof(Valuable); }
-    constexpr virtual size_t getAllocSize() const { return sz; }
-    constexpr virtual void setAllocSize(size_t sz) { this->sz = sz; }
+    virtual size_t getTypeSize() const noexcept { return sizeof(Valuable); }
+    virtual size_t getAllocSize() const noexcept { return sz; }
+    virtual void setAllocSize(size_t sz) noexcept { this->sz = sz; }
 
     template<class T>
-    constexpr Valuable() {}
+    Valuable() noexcept {}
 
-    constexpr Valuable(ValuableDescendantMarker)
+    Valuable(ValuableDescendantMarker) noexcept
     {}
 
     Valuable(const Valuable& v, ValuableDescendantMarker);
@@ -142,24 +147,6 @@ protected:
     Valuable(Valuable&& v, ValuableDescendantMarker);
 
     virtual std::ostream& print(std::ostream& out) const;
-    virtual std::wostream& print(std::wostream& out) const;
-
-    Valuable& Become(Valuable&&);
-
-    size_t hash = 0;
-    size_t sz = sizeof(Valuable);
-    static constexpr a_int const& a_int_z = a_int_cz;
-    static constexpr max_exp_t const& max_exp_z = max_exp_cz;
-    max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
-
-    bool optimized = false;
-    void MarkAsOptimized();
-
-public:
-    constexpr const encapsulated_instance& getInst() const { return exp; }
-    void MarkNotOptimized();
-
-
     /// <summary>
     /// Depends on optimizing goals, the view may set different.
     // time to evaluate
@@ -168,8 +155,7 @@ public:
 	// memory allocation size
     // at the moment, well supported are Equation and Flat views
     /// </summary>
-    enum class View
-		: uint8_t
+    enum class View : uint8_t
     {
         None = 0,
         Calc = 1,
@@ -181,14 +167,32 @@ public:
         SupersetOfRoots = 64 | Solving
     };
 
+    virtual std::wostream& print(std::wostream& out) const;
+
+    Valuable& Become(Valuable&&);
+
+    size_t hash = 0;
+    size_t sz = sizeof(Valuable);
+    static const a_int& a_int_z;
+    static const max_exp_t& max_exp_z;
+    View view{View::None};
+    max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
+
+    bool optimized = false;
+    void MarkAsOptimized();
+
+public:
+    const encapsulated_instance& getInst() const noexcept { return exp; }
+    void MarkNotOptimized();
+
     friend std::ostream& operator<<(std::ostream& os, View v) {
 	return os << static_cast<uint8_t>(v);
     }
 
-    friend constexpr View operator&(View a, View b) {
+    friend View operator&(View a, View b) noexcept {
         return View(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
     }
-    friend constexpr View operator|(View a, View b) {
+    friend View operator|(View a, View b) noexcept {
         return View(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
     }
 
@@ -224,7 +228,6 @@ public:
     class [[maybe_unused]] OptimizeOn {
         bool opts;
     public:
-        MSVC_CONSTEXPR
         OptimizeOn() : opts(optimizations) {
             optimizations = true;
         }
@@ -236,7 +239,6 @@ public:
     class [[maybe_unused]] OptimizeOff {
         bool opts;
     public:
-        MSVC_CONSTEXPR
         OptimizeOff() : opts(optimizations) {
 			optimizations = {};
         }
@@ -271,7 +273,7 @@ public:
 
     template <typename ValuableT>
         requires(std::derived_from<ValuableT, Valuable>)
-    Valuable& operator=(ptrs::shared_ptr<ValuableT>&& ptr) {
+    Valuable& operator=(ptrs::shared_ptr<ValuableT>&& ptr) noexcept {
         return operator=(Valuable(std::move(std::static_pointer_cast<Valuable>(ptr))));
     }
 
@@ -284,6 +286,7 @@ public:
     Valuable(const T&& t)
     : exp(t.Clone())
     {
+        optimized = true;
     }
 
     template<class T,
@@ -296,14 +299,14 @@ public:
     : exp(t.Move())
     { }
 
-    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
+    Valuable(Valuable&&) = default;
     Valuable();
     Valuable(double d);
 
     template<class T,
         typename = typename std::enable_if<!std::is_rvalue_reference<T>::value && std::is_integral<T>::value>::type
     >
-    constexpr Valuable(T i = 0) : Valuable(a_int(i)) {}
+    Valuable(T i = 0) noexcept : Valuable(a_int(i)) {}
 
     Valuable(const a_int&);
     Valuable(a_int&&);
@@ -361,9 +364,9 @@ public:
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
-    View GetView() const;
-    void SetView(View v);
-    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
+    View GetView() const { return view; }
+    void SetView(View v) { view = v; }
+    bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
 
@@ -567,8 +570,7 @@ public:
     // logic
     static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
     template <class Fwd>
-    constexpr Valuable& equals(Fwd&& v) {
-//        SetView(View::Equation);  // FIXME: see ifz test
+    Valuable& equals(Fwd&& v) noexcept {
         return operator -=(std::forward<Fwd>(v));
     }
     Valuable Equals(const Valuable&) const;
@@ -770,8 +772,6 @@ public:
 protected:
     friend class boost::serialization::access;
 
-    View view = View::Flat;
-
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
         if (exp) {
@@ -793,7 +793,7 @@ const T& Valuable::as() const {
     auto& the = get();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
     if (!the.Is<T>()) {
-        IMPLEMENT
+        return static_cast<const T&>(the);
     }
 #endif
     return static_cast<const T&>(the);
