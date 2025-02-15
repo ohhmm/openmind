@@ -17,8 +17,8 @@ namespace omnn::math {
         static constinit std::string_view SerializationName;
 
         bool Is_i() const override { return true; }
-        bool IsSimple() const override { return {}; }
-        YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }        
+        bool IsSimple() const noexcept override { return {}; }
+        YesNoMaybe IsMultival() const noexcept override { return YesNoMaybe::No; }       
 
         bool operator==(const Valuable& v) const override
         { return v.Is_i(); }
