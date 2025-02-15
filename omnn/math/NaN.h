@@ -17,7 +17,7 @@ public:
     constexpr
     bool IsNaN() const override { return true; }
 
-    constexpr bool IsSimple() const override { return {}; }
+    bool IsSimple() const noexcept override { return {}; }
     Valuable ToBool() const override { return {}; }
 
     Valuable* Clone() const noexcept override {
