@@ -60,7 +60,7 @@ public:
 
     explicit
     Integer(const std::string& s)
-        : ValuableDescendantContract(), arbitrary(s)
+        : base(), arbitrary(s)
     {
         hash = std::hash<base_int>()(arbitrary);
         optimized = true;
@@ -68,7 +68,7 @@ public:
 
     explicit
     Integer(const std::string_view& s)
-        : ValuableDescendantContract(), arbitrary(s)
+        : base(), arbitrary(s)
     {
         hash = std::hash<base_int>()(arbitrary);
         optimized = true;
