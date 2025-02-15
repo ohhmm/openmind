@@ -78,7 +78,7 @@ template <class Chld>
             };
         }
 
-        Valuable& operator *=(const Valuable& v) override {
+        Valuable& operator *=(const Valuable& v) noexcept override {
             if(v.IsProduct())
                 return this->Become(v**this);
             else
