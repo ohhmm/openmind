@@ -55,8 +55,7 @@ protected:
 	std::ostream& print(std::ostream& out) const override;
     
     [[nodiscard]]
-    MSVC_CONSTEXPR
-    Sum* Clone() const override
+    Sum* Clone() const noexcept override
     {
         auto sum = new Sum(*CPtr());
         sum->isOptimizing = {};
