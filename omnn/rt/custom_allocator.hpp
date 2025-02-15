@@ -8,6 +8,8 @@
 
 #include <boost/version.hpp>
 
+namespace omnn::rt {
+
 template <typename T>
 class custom_allocator {
 public:
@@ -178,3 +180,5 @@ public:
         data_.clear();
     }
 };
+
+} // namespace omnn::rt

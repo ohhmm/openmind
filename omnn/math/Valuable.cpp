@@ -1832,7 +1832,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             auto _1 = operator a_rational();
             auto _2 = static_cast<a_rational>(v);
             return _1 < _2;
-        } else {
+        }
+        else if (v.IsZero())
+        {
+            return Sign() == constants::minus_1;
+        }
+        else {
             auto diff = *this - v;
             if (!diff.FindVa()) {
                 return diff < constants::zero;
