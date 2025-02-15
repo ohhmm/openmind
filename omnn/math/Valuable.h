@@ -805,7 +805,7 @@ const T& Valuable::as() const {
     auto& the = get();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
     if (!the.Is<T>()) {
-        IMPLEMENT
+        return static_cast<const T&>(the);
     }
 #endif
     return static_cast<const T&>(the);
