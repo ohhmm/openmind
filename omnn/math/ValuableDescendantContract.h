@@ -83,20 +83,20 @@ namespace math {
         }
 
         [[nodiscard]]
-        NO_APPLE_CONSTEXPR const Chld& CRef() noexcept {
-            return Ref();
+        NO_APPLE_CONSTEXPR const Chld& CRef() const noexcept {
+            return *CPtr();
         }
 
-        NO_CLANG_CONSTEXPR Valuable* Clone() const override
+        NO_CLANG_CONSTEXPR Valuable* Clone() const noexcept override
         {
             return new Chld(*CPtr());
         }
 
         [[nodiscard]]
-        NO_CLANG_CONSTEXPR size_t getTypeSize() const override { return sizeof(Chld); }
+        NO_CLANG_CONSTEXPR size_t getTypeSize() const noexcept override { return sizeof(Chld); }
 
         [[nodiscard]]
-        Valuable* Move() override
+        Valuable* Move() noexcept override
         {
             return static_cast<Valuable*>(new Chld(std::move(*Ptr())));
         }
@@ -107,22 +107,42 @@ namespace math {
 
     public:
         // once compiler allow
-        // todo :
-        //ValuableDescendantContract() : Valuable<>() {}
-        // instead of
-        constexpr ValuableDescendantContract() : ValuableDescendantBase(ValuableDescendantMarker()) {}
-        ValuableDescendantContract(ValuableDescendantContract&& c)//        =default;
-        : ValuableDescendantBase(std::move(c), ValuableDescendantMarker()) {}
-        ValuableDescendantContract(const ValuableDescendantContract& c)//        =default;
-         : ValuableDescendantBase(c, ValuableDescendantMarker()) {}
-        ValuableDescendantContract& operator=(const ValuableDescendantContract& v) {
-            hash = v.hash;
-            optimized = v.optimized;
+        ValuableDescendantContract() noexcept 
+            : ValuableDescendantBase(ValuableDescendantMarker()) 
+        {
+            optimized = true;
+            hash = 0;
+        }
+        
+        ValuableDescendantContract(ValuableDescendantContract&& c) noexcept
+            : ValuableDescendantBase(std::move(c))
+        {
+            this->hash = c.hash;
+            this->optimized = c.optimized;
+        }
+        
+        ValuableDescendantContract(const ValuableDescendantContract& c) noexcept
+            : ValuableDescendantBase(c)
+        {
+            this->hash = c.hash;
+            this->optimized = c.optimized;
+        }
+        
+        ValuableDescendantContract& operator=(const ValuableDescendantContract& v) noexcept {
+            if (this != &v) {
+                ValuableDescendantBase::operator=(v);
+                hash = v.hash;
+                optimized = v.optimized;
+            }
             return *this;
         }
-        ValuableDescendantContract& operator=(ValuableDescendantContract&& v) {
-            hash = v.hash;
-            optimized = v.optimized;
+        
+        ValuableDescendantContract& operator=(ValuableDescendantContract&& v) noexcept {
+            if (this != &v) {
+                ValuableDescendantBase::operator=(std::move(v));
+                hash = std::exchange(v.hash, 0);
+                optimized = std::exchange(v.optimized, false);
+            }
             return *this;
         }
 

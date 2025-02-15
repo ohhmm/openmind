@@ -43,59 +43,62 @@ public:
 
 	using base::base;
 
-    MSVC_CONSTEXPR Integer(const Integer&)=default;
-    MSVC_CONSTEXPR Integer(Integer&&)=default;
-    MSVC_CONSTEXPR Integer& operator=(const Integer&) = default;
-    MSVC_CONSTEXPR Integer& operator=(Integer&&) = default;
+    MSVC_CONSTEXPR Integer(const Integer&) noexcept = default;
+    MSVC_CONSTEXPR Integer(Integer&&) noexcept = default;
+    MSVC_CONSTEXPR Integer& operator=(const Integer&) noexcept = default;
+    MSVC_CONSTEXPR Integer& operator=(Integer&&) noexcept = default;
 
     template<typename IntT, 
               typename = std::enable_if_t<!std::is_same_v<std::decay_t<IntT>, Integer>>>
-    constexpr Integer(IntT&& i = 0)
+    constexpr Integer(IntT&& i = 0) noexcept
     : arbitrary(std::forward<IntT>(i))
     {
         hash = std::hash<base_int>()(arbitrary);
+        optimized = true;
     }
 
     explicit
     constexpr
     Integer(const std::string& s)
-        : arbitrary(s)
+        : base(), arbitrary(s)
     {
         hash = std::hash<base_int>()(arbitrary);
+        optimized = true;
     }
 
     explicit
     constexpr
     Integer(const std::string_view& s)
-		: arbitrary(s)
+        : base(), arbitrary(s)
     {
         hash = std::hash<base_int>()(arbitrary);
+        optimized = true;
     }
 
     explicit Integer(const Fraction& f);
 
-    constexpr const_base_int_ref as_const_base_int_ref() const {
+    constexpr const_base_int_ref as_const_base_int_ref() const noexcept {
         return arbitrary;
     }
 
     Valuable FirstFactor() const override;
-    constexpr bool IsPositivePowerOf2() const;
-    constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::Yes; }
+    constexpr bool IsPositivePowerOf2() const noexcept;
+    constexpr YesNoMaybe IsRational() const noexcept override { return YesNoMaybe::Yes; }
     explicit operator int64_t() const;
 
     [[nodiscard]]
-    constexpr bool IsInt() const override { return true; }
+    constexpr bool IsInt() const noexcept override { return true; }
     [[nodiscard]]
-    constexpr bool IsZero() const override { return arbitrary.is_zero(); }
+    constexpr bool IsZero() const noexcept override { return arbitrary.is_zero(); }
     [[nodiscard]]
-    constexpr bool IsSimple() const override { return true; }
+    constexpr bool IsSimple() const noexcept override { return true; }
     //bool IsConstant() const override { return true; }   The Integer object may be applied an arithmetic operation and this object value changed. Only Constant class objects should return IsConstant true.
     [[nodiscard]]
-    constexpr bool is_optimized() const override { return true; }
+    constexpr bool is_optimized() const noexcept override { return true; }
     void optimize() override { MarkAsOptimized(); }
     YesNoMaybe IsEven() const override;
     [[nodiscard]]
-    constexpr bool IsPolynomial(const Variable&) const override { return true; }
+    constexpr bool IsPolynomial(const Variable&) const noexcept override { return true; }
     [[nodiscard]]
     size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const override {
         if (coefficients.empty())
@@ -104,9 +107,9 @@ public:
         return 0;
     }
     [[nodiscard]]
-    constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+    constexpr YesNoMaybe IsMultival() const noexcept override { return YesNoMaybe::No; }
     [[nodiscard]]
-    constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
+    constexpr const PrincipalSurd* PrincipalSurdFactor() const noexcept override { return {}; }
     void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
 
     // virtual operators

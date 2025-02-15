@@ -17,19 +17,19 @@ public:
     constexpr
     bool IsNaN() const override { return true; }
 
-    constexpr bool IsSimple() const override { return {}; }
+    constexpr bool IsSimple() const noexcept override { return {}; }
     Valuable ToBool() const override { return {}; }
 
-    Valuable* Clone() const override {
+    Valuable* Clone() const noexcept override {
         auto inst = reason.getInst();
         return new NaN(std::move(inst));
     }
 
     Valuable operator-() const override { return *this; }
-    constexpr Valuable& operator+=(const Valuable& v) override { return *this; }
-    constexpr Valuable& operator*=(const Valuable& v) override { return *this; }
-    constexpr Valuable& operator/=(const Valuable& v) override { return *this; }
-    constexpr Valuable& operator%=(const Valuable& v) override { return *this; }
+    Valuable& operator+=(const Valuable& v) override { return *this; }
+    Valuable& operator*=(const Valuable& v) noexcept override { return *this; }
+    Valuable& operator/=(const Valuable& v) override { return *this; }
+    Valuable& operator%=(const Valuable& v) override { return *this; }
     constexpr Valuable& operator--() override { return *this; }
     constexpr Valuable& operator++() override { return *this; }
     constexpr Valuable& operator^=(const Valuable&) override { return *this; }

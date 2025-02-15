@@ -124,8 +124,8 @@ class Valuable
     static const a_int a_int_cz;
     static const max_exp_t max_exp_cz;
 
-    typedef Valuable& (Valuable::*method_t)(const Valuable&);
-    self& call_polymorphic_method(method_t, const self& arg);
+    using method_t = Valuable& (Valuable::*)(const Valuable&);
+    self& call_polymorphic_method(method_t method, const self& arg);
 
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
@@ -139,14 +139,14 @@ protected:
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
     static constexpr size_t DefaultAllocSize = 768;
-    constexpr virtual size_t getTypeSize() const { return sizeof(Valuable); }
-    constexpr virtual size_t getAllocSize() const { return sz; }
-    constexpr virtual void setAllocSize(size_t sz) { this->sz = sz; }
+    constexpr virtual size_t getTypeSize() const noexcept { return sizeof(Valuable); }
+    constexpr virtual size_t getAllocSize() const noexcept { return sz; }
+    constexpr virtual void setAllocSize(size_t sz) noexcept { this->sz = sz; }
 
     template<class T>
-    constexpr Valuable() {}
+    constexpr Valuable() noexcept {}
 
-    constexpr Valuable(ValuableDescendantMarker)
+    constexpr Valuable(ValuableDescendantMarker) noexcept
     {}
 
     Valuable(const Valuable& v, ValuableDescendantMarker);
@@ -168,7 +168,7 @@ protected:
     void MarkAsOptimized();
 
 public:
-    constexpr const encapsulated_instance& getInst() const { return exp; }
+    constexpr const encapsulated_instance& getInst() const noexcept { return exp; }
     void MarkNotOptimized();
 
     static Valuable&& move(Valuable&&) noexcept;
@@ -194,14 +194,32 @@ public:
         SupersetOfRoots = 64 | Solving
     };
 
+    virtual std::wostream& print(std::wostream& out) const;
+
+    Valuable& Become(Valuable&&);
+
+    size_t hash = 0;
+    size_t sz = sizeof(Valuable);
+    static const a_int& a_int_z;
+    static const max_exp_t& max_exp_z;
+    View view{View::None};
+    max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
+
+    bool optimized = false;
+    void MarkAsOptimized();
+
+public:
+    const encapsulated_instance& getInst() const noexcept { return exp; }
+    void MarkNotOptimized();
+
     friend std::ostream& operator<<(std::ostream& os, View v) {
 	return os << static_cast<uint8_t>(v);
     }
 
-    friend constexpr View operator&(View a, View b) {
+    friend constexpr View operator&(View a, View b) noexcept {
         return View(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
     }
-    friend constexpr View operator|(View a, View b) {
+    friend constexpr View operator|(View a, View b) noexcept {
         return View(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
     }
 
@@ -291,7 +309,7 @@ public:
 
     template <typename ValuableT>
         requires(std::derived_from<ValuableT, Valuable>)
-    Valuable& operator=(ptrs::shared_ptr<ValuableT>&& ptr) {
+    Valuable& operator=(ptrs::shared_ptr<ValuableT>&& ptr) noexcept {
         return operator=(Valuable(std::move(std::static_pointer_cast<Valuable>(ptr))));
     }
 
@@ -304,6 +322,7 @@ public:
     Valuable(const T&& t)
     : exp(t.Clone())
     {
+        optimized = true;
     }
 
     template<class T,
@@ -323,7 +342,7 @@ public:
     template<class T,
         typename = typename std::enable_if<!std::is_rvalue_reference<T>::value && std::is_integral<T>::value>::type
     >
-    constexpr Valuable(T i = 0) : Valuable(a_int(i)) {}
+    constexpr Valuable(T i = 0) noexcept : Valuable(a_int(i)) {}
 
     Valuable(const a_int&);
     Valuable(a_int&&);
@@ -796,8 +815,6 @@ public:
 protected:
     friend class boost::serialization::access;
 
-    View view = View::Flat;
-
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
         if (exp) {
@@ -819,7 +836,7 @@ const T& Valuable::as() const {
     auto& the = get();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
     if (!the.Is<T>()) {
-        IMPLEMENT
+        return static_cast<const T&>(the);
     }
 #endif
     return static_cast<const T&>(the);
