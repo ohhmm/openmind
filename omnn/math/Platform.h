@@ -3,24 +3,18 @@
 // Define platform-specific function attributes
 #if defined(_MSC_VER)
     #define MSVC_CONSTEXPR inline
-#else
-    #define MSVC_CONSTEXPR constexpr
-#endif
-
-#if defined(__APPLE__) && !defined(__clang__)
     #define NO_APPLE_CONSTEXPR inline
-#else
-    #define NO_APPLE_CONSTEXPR constexpr
-#endif
-
-#if defined(__clang__)
+    #define NO_CLANG_CONSTEXPR inline
+#elif defined(__APPLE__)
+    #define MSVC_CONSTEXPR inline
+    #define NO_APPLE_CONSTEXPR inline
+    #define NO_CLANG_CONSTEXPR inline
+#elif defined(__clang__)
+    #define MSVC_CONSTEXPR inline
+    #define NO_APPLE_CONSTEXPR inline
     #define NO_CLANG_CONSTEXPR inline
 #else
-    #define NO_CLANG_CONSTEXPR constexpr
-#endif
-
-// Define platform-specific function attributes for special cases
-#ifdef _MSC_VER
-    #undef MSVC_CONSTEXPR
-    #define MSVC_CONSTEXPR __forceinline
+    #define MSVC_CONSTEXPR inline
+    #define NO_APPLE_CONSTEXPR inline
+    #define NO_CLANG_CONSTEXPR inline
 #endif
