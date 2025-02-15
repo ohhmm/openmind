@@ -23,6 +23,7 @@ namespace omnn::math {
         bool operator<(const Valuable&) const override;
 
         Valuable IsPositive() const override { return {}; }
+        Valuable Sign() const override;
         
 		std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
         std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }

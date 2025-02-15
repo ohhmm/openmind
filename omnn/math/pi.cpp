@@ -13,4 +13,8 @@ bool Pi::operator<(const Valuable& v) const {
     }
 }
 
+Valuable Pi::Sign() const {
+    return Valuable(std::static_pointer_cast<Valuable>(std::make_shared<Integer>(1)));
+}
+
 Pi::operator double() const { return std::numbers::pi; }
