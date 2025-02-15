@@ -1508,6 +1508,15 @@ using namespace omnn::math;
         return vaExps;
     }
 
+    bool Product::MultiplyIfSimplifiable(const Valuable& v) {
+        if (v.IsInt() && v == -1) {
+            // Handle -1*x case through multiplication
+            operator*=(v);
+            return true;
+        }
+        return false;
+    }
+
     const PrincipalSurd* Product::PrincipalSurdFactor() const {
         const PrincipalSurd* surd = nullptr;
         GetFirstOccurence([&](auto& item) {

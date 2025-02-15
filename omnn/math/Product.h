@@ -112,6 +112,7 @@ public:
 
     bool IsProduct() const override { return true; }
     bool IsZero() const override;
+    bool MultiplyIfSimplifiable(const Valuable& v) override;
     std::pair<Valuable, Valuable> SplitSimplePart() const;
     std::pair<Valuable, Valuable> split_simple_part();
   
