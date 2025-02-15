@@ -17,6 +17,12 @@
 using namespace omnn;
 using namespace math;
 
+std::ostream& operator<<(std::ostream& os, const System& sys) {
+    for (const auto& eq : sys) {
+        os << eq << std::endl;
+    }
+    return os;
+}
 
 bool is_subset(const auto& smaller_set, const auto& larger_set) {
     return std::includes(larger_set.begin(), larger_set.end(), smaller_set.begin(), smaller_set.end());
@@ -317,10 +323,15 @@ bool System::Fetch(const Variable& va)
 
 System::solutions_t System::Solve(const Variable& va)
 {
+    std::cout << "Solving system for variable " << va << std::endl;
+    std::cout << "System equations: " << *this << std::endl;
+    
     auto solutions = Known(va);
     InProgress SolvingInProgress(solving, va);
-    if (SolvingInProgress)
+    if (SolvingInProgress) {
+        std::cout << "Already solving " << va << ", returning known solutions: " << solutions.size() << std::endl;
         return solutions;
+    }
 
     if (makeTotalEqu) {
         auto vars = sqs.Vars();
@@ -578,6 +589,11 @@ System::solutions_t System::Solve(const Variable& va)
                 }
             }
         }
+    }
+
+    std::cout << "Found " << solutions.size() << " solutions for " << va << std::endl;
+    for (const auto& sol : solutions) {
+        std::cout << "Solution: " << sol << std::endl;
     }
 
     return solutions;
