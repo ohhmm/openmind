@@ -1,5 +1,10 @@
 #pragma once
 
+// Ensure macros are undefined first to avoid redefinition issues
+#undef MSVC_CONSTEXPR
+#undef NO_APPLE_CONSTEXPR
+#undef NO_CLANG_CONSTEXPR
+
 #ifdef _MSC_VER
 #define MSVC_CONSTEXPR
 #else
