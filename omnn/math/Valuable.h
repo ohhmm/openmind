@@ -160,7 +160,7 @@ protected:
     size_t sz = sizeof(Valuable);
     static const a_int& a_int_z;
     static const max_exp_t& max_exp_z;
-    enum class View view = View::None;
+    View view = View::None;
     max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
     bool optimized = false;
