@@ -306,7 +306,7 @@ public:
     : exp(t.Move())
     { }
 
-    Valuable(Valuable&&) noexcept = default;
+    Valuable(Valuable&&) = default;
     Valuable();
     Valuable(double d);
 
@@ -371,10 +371,10 @@ public:
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
-    View GetView() const noexcept { return view; }
-    void SetView(View v) noexcept { view = v; }
-    bool IsEquation() const noexcept {
-        return (view & View::Equation) != View::None;
+    View GetView() const { return view; }
+    void SetView(View v) { view = v; }
+    bool IsEquation() const {
+        return (GetView() & View::Equation) != View::None;
     }
 
     // identify
