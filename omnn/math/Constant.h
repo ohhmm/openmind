@@ -67,15 +67,15 @@ template <class Chld>
             return {};
         }
 
-        constexpr void CollectVa(std::set<Variable>&) const override
+        void CollectVa(std::set<Variable>&) const override
         { }
-        constexpr void CollectVaNames(Valuable::va_names_t&) const override
+        void CollectVaNames(Valuable::va_names_t&) const override
         { }
 
-        constexpr bool eval(const Valuable::vars_cont_t&) override {
+        bool eval(const Valuable::vars_cont_t&) override {
             return {};
         }
-        constexpr void Eval(const Variable&, const Valuable&) override
+        void Eval(const Variable&, const Valuable&) override
         { }
 
         [[nodiscard]]
@@ -116,10 +116,10 @@ template <class Chld>
         }
 
         Valuable& operator/=(const Valuable& v) override {
-            if (v == *this)
+            if (v == *this) {
                 return this->Become(1);
-            else
-                return base::operator/=(v);
+            }
+            return base::operator/=(v);
         }
 
         [[nodiscard]]
