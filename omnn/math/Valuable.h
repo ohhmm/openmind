@@ -191,10 +191,10 @@ public:
 	return os << static_cast<uint8_t>(v);
     }
 
-    friend constexpr View operator&(View a, View b) {
+    friend View operator&(View a, View b) noexcept {
         return View(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
     }
-    friend constexpr View operator|(View a, View b) {
+    friend View operator|(View a, View b) noexcept {
         return View(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
     }
 
@@ -275,7 +275,7 @@ public:
 
     template <typename ValuableT>
         requires(std::derived_from<ValuableT, Valuable>)
-    Valuable& operator=(ptrs::shared_ptr<ValuableT>&& ptr) {
+    Valuable& operator=(ptrs::shared_ptr<ValuableT>&& ptr) noexcept {
         return operator=(Valuable(std::move(std::static_pointer_cast<Valuable>(ptr))));
     }
 
@@ -285,7 +285,7 @@ public:
 
     template<class T,
             typename = typename std::enable_if<std::is_convertible<T&, Valuable&>::value>::type>
-    Valuable(const T&& t)
+    Valuable(const T&& t) noexcept
     : exp(t.Clone())
     {
     }
@@ -571,8 +571,7 @@ public:
     // logic
     static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
     template <class Fwd>
-    constexpr Valuable& equals(Fwd&& v) {
-//        SetView(View::Equation);  // FIXME: see ifz test
+    Valuable& equals(Fwd&& v) noexcept {
         return operator -=(std::forward<Fwd>(v));
     }
     Valuable Equals(const Valuable&) const;
