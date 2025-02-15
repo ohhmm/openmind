@@ -50,7 +50,7 @@ namespace math {
         {
             bool opts;
         public:
-            MSVC_CONSTEXPR
+            PLATFORM_INLINE
             NonZeroLogOffScope() : opts(add_non_zero_mode_on) { add_non_zero_mode_on = {}; }
             MSVC_CONSTEXPR
             ~NonZeroLogOffScope() { add_non_zero_mode_on = opts; }
