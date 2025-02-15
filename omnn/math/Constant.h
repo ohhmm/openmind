@@ -111,11 +111,11 @@ template <class Chld>
         }
 
         [[nodiscard]]
-        bool operator==(const Valuable& v) const override {
+        bool operator==(const Valuable& v) const noexcept override {
             return this->OfSameType(v) || v.operator==(*this);
         }
 
-        Valuable& operator/=(const Valuable& v) override {
+        Valuable& operator/=(const Valuable& v) noexcept override {
             if (v == *this)
                 return this->Become(1);
             else
