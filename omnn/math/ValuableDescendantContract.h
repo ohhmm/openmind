@@ -117,13 +117,17 @@ namespace math {
         }
         
         ValuableDescendantContract(ValuableDescendantContract&& c) noexcept
-            : ValuableDescendantBase(std::move(c)), hash(c.hash), optimized(c.optimized)
+            : ValuableDescendantBase(std::move(c))
         {
+            this->hash = c.hash;
+            this->optimized = c.optimized;
         }
         
         ValuableDescendantContract(const ValuableDescendantContract& c) noexcept
-            : ValuableDescendantBase(c), hash(c.hash), optimized(c.optimized)
+            : ValuableDescendantBase(c)
         {
+            this->hash = c.hash;
+            this->optimized = c.optimized;
         }
         
         ValuableDescendantContract& operator=(const ValuableDescendantContract& v) noexcept {
