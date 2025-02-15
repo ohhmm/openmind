@@ -96,7 +96,7 @@ template <class Chld>
             return this->Become(Exponentiation{*this, 2});
         }
 
-        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const noexcept override {
+        std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override {
             std::pair<bool, Valuable> is;
             is.first = v.IsConstant();
             if (is.first) {
