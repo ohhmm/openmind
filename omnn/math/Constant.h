@@ -79,8 +79,7 @@ template <class Chld>
         { }
 
         [[nodiscard]]
-        NO_APPLE_CONSTEXPR
-        Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
+        Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const noexcept override {
             return [](Valuable::universal_lambda_params_t) -> Valuable {
                 return GlobalObject;
             };
@@ -132,8 +131,7 @@ template <class Chld>
         Valuable::vars_cont_t GetVaExps() const override { return {}; }
 
         [[nodiscard]]
-        NO_APPLE_CONSTEXPR
-        a_int Complexity() const override { return 1; }
+        a_int Complexity() const noexcept override { return 1; }
 
         typename base::solutions_t Distinct() const override { return { *this }; }
         void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
