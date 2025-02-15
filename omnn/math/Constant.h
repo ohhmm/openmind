@@ -60,7 +60,7 @@ template <class Chld>
             return {};
         }
 
-        NO_CLANG_CONSTEXPR Valuable* Clone() const override { return new Chld(); }
+        Valuable* Clone() const noexcept override { return new Chld(); }
 
         [[nodiscard]]
         constexpr bool HasVa(const Variable& va) const override {
