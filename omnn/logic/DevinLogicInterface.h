@@ -1,4 +1,5 @@
 #pragma once
+#include <omnn/math/VarHost.h>
 #include <omnn/math/Valuable.h>
 #include <omnn/math/Variable.h>
 #include "DevinVarHost.h"
