@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include <omnn/math/Platform.h>
+#include <omnn/math/Valuable.h>
 
 //#include <any>
 #include <list>
