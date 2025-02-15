@@ -152,10 +152,6 @@ protected:
     Valuable(Valuable&& v, ValuableDescendantMarker);
 
     virtual std::ostream& print(std::ostream& out) const;
-    virtual std::wostream& print(std::wostream& out) const;
-
-    Valuable& Become(Valuable&&);
-
     /// <summary>
     /// Depends on optimizing goals, the view may set different.
     // time to evaluate
@@ -164,8 +160,7 @@ protected:
 	// memory allocation size
     // at the moment, well supported are Equation and Flat views
     /// </summary>
-    enum class View
-		: uint8_t
+    enum class View : uint8_t
     {
         None = 0,
         Calc = 1,
@@ -176,6 +171,10 @@ protected:
         Solving = 32 | Equation,
         SupersetOfRoots = 64 | Solving
     };
+
+    virtual std::wostream& print(std::wostream& out) const;
+
+    Valuable& Become(Valuable&&);
 
     size_t hash = 0;
     size_t sz = sizeof(Valuable);
