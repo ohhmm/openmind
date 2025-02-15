@@ -9,8 +9,6 @@ namespace math {
 class VarHost;
 class Variable;
 } // namespace math
-
-namespace omnn {
 namespace logic {
 
 class DevinVarHost : public math::VarHost {
