@@ -6,6 +6,18 @@
 #define MSVC_CONSTEXPR constexpr
 #endif
 
+#ifdef __APPLE__
+#define NO_APPLE_CONSTEXPR
+#else
+#define NO_APPLE_CONSTEXPR constexpr
+#endif
+
+#ifdef __clang__
+#define NO_CLANG_CONSTEXPR
+#else
+#define NO_CLANG_CONSTEXPR constexpr
+#endif
+
 #include <omnn/math/Integer.h>
 #include <any>
 #include <map>
