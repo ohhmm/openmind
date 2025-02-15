@@ -290,9 +290,10 @@ public:
 
     template<class T,
             typename = typename std::enable_if<std::is_convertible<T&, Valuable&>::value>::type>
-    Valuable(const T&& t) noexcept
+    Valuable(const T&& t)
     : exp(t.Clone())
     {
+        optimized = true;
     }
 
     template<class T,
