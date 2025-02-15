@@ -535,9 +535,15 @@ macro(exe)
 				MACOSX_BUNDLE TRUE
 				WIN32_EXECUTABLE TRUE
 			)
-			install(TARGETS ${this_target} BUNDLE DESTINATION .)
+			install(TARGETS ${this_target} BUNDLE DESTINATION .
+				LIBRARY DESTINATION lib
+				ARCHIVE DESTINATION lib
+				PUBLIC_HEADER DESTINATION include)
 		else()
-			install(TARGETS ${this_target})
+			install(TARGETS ${this_target}
+				LIBRARY DESTINATION lib
+				ARCHIVE DESTINATION lib
+				PUBLIC_HEADER DESTINATION include)
 		endif()
 	endif()
 
