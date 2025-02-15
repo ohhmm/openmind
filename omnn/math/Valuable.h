@@ -156,21 +156,6 @@ protected:
 
     Valuable& Become(Valuable&&);
 
-    size_t hash = 0;
-    size_t sz = sizeof(Valuable);
-    static const a_int& a_int_z;
-    static const max_exp_t& max_exp_z;
-    View view = View::None;
-    max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
-
-    bool optimized = false;
-    void MarkAsOptimized();
-
-public:
-    const encapsulated_instance& getInst() const noexcept { return exp; }
-    void MarkNotOptimized();
-
-
     /// <summary>
     /// Depends on optimizing goals, the view may set different.
     // time to evaluate
@@ -191,6 +176,20 @@ public:
         Solving = 32 | Equation,
         SupersetOfRoots = 64 | Solving
     };
+
+    size_t hash = 0;
+    size_t sz = sizeof(Valuable);
+    static const a_int& a_int_z;
+    static const max_exp_t& max_exp_z;
+    View view{View::None};
+    max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
+
+    bool optimized = false;
+    void MarkAsOptimized();
+
+public:
+    const encapsulated_instance& getInst() const noexcept { return exp; }
+    void MarkNotOptimized();
 
     friend std::ostream& operator<<(std::ostream& os, View v) {
 	return os << static_cast<uint8_t>(v);
