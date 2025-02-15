@@ -125,8 +125,8 @@ class Valuable
     static const a_int a_int_cz;
     static const max_exp_t max_exp_cz;
 
-    typedef Valuable& (Valuable::*method_t)(const Valuable&);
-    self& call_polymorphic_method(method_t, const self& arg);
+    using method_t = Valuable& (Valuable::*)(const Valuable&);
+    self& call_polymorphic_method(method_t method, const self& arg);
 
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
