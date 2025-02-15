@@ -330,9 +330,7 @@ BOOST_AUTO_TEST_CASE(sq_System_test
     }
 }
 
-BOOST_AUTO_TEST_CASE(Quadratic_System_test
-    , *disabled() // Enable after review
-) {
+BOOST_AUTO_TEST_CASE(Quadratic_System_test) {
     DECL_VARS(l);
     System sys;
     
