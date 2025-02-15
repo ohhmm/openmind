@@ -784,8 +784,6 @@ public:
 protected:
     friend class boost::serialization::access;
 
-    View view = View::Flat;
-
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
         if (exp) {
