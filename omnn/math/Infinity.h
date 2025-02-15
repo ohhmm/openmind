@@ -19,11 +19,11 @@ public:
 
     bool IsInfinity() const override { return true; }
 
-    bool IsSimple() const override { return {}; }
+    bool IsSimple() const noexcept override { return {}; }
 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
-    Valuable& operator *=(const Valuable& v) override;
+    Valuable& operator *=(const Valuable& v) noexcept override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override { return *this; }
@@ -48,11 +48,11 @@ public:
 
     bool IsMInfinity() const override { return true; }
 
-    bool IsSimple() const override { return {}; }
+    bool IsSimple() const noexcept override { return {}; }
 
     Valuable operator -() const override;
     Valuable& operator +=(const Valuable& v) override;
-    Valuable& operator *=(const Valuable& v) override;
+    Valuable& operator *=(const Valuable& v) noexcept override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;
     Valuable& operator --() override { return *this; }
