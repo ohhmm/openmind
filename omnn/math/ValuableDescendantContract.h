@@ -27,8 +27,8 @@ namespace math {
 
         Valuable operator -() const override;
 
-        constexpr Valuable& operator --() override { return operator+=(constants::minus_1); }
-        constexpr Valuable& operator ++() override { return operator+=(constants::one); }
+        Valuable& operator --() override { return operator+=(constants::minus_1); }
+        Valuable& operator ++() override { return operator+=(constants::one); }
 
         Valuable& sq() override;
 
@@ -71,15 +71,14 @@ namespace math {
 #ifndef BOOST_TEST_MODULE
     protected:
 #endif
-
         [[nodiscard]]
-        auto CPtr() const noexcept {
-            return reinterpret_cast<const Chld*>(this);
+        const Chld* CPtr() const noexcept {
+            return static_cast<const Chld*>(this);
         }
 
         [[nodiscard]]
-        auto Ptr() noexcept {
-            return reinterpret_cast<Chld*>(this);
+        Chld* Ptr() noexcept {
+            return static_cast<Chld*>(this);
         }
 
         [[nodiscard]]
@@ -88,20 +87,19 @@ namespace math {
         }
 
         [[nodiscard]]
-        const Chld& CRef() noexcept {
-            return Ref();
+        const Chld& CRef() const noexcept {
+            return *CPtr();
         }
 
-        Valuable* Clone() const override {
+        Valuable* Clone() const noexcept override {
             return new Chld(*CPtr());
         }
 
         [[nodiscard]]
-        size_t getTypeSize() const override { return sizeof(Chld); }
+        size_t getTypeSize() const noexcept override { return sizeof(Chld); }
 
         [[nodiscard]]
-        Valuable* Move() override
-        {
+        Valuable* Move() noexcept override {
             return static_cast<Valuable*>(new Chld(std::move(*Ptr())));
         }
 
@@ -111,24 +109,16 @@ namespace math {
 
     public:
         // once compiler allow
-        // todo :
-        //ValuableDescendantContract() : Valuable<>() {}
-        // instead of
-        ValuableDescendantContract() : ValuableDescendantBase(ValuableDescendantMarker()) {}
-        ValuableDescendantContract(ValuableDescendantContract&& c)
-        : ValuableDescendantBase(std::move(c), ValuableDescendantMarker()) {}
-        ValuableDescendantContract(const ValuableDescendantContract& c)
-        : ValuableDescendantBase(c, ValuableDescendantMarker()) {}
-        ValuableDescendantContract& operator=(const ValuableDescendantContract& v) {
-            hash = v.hash;
-            optimized = v.optimized;
-            return *this;
+        ValuableDescendantContract() noexcept 
+            : ValuableDescendantBase(ValuableDescendantMarker()) 
+        {
+            optimized = true;
         }
-        ValuableDescendantContract& operator=(ValuableDescendantContract&& v) {
-            hash = v.hash;
-            optimized = v.optimized;
-            return *this;
-        }
+        
+        ValuableDescendantContract(ValuableDescendantContract&& c) noexcept = default;
+        ValuableDescendantContract(const ValuableDescendantContract& c) noexcept = default;
+        ValuableDescendantContract& operator=(const ValuableDescendantContract& v) noexcept = default;
+        ValuableDescendantContract& operator=(ValuableDescendantContract&& v) noexcept = default;
 
 //        operator Valuable&&() {
 //            return std::move(Valuable(Move()));
