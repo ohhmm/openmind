@@ -113,12 +113,36 @@ namespace math {
             : ValuableDescendantBase(ValuableDescendantMarker()) 
         {
             optimized = true;
+            hash = 0;
         }
         
-        ValuableDescendantContract(ValuableDescendantContract&& c) noexcept = default;
-        ValuableDescendantContract(const ValuableDescendantContract& c) noexcept = default;
-        ValuableDescendantContract& operator=(const ValuableDescendantContract& v) noexcept = default;
-        ValuableDescendantContract& operator=(ValuableDescendantContract&& v) noexcept = default;
+        ValuableDescendantContract(ValuableDescendantContract&& c) noexcept
+            : ValuableDescendantBase(std::move(c)), hash(c.hash), optimized(c.optimized)
+        {
+        }
+        
+        ValuableDescendantContract(const ValuableDescendantContract& c) noexcept
+            : ValuableDescendantBase(c), hash(c.hash), optimized(c.optimized)
+        {
+        }
+        
+        ValuableDescendantContract& operator=(const ValuableDescendantContract& v) noexcept {
+            if (this != &v) {
+                ValuableDescendantBase::operator=(v);
+                hash = v.hash;
+                optimized = v.optimized;
+            }
+            return *this;
+        }
+        
+        ValuableDescendantContract& operator=(ValuableDescendantContract&& v) noexcept {
+            if (this != &v) {
+                ValuableDescendantBase::operator=(std::move(v));
+                hash = std::exchange(v.hash, 0);
+                optimized = std::exchange(v.optimized, false);
+            }
+            return *this;
+        }
 
 //        operator Valuable&&() {
 //            return std::move(Valuable(Move()));
