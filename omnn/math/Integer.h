@@ -43,10 +43,10 @@ public:
 
 	using base::base;
 
-    MSVC_CONSTEXPR Integer(const Integer&)=default;
-    MSVC_CONSTEXPR Integer(Integer&&)=default;
-    MSVC_CONSTEXPR Integer& operator=(const Integer&) = default;
-    MSVC_CONSTEXPR Integer& operator=(Integer&&) = default;
+    Integer(const Integer&)=default;
+    Integer(Integer&&)=default;
+    Integer& operator=(const Integer&) = default;
+    Integer& operator=(Integer&&) = default;
 
     template<typename IntT, 
               typename = std::enable_if_t<!std::is_same_v<std::decay_t<IntT>, Integer>>>
