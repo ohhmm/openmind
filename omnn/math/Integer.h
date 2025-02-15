@@ -59,16 +59,16 @@ public:
     }
 
     explicit
-    Integer(const std::string& s) noexcept
-        : base(), arbitrary(s)
+    Integer(const std::string& s)
+        : ValuableDescendantContract(), arbitrary(s)
     {
         hash = std::hash<base_int>()(arbitrary);
         optimized = true;
     }
 
     explicit
-    Integer(const std::string_view& s) noexcept
-        : base(), arbitrary(s)
+    Integer(const std::string_view& s)
+        : ValuableDescendantContract(), arbitrary(s)
     {
         hash = std::hash<base_int>()(arbitrary);
         optimized = true;
