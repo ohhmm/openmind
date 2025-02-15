@@ -1,6 +1,12 @@
 #pragma once
+
+#ifdef _MSC_VER
+#define MSVC_CONSTEXPR
+#else
+#define MSVC_CONSTEXPR constexpr
+#endif
+
 #include <omnn/math/Integer.h>
-#include <omnn/math/OpenOps.h> // For MSVC_CONSTEXPR definition
 #include <any>
 #include <map>
 #include <string>
