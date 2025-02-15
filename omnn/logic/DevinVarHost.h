@@ -1,5 +1,6 @@
 #pragma once
 #include <omnn/math/Integer.h>
+#include <omnn/math/OpenOps.h> // For MSVC_CONSTEXPR definition
 #include <any>
 #include <map>
 #include <string>
