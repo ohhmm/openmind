@@ -147,14 +147,14 @@ protected:
     virtual Valuable* Move();
     virtual void New(void*, Valuable&&);
     static constexpr size_t DefaultAllocSize = 768;
-    constexpr virtual size_t getTypeSize() const { return sizeof(Valuable); }
-    constexpr virtual size_t getAllocSize() const { return sz; }
-    constexpr virtual void setAllocSize(size_t sz) { this->sz = sz; }
+    constexpr virtual size_t getTypeSize() const noexcept { return sizeof(Valuable); }
+    constexpr virtual size_t getAllocSize() const noexcept { return sz; }
+    constexpr virtual void setAllocSize(size_t sz) noexcept { this->sz = sz; }
 
     template<class T>
-    constexpr Valuable() {}
+    constexpr Valuable() noexcept {}
 
-    constexpr Valuable(ValuableDescendantMarker)
+    constexpr Valuable(ValuableDescendantMarker) noexcept
     {}
 
     Valuable(const Valuable& v, ValuableDescendantMarker);
@@ -168,15 +168,16 @@ protected:
 
     size_t hash = 0;
     size_t sz = sizeof(Valuable);
-    static constexpr a_int const& a_int_z = a_int_cz;
-    static constexpr max_exp_t const& max_exp_z = max_exp_cz;
+    static constexpr const a_int& a_int_z;
+    static constexpr const max_exp_t& max_exp_z;
+    View view = View::None;
     max_exp_t maxVaExp = 0;//max_exp_z; // ordering weight: vars max exponentiation in this valuable
 
     bool optimized = false;
     void MarkAsOptimized();
 
 public:
-    constexpr const encapsulated_instance& getInst() const { return exp; }
+    const encapsulated_instance& getInst() const noexcept { return exp; }
     void MarkNotOptimized();
 
 
@@ -320,14 +321,14 @@ public:
     : exp(t.Move())
     { }
 
-    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
+    Valuable(Valuable&&) noexcept = default;
     Valuable();
     Valuable(double d);
 
     template<class T,
         typename = typename std::enable_if<!std::is_rvalue_reference<T>::value && std::is_integral<T>::value>::type
     >
-    constexpr Valuable(T i = 0) : Valuable(a_int(i)) {}
+    Valuable(T i = 0) noexcept : Valuable(a_int(i)) {}
 
     Valuable(const a_int&);
     Valuable(a_int&&);
@@ -385,10 +386,10 @@ public:
     virtual bool operator<(const Valuable&) const;
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
-    View GetView() const;
-    void SetView(View v);
-    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
-        return (GetView() & View::Equation) != View::None;
+    View GetView() const noexcept { return view; }
+    void SetView(View v) noexcept { view = v; }
+    bool IsEquation() const noexcept {
+        return (view & View::Equation) != View::None;
     }
 
     // identify
