@@ -484,10 +484,19 @@ macro(exe)
             MACOSX_BUNDLE TRUE
             WIN32_EXECUTABLE TRUE
         )
-        install(TARGETS ${this_target} BUNDLE DESTINATION .)
+        install(TARGETS ${this_target}
+          BUNDLE DESTINATION .
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib
+          PUBLIC_HEADER DESTINATION include)
 
     else()
-        install(TARGETS ${this_target})
+        install(TARGETS ${this_target}
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib
+          PUBLIC_HEADER DESTINATION include)
     endif()
 
     target_include_directories(${this_target} PUBLIC
