@@ -1,9 +1,14 @@
 #pragma once
-#include <omnn/math/VarHost.h>
 #include <omnn/math/Integer.h>
 #include <any>
 #include <map>
 #include <string>
+
+namespace omnn {
+namespace math {
+class VarHost;
+class Variable;
+} // namespace math
 
 namespace omnn {
 namespace logic {
