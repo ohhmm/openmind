@@ -34,11 +34,11 @@ template <class Chld>
         static const/*init*/ Chld GlobalObject;
 
         [[nodiscard]]
-        constexpr bool IsConstant() const override { return true; }
+        bool IsConstant() const noexcept override { return true; }
         [[nodiscard]]
-        constexpr bool IsSimple() const override { return true; }
+        bool IsSimple() const noexcept override { return true; }
         [[nodiscard]]
-        constexpr bool IsPolynomial(const Variable&) const override { return true; }
+        bool IsPolynomial(const Variable&) const noexcept override { return true; }
         [[nodiscard]]
         size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const override {
             if (coefficients.empty())
@@ -47,23 +47,23 @@ template <class Chld>
             return 0;
         }
         [[nodiscard]]
-        constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
+        const PrincipalSurd* PrincipalSurdFactor() const noexcept override { return {}; }
         [[nodiscard]]
-        constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
+        YesNoMaybe IsMultival() const noexcept override { return YesNoMaybe::No; }
         [[nodiscard]]
-        constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::No; }
+        YesNoMaybe IsRational() const noexcept override { return YesNoMaybe::No; }
         [[nodiscard]]
-        constexpr bool is_optimized() const override { return true; }
-        constexpr void optimize() override {}     
+        bool is_optimized() const noexcept override { return true; }
+        void optimize() noexcept override {}
 
-        constexpr const Variable* FindVa() const override {
+        const Variable* FindVa() const noexcept override {
             return {};
         }
 
         Valuable* Clone() const noexcept override { return new Chld(); }
 
         [[nodiscard]]
-        constexpr bool HasVa(const Variable& va) const override {
+        bool HasVa(const Variable& va) const noexcept override {
             return {};
         }
 
