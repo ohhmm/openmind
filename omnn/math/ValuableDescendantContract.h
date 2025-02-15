@@ -2,6 +2,11 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
+
+// Platform macros must be defined before any other includes
+#include <omnn/math/Platform.h>
+
+// Other includes
 #include <omnn/math/Valuable.h>
 
 namespace omnn{
