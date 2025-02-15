@@ -8,24 +8,38 @@
         #include <OpenGL/gl.h>
         #include <OpenGL/glu.h>
         #include <OpenGL/glext.h>
-        #include <GLUT/glut.h>
+        #if __has_include(<GLUT/glut.h>)
+            #include <GLUT/glut.h>
+        #endi
 
     #elif defined(MSVC)
 
         #ifdef _WIN32
             #include <Windows.h>
+
+            #ifdef max
+            #undef max
+            #endif
+
+            #ifdef min
+            #undef min
+            #endif
         #endif
+
         #include <GL/gl.h>
         #include <GL/glu.h>
         #include <GL/glext.h>
-        #include <GLUT/glut.h>
-
+        #if __has_include(<GLUT/glut.h>)
+            #include <GLUT/glut.h>
+        #endi
     #else
 
         #include <GL/gl.h>
         #include <GL/glu.h>
         #include <GL/glext.h>
-        #include <GL/glut.h>
+        #if __has_include(<GL/glut.h>)
+            #include <GL/glut.h>
+        #endi
 
     #endif
 
