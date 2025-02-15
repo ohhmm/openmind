@@ -6,6 +6,11 @@
  */
 
 #pragma once
+
+// Platform macros must be defined before any other includes
+#include <omnn/math/Platform.h>
+
+// Other includes
 #include <omnn/math/Valuable.h>
 
 //#include <any>
