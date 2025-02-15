@@ -2,7 +2,7 @@
 // Created by Сергей Кривонос on 01.09.17.
 //
 #pragma once
-#include "Platform.h"
+#include <omnn/math/Platform.h>
 #include <omnn/math/OpenOps.h>
 #include <omnn/math/YesNoMaybe.h>
 
