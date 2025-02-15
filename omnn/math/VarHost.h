@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "Platform.h"
 
 //#include <any>
 #include <list>
