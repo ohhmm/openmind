@@ -1,0 +1,22 @@
+site:
+  title: OpenMind Documentation
+  url: https://docs.openmind.ai
+  start_page: openmind::index.adoc
+
+content:
+  sources:
+    - url: .
+      start_path: docs
+      branches: [main]
+
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/releases/download/latest/ui-bundle.zip
+    snapshot: true
+
+asciidoc:
+  attributes:
+    experimental: ''
+    idprefix: ''
+    idseparator: '-'
+    page-pagination: ''

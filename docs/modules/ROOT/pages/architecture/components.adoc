@@ -1,0 +1,37 @@
+= OpenMind Components
+:description: Detailed description of OpenMind's core components
+
+== Math Module (omnn/math)
+
+The Math module provides fundamental mathematical operations and types:
+
+* Variable and equation handling
+* Matrix operations
+* Arithmetic operations
+* Special mathematical constants
+
+== Runtime Module (omnn/rt)
+
+The Runtime module handles neural network operations:
+
+* Asynchronous neuron implementation
+* GPU acceleration (OpenCL/OpenGL)
+* Custom memory allocators
+* Parallel processing capabilities
+
+== Language Module (lang)
+
+The Language module provides:
+
+* Language processing capabilities
+* Syntax analysis
+* Pattern matching
+
+== Storage System
+
+The storage system supports multiple backends:
+
+* LevelDB integration
+* FoundationDB support
+* Thread-safe operations
+* Caching mechanisms

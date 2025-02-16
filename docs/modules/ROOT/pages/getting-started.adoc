@@ -1,0 +1,37 @@
+= Getting Started with OpenMind
+:description: Guide to get started with OpenMind
+
+== Prerequisites
+
+To build and use OpenMind, you need:
+
+* C++ compiler with C++17 support
+* CMake (3.15 or higher)
+* vcpkg package manager
+* Git
+
+== Installation
+
+[source,bash]
+----
+# Clone the repository
+git clone https://github.com/ohhmm/openmind.git
+cd openmind
+
+# Build using CMake
+cmake -B build
+cmake --build build
+----
+
+== Basic Usage
+
+[NOTE]
+====
+This section will be expanded with actual usage examples from the codebase.
+====
+
+== Next Steps
+
+* Learn about the xref:architecture/overview.adoc[architecture]
+* Read the xref:development/contributing.adoc[contributing guidelines]
+* Explore the xref:reference/api.adoc[API reference]

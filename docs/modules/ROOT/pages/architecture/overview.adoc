@@ -1,0 +1,17 @@
+= Architecture Overview
+:description: Overview of OpenMind's architecture
+
+== Core Components
+
+OpenMind consists of several key components:
+
+* Math Module (`omnn/math`)
+* Runtime Module (`omnn/rt`)
+* Language Module (`lang`)
+
+== System Design
+
+[NOTE]
+====
+This section will be expanded with detailed architecture diagrams and component interactions.
+====

@@ -1,0 +1,26 @@
+= OpenMind Documentation
+:description: Main documentation page for the OpenMind project
+
+[.lead]
+OpenMind is a C++ project focused on mathematical computations and optimizations.
+
+== Overview
+
+This documentation provides comprehensive information about OpenMind, including:
+
+* Getting started guide
+* Architecture overview
+* Development guidelines
+* API reference
+* Configuration options
+
+== Quick Links
+
+* xref:getting-started.adoc[Getting Started Guide]
+* xref:architecture/overview.adoc[Architecture Overview]
+* xref:development/building.adoc[Building from Source]
+* xref:development/contributing.adoc[Contributing Guidelines]
+
+== Project Status
+
+The project is actively maintained and developed. For the latest updates, please visit our https://github.com/ohhmm/openmind[GitHub repository].
