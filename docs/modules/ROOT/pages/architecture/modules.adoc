@@ -1,0 +1,59 @@
+= OpenMind Modules
+:description: Detailed documentation of OpenMind's module system
+
+== Extrapolator Module
+
+The Extrapolator module (`omnn/extrapolator`) provides:
+
+* Matrix operations for data analysis
+* Extrapolation algorithms
+* Pattern recognition capabilities
+* Data prediction models
+
+== Logic Module
+
+The Logic module (`omnn/logic`) implements:
+
+* Logical operations framework
+* Boolean algebra operations
+* Inference engines
+* Rule-based systems
+
+== Compile-time Utilities
+
+The CT module (`omnn/ct`) provides compile-time optimization tools:
+
+* Template metaprogramming utilities
+* Compile-time computation facilities
+* Type trait helpers
+* Static assertions and checks
+
+== Goal Management System
+
+=== Core Components
+
+==== Mind Class
+The central coordinator that manages:
+
+* Goal prioritization
+* State machine transitions
+* Resource allocation
+* Goal execution scheduling
+
+==== Goal Generators
+
+* `GeneralGoalGenerator`: Creates general-purpose goals
+* `SingletonGoalGenerator`: One-time goal generation
+* `IdleTimeGoalGenerator`: Utilizes system idle time
+
+=== State Machine
+* Goal state tracking
+* Transition management
+* Event handling
+* Error recovery
+
+=== Facilities
+* Reusable operations
+* Common patterns
+* Utility functions
+* Resource management
