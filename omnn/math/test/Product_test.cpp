@@ -5,9 +5,15 @@
 #include "Sum.h"
 #include "Fraction.h"
 #include "Variable.h"
-#include "System.h"
 #include "Integer.h"
 #include "Exponentiation.h"
+
+// Forward declare System to avoid circular dependency
+namespace omnn {
+namespace math {
+class System;
+}
+}
 #include "generic.hpp"
 
 using namespace std;
