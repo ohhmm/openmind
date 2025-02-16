@@ -6,6 +6,9 @@
 #include "Fraction.h"
 #include "Variable.h"
 #include "System.h"
+#include "Integer.h"
+#include "Exponentiation.h"
+
 #include "generic.hpp"
 
 using namespace std;
@@ -94,6 +97,40 @@ BOOST_AUTO_TEST_CASE(Product_comparision_test) {
     BOOST_TEST(!less);
 }
 
+BOOST_AUTO_TEST_CASE(Product_coefficient_normalization_test) {
+    DECL_VA(l);
+
+    // Test equation: 9l^2 - 2 = 16
+    // This test demonstrates coefficient normalization issue
+    auto term = 9_v * l;  // First multiplication
+    auto squared = term * l;  // Second multiplication
+
+    // Test actual mathematical equivalence, not just string representation
+    auto expected = 9_v * (l ^ 2);
+    BOOST_TEST(squared != expected);  // Should fail without MultiplyIfSimplifiable
+
+    // Test internal representation
+    BOOST_TEST(squared.IsProduct());
+    auto& p = squared.as<Product>();
+    BOOST_TEST(p.size() == 3);  // Should have 3 members (9, l, l) without normalization
+
+    // Test negative coefficient case
+    auto negTerm = -1_v * l;
+    auto negSquared = negTerm * l;
+    auto negExpected = -1_v * (l ^ 2);
+    BOOST_TEST(negSquared == negExpected);  // Should pass with normalization
+
+    // Test l^3 computation
+    auto cubed = squared * l;  // (9l^2) * l
+    auto expectedCube = 9_v * (l ^ 3);  // 9l^3
+    BOOST_TEST(cubed == expectedCube);  // Should pass with normalization
+
+    // Verify internal representation
+    BOOST_TEST(cubed.IsProduct());
+    auto& c = cubed.as<Product>();
+    BOOST_TEST(c.size() == 2);  // Should have 2 members (9, l^3) after normalization
+}
+
 BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test)
 {
     Valuable::OptimizeOff off;
@@ -119,32 +156,32 @@ BOOST_AUTO_TEST_CASE(Quadratic_coefficient_test9)
 {
     DECL_VA(l);
     System sys;
-    
+
     // Test equation: 9l^2 - 2 = 16
     // Without MultiplyIfSimplifiable, coefficient normalization fails
     auto term = 9_v * l;  // Should normalize with MultiplyIfSimplifiable
     auto squared = term * l;  // Will fail to normalize properly
-    
+
     // Verify coefficient normalization (will fail without MultiplyIfSimplifiable)
     BOOST_TEST(squared == 9_v * (l ^ 2));
-    
+
     // Test equation solving
     auto eq = squared - 18_v;  // 9l^2 - 18 = 0
     sys << eq;
-    
+
     // Solve for l
     auto solutions = sys.Solve(l);
     BOOST_TEST(solutions.size() == 2);  // Should have both +√2 and -√2
-    
+
     if (solutions.size() == 2) {
         auto it = solutions.begin();
         auto sol1 = *it++;
         auto sol2 = *it;
-        
+
         // Test l^3 computation (will fail without proper coefficient handling)
         auto cube1 = sol1 ^ 3;  // Should be 2√2
         auto cube2 = sol2 ^ 3;  // Should be -2√2
-        
+
         BOOST_TEST(cube1 == -cube2);  // Opposite values
         BOOST_TEST(cube1 * cube1 == 8_v);  // (2√2)^2 = 8
     }
@@ -153,17 +190,17 @@ BOOST_AUTO_TEST_CASE(Quadratic_coefficient_test9)
 BOOST_AUTO_TEST_CASE(Product_numeric_type_test0)
 {
     DECL_VA(x);
-    
+
     // Test fraction coefficient handling
     auto _1 = Fraction(1, 2) * x;
     auto _2 = x * Fraction(1, 2);
     BOOST_TEST(_1 == _2);  // Order independence with fractions
-    
+
     // Test mixed numeric type handling
     auto _3 = (-1_v * x) * Fraction(1, 2);
     auto _4 = Fraction(-1, 2) * x;
     BOOST_TEST(_3 == _4);  // Equivalent forms
-    
+
     // Test coefficient normalization with mixed types
     auto _5 = (Fraction(-1, 2) * x) * (-2_v);
     BOOST_TEST(_5 == x);  // Double negation with mixed types
@@ -285,9 +322,7 @@ BOOST_AUTO_TEST_CASE(Product_getVaVal_test) {
     BOOST_TEST(val == a);
 }
 
-BOOST_AUTO_TEST_CASE(Product_optimization_test
-    ,*disabled()
-    )
+BOOST_AUTO_TEST_CASE(Product_optimization_test)
 {
     auto _1 = -8 * constants::plus_minus_1;
     auto _2 = 8 * constants::plus_minus_1;
