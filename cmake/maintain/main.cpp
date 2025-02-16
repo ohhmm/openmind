@@ -15,6 +15,7 @@
 #define GIT_STASH_POP "\"" GIT_EXECUTABLE_PATH "\" stash pop"
 #define GIT_REBASE_ABORT "\"" GIT_EXECUTABLE_PATH "\" rebase --abort"
 #define GIT_REBASE_CONTINUE "\"" GIT_EXECUTABLE_PATH "\" rebase --continue"
+#define GIT_IS_UPTODATE_WITH_ORIGIN_MAIN "\"" GIT_EXECUTABLE_PATH "\" merge-base --is-ancestor HEAD origin/main"
 #define GIT_FETCH_ALL "\"" GIT_EXECUTABLE_PATH "\" fetch --all --prune"
 #define CMD_LIST_LOCAL_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/heads/ --no-contains main"
 #define CMD_LIST_ORIGIN_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/remotes/origin/ --no-contains main"
@@ -114,13 +115,38 @@ void push(std::string_view branch) {
     pushing.join();
 }
 
+bool is_uptodate_with_origin_main() {
+    boost::process::child is_uptodate(GIT_IS_UPTODATE_WITH_ORIGIN_MAIN);
+    std::cout << "Checking if HEAD is up-to-date with origin/main: " GIT_IS_UPTODATE_WITH_ORIGIN_MAIN << std::endl;
+    is_uptodate.join();
+    auto code = is_uptodate.exit_code();
+    std::cout << "exit code: " << code << std::endl;
+    return code == 0;
+}
+
+void delete_remote_branch(std::string_view branch) {
+    std::stringstream cmd;
+    cmd << "\"" GIT_EXECUTABLE_PATH "\" push origin --delete " << branch;
+    auto line = cmd.str();
+
+    boost::process::child deleting(line);
+    std::cout << "Deleting " << branch << " from origin: " << line << std::endl;
+    deleting.join();
+}
+
 void rebase_remote_branches() {
     std::cout << "rebasing origin branches: " << std::endl;
     constexpr std::string_view origin_prefix = "origin/";
     constexpr size_t origin_prefix_len = origin_prefix.size();
     for (auto branch : list_origin_branches()) {
         if (rebase(branch)) {
-            push(branch.substr(origin_prefix_len));
+            branch.remove_prefix(origin_prefix_len);
+            if(is_uptodate_with_origin_main())
+            {
+                delete_remote_branch(branch);
+            } else {
+                push(branch);
+            }
         }
     }
 }
