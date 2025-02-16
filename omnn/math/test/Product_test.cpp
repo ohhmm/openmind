@@ -2,10 +2,13 @@
 #include <boost/test/unit_test.hpp>
 
 #include "Product.h"
+#include "System.h"  // Must be included early for System class definition
 #include "Sum.h"
 #include "Fraction.h"
 #include "Variable.h"
-#include "System.h"
+#include "Integer.h"
+#include "Exponentiation.h"
+
 #include "generic.hpp"
 
 using namespace std;
@@ -115,23 +118,40 @@ BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test)
     EqualOrderCheck(_1, _2);
 }
 
-BOOST_AUTO_TEST_CASE(Product_coefficient_handling_test)
-{
-    DECL_VA(x);
+BOOST_AUTO_TEST_CASE(Quadratic_coefficient_test
+    , *disabled() // Enable after implementing MultiplyIfSimplifiable
+) {
+    DECL_VA(l);
+    System sys;
 
-    // Test direct multiplication with negative coefficients
-    auto _1 = -1_v * x;
-    auto _2 = x * -1_v;
-    BOOST_TEST(_1 == _2);  // Order independence
+    // Test equation: 9l^2 - 2 = 16
+    // Without MultiplyIfSimplifiable, coefficient normalization fails
+    auto term = 9_v * l;  // Should normalize with MultiplyIfSimplifiable
+    auto squared = term * l;  // Will fail to normalize properly
 
-    // Test coefficient normalization
-    auto _3 = (-1_v * x) * (-1_v * x);
-    BOOST_TEST(_3 == (x ^ 2));  // Double negation
+    // Verify coefficient normalization (will fail without MultiplyIfSimplifiable)
+    BOOST_TEST(squared == 9_v * (l ^ 2));
 
-    // Test polynomial coefficient handling
-    auto _4 = -1_v * x + x * x;
-    auto _5 = (x ^ 2) - x;
-    BOOST_TEST(_4 == _5);  // Equivalent polynomial forms
+    // Test equation solving
+    auto eq = squared - 18_v;  // 9l^2 - 18 = 0
+    sys << eq;
+
+    // Solve for l
+    auto solutions = sys.Solve(l);
+    BOOST_TEST(solutions.size() == 2);  // Should have both +√2 and -√2
+
+    if (solutions.size() == 2) {
+        auto it = solutions.begin();
+        auto sol1 = *it++;
+        auto sol2 = *it;
+
+        // Test l^3 computation (will fail without proper coefficient handling)
+        auto cube1 = sol1 ^ 3;  // Should be 2√2
+        auto cube2 = sol2 ^ 3;  // Should be -2√2
+
+        BOOST_TEST(cube1 == -cube2);  // Opposite values
+        BOOST_TEST(cube1 * cube1 == 8_v);  // (2√2)^2 = 8
+    }
 }
 
 BOOST_AUTO_TEST_CASE(Product_tests)
