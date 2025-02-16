@@ -5,12 +5,22 @@
 #include "Sum.h"
 #include "Valuable.h"
 #include "Variable.h"
+#include "Product.h"
+#include "Fraction.h"
+#include "Exponentiation.h"
 
 #include <map>
+#include <set>
+#include <memory>
+
 #include <boost/numeric/ublas/matrix.hpp>
+
 
 namespace omnn{
 namespace math {
+
+class System;
+std::ostream& operator<<(std::ostream& os, const System& sys);
 
     using system_base_t = Valuable::expressions_t;
 
@@ -65,7 +75,7 @@ public:
 
     System() : vEs(ptrs::make_shared<v_es_t>()) {}
     System(v_es_ptr_t yarns) : vEs(std::move(yarns)) {}
-    
+
     /**
      * Construct a system from a matrix where columns represent variables
      * @param matrix The matrix to construct the system from
