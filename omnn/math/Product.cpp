@@ -584,6 +584,80 @@ using namespace omnn::math;
         return grade;
     }
 
+    const a_int& Product::ca() const {
+        static a_int coef = 1;
+        coef = 1;
+        // Handle direct integer coefficients
+        for (const auto& m : members) {
+            if (m.IsInt()) {
+                coef *= m.ca();
+            }
+        }
+        // Handle coefficient in front of variable
+        if (size() == 2) {
+            auto it = begin();
+            if (it->IsInt()) {
+                auto next = std::next(it);
+                if (next->IsVa() || (next->IsExponentiation() && next->as<Exponentiation>().getBase().IsVa())) {
+                    coef *= it->ca();
+                }
+            }
+        }
+        return coef;
+    }
+
+    bool Product::MultiplyIfSimplifiable(const Valuable& v) {
+        // Handle coefficient multiplication with variables
+        if (v.IsProduct()) {
+            const auto& p = v.as<Product>();
+            if (p.size() == 2) {
+                auto it = p.begin();
+                if (it->IsInt()) {
+                    auto next = std::next(it);
+                    if (next->IsVa() || (next->IsExponentiation() && next->as<Exponentiation>().getBase().IsVa())) {
+                        // Combine coefficients and variables
+                        operator*=(v);
+                        optimize();
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // Handle variable multiplication and exponentiation
+        if (v.IsVa()) {
+            const auto& va = v.as<Variable>();
+            for (auto it = members.begin(); it != members.end(); ++it) {
+                // Direct variable multiplication
+                if (it->Same(v)) {
+                    Update(it, Exponentiation(va, 2));
+                    optimize();
+                    return true;
+                }
+                // Increment existing exponentiation
+                if (it->IsExponentiation() && it->as<Exponentiation>().getBase() == va) {
+                    const auto& e = it->as<Exponentiation>();
+                    Update(it, va ^ (e.getExponentiation() + 1));
+                    optimize();
+                    return true;
+                }
+            }
+            // Handle coefficient normalization
+            if (size() >= 2) {
+                auto firstIt = begin();
+                auto secondIt = std::next(firstIt);
+                if (firstIt->IsInt() && secondIt->IsVa() && secondIt->as<Variable>() == va) {
+                    // Combine coefficient with variable
+                    Update(firstIt, *firstIt * va);
+                    members.erase(secondIt);
+                    optimize();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     Valuable Product::InCommonWith(const Valuable& v) const
     {
         auto _ = 1_v;

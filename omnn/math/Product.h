@@ -113,6 +113,8 @@ public:
 
     bool IsProduct() const override { return true; }
     bool IsZero() const override;
+    const a_int& ca() const override;
+    bool MultiplyIfSimplifiable(const Valuable& v);
     size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const override;
     std::pair<Valuable, Valuable> SplitSimplePart() const;
     std::pair<Valuable, Valuable> split_simple_part();
