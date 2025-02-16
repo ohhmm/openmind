@@ -1,0 +1,32 @@
+= Configuration Reference
+:description: Configuration options for OpenMind
+
+== Build Configuration
+
+[source,bash]
+----
+# CMake configuration options
+-DOPENMIND_BUILD_SAMPLES=ON/OFF    # Build example applications
+-DOPENMIND_BUILD_TESTS=ON/OFF      # Build test suite
+-DOPENMIND_USE_OPENCL=ON/OFF       # Enable OpenCL support
+----
+
+== Runtime Configuration
+
+=== Memory Management
+
+* Custom allocator configuration
+* Cache size settings
+* Thread pool size
+
+=== GPU Acceleration
+
+* OpenCL device selection
+* Compute shader configuration
+* Memory buffer sizes
+
+=== Storage Backend
+
+* Database path configuration
+* Cache settings
+* Compression options

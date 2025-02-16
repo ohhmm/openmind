@@ -1,0 +1,5 @@
+name: openmind
+title: OpenMind Documentation
+version: '1.0'
+nav:
+  - modules/ROOT/nav.adoc

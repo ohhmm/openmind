@@ -1,0 +1,72 @@
+= API Reference
+:description: API documentation for OpenMind
+
+== Core Classes
+
+=== Mind Class
+
+The central coordinator for goals and operations.
+
+[source,cpp]
+----
+class Mind {
+    // Goal management
+    void addGoal(Goal& goal);
+    void processGoals();
+    
+    // Generator management
+    void registerGenerator(GoalGenerator& generator);
+};
+----
+
+=== Goal Generators
+
+==== GeneralGoalGenerator
+
+[source,cpp]
+----
+class GeneralGoalGenerator {
+    void generate();
+    bool isActive();
+};
+----
+
+==== SingletonGoalGenerator
+
+[source,cpp]
+----
+class SingletonGoalGenerator {
+    void generate();
+    bool isDone();
+};
+----
+
+== Math API
+
+=== Variable Operations
+
+[source,cpp]
+----
+namespace omnn::math {
+    class Variable {
+        // Variable manipulation
+        void setValue(T value);
+        T getValue() const;
+    };
+}
+----
+
+== Runtime API
+
+=== Neuron Implementation
+
+[source,cpp]
+----
+namespace omnn::rt {
+    class Neuron {
+        // Async operations
+        void process();
+        void connect(Neuron& other);
+    };
+}
+----
