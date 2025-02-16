@@ -4,8 +4,7 @@
 #pragma once
 #include <omnn/math/Valuable.h>
 
-namespace omnn{
-namespace math {
+namespace omnn::math {
 
     class ValuableDescendantBase : public Valuable
     {
@@ -150,5 +149,4 @@ namespace math {
             return exp;
         }
     };
-}
 }

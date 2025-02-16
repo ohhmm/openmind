@@ -1,10 +1,13 @@
 #define BOOST_TEST_MODULE Product test
 #include <boost/test/unit_test.hpp>
 
+#include "Valuable.h"
+#include "Variable.h"
 #include "Product.h"
 #include "Sum.h"
 #include "Fraction.h"
-#include "Variable.h"
+#include "Integer.h"
+#include "Exponentiation.h"
 #include "System.h"
 #include "generic.hpp"
 
@@ -94,8 +97,42 @@ BOOST_AUTO_TEST_CASE(Product_comparision_test) {
     BOOST_TEST(!less);
 }
 
-BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test)
-{
+BOOST_AUTO_TEST_CASE(Product_coefficient_normalization_test) {
+    DECL_VA(l);
+    
+    // Test equation: 9l^2 - 2 = 16
+    // This test demonstrates coefficient normalization issue
+    auto term = 9_v * l;  // First multiplication
+    auto squared = term * l;  // Second multiplication
+    
+    // Test that terms are not combined prematurely
+    auto expected = 9_v * (l ^ 2);  // Normalized form
+    BOOST_TEST(squared.IsProduct());
+    auto& p = squared.as<Product>();
+    BOOST_TEST(p.size() == 3);  // Should have 3 members (9, l, l) to demonstrate normalization issue
+    BOOST_TEST(squared.ca() == 9);  // Coefficient should be 9
+    BOOST_TEST(squared != expected);  // Should fail to show normalization is needed
+    squared.optimize();  // Now normalize
+    BOOST_TEST(squared == expected);  // Should pass after normalization
+    
+    // Test negative coefficient case
+    auto negTerm = -1_v * l;
+    auto negSquared = negTerm * l;
+    auto negExpected = -1_v * (l ^ 2);
+    BOOST_TEST(negSquared == negExpected);  // Should pass with normalization
+    
+    // Test l^3 computation
+    auto cubed = squared * l;  // (9l^2) * l
+    auto expectedCube = 9_v * (l ^ 3);  // 9l^3
+    BOOST_TEST(cubed == expectedCube);  // Should pass with normalization
+    
+    // Verify internal representation
+    BOOST_TEST(cubed.IsProduct());
+    auto& c = cubed.as<Product>();
+    BOOST_TEST(c.size() == 2);  // Should have 2 members (9, l^3) after normalization
+}
+
+BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
     Valuable::OptimizeOff off;
     auto _1 = "-2*(1^5)"_v;
     auto _2 = "(1 ^ 6)"_v;
@@ -231,9 +268,7 @@ BOOST_AUTO_TEST_CASE(Product_getVaVal_test) {
     BOOST_TEST(val == a);
 }
 
-BOOST_AUTO_TEST_CASE(Product_optimization_test
-    ,*disabled()
-    )
+BOOST_AUTO_TEST_CASE(Product_optimization_test)
 {
     auto _1 = -8 * constants::plus_minus_1;
     auto _2 = 8 * constants::plus_minus_1;
