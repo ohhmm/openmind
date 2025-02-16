@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE Product test
 #include <boost/test/unit_test.hpp>
 
+#include "System.h"  // Must come before Product.h to avoid incomplete type
 #include "Product.h"
 #include "Sum.h"
 #include "Fraction.h"
 #include "Variable.h"
-#include "System.h"
 #include "generic.hpp"
 
 using namespace std;
