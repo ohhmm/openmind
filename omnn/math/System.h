@@ -5,11 +5,19 @@
 #include "Sum.h"
 #include "Valuable.h"
 #include "Variable.h"
+#include "Product.h"
+#include "Fraction.h"
+#include "Exponentiation.h"
 
 #include <map>
+#include <set>
+#include <memory>
 
 namespace omnn{
 namespace math {
+
+class System;
+std::ostream& operator<<(std::ostream& os, const System& sys);
 
     using system_base_t = Valuable::expressions_t;
 
