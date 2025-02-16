@@ -5,7 +5,16 @@
 #include "Sum.h"
 #include "Fraction.h"
 #include "Variable.h"
+#include "Integer.h"
 #include "System.h"
+
+// Forward declare System to avoid circular dependency
+namespace omnn {
+namespace math {
+class System;
+}
+}
+
 #include "generic.hpp"
 
 using namespace std;
@@ -94,8 +103,41 @@ BOOST_AUTO_TEST_CASE(Product_comparision_test) {
     BOOST_TEST(!less);
 }
 
-BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test)
-{
+BOOST_AUTO_TEST_CASE(Product_coefficient_normalization_test) {
+    DECL_VA(l);
+    
+    // Test equation: 9l^2 - 2 = 16
+    // This test demonstrates coefficient normalization issue
+    auto term = 9_v * l;  // First multiplication
+    auto squared = term * l;  // Second multiplication
+    
+    // Test actual mathematical equivalence, not just string representation
+    auto expected = 9_v * (l ^ 2);
+    BOOST_TEST(squared != expected);  // Should fail without MultiplyIfSimplifiable
+    
+    // Test internal representation
+    BOOST_TEST(squared.IsProduct());
+    auto& p = squared.as<Product>();
+    BOOST_TEST(p.size() == 3);  // Should have 3 members (9, l, l) without normalization
+    
+    // Test negative coefficient case
+    auto negTerm = -1_v * l;
+    auto negSquared = negTerm * l;
+    auto negExpected = -1_v * (l ^ 2);
+    BOOST_TEST(negSquared == negExpected);  // Should pass with normalization
+    
+    // Test l^3 computation
+    auto cubed = squared * l;  // (9l^2) * l
+    auto expectedCube = 9_v * (l ^ 3);  // 9l^3
+    BOOST_TEST(cubed == expectedCube);  // Should pass with normalization
+    
+    // Verify internal representation
+    BOOST_TEST(cubed.IsProduct());
+    auto& c = cubed.as<Product>();
+    BOOST_TEST(c.size() == 2);  // Should have 2 members (9, l^3) after normalization
+}
+
+BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
     Valuable::OptimizeOff off;
     auto _1 = "-2*(1^5)"_v;
     auto _2 = "(1 ^ 6)"_v;
