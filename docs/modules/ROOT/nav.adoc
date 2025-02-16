@@ -3,6 +3,9 @@
 * Architecture
 ** xref:architecture/overview.adoc[Overview]
 ** xref:architecture/components.adoc[Components]
+** xref:architecture/modules.adoc[Modules]
+* Examples
+** xref:examples/index.adoc[Example Usage]
 * Development
 ** xref:development/building.adoc[Building]
 ** xref:development/contributing.adoc[Contributing]
