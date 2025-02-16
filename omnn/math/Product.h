@@ -9,6 +9,7 @@
 #include <omnn/math/Fraction.h>
 #include <omnn/math/ProductOrderComparator.h>
 #include <omnn/math/Variable.h>
+#include <omnn/math/System.h>
 
 #include <set>
 #include <unordered_set>
