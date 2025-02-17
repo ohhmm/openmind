@@ -79,14 +79,14 @@ if(CMAKE_BUILD_TYPE MATCHES [Dd][Ee][Bb][Uu][Gg])
 		add_compile_options($<$<CONFIG:Debug>:/constexpr:steps1000000000>)
 		add_link_options(/stack:1000000000)
 	elseif(NOT OPENMIND_USE_VCPKG)
-		add_definitions(-DBOOST_ALL_DYN_LINK)
+		add_definitions(-DBOOST_ALL_DYN_LINK)  # Use dynamic linking consistently
 	endif()
 else()
 	set(_IS_DEBUG FALSE)
-	set(Boost_USE_STATIC_LIBS ON)
-	SET(BUILD_SHARED_LIBS OFF)
+	set(Boost_USE_STATIC_LIBS OFF)  # Match dynamic linking choice
+	SET(BUILD_SHARED_LIBS ON)  # Match dynamic linking choice
 	if(NOT OPENMIND_USE_VCPKG)
-		add_definitions(-DBOOST_ALL_STATIC_LINK)
+		add_definitions(-DBOOST_ALL_DYN_LINK)  # Use dynamic linking consistently
 	endif()
 	if(CMAKE_BUILD_TYPE MATCHES [Rr][Ee][Ll][Ee][Aa][Ss][Ee])
 		set(OPENMIND_PRIME_TABLE Bundled CACHE STRING "Table of predefined prime numbers")
