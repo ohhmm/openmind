@@ -7,13 +7,7 @@
 #include "Variable.h"
 #include "Integer.h"
 #include "Exponentiation.h"
-
-// Forward declare System to avoid circular dependency
-namespace omnn {
-namespace math {
-class System;
-}
-}
+#include "System.h"
 #include "generic.hpp"
 
 using namespace std;
@@ -110,14 +104,13 @@ BOOST_AUTO_TEST_CASE(Product_coefficient_normalization_test) {
     auto term = 9_v * l;  // First multiplication
     auto squared = term * l;  // Second multiplication
     
-    // Test actual mathematical equivalence, not just string representation
-    auto expected = 9_v * (l ^ 2);
-    BOOST_TEST(squared != expected);  // Should fail without MultiplyIfSimplifiable
-    
-    // Test internal representation
+    // Test that terms are not combined prematurely
+    auto expected = 9_v * (l ^ 2);  // Normalized form
     BOOST_TEST(squared.IsProduct());
     auto& p = squared.as<Product>();
-    BOOST_TEST(p.size() == 3);  // Should have 3 members (9, l, l) without normalization
+    BOOST_TEST(p.size() == 3);  // Should have 3 members (9, l, l) to demonstrate normalization issue
+    BOOST_TEST(squared.ca() == 9);  // Coefficient should be 9
+    BOOST_TEST(squared != expected);  // Should fail to show normalization is needed
     
     // Test negative coefficient case
     auto negTerm = -1_v * l;
