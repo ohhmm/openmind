@@ -112,6 +112,8 @@ BOOST_AUTO_TEST_CASE(Product_coefficient_normalization_test) {
     BOOST_TEST(p.size() == 3);  // Should have 3 members (9, l, l) to demonstrate normalization issue
     BOOST_TEST(squared.ca() == 9);  // Coefficient should be 9
     BOOST_TEST(squared != expected);  // Should fail to show normalization is needed
+    squared.optimize();  // Now normalize
+    BOOST_TEST(squared == expected);  // Should pass after normalization
     
     // Test negative coefficient case
     auto negTerm = -1_v * l;
