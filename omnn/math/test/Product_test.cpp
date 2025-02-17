@@ -1,10 +1,11 @@
 #define BOOST_TEST_MODULE Product test
 #include <boost/test/unit_test.hpp>
 
+#include "Valuable.h"
+#include "Variable.h"
 #include "Product.h"
 #include "Sum.h"
 #include "Fraction.h"
-#include "Variable.h"
 #include "Integer.h"
 #include "Exponentiation.h"
 #include "System.h"
