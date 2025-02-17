@@ -112,19 +112,19 @@ using namespace omnn::math;
         auto isSameType = v.IsProduct();
         if(!isSameType)
         {
-            return poc(*this, v);
+            return ProductOrderComparator()(*this, v);
         }
         auto p = isSameType ? &v.as<Product>() : new(vp) Product{v};
-        auto d = [isSameType](const Product* _){
-            if (!isSameType && _){
+        auto d = [isSameType](const Product* _) {
+            if (!isSameType && _) {
                 _->~Product();
             }
-        }
+        };
         return coef;
     }
 
     bool Product::MultiplyIfSimplifiable(const Valuable& v) {
-        // During multiplication, preserve structure and don't combine terms
+        // Never combine terms to demonstrate normalization issues
         // This ensures squared != expected test fails as intended
         return false;
     }
