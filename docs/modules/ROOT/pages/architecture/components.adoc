@@ -1,37 +1,25 @@
-= OpenMind Components
-:description: Detailed description of OpenMind's core components
+= Core Components
+:description: OpenMind component specifications
 
-== Math Module (omnn/math)
+== Math Module (`omnn/math`)
+* Variable type system with template-based operations
+* Matrix algebra with optimized memory layout
+* Equation solver supporting arithmetic, logarithmic, exponential operations
+* Constants: pi (π), e, i with arbitrary precision
 
-The Math module provides fundamental mathematical operations and types:
+== Runtime (`omnn/rt`)
+* Lock-free neuron implementation with async message passing
+* OpenCL/Vulkan compute pipeline for GPU acceleration
+* Custom allocator with 16-byte alignment
+* Thread pool with work stealing scheduler
 
-* Variable and equation handling
-* Matrix operations
-* Arithmetic operations
-* Special mathematical constants
+== Language Processing (`lang`)
+* Recursive descent parser for mathematical expressions
+* Symbol table with scope management
+* Pattern matching using AST transformations
 
-== Runtime Module (omnn/rt)
-
-The Runtime module handles neural network operations:
-
-* Asynchronous neuron implementation
-* GPU acceleration (OpenCL/OpenGL)
-* Custom memory allocators
-* Parallel processing capabilities
-
-== Language Module (lang)
-
-The Language module provides:
-
-* Language processing capabilities
-* Syntax analysis
-* Pattern matching
-
-== Storage System
-
-The storage system supports multiple backends:
-
-* LevelDB integration
-* FoundationDB support
-* Thread-safe operations
-* Caching mechanisms
+== Storage Layer
+* LevelDB: Key-value storage with LSM-tree
+* FoundationDB: Distributed ACID transactions
+* Thread-safe operations with MVCC
+* LRU cache with configurable size
