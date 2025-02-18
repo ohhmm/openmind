@@ -1,18 +1,19 @@
 = OpenMind Documentation
-:description: Main documentation page for the OpenMind project
+:description: Technical documentation for the OpenMind AGI framework
 
 [.lead]
-OpenMind is a C++ project focused on mathematical computations and optimizations.
+OpenMind is a C++ AGI infrastructure framework implementing:
+* Knowledge accumulation in universal distributed forms
+* Deduction capabilities for information processing
+* Self-modification with system integrity preservation
 
-== Overview
+== Documentation Structure
 
-This documentation provides comprehensive information about OpenMind, including:
-
-* Getting started guide
-* Architecture overview
-* Development guidelines
-* API reference
-* Configuration options
+* xref:getting-started.adoc[Getting Started]: Environment setup and basic usage
+* xref:architecture/overview.adoc[Architecture]: Core systems and data flows
+* xref:development/building.adoc[Development]: Build process and contribution
+* xref:reference/api.adoc[API]: Interface specifications
+* xref:reference/configuration.adoc[Configuration]: System parameters
 
 == Quick Links
 

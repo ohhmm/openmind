@@ -1,17 +1,22 @@
 = Architecture Overview
-:description: Overview of OpenMind's architecture
+:description: OpenMind system architecture and core components
 
-== Core Components
+== Core Systems
 
-OpenMind consists of several key components:
+=== Knowledge System (`omnn/math`, `omnn/extrapolator`)
+* Universal knowledge representation using mathematical structures
+* Pattern recognition and extrapolation
+* Matrix operations for data analysis
+* Type-safe mathematical operations
 
-* Math Module (`omnn/math`)
-* Runtime Module (`omnn/rt`)
-* Language Module (`lang`)
+=== Runtime System (`omnn/rt`)
+* Asynchronous neural processing
+* GPU-accelerated computations (OpenCL/Vulkan)
+* Custom memory management
+* Thread-safe operations
 
-== System Design
-
-[NOTE]
-====
-This section will be expanded with detailed architecture diagrams and component interactions.
-====
+=== Goal Management (`Mind` class)
+* State machine-based goal processing
+* Resource allocation and scheduling
+* Event-driven goal execution
+* Priority-based task management
