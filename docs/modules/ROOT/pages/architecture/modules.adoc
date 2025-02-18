@@ -1,59 +1,90 @@
-= OpenMind Modules
-:description: Detailed documentation of OpenMind's module system
+= Module Reference
+:description: OpenMind module specifications and interfaces
 
-== Extrapolator Module
+== Extrapolator (`omnn/extrapolator`)
+[source,cpp]
+----
+namespace omnn::extrapolator {
+    template<typename T>
+    class Matrix {
+        Matrix(size_t rows, size_t cols);          // SIMD-aligned storage
+        
+        // Decomposition: O(n³) time, O(n²) space
+        void decompose(DecompType type = LU);      // LU default for speed
+        Vector<T> solve(const Vector<T>& b);       // Back-substitution O(n²)
+        
+        // GPU acceleration
+        void moveToGPU();                          // Async transfer
+        void syncFromGPU();                        // Blocking sync
+    };
+    
+    class Predictor {
+        // Training: O(n log n) time, O(n) space
+        void train(const DataSet& data,            // Input samples
+                  size_t max_depth = 10);          // Tree depth limit
+        
+        // Prediction: O(log n) time, O(1) space
+        Value predict(const Input& input);         // Thread-safe
+        
+        // Metrics
+        double accuracy() const;                   // k-fold cross-validation
+        double latency_ms() const;                 // 99th percentile
+    };
+}
+----
 
-The Extrapolator module (`omnn/extrapolator`) provides:
+== Logic System (`omnn/logic`)
+[source,cpp]
+----
+namespace omnn::logic {
+    class Proposition {
+        bool evaluate() const;                     // O(1) evaluation
+        Proposition simplify() const;              // CNF simplification
+        bool isContradiction() const noexcept;     // Consistency check
+    };
+    
+    class InferenceEngine {
+        void addRule(const Rule& rule);            // Add inference rule
+        void addFact(const Fact& fact);           // Add known fact
+        std::vector<Fact> infer();                // Forward chaining
+    };
+}
+----
 
-* Matrix operations for data analysis
-* Extrapolation algorithms
-* Pattern recognition capabilities
-* Data prediction models
+== Compile-time Utilities (`omnn/ct`)
+[source,cpp]
+----
+namespace omnn::ct {
+    // Type traits
+    template<typename T>
+    concept Arithmetic = std::is_arithmetic_v<T>;
+    
+    // Compile-time computation
+    template<typename T, T N>
+    struct Factorial {
+        static constexpr T value = N * Factorial<T, N-1>::value;
+    };
+    
+    // Static assertions
+    static_assert(Factorial<int, 5>::value == 120);
+}
+----
 
-== Logic Module
-
-The Logic module (`omnn/logic`) implements:
-
-* Logical operations framework
-* Boolean algebra operations
-* Inference engines
-* Rule-based systems
-
-== Compile-time Utilities
-
-The CT module (`omnn/ct`) provides compile-time optimization tools:
-
-* Template metaprogramming utilities
-* Compile-time computation facilities
-* Type trait helpers
-* Static assertions and checks
-
-== Goal Management System
-
-=== Core Components
-
-==== Mind Class
-The central coordinator that manages:
-
-* Goal prioritization
-* State machine transitions
-* Resource allocation
-* Goal execution scheduling
-
-==== Goal Generators
-
-* `GeneralGoalGenerator`: Creates general-purpose goals
-* `SingletonGoalGenerator`: One-time goal generation
-* `IdleTimeGoalGenerator`: Utilizes system idle time
-
-=== State Machine
-* Goal state tracking
-* Transition management
-* Event handling
-* Error recovery
-
-=== Facilities
-* Reusable operations
-* Common patterns
-* Utility functions
-* Resource management
+== Goal System (`omnn/core`)
+[source,cpp]
+----
+namespace omnn::core {
+    class Mind {
+        // O(1) goal operations
+        GoalId addGoal(Goal&& goal);              // Thread-safe
+        bool cancelGoal(GoalId id) noexcept;      // Lock-free
+        
+        // O(log n) scheduling
+        void processGoals(size_t max_concurrent);  // Work stealing
+        
+        // Resource management
+        void setThreadCount(size_t n);            // Dynamic scaling
+        void setMemoryLimit(size_t bytes);        // Memory control
+    };
+}
+----
