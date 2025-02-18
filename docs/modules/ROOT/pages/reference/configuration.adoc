@@ -1,32 +1,54 @@
 = Configuration Reference
-:description: Configuration options for OpenMind
+:description: Build and runtime configuration parameters
 
 == Build Configuration
 
-[source,bash]
+[source,cmake]
 ----
-# CMake configuration options
--DOPENMIND_BUILD_SAMPLES=ON/OFF    # Build example applications
--DOPENMIND_BUILD_TESTS=ON/OFF      # Build test suite
--DOPENMIND_USE_OPENCL=ON/OFF       # Enable OpenCL support
+# Core build options
+set(OPENMIND_BUILD_SAMPLES OFF)      # Build example applications
+set(OPENMIND_BUILD_TESTS ON)         # Build test suite
+set(OPENMIND_USE_OPENCL ON)          # Enable OpenCL support
+set(OPENMIND_USE_VULKAN OFF)         # Enable Vulkan compute
+set(OPENMIND_ENABLE_PROFILING OFF)   # Enable performance profiling
+
+# Compiler flags
+set(CMAKE_CXX_STANDARD 20)           # C++20 required
+set(CMAKE_CXX_STANDARD_REQUIRED ON)  # Enforce C++20
 ----
 
 == Runtime Configuration
 
 === Memory Management
-
-* Custom allocator configuration
-* Cache size settings
-* Thread pool size
+[source,cpp]
+----
+struct MemoryConfig {
+    size_t thread_pool_size = std::thread::hardware_concurrency();
+    size_t cache_size_mb = 1024;     // Default 1GB cache
+    size_t allocation_alignment = 16; // 16-byte alignment
+    bool use_huge_pages = false;     // Use 2MB pages
+};
+----
 
 === GPU Acceleration
-
-* OpenCL device selection
-* Compute shader configuration
-* Memory buffer sizes
+[source,cpp]
+----
+struct GpuConfig {
+    std::string preferred_device;     // Empty = auto-select
+    size_t compute_units = 0;        // 0 = use all available
+    size_t work_group_size = 256;    // OpenCL work group size
+    size_t buffer_size_mb = 512;     // Default 512MB buffers
+};
+----
 
 === Storage Backend
-
-* Database path configuration
-* Cache settings
-* Compression options
+[source,cpp]
+----
+struct StorageConfig {
+    std::string db_path = "/var/lib/openmind/db";
+    size_t cache_size_mb = 256;      // LRU cache size
+    bool compression = true;          // Enable LZ4 compression
+    uint32_t max_file_size_mb = 64;  // Max single file size
+    bool sync_writes = true;         // Force sync on write
+};
+----

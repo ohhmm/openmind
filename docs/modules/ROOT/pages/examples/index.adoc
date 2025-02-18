@@ -1,41 +1,62 @@
-= OpenMind Examples
-:description: Example implementations and use cases
+= Example Programs
+:description: Ready-to-run example programs demonstrating OpenMind features
 
-== Available Examples
+== Core Examples
 
-The `/Examples` directory contains various implementations demonstrating OpenMind's capabilities:
+=== Goal Management (`/Examples/goals/`)
+* `basic_goal.cpp`: Single goal creation and execution
+* `multi_goal.cpp`: Concurrent goal processing
+* `priority_goals.cpp`: Priority-based scheduling
 
-=== Basic Usage
+=== Neural Networks (`/Examples/neural/`)
+* `feedforward.cpp`: Basic feedforward network
+* `gpu_accel.cpp`: GPU-accelerated training
+* `distributed.cpp`: Multi-node network
 
-* Goal creation and management
-* Neural network setup
-* Mathematical operations
-* Storage system usage
+=== Mathematical Operations (`/Examples/math/`)
+* `matrix_ops.cpp`: Matrix algebra operations
+* `equation_solver.cpp`: Equation system solving
+* `optimization.cpp`: Function optimization
 
-=== Advanced Examples
-
-* Custom goal generators
-* Complex mathematical computations
-* Neural network optimization
-* Multi-threaded processing
-
-== Running Examples
+== Building Examples
 
 [source,bash]
 ----
-# Build examples
+# Build specific example
 cmake -B build -DOPENMIND_BUILD_SAMPLES=ON
-cmake --build build
+cmake --build build --target basic_goal feedforward matrix_ops
 
-# Run specific example
-./build/Examples/basic_goal_management
+# Run example
+./build/Examples/goals/basic_goal
+./build/Examples/neural/feedforward
+./build/Examples/math/matrix_ops
 ----
 
-== Creating Custom Examples
+== Example Template
 
-Guidelines for creating new examples:
+[source,cpp]
+----
+#include <openmind/core.hpp>
+#include <openmind/math.hpp>
 
-1. Follow the existing structure
-2. Include comprehensive comments
-3. Demonstrate specific features
-4. Include error handling
+int main() {
+    try {
+        // Initialize with 4 compute threads
+        omnn::Mind mind(4);
+        
+        // Create goal with priority
+        auto goal = mind.createGoal(
+            omnn::math::Variable<double>(1.0),  // Initial value
+            0.8                                 // Priority (0.0-1.0)
+        );
+        
+        // Process with timeout
+        mind.processGoals(4, std::chrono::seconds(30));
+        return goal.getState() == Goal::State::Completed ? 0 : 1;
+        
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+}
+----
