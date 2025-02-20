@@ -1336,6 +1336,28 @@ using namespace omnn::math;
             && eexp() > constants::zero;
 	}
 
+    size_t Exponentiation::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
+        if (!IsPolynomial(v)) {
+            IMPLEMENT
+        }
+        auto& base = getBase();
+        if (base == v) {
+            auto& exp = getExponentiation();
+            if (!exp.IsInt()) {
+                IMPLEMENT
+            }
+            auto i = static_cast<size_t>(exp.ca());
+            if (coefficients.size() < i + 1) {
+                coefficients.resize(i + 1);
+            }
+            coefficients[i] += 1;
+            return i;
+        }
+        if (coefficients.empty())
+            coefficients.emplace_back(std::move(*this));
+        return 0;
+    }
+
     void Exponentiation::solve(const Variable& va, solutions_t& s) const {
         if (_1 == va
 			&& !_2.FindVa()

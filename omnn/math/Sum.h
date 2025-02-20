@@ -141,7 +141,7 @@ public:
 
     bool IsBinomial() const;
     bool IsPolynomial(const Variable&) const override;
-    size_t FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const;
+    size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const;
     std::vector<Valuable> Coefficients(const Variable&) const;
     Formula FormulaOfVa(const Variable& v) const;
 

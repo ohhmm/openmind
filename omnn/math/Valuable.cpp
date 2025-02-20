@@ -1645,6 +1645,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
+    size_t Valuable::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
+        if (exp) {
+            return exp->FillPolynomialCoefficients(coefficients, v);
+        }
+        IMPLEMENT
+    }
+
     Valuable::solutions_t Valuable::Solutions() const
     {
         std::set<Variable> vars;
@@ -2831,7 +2838,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 //        auto quadratic = Equals(x) || x.Equals(second);
 //        auto& sum = quadratic.as<Sum>();
 //        std::vector<Valuable> coefficients;
-//        auto grade = sum.FillPolyCoeff(coefficients, x);
+//        auto grade = sum.FillPolynomialCoefficients(coefficients, x);
 //        if (grade != 2)
 //            IMPLEMENT
 //        if (coefficients.size() != 3)

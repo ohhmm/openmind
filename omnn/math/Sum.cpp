@@ -927,7 +927,7 @@ namespace
                 auto root = -*im.rbegin();
                 std::vector<Valuable> coefficients;
                 auto& va = im.begin()->as<Variable>();
-                auto degree = FillPolyCoeff(coefficients, va);
+                auto degree = FillPolynomialCoefficients(coefficients, va);
                 if (degree) {
                     auto coef = std::move(coefficients.back());
                     coefficients.pop_back();
@@ -1325,7 +1325,7 @@ namespace
                 const auto& va = *FindVa();
                 if (IsPolynomial(va)) {
                     std::vector<Valuable> coefficients;
-                    auto grade = FillPolyCoeff(coefficients, va);
+                    auto grade = FillPolynomialCoefficients(coefficients, va);
                     if (grade == 2) {
                         solutions_t solutions;
                         solve(va, solutions, coefficients, grade);
@@ -1424,7 +1424,7 @@ namespace
         return is;
     }
 
-    size_t Sum::FillPolyCoeff(std::vector<Valuable>& coefficients, const Variable& v) const
+    size_t Sum::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const
     {
         size_t grade = 0;
         OptimizeOn opt;
@@ -1433,7 +1433,7 @@ namespace
             if (!univariate.IsSum()) {
                 IMPLEMENT
             } else {
-                grade = univariate.as<Sum>().FillPolyCoeff(coefficients, v);
+                grade = univariate.as<Sum>().FillPolynomialCoefficients(coefficients, v);
                 return grade;
             }
         } else if(!IsPolynomial(v)){
@@ -1441,7 +1441,7 @@ namespace
             copy.SetView(View::Solving);
             copy.optimize(); // for Solving ^, object may morph, IsSum check and as<Sum> call required
             if (copy.IsPolynomial(v)) {
-                grade = copy.as<Sum>().FillPolyCoeff(coefficients, v);
+                grade = copy.as<Sum>().FillPolynomialCoefficients(coefficients, v);
                 return grade;
             } else {
                 LOG_AND_IMPLEMENT("Need normalized polynomial of f(" << v << ") to get its coefficients: " << str());
@@ -1485,7 +1485,7 @@ namespace
                         s.optimize();
                         if (s.IsSum()) {
                             coefficients.clear();
-                            return s.as<Sum>().FillPolyCoeff(coefficients, v);
+                            return s.as<Sum>().FillPolynomialCoefficients(coefficients, v);
                         } else {
                             IMPLEMENT
 						}
@@ -1502,7 +1502,7 @@ namespace
                     auto normalized = (v ^ -ie) * *this;
                     if(normalized.IsSum()){
                         coefficients.clear();
-                        return normalized.as<Sum>().FillPolyCoeff(coefficients, v);
+                        return normalized.as<Sum>().FillPolynomialCoefficients(coefficients, v);
                     } else {
                         IMPLEMENT
                     }
@@ -1590,7 +1590,7 @@ namespace
     
     std::vector<Valuable> Sum::Coefficients(const Variable& va) const {
         std::vector<Valuable> coefficients;
-        auto grade = FillPolyCoeff(coefficients, va);
+        auto grade = FillPolynomialCoefficients(coefficients, va);
         return coefficients;
     }
 
@@ -1604,7 +1604,7 @@ namespace
         }
         auto& es = e.as<Sum>();
         std::vector<Valuable> coefs;
-        auto grade = es.FillPolyCoeff(coefs, va);
+        auto grade = es.FillPolynomialCoefficients(coefs, va);
         if (coefs.size() && grade)
         {
             es.solve(va, solutions, coefs, grade);
@@ -1727,21 +1727,21 @@ namespace
         }
 
         std::vector<Valuable> coefficients;
-        auto grade = FillPolyCoeff(coefficients, va);
+        auto grade = FillPolynomialCoefficients(coefficients, va);
 
         if (coefficients.size() == grade && grade == 0) {
             throw std::runtime_error("Expression is empty");
         }
         if (coefficients.size() != grade+1){
 #ifndef NDEBUG
-            // grade = FillPolyCoeff(coefs, va);
+            // grade = FillPolynomialCoefficients(coefs, va);
 #endif
             IMPLEMENT
         }
         if(grade==0){
 #ifndef NDEBUG
             //coefficients.clear();
-            //grade = FillPolyCoeff(coefficients, va);
+            //grade = FillPolynomialCoefficients(coefficients, va);
 #endif
             return Valuable(std::move(s));
         } else if (grade == 1) {
@@ -1918,7 +1918,7 @@ namespace
         auto& sum = _.as<Sum>();
         {
             std::vector<Valuable> coefficients;
-            auto g = sum.FillPolyCoeff(coefficients, va);
+            auto g = sum.FillPolynomialCoefficients(coefficients, va);
             if (g < 3) {
                 sum.solve(va, solutions, coefficients, g);
 
@@ -2004,7 +2004,7 @@ namespace
         std::vector<Valuable> coefficients;
         auto isNormalizedPolynomial = IsPolynomial(va);
         if (isNormalizedPolynomial) {
-            auto grade = FillPolyCoeff(coefficients, va);
+            auto grade = FillPolynomialCoefficients(coefficients, va);
 //        if(grade > 2)
 //        {
 //            Valuable t = *this;
@@ -2558,7 +2558,7 @@ namespace
                 std::vector<Valuable> teq_coefficients;
                 if (teq.IsSum()) {
                     auto& teqs = teq.as<Sum>();
-                    if (teqs.FillPolyCoeff(teq_coefficients, va) != grade) {
+                    if (teqs.FillPolynomialCoefficients(teq_coefficients, va) != grade) {
                         IMPLEMENT
                     }
                 } else {
@@ -2608,7 +2608,7 @@ namespace
         }
         auto& va = *vars.cbegin();
         std::vector<Valuable> coefficients;
-        auto grade = FillPolyCoeff(coefficients, va);
+        auto grade = FillPolynomialCoefficients(coefficients, va);
         if (coefficients.size() < 2) {
                 IMPLEMENT
         }
@@ -2628,7 +2628,7 @@ namespace
         }
         auto& va = *vars.cbegin();
         std::vector<Valuable> coefficients;
-        auto grade = FillPolyCoeff(coefficients, va);
+        auto grade = FillPolynomialCoefficients(coefficients, va);
         if (coefficients.size() < 2) {
                 IMPLEMENT
         }
@@ -2644,7 +2644,7 @@ namespace
 	{
         Valuable fx(0);
         std::vector<Valuable> coefficients(4);
-        auto grade = FillPolyCoeff(coefficients,v);
+        auto grade = FillPolynomialCoefficients(coefficients,v);
         
         switch (grade) {
             case 2: {
