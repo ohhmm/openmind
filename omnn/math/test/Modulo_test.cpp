@@ -121,3 +121,22 @@ BOOST_AUTO_TEST_CASE(ModuloExponentiationOptimization_test, *disabled())
     expr2.optimize();
     BOOST_TEST(expr2 == -888 % x);
 }
+
+BOOST_AUTO_TEST_CASE(ModuloSquaredOptimization_test, *disabled())
+{
+    Variable z;
+    auto z_squared = z^2;
+    auto expr = (-888 * z_squared) % z_squared;
+    expr.optimize();
+    BOOST_TEST(expr == 0);
+
+    // Test with different coefficient
+    auto expr2 = (42 * z_squared) % z_squared;
+    expr2.optimize();
+    BOOST_TEST(expr2 == 0);
+
+    // Test with more complex expression
+    auto expr3 = ((z^2) * (z + 1)) % (z^2);
+    expr3.optimize();
+    BOOST_TEST(expr3 == z+1);
+}
