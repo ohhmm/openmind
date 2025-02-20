@@ -127,3 +127,32 @@ BOOST_AUTO_TEST_CASE(RadicalSimplificationAndSolving_test)
         BOOST_TEST(solution == 1);
     }
 }
+
+BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test
+    , *disabled()
+) {
+    DECL_VA(y);
+    DECL_VA(z);
+    
+    // Inner expression under sqrt
+    auto inner = -1944*(y^2) + -888*(z^2) + 1728*z*y + -5280*z + 7344*y + -8952;
+    
+    // Full expression
+    auto expr = (-inner.Sqrt() - (-18*y + -6*z + -204))/42;
+    
+    // Test with specific values
+    auto _1 = expr;
+    _1.eval({{y, 1}, {z, 1}});
+    _1.optimize();
+    
+    // Verify result matches expected value
+    auto _2 = _1.Sq() * 42 * 42;  // Square and multiply by denominator squared
+    _2.optimize();
+    
+    // The squared result should equal the original inner expression
+    auto expected = inner;
+    expected.eval({{y, 1}, {z, 1}});
+    expected.optimize();
+    
+    BOOST_TEST(_2 == expected);
+}
