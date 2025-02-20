@@ -58,6 +58,24 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
     return is;
 }
 
+[[nodiscard]]
+size_t PrincipalSurd::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
+    if (IsPolynomial(v)) {
+        if (HasVa(v)) {
+            IMPLEMENT
+        } else {
+            if (coefficients.empty()) {
+                coefficients.emplace_back(*this);
+            } else {
+                coefficients[0] += *this;
+            }
+        }
+    } else {
+        IMPLEMENT
+    }
+    return 0;
+}
+
 void PrincipalSurd::optimize() {
     if (!optimizations || is_optimized())
         return;
