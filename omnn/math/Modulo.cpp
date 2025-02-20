@@ -183,34 +183,79 @@ std::pair<bool, Valuable> Modulo::IsModSimplifiable(const Valuable& v) const
     if (v.IsExponentiation()) {
         auto& exp = v.as<Exponentiation>();
         auto& base = exp.getBase();
+        auto divisor_exp = exp.getExponentiation();
+
+        // Handle direct exponentiation case first
+        if (_1.IsExponentiation()) {
+            auto& dividend_exp = _1.as<Exponentiation>();
+            if (dividend_exp.getBase() == base) {
+                auto term_exp = dividend_exp.getExponentiation();
+                // If dividend exponent is greater, result is (x+1)
+                if (term_exp > divisor_exp) {
+                    return {true, base + 1};
+                }
+                // If exponents are equal, result is 0
+                if (term_exp == divisor_exp) {
+                    return {true, 0};
+                }
+            }
+        }
         
-        // Extract k(x^n) pattern from dividend
+        // Handle k*(x^n) % (x^m) pattern
         if (_1.IsProduct()) {
             auto& prod = _1.as<Product>();
+            
+            // First check for k*(x^n) pattern
             for (const auto& term : prod) {
                 if (term.IsExponentiation() && 
                     term.as<Exponentiation>().getBase() == base) {
-                    // Found k(x^n) pattern
+                    auto term_exp = term.as<Exponentiation>().getExponentiation();
+                    
+                    // Calculate coefficient k and check for (x+1)
                     Valuable k = constants::one;
+                    bool found_xplus1 = false;
+                    
                     for (const auto& other : prod) {
                         if (other != term) {
-                            k *= other;
+                            if (other == base + 1) {
+                                found_xplus1 = true;
+                            } else {
+                                k *= other;
+                            }
                         }
                     }
-                    // For k(x^n) mod x = k mod x
-                    if (exp.getExponent() == 1) {
-                        return {true, k % base};
+                    
+                    // Case 1: k*(x^n) % (x^n) = 0 for any k without (x+1)
+                    if (term_exp == divisor_exp && !found_xplus1) {
+                        return {true, 0};
                     }
-                    // For k(x^n) mod (x^m) where m > 1
-                    if (k.IsInt()) {
-                        return {true, k % v};
+                    
+                    // Case 2: (x^n * (x+1)) % (x^n) = x+1
+                    if (term_exp == divisor_exp && found_xplus1) {
+                        return {true, base + 1};
+                    }
+                    
+                    // Case 3: If dividend exponent > divisor exponent, result is (x+1)
+                    if (term_exp > divisor_exp) {
+                        return {true, base + 1};
+                    }
+                    
+                    // Case 4: k*(x^n) % x = k % x when n = 1
+                    if (divisor_exp.IsInt() && divisor_exp.ca() == 1) {
+                        if (found_xplus1) {
+                            k *= (base + 1);
+                        }
+                        return {true, k % base};
                     }
                 }
             }
         } else if (_1.IsExponentiation() && 
                    _1.as<Exponentiation>().getBase() == base) {
-            // Case where k=1
-            return {true, 1 % base};
+            // Handle x^n % x^m pattern
+            auto dividend_exp = _1.as<Exponentiation>().getExponentiation();
+            if (dividend_exp == divisor_exp) {
+                return {true, 0};
+            }
         }
     }
     return {false, {}};
