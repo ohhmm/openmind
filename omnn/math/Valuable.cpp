@@ -1652,6 +1652,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
+    std::vector<Valuable> Valuable::Coefficients(const Variable& v) const
+    {
+        std::vector<Valuable> coefficients;
+        (void) FillPolynomialCoefficients(coefficients, v);
+        return coefficients;
+    }
+
     Valuable::solutions_t Valuable::Solutions() const
     {
         std::set<Variable> vars;

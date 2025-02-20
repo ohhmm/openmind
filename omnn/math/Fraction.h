@@ -79,6 +79,8 @@ namespace math {
         bool IsPolynomial(const Variable& x) const override {
             return _1.IsPolynomial(x) && _2.IsSimple();
         }
+        [[nodiscard]]
+        size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const override;
         const PrincipalSurd* PrincipalSurdFactor() const override;
 
         using base::base;

@@ -1587,12 +1587,6 @@ namespace
 
         return grade;
     }
-    
-    std::vector<Valuable> Sum::Coefficients(const Variable& va) const {
-        std::vector<Valuable> coefficients;
-        auto grade = FillPolynomialCoefficients(coefficients, va);
-        return coefficients;
-    }
 
     Valuable Sum::operator()(const Variable& va, const Valuable& augmentation) const
     {
