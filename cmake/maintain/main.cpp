@@ -19,6 +19,7 @@
 #define GIT_FETCH_ALL "\"" GIT_EXECUTABLE_PATH "\" fetch --all --prune"
 #define CMD_LIST_LOCAL_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/heads/ --no-contains main"
 #define CMD_LIST_ORIGIN_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/remotes/origin/ --no-contains main"
+#define CMAKE_BUILD_COMMAND "\"" CMAKE_COMMAND "\" --build \"" SRC_DIR "\""
 
 
 using namespace std;
@@ -51,6 +52,13 @@ generator<std::string_view> list_origin_branches() {
     }
     pipe.close();
     branches.join();
+}
+
+bool build() {
+    boost::process::child build(CMAKE_BUILD_COMMAND);
+    std::cout << "Building" << std::endl;
+    build.join();
+    return build.exit_code() == 0;
 }
 
 bool rebase(std::string_view branch, std::string_view onto = "origin/main") {

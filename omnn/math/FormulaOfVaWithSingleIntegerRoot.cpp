@@ -31,7 +31,7 @@ namespace math {
 
         //auto isMultival = IsMultival()== YesNoMaybe::Yes;
         auto& sum = _.as<Sum>();
-        auto g = sum.FillPolyCoeff(coefficients,getVa());
+        auto g = sum.FillPolynomialCoefficients(coefficients,getVa());
         if (g<3)
         {
             solutions_t solutions;

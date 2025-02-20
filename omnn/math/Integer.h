@@ -98,6 +98,13 @@ public:
     [[nodiscard]]
     constexpr bool IsPolynomial(const Variable&) const override { return true; }
     [[nodiscard]]
+    size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const override {
+        if (coefficients.empty())
+            coefficients.resize(1);
+        coefficients[0] += *this;
+        return 0;
+    }
+    [[nodiscard]]
     constexpr YesNoMaybe IsMultival() const override { return YesNoMaybe::No; }
     [[nodiscard]]
     constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
