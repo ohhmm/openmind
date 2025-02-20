@@ -131,24 +131,77 @@ BOOST_AUTO_TEST_CASE(RadicalSimplificationAndSolving_test)
 BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test) {
     DECL_VA(y);
     DECL_VA(z);
-    
+
     // Inner expression under sqrt
     auto inner = -1944*(y^2) + -888*(z^2) + 1728*z*y + -5280*z + 7344*y + -8952;
-    
+
     // Full expression
     auto expr = (-inner.Sqrt() - (-18*y + -6*z + -204))/42;
-    
+
     // Test with specific values
     auto _1 = expr;
     _1.eval({{y, 1}, {z, 1}});
     _1.optimize();
-    
+
     // Verify result matches expected value
     auto _2 = _1.Sq() * 42 * 42;  // Square and multiply by denominator squared
     _2.optimize();
-    
+
     // The squared result should equal the original inner expression
     auto expected = inner;
     expected.eval({{y, 1}, {z, 1}});
     expected.optimize();
+}
+
+BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test0
+    , *disabled()
+) {
+    DECL_VA(y);
+    DECL_VA(z);
+
+    // Inner expression under sqrt
+    auto inner = -1944*(y^2) + -888*(z^2) + 1728*z*y + -5280*z + 7344*y + -8952;
+
+    // Full expression
+    auto expr = (-inner.Sqrt() - (-18*y + -6*z + -204))/42;
+
+    // Test with specific values
+    auto _1 = expr;
+    _1.eval({{y, 1}, {z, 1}});
+    _1.optimize();
+
+    // When we multiply both sides by 42:
+    // -sqrt(inner) - (-18y - 6z - 204) = expr * 42
+    auto _2 = _1 * 42;  // expr * 42
+    _2.optimize();
+    auto _3 = _2 + (-18*y - 6*z - 204);  // expr * 42 + (-18y - 6z - 204)
+    _3.optimize();
+
+    // -sqrt(inner) = expr * 42 + (-18y - 6z - 204)
+    // sqrt(inner) = -(expr * 42 + (-18y - 6z - 204))
+    auto _4 = -_3;  // -(expr * 42 + (-18y - 6z - 204))
+    _4.optimize();
+
+    // Verify sqrt(inner) equals our transformed expression
+    auto expected = inner.Sqrt();
+    expected.eval({{y, 1}, {z, 1}});
+    expected.optimize();
+
+    BOOST_TEST(_4 == expected);
+
+    // Also verify negative root case
+    auto neg_expected = -expected;
+    neg_expected.optimize();
+    BOOST_TEST(_4 == neg_expected || _4 == expected);
+
+    // Verify original equation is satisfied
+    auto verify = expr * 42 + (-18*y - 6*z - 204);  // Should equal -sqrt(inner)
+    verify.eval({{y, 1}, {z, 1}});
+    verify.optimize();
+
+    auto solution = -inner.Sqrt();
+    solution.eval({{y, 1}, {z, 1}});
+    solution.optimize();
+
+    BOOST_TEST(verify == solution);
 }

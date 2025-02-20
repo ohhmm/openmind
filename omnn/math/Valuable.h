@@ -425,8 +425,25 @@ public:
     [[nodiscard]]
     virtual Valuable Sin() const;
     [[nodiscard]]
-    virtual Valuable Sqrt() const;
-    virtual Valuable& sqrt();
+    virtual Valuable Sqrt() const {
+        if (IsZero()) return constants::zero;
+        if (exp) return exp->Sqrt();
+        if (IsNegative()) {
+            auto pos = -(*this);
+            pos.optimize();
+            auto result = PrincipalSurd(pos) * constants::i;
+            result.optimize();
+            return result;
+        }
+        auto result = PrincipalSurd(*this);
+        result.optimize();
+        return result;
+    }
+    virtual Valuable& sqrt() { 
+        auto result = Sqrt();
+        result.optimize();
+        return Become(result); 
+    }
     [[nodiscard]]
     virtual Valuable Tg() const;
     [[nodiscard]]
