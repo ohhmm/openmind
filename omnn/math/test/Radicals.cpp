@@ -131,22 +131,22 @@ BOOST_AUTO_TEST_CASE(RadicalSimplificationAndSolving_test)
 BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test) {
     DECL_VA(y);
     DECL_VA(z);
-    
+
     // Inner expression under sqrt
     auto inner = -1944*(y^2) + -888*(z^2) + 1728*z*y + -5280*z + 7344*y + -8952;
-    
+
     // Full expression
     auto expr = (-inner.Sqrt() - (-18*y + -6*z + -204))/42;
-    
+
     // Test with specific values
     auto _1 = expr;
     _1.eval({{y, 1}, {z, 1}});
     _1.optimize();
-    
+
     // Verify result matches expected value
     auto _2 = _1.Sq() * 42 * 42;  // Square and multiply by denominator squared
     _2.optimize();
-    
+
     // The squared result should equal the original inner expression
     auto expected = inner;
     expected.eval({{y, 1}, {z, 1}});
@@ -235,21 +235,21 @@ BOOST_AUTO_TEST_CASE(RadicalEquationMultipleRoots_test) {
     // Test for equation with multiple roots: x^2 = 1, which comes from x = 1^(1/2)
     // This test verifies that the solver correctly identifies both roots (1 and -1)
     DECL_VA(x);
-    
+
     // Create the equation in the form that the library can solve
     Valuable _1 = "x^2=1"sv;
-    
+
     // Solve for x
     auto solutions = _1.Solutions(x);
-    
+
     // Verify we have both solutions
     BOOST_TEST(solutions.size() == 2);
-    
+
     if (solutions.size() > 0) {
         // Check that both 1 and -1 are in the solutions
         bool foundPositive = false;
         bool foundNegative = false;
-        
+
         for (const auto& sol : solutions) {
             auto& solution = sol.get();
             if (solution == 1) {
@@ -258,17 +258,17 @@ BOOST_AUTO_TEST_CASE(RadicalEquationMultipleRoots_test) {
                 foundNegative = true;
             }
         }
-        
+
         BOOST_TEST(foundPositive);
         BOOST_TEST(foundNegative);
-        
+
         // Verify by substituting back into original equation
         for (const auto& sol : solutions) {
             auto& solution = sol.get();
             Valuable leftSide = "x^2"sv;
             leftSide.eval({{x, solution}});
             leftSide.optimize();
-            
+
             BOOST_TEST(leftSide == 1);
         }
     }
@@ -278,27 +278,80 @@ BOOST_AUTO_TEST_CASE(RadicalEquationWithVariableInRadicand_test) {
     // Test for equation: sqrt(x+3) = 2
     // This test verifies that the solver correctly handles variables inside the radicand
     DECL_VA(x);
-    
+
     // Create the equation in the form that the library can solve
     Valuable _1 = "sqrt(x+3)=2"sv;
-    
+
     // Solve for x
     auto solutions = _1.Solutions(x);
-    
+
     // Verify we have a solution
     BOOST_TEST(solutions.size() > 0);
-    
+
     if (solutions.size() > 0) {
         auto solution = solutions.begin()->get();
-        
+
         // Expected solution: x = 1
         BOOST_TEST(solution == 1);
-        
+
         // Verify by substituting back into original equation
         Valuable leftSide = "sqrt(x+3)"sv;
         leftSide.eval({{x, solution}});
         leftSide.optimize();
-        
+
         BOOST_TEST(leftSide == 2);
     }
+}
+
+BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test0
+    , *disabled()
+) {
+    DECL_VA(y);
+    DECL_VA(z);
+
+    // Inner expression under sqrt
+    auto inner = -1944*(y^2) + -888*(z^2) + 1728*z*y + -5280*z + 7344*y + -8952;
+
+    // Full expression
+    auto expr = (-inner.Sqrt() - (-18*y + -6*z + -204))/42;
+
+    // Test with specific values
+    auto _1 = expr;
+    _1.eval({{y, 1}, {z, 1}});
+    _1.optimize();
+
+    // When we multiply both sides by 42:
+    // -sqrt(inner) - (-18y - 6z - 204) = expr * 42
+    auto _2 = _1 * 42;  // expr * 42
+    _2.optimize();
+    auto _3 = _2 + (-18*y - 6*z - 204);  // expr * 42 + (-18y - 6z - 204)
+    _3.optimize();
+
+    // -sqrt(inner) = expr * 42 + (-18y - 6z - 204)
+    // sqrt(inner) = -(expr * 42 + (-18y - 6z - 204))
+    auto _4 = -_3;  // -(expr * 42 + (-18y - 6z - 204))
+    _4.optimize();
+
+    // Verify sqrt(inner) equals our transformed expression
+    auto expected = inner.Sqrt();
+    expected.eval({{y, 1}, {z, 1}});
+    expected.optimize();
+
+    BOOST_TEST(_4 == expected);
+
+    // Also verify negative root case
+    auto neg_expected = -expected;
+    neg_expected.optimize();
+    BOOST_TEST(_4 == neg_expected || _4 == expected);
+
+    // Verify original equation is satisfied
+    auto verify = expr * 42 + (-18*y - 6*z - 204);  // Should equal -sqrt(inner)
+    verify.eval({{y, 1}, {z, 1}});
+    verify.optimize();
+
+    auto solution = -inner.Sqrt();
+    solution.eval({{y, 1}, {z, 1}});
+    solution.optimize();
+
+    BOOST_TEST(verify == solution);
 }
