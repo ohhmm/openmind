@@ -96,6 +96,7 @@ public:
     solutions_t Distinct() const override;
 
     bool IsPolynomial(const Variable&) const override;
+    size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const override;
 
     Valuable Abet(const std::initializer_list<Valuable>) const;
 
