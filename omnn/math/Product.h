@@ -89,8 +89,9 @@ public:
     Valuable& gcd(const Product&);
     Valuable& gcd(const Valuable&) override;
     Valuable& operator+=(const Valuable&) override;
-    std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
-    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
+    std::pair<bool, Valuable> IsSummationSimplifiable(const Product&) const;
+    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable&) const override;
+    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
     Valuable& operator*=(const Valuable& v) override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;

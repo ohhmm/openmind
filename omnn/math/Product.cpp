@@ -837,13 +837,39 @@ using namespace omnn::math;
         return is;
     }
 
+   std::pair<bool, Valuable> Product::IsSummationSimplifiable(const Product& prod) const {
+       std::pair<bool, Valuable> is;
+       auto vars1 = getVaVal();
+       auto vars2 = prod.getVaVal();
+       auto commonVars = vars1.InCommonWith(vars2);
+       if (vars1 != constants::one && vars2 != constants::one && commonVars == constants::one) {
+           is.first = {};
+       } else {
+           auto common = InCommonWith(prod);
+           if (common != constants::one) {
+               auto thisNoCommon = *this / common;
+               if (!operator==(thisNoCommon)) { // multivalue scenarios
+                   auto vNoCommon = prod / common;
+                   if (vNoCommon != prod) {
+                       is = thisNoCommon.IsSummationSimplifiable(vNoCommon);
+                       if (is.first) {
+                           is.second *= common;
+                       }
+                   }
+               }
+           }
+       }
+       return is;
+   }
 
    std::pair<bool,Valuable> Product::IsSummationSimplifiable(const Valuable& v) const
    {
        std::pair<bool,Valuable> is;
-       is.first = v == 0;
+       is.first = v.IsZero();
        if (is.first)
            is.second = *this;
+       else if (v.IsProduct())
+           is = IsSummationSimplifiable(v.as<Product>());
        else if ((is.first = operator==(v)))
            is.second = *this * 2;
        else if ((is.first = operator==(-v)))
