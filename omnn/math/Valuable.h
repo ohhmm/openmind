@@ -468,6 +468,8 @@ public:
     virtual Valuable Univariate() const;
     virtual bool IsPolynomial(const Variable&) const;
     virtual size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const;
+    std::vector<Valuable> Coefficients(const Variable&) const;
+
     solutions_t Solutions() const;
     solutions_t IntSolutions() const;
     solutions_t Solutions(const Variable&) const;

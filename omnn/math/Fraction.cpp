@@ -850,3 +850,27 @@ const PrincipalSurd* Fraction::PrincipalSurdFactor() const {
         hasPrincipalSurd = denominator().PrincipalSurdFactor();
     return hasPrincipalSurd;
 }
+
+size_t Fraction::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
+    if (!IsPolynomial(v)) {
+        IMPLEMENT
+    }
+
+    if (_2.HasVa(v)) {
+        IMPLEMENT
+    }
+
+    // Get the grade first to ensure proper sizing
+    std::vector<Valuable> coef;
+    auto grade = _1.FillPolynomialCoefficients(coef, v);
+    // Ensure coefficients vector has enough space
+    if (coefficients.size() <= grade) {
+        coefficients.resize(grade + 1);
+    }
+    // Divide all coefficients by denominator
+    for (size_t i = 0; i <= grade; ++i) {
+        coef[i] /= _2;
+        coefficients[i] += std::move(coef[i]);
+    }
+    return grade;
+}
