@@ -107,3 +107,17 @@ BOOST_AUTO_TEST_CASE(IsModSimplifiable_test)
     BOOST_TEST(!result.first);
     BOOST_TEST(result.second == Valuable());
 }
+
+BOOST_AUTO_TEST_CASE(ModuloExponentiationOptimization_test, *disabled())
+{
+    Variable x;
+    // Basic pattern: k(x^n) mod x = k mod x
+    auto expr = (42 * (x^3)) % x;
+    expr.optimize();
+    BOOST_TEST(expr == 42 % x);
+
+    // Test with different n values
+    auto expr2 = (-888 * (x^5)) % x;
+    expr2.optimize();
+    BOOST_TEST(expr2 == -888 % x);
+}
