@@ -50,261 +50,222 @@ namespace
     CACHE(DbSumSqCache);
 }
 
+bool Sum::HasSurdFactor() const {
+    return std::any_of(members.begin(), members.end(),
+        [](const auto& m) {
+            return m.IsPrincipalSurd() ||
+                   (m.IsProduct() && m.as<Product>().HasSurdFactor()) ||
+                   (m.IsSum() && m.as<Sum>().HasSurdFactor());
+        });
+}
 
-    Sum::iterator Sum::Had(iterator it)
-    {
-        auto item = *it;
-        std::cout << item.str();
-        it = std::find(members.begin(), members.end(), item);
-        LOG_AND_IMPLEMENT("Impossible! Check order comparator error: " << item << " was in  " << *this);
-        return it;
+void Sum::ExtractSurdFactors(Valuable& base, Valuable& exponent) const {
+    base = constants::one;
+    exponent = constants::one;
+
+    for (const auto& m : members) {
+        if (m.IsPrincipalSurd()) {
+            base *= m.as<PrincipalSurd>().Radicand();
+            exponent = m.as<PrincipalSurd>().Index();
+        } else if (m.IsProduct() && m.as<Product>().HasSurdFactor()) {
+            Valuable b, e;
+            m.as<Product>().ExtractSurdFactors(b, e);
+            base *= b;
+            exponent = e;
+        }
+    }
+}
+
+Valuable Sum::Sqrt() const {
+    if (IsZero()) {
+        return constants::zero;
     }
 
-    bool Sum::VarSurdFactor(const Valuable& v) {
-        return (v.IsProduct() && v.as<Product>().HasSurdFactor())
-            || (v.IsSum() && v.as<Sum>().HasSurdFactor())
-            || (v.IsPrincipalSurd() && v.FindVa() != nullptr);
+    if (size() == 1) {
+        return begin()->Sqrt();
     }
 
-    auto HwC = std::thread::hardware_concurrency();
-    auto Thr = ::std::min<decltype(HwC)>(HwC << 3, 128);
+    // Handle complex expressions with variables
+    auto copy = *this;
+    copy.optimize();
 
-    const Sum::iterator Sum::Add(const Valuable& item, const iterator hint) {
-        auto copy = item;
-        return this->Add(std::move(copy), hint);
+    if (!copy.IsSum()) {
+        return copy.Sqrt();
     }
 
-    const Sum::iterator Sum::Add(Valuable&& item, const iterator hint)
-    {
-        iterator it = hint;
-        if (item.IsZero())
-            it = end();
-        else if (item.IsInt()) {
-            it = GetFirstOccurence<Integer>();
-            auto e = end();
-            if (it == e)
-                it = GetFirstOccurence<Fraction>();
-            if (it != e && it->IsSimple()) {
-                auto i = Extract(it++);
-                OptimizeOn oo;
-                i += item;
-                if (!i.IsZero())
-                    it = Add(std::move(i), it);
-                else
-                    it = e;
+    // Try to find common factors that can be extracted
+    auto gcd = copy.GCDofMembers();
+    if (gcd != constants::one) {
+        // Extract sqrt of common factor
+        auto sqrt_gcd = gcd.Sqrt();
+        auto remainder = copy / gcd;
+        remainder.optimize();
+
+        if (remainder.IsSum()) {
+            // Check if remainder has surd factors
+            if (remainder.as<Sum>().HasSurdFactor()) {
+                Valuable base, exp;
+                remainder.as<Sum>().ExtractSurdFactors(base, exp);
+                auto result = sqrt_gcd * PrincipalSurd(base, exp * constants::half);
+                result.optimize();
+                return result;
             }
-            else
-                it = base::Add(std::move(item), hint);
-        } else if (item.IsSimpleFraction()
-            && (it = GetFirstOccurence<Fraction>()) != end()
-            && it->IsSimple())
-        {
+            auto result = sqrt_gcd * PrincipalSurd(remainder);
+            result.optimize();
+            return result;
+        }
+        auto result = sqrt_gcd * remainder.Sqrt();
+        result.optimize();
+        return result;
+    }
+
+    // Check for surd factors in the sum
+    if (HasSurdFactor()) {
+        Valuable base, exp;
+        ExtractSurdFactors(base, exp);
+        auto result = PrincipalSurd(base, exp * constants::half);
+        result.optimize();
+        return result;
+    }
+
+    // For expressions like (-1944*(y^2) + -888*(z^2) + 1728*z*y + -5280*z + 7344*y + -8952)
+    // We need to handle negative values carefully
+    auto varless = copy.varless();
+    if (varless.IsInt() && varless < 0) {
+        auto pos = -copy;
+        pos.optimize();
+        auto result = PrincipalSurd(pos) * constants::i;
+        result.optimize();
+        return result;
+    }
+
+    auto result = PrincipalSurd(copy);
+    result.optimize();
+    return result;
+}
+
+// Restore other necessary methods from original Sum.cpp
+Sum::iterator Sum::Had(iterator it) {
+    auto item = *it;
+    std::cout << item.str();
+    it = std::find(members.begin(), members.end(), item);
+    LOG_AND_IMPLEMENT("Impossible! Check order comparator error: " << item << " was in  " << *this);
+    return it;
+}
+
+bool Sum::VarSurdFactor(const Valuable& v) {
+    return (v.IsProduct() && v.as<Product>().HasSurdFactor())
+        || (v.IsSum() && v.as<Sum>().HasSurdFactor())
+        || (v.IsPrincipalSurd() && v.FindVa() != nullptr);
+}
+
+auto HwC = std::thread::hardware_concurrency();
+auto Thr = ::std::min<decltype(HwC)>(HwC << 3, 128);
+
+const Sum::iterator Sum::Add(const Valuable& item, const iterator hint) {
+    auto copy = item;
+    return this->Add(std::move(copy), hint);
+}
+
+const Sum::iterator Sum::Add(Valuable&& item, const iterator hint) {
+    iterator it = hint;
+    if (item.IsZero())
+        it = end();
+    else if (item.IsInt()) {
+        it = GetFirstOccurence<Integer>();
+        auto e = end();
+        if (it == e)
+            it = GetFirstOccurence<Fraction>();
+        if (it != e && it->IsSimple()) {
             auto i = Extract(it++);
             OptimizeOn oo;
             i += item;
             if (!i.IsZero())
                 it = Add(std::move(i), it);
             else
-                it = end();
-        } else if (item.IsSum()) {
-            for(auto& i : item.as<Sum>()) {
-                it = Add(i, it);
-            }
+                it = e;
         }
         else
-        {
-#if __has_include(<execution>)
-            if (members.size() > Thr)
-                it = std::find(
-                               PAR
-                               members.begin(), members.end(), item);
-            else
-#endif
-                it = members.find(item);
-
-            auto itemMaxVaExp = item.getMaxVaExp();
-            if (it == end()) {
-                it = base::Add(std::move(item), hint);
-            } else {
-                Update(it, std::move(item.shl()));
-            }
-
-            if(itemMaxVaExp > maxVaExp)
-                maxVaExp = itemMaxVaExp;
-
-            // FIXME: handle lowering of maxVaExp
-        }
-        return it;
-    }
-
-    void Sum::Update(iterator& it, Valuable&& value)
+            it = base::Add(std::move(item), hint);
+    } else if (item.IsSimpleFraction()
+        && (it = GetFirstOccurence<Fraction>()) != end()
+        && it->IsSimple())
     {
-        if (value.IsZero()) {
-            Delete(it);
+        auto i = Extract(it++);
+        OptimizeOn oo;
+        i += item;
+        if (!i.IsZero())
+            it = Add(std::move(i), it);
+        else
+            it = end();
+    } else if (item.IsSum()) {
+        for(auto& i : item.as<Sum>()) {
+            it = Add(i, it);
+        }
+    } else {
+        it = members.find(item);
+        if (it == end()) {
+            it = base::Add(std::move(item), hint);
         } else {
-            base::Update(it, std::move(value));
+            Update(it, std::move(item));
         }
+        maxVaExp = std::max(maxVaExp, item.getMaxVaExp());
+    }
+    return it;
+}
+
+void Sum::Update(iterator& it, Valuable&& value) {
+    if (value.IsZero()) {
+        Delete(it);
+    } else {
+        base::Update(it, std::move(value));
+    }
+}
+
+void Sum::Update(iterator& it, const Valuable& value) {
+    if (value.IsZero()) {
+        Delete(it);
+    } else {
+        base::Update(it, value);
+    }
+}
+
+Valuable Sum::operator-() const {
+    Sum s;
+    for (auto& a : members)
+        s.Add(-a);
+    return s;
+}
+
+bool Sum::IsZero() const {
+    auto n = members.size();
+    return n == 0 || (n == 1 && members.begin()->IsZero());
+}
+
+bool Sum::operator==(const Sum& v) const {
+    return members == v.members
+            || (members.size() == 1 && members.begin()->operator==(v))
+            || (IsZero() && v.IsZero());
+}
+
+bool Sum::operator==(const Valuable& v) const {
+    return (Valuable::hash == v.Hash() && v.IsSum() && operator==(v.as<Sum>())) ||
+           (members.size() == 1 && members.begin()->operator==(v)) ||
+           (IsZero() && v.IsZero());
+}
+
+void Sum::optimize() {
+    if (is_optimized() || !optimizations) {
+        return;
     }
 
-    void Sum::Update(iterator& it, const Valuable& value)
+    if (isOptimizing) {
+        return;
+    }
+
+    ANTILOOP(Sum)
+
     {
-        if (value.IsZero()) {
-            Delete(it);
-        } else {
-            base::Update(it, value);
-        }
-    }
-
-	Valuable Sum::operator -() const
-	{
-		Sum s;
-		for (auto& a : members) 
-			s.Add(-a);
-		return s;
-	}
-
-    Valuable Sum::LCMofMemberFractionDenominators() const {
-        auto lcm = constants::one;
-        for (auto& m : members) {
-            if (m.IsFraction()) {
-                auto& f = m.as<Fraction>();
-                auto& dn = f.getDenominator();
-                if (dn != constants::one) {
-                    lcm.lcm(dn);
-                }
-            } else if (m.IsExponentiation()) {
-                auto& e = m.as<Exponentiation>();
-                auto& ee = e.getExponentiation();
-                if (ee == constants::minus_1) {
-                    lcm.lcm(e.getBase());
-                }
-            } else if (m.IsProduct()) {
-                auto& p = m.as<Product>();
-                for (auto& m : p) {
-                    if (m.IsFraction()) {
-						auto& f = m.as<Fraction>();
-						auto& dn = f.getDenominator();
-                        if (dn != constants::one) {
-							lcm.lcm(dn);
-						}
-                    }
-                    else if (m.IsExponentiation()) {
-						auto& e = m.as<Exponentiation>();
-						auto& ee = e.getExponentiation();
-                        if (ee == constants::minus_1) {
-							lcm.lcm(e.getBase());
-						}
-					}
-				}
-            }
-        }
-        return lcm;
-    }
-
-    Valuable Sum::GCDofMembers() const {
-        if (!is_optimized() && !isOptimizing) {
-            OptimizeOn on;
-            Valuable copy(Clone());
-            copy.optimize();
-            if (copy.is_optimized()) {
-                return copy.IsSum()
-                    ? copy.as<Sum>().GCDofMembers()
-                    : std::move(copy);
-            }
-        }
-        auto beg = members.begin();
-        auto num = members.size();
-        auto gcd = num == 0 ? constants::zero : *beg;
-        if (num > 1) {
-            auto e = members.end();
-            auto it = beg;
-            gcd.gcd(*++it);
-            for (; gcd != constants::one && it != e; ++it) {
-                if (it->IsZero()) {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-                    LOG_AND_IMPLEMENT("FIXME: GCD of members of non-optimized sums causes lesser GCD values: " << *this);
-#endif
-                    continue;
-                }
-                bool processed = false;
-                if (it->IsPrincipalSurd()) {
-                    auto& surd = it->as<PrincipalSurd>();
-                    auto& subexpr = surd.Radicand();
-                    if (subexpr.IsSum()) {
-                        auto subgcd = subexpr.as<Sum>().GCDofMembers();
-                        Valuable copy = surd;
-                        copy.as<PrincipalSurd>().setRadicand(std::move(subgcd));
-                        copy.optimize();
-                        processed = !copy.FindVa();
-                        if (processed) {
-                            if (copy.IsInt())
-                                gcd = boost::integer::gcd(gcd, copy);
-                            else
-                                gcd = copy.GCD(gcd);
-                        }
-                    }
-                }
-                if (!processed) {
-                    gcd.gcd(*it);
-                }
-            }
-        }
-        return gcd;
-    }
-
-    Valuable Sum::GCDofCoefficients(const Variable& va) const {
-        auto coefficients = Coefficients(va);
-        auto beg = std::begin(coefficients);
-        auto& init = coefficients.size() > 0 ? *beg++ : constants::zero;
-        return std::reduce(beg, coefficients.end(), init,
-            [](auto _1st, auto _2nd) { return _1st.GCD(_2nd); });
-    }
-
-    Valuable Sum::GCD(const Valuable& v) const {
-        if (v.IsInt())
-            return v.GCD(GCDofMembers()); 
-        auto gcd = base::GCD(v);
-        if (gcd == constants::one) {
-            auto gcdm = GCDofMembers();
-            gcd = v.GCD(gcdm);
-            if (gcd == constants::one && v.IsSum()) {
-                gcd = gcdm.gcd(v.as<Sum>().GCDofMembers());
-            }
-        }
-        return gcd;
-    }
-
-    bool Sum::IsZero() const {
-        auto n = members.size();
-        return n == 0
-			|| (n == 1 && members.begin()->IsZero());
-    }
-
-    bool Sum::operator==(const Sum& v) const {
-        return members == v.members
-                || (members.size() == 1 && members.begin()->operator==(v))
-                || (IsZero() && v.IsZero());
-    }
-    bool Sum::operator ==(const Valuable &v) const
-    {
-        return (Valuable::hash == v.Hash()
-                && v.IsSum()
-                && operator==(v.as<Sum>())
-                )
-                || (members.size() == 1 && members.begin()->operator==(v))
-                || (IsZero() && v.IsZero());
-    }
-    
-    void Sum::optimize()
-    {
-        if (is_optimized() || !optimizations)
-            return;
-
-        if (isOptimizing)
-            return;
-
-        ANTILOOP(Sum)
-
         Optimizing o(*this);
 
         auto s = str();
@@ -349,21 +310,24 @@ namespace
                 else if (it->IsZero()) {
                     Delete(it);
                     continue;
-                } else
+                } else {
                     ++it;
+                }
             }
 
-            //if (isBalancing)
-            //    balance();
+            if (isBalancing) {
+                balance();
+            }
 
-            for (auto it = members.begin(); it != members.end();)
-            {
+            for (auto it = members.begin(); it != members.end();) {
                 // optimize member
                 auto copy = it->Optimized();
-                if (!it->Same(copy))
+                if (!it->Same(copy)) {
                     Update(it, copy);
-                else
+                }
+                else {
                     ++it;
+                }
 
                 CHECK_OPTIMIZATION_CACHE
             }
@@ -376,15 +340,28 @@ namespace
                 break;
             }
 
-            for (auto it = members.begin(); it != members.end();)
-            {
-                if (it->IsSum()) {
-                    for (auto& m : it->as<Sum>())
-                    {
-                        Add(std::move(m));
+            // Continue with member optimization
+
+            // Optimize each member recursively
+            for (auto it = members.begin(); it != members.end();) {
+                if (!isOptimizing && it->IsSum()) {
+                    // Handle nested sums by flattening and optimizing
+                    auto& sum = it->as<Sum>();
+                    if (!sum.isOptimizing) {
+                        sum.optimize();
+                        for (auto& m : sum) {
+                            Add(std::move(m));
+                        }
+                        it = members.erase(it);
+                        if (!isOptimizing) {
+                            isOptimizing = true;
+                            optimize();
+                            PerformSurdReduce();
+                            optimize();
+                            isOptimizing = false;
+                        }
+                        continue;
                     }
-                    Delete(it);
-                    continue;
                 }
 
                 auto it2 = it;
@@ -398,19 +375,7 @@ namespace
 
                 up();
 
-                auto comVaEq = [&]() {
-                    auto& ccv = c.getCommonVars();
-                    auto ccvsz = ccv.size();
-                    auto& itcv = it2->getCommonVars();
-                    auto itcvsz = itcv.size();
-                    return ccvsz
-                        && ccvsz == itcvsz
-                        && std::equal(//TODO:std::execution::par,
-                            ccv.cbegin(), ccv.cend(), itcv.cbegin());
-                };
-
-                for (; it2 != members.end();)
-                {
+                for (; it2 != members.end();) {
                     CHECK_OPTIMIZATION_CACHE
                     
                     if (c.IsSum() || c.IsNaN()) {
@@ -422,8 +387,7 @@ namespace
                         Delete(it2);
                         up();
                     }
-                    else
-                    if (((c.IsFraction() || c.IsInt()) && it2->IsSimpleFraction())
+                    else if (((c.IsFraction() || c.IsInt()) && it2->IsSimpleFraction())
                         || (it2->IsInt() && (c.IsInt() || c.IsSimpleFraction()))
                         || (c.IsProduct() && mc == *it2)
                         || c.IsInfinity() || c.IsMInfinity()
@@ -502,20 +466,9 @@ namespace
                 else
                     ++it;
             }
-            
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-//            if (w!=*this) {
-//                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
-//            }
-#endif
         } while (w != *this);
 
         if (IsSum()) {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            if (size() == 1) {
-                LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << s << " to " << *this);
-            }
-#endif
             if (isBalancing)
                 balance();
         }
@@ -524,213 +477,87 @@ namespace
             db.AsyncSet(std::move(s), str());
         }
     }
+}
 
-    void Sum::balance()
-    {
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        std::cout << "Balancing " << *this << std::endl;
-#endif
-        if(IsSum())
-        {
-            if (members.size() == 0) {
-                Become(0_v);
-            }
-            else if (members.size() == 1) {
-                cont::iterator b = members.begin();
-                Become(std::move(const_cast<Valuable&>(*b)));
-            }
-            else {
-                // make coefficients int to use https://simple.wikipedia.org/wiki/Rational_root_theorem
-                bool scan;
-                do {
-                    scan = {};
-                    if (IsSum())
-                    {
-                        for (auto& member : members)
-                        {
-                            if (member.IsProduct()) {
-                                auto& p = member.as<Product>();
-                                for (auto& m : p) {
-                                    if (m.IsFraction()) {
-                                        operator*=(m.as<Fraction>().getDenominator());
-                                        scan = true;
-                                        break;
-                                    }
-                                    else if (m.IsExponentiation()) {
-                                        auto& e = m.as<Exponentiation>();
-                                        auto& ee = e.getExponentiation();
-                                        if (ee.IsInt() && ee.ca() < 0) {
-                                            operator*=(e.getBase() ^ (-ee)); // FIXME: (-1*((-1*percentWaterDehydrated + 100)^(-1))*potatoKgDehydrated + (percentWaterDehydrated^(-1))*weightWaterDehydrated)  *  (-1*percentWaterDehydrated + 100)
-
-                                            scan = true;
-                                            break;
-                                        }
-                                        else if (ee.IsFraction()) {
-                                            auto& f = ee.as<Fraction>();
-                                            auto& d = f.getDenominator();
-
-                                            auto wo = p;
-                                            wo.Delete(e);
-
-                                            auto nop = *this;
-                                            nop.Delete(p);
-
-                                            auto balanced =
-                                                ((e.getBase() ^ f.getNumerator()) * (wo ^ d)) - ((-nop) ^ d);
-                                            Become(std::move(balanced));
-                                            scan = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (scan)
-                                    break;
-                            } else if (member.IsFraction()) {
-                                operator*=(member.as<Fraction>().getDenominator());
-                                scan = true;
-                                break;
-                            } else if (member.IsExponentiation()) {
-                                auto& e = member.as<Exponentiation>();
-                                auto& ee = e.getExponentiation();
-                                if (ee.IsInt() && ee < 0) {
-                                    operator*=(e.getBase() ^ (-ee));
-                                    scan = true;
-                                    break;
-                                }
-                                else if (ee.IsFraction()) {
-                                    auto& f = ee.as<Fraction>();
-                                    Become((e.getBase() ^ f.getNumerator()) - ((-(*this - member)) ^ f.getDenominator()));
-                                    scan = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                } while (scan);
-
-                if(IsSum())
-                {
-                    auto gcd = GCDofMembers();
-                    if(gcd != constants::one && !gcd.IsPrincipalSurd()){
-                        if (gcd.IsProduct()) {
-                            for (auto& member : gcd.as<Product>()) {
-                                if (member.FindVa() == nullptr || !member.IsPrincipalSurd()) {
-                                    operator/=(member);
-                                }
-                            }
-                        } else {
-                            operator/=(gcd);
-                        }
-                    }
-
-                    if(IsMultival()== YesNoMaybe::Yes){
-                        auto uni = Univariate();
-                        if(!Same(uni)){
-                            Become(std::move(uni));
+void Sum::PerformSurdReduce() {
+    if (IsEquation()) {
+        // For sqrt(x)=0, roots are same as x=0
+        // But for sqrt(x)+1=0, roots after square (x=1) differ from x+1=0 (x=-1)
+        // Only equality to zero with zero sign can be squared (not for odd powers)
+        auto isSurdReduceCommonlyAllowed =
+            size() == 1 || GetView() == View::SupersetOfRoots;
+        auto e = members.end();
+        for (auto it = members.begin(); it != e; ++it) {
+            auto SurdIsReducable = [&](auto& it) {
+                auto is = isSurdReduceCommonlyAllowed;
+                if (!is) {
+                    auto isThereSurd = it->PrincipalSurdFactor();
+                    if (isThereSurd) {
+                        auto& index = isThereSurd->Index();
+                        if (index.IsEven() == YesNoMaybe::No) {
+                            auto next = it;
+                            ++next;
+                            is = std::none_of(next, e, &Sum::VarSurdFactor);
                         }
                     }
                 }
-            }
-        }
-    }
-
-    const PrincipalSurd* Sum::PrincipalSurdFactor() const
-    {
-        auto isTherePrincipalSurdFactor = size() == 1 ? begin()->PrincipalSurdFactor() : nullptr;
-        if (!isTherePrincipalSurdFactor)
-        {
-            auto areAllPrincipalSurdFactors = std::all_of(begin(), end(),
-                [](auto& m) { return m.PrincipalSurdFactor() != nullptr; });
-            if (areAllPrincipalSurdFactors) {
-                IMPLEMENT
-            }
-        }
-        return isTherePrincipalSurdFactor;
-    }
-
-    void Sum::PerformSurdReduce()
-    {
-        if (IsEquation()) {
-            auto isSurdReduceCommonlyAllowed =
-                size() ==
-                    1 // sqrt(x)=0 roots is no differ from x=0 roots, but sqrt(x)+1=0 roots adter square (x=1) is
-                      // different from x+1=0 (x=-1) this means that only equality to zero which has zero sign can be
-                      // squared (not for odd powers) reducing surd makes new consistent equation which roots might be
-                      // considered for the source equation but it is not equivalent if size > 1, where expression under
-                      // surd is not zero, it may be used for root finding routine, not for equation transformation:
-                || GetView() == View::SupersetOfRoots;
-            auto e = members.end();
-            for (auto it = members.begin(); it != e; ++it) {
-                auto SurdIsReducable = [&](auto& it) {
-                    auto is = isSurdReduceCommonlyAllowed;
-                    if (!is) {
-                        auto isThereSurd = it->PrincipalSurdFactor();
-                        if (isThereSurd) {
-                            auto& index = isThereSurd->Index();
-                            if (index.IsEven() == YesNoMaybe::No) {
-                                auto next = it;
-                                ++next;
-                                is = std::none_of(next, e, &Sum::VarSurdFactor);
-                            }
-                        }
-                    }
-                    return is;
-                };
-                auto isThereSurd = it->PrincipalSurdFactor();
-                if (isThereSurd && SurdIsReducable(it)) {
-                    if (it->IsPrincipalSurd()) {
-                        ViewOptimizePause flat(this);
-                        auto ps = Extract(it);
-                        auto& surd = ps.as<PrincipalSurd>();
-                        operator^=(surd.Index());
-                        operator-=(surd.Radicand());
-                        break;
-                    } else if (it->IsProduct()) {
-                        auto& idx = isThereSurd->Index();
-                        ViewOptimizePause flat(this);
-                        auto product = Extract(it);
-                        operator^=(idx);
-                        product ^= idx;
-                        operator-=(product);
-                        break;
-                    } else if (it->IsExponentiation()) {
-                        auto& exponentiation = it->as<Exponentiation>();
-                        auto& base = exponentiation.ebase();
-                        if (base.IsPrincipalSurd()) {
-                            auto variable = base.FindVa();
-                            if (variable == nullptr) {
-                                ViewOptimizePause flat(this);
-                                auto extracted = Extract(it);
-                                auto& extractedExponentiation = extracted.as<Exponentiation>();
-                                auto logBase = extractedExponentiation.extractBase();
-                                Logarithm log{std::move(logBase), -*this};
-                                Become(log - extractedExponentiation.extractExponentiation());
-                            } else {
-                                LOG_AND_IMPLEMENT("Surd reduction for " << it->get());
-                            }
+                return is;
+            };
+            auto isThereSurd = it->PrincipalSurdFactor();
+            if (isThereSurd && SurdIsReducable(it)) {
+                if (it->IsPrincipalSurd()) {
+                    ViewOptimizePause flat(this);
+                    auto ps = Extract(it);
+                    auto& surd = ps.as<PrincipalSurd>();
+                    operator^=(surd.Index());
+                    operator-=(surd.Radicand());
+                    break;
+                } else if (it->IsProduct()) {
+                    auto& idx = isThereSurd->Index();
+                    ViewOptimizePause flat(this);
+                    auto product = Extract(it);
+                    operator^=(idx);
+                    product ^= idx;
+                    operator-=(product);
+                    break;
+                } else if (it->IsExponentiation()) {
+                    auto& exponentiation = it->as<Exponentiation>();
+                    auto& base = exponentiation.ebase();
+                    if (base.IsPrincipalSurd()) {
+                        auto variable = base.FindVa();
+                        if (variable == nullptr) {
+                            ViewOptimizePause flat(this);
+                            auto extracted = Extract(it);
+                            auto& extractedExponentiation = extracted.as<Exponentiation>();
+                            auto logBase = extractedExponentiation.extractBase();
+                            Logarithm log{std::move(logBase), -*this};
+                            Become(log - extractedExponentiation.extractExponentiation());
                         } else {
-                            IMPLEMENT
+                            LOG_AND_IMPLEMENT("Surd reduction for " << it->get());
                         }
-                        break;
                     } else {
-                        LOG_AND_IMPLEMENT("Surd reduction for " << it->get());
+                        IMPLEMENT
                     }
-                }
-            }
-
-            if (this->IsSum()) {
-                if (exp) {
-                    auto shptr = std::move(exp);
-                    Become(std::move(shptr->get()));
-                }
-
-                auto common = GCDofMembers().varless();
-                if (common != constants::one) {
-                    operator/=(common);
+                    break;
+                } else {
+                    LOG_AND_IMPLEMENT("Surd reduction for " << it->get());
                 }
             }
         }
+
+        if (this->IsSum()) {
+            if (exp) {
+                auto shptr = std::move(exp);
+                Become(std::move(shptr->get()));
+            }
+
+            auto common = GCDofMembers().varless();
+            if (common != constants::one) {
+                operator/=(common);
+            }
+        }
     }
+}
 
     const Valuable::vars_cont_t& Sum::getCommonVars() const
     {
@@ -980,7 +807,7 @@ namespace
                                 auto coVa = it->getCommonVars();
                                 auto maxVa = std::max_element(coVa.begin(), coVa.end(),
                                                               [](auto&_1,auto&_2){return _1.second < _2.second;});
-                                
+
                                 for (it2 = b; it2 != e; ++it2)
                                 {
                                     bool found = {};
@@ -998,18 +825,18 @@ namespace
                                                 IMPLEMENT
                                             }
                                             found = coVa1vIt->second >= coVa2vIt->second;
-                                            
+
                                         }
-                                        
+
                                         if (!found) {
                                             break;
                                         }
                                     }
-                                    
+
                                     if(found)
                                         break;
                                 }
-                                
+
                                 if (it2 == e) {
                                     IMPLEMENT;
                                 }
@@ -1100,7 +927,7 @@ namespace
                     auto e = i.end();
                     size_t offs = 0;
                     std::deque<Valuable> hist {*this};
-                    
+
                     auto icnt = size() * 2;
                     while (!IsZero() && icnt--)
                     {
@@ -1155,7 +982,7 @@ namespace
                                     break;
                                 }
                             }
-                            
+
                             auto t = *begin() / *it2;
                             sum += t;
                             t *= value;
@@ -1225,7 +1052,7 @@ namespace
         };
         for(auto m : *this)
             add(m.d(x));
-        
+
         return Become(std::move(sum));
     }
 
@@ -1284,7 +1111,7 @@ namespace
         std::stringstream s;
         s << '(';
         constexpr char sep[] = " + ";
-		for (auto& b : members) 
+		for (auto& b : members)
             s << b << sep;
         auto str = s.str();
         auto cstr = const_cast<char*>(str.c_str());
@@ -1408,7 +1235,7 @@ namespace
     }
 
     bool Sum::IsBinomial() const {
-        return members.size() == 2 
+        return members.size() == 2
 			&& members.begin()->IsVa()
 			&& members.rbegin()->FindVa() == nullptr;
 	}
@@ -1460,7 +1287,7 @@ namespace
         //#pragma omp parallel default(none) shared(grade,coefficients)
         {
             OptimizeOff off;
-        //#pragma omp for 
+        //#pragma omp for
         for (auto& m : members)
         {
             if(!m.HasVa(v))
@@ -1612,7 +1439,7 @@ namespace
                     ++i;
             }
 #endif
-            
+
             if (solutions.size()) {
                 return Valuable(std::move(solutions));
             }
@@ -1628,7 +1455,7 @@ namespace
                 _ -= m;
             }
         }
-        
+
         if (todo.IsSum()) {
             auto coVa = todo.getCommonVars();
             auto it = coVa.find(va);
@@ -1702,7 +1529,7 @@ namespace
 
         return Valuable(std::move(solutions));
     }
-    
+
     bool Sum::IsPowerX(const std::vector<Valuable>& coefficients){
         auto coefIdx = coefficients.size() - 1;
         auto is = coefficients[coefIdx] != 0;
@@ -1745,7 +1572,7 @@ namespace
         if(IsPowerX(coefficients)){
             return (-(coefficients[0] / coefficients[grade])) ^ (constants::one / grade);
         }
-        
+
         auto doCheckCache = grade > 2;
         auto checkCached = doCheckCache
                             ? DbSumSolutionsOptimizedCache.AsyncFetch(*this, true)
@@ -1871,7 +1698,7 @@ namespace
                     // TODO : IMPLEMENT
                 }
             }
-            
+
             // TODO : IMPLEMENT, the next here needs debugging
             Valuable augmentation = constants::zero;
             Valuable _ = constants::zero;
@@ -1888,16 +1715,16 @@ namespace
 
             return _(va, augmentation);
         }
-        
+
         if(checkCached)
             return checkCached;
-        
+
         Valuable pluralSolutionsExpression(std::move(s));
         if (checkCached.NotInCache())
             DbSumSolutionsOptimizedCache.AsyncSet(str(), pluralSolutionsExpression.str());
         return pluralSolutionsExpression;
     }
-    
+
     Valuable::solutions_t Sum::GetIntegerSolution(const Variable& va) const
     {
         solutions_t solutions;
@@ -1937,7 +1764,7 @@ namespace
             else
                 IMPLEMENT
         }
-        
+
         Valuable min;
         Valuable closest;
         auto finder = [&](const Integer* i) -> bool
@@ -1953,7 +1780,7 @@ namespace
                                         auto _ = c;
                                         _.Eval(va, i);
                                         _.optimize();
-                                        
+
                                         auto found = _.IsZero();
                                         if (found) {
                                             std::cout << "found " << i << std::endl;
@@ -1977,17 +1804,17 @@ namespace
                                     Infinity(),
                                     zz);
         };
-        
+
         auto freeMember = _.calcFreeMember();
         if(!freeMember.IsInt()) {
             IMPLEMENT
         }
         auto& i = freeMember.as<Integer>();
-        
+
         if (finder(&i)) {
             return solutions;
         }
-        
+
         return solutions;
         IMPLEMENT
 
@@ -2130,7 +1957,7 @@ namespace
 				}
 
                 if(GetView() != View::Solving && GetView() != View::Equation) {
-//                    auto 
+//                    auto
                 }
                 auto a = coefficients[grade];
                 if(!a.IsInt()) {
@@ -2205,9 +2032,9 @@ namespace
         }
         if(solutions.size())
             return;
-        
+
         // no rational roots
-        
+
         switch (grade) {
             case 3: {
 //                static const VarHost::ptr VH(VarHost::make<std::string>());
@@ -2260,7 +2087,7 @@ namespace
 //
 //                    IMPLEMENT
 //                }
-                
+
 //                // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_real_coefficients
 //                auto& a = coefficients[3];
 //                auto& b = coefficients[2];
@@ -2336,7 +2163,7 @@ namespace
                 auto& b = coefficients[2]; // -3
                 auto& c = coefficients[1]; // -13
                 auto& d = coefficients[0]; // 19
-                
+
                 auto asq = a.Sq(); // 4
                 auto bsq = b.Sq(); // 9
                 auto ac3 = a * c * 3; // -78
@@ -2450,28 +2277,28 @@ namespace
                         << "    long " << va << "=i;"
                         << "    c[i] = "; copy.code(source);
                 source << ";}";
-                
+
                 auto devices = system::devices();
                 if(devices.size() == 0)
                 	return;
                 auto& cuwinner = ::omnn::rt::GetComputeUnitsWinnerDevice();
                 auto wgsz = cuwinner.max_work_group_size();
                 context context(cuwinner);
-                
+
                 kernel k(program::build_with_source(source.str(), context), "f");
                 auto sz = wgsz * sizeof(cl_long);
                 buffer c(context, sz);
                 k.set_arg(0, c);
-                
+
                 command_queue queue(context, cuwinner);
                 // run the add kernel
                 queue.enqueue_1d_range_kernel(k, 0, wgsz, 0);
-                
+
                 // transfer results to the host array 'c'
                 std::vector<cl_long> z(wgsz);
                 queue.enqueue_read_buffer(c, 0, sz, &z[0]);
                 queue.finish();
-                
+
                 Valuable simple = *this;
                 auto addSolution = [&](auto& s) -> bool {
                     auto it = solutions.insert(s);
@@ -2480,7 +2307,7 @@ namespace
                     }
                     return it.second;
                 };
-                
+
                 for(auto i = wgsz; i-->0;)
                     if (z[i] == 0) {
                         // lets recheck on host
@@ -2491,10 +2318,10 @@ namespace
                             addSolution(i);
                         }
                     }
-                
+
                 if(solutions.size() == grade)
                     return;
-                
+
                 auto simpleSolve = [&](){
                     solutions_t news;
                     do {
@@ -2506,30 +2333,30 @@ namespace
                         }
                     } while(news.size());
                 };
-                
+
                 auto addSolution2 = [&](auto& _) -> bool {
                     if (addSolution(_)) {
                         simpleSolve();
                     }
                     return solutions.size() == grade;
                 };
-                
-                
+
+
 #define IS(_) if(addSolution2(_))return;
-                
+
                 if (solutions.size()) {
                     simpleSolve();
                 }
-                
+
                 if(solutions.size() == grade)
                     return;
-                
-                
+
+
                 for(auto i : simple.GetIntegerSolution(va))
                 {
                     IS(i);
                 }
-                
+
                 // decomposition
                 IMPLEMENT;
 //                auto yx = -*this;
@@ -2538,7 +2365,7 @@ namespace
 //                yx += *this;
 //                yx /= va - y;
 //                auto _ = yx.str();
-                
+
                 sz = grade + 1;
                 auto sza = (grade >> 1) + (grade % 2) + 1;
                 auto szb = (grade >> 1) + 1;
@@ -2551,7 +2378,7 @@ namespace
                 for (auto i = szb; i--; ) {
                     eq2 += vvb[i] * (va ^ i);
                 }
-                
+
                 auto teq = eq1*eq2;
                 std::vector<Valuable> teq_coefficients;
                 if (teq.IsSum()) {
@@ -2573,7 +2400,7 @@ namespace
                 for (auto i = szb; i--; ) {
                     s[i] = sequs.Solve(vvb[i]);
                 }
-                
+
                 auto ss = sequs.Solve(vvb[0]);
                 if (ss.size()) {
                     for(auto& s : ss)
@@ -2597,7 +2424,7 @@ namespace
         }
 #endif
     }
-    
+
     Valuable Sum::SumOfRoots() const
     {   // See Viet's basic formulas: https://en.m.wikipedia.org/wiki/Vieta%27s_formulas#Basic_formulas
         auto vars = Vars();

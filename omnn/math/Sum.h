@@ -51,9 +51,9 @@ class Sum
     };
 
 protected:
-	constexpr cont& GetCont() override { return members; }
-	std::ostream& print(std::ostream& out) const override;
-    
+    constexpr cont& GetCont() override { return members; }
+    std::ostream& print(std::ostream& out) const override;
+
     [[nodiscard]]
     MSVC_CONSTEXPR
     Sum* Clone() const override
@@ -63,8 +63,8 @@ protected:
         return sum;
     }
 
-	template <typename T>
-	const Sum::iterator SumAddImpl(T&& item, const iterator hint);
+    template <typename T>
+    const Sum::iterator SumAddImpl(T&& item, const iterator hint);
 
 public:
     std::ostream& code(std::ostream& out) const override;
@@ -72,17 +72,17 @@ public:
     static constexpr auto GetBinaryOperationLambdaTemplate() {
         return [](const auto& _1st, const auto& _2nd) { return _1st + _2nd; };
     }
-
-	constexpr const cont& GetConstCont() const override { return members; }
+    constexpr const cont& GetConstCont() const override { return members; }
     constexpr bool IsSum() const override { return true; }
     bool IsZero() const override;
+    Valuable Sqrt() const override;
+    Valuable& sqrt() override;
 
-	// virtual operators
-	Valuable operator -() const override;
+    Valuable operator -() const override;
     Valuable& operator+=(const Sum& v);
-	Valuable& operator +=(const Valuable& v) override;
-	Valuable& operator *=(const Valuable& v) override;
-	Valuable& operator /=(const Valuable& v) override;
+    Valuable& operator +=(const Valuable& v) override;
+    Valuable& operator *=(const Valuable& v) override;
+    Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;
     explicit operator double() const override;
     Valuable& d(const Variable& x) override;
@@ -101,7 +101,8 @@ public:
     Valuable InCommonWith(const Valuable& v) const override;
     max_exp_t findMaxVaExp();
     Valuable varless() const override;
-    Valuable Sqrt() const override;
+    bool HasSurdFactor() const;
+    void ExtractSurdFactors(Valuable& base, Valuable& exponent) const;
     Valuable& sq() override;
     Valuable calcFreeMember() const override;
     solutions_t GetIntegerSolution(const Variable& va) const override;
@@ -149,7 +150,7 @@ public:
     bool MultiplyIfSimplifiable(const Valuable& v) override;
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override;
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
-	vars_cont_t GetVaExps() const override;
+    vars_cont_t GetVaExps() const override;
     Valuable Sign() const override;
 };
 
