@@ -50,6 +50,9 @@ public:
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
     bool IsPolynomial(const Variable&) const override { return IsSimple(); }
 
+    [[nodiscard]]
+    size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable&) const override;
+
     void optimize() override;
 
     Valuable& sq() override;
