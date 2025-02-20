@@ -176,3 +176,42 @@ Valuable::vars_cont_t Modulo::GetVaExps() const {
     }
     return vars;
 }
+
+std::pair<bool, Valuable> Modulo::IsModSimplifiable(const Valuable& v) const 
+{
+    // Check if divisor is x^m
+    if (v.IsExponentiation()) {
+        auto& exp = v.as<Exponentiation>();
+        auto& base = exp.getBase();
+        
+        // Extract k(x^n) pattern from dividend
+        if (_1.IsProduct()) {
+            auto& prod = _1.as<Product>();
+            for (const auto& term : prod) {
+                if (term.IsExponentiation() && 
+                    term.as<Exponentiation>().getBase() == base) {
+                    // Found k(x^n) pattern
+                    Valuable k = constants::one;
+                    for (const auto& other : prod) {
+                        if (other != term) {
+                            k *= other;
+                        }
+                    }
+                    // For k(x^n) mod x = k mod x
+                    if (exp.getExponent() == 1) {
+                        return {true, k % base};
+                    }
+                    // For k(x^n) mod (x^m) where m > 1
+                    if (k.IsInt()) {
+                        return {true, k % v};
+                    }
+                }
+            }
+        } else if (_1.IsExponentiation() && 
+                   _1.as<Exponentiation>().getBase() == base) {
+            // Case where k=1
+            return {true, 1 % base};
+        }
+    }
+    return {false, {}};
+}

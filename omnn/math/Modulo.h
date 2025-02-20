@@ -46,7 +46,7 @@ public:
 
 	std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable& v) const override { return {}; }
     std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override { return {}; }
-    std::pair<bool, Valuable> IsModSimplifiable(const Valuable& v) const override { return {}; }
+    std::pair<bool, Valuable> IsModSimplifiable(const Valuable& v) const override;
     Valuable InCommonWith(const Valuable& v) const override { return 1; }
     const vars_cont_t& getCommonVars() const override { return VarsForCommoning; }
 
