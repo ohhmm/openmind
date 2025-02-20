@@ -551,6 +551,38 @@ using namespace omnn::math;
         return std::any_of(begin(), end(), [](auto& m) { return m.IsZero(); });
     }
 
+    size_t Product::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
+        size_t grade = 0;
+        std::vector<Valuable> productCoefficients;
+        std::vector<Valuable> memberCoefficients;
+        for (auto& item : members) {
+            auto g = item.FillPolynomialCoefficients(memberCoefficients, v);
+            if (g > grade)
+            {
+                grade = g;
+                if (productCoefficients.empty())
+                    productCoefficients = std::move(memberCoefficients);
+                else{
+                    auto memberCoefficientsSize = memberCoefficients.size();
+                    for (size_t i = 0; i < memberCoefficientsSize; ++i) {
+                        if (i == productCoefficients.size()) {
+                            productCoefficients.emplace_back(std::move(memberCoefficients[i]));
+                        } else {
+                            productCoefficients[i] *= std::move(memberCoefficients[i]);
+                        }
+                    }
+                }
+                memberCoefficients.clear();
+            }
+        }
+        auto productCoefficientsSize = productCoefficients.size();
+        if (coefficients.size() < productCoefficientsSize)
+            coefficients.resize(productCoefficientsSize);
+        for (size_t i = 0; i < productCoefficientsSize; ++i)
+            coefficients[i] += std::move(productCoefficients[i]);
+        return grade;
+    }
+
     Valuable Product::InCommonWith(const Valuable& v) const
     {
         auto _ = 1_v;
