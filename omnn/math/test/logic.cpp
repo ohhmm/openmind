@@ -588,6 +588,6 @@ BOOST_AUTO_TEST_CASE(test_logic_intersection_simplifying)
     BOOST_TEST(i.IsSum());
     auto& sum = i.as<Sum>();
     std::vector<Valuable> coefficients;
-    auto grade = sum.FillPolyCoeff(coefficients, x);
+    auto grade = sum.FillPolynomialCoefficients(coefficients, x);
     BOOST_TEST(grade == 1);
 }
