@@ -477,12 +477,29 @@ System::solutions_t System::Solve(const Variable& va)
     
     if (solutions.empty() && !makeTotalEqu) {
         auto total = CalculateTotalExpression();
-        EvalInvariantKnowns(total);
+        auto start = true;
+
+        while (EvalInvariantKnowns(total) || start) {
+            start = {};
         total.optimize();
         auto vars = total.Vars();
         if (vars.size() == 1 && vars.begin()->Same(va)) {
             total.solve(va, solutions);
-            // TODO: add to system found solutions
+                for (auto& solution : solutions) {
+                    Add(va, solution);
+                }
+            } else {
+                for (auto& variable : vars) {
+                    if (variable != va) {
+                        try {
+                            for (auto& sol : total.Solutions(variable)) {
+                                Add(variable, sol);
+                            }
+                        } catch (...) {
+                        }
+                    }
+                }
+            }
         }
     }
 
