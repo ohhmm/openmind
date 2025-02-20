@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(ModuloExponentiationOptimization_test, *disabled())
     BOOST_TEST(expr2 == -888 % x);
 }
 
-BOOST_AUTO_TEST_CASE(ModuloSquaredOptimization_test, *disabled())
+BOOST_AUTO_TEST_CASE(ModuloSquaredOptimization_test)
 {
     Variable z;
     auto z_squared = z^2;
