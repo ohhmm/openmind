@@ -307,6 +307,26 @@ BOOST_AUTO_TEST_CASE(SumFindMember_test) {
     BOOST_TEST(!found); // _2 members distributed into sum members
 }
 
+BOOST_AUTO_TEST_CASE(Sum_coefficient_test)
+{
+    DECL_VA(x);
+    
+    // Test polynomial coefficient handling
+    auto _1 = -1_v * x + x * x;
+    auto _2 = (x ^ 2) - x;
+    BOOST_TEST(_1 == _2);  // Equivalent polynomial forms
+    
+    // Test mixed coefficient types in polynomials
+    auto _3 = Fraction(1, 2) * x + x * x;
+    auto _4 = (x ^ 2) + Fraction(1, 2) * x;
+    BOOST_TEST(_3 == _4);  // Order independence in polynomials
+    
+    // Test coefficient normalization in polynomials
+    auto _5 = (-1_v * x + x * x) * (-1_v);
+    auto _6 = x - (x ^ 2);
+    BOOST_TEST(_5 == _6);  // Sign distribution
+}
+
 BOOST_AUTO_TEST_CASE(Sum_tests) {
     DECL_VARS(v1, v2, v3);
 
