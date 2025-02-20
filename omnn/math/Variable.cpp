@@ -343,6 +343,20 @@ namespace math {
         return true;
     }
 
+    size_t Variable::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
+        if (operator==(v)) {
+            if (coefficients.size() < 2)
+                coefficients.resize(2);
+            ++coefficients[1];
+            return 1;
+        }
+        if (coefficients.empty())
+            coefficients.resize(1);
+        coefficients[0] += *this;
+        return 0;
+    }
+
+
     Valuable::vars_cont_t Variable::GetVaExps() const {
         return {{*this, constants::one}};
     }
