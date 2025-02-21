@@ -2438,20 +2438,24 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         return _;
     }
 
-    Valuable Valuable::VaVal(const vars_cont_t& v)
+    Valuable Valuable::VaVal(const vars_cont_t& value)
     {
         auto product = std::make_shared<Product>();
-        if (v.size()) {
-            for (auto& kv : v) {
+        if (value.size()) {
+            for (auto& kv : value) {
                 product->Add(Exponentiation{kv.first, kv.second});
             }
         }
-        return Valuable(product);
+        return product->Optimized();
     }
 
     Valuable Valuable::getVaVal() const
     {
         return VaVal(getCommonVars());
+    }
+
+    Valuable Valuable::commonVarsWith(const Valuable& value) const {
+        return getVaVal().InCommonWith(value.getVaVal());
     }
 
     const Valuable::vars_cont_t& Valuable::emptyCommonVars()
