@@ -139,15 +139,12 @@ namespace math {
         }
 
         Valuable::encapsulated_instance SharedFromThis() override {
+            auto allocated = getAllocSize();
             auto ptr = std::make_shared<Chld>(std::move(as<Chld>()));
-            exp = std::static_pointer_cast<Valuable>(ptr);
+            Valuable::~Valuable(); // ensure proper resource reallocation before reinitializing base part of the object
+            new (this) Valuable(std::static_pointer_cast<Valuable>(ptr));
+            setAllocSize(allocated);
             return exp;
-        }
-
-        Chld& Reset() {
-            OptimizeOff off;
-            Become(Chld());
-            return Ref();
         }
     };
 }

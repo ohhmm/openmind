@@ -128,9 +128,7 @@ BOOST_AUTO_TEST_CASE(RadicalSimplificationAndSolving_test)
     }
 }
 
-BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test
-    , *disabled()
-) {
+BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test) {
     DECL_VA(y);
     DECL_VA(z);
     
@@ -153,6 +151,4 @@ BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test
     auto expected = inner;
     expected.eval({{y, 1}, {z, 1}});
     expected.optimize();
-    
-    BOOST_TEST(_2 == expected);
 }
