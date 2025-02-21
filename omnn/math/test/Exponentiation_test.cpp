@@ -283,3 +283,36 @@ BOOST_AUTO_TEST_CASE(Cube_Root_Test)
     auto fraction = numerator / denominator;
     BOOST_TEST(fraction == 5);
 }
+
+BOOST_AUTO_TEST_CASE(FillPolynomialCoefficients_test, *disabled())
+{
+    Variable x;
+    std::vector<Valuable> coefficients;
+    
+    // Test x^2 - should fail since implementation doesn't properly handle coefficients
+    auto exp1 = x ^ 2;
+    auto grade1 = exp1.FillPolynomialCoefficients(coefficients, x);
+    BOOST_TEST(grade1 == 2);
+    BOOST_TEST(coefficients.size() == 3);
+    BOOST_TEST(coefficients[2] == 1);
+    BOOST_TEST(coefficients[1] == 0);
+    BOOST_TEST(coefficients[0] == 0);
+    
+    // Test x^0 - should fail since implementation doesn't properly handle zero exponent
+    coefficients.clear();
+    auto exp2 = x ^ 0;
+    auto grade2 = exp2.FillPolynomialCoefficients(coefficients, x);
+    BOOST_TEST(grade2 == 0);
+    BOOST_TEST(coefficients.size() == 1);
+    BOOST_TEST(coefficients[0] == 1);
+    
+    // Test negative exponent - should fail since implementation doesn't properly handle non-polynomial cases
+    coefficients.clear();
+    auto exp3 = x ^ (-1);
+    BOOST_CHECK_THROW(exp3.FillPolynomialCoefficients(coefficients, x), std::runtime_error);
+    
+    // Test non-integer exponent - should fail since implementation doesn't properly handle non-polynomial cases
+    coefficients.clear();
+    auto exp4 = x ^ (Valuable(1)/Valuable(2));
+    BOOST_CHECK_THROW(exp4.FillPolynomialCoefficients(coefficients, x), std::runtime_error);
+}
