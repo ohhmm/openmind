@@ -869,11 +869,37 @@ using namespace omnn::math;
         return is;
     }
 
+   std::pair<bool, Valuable> Product::IsSummationSimplifiable(const Product& prod) const {
+       std::pair<bool, Valuable> is;
+       auto vars1 = getVaVal();
+       auto vars2 = prod.getVaVal();
+       auto commonVars = vars1.InCommonWith(vars2);
+       if (vars1 != constants::one && vars2 != constants::one && commonVars == constants::one) {
+           is.first = {};
+       } else {
+           auto common = InCommonWith(prod);
+           if (common != constants::one) {
+               auto thisNoCommon = *this / common;
+               if (!operator==(thisNoCommon) // multivalue scenarios
+                   && thisNoCommon.Complexity() <= Complexity())
+               {
+                   auto vNoCommon = prod / common;
+                   if (vNoCommon != prod && vNoCommon.Complexity() <= prod.Complexity()) {
+                       is = thisNoCommon.IsSummationSimplifiable(vNoCommon);
+                       if (is.first) {
+                           is.second *= common;
+                       }
+                   }
+               }
+           }
+       }
+       return is;
+   }
 
    std::pair<bool,Valuable> Product::IsSummationSimplifiable(const Valuable& v) const
    {
        std::pair<bool,Valuable> is;
-       is.first = v == 0;
+       is.first = v.IsZero();
        if (is.first)
            is.second = *this;
        else if ((is.first = operator==(v)))
@@ -902,8 +928,9 @@ using namespace omnn::math;
                  )
        {
            is = v.IsSummationSimplifiable(*this);
-       } else if (v.IsProduct()
-                  || v.IsVa()
+       } else if (v.IsProduct()) {
+           is = IsSummationSimplifiable(v.as<Product>());
+       } else if (v.IsVa()
                   || v.IsFraction()
                   ) {
            //OptimizeOn o;
@@ -924,13 +951,6 @@ using namespace omnn::math;
                    }
                }
            }
-//           auto& vp = v.as<Product>();
-//           auto sp = SplitSimplePart();
-//           auto vsp = vp.SplitSimplePart();
-//           if(sp.second == vsp.second){
-//
-//               IMPLEMENT
-//           }
        } else if (v.Is_i()) {
            auto it = GetFirstOccurence<MinusOneSurd>();
            is.first = it != end();
