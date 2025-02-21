@@ -68,7 +68,8 @@ namespace math {
         Valuable Sqrt() const override;
         const vars_cont_t& getCommonVars() const override;
         vars_cont_t GetVaExps() const override;
-        Valuable InCommonWith(const Valuable& v) const override;
+        Valuable InCommonWith(const Fraction&) const;
+        Valuable InCommonWith(const Valuable&) const override;
         bool IsComesBefore(const Fraction&) const;
         bool IsComesBefore(const Valuable& v) const override;
         constexpr bool IsFraction() const override { return true; }

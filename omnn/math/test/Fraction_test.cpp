@@ -61,13 +61,14 @@ BOOST_AUTO_TEST_CASE(Fraction_tests)
     _ = 1_v / (1_v / v1);
     BOOST_TEST(_ == v1);
     
-    BOOST_TEST((2040_v*v1/(-2_v*v1))==-1020);
+    BOOST_TEST(((2040_v*v1/(-2_v*v1))==-1020));
     
     _ = (2040_v/v1) / ((-1_v/v1)*v2);
     _.optimize();
-    BOOST_TEST(_ == -2040_v/v2);
+    BOOST_TEST((_ == -2040_v/v2));
     
-    BOOST_TEST((Fraction{1,-2}).operator<(0));
+    auto f = Fraction(1,-2);
+    BOOST_TEST((f < 0));
 
     _ = constants::plus_minus_1;
     auto eq = _ == constants::plus_minus_1;
@@ -132,4 +133,37 @@ BOOST_AUTO_TEST_CASE(Balancing_no_hang_test
     DECL_VARS(x, y, z);
     auto _ = (constants::minus_1 / 4) * ((-16 * (y ^ 2) + 160 * y - 8 * x - 200) ^ constants::half) + z - 35;
     _.as<Sum>().balance();
+}
+
+BOOST_AUTO_TEST_CASE(Fraction_InCommonWith_test)
+{
+    // Test fraction with fraction
+    auto f1 = Fraction(4, 6);  // 2/3
+    auto f2 = Fraction(10, 15); // 2/3
+    auto common = f1.InCommonWith(f2);
+    BOOST_TEST((common == f1));
+    // FIXME: common = f1.GCD(f2); 
+
+    // Test fraction with integer
+    f1 = Fraction(15, 5); // 3
+    auto i = 9_v;
+    common = f1.InCommonWith(i);
+    BOOST_TEST((common == 3_v));
+    // FIXME: common = f1.GCD(f2);
+
+    // Test with no common factors
+    f1 = Fraction(2, 3);
+    f2 = Fraction(5, 7);
+    common = f1.InCommonWith(f2);
+    BOOST_TEST((common == constants::one));
+    // FIXME: common = f1.GCD(f2);
+
+    // Test with variable
+    DECL_VA(x);
+    f1 = Fraction(x, 2);
+    f2 = Fraction(x, 4);
+    common = f1.InCommonWith(f2);
+    auto expected = x / 2;
+    BOOST_TEST((common == expected));
+    // FIXME: common = f1.GCD(f2);
 }
