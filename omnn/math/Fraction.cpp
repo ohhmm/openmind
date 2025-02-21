@@ -717,19 +717,22 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
         return vars;
     }
 
-    Valuable Fraction::InCommonWith(const Valuable& v) const
-    {
-        auto c = constants::one;
+    Valuable Fraction::InCommonWith(const Fraction& frac) const {
+        auto common = getNumerator().InCommonWith(frac.getNumerator());
+        common /= getDenominator().InCommonWith(frac.getDenominator());
+        return common;
+    }
+
+    Valuable Fraction::InCommonWith(const Valuable& v) const {
+        auto common = constants::one;
         if (v.IsFraction()) {
-            auto& f = v.as<Fraction>();
-            c *= getNumerator().InCommonWith(f.getNumerator());
-            c /= getDenominator().InCommonWith(f.getDenominator());
+            common = InCommonWith(v.as<Fraction>());
+        } else if (v.IsProduct() || v.IsSum()) {
+            common = v.InCommonWith(*this);
+        } else {
+            common = getNumerator().InCommonWith(v);
         }
-        else
-        {
-            c = getNumerator().InCommonWith(v);
-        }
-        return c;
+        return common;
     }
 
     bool Fraction::IsComesBefore(const Fraction& fraction) const {
