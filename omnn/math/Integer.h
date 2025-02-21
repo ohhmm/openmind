@@ -144,6 +144,7 @@ public:
 
     explicit operator int() const override;
     explicit operator a_int() const override;
+    [[nodiscard]] constexpr explicit operator const_base_int_ref() { return arbitrary; }
     explicit operator uint64_t() const override;
     explicit operator double() const override;
     explicit operator long double() const override;

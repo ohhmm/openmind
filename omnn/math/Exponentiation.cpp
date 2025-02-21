@@ -851,6 +851,8 @@ using namespace omnn::math;
         auto eq = v.IsExponentiation();
         if(eq){
             eq = operator==(v.as<Exponentiation>());
+        } else if (ebase() == v) {
+            eq = eexp() == 1;
         } else if (v.IsFraction()) {
             eq = (eexp().IsInt() || eexp().IsSimpleFraction())
                  && eexp() < 0

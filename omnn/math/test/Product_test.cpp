@@ -94,7 +94,8 @@ BOOST_AUTO_TEST_CASE(Product_comparision_test) {
     BOOST_TEST(!less);
 }
 
-BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
+BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test)
+{
     Valuable::OptimizeOff off;
     auto _1 = "-2*(1^5)"_v;
     auto _2 = "(1 ^ 6)"_v;
@@ -114,9 +115,8 @@ BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test) {
     EqualOrderCheck(_1, _2);
 }
 
-BOOST_AUTO_TEST_CASE(Quadratic_coefficient_test9
-    , *disabled() // Enable after implementing MultiplyIfSimplifiable
-) {
+BOOST_AUTO_TEST_CASE(Quadratic_coefficient_test9)
+{
     DECL_VA(l);
     System sys;
     
@@ -273,6 +273,16 @@ BOOST_AUTO_TEST_CASE(Product_tests)
     BOOST_TEST(_1.IsProduct());
     BOOST_TEST(_2.IsProduct());
     BOOST_TEST(_1 == _2);
+}
+
+BOOST_AUTO_TEST_CASE(Product_getVaVal_test) {
+    DECL_VARS(a, b);
+    auto prod = ((16 * (b ^ 2) + 8192 * (a ^ 2) + -32768) ^ ((1 / 2))) * a;
+    auto vars = prod.getCommonVars();
+    decltype(vars) expected = {{a, 1}};
+    BOOST_TEST(vars == expected);
+    auto val = prod.getVaVal();
+    BOOST_TEST(val == a);
 }
 
 BOOST_AUTO_TEST_CASE(Product_optimization_test

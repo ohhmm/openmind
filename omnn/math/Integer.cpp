@@ -673,7 +673,9 @@ namespace math {
 
     Valuable Integer::InCommonWith(const Valuable& v) const
     {
-        return v.GCD(*this);
+        //constexpr 
+        auto one = boost::multiprecision::cpp_int(1);
+        return arbitrary == one ? Valuable(one) : v.GCD(*this);
     }
 
     Valuable Integer::GCD(const Valuable& value) const {

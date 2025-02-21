@@ -516,6 +516,7 @@ public:
     virtual Valuable varless() const;
     static Valuable VaVal(const vars_cont_t&);
     Valuable getVaVal() const;
+    Valuable commonVarsWith(const Valuable&) const;
     virtual bool eval(const vars_cont_t& with);
     Valuable Eval(const vars_cont_t& with) const;
 
