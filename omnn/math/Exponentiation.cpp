@@ -1338,26 +1338,28 @@ using namespace omnn::math;
 
     size_t Exponentiation::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
         if (!IsPolynomial(v)) {
-            IMPLEMENT
+            throw std::runtime_error("Expression is not a polynomial");
         }
         auto& base = getBase();
         if (base == v) {
             auto& exp = getExponentiation();
             if (!exp.IsInt()) {
-                IMPLEMENT
+                throw std::runtime_error("Non-integer exponent in polynomial");
             }
-            auto i = static_cast<size_t>(exp.ca());
+            auto expVal = exp.ca();
+            if (expVal < 0) {
+                throw std::runtime_error("Negative exponent in polynomial");
+            }
+            auto i = static_cast<size_t>(expVal);
             if (coefficients.size() < i + 1) {
-                coefficients.resize(i + 1);
+                coefficients.resize(i + 1, 0);  // Initialize new elements to 0
             }
             coefficients[i] += 1;
             return i;
-        } else if (base.HasVa(v)) {
-            IMPLEMENT
-        } else if (getExponentiation().HasVa(v)) {
-            IMPLEMENT
-        } else if (coefficients.size() < 1) {
-            coefficients.resize(1);
+        }
+        // Base is not the variable - constant term
+        if (coefficients.size() < 1) {
+            coefficients.resize(1, 0);  // Initialize to 0
         }
         coefficients[0] += *this;
         return 0;
