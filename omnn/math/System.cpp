@@ -481,10 +481,10 @@ System::solutions_t System::Solve(const Variable& va)
 
         while (EvalInvariantKnowns(total) || start) {
             start = {};
-            total.optimize();
-            auto vars = total.Vars();
-            if (vars.size() == 1 && vars.begin()->Same(va)) {
-                total.solve(va, solutions);
+        total.optimize();
+        auto vars = total.Vars();
+        if (vars.size() == 1 && vars.begin()->Same(va)) {
+            total.solve(va, solutions);
                 for (auto& solution : solutions) {
                     Add(va, solution);
                 }
