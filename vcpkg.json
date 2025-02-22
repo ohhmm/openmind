@@ -19,6 +19,8 @@
     "boost-thread",
     "boost-ublas",
     "boost-uuid",
+    "eigen3",
+    "freeglut",
     "leveldb",
     {
       "name": "vcpkg-cmake",
