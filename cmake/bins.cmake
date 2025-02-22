@@ -471,24 +471,25 @@ macro(exe)
 	SET_TARGET_PROPERTIES(${this_target} PROPERTIES LINKER_LANGUAGE CXX)
 
     #add_dependencies(${this_target} prerequisites)
-    if(Qt${QT_VERSION_MAJOR}_FOUND)
-
-        if(APPLE AND PROJECT_VERSION)
+	get_target_property(built ${this_target} EXCLUDE_FROM_ALL)
+	if(built)
+		if(Qt${QT_VERSION_MAJOR}_FOUND)
+			if(APPLE AND PROJECT_VERSION)
+				set_target_properties(${this_target} PROPERTIES
+					MACOSX_BUNDLE_GUI_IDENTIFIER ${this_target}.deduction-fw.org
+					MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+					MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+				)
+			endif()
 			set_target_properties(${this_target} PROPERTIES
-				MACOSX_BUNDLE_GUI_IDENTIFIER ${this_target}.deduction-fw.org
-				MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-				MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+				MACOSX_BUNDLE TRUE
+				WIN32_EXECUTABLE TRUE
 			)
-        endif()
-        set_target_properties(${this_target} PROPERTIES
-            MACOSX_BUNDLE TRUE
-            WIN32_EXECUTABLE TRUE
-        )
-        install(TARGETS ${this_target} BUNDLE DESTINATION .)
-
-    else()
-        install(TARGETS ${this_target})
-    endif()
+			install(TARGETS ${this_target} BUNDLE DESTINATION .)
+		else()
+			install(TARGETS ${this_target})
+		endif()
+	endif()
 
     target_include_directories(${this_target} PUBLIC
         ${OPENMIND_INCLUDE_DIR}
