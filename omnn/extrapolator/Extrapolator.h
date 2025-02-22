@@ -37,13 +37,16 @@ class Extrapolator
     mutable solution_t solution;
 
 public:
+    using vector_t = ublas::vector<T, custom_allocator<T>>;
+    using matrix_t = ublas::matrix<T, ublas::row_major, custom_allocator<T>>;
+
     using base::base;
 
 	Extrapolator() = default;
 
     Extrapolator(std::initializer_list<std::vector<T>> dependancy_matrix);
 
-    solution_t Solve(const ublas::vector<T>& augment) const;
+    solution_t Solve(const vector_t& augment) const;
 
     T Determinant() const;
 
@@ -51,13 +54,19 @@ public:
      * If possible, make the matrix consistent
      * @return true if it is
      * **/
-    bool Consistent(const ublas::vector<T>& augment);
+    bool Consistent(const matrix_t& augment);
 
     /**
      * If possible, make the matrix consistent
      * @return true if it is
      * **/
     bool Consistent(const extrapolator_base_matrix& augment);
+
+    /**
+     * If possible, make the matrix consistent
+     * @return true if it is
+     * **/
+    bool Consistent(const vector_t& augment);
 
     /**
      * this is to complete it with other deducible variables
