@@ -123,15 +123,23 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git/develop")
 
+	foreach(NUM RANGE 0 9)
+		add_force_push_head_to_develop_target(${NUM})
+	endforeach()
 
 	add_git_target(force-push-head push -f)
 	add_git_target(force-push-origin push -f origin)
 
 	add_git_target(rebase-continue rebase --continue)
 
-	foreach(NUM RANGE 0 9)
-		add_force_push_head_to_develop_target(${NUM})
-	endforeach()
+	add_custom_target(rebase-and-force-push-origin
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main && ${GIT_EXECUTABLE} push -f origin
+	)
+	set_target_properties(rebase-and-force-push-origin PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
 
 	if(WIN32)
 		set(CMD_LIST_BRANCHES "${GIT_EXE_CMD} for-each-ref --format=%(refname:short) refs/heads/ --no-contains main")
