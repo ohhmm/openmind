@@ -58,6 +58,8 @@ if(GIT_EXECUTABLE)
 		COMMAND ${GIT_EXECUTABLE} gc
 		COMMAND ${GIT_EXECUTABLE} gui
 	)
+	add_git_target(stash stash)
+	add_git_target(unstash stash pop)
 	add_git_target(rebase-origin-main pull --rebase --autostash origin main)
 	add_git_target(rebase-main-interactive rebase -i --autostash origin/main)
 	add_git_target(offline-rebase-origin-main-interactive rebase -i --autostash origin/main)
