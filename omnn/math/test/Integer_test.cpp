@@ -74,6 +74,29 @@ BOOST_AUTO_TEST_CASE(BaseInt_sqrt_test)
     }
 }
 
+BOOST_AUTO_TEST_CASE(GreatestCommonExp_tests) {
+    // Test existing cases
+    Integer i50 = 50;
+    BOOST_TEST(i50.GreatestCommonExp(2).first == 5_v);
+    
+    Integer i32 = 32;
+    BOOST_TEST(i32.GreatestCommonExp(2).first == 4_v);
+    
+    // Test failing case
+    Integer i216 = 216;
+    auto result = i216.GreatestCommonExp(2);
+    BOOST_TEST(result.first == 6_v);
+    BOOST_TEST(result.second == 36_v);
+    BOOST_TEST((result.first ^ 2) == result.second);
+    
+    // Test edge cases
+    Integer i1 = 1;
+    BOOST_TEST(i1.GreatestCommonExp(2).first == 1_v);
+    
+    Integer i4 = 4;
+    BOOST_TEST(i4.GreatestCommonExp(2).first == 2_v);
+}
+
 BOOST_AUTO_TEST_CASE(Integer_Factorial) {
     Integer i = 0;
     i.factorial();
