@@ -122,7 +122,7 @@ jobs:
           RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer $DEVIN_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\"prompt\": $ESCAPED_PROMPT}" \
+            -d "{\"prompt\": $ESCAPED_PROMPT, \"snapshot_id\": \"snapshot-9dbc293445474e4498a0c5a4fd32e36b\"}" \
             "https://api.devin.ai/v1/sessions")
 
           # Check for errors in the response
