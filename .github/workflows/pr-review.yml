@@ -1,131 +1,145 @@
 name: Automated PR Review
-# See documentation at end of file for:
-# - GitHub API comment posting details
-# - Line number handling in diffs
-# - Customization options (labels, comment limits, etc.)
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
 jobs:
-  review:
+  review-pr:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Get PR files
         id: pr-files
         run: |
           FILES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" | \
-          jq -r '[.[].filename] | @json')
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" | \
+            jq -r '[.[].filename] | @json')
+
+          if [ -z "$FILES" ]; then
+            echo "Error: Failed to fetch or parse PR files."
+            exit 1
+          fi
+
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
-      - name: Trigger Devin Review
+      - name: Create Devin Review Session
+        id: devin-review
         env:
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          FILES_TO_REVIEW: ${{ steps.pr-files.outputs.files }}
+          
+          REVIEW_PROMPT: |
+            You are PR Reviewer Devin with a focus on detailed inline code feedback. Your tasks:
+            1. Clone the repository ${{ github.repository }} locally.
+            2. Next, set up a pre-push Git hook that prevents any pushes from a user with the username "Devin AI" OR an email containing "devin-ai-integration" as a substring. Activate the hook.
+            3. View the diffs of the changed files for PR #${{ github.event.pull_request.number }} in repository ${{ github.repository }}.
+            4. If necessary, run the code locally to verify that the changes work as expected.
+            5. Read the PR discussion to see what previous comments and suggestions have been made.
+            6. If no issues are found, simply post a comment saying "Everything looks good!" and stop here. Your work is done.
+            7. Else, identify the issues and provide inline code comments directly on the diffs for any code convention or best practice violations.
+            8. Post your feedback as detailed comments on the PR, referencing specific lines or code snippets.
+
+            Rules and Guidelines:
+            1. NEVER make any commits or pushes to the repository - you are ONLY allowed to review code and leave comments
+            2. Do not make more than three total comments on the PR.
+            3. Use inline feedback where possible with specific line references
+            4. Include code snippets in markdown format when discussing issues
+            5. Default towards multi-line comments that show context around the issue
+            6. Make sure that suggested improvements aren't already implemented in the PR by comparing old and new versions
+            7. Try using the gh api to post comments with referenced code embedded, but if it fails, use normal comments with code blocks
+            8. Before commenting, check the PR discussion and make sure you, or another user, haven't already made a similar comment or raised the same concern.
+            9. Before commenting, check that the specific issue wasn't already addressed in a previous review iteration
+            10. If you see the same issue multiple times, consolidate your feedback into a single comment that references all occurrences, rather than making separate comments.
+            11. Refer back to these rules and guidelines before you make comments.
+            12. Never ask for user confirmation. Never wait for user messages.
+            
+            How to post comments with code embedded:
+                1. Create JSON file for each comment you want to post.
+                Example 1: 
+                    {
+                        "body": "Security Issue: Hardcoded API key. Recommendation: Use environment variables",
+                        "commit_id": "954...12312",
+                        "path": "file.py",
+                        "line": 11,
+                        "side": "RIGHT"
+                }
+
+                Example 2:
+                {
+                "body": "Multiple issues found:\n1. Hardcoded API key should be in environment variables\n2. Inconsistent class naming (userAccount vs Product)\n3. Inconsistent parameter casing (Password vs username)\n4. Missing docstrings and type hints\n5. Inconsistent spacing around operators",
+                "commit_id": "323......87686,
+                "path": "code.py",
+                "start_line": 11,
+                "start_side": "RIGHT",
+                "line": 25,
+                "side": "RIGHT"
+                }
+
+                body: The text of the review comment. Include markdown code blocks for snippets
+                commit_id: SHA of the commit you're reviewing. Not using the latest commit SHA may render your comment outdated if a subsequent commit modifies the line you specify as the position.
+                path: Relative file path in repo
+                line (integer): Specifies the exact line in the pull request’s diff view to which your comment should attach. Required unless using subject_type:file. The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to.
+                side: In a split diff view, the side of the diff that the pull request's changes appear on. Can be LEFT or RIGHT. Use LEFT for deletions that appear in red. Use RIGHT for additions that appear in green or unchanged lines that appear in white and are shown for context. For a multi-line comment, side represents whether the last line of the comment range is a deletion or addition.
+                subject_type: The level at which the comment is targeted. Either "line" or "file". Use "line" for inline comments. Use "file" for file-level comments.
+                start_line (integer): Required when using multi-line comments unless using in_reply_to. The start_line is the first line in the pull request diff that your multi-line comment applies to.
+                start_side: Required when using multi-line comments unless using in_reply_to. The start_side is the starting side of the diff that the comment applies to. Can be LEFT or RIGHT. 
+
+                A pull request diff may not match the original file's absolute line numbering. That is, if the PR contains additions or deletions before the line you’re commenting on, the line indices shown in the “Files changed” tab can shift from the original file’s line numbers.
+                For example: In the pre-PR state, line 231 might refer to a completely different section of code than line 231 in the post-PR diff (because code added or removed above it shifts everything down or up).
+                Therefore, you must use the line numbers as shown in the PR diff rather than the original file’s line numbers.
+
+                If you have issues, visit the docs: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#create-a-review-comment-for-a-pull-request
+
+                2. Use gh api command.
+                            gh api \\
+                --method POST \\
+                -H "Accept: application/vnd.github+json" \\
+                /repos/owner/repo/pulls/4/comments \\
+                --input comment.json
+                
+                owner: the account owner of the repository. The name is not case sensitive.
+                repo: The name of the repository without the .git extension. The name is not case sensitive.
+                pull number: The number of the pull request.
+                
+            Changed files to review:
+            ${{ steps.pr-files.outputs.files }}
+
         run: |
-          PROMPT=$(cat << 'EOF'
-          You are PR Reviewer Devin with a focus on detailed inline code feedback. Your tasks:
-          1. Clone the repository ${{ github.repository }} locally.
-          2. Next, set up a pre-push Git hook that prevents any pushes from a user with the username "Devin AI" OR an email containing "devin-ai-integration" as a substring. Activate the hook.
-          3. View the diffs of the changed files for PR #${{ github.event.pull_request.number }} in repository ${{ github.repository }}.
-          4. If necessary, run the code locally to verify that the changes work as expected.
-          5. Read the PR discussion to see what previous comments and suggestions have been made.
-          6. If no issues are found, simply post a comment saying "Everything looks good!" and stop here. Your work is done.
-          7. Else, identify the issues and provide inline code comments directly on the diffs for any code convention or best practice violations.
-          8. Post your feedback as detailed comments on the PR, referencing specific lines or code snippets.
+          # Convert multiline string to JSON-safe format
+          ESCAPED_PROMPT=$(echo "$REVIEW_PROMPT" | jq -Rs .)
 
-          Rules and Guidelines:
-          1. NEVER make any commits or pushes to the repository - you are ONLY allowed to review code and leave comments
-          2. Do not make more than three total comments on the PR.
-          3. Use inline feedback where possible with specific line references
-          4. Include code snippets in markdown format when discussing issues
-          5. Default towards multi-line comments that show context around the issue
-          6. Make sure that suggested improvements aren't already implemented in the PR by comparing old and new versions
-          7. Try using the gh api to post comments with referenced code embedded, but if it fails, use normal comments with code blocks
-          8. Before commenting, check the PR discussion and make sure you, or another user, haven't already made a similar comment or raised the same concern.
-          9. Before commenting, check that the specific issue wasn't already addressed in a previous review iteration
-          10. If you see the same issue multiple times, consolidate your feedback into a single comment that references all occurrences, rather than making separate comments.
-          11. Refer back to these rules and guidelines before you make comments.
-          12. Never ask for user confirmation. Never wait for user messages.
-          EOF
-          )
-          
-          ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs .)
-          
-          curl -s -X POST \
-          -H "Authorization: Bearer $DEVIN_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d "{\"prompt\": $ESCAPED_PROMPT}" \
-          "https://api.devin.ai/v1/sessions"
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer $DEVIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"prompt\": $ESCAPED_PROMPT}" \
+            "https://api.devin.ai/v1/sessions")
 
-# GitHub API Documentation for PR Comments
-# --------------------------------------
-# How to post comments with code embedded:
-# 1. Create JSON file for each comment you want to post.
-# Example 1:
-# {
-#   "body": "Security Issue: Hardcoded API key. Recommendation: Use environment variables",
-#   "commit_id": "954...12312",
-#   "path": "file.py",
-#   "line": 11,
-#   "side": "RIGHT"
-# }
-# 
-# Example 2:
-# {
-#   "body": "Multiple issues found:\n1. Hardcoded API key should be in environment variables\n2. Inconsistent class naming (userAccount vs Product)\n3. Inconsistent parameter casing (Password vs username)\n4. Missing docstrings and type hints\n5. Inconsistent spacing around operators",
-#   "commit_id": "323......87686",
-#   "path": "code.py",
-#   "start_line": 11,
-#   "start_side": "RIGHT",
-#   "line": 25,
-#   "side": "RIGHT"
-# }
-#
-# Field Descriptions:
-# - body: The text of the review comment. Include markdown code blocks for snippets
-# - commit_id: SHA of the commit you're reviewing
-# - path: Relative file path in repo
-# - line (integer): Line in diff for comment. Required unless using subject_type:file
-# - side: LEFT for deletions (red), RIGHT for additions (green)
-# - subject_type: "line" for inline comments, "file" for file-level comments
-# - start_line (integer): First line for multi-line comments
-# - start_side: Starting side for multi-line comments (LEFT/RIGHT)
-#
-# Note: Line numbers in PR diff may not match original file due to additions/deletions.
-# Use line numbers from PR diff view rather than original file.
-#
-# For issues, see: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28
-#
-# 2. Use gh api command:
-# gh api \
-#   --method POST \
-#   -H "Accept: application/vnd.github+json" \
-#   /repos/owner/repo/pulls/4/comments \
-#   --input comment.json
-#
-# Key points:
-# - Use "line" instead of "position"
-# - Include code snippets in body using markdown
-# - Set side="RIGHT" for additions
+          # Check for errors in the response
+          ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error')
+          if [ "$ERROR_MSG" != "null" ]; then
+            echo "Error creating Devin session: $ERROR_MSG"
+            exit 1
+          fi
 
-# Customization Options
-# -------------------
-# 1. Custom Labels:
-#    Add if condition to workflow trigger to only run on specific labels
-#    on:
-#      pull_request:
-#        types: [opened, synchronize, reopened]
-#    if: contains(github.event.pull_request.labels.*.name, 'needs-review')
-#
-# 2. Adjust Comment Limits:
-#    Modify Rule #2 in prompt to change max comments per PR
-#
-# 3. Enable Suggested Changes:
-#    Add to Rules section: "You may create suggested changes using the GitHub suggestion format"
-#
-# 4. Allow PR Approval:
-#    Add to Rules section: "You may approve the PR if no issues are found"
+          SESSION_ID=$(echo "$RESPONSE" | jq -r '.session_id')
+          SESSION_URL=$(echo "$RESPONSE" | jq -r '.url')
+
+          if [ -z "$SESSION_ID" ] || [ -z "$SESSION_URL" ]; then
+            echo "Error: Devin session details are missing from the response."
+            exit 1
+          fi
+
+          echo "session-id=$SESSION_ID" >> $GITHUB_OUTPUT
+          echo "session-url=$SESSION_URL" >> $GITHUB_OUTPUT
+          echo "Devin session created successfully: $RESPONSE"
