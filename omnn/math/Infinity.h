@@ -33,6 +33,7 @@ public:
     bool operator <(const Valuable& v) const override;
 
     std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable&) const override;
+    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
 };
 
 class MInfinity
