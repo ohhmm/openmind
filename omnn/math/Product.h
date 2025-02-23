@@ -89,9 +89,8 @@ public:
     Valuable& gcd(const Product&);
     Valuable& gcd(const Valuable&) override;
     Valuable& operator+=(const Valuable&) override;
-    std::pair<bool, Valuable> IsSummationSimplifiable(const Product&) const;
-    std::pair<bool, Valuable> IsSummationSimplifiable(const Valuable&) const override;
-    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable&) const override;
+    std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const override;
+    std::pair<bool, Valuable> IsMultiplicationSimplifiable(const Valuable& v) const override;
     Valuable& operator*=(const Valuable& v) override;
     Valuable& operator /=(const Valuable& v) override;
     Valuable& operator %=(const Valuable& v) override;
@@ -113,6 +112,8 @@ public:
 
     bool IsProduct() const override { return true; }
     bool IsZero() const override;
+    const a_int& ca() const override;
+    bool MultiplyIfSimplifiable(const Valuable& v) override;
     size_t FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const override;
     std::pair<Valuable, Valuable> SplitSimplePart() const;
     std::pair<Valuable, Valuable> split_simple_part();
