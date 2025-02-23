@@ -1,4 +1,8 @@
 name: Automated PR Review
+# See documentation at end of file for:
+# - GitHub API comment posting details
+# - Line number handling in diffs
+# - Customization options (labels, comment limits, etc.)
 
 on:
   pull_request:
@@ -56,3 +60,72 @@ jobs:
           -H "Content-Type: application/json" \
           -d "{\"prompt\": $ESCAPED_PROMPT}" \
           "https://api.devin.ai/v1/sessions"
+
+# GitHub API Documentation for PR Comments
+# --------------------------------------
+# How to post comments with code embedded:
+# 1. Create JSON file for each comment you want to post.
+# Example 1:
+# {
+#   "body": "Security Issue: Hardcoded API key. Recommendation: Use environment variables",
+#   "commit_id": "954...12312",
+#   "path": "file.py",
+#   "line": 11,
+#   "side": "RIGHT"
+# }
+# 
+# Example 2:
+# {
+#   "body": "Multiple issues found:\n1. Hardcoded API key should be in environment variables\n2. Inconsistent class naming (userAccount vs Product)\n3. Inconsistent parameter casing (Password vs username)\n4. Missing docstrings and type hints\n5. Inconsistent spacing around operators",
+#   "commit_id": "323......87686",
+#   "path": "code.py",
+#   "start_line": 11,
+#   "start_side": "RIGHT",
+#   "line": 25,
+#   "side": "RIGHT"
+# }
+#
+# Field Descriptions:
+# - body: The text of the review comment. Include markdown code blocks for snippets
+# - commit_id: SHA of the commit you're reviewing
+# - path: Relative file path in repo
+# - line (integer): Line in diff for comment. Required unless using subject_type:file
+# - side: LEFT for deletions (red), RIGHT for additions (green)
+# - subject_type: "line" for inline comments, "file" for file-level comments
+# - start_line (integer): First line for multi-line comments
+# - start_side: Starting side for multi-line comments (LEFT/RIGHT)
+#
+# Note: Line numbers in PR diff may not match original file due to additions/deletions.
+# Use line numbers from PR diff view rather than original file.
+#
+# For issues, see: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28
+#
+# 2. Use gh api command:
+# gh api \
+#   --method POST \
+#   -H "Accept: application/vnd.github+json" \
+#   /repos/owner/repo/pulls/4/comments \
+#   --input comment.json
+#
+# Key points:
+# - Use "line" instead of "position"
+# - Include code snippets in body using markdown
+# - Set side="RIGHT" for additions
+
+# Customization Options
+# -------------------
+# 1. Custom Labels:
+#    Add if condition to workflow trigger to only run on specific labels
+#    on:
+#      pull_request:
+#        types: [opened, synchronize, reopened]
+#    if: contains(github.event.pull_request.labels.*.name, 'needs-review')
+#
+# 2. Adjust Comment Limits:
+#    Modify Rule #2 in prompt to change max comments per PR
+#
+# 3. Enable Suggested Changes:
+#    Add to Rules section: "You may create suggested changes using the GitHub suggestion format"
+#
+# 4. Allow PR Approval:
+#    Add to Rules section: "You may approve the PR if no issues are found"
