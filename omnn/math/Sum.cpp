@@ -82,7 +82,7 @@ namespace
         else if (item.IsInt()) {
             it = GetFirstOccurence<Integer>();
             auto e = end();
-            if (it == e) 
+            if (it == e)
                 it = GetFirstOccurence<Fraction>();
             if (it != e && it->IsSimple()) {
                 auto i = Extract(it++);
@@ -136,7 +136,7 @@ namespace
         }
         return it;
     }
-    
+
     void Sum::Update(iterator& it, Valuable&& value)
     {
         if (value.IsZero()) {

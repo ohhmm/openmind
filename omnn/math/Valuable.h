@@ -49,7 +49,7 @@ class Exponentiation;
 class Fraction;
 class PrincipalSurd;
 class Sum;
-size_t hash_value(const omnn::math::Valuable& valuable);
+size_t hash_value(const omnn::math::Valuable&);
 
 using vars_cont_t = std::map<Variable, Valuable>;
 std::ostream& operator<<(std::ostream& out, const vars_cont_t& vars);

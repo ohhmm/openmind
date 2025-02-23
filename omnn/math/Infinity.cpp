@@ -1,5 +1,6 @@
 #include "Infinity.h"
 #include "NaN.h"
+#include "Limit.h"
 
 using namespace omnn;
 using namespace math;
@@ -14,8 +15,9 @@ Valuable Infinity::operator -() const {
 
 Valuable& Infinity::operator +=(const Valuable& v)
 {
-    if (v.IsMInfinity())
-        IMPLEMENT;
+    if (v.IsMInfinity()) {
+        Become(NaN());  // Infinity + (-Infinity) = NaN
+    }
     return *this;
 }
 
@@ -25,26 +27,27 @@ Valuable& Infinity::operator *=(const Valuable& v)
         if (v.ca() < 0) {
             Become(MInfinity());
         } else if(v.ca() == 0) {
-            IMPLEMENT;
+            Become(NaN());  // Infinity * 0 = NaN
         } else {
-            //Infinity
+            // Stay infinity
         }
     } else if (v.IsMInfinity()) {
-        IMPLEMENT;
-    } else if (v < constants::zero)
+        Become(MInfinity());  // Infinity * (-Infinity) = -Infinity
+    } else if (v < constants::zero) {
         Become(MInfinity());
-        
+    }
     return *this;
 }
 
 Valuable& Infinity::operator /=(const Valuable& v)
 {
-    if (v.IsInfinity() || v.IsMInfinity())
-        IMPLEMENT
-    else if (v < constants::zero)
+    if (v.IsInfinity() || v.IsMInfinity()) {
+        Become(NaN());  // Infinity/Infinity or Infinity/(-Infinity) = NaN
+    } else if (v < constants::zero) {
         Become(MInfinity());
-    else if (v.IsZero())
-        IMPLEMENT;
+    } else if (v.IsZero()) {
+        LOG_AND_IMPLEMENT("Complex Infinity")
+    }
     return *this;
 }
 
@@ -71,14 +74,30 @@ std::pair<bool, Valuable> omnn::math::Infinity::IsSummationSimplifiable(const Va
     return is;
 }
 
+std::pair<bool, Valuable> Infinity::IsMultiplicationSimplifiable(const Valuable& value) const {
+    std::pair<bool, Valuable> is;
+    is.first = value.IsSimple();
+    if (is.first) {
+        if (value < constants::zero) {
+            is.second = MInfinity();
+        } else if (value.IsZero()) {
+            is.second = NaN();
+        } else {
+            is.second = *this;
+        }
+    }
+    return is;
+}
+
 Valuable& Infinity::operator^=(const Valuable& v)
 {
-    if (v.IsZero())
+    if (v.IsZero()) {
+        Become(NaN());
+    } else if (!v.IsInt()) {
         IMPLEMENT
-    else if (!v.IsInt())
-        IMPLEMENT
-    else if (v < constants::zero)
-        IMPLEMENT
+    } else if (v < constants::zero) {
+        LOG_AND_IMPLEMENT("Limit->0")
+    }
     return *this;
 }
 
@@ -97,8 +116,9 @@ Valuable MInfinity::operator -() const {
 
 Valuable& MInfinity::operator +=(const Valuable& v)
 {
-    if (v.IsInfinity())
-        IMPLEMENT
+    if (v.IsInfinity()) {
+        Become(NaN());  // -Infinity + Infinity = NaN
+    }
     return *this;
 }
 
@@ -118,23 +138,25 @@ std::pair<bool, Valuable> MInfinity::IsMultiplicationSimplifiable(const Valuable
 
 Valuable& MInfinity::operator *=(const Valuable& v)
 {
-    if (v.IsInfinity())
-        IMPLEMENT
-    else if (v < constants::zero)
+    if (v.IsInfinity()) {
+        // -Infinity * Infinity = -Infinity
+    } else if (v < constants::zero) {
         Become(Infinity());
-    else if (v.IsZero())
+    } else if (v.IsZero()) {
         Become(NaN());
+    }
     return *this;
 }
 
 Valuable& MInfinity::operator /=(const Valuable& v)
 {
-    if (v.IsInfinity() || v.IsMInfinity())
-        IMPLEMENT
-    else if (v < constants::zero)
+    if (v.IsInfinity() || v.IsMInfinity()) {
+        Become(NaN());  // -Infinity/Infinity or -Infinity/(-Infinity) = NaN
+    } else if (v < constants::zero) {
         Become(MInfinity());
-    else if (v.IsZero())
-        IMPLEMENT
+    } else if (v.IsZero()) {
+        LOG_AND_IMPLEMENT("Complex Infinity")
+    }
     return *this;
 }
 
@@ -152,12 +174,13 @@ bool MInfinity::operator <(const Valuable& v) const
 
 Valuable& MInfinity::operator^=(const Valuable& v)
 {
-    if (v.IsZero())
+    if (v.IsZero()) {
+        Become(NaN());
+    } else if (!v.IsInt()) {
         IMPLEMENT
-    else if (!v.IsInt())
-        IMPLEMENT
-    else if (v < constants::zero)
-        IMPLEMENT
+    } else if (v < constants::zero) {
+        LOG_AND_IMPLEMENT("Limit->0")
+    }
     return *this;
 }
 
