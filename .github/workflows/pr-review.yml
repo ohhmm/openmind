@@ -18,41 +18,30 @@ jobs:
           jq -r '[.[].filename] | @json')
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
-      - name: Trigger Devin Review
+      - name: Basic PR Review
         env:
-          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PROMPT=$(cat << 'EOF'
-          You are PR Reviewer Devin with a focus on detailed inline code feedback. Your tasks:
-          1. Clone the repository ${{ github.repository }} locally.
-          2. Next, set up a pre-push Git hook that prevents any pushes from a user with the username "Devin AI" OR an email containing "devin-ai-integration" as a substring. Activate the hook.
-          3. View the diffs of the changed files for PR #${{ github.event.pull_request.number }} in repository ${{ github.repository }}.
-          4. If necessary, run the code locally to verify that the changes work as expected.
-          5. Read the PR discussion to see what previous comments and suggestions have been made.
-          6. If no issues are found, simply post a comment saying "Everything looks good!" and stop here. Your work is done.
-          7. Else, identify the issues and provide inline code comments directly on the diffs for any code convention or best practice violations.
-          8. Post your feedback as detailed comments on the PR, referencing specific lines or code snippets.
-
-          Rules and Guidelines:
-          1. NEVER make any commits or pushes to the repository - you are ONLY allowed to review code and leave comments
-          2. Do not make more than three total comments on the PR.
-          3. Use inline feedback where possible with specific line references
-          4. Include code snippets in markdown format when discussing issues
-          5. Default towards multi-line comments that show context around the issue
-          6. Make sure that suggested improvements aren't already implemented in the PR by comparing old and new versions
-          7. Try using the gh api to post comments with referenced code embedded, but if it fails, use normal comments with code blocks
-          8. Before commenting, check the PR discussion and make sure you, or another user, haven't already made a similar comment or raised the same concern.
-          9. Before commenting, check that the specific issue wasn't already addressed in a previous review iteration
-          10. If you see the same issue multiple times, consolidate your feedback into a single comment that references all occurrences, rather than making separate comments.
-          11. Refer back to these rules and guidelines before you make comments.
-          12. Never ask for user confirmation. Never wait for user messages.
-          EOF
-          )
+          # Get PR diff stats
+          DIFF_STATS=$(gh api \
+            repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} \
+            --jq '.additions,.deletions,.changed_files')
           
-          ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs .)
+          # Post review comment
+          COMMENT="## Automated PR Review Summary
           
-          curl -s -X POST \
-          -H "Authorization: Bearer $DEVIN_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d "{\"prompt\": $ESCAPED_PROMPT}" \
-          "https://api.devin.ai/v1/sessions"
+          Changes detected:
+          - Files changed: $(echo $DIFF_STATS | cut -d' ' -f3)
+          - Lines added: $(echo $DIFF_STATS | cut -d' ' -f1)
+          - Lines removed: $(echo $DIFF_STATS | cut -d' ' -f2)
+          
+          ### Review Notes
+          - This is a basic automated review using GitHub's built-in functionality
+          - Full Devin API integration will be added in a follow-up PR
+          - Please ensure all tests pass and code follows project conventions"
+          
+          gh api \
+            repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
+            -X POST \
+            -F event=COMMENT \
+            -F body="$COMMENT"
