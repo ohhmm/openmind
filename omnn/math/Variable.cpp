@@ -27,7 +27,7 @@ namespace math {
         hash = v.Hash();
         maxVaExp=1;
     }
-    
+
     void Variable::SetId(::std::any id) {
         hash = varSetHost->Hash(id);
         varId = std::move(id);

@@ -45,6 +45,15 @@ macro(glob_add_dir_source_files)
 		file(GLOB ${varnameprefix}resources ${ARGN}/*.rc)
 		file(GLOB ${varnameprefix}pch ${ARGN}/pch.h ${ARGN}/stdafx.h)
 		file(GLOB ${varnameprefix}pcs ${ARGN}/pch.cpp ${ARGN}/stdafx.cpp)
+		file(GLOB ${varnameprefix}script
+			${ARGN}/*.js ${ARGN}/*.ts
+			${ARGN}/*.php
+			${ARGN}/*.pl
+			${ARGN}/*.py
+			${ARGN}/*.rb
+			${ARGN}/*.skrypt
+			${ARGN}/*.vb
+			)
 		list(APPEND ${varnameprefix}all_source_files
 			${${varnameprefix}headers}
 			${${varnameprefix}src}
@@ -53,6 +62,7 @@ macro(glob_add_dir_source_files)
 			${${varnameprefix}resources}
 			${${varnameprefix}pch}
 			${${varnameprefix}pcs}
+			${${varnameprefix}script}
 			)
         if(varnameprefix)
 		    list(APPEND headers ${${varnameprefix}headers})
@@ -62,11 +72,13 @@ macro(glob_add_dir_source_files)
 		    list(APPEND resources ${${varnameprefix}resources})
 		    list(APPEND pch ${${varnameprefix}pch})
 		    list(APPEND pcs ${${varnameprefix}pcs})
+			list(APPEND script ${${varnameprefix}script})
 			list(APPEND all_source_files ${${varnameprefix}all_source_files})
         endif(varnameprefix)
     else()
     	unset(${varnameprefix}src)
 		unset(${varnameprefix}resources)
+		unset(${varnameprefix}script)
 		unset(${varnameprefix}qtsrc)
 		unset(${varnameprefix}qmlsrc)
 		unset(${varnameprefix}pcs)
@@ -123,6 +135,7 @@ function(apply_target_commons this_target)
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:DebugDLL>
+		POSITION_INDEPENDENT_CODE ON
 		)
 	target_compile_options(${this_target} PUBLIC
 		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-fcoroutines>
@@ -366,7 +379,7 @@ macro(lib)
     message("\nCreating Library: ${this_target}")
 	check_dep_file()
 	glob_source_files()
-    add_library(${this_target} ${USE_SHARED} ${src} ${headers})
+    add_library(${this_target} ${USE_SHARED} ${all_source_files})
 	APPLY_TARGET_COMMONS(${this_target})
 	if(CMAKE_CXX_STANDARD)
 		set_target_properties(${this_target} PROPERTIES CXX_STANDARD ${CMAKE_CXX_STANDARD})
