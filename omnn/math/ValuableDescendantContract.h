@@ -56,7 +56,7 @@ namespace math {
             constexpr DepSz(self* ths) {
                 ths->setAllocSize(sizeof(Chld));
 #ifndef NOOMDEBUG
-                assert(DefaultAllocSize >= sizeof(Chld) && "Increase DefaultAllocSize");
+                assert(Valuable::DefaultAllocSize >= sizeof(Chld) && "Increase DefaultAllocSize");
 #endif
             }
         };
