@@ -4,7 +4,6 @@
 #include "omnn/math/Variable.h"
 #include "omnn/math/System.h"
 #include <sstream>
-#include <map>
 
 using namespace boost::python;
 using namespace omnn::math;
@@ -19,7 +18,7 @@ namespace {
         }
         return result;
     }
-    
+
     // Converter function
     std::map<omnn::math::Variable, omnn::math::Valuable> dict_to_map(const dict& py_dict) {
         std::map<omnn::math::Variable, omnn::math::Valuable> cpp_map;
@@ -51,6 +50,19 @@ namespace {
             data->convertible = storage;
         }
     };
+
+    // Helper for __str__
+    std::string valuable_str(const Valuable& v) {
+        std::ostringstream ss;
+        ss << v; // Use operator<< instead of protected print()
+        return ss.str();
+    }
+
+    std::string variable_str(const Variable& v) {
+        std::ostringstream ss;
+        ss << v; // Use operator<< instead of protected print()
+        return ss.str();
+    }
 }
 
 BOOST_PYTHON_MODULE(variable)
@@ -113,6 +125,9 @@ BOOST_PYTHON_MODULE(variable)
 
         // Comparison
         .def(self < self)
+        .def("__le__", +[](const Valuable& a, const Valuable& b) -> bool { return a < b || a == b; })
+        .def("__gt__", +[](const Valuable& a, const Valuable& b) -> bool { return !(a < b || a == b); })
+        .def("__ge__", +[](const Valuable& a, const Valuable& b) -> bool { return !(a < b); })
         .def(self == self)
         .def(self != self)
 
@@ -120,6 +135,10 @@ BOOST_PYTHON_MODULE(variable)
         .def("shl", +[](const Valuable& v, int shift) { return v.Shl(shift); })
         .def("shr", +[](const Valuable& v, int shift) { return v.Shr(shift); })
         .def("bit", +[](const Valuable& v, int bit) { return v.bit(bit); })
+        .def("and_", +[](const Valuable& v, const Valuable& other) { return v.And(v, other); })
+        .def("or_", +[](const Valuable& v, const Valuable& other) { return v.Or(v, other); })
+        .def("xor_", +[](const Valuable& v, const Valuable& other) { return v.Xor(v, other); })
+        .def("not_", +[](const Valuable& v) { return v.Not(v); })
 
         // Mathematical functions
         .def("abs", &Valuable::Abs)
@@ -128,61 +147,399 @@ BOOST_PYTHON_MODULE(variable)
         .def("optimize", &Valuable::optimize)
         .def("eval", &Valuable::eval)
 
-        // Type conversion
-        .def("__int__", +[](const Valuable& v) { return static_cast<int>(v); })
-        .def("__float__", +[](const Valuable& v) { return static_cast<double>(v); })
+        // Type identification
+        .def("is_constant", &Valuable::IsConstant)
+        .def("is_int", &Valuable::IsInt)
+        .def("is_fraction", &Valuable::IsFraction)
+        .def("is_zero", &Valuable::IsZero)
+        .def("is_rational", &Valuable::IsRational)
+
+        // View system
+        .def("get_view", &Valuable::GetView)
+        .def("set_view", &Valuable::SetView)
 
         // String conversion
         .def("__str__", &Valuable::str)
+
+        // Type conversion
+        .def("__int__", +[](const Valuable& v) { return static_cast<int>(v); })
+        .def("__float__", +[](const Valuable& v) {
+            try {
+                std::cout << "Converting to float: " << v << std::endl;
+
+                // First evaluate the value
+                auto result = v.evaluate();
+                std::cout << "Evaluated to: " << result << std::endl;
+
+                // If result is a Variable, try to get its stored value
+                if (result.IsVa()) {
+                    const auto& var = result.as<Variable>();
+                    result = var.evaluate();
+                    std::cout << "Variable evaluated to: " << result << std::endl;
+                }
+
+                // Convert to double using operator double()
+                auto value = static_cast<double>(result);
+                std::cout << "Converted to double: " << value << std::endl;
+                return value;
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in float conversion: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("__bool__", +[](const Valuable& v) { return static_cast<bool>(v); })
+
+        // Evaluation
+        .def("evaluate", +[](const Valuable& v) {
+            std::cout << "Evaluating Valuable" << std::endl;
+            return v;
+        })
         ;
 
+    // Expose Variable
     class_<Variable, bases<Valuable>>("Variable")
         // Constructors
         .def(init<>())
         .def(init<const std::string&>())
 
-        // Basic arithmetic with numeric conversion
+        // Basic arithmetic (inherited from Valuable)
         .def(self + self)
-        .def("__add__", +[](const Variable& v, int i) { return v + i; })
-        .def("__radd__", +[](const Variable& v, int i) { return i + v; })
-        .def("__add__", +[](const Variable& v, double d) { return v + d; })
-        .def("__radd__", +[](const Variable& v, double d) { return d + v; })
+        .def("__add__", +[](const Variable& v, const Variable& other) -> Variable {
+            std::cout << "Variable + Variable" << std::endl;
+            try {
+                // First evaluate both operands
+                auto v_val = v.evaluate();
+                auto other_val = other.evaluate();
+                // Perform addition
+                auto result = v_val + other_val;
+                std::cout << "Addition result: " << result << std::endl;
+                return Variable(result);
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in addition: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("__add__", +[](const Variable& v, const Valuable& other) -> Valuable {
+            std::cout << "Variable + Valuable" << std::endl;
+            try {
+                // First evaluate both operands
+                auto v_val = v.evaluate();
+                auto other_val = other.evaluate();
+                std::cout << "v_val: " << v_val << ", other_val: " << other_val << std::endl;
+
+                // Perform addition and evaluate immediately
+                auto result = (v_val + other_val).evaluate();
+                std::cout << "Final result: " << result << std::endl;
+
+                if (result.IsVa()) {
+                    throw std::runtime_error("Addition result is still a variable");
+                }
+
+                return result;
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in addition: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("__add__", +[](const Variable& v, int i) -> Variable {
+            std::cout << "Variable + int" << std::endl;
+            return Variable(static_cast<const Valuable&>(v) + Valuable(i));
+        })
+        .def("__radd__", +[](const Variable& v, int i) -> Variable {
+            std::cout << "int + Variable" << std::endl;
+            return Variable(Valuable(i) + static_cast<const Valuable&>(v));
+        })
+        .def("__add__", +[](const Variable& v, double d) -> Variable {
+            std::cout << "Variable + double" << std::endl;
+            return Variable(static_cast<const Valuable&>(v) + Valuable(d));
+        })
+        .def("__radd__", +[](const Variable& v, double d) -> Variable {
+            std::cout << "double + Variable" << std::endl;
+            return Variable(Valuable(d) + static_cast<const Valuable&>(v));
+        })
         .def(self - self)
-        .def("__sub__", +[](const Variable& v, int i) { return v - i; })
-        .def("__rsub__", +[](const Variable& v, int i) { return i - v; })
-        .def("__sub__", +[](const Variable& v, double d) { return v - d; })
-        .def("__rsub__", +[](const Variable& v, double d) { return d - v; })
+        .def("__sub__", +[](const Variable& v, const Variable& other) {
+            auto result = v - other;
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__sub__", +[](const Variable& v, const Valuable& other) {
+            auto result = v - other;
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__sub__", +[](const Variable& v, int i) {
+            auto result = v - Valuable(i);
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__rsub__", +[](const Variable& v, int i) {
+            auto result = Valuable(i) - v;
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__sub__", +[](const Variable& v, double d) {
+            auto result = v - Valuable(d);
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__rsub__", +[](const Variable& v, double d) {
+            auto result = Valuable(d) - v;
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
         .def(self * self)
-        .def("__mul__", +[](const Variable& v, int i) { return v * i; })
-        .def("__rmul__", +[](const Variable& v, int i) { return i * v; })
-        .def("__mul__", +[](const Variable& v, double d) { return v * d; })
-        .def("__rmul__", +[](const Variable& v, double d) { return d * v; })
+        .def("__mul__", +[](const Variable& v, const Variable& other) -> Variable {
+            std::cout << "Variable * Variable" << std::endl;
+            try {
+                // First evaluate both operands
+                auto v_val = v.evaluate();
+                auto other_val = other.evaluate();
+                std::cout << "v_val: " << v_val << ", other_val: " << other_val << std::endl;
+
+                // Perform multiplication
+                auto result = v_val * other_val;
+                std::cout << "Multiplication result: " << result << std::endl;
+
+                // Create new variable with result
+                Variable var_result;
+                var_result.Eval(var_result, result);
+
+                // Verify the result
+                auto final_val = var_result.evaluate();
+                std::cout << "Final result: " << final_val << std::endl;
+
+                return var_result;
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("__mul__", +[](const Variable& v, const Valuable& other) -> Variable {
+            std::cout << "Variable * Valuable" << std::endl;
+            try {
+                // First evaluate the variable
+                auto v_val = v.evaluate();
+                std::cout << "Variable evaluated to: " << v_val << std::endl;
+
+                // Perform multiplication
+                auto result = v_val * other;
+                std::cout << "Multiplication result: " << result << std::endl;
+
+                // Create new variable with result
+                Variable var_result;
+                var_result.Eval(var_result, result);
+
+                // Verify the result
+                auto final_val = var_result.evaluate();
+                std::cout << "Final result: " << final_val << std::endl;
+
+                return var_result;
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("__mul__", +[](const Variable& v, int i) -> Variable {
+            std::cout << "Variable * int" << std::endl;
+            try {
+                // First evaluate the variable
+                auto v_val = v.evaluate();
+                std::cout << "Variable evaluated to: " << v_val << std::endl;
+
+                // Create Valuable from int
+                Valuable val_i(i);
+                std::cout << "Created Valuable from int: " << val_i << std::endl;
+
+                // Perform multiplication
+                auto result = v_val * val_i;
+                std::cout << "Multiplication result: " << result << std::endl;
+
+                // Create new variable with result
+                Variable var_result;
+                var_result.Eval(var_result, result);
+
+                // Verify the result
+                auto final_val = var_result.evaluate();
+                std::cout << "Final result: " << final_val << std::endl;
+
+                return var_result;
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("__rmul__", +[](const Variable& v, int i) -> Variable {
+            std::cout << "int * Variable" << std::endl;
+            try {
+                // First evaluate the variable
+                auto v_val = v.evaluate();
+                std::cout << "Variable evaluated to: " << v_val << std::endl;
+
+                // Create Valuable from int
+                Valuable val_i(i);
+                std::cout << "Created Valuable from int: " << val_i << std::endl;
+
+                // Perform multiplication
+                auto result = val_i * v_val;
+                std::cout << "Multiplication result: " << result << std::endl;
+
+                // Create new variable with result
+                Variable var_result;
+                var_result.Eval(var_result, result);
+
+                // Verify the result
+                auto final_val = var_result.evaluate();
+                std::cout << "Final result: " << final_val << std::endl;
+
+                return var_result;
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("__mul__", +[](const Variable& v, double d) -> Valuable {
+            std::cout << "Variable * double" << std::endl;
+            try {
+                // First evaluate the variable
+                auto v_val = v.evaluate();
+                std::cout << "Variable evaluated to: " << v_val << std::endl;
+
+                // Create Valuable from double
+                Valuable val_d(d);
+                std::cout << "Created Valuable from double: " << val_d << std::endl;
+
+                // Perform multiplication and evaluate immediately
+                auto result = (v_val * val_d).evaluate();
+                std::cout << "Final result: " << result << std::endl;
+
+                if (result.IsVa()) {
+                    throw std::runtime_error("Multiplication result is still a variable");
+                }
+
+                return result;
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("__rmul__", +[](const Variable& v, double d) -> Variable {
+            std::cout << "double * Variable" << std::endl;
+            try {
+                auto result = Valuable(d) * static_cast<const Valuable&>(v);
+                std::cout << "Multiplication successful" << std::endl;
+                return Variable(result);
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
+                throw;
+            }
+        })
         .def(self / self)
-        .def("__truediv__", +[](const Variable& v, int i) { return v / i; })
-        .def("__rtruediv__", +[](const Variable& v, int i) { return i / v; })
-        .def("__truediv__", +[](const Variable& v, double d) { return v / d; })
-        .def("__rtruediv__", +[](const Variable& v, double d) { return d / v; })
+        .def("__truediv__", +[](const Variable& v, const Variable& other) {
+            auto result = v / other;
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__truediv__", +[](const Variable& v, const Valuable& other) {
+            auto result = v / other;
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__truediv__", +[](const Variable& v, int i) {
+            auto result = v / Valuable(i);
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__rtruediv__", +[](const Variable& v, int i) {
+            auto result = Valuable(i) / v;
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__truediv__", +[](const Variable& v, double d) {
+            auto result = v / Valuable(d);
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
+        .def("__rtruediv__", +[](const Variable& v, double d) {
+            auto result = Valuable(d) / v;
+            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        })
         .def(self % self)
-        .def("__mod__", +[](const Variable& v, int i) { return v % i; })
-        .def("__rmod__", +[](const Variable& v, int i) { return i % v; })
+        .def("__mod__", +[](const Variable& v, const Variable& other) { return Variable(v % other); })
+        .def("__mod__", +[](const Variable& v, const Valuable& other) { return Variable(v % other); })
+        .def("__mod__", +[](const Variable& v, int i) { return Variable(v % Valuable(i)); })
+        .def("__rmod__", +[](const Variable& v, int i) { return Variable(Valuable(i) % v); })
         .def(self ^ self)
-        .def("__pow__", +[](const Variable& v, int i) { return v ^ i; })
-        .def("__rpow__", +[](const Variable& v, int i) { return i ^ v; })
-        .def("__pow__", +[](const Variable& v, double d) { return v ^ d; })
-        .def("__rpow__", +[](const Variable& v, double d) { return d ^ v; })
         .def(-self)
 
-        // Comparison
+        // Comparison (inherited from Valuable)
         .def(self < self)
+        .def("__le__", +[](const Variable& a, const Variable& b) -> bool { return a < b || a == b; })
+        .def("__gt__", +[](const Variable& a, const Variable& b) -> bool { return !(a < b || a == b); })
+        .def("__ge__", +[](const Variable& a, const Variable& b) -> bool { return !(a < b); })
         .def(self == self)
         .def(self != self)
-        ;
-        
+
+        // String conversion
+        .def("__str__", &variable_str)
+
+        // Type identification
+        .def("is_va", &Variable::IsVa)
+
+        // Variable-specific methods
+        .def("set_value", +[](Variable& v, double value) {
+            std::cout << "Setting double value: " << value << std::endl;
+            try {
+                // Create a Valuable with the value
+                Valuable val(value);
+
+                // Store value using public Eval method
+                v.Eval(v, val);
+
+                // Verify the value was set
+                auto result = v.evaluate();
+                std::cout << "Value set, evaluates to: " << result << std::endl;
+
+                if (result.IsVa()) {
+                    throw std::runtime_error("Failed to set value - still a variable after assignment");
+                }
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in set_value: " << e.what() << std::endl;
+                throw;
+            }
+        })
+        .def("set_value", +[](Variable& v, int i) {
+            std::cout << "Setting int value: " << i << std::endl;
+            v.Eval(v, Valuable(i));
+            // Verify the value was set
+            auto result = v.evaluate();
+            std::cout << "Value set, evaluates to: " << result << std::endl;
+        })
+        .def("set_value", +[](Variable& v, double d) {
+            std::cout << "Setting double value: " << d << std::endl;
+            v.Eval(v, Valuable(d));
+            // Verify the value was set
+            auto result = v.evaluate();
+            std::cout << "Value set, evaluates to: " << result << std::endl;
+        })
+        .def("evaluate", +[](Variable& v) {
+            std::cout << "Evaluating Variable expression" << std::endl;
+            try {
+                // Evaluate using Variable's evaluate()
+                auto result = v.evaluate();
+                std::cout << "Got result from evaluate(): " << result << std::endl;
+
+                // If we got a variable result, try to get its concrete value
+                if (result.IsVa()) {
+                    const auto& var = result.as<Variable>();
+                    auto concrete = var.evaluate();
+                    if (!concrete.IsVa()) {
+                        result = concrete;
+                        std::cout << "Found concrete value: " << result << std::endl;
+                    }
+                }
+
+                return result;
+            } catch (const std::exception& e) {
+                std::cerr << "Exception in evaluate: " << e.what() << std::endl;
+                throw;
+            }
+        });
+
     class_<System>("System")
         // Constructors
         .def(init<>())
         .def(init<const boost::numeric::ublas::matrix<Valuable>&>())
-        
+
         // Methods
         .def("Add", static_cast<bool (System::*)(const Valuable&)>(&System::Add))
         .def("Add", static_cast<bool (System::*)(const Variable&, const Valuable&)>(&System::Add))
@@ -205,7 +562,7 @@ BOOST_PYTHON_MODULE(variable)
         .def("MakesTotalEqu", static_cast<void (System::*)(bool)>(&System::MakesTotalEqu))
         .def("CalculateTotalExpression", &System::CalculateTotalExpression)
         .def("IsEmpty", &System::IsEmpty)
-        
+
         // Operators
         .def("__str__", +[](const System& sys) {
             std::ostringstream ss;
