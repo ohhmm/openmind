@@ -1,0 +1,61 @@
+name: Create Devin Session from Issue
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  create-devin-session:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get issue content
+        id: issue-content
+        run: |
+          ISSUE_BODY="${{ github.event.issue.body }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          
+          # Combine title and body into prompt
+          PROMPT="Issue #${{ github.event.issue.number }}: $ISSUE_TITLE
+
+          $ISSUE_BODY"
+          
+          echo "prompt<<EOF" >> $GITHUB_OUTPUT
+          echo "$PROMPT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Devin Session
+        id: devin-session
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Convert multiline string to JSON-safe format
+          ESCAPED_PROMPT=$(echo "${{ steps.issue-content.outputs.prompt }}" | jq -Rs .)
+          
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer $DEVIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"prompt\": $ESCAPED_PROMPT, \"snapshot_id\": \"snapshot-9dbc293445474e4498a0c5a4fd32e36b\"}" \
+            "https://api.devin.ai/v1/sessions")
+
+          # Check for errors in the response
+          ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error')
+          if [ "$ERROR_MSG" != "null" ]; then
+            echo "Error creating Devin session: $ERROR_MSG"
+            exit 1
+          fi
+
+          SESSION_ID=$(echo "$RESPONSE" | jq -r '.session_id')
+          SESSION_URL=$(echo "$RESPONSE" | jq -r '.url')
+
+          if [ -z "$SESSION_ID" ] || [ -z "$SESSION_URL" ]; then
+            echo "Error: Devin session details are missing from the response."
+            exit 1
+          fi
+
+          # Add comment to issue with session link
+          gh issue comment "${{ github.event.issue.number }}" --body "Created Devin session: $SESSION_URL"
