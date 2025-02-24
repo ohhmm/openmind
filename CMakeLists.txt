@@ -5,11 +5,12 @@ string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
 
 enable_language(CXX)
-set (CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 
@@ -163,6 +164,7 @@ set(_BOOST_USED_COMPONENTS
 	filesystem
 	iostreams
 	locale
+	python
 	serialization
 	system
 	thread
@@ -413,17 +415,6 @@ IF (Boost_FOUND)
 ELSE()
     message(WARNING "Boost not found. Build 'prerequisites' target first.")
 ENDIF()
-
-
-# Find Python
-if(NOT Python_FOUND)
-    find_package(Python)
-endif()
-if(Python_FOUND)
-    message(STATUS "Python found: ${Python_EXECUTABLE}")
-    message(STATUS "Python version: ${Python_VERSION}")
-endif()
-
 
 if (OPENMIND_BUILD_TESTS)
 	if(NOT MSVC)

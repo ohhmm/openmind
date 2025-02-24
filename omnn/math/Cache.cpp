@@ -9,24 +9,27 @@
 
 #include <boost/tokenizer.hpp>
 
+#include <cassert>
+#include <chrono>
 #include <iostream>
 #include <thread>
 
 
 using namespace omnn::math;
 using namespace omnn::rt;
+using namespace std::chrono_literals;
 
-
-namespace {
 
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
+namespace {
+
 void DeleteDB(const Cache::path_str_t& path) {
   if(fs::exists(path))
     fs::remove_all(path);
 }
-#endif
 
-}
+} // namespace
+#endif
 
 Cache::Cached Cache::TaskNoCache;
 Cache::CachedSet Cache::TaskCachedSetNoCache;
@@ -45,7 +48,6 @@ void Cache::DbOpen() {
     std::cerr << err << status.ToString() << std::endl;
     if(status.IsIOError()){
       std::cout << "DB is busy. Waiting. Retrying in 5 sec." << std::endl;
-      using namespace std::chrono_literals;
       std::this_thread::sleep_for(5s);
     } else {
 #ifndef NDEBUG
