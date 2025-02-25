@@ -156,8 +156,7 @@ BOOST_PYTHON_MODULE(variable)
         .def("__int__", +[](const Valuable& v) { return static_cast<int>(v); })
         .def("__float__", +[](const Valuable& v) { 
             try {
-                auto result = v.evaluate();
-                return static_cast<double>(result.IsVa() ? result.as<Variable>().evaluate() : result);
+                return static_cast<double>(v.evaluate());
             } catch (const std::exception& e) {
                 throw std::runtime_error(std::string("Float conversion failed: ") + e.what());
             }
