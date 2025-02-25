@@ -77,6 +77,8 @@ size_t PrincipalSurd::FillPolynomialCoefficients(std::vector<Valuable>& coeffici
 }
 
 void PrincipalSurd::optimize() {
+    DUO_OPT_PFX
+    
     if (!optimizations || is_optimized())
         return;
 
