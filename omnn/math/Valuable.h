@@ -208,7 +208,8 @@ public:
         auto& the = get();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (!the.Is<T>()) {
-            LOG_AND_IMPLEMENT("Attempt to cast " << Type().name() << ' ' << *this << " to " << typeid(T).name());
+            ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Attempt to cast " << Type().name() << ' ' << *this << " to " << typeid(T).name())).str().c_str());
+            throw;
         }
 #endif
         return static_cast<T&>(the);
@@ -229,7 +230,9 @@ public:
     class [[maybe_unused]] OptimizeOn {
         bool opts;
     public:
-        MSVC_CONSTEXPR
+#ifdef MSVC
+        constexpr
+#endif
         OptimizeOn() : opts(optimizations) {
             optimizations = true;
         }
@@ -241,7 +244,9 @@ public:
     class [[maybe_unused]] OptimizeOff {
         bool opts;
     public:
-        MSVC_CONSTEXPR
+#ifdef MSVC
+        constexpr
+#endif
         OptimizeOff() : opts(optimizations) {
 			optimizations = {};
         }
@@ -301,7 +306,10 @@ public:
     : exp(t.Move())
     { }
 
-    MSVC_CONSTEXPR Valuable(Valuable&&) = default;
+#ifdef MSVC
+    constexpr
+#endif
+    Valuable(Valuable&&) = default;
     Valuable();
     Valuable(double d);
 
@@ -368,7 +376,10 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
     void SetView(View v);
-    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
+#if defined(MSVC) || defined(__APPLE__)
+    constexpr
+#endif
+    bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
 
@@ -499,310 +510,59 @@ public:
 
     using zone_t = std::pair<Valuable/*from*/,Valuable/*to*/>;
     using ranges_t = std::pair<zone_t/*whole*/,std::deque<zone_t>/*subranges*/>;
-    ranges_t get_zeros_zones(const Variable& v, solutions_t& some) const;
 
-    friend std::ostream& operator<<(std::ostream& out, const Valuable& obj);
-    friend std::wostream& operator<<(std::wostream& out, const Valuable& obj);
-    friend std::istream& operator>>(std::istream& in, const Valuable& obj);
-    friend std::ostream& operator<<(std::ostream& out, const Valuable::solutions_t& obj);
-
-    virtual max_exp_t getMaxVaExp()  const;
-    using vars_cont_t = std::map<Variable, Valuable>;
-    virtual vars_cont_t GetVaExps() const;
-    virtual const vars_cont_t& getCommonVars() const;
-    virtual vars_cont_t calcCommonVars() const;
-    virtual Valuable InCommonWith(const Valuable&) const;
-    static const vars_cont_t& emptyCommonVars();
-    virtual Valuable varless() const;
-    static Valuable VaVal(const vars_cont_t&);
-    Valuable getVaVal() const;
-    Valuable commonVarsWith(const Valuable&) const;
-    virtual bool eval(const vars_cont_t& with);
-    Valuable Eval(const vars_cont_t& with) const;
-
-    // virtual template <class T> const Valuable* Find<T>() const;   // FIXME : check for virtual template methods in new C++ standards https://www.quora.com/profile/Serg-Kryvonos/Template-virtual-method-into-C
+    using va_names_t = std::set<std::string>;
+    virtual void CollectVaNames(va_names_t&) const;
+    virtual void CollectVa(std::set<Variable>&) const;
     virtual const Variable* FindVa() const;
     virtual bool HasVa(const Variable&) const;
-    using var_set_t = std::set<Variable>;
-    virtual void CollectVa(var_set_t& s) const;
-    using va_names_t = std::map<std::string_view, Variable>;
-    virtual void CollectVaNames(va_names_t& s) const;
-    va_names_t VaNames() const;
-    virtual std::shared_ptr<VarHost> getVaHost() const;
+    virtual bool eval(const std::map<Variable, Valuable>& with);
+    virtual void Eval(const Variable&, const Valuable&);
 
-    var_set_t Vars() const;
-    virtual void Eval(const Variable& va, const Valuable&);
-    virtual bool IsComesBefore(const Valuable&) const; /// accepts same type as param
-
-    virtual bool Same(const Valuable&) const;
-    bool OfSameType(const Valuable&) const;
-    bool HasSameVars(const Valuable&) const;
-    bool IsMonic() const;
-
-    Valuable(const std::string& s, const va_names_t& vaNames, bool itIsOptimized = false);
-    Valuable(std::string_view str, const va_names_t& vaNames, bool itIsOptimized = false);
-
-	Valuable operator!() const;
-    explicit operator bool() const;
-    virtual explicit operator int() const;
-    virtual explicit operator a_int() const;
-    virtual explicit operator uint64_t() const;
-    virtual explicit operator double() const;
-    virtual explicit operator long double() const;
-    virtual explicit operator a_rational() const;
-    virtual explicit operator uint32_t() const;
-    virtual explicit operator unsigned char() const;
-    virtual a_int& a();
-    virtual const a_int& ca() const;
-
-    // bits
-    virtual Valuable bit(const Valuable& n = constants::zero) const;
-    virtual Valuable bits(int n, int l) const;
-    virtual Valuable Or(const Valuable& n, const Valuable&) const;
-    virtual Valuable And(const Valuable& n, const Valuable&) const;
-    virtual Valuable Xor(const Valuable& n, const Valuable&) const;
-    virtual Valuable Not(const Valuable& n) const;
-    virtual Valuable& shl();
-    virtual Valuable& shl(const Valuable& n);
-    virtual Valuable& shr(const Valuable& n);
-    virtual Valuable& shr();
-    virtual Valuable Shl() const;
-    virtual Valuable Shl(const Valuable& n) const;
-    virtual Valuable Shr(const Valuable& n) const;
-    virtual Valuable Shr() const;
-    virtual Valuable sh(const Valuable& n) const;
-    virtual Valuable Cyclic(const Valuable& total, const Valuable& shiftLeft) const;
-
-    // logic
-    static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
-    template <class Fwd>
-    constexpr Valuable& equals(Fwd&& valuable) {
-//        SetView(View::Equation);  // FIXME: see ifz test
-        return operator -=(std::forward<Fwd>(valuable));
-    }
-    Valuable Equals(const Valuable&) const;
-    Valuable NotEquals(const Valuable&) const;
-//    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
-//    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
-    Valuable LogicAnd(const Valuable& valuable) const;
-    Valuable operator&&(const Valuable& valuable) const { return LogicAnd(valuable); }
-    Valuable LogicOr(const Valuable& valuable) const;
-    Valuable operator||(const Valuable& valuable) const { return LogicOr(valuable); }
-    Valuable& logic_or(const Valuable& valuable); // inplace
-    Valuable& logic_and(const Valuable& valuable);
-
-    Valuable Intersect(const Valuable& valuable) const;
-    Valuable operator&(const Valuable& valuable) const { return Intersect(valuable); }
-    Valuable& intersect(const Valuable& valuable, const Variable& va);
-    Valuable& operator&=(const Valuable& valuable) { return intersect(valuable); }
-    Valuable& intersect(const Valuable& valuable);
-    Valuable Intersect(const Valuable& valuable, const Variable& va) const;
-
-    Valuable Union(const Valuable& valuable) const;
-    //Valuable operator|(const Valuable& valuable) const { return Union(valuable); }
-    Valuable& unionize(const Valuable& valuable); // inplace
-    //Valuable& unionize(const Valuable& valuable, const Variable& va);
-    Valuable& operator|=(const Valuable& valuable) { return unionize(valuable); }
-    //Valuable Union(const Valuable& valuable, const Variable& va) const;
-    Valuable& remove(const Valuable& valuable);
-    Valuable Remove(const Valuable& valuable) const;
-
-    Valuable RootSetDifference(const Valuable& valuable) const;
-    Valuable RootsSymetricDifference(const Valuable& valuable) const;
-
-    /// conditional operators
-    //
-    Valuable Ifz(const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression is zero and @Else otherwise
-    Valuable IfNZ(const Valuable& Then, const Valuable& Else) const; /// returns an expression which equals to @Then when this expression is not zero and @Else if it is zero
-    Valuable IfEq(const Valuable& v, const Valuable& Then,
-                  const Valuable& Else) const; /// returns an expression which equals to @Then when this expression
-                                               /// equals to @v param and @Else otherwise
-
-    /// <summary>
-    /// bool is 0 or 1
-    /// </summary>
-    /// <returns>0->1 or 1->0</returns>
-    virtual Valuable BoolNot() const;
-
-    /// <summary>
-    /// 0 or 1
-    /// </summary>
-    /// <returns>0->0, otherwise 1</returns>
-    virtual Valuable BoolIntModNotZero() const;
-
-    /// <summary>
-    /// IntMod prefix tells that this method is only applicable for variables known to be integer with modulo operation
-    /// applicable
-    /// x%(x-1) is 1 for x>2, is 0 for 2
-    /// </summary>
-    /// <returns>For x meant to be integers, returns an expression that is equal to 0 when x is positive</returns>
-    virtual Valuable IntMod_IsPositive() const;
-
-	/// <summary>
-	/// (this < 0) - the int is negative
-	/// </summary>
-	/// <returns>bool</returns>
-	virtual Valuable IntMod_Negative() const;
-
-    /// <summary>
-    /// Getting sign of the assumed integer
-    /// </summary>
-    /// <param name="a"></param>
-    /// <returns>-1, 0, 1</returns>
-    virtual Valuable IntMod_Sign() const;
-
-	/// <summary>
-	/// Converts the operator to boolean (delta function)
-	/// </summary>
-	/// <returns>An expression that evaluates to 1 or 0 value</returns>
-	virtual Valuable ToBool() const;
-    Valuable IfzToBool() const;
-
-    /// <summary>
-    /// (x-1)%x is -1 for negative numbers only
-	/// (x-1)%x is undefined for zero
-	/// (x-1)%x is x-1 for positive integers
-    /// </summary>
-    /// <returns></returns>
-    virtual Valuable IntMod_IsNegativeOrZero() const;
-
-    /// <summary>
-    /// Operator 'less' then value to which a param expression is to be evaluated
-	/// IntMod prefix tells that this method is only applicable for variables known to be integer
-	/// Modulo operation may be used
-    /// </summary>
-    /// <param name="than">the param to compare that the object is less then the param</param>
-    /// <returns>An expression that equals zero only when the object is less then param</returns>
-    virtual Valuable IntMod_Less(const Valuable& than) const;
-
-    /// <summary>
-    /// (this <= 0) - constraint negative
-    /// </summary>
-    /// <returns>constraint values <= 0 : expression that equals zero for given negative or 0 *this values</returns>
-    virtual Valuable NegativeOrZero() const;
-
-    /// <summary>
-    /// This > 0
-    /// </summary>
-    /// <returns>filter expression to have roots when this expression is positive</returns>
-    virtual Valuable IsPositive() const;
-
-    /// <summary>
-    /// (this < 0) - constraint negative
-    /// </summary>
-    /// <returns>constraint to negative values: expression that equals zero for given negative *this values</returns>
-    virtual Valuable IsNegative() const;
-
-    /// <summary>
-    /// This < 0, Than = abs(This)
-    /// </summary>
-    /// <param name="than"></param>
-    /// <returns></returns>
-    virtual Valuable IsNegativeThan(const Valuable& than) const;
-
-    /// <summary>
-    /// Operator 'less' then value to which a param expression is to be evaluated
-    /// </summary>
-    /// <param name="than">the param to compare that the object is less then the param</param>
-    /// <returns>An expression that equals zero only when the object is less then param</returns>
-	virtual Valuable Less(const Valuable& than) const;
-
-    /// <summary>
-    /// Operator 'less or eaual' then value to which a param expression is to be evaluated
-    /// </summary>
-    /// <param name="than">the param to compare the object with</param>
-    /// <returns>An expression that equals zero only when the object is less or equal to param</returns>
-    /// <remarks>returns -diff otherwise</remarks>
-	virtual Valuable LessOrEqual(const Valuable& than) const;
-	virtual Valuable GreaterOrEqual(const Valuable& than) const;
-
-    /// <summary>
-    /// Returns minimum between the object and the param asuming that both are real
-    /// </summary>
-    Valuable Minimum(const Valuable& second) const;
-
-    /// <summary>
-    /// Returns maximum between the object and the param asuming that both are real
-    /// </summary>
-    Valuable Maximum(const Valuable& with) const;
-
-    /// <summary>
-    /// Returns distance between the object and the param asuming that both are real
-    /// </summary>
-    Valuable Distance(const Valuable& with) const;
-
-	/// iterations
-	//
-    Valuable For(const Valuable& initialValue, const Valuable& lambda) const; // TODO : iterations operator
-
-	/// constrainting operators
-	//
-    virtual Valuable MustBeInt() const; /// return an expression which equals to zero only when this expression is integer (see https://math.stackexchange.com/a/1598552/118612)
-
-	/// code builders
-    //
-    virtual std::function<bool(std::initializer_list<Valuable>)> Functor() const;
-
-    size_t Hash() const;
-    std::string str() const;
-    std::wstring wstr() const;
-    virtual std::wstring save(const std::wstring&) const;
-
-    using variables_for_lambda_t = const std::initializer_list<const Variable>&; // passed recoursively, should be ref
-    using universal_lambda_params_t = const std::initializer_list<const Valuable>&;
+    using universal_lambda_params_t = const std::vector<double>&;
     using universal_lambda_t = std::function<Valuable(universal_lambda_params_t)>;
+    using variables_for_lambda_t = std::vector<Variable>;
     virtual universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const;
 
-    template <typename... Fwd>
-        requires((std::same_as<std::remove_cvref_t<Fwd>, ::omnn::math::Variable> ||
-                  std::derived_from<std::remove_cvref_t<Fwd>, ::omnn::math::Variable>) &&
-                 ...)
+    virtual bool IsComesBefore(const Valuable&) const;
+    virtual bool OfSameType(const Valuable&) const;
+    virtual bool Same(const Valuable&) const;
+    virtual Valuable InCommonWith(const Valuable&) const;
+    virtual max_exp_t getMaxVaExp() const;
+
+    virtual operator a_rational() const;
+    virtual operator double() const;
+    virtual operator long double() const;
+
     [[nodiscard]]
-    auto CompiLambda(Fwd&& ...variables) const {
-        return [
-            lambda = CompileIntoLambda(variables_for_lambda_t{std::forward<Fwd>(variables)...})
-        ] (auto... args) {
-            OptimizeOn on;
-            return lambda({args...});
-        };
-    }
-
-    virtual std::ostream& code(std::ostream& out) const;
-    std::string OpenCL(const std::string_view& TypeName = "float") const;
-    std::string OpenCLuint() const;
-    va_names_t OpenCLparamVarNames() const;
-
-    [[nodiscard]] virtual bool is_optimized() const;
-    [[nodiscard]] Valuable Optimized() const;
-    [[nodiscard]] Valuable Optimized(View) const;
-
-protected:
-    friend class boost::serialization::access;
-
-    View view = View::Flat;
+    size_t Hash() const;
 
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        if (exp) {
-            ar & exp;
-        } else {
-            ar & hash;
-            ar & maxVaExp;
-            ar & view;
-            ar & optimized;
-        }
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        boost::serialization::split_member(ar, *this, version);
     }
 
-};
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+        ar & hash;
+    }
 
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(Valuable)
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+        ar & hash;
+    }
+};
 
 template<class T>
 const T& Valuable::as() const {
     auto& the = get();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
     if (!the.Is<T>()) {
-        IMPLEMENT
+        ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Attempt to cast " << Type().name() << ' ' << *this << " to " << typeid(T).name())).str().c_str());
+        throw;
     }
 #endif
     return static_cast<const T&>(the);
