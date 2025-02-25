@@ -24,6 +24,7 @@
     "bzip2",
     "leveldb",
     "liblzma",
+    "python3",
     "zlib",
     {
       "name": "vcpkg-cmake",
