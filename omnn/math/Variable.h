@@ -40,6 +40,7 @@ public:
     Variable& operator=(const Variable& v) = default;
     Variable(const Variable& v);
     Variable(std::shared_ptr<VarHost>);
+    Variable(const std::string_view&, const std::shared_ptr<VarHost> host = nullptr);
 
     std::shared_ptr<VarHost> getVaHost() const override { return varSetHost; }
     const auto& getId() const { return varId; }

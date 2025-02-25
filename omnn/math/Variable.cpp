@@ -46,6 +46,13 @@ namespace math {
         maxVaExp=1;
     }
     
+    Variable::Variable(const std::string_view& str, std::shared_ptr<VarHost> host)
+    : varSetHost(host ? host : VarHost::Global<std::string>().shared_from_this())
+    , varId(host->IsIntegerId()?host->Host(Valuable(a_int(str))):host->Host(str))
+    {
+        maxVaExp=1;
+    }
+
     Valuable Variable::operator -() const
     {
         return Product{-1, *this};
