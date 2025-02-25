@@ -144,7 +144,7 @@ class Valuable
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
-    
+
     /// Ensures a unique copy of the object before modification (Copy-on-Write)
     void clone_on_write();
 
@@ -236,7 +236,7 @@ public:
     }
 
     const Valuable& get() const { return exp ? exp->get() : *this; }
-    Valuable& get() { 
+    Valuable& get() {
         if (exp) {
             clone_on_write(); // Ensure unique copy before returning non-const reference
             return exp->get();
