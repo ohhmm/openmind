@@ -57,8 +57,14 @@ jobs:
     - name: Setup vcpkg
       shell: bash
       run: |
-        git submodule update --init --recursive
-        ./vcpkg/bootstrap-vcpkg.sh
+        git clone https://github.com/Microsoft/vcpkg.git
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          ./vcpkg/bootstrap-vcpkg.bat
+        elif [[ "${{ runner.os }}" == "Darwin" ]]; then
+          ./vcpkg/bootstrap-vcpkg.sh
+        else
+          ./vcpkg/bootstrap-vcpkg.sh
+        fi
         ./vcpkg/vcpkg install --triplet=${{ matrix.triplet }} --clean-after-build
 
     - name: Configure CMake
