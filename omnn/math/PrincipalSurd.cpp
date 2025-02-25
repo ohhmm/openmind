@@ -1,8 +1,6 @@
 #include "PrincipalSurd.h"
-#include "PrincipalSurdComparator.h"
 #include "Product.h"
 #include "Sum.h"
-#include "../rt/antiloop.hpp"
 
 using namespace omnn::math;
 
