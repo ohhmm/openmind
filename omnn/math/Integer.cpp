@@ -702,18 +702,37 @@ namespace math {
         return *this;
     }
 
+    // Thread-local set to detect recursion loops in Sqrt()
+    static thread_local std::unordered_set<a_int> sqrtLoopDetectionStack;
+
     Valuable Integer::Sqrt() const
     {
         auto arbitraryAbsoluteValue = boost::multiprecision::abs(arbitrary);
         auto sqrtIntegerPart = boost::multiprecision::sqrt(arbitraryAbsoluteValue); // integer square root
         if (sqrtIntegerPart * sqrtIntegerPart != arbitraryAbsoluteValue) { // no integer square root
+            // Check if we're in a loop
+            auto emplaced = sqrtLoopDetectionStack.emplace(arbitraryAbsoluteValue);
+            bool isLoop = !emplaced.second;
+            
+            if (isLoop) {
+                // Loop detected, return PrincipalSurd directly
+                return Valuable(std::make_shared<PrincipalSurd>(*this));
+            }
+            
+            // No loop detected, proceed with normal computation
             auto d = GreatestCommonExp(constants::two);
             if (d.second != constants::one) {
                 std::cout << *this << ".GreatestCommonExp(2): " << d.first << " , " << d.second << " ; sqrtIntegerPart=" << sqrtIntegerPart << std::endl;
-                return (*this / d.second).Sqrt() * d.first;
+                auto result = (*this / d.second).Sqrt() * d.first;
+                // Remove from stack when done
+                sqrtLoopDetectionStack.erase(arbitraryAbsoluteValue);
+                return result;
             }
-            else
+            else {
+                // Remove from stack when done
+                sqrtLoopDetectionStack.erase(arbitraryAbsoluteValue);
                 return Valuable(std::make_shared<PrincipalSurd>(*this));
+            }
         }
         return arbitrary.sign() == -1 ? constant::i * sqrtIntegerPart : sqrtIntegerPart;
     }
