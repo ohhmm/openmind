@@ -161,6 +161,6 @@ BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_no_hang_test
     _1.SetView(Valuable::View::Equation);
     
     // Set a maximum number of optimization iterations to prevent hanging
-    OptimizeOn optimizeOn(100);
+    Valuable::OptimizeOn optimizeOn;
     _1.optimize();
 }
