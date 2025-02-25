@@ -54,8 +54,8 @@ jobs:
     - name: Install Python dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        choco install ninja cmake
-        python -m pip install --upgrade pip
+        choco install ninja cmake --timeout 1800 --execution-timeout=1800
+        python -m pip install --upgrade pip setuptools wheel
         python -m pip install -r requirements.txt
 
     - name: Cache vcpkg
@@ -93,7 +93,8 @@ jobs:
         cmake -B build -S . \
           -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
           -DCMAKE_BUILD_TYPE=Release \
-          -DOPENMIND_USE_VCPKG=ON
+          -DOPENMIND_USE_VCPKG=ON \
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
 
     - name: Build
       shell: bash
