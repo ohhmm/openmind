@@ -21,6 +21,7 @@
     "boost-thread",
     "boost-ublas",
     "boost-uuid",
+    "bzip2",
     "leveldb",
     "liblzma",
     {
