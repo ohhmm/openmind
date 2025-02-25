@@ -83,55 +83,26 @@ jobs:
           ./bootstrap-vcpkg.sh
         fi
 
-        # Install dependencies
+        # Install BZip2 first
+        ./vcpkg install bzip2[tool] --triplet=${{ matrix.triplet }} --debug
+
+        # Install other dependencies
         ./vcpkg install --triplet=${{ matrix.triplet }} --clean-after-build
         popd
 
     - name: Configure CMake
       shell: bash
       run: |
-        # Install BZip2 explicitly first
-        ./vcpkg/vcpkg install bzip2[tool] --triplet=${{ matrix.triplet }} --debug
-        
-        # Get actual vcpkg installation path
+        # Get vcpkg installation path
         VCPKG_ROOT="${{ github.workspace }}/vcpkg"
         VCPKG_INSTALL_PATH="${VCPKG_ROOT}/installed/${{ matrix.triplet }}"
-        
-        # Set BZip2 paths based on actual installation
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/bz2.lib"
-        elif [[ "${{ runner.os }}" == "macOS" ]]; then
-          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
-        else
-          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
-        fi
-        
-        # Export BZip2 variables for CMake
-        export BZIP2_ROOT="${VCPKG_INSTALL_PATH}"
-        export BZIP2_INCLUDE_DIR="${VCPKG_INSTALL_PATH}/include"
-        export BZIP2_LIBRARIES="${BZIP2_LIB}"
-        
-        # Install dependencies with debug output
-        echo "Installing vcpkg dependencies..."
-        ./vcpkg/vcpkg install --triplet=${{ matrix.triplet }} --debug
-
-        # Get actual vcpkg installation path
-        VCPKG_ROOT="${{ github.workspace }}/vcpkg"
-        VCPKG_INSTALL_PATH="${VCPKG_ROOT}/installed/${{ matrix.triplet }}"
-        
-        echo "Verifying vcpkg installation..."
-        ls -la "${VCPKG_ROOT}"
-        ls -la "${VCPKG_INSTALL_PATH}" || true
-        ls -la "${VCPKG_INSTALL_PATH}/lib" || true
         
         # Install BZip2 explicitly first
         ./vcpkg/vcpkg install bzip2[tool] --triplet=${{ matrix.triplet }} --debug
         
-        # Set up BZip2 paths based on actual installation
+        # Set BZip2 paths based on platform
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/bz2.lib"
-        elif [[ "${{ runner.os }}" == "macOS" ]]; then
-          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
         else
           BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
         fi
@@ -144,7 +115,7 @@ jobs:
         echo "BZip2 configuration:"
         echo "BZIP2_ROOT=${BZIP2_ROOT}"
         echo "BZIP2_INCLUDE_DIR=${BZIP2_INCLUDE_DIR}"
-        echo "BZIP2_LIBRARIES=${BZIP2_LIBRARIES}"
+        echo "BZIP2_LIBRARIES=${BZIP2_LIB}"
           
         # Configure CMake with explicit vcpkg and BZip2 configuration
         cmake -B build -S . \
@@ -152,20 +123,29 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DOPENMIND_USE_VCPKG=ON \
           -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
-          -DBZIP2_ROOT="${BZIP2_ROOT}" \
-          -DBZIP2_INCLUDE_DIR="${BZIP2_INCLUDE_DIR}" \
-          -DBZIP2_LIBRARIES="${BZIP2_LIBRARIES}" \
+          -DBZIP2_ROOT="${VCPKG_INSTALL_PATH}" \
+          -DBZIP2_INCLUDE_DIR="${VCPKG_INSTALL_PATH}/include" \
+          -DBZIP2_LIBRARIES="${VCPKG_INSTALL_PATH}/lib/libbz2.a" \
           -DBZIP2_USE_STATIC_LIBS=ON \
           -DCMAKE_PREFIX_PATH="${VCPKG_INSTALL_PATH}" \
           -DCMAKE_FIND_ROOT_PATH="${VCPKG_INSTALL_PATH}" \
           -DCMAKE_FIND_DEBUG_MODE=ON \
           -DCMAKE_DEBUG_FIND_PACKAGE=BZip2
         else
+          # Configure CMake with explicit vcpkg and BZip2 configuration
           cmake -B build -S . \
-            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+            -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
             -DCMAKE_BUILD_TYPE=Release \
             -DOPENMIND_USE_VCPKG=ON \
-            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+            -DBZIP2_ROOT="${VCPKG_INSTALL_PATH}" \
+            -DBZIP2_INCLUDE_DIR="${VCPKG_INSTALL_PATH}/include" \
+            -DBZIP2_LIBRARIES="${BZIP2_LIB}" \
+            -DBZIP2_USE_STATIC_LIBS=ON \
+            -DCMAKE_PREFIX_PATH="${VCPKG_INSTALL_PATH}" \
+            -DCMAKE_FIND_ROOT_PATH="${VCPKG_INSTALL_PATH}" \
+            -DCMAKE_FIND_DEBUG_MODE=ON \
+            -DCMAKE_DEBUG_FIND_PACKAGE=BZip2
         fi
 
     - name: Build
