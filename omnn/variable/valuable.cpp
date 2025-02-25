@@ -386,21 +386,26 @@ BOOST_PYTHON_MODULE(variable)
             return Variable(Valuable(d) * static_cast<const Valuable&>(v));
         })
         .def(self / self)
-        .def("__truediv__", +[](const Variable& v, const Variable& other) {
-            auto result = v / other;
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        // Division operations with error handling
+        .def("__truediv__", +[](const Variable& v, const Variable& other) -> Variable {
+            try {
+                return Variable(v.evaluate() / other.evaluate());
+            } catch (const std::exception& e) {
+                throw std::runtime_error(std::string("Division failed: ") + e.what());
+            }
         })
-        .def("__truediv__", +[](const Variable& v, const Valuable& other) {
-            auto result = v / other;
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        .def("__truediv__", +[](const Variable& v, const Valuable& other) -> Variable {
+            try {
+                return Variable(v.evaluate() / other.evaluate());
+            } catch (const std::exception& e) {
+                throw std::runtime_error(std::string("Division failed: ") + e.what());
+            }
         })
-        .def("__truediv__", +[](const Variable& v, int i) {
-            auto result = v / Valuable(i);
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        .def("__truediv__", +[](const Variable& v, int i) -> Variable {
+            return Variable(static_cast<const Valuable&>(v) / Valuable(i));
         })
-        .def("__rtruediv__", +[](const Variable& v, int i) {
-            auto result = Valuable(i) / v;
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
+        .def("__rtruediv__", +[](const Variable& v, int i) -> Variable {
+            return Variable(Valuable(i) / static_cast<const Valuable&>(v));
         })
         .def("__truediv__", +[](const Variable& v, double d) {
             auto result = v / Valuable(d);
@@ -434,14 +439,9 @@ BOOST_PYTHON_MODULE(variable)
 
         // Variable-specific methods
         .def("set_value", +[](Variable& v, double value) {
-            std::cout << "Setting double value: " << value << std::endl;
             try {
-                // Create a Valuable with the value
-                Valuable val(value);
-
-                // Store value using public Eval method
-                v.Eval(v, val);
-
+                // Create a Valuable with the value and store it
+                v.Eval(v, Valuable(value));
                 // Verify the value was set
                 auto result = v.evaluate();
                 std::cout << "Value set, evaluates to: " << result << std::endl;
@@ -450,30 +450,24 @@ BOOST_PYTHON_MODULE(variable)
                     throw std::runtime_error("Failed to set value - still a variable after assignment");
                 }
             } catch (const std::exception& e) {
-                std::cerr << "Exception in set_value: " << e.what() << std::endl;
-                throw;
+                throw std::runtime_error(std::string("Failed to set value: ") + e.what());
             }
         })
         .def("set_value", +[](Variable& v, int i) {
-            std::cout << "Setting int value: " << i << std::endl;
-            v.Eval(v, Valuable(i));
-            // Verify the value was set
-            auto result = v.evaluate();
-            std::cout << "Value set, evaluates to: " << result << std::endl;
-        })
-        .def("set_value", +[](Variable& v, double d) {
-            std::cout << "Setting double value: " << d << std::endl;
-            v.Eval(v, Valuable(d));
-            // Verify the value was set
-            auto result = v.evaluate();
-            std::cout << "Value set, evaluates to: " << result << std::endl;
+            try {
+                v.Eval(v, Valuable(i));
+                auto result = v.evaluate();
+                if (result.IsVa()) {
+                    throw std::runtime_error("Failed to set value - still a variable after assignment");
+                }
+            } catch (const std::exception& e) {
+                throw std::runtime_error(std::string("Failed to set value: ") + e.what());
+            }
         })
         .def("evaluate", +[](Variable& v) {
-            std::cout << "Evaluating Variable expression" << std::endl;
             try {
                 // Evaluate using Variable's evaluate()
                 auto result = v.evaluate();
-                std::cout << "Got result from evaluate(): " << result << std::endl;
 
                 // If we got a variable result, try to get its concrete value
                 if (result.IsVa()) {
@@ -481,14 +475,12 @@ BOOST_PYTHON_MODULE(variable)
                     auto concrete = var.evaluate();
                     if (!concrete.IsVa()) {
                         result = concrete;
-                        std::cout << "Found concrete value: " << result << std::endl;
                     }
                 }
 
                 return result;
             } catch (const std::exception& e) {
-                std::cerr << "Exception in evaluate: " << e.what() << std::endl;
-                throw;
+                throw std::runtime_error(std::string("Evaluation failed: ") + e.what());
             }
         });
 
