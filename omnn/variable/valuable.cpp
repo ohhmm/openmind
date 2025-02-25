@@ -440,7 +440,6 @@ BOOST_PYTHON_MODULE(variable)
         // Variable-specific methods
         .def("set_value", +[](Variable& v, double value) {
             try {
-                // Create a Valuable with the value and store it
                 v.Eval(v, Valuable(value));
                 // Verify the value was set
                 auto result = v.evaluate();
@@ -464,21 +463,9 @@ BOOST_PYTHON_MODULE(variable)
                 throw std::runtime_error(std::string("Failed to set value: ") + e.what());
             }
         })
-        .def("evaluate", +[](Variable& v) {
+        .def("evaluate", +[](Variable& v) -> Valuable {
             try {
-                // Evaluate using Variable's evaluate()
-                auto result = v.evaluate();
-
-                // If we got a variable result, try to get its concrete value
-                if (result.IsVa()) {
-                    const auto& var = result.as<Variable>();
-                    auto concrete = var.evaluate();
-                    if (!concrete.IsVa()) {
-                        result = concrete;
-                    }
-                }
-
-                return result;
+                return v.evaluate();
             } catch (const std::exception& e) {
                 throw std::runtime_error(std::string("Evaluation failed: ") + e.what());
             }
