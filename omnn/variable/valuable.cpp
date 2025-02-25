@@ -62,12 +62,109 @@ namespace {
         ss << v; // Use operator<< instead of protected print()
         return ss.str();
     }
+// Helper functions for arithmetic operations
+Variable add_variables(const Variable& v1, const Variable& v2) {
+    return Variable(v1.evaluate() + v2.evaluate());
+}
 
-    std::string variable_str(const Variable& v) {
-        std::ostringstream ss;
-        ss << v; // Use operator<< instead of protected print()
-        return ss.str();
-    }
+Variable add_variable_valuable(const Variable& v, const Valuable& val) {
+    return Variable(v.evaluate() + val);
+}
+
+Variable add_variable_int(const Variable& v, int i) {
+    return Variable(v.evaluate() + Valuable(i));
+}
+
+Variable radd_variable_int(const Variable& v, int i) {
+    return Variable(Valuable(i) + v.evaluate());
+}
+
+Variable add_variable_double(const Variable& v, double d) {
+    return Variable(v.evaluate() + Valuable(d));
+}
+
+Variable radd_variable_double(const Variable& v, double d) {
+    return Variable(Valuable(d) + v.evaluate());
+}
+
+Variable sub_variables(const Variable& v1, const Variable& v2) {
+    return Variable(v1.evaluate() - v2.evaluate());
+}
+
+Variable sub_variable_valuable(const Variable& v, const Valuable& val) {
+    return Variable(v.evaluate() - val);
+}
+
+Variable sub_variable_int(const Variable& v, int i) {
+    return Variable(v.evaluate() - Valuable(i));
+}
+
+Variable rsub_variable_int(const Variable& v, int i) {
+    return Variable(Valuable(i) - v.evaluate());
+}
+
+Variable sub_variable_double(const Variable& v, double d) {
+    return Variable(v.evaluate() - Valuable(d));
+}
+
+Variable rsub_variable_double(const Variable& v, double d) {
+    return Variable(Valuable(d) - v.evaluate());
+}
+
+Variable mul_variables(const Variable& v1, const Variable& v2) {
+    return Variable(v1.evaluate() * v2.evaluate());
+}
+
+Variable mul_variable_valuable(const Variable& v, const Valuable& val) {
+    return Variable(v.evaluate() * val);
+}
+
+Variable mul_variable_int(const Variable& v, int i) {
+    return Variable(v.evaluate() * Valuable(i));
+}
+
+Variable rmul_variable_int(const Variable& v, int i) {
+    return Variable(Valuable(i) * v.evaluate());
+}
+
+Variable mul_variable_double(const Variable& v, double d) {
+    return Variable(v.evaluate() * Valuable(d));
+}
+
+Variable rmul_variable_double(const Variable& v, double d) {
+    return Variable(Valuable(d) * v.evaluate());
+}
+
+Variable div_variables(const Variable& v1, const Variable& v2) {
+    return Variable(v1.evaluate() / v2.evaluate());
+}
+
+Variable div_variable_valuable(const Variable& v, const Valuable& val) {
+    return Variable(v.evaluate() / val);
+}
+
+Variable div_variable_int(const Variable& v, int i) {
+    return Variable(v.evaluate() / Valuable(i));
+}
+
+Variable rdiv_variable_int(const Variable& v, int i) {
+    return Variable(Valuable(i) / v.evaluate());
+}
+
+Variable div_variable_double(const Variable& v, double d) {
+    return Variable(v.evaluate() / Valuable(d));
+}
+
+Variable rdiv_variable_double(const Variable& v, double d) {
+    return Variable(Valuable(d) / v.evaluate());
+}
+
+// Helper for __str__
+std::string valuable_str(const Valuable& v) {
+    std::ostringstream ss;
+    ss << v;  // Use operator<< instead of protected print()
+    return ss.str();
+}
 #endif
 }
 
@@ -278,26 +375,6 @@ BOOST_PYTHON_MODULE(variable)
         "    result = lambda_func([3, 4])  # 3*4 + 3 = 15")
         ;
 
-namespace {
-// Helper template for arithmetic operations
-template<typename T>
-Variable perform_operation(const Variable& v, T value, const std::string& op, bool reverse = false) {
-    try {
-        Valuable val(std::forward<T>(value));
-        Valuable result;
-
-        if (op == "+") result = reverse ? (val + v) : (v + val);
-        else if (op == "-") result = reverse ? (val - v) : (v - val);
-        else if (op == "*") result = reverse ? (val * v) : (v * val);
-        else if (op == "/") result = reverse ? (val / v) : (v / val);
-        else throw std::runtime_error("Unknown operation");
-
-        return Variable(result);
-    } catch (const std::exception& e) {
-        throw std::runtime_error(op + " operation failed: " + e.what());
-    }
-}
-}
 
     // Expose Variable
     class_<Variable, bases<Valuable>>("Variable")
@@ -307,12 +384,12 @@ Variable perform_operation(const Variable& v, T value, const std::string& op, bo
 
         // Basic arithmetic (inherited from Valuable)
         .def(self + self)
-        .def("__add__", +[](const Variable& v, const Variable& other) { return perform_operation<Variable>(v, other, "+"); })
-        .def("__add__", +[](const Variable& v, const Valuable& other) { return perform_operation<Valuable>(v, other, "+"); })
-        .def("__add__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "+"); })
-        .def("__radd__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "+", true); })
-        .def("__add__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "+"); })
-        .def("__radd__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "+", true); })
+        .def("__add__", add_variables)
+        .def("__add__", add_variable_valuable)
+        .def("__add__", add_variable_int)
+        .def("__radd__", radd_variable_int)
+        .def("__add__", add_variable_double)
+        .def("__radd__", radd_variable_double)
         .def(self - self)
         .def("__sub__", +[](const Variable& v, const Variable& other) { return perform_operation<Variable>(v, other, "-"); })
         .def("__sub__", +[](const Variable& v, const Valuable& other) { return perform_operation<Valuable>(v, other, "-"); })
@@ -324,20 +401,20 @@ Variable perform_operation(const Variable& v, T value, const std::string& op, bo
         .def("__rsub__", +[](const Valuable& v, const Valuable& i) { return i - v; })
         .def(self * self)
         // Multiplication operations
-        .def("__mul__", +[](const Variable& v, const Variable& other) { return perform_operation<Variable>(v, other, "*"); })
-        .def("__mul__", +[](const Variable& v, const Valuable& other) { return perform_operation<Valuable>(v, other, "*"); })
-        .def("__mul__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "*"); })
-        .def("__rmul__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "*", true); })
-        .def("__mul__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "*"); })
-        .def("__rmul__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "*", true); })
+        .def("__mul__", mul_variables)
+        .def("__mul__", mul_variable_valuable)
+        .def("__mul__", mul_variable_int)
+        .def("__rmul__", rmul_variable_int)
+        .def("__mul__", mul_variable_double)
+        .def("__rmul__", rmul_variable_double)
         .def(self / self)
         // Division operations
-        .def("__truediv__", +[](const Variable& v, const Variable& other) { return perform_operation<Variable>(v, other, "/"); })
-        .def("__truediv__", +[](const Variable& v, const Valuable& other) { return perform_operation<Valuable>(v, other, "/"); })
-        .def("__truediv__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "/"); })
-        .def("__rtruediv__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "/", true); })
-        .def("__truediv__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "/"); })
-        .def("__rtruediv__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "/", true); })
+        .def("__truediv__", div_variables)
+        .def("__truediv__", div_variable_valuable)
+        .def("__truediv__", div_variable_int)
+        .def("__rtruediv__", rdiv_variable_int)
+        .def("__truediv__", div_variable_double)
+        .def("__rtruediv__", rdiv_variable_double)
         .def(self % self)
         .def("__mod__", +[](const Variable& v, const Variable& other) { return Variable(v % other); })
         .def("__mod__", +[](const Variable& v, const Valuable& other) { return Variable(v % other); })
@@ -362,9 +439,6 @@ Variable perform_operation(const Variable& v, T value, const std::string& op, bo
 
         // Variable-specific methods
         .def("set_value", +[](Variable& v, double value) {
-#ifdef DEBUG_PYTHON_BINDINGS
-            std::cout << "Setting value: " << value << " to variable " << v << std::endl;
-#endif
             v.Eval(v, Valuable(value));
             // Verify the value was set
                 auto result = v.evaluate();
@@ -383,20 +457,10 @@ Variable perform_operation(const Variable& v, T value, const std::string& op, bo
             if (result.IsVa()) {
                 throw std::runtime_error("Failed to set value - still a variable after assignment");
             }
-#ifdef DEBUG_PYTHON_BINDINGS
-            std::cout << "Value set successfully, evaluates to: " << result << std::endl;
-#endif
         })
         .def("evaluate", +[](Variable& v) -> Valuable {
             try {
-#ifdef DEBUG_PYTHON_BINDINGS
-                std::cout << "Evaluating variable: " << v << std::endl;
-#endif
-                auto result = v.evaluate();
-#ifdef DEBUG_PYTHON_BINDINGS
-                std::cout << "Evaluation result: " << result << std::endl;
-#endif
-                return result;
+                return v.evaluate();
             } catch (const std::exception& e) {
                 throw std::runtime_error(std::string("Evaluation failed: ") + e.what());
             }
