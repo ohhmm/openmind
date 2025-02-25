@@ -60,19 +60,20 @@ jobs:
         # Clone vcpkg if not already present
         if [[ ! -d "vcpkg" ]]; then
           git clone https://github.com/Microsoft/vcpkg.git
-          cd vcpkg
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            ./bootstrap-vcpkg.bat
-          else
-            chmod +x ./bootstrap-vcpkg.sh
-            ./bootstrap-vcpkg.sh
-          fi
-        else
-          cd vcpkg
         fi
-        
+
+        # Bootstrap vcpkg
+        pushd vcpkg
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          ./bootstrap-vcpkg.bat
+        else
+          chmod +x ./bootstrap-vcpkg.sh
+          ./bootstrap-vcpkg.sh
+        fi
+
         # Install dependencies
         ./vcpkg install --triplet=${{ matrix.triplet }} --clean-after-build
+        popd
 
     - name: Configure CMake
       shell: bash
