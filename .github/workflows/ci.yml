@@ -19,7 +19,7 @@ jobs:
             triplet: x64-windows
             python-dev: ""
           - os: macos-latest
-            triplet: x64-osx
+            triplet: arm64-osx
             python-dev: ""
 
     runs-on: ${{ matrix.os }}
@@ -90,16 +90,26 @@ jobs:
     - name: Configure CMake
       shell: bash
       run: |
-        # Set BZip2 paths explicitly
-        BZIP2_ROOT="${{ github.workspace }}/build/vcpkg_installed/${{ matrix.triplet }}"
-        BZIP2_INCLUDE_DIR="${BZIP2_ROOT}/include"
-        BZIP2_LIBRARY_PATH="${BZIP2_ROOT}/lib"
+        # Install BZip2 explicitly first
+        ./vcpkg/vcpkg install bzip2[tool] --triplet=${{ matrix.triplet }} --debug
         
+        # Get actual vcpkg installation path
+        VCPKG_ROOT="${{ github.workspace }}/vcpkg"
+        VCPKG_INSTALL_PATH="${VCPKG_ROOT}/installed/${{ matrix.triplet }}"
+        
+        # Set BZip2 paths based on actual installation
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          BZIP2_LIBRARIES="${BZIP2_LIBRARY_PATH}/bz2.lib"
+          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/bz2.lib"
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
         else
-          BZIP2_LIBRARIES="${BZIP2_LIBRARY_PATH}/libbz2.a"
+          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
         fi
+        
+        # Export BZip2 variables for CMake
+        export BZIP2_ROOT="${VCPKG_INSTALL_PATH}"
+        export BZIP2_INCLUDE_DIR="${VCPKG_INSTALL_PATH}/include"
+        export BZIP2_LIBRARIES="${BZIP2_LIB}"
         
         # Install dependencies with debug output
         echo "Installing vcpkg dependencies..."
