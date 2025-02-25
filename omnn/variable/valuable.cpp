@@ -173,19 +173,7 @@ BOOST_PYTHON_MODULE(variable)
         .def("__int__", +[](const Valuable& v) { return static_cast<int>(v); })
         .def("__float__", +[](const Valuable& v) {
             try {
-                std::cout << "Converting to float: " << v << std::endl;
-
-                // First evaluate the value
-                auto result = v.evaluate();
-
-                // If result is a Variable, try to get its stored value
-                if (result.IsVa()) {
-                    const auto& var = result.as<Variable>();
-                    result = var.evaluate();
-                }
-
-                // Convert to double using operator double()
-                return static_cast<double>(result);
+                return static_cast<double>(v);
             } catch (const std::exception& e) {
                 throw std::runtime_error(std::string("Float conversion failed: ") + e.what());
             }
@@ -290,6 +278,21 @@ BOOST_PYTHON_MODULE(variable)
         "    result = lambda_func([3, 4])  # 3*4 + 3 = 15")
         ;
 
+    // Helper template for arithmetic operations
+    template<typename T>
+    Variable perform_arithmetic(const Variable& v, T value, const std::string& op) {
+        try {
+            Valuable val(value);
+            if (op == "+") return Variable(v.evaluate() + val);
+            if (op == "-") return Variable(v.evaluate() - val);
+            if (op == "*") return Variable(v.evaluate() * val);
+            if (op == "/") return Variable(v.evaluate() / val);
+            throw std::runtime_error("Unknown operation");
+        } catch (const std::exception& e) {
+            throw std::runtime_error(op + " operation failed: " + e.what());
+        }
+    }
+
     // Expose Variable
     class_<Variable, bases<Valuable>>("Variable")
         // Constructors
@@ -298,38 +301,12 @@ BOOST_PYTHON_MODULE(variable)
 
         // Basic arithmetic (inherited from Valuable)
         .def(self + self)
-        // Helper template for arithmetic operations
-        .def("__add__", +[](const Variable& v, const Variable& other) -> Variable {
-            try {
-                return Variable(v.evaluate() + other.evaluate());
-            } catch (const std::exception& e) {
-                throw std::runtime_error(std::string("Addition failed: ") + e.what());
-            }
-        })
-        .def("__add__", +[](const Variable& v, const Valuable& other) -> Valuable {
-            try {
-                auto result = (v.evaluate() + other.evaluate()).evaluate();
-                if (result.IsVa()) {
-                    throw std::runtime_error("Addition result is still a variable");
-                }
-
-                return result;
-            } catch (const std::exception& e) {
-                throw std::runtime_error(std::string("Addition failed: ") + e.what());
-            }
-        })
-        .def("__add__", +[](const Variable& v, int i) -> Variable {
-            return Variable(static_cast<const Valuable&>(v) + Valuable(i));
-        })
-        .def("__radd__", +[](const Variable& v, int i) -> Variable {
-            return Variable(Valuable(i) + static_cast<const Valuable&>(v));
-        })
-        .def("__add__", +[](const Variable& v, double d) -> Variable {
-            return Variable(static_cast<const Valuable&>(v) + Valuable(d));
-        })
-        .def("__radd__", +[](const Variable& v, double d) -> Variable {
-            return Variable(Valuable(d) + static_cast<const Valuable&>(v));
-        })
+        .def("__add__", +[](const Variable& v, const Variable& other) { return perform_arithmetic(v, other, "+"); })
+        .def("__add__", +[](const Variable& v, const Valuable& other) { return perform_arithmetic(v, other, "+"); })
+        .def("__add__", +[](const Variable& v, int i) { return perform_arithmetic(v, i, "+"); })
+        .def("__radd__", +[](const Variable& v, int i) { return perform_arithmetic(v, i, "+"); })
+        .def("__add__", +[](const Variable& v, double d) { return perform_arithmetic(v, d, "+"); })
+        .def("__radd__", +[](const Variable& v, double d) { return perform_arithmetic(v, d, "+"); })
         .def(self - self)
         .def("__sub__", +[](const Variable& v, const Variable& other) {
             auto result = v - other;
