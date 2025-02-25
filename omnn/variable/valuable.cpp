@@ -176,32 +176,19 @@ BOOST_PYTHON_MODULE(variable)
 
     // Helper template for arithmetic operations
     template<typename T>
-    Variable perform_arithmetic(const Variable& v, T value, const std::string& op) {
+    Variable perform_operation(const Variable& v, T value, const std::string& op, bool reverse = false) {
         try {
             Valuable val(value);
             Valuable result;
-            if (op == "+") result = v.evaluate() + val;
-            else if (op == "-") result = v.evaluate() - val;
-            else if (op == "*") result = v.evaluate() * val;
-            else if (op == "/") result = v.evaluate() / val;
+            auto lhs = reverse ? val : v.evaluate();
+            auto rhs = reverse ? v.evaluate() : val;
+            
+            if (op == "+") result = lhs + rhs;
+            else if (op == "-") result = lhs - rhs;
+            else if (op == "*") result = lhs * rhs;
+            else if (op == "/") result = lhs / rhs;
             else throw std::runtime_error("Unknown operation");
-            return Variable(result);
-        } catch (const std::exception& e) {
-            throw std::runtime_error(op + " operation failed: " + e.what());
-        }
-    }
-
-    // Helper template for reverse arithmetic operations
-    template<typename T>
-    Variable perform_reverse_arithmetic(const Variable& v, T value, const std::string& op) {
-        try {
-            Valuable val(value);
-            Valuable result;
-            if (op == "+") result = val + v.evaluate();
-            else if (op == "-") result = val - v.evaluate();
-            else if (op == "*") result = val * v.evaluate();
-            else if (op == "/") result = val / v.evaluate();
-            else throw std::runtime_error("Unknown operation");
+            
             return Variable(result);
         } catch (const std::exception& e) {
             throw std::runtime_error(op + " operation failed: " + e.what());
@@ -216,12 +203,12 @@ BOOST_PYTHON_MODULE(variable)
 
         // Basic arithmetic (inherited from Valuable)
         .def(self + self)
-        .def("__add__", +[](const Variable& v, const Variable& other) { return perform_arithmetic(v, other, "+"); })
-        .def("__add__", +[](const Variable& v, const Valuable& other) { return perform_arithmetic(v, other, "+"); })
-        .def("__add__", +[](const Variable& v, int i) { return perform_arithmetic(v, i, "+"); })
-        .def("__radd__", +[](const Variable& v, int i) { return perform_reverse_arithmetic(v, i, "+"); })
-        .def("__add__", +[](const Variable& v, double d) { return perform_arithmetic(v, d, "+"); })
-        .def("__radd__", +[](const Variable& v, double d) { return perform_reverse_arithmetic(v, d, "+"); })
+        .def("__add__", +[](const Variable& v, const Variable& other) { return perform_operation(v, other, "+"); })
+        .def("__add__", +[](const Variable& v, const Valuable& other) { return perform_operation(v, other, "+"); })
+        .def("__add__", +[](const Variable& v, int i) { return perform_operation(v, i, "+"); })
+        .def("__radd__", +[](const Variable& v, int i) { return perform_operation(v, i, "+", true); })
+        .def("__add__", +[](const Variable& v, double d) { return perform_operation(v, d, "+"); })
+        .def("__radd__", +[](const Variable& v, double d) { return perform_operation(v, d, "+", true); })
         .def(self - self)
         .def("__sub__", +[](const Variable& v, const Variable& other) {
             auto result = v - other;
