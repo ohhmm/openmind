@@ -94,7 +94,10 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
           -DCMAKE_BUILD_TYPE=Release \
           -DOPENMIND_USE_VCPKG=ON \
-          -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+          -DBZIP2_ROOT=${{ github.workspace }}/build/vcpkg_installed/${{ matrix.triplet }} \
+          -DBZIP2_USE_STATIC_LIBS=ON \
+          -DCMAKE_PREFIX_PATH=${{ github.workspace }}/build/vcpkg_installed/${{ matrix.triplet }}
 
     - name: Build
       shell: bash
