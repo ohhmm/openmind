@@ -218,62 +218,20 @@ BOOST_PYTHON_MODULE(variable)
         .def("__rsub__", +[](const Variable& v, double d) { return perform_operation(v, d, "-", true); })
         .def(self * self)
         // Multiplication operations
-        .def("__mul__", +[](const Variable& v, const Variable& other) -> Variable {
-            try {
-                return Variable(v.evaluate() * other.evaluate());
-            } catch (const std::exception& e) {
-                throw std::runtime_error(std::string("Multiplication failed: ") + e.what());
-            }
-        })
-        .def("__mul__", +[](const Variable& v, const Valuable& other) -> Variable {
-            try {
-                return Variable(v.evaluate() * other.evaluate());
-            } catch (const std::exception& e) {
-                throw std::runtime_error(std::string("Multiplication failed: ") + e.what());
-            }
-        })
-        .def("__mul__", +[](const Variable& v, int i) -> Variable {
-            return Variable(static_cast<const Valuable&>(v) * Valuable(i));
-        })
-        .def("__rmul__", +[](const Variable& v, int i) -> Variable {
-            return Variable(Valuable(i) * static_cast<const Valuable&>(v));
-        })
-        .def("__mul__", +[](const Variable& v, double d) -> Variable {
-            return Variable(static_cast<const Valuable&>(v) * Valuable(d));
-        })
-        .def("__rmul__", +[](const Variable& v, double d) -> Variable {
-            return Variable(Valuable(d) * static_cast<const Valuable&>(v));
-        })
+        .def("__mul__", +[](const Variable& v, const Variable& other) { return perform_operation(v, other, "*"); })
+        .def("__mul__", +[](const Variable& v, const Valuable& other) { return perform_operation(v, other, "*"); })
+        .def("__mul__", +[](const Variable& v, int i) { return perform_operation(v, i, "*"); })
+        .def("__rmul__", +[](const Variable& v, int i) { return perform_operation(v, i, "*", true); })
+        .def("__mul__", +[](const Variable& v, double d) { return perform_operation(v, d, "*"); })
+        .def("__rmul__", +[](const Variable& v, double d) { return perform_operation(v, d, "*", true); })
         .def(self / self)
-        // Division operations with error handling
-        .def("__truediv__", +[](const Variable& v, const Variable& other) -> Variable {
-            try {
-                return Variable(v.evaluate() / other.evaluate());
-            } catch (const std::exception& e) {
-                throw std::runtime_error(std::string("Division failed: ") + e.what());
-            }
-        })
-        .def("__truediv__", +[](const Variable& v, const Valuable& other) -> Variable {
-            try {
-                return Variable(v.evaluate() / other.evaluate());
-            } catch (const std::exception& e) {
-                throw std::runtime_error(std::string("Division failed: ") + e.what());
-            }
-        })
-        .def("__truediv__", +[](const Variable& v, int i) -> Variable {
-            return Variable(static_cast<const Valuable&>(v) / Valuable(i));
-        })
-        .def("__rtruediv__", +[](const Variable& v, int i) -> Variable {
-            return Variable(Valuable(i) / static_cast<const Valuable&>(v));
-        })
-        .def("__truediv__", +[](const Variable& v, double d) {
-            auto result = v / Valuable(d);
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
-        })
-        .def("__rtruediv__", +[](const Variable& v, double d) {
-            auto result = Valuable(d) / v;
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
-        })
+        // Division operations
+        .def("__truediv__", +[](const Variable& v, const Variable& other) { return perform_operation(v, other, "/"); })
+        .def("__truediv__", +[](const Variable& v, const Valuable& other) { return perform_operation(v, other, "/"); })
+        .def("__truediv__", +[](const Variable& v, int i) { return perform_operation(v, i, "/"); })
+        .def("__rtruediv__", +[](const Variable& v, int i) { return perform_operation(v, i, "/", true); })
+        .def("__truediv__", +[](const Variable& v, double d) { return perform_operation(v, d, "/"); })
+        .def("__rtruediv__", +[](const Variable& v, double d) { return perform_operation(v, d, "/", true); })
         .def(self % self)
         .def("__mod__", +[](const Variable& v, const Variable& other) { return Variable(v % other); })
         .def("__mod__", +[](const Variable& v, const Valuable& other) { return Variable(v % other); })
