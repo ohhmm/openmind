@@ -90,14 +90,27 @@ jobs:
     - name: Configure CMake
       shell: bash
       run: |
+        # Set BZip2 paths explicitly
+        BZIP2_ROOT="${{ github.workspace }}/build/vcpkg_installed/${{ matrix.triplet }}"
+        BZIP2_INCLUDE_DIR="${BZIP2_ROOT}/include"
+        BZIP2_LIBRARY_PATH="${BZIP2_ROOT}/lib"
+        
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          BZIP2_LIBRARIES="${BZIP2_LIBRARY_PATH}/bz2.lib"
+        else
+          BZIP2_LIBRARIES="${BZIP2_LIBRARY_PATH}/libbz2.a"
+        fi
+        
         cmake -B build -S . \
           -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
           -DCMAKE_BUILD_TYPE=Release \
           -DOPENMIND_USE_VCPKG=ON \
           -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
-          -DBZIP2_ROOT=${{ github.workspace }}/build/vcpkg_installed/${{ matrix.triplet }} \
+          -DBZIP2_ROOT="${BZIP2_ROOT}" \
+          -DBZIP2_INCLUDE_DIR="${BZIP2_INCLUDE_DIR}" \
+          -DBZIP2_LIBRARIES="${BZIP2_LIBRARIES}" \
           -DBZIP2_USE_STATIC_LIBS=ON \
-          -DCMAKE_PREFIX_PATH=${{ github.workspace }}/build/vcpkg_installed/${{ matrix.triplet }}
+          -DCMAKE_PREFIX_PATH="${BZIP2_ROOT}"
 
     - name: Build
       shell: bash
