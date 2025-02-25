@@ -156,7 +156,6 @@ BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_test) {
 
 BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_no_hang_test
     , *timeout(20)
-    * disabled()
 ) {
     auto _1 = "((-1/54)*sqrt((-1944*(x^2) - 864*(z^2) + 1296*z*x + -9936*z + 22032*x + -65016)) + (-1/3)*x + ((-1)/9)*z + y)"_v;
     _1.SetView(Valuable::View::Equation);
