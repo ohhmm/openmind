@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            triplet: x64-linux
+            python-dev: python3.10-dev libpython3.10-dev
+          - os: windows-latest
+            triplet: x64-windows
+            python-dev: ""
+          - os: macos-latest
+            triplet: x64-osx
+            python-dev: ""
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ${{ matrix.python-dev }}
+
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install python@3.10
+
+    - name: Setup Python 3.10 (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+
+    - name: Cache vcpkg
+      uses: actions/cache@v3
+      with:
+        path: |
+          vcpkg
+          build/vcpkg_installed
+        key: vcpkg-${{ matrix.os }}-${{ hashFiles('vcpkg.json') }}
+
+    - name: Setup vcpkg
+      shell: bash
+      run: |
+        git submodule update --init --recursive
+        ./vcpkg/bootstrap-vcpkg.sh
+        ./vcpkg/vcpkg install --triplet=${{ matrix.triplet }} --clean-after-build
+
+    - name: Configure CMake
+      shell: bash
+      run: |
+        cmake -B build -S . \
+          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DOPENMIND_USE_VCPKG=ON
+
+    - name: Build
+      shell: bash
+      run: cmake --build build --config Release
+
+    - name: Test
+      working-directory: build
+      shell: bash
+      run: ctest -C Release --output-on-failure
