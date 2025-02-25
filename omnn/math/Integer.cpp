@@ -350,8 +350,9 @@ namespace math {
         if (n.IsInt()) {
             arbitrary = arbitrary >> static_cast<int>(n);
             hash = std::hash<base_int>()(arbitrary);
-        } else
+        } else {
             base::shl(n);
+        }
         return *this;
     }
 
@@ -386,9 +387,9 @@ namespace math {
                 mask &= arbitrary;
             }
             return Valuable(std::move(mask));
-        }
-        else
+        } else {
             return base::And(n, v);
+        }
     }
     Valuable Integer::Xor(const Valuable& n, const Valuable& v) const
     {
@@ -452,15 +453,15 @@ namespace math {
             }
             return *this;
         } else if ((arbitrary == 1 || arbitrary == -1) && v.IsSimpleFraction()) {
-            if(!v.as<Fraction>().getDenominator().IsEven())
+            if(!v.as<Fraction>().getDenominator().IsEven()) {
                 return *this;
-            else
+            } else {
                 return Become(Exponentiation{*this,v});
+            }
         } else if (v.IsSimple() && v < constants::zero) {
             return reciprocal().operator^=(-v);
         }
-        if(v.IsInt())
-        {
+        if(v.IsInt()) {
 // FIXME:     arbitrary = boost::multiprecision::pow(a(), v.ca());
 //            hash = std::hash<base_int>()(arbitrary);
 //            return *this;
@@ -483,7 +484,10 @@ namespace math {
                     while (n > constants::one)
                     {
                         auto nIsInt = n.IsInt();
-                        if (!nIsInt) IMPLEMENT;
+                        if (!nIsInt) {
+                            ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Non-integer exponent in power calculation")).str().c_str());
+                            throw;
+                        }
                         if (n.ca() & 1)
                         {
                             y *= x;
@@ -547,8 +551,10 @@ namespace math {
                     ++signs;
                 } else {
 //                    IMPLEMENT
-                    if(n!=constants::one)
-                        IMPLEMENT;
+                    if(n!=constants::one) {
+                        ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Non-one numerator in fraction exponentiation")).str().c_str());
+                        throw;
+                    }
                     auto gce = GreatestCommonExp(dn);
                     auto ee = ltz
                         ? Fraction { constants::minus_1, std::move(dn) }
@@ -588,7 +594,8 @@ namespace math {
                                     return Become(f*((x/xFactor)^exponentiating));
                             }
                         }
-                        IMPLEMENT
+                        ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Negative exponentiation with even denominator")).str().c_str());
+                        throw;
                     }
                 }
 //                else if(dn==2_v) {
@@ -789,20 +796,21 @@ namespace math {
 
     bool Integer::operator <(const Valuable& v) const
     {
-        if (v.IsInt())
+        if (v.IsInt()) {
             return arbitrary < v.ca();
-        else if (v.IsFraction())
+        } else if (v.IsFraction()) {
             return !(v.operator<(*this) || operator==(v));
-        else if(v.IsMInfinity())
+        } else if(v.IsMInfinity()) {
             return {};
-        else if(v.IsInfinity())
+        } else if(v.IsInfinity()) {
             return true;
-        else if (v.IsRational() == YesNoMaybe::Yes) 
+        } else if (v.IsRational() == YesNoMaybe::Yes) {
             return arbitrary < static_cast<a_rational>(v);
-        else if (v.Is_pi())
+        } else if (v.Is_pi()) {
             return arbitrary < 4;
-        else
+        } else {
             return v > *this;
+        }
     }
 
     bool Integer::operator ==(const int& i) const
@@ -822,12 +830,13 @@ namespace math {
 
     bool Integer::operator ==(const Valuable& v) const
     {
-        if (v.IsInt())
+        if (v.IsInt()) {
             return operator ==(v.as<Integer>());
-        else if(v.FindVa() || v.IsConstant())
+        } else if(v.FindVa() || v.IsConstant()) {
             return {};
-        else
+        } else {
             return v.operator==(*this);
+        }
     }
 
     std::ostream& Integer::print(std::ostream& out) const
