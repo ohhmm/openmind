@@ -24,6 +24,7 @@
     "bzip2",
     "leveldb",
     "liblzma",
+    "zlib",
     {
       "name": "vcpkg-cmake",
       "host": true
