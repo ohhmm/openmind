@@ -17,6 +17,8 @@ protected:
 
     std::ostream& print(std::ostream&) const override;
     std::ostream& print_sign(std::ostream&) const override;
+    using base::set1;
+    using base::set2;
 
 public:
     using base::base;
@@ -26,6 +28,11 @@ public:
         : base(std::forward<T1>(radicand), constants::two)
     {
     }
+
+    using base::operator=;
+    using base::operator==;
+    using base::update1;
+    using base::update2;
 
     [[nodiscard]]
     constexpr bool IsPrincipalSurd() const override { return true; }
