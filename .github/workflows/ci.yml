@@ -103,6 +103,10 @@ jobs:
         # Set BZip2 paths based on platform
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/bz2.lib"
+        elif [[ "${{ runner.os }}" == "Darwin" ]]; then
+          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
+          # On macOS, we need to ensure BZip2 is built as a static library
+          export BZIP2_USE_STATIC_LIBS=ON
         else
           BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
         fi
@@ -145,7 +149,8 @@ jobs:
             -DCMAKE_PREFIX_PATH="${VCPKG_INSTALL_PATH}" \
             -DCMAKE_FIND_ROOT_PATH="${VCPKG_INSTALL_PATH}" \
             -DCMAKE_FIND_DEBUG_MODE=ON \
-            -DCMAKE_DEBUG_FIND_PACKAGE=BZip2
+            -DCMAKE_DEBUG_FIND_PACKAGE=BZip2 \
+            -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
         fi
 
     - name: Build
