@@ -278,26 +278,26 @@ BOOST_PYTHON_MODULE(variable)
         "    result = lambda_func([3, 4])  # 3*4 + 3 = 15")
         ;
 
-    // Helper template for arithmetic operations
-    template<typename T>
-    Variable perform_operation(const Variable& v, T value, const std::string& op, bool reverse = false) {
-        try {
-            Valuable val(value);
-            Valuable result;
-            auto lhs = reverse ? val : v.evaluate();
-            auto rhs = reverse ? v.evaluate() : val;
-            
-            if (op == "+") result = lhs + rhs;
-            else if (op == "-") result = lhs - rhs;
-            else if (op == "*") result = lhs * rhs;
-            else if (op == "/") result = lhs / rhs;
-            else throw std::runtime_error("Unknown operation");
-            
-            return Variable(result);
-        } catch (const std::exception& e) {
-            throw std::runtime_error(op + " operation failed: " + e.what());
-        }
+namespace {
+// Helper template for arithmetic operations
+template<typename T>
+Variable perform_operation(const Variable& v, T value, const std::string& op, bool reverse = false) {
+    try {
+        Valuable val(std::forward<T>(value));
+        Valuable result;
+
+        if (op == "+") result = reverse ? (val + v) : (v + val);
+        else if (op == "-") result = reverse ? (val - v) : (v - val);
+        else if (op == "*") result = reverse ? (val * v) : (v * val);
+        else if (op == "/") result = reverse ? (val / v) : (v / val);
+        else throw std::runtime_error("Unknown operation");
+
+        return Variable(result);
+    } catch (const std::exception& e) {
+        throw std::runtime_error(op + " operation failed: " + e.what());
     }
+}
+}
 
     // Expose Variable
     class_<Variable, bases<Valuable>>("Variable")
@@ -307,37 +307,37 @@ BOOST_PYTHON_MODULE(variable)
 
         // Basic arithmetic (inherited from Valuable)
         .def(self + self)
-        .def("__add__", +[](const Variable& v, const Variable& other) { return perform_operation(v, other, "+"); })
-        .def("__add__", +[](const Variable& v, const Valuable& other) { return perform_operation(v, other, "+"); })
-        .def("__add__", +[](const Variable& v, int i) { return perform_operation(v, i, "+"); })
-        .def("__radd__", +[](const Variable& v, int i) { return perform_operation(v, i, "+", true); })
-        .def("__add__", +[](const Variable& v, double d) { return perform_operation(v, d, "+"); })
-        .def("__radd__", +[](const Variable& v, double d) { return perform_operation(v, d, "+", true); })
+        .def("__add__", +[](const Variable& v, const Variable& other) { return perform_operation<Variable>(v, other, "+"); })
+        .def("__add__", +[](const Variable& v, const Valuable& other) { return perform_operation<Valuable>(v, other, "+"); })
+        .def("__add__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "+"); })
+        .def("__radd__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "+", true); })
+        .def("__add__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "+"); })
+        .def("__radd__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "+", true); })
         .def(self - self)
-        .def("__sub__", +[](const Variable& v, const Variable& other) { return perform_operation(v, other, "-"); })
-        .def("__sub__", +[](const Variable& v, const Valuable& other) { return perform_operation(v, other, "-"); })
-        .def("__sub__", +[](const Variable& v, int i) { return perform_operation(v, i, "-"); })
-        .def("__rsub__", +[](const Variable& v, int i) { return perform_operation(v, i, "-", true); })
-        .def("__sub__", +[](const Variable& v, double d) { return perform_operation(v, d, "-"); })
-        .def("__rsub__", +[](const Variable& v, double d) { return perform_operation(v, d, "-", true); })
+        .def("__sub__", +[](const Variable& v, const Variable& other) { return perform_operation<Variable>(v, other, "-"); })
+        .def("__sub__", +[](const Variable& v, const Valuable& other) { return perform_operation<Valuable>(v, other, "-"); })
+        .def("__sub__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "-"); })
+        .def("__rsub__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "-", true); })
+        .def("__sub__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "-"); })
+        .def("__rsub__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "-", true); })
         .def("__sub__", +[](const Valuable& v, const Valuable& i) { return v - i; })
         .def("__rsub__", +[](const Valuable& v, const Valuable& i) { return i - v; })
         .def(self * self)
         // Multiplication operations
-        .def("__mul__", +[](const Variable& v, const Variable& other) { return perform_operation(v, other, "*"); })
-        .def("__mul__", +[](const Variable& v, const Valuable& other) { return perform_operation(v, other, "*"); })
-        .def("__mul__", +[](const Variable& v, int i) { return perform_operation(v, i, "*"); })
-        .def("__rmul__", +[](const Variable& v, int i) { return perform_operation(v, i, "*", true); })
-        .def("__mul__", +[](const Variable& v, double d) { return perform_operation(v, d, "*"); })
-        .def("__rmul__", +[](const Variable& v, double d) { return perform_operation(v, d, "*", true); })
+        .def("__mul__", +[](const Variable& v, const Variable& other) { return perform_operation<Variable>(v, other, "*"); })
+        .def("__mul__", +[](const Variable& v, const Valuable& other) { return perform_operation<Valuable>(v, other, "*"); })
+        .def("__mul__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "*"); })
+        .def("__rmul__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "*", true); })
+        .def("__mul__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "*"); })
+        .def("__rmul__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "*", true); })
         .def(self / self)
         // Division operations
-        .def("__truediv__", +[](const Variable& v, const Variable& other) { return perform_operation(v, other, "/"); })
-        .def("__truediv__", +[](const Variable& v, const Valuable& other) { return perform_operation(v, other, "/"); })
-        .def("__truediv__", +[](const Variable& v, int i) { return perform_operation(v, i, "/"); })
-        .def("__rtruediv__", +[](const Variable& v, int i) { return perform_operation(v, i, "/", true); })
-        .def("__truediv__", +[](const Variable& v, double d) { return perform_operation(v, d, "/"); })
-        .def("__rtruediv__", +[](const Variable& v, double d) { return perform_operation(v, d, "/", true); })
+        .def("__truediv__", +[](const Variable& v, const Variable& other) { return perform_operation<Variable>(v, other, "/"); })
+        .def("__truediv__", +[](const Variable& v, const Valuable& other) { return perform_operation<Valuable>(v, other, "/"); })
+        .def("__truediv__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "/"); })
+        .def("__rtruediv__", +[](const Variable& v, int i) { return perform_operation<int>(v, i, "/", true); })
+        .def("__truediv__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "/"); })
+        .def("__rtruediv__", +[](const Variable& v, double d) { return perform_operation<double>(v, d, "/", true); })
         .def(self % self)
         .def("__mod__", +[](const Variable& v, const Variable& other) { return Variable(v % other); })
         .def("__mod__", +[](const Variable& v, const Valuable& other) { return Variable(v % other); })
@@ -362,9 +362,8 @@ BOOST_PYTHON_MODULE(variable)
 
         // Variable-specific methods
         .def("set_value", +[](Variable& v, double value) {
-            try {
-                v.Eval(v, Valuable(value));
-                // Verify the value was set
+            v.Eval(v, Valuable(value));
+            // Verify the value was set
                 auto result = v.evaluate();
                 std::cout << "Value set, evaluates to: " << result << std::endl;
 
@@ -377,13 +376,9 @@ BOOST_PYTHON_MODULE(variable)
         })
         .def("set_value", +[](Variable& v, int i) {
             try {
-                v.Eval(v, Valuable(i));
-                auto result = v.evaluate();
-                if (result.IsVa()) {
-                    throw std::runtime_error("Failed to set value - still a variable after assignment");
-                }
-            } catch (const std::exception& e) {
-                throw std::runtime_error(std::string("Failed to set value: ") + e.what());
+                v.Eval(v, Valuable(i));auto result = v.evaluate();
+            if (result.IsVa()) {
+                throw std::runtime_error("Failed to set value - still a variable after assignment");
             }
         })
         .def("evaluate", +[](Variable& v) -> Valuable {

@@ -20,21 +20,24 @@ class TestValuable(unittest.TestCase):
         #prod = variable.Valuable("4 * 2")
         self.assertEqual(float(prod), 8.0)  # 4 * 2
         
+        self.assertEqual(float(x), 3.0)
+        self.assertEqual(float(y), 4.0)
+
         # Test multiplication
-        prod = y * 2
-        self.assertEqual(float(prod), 8.0)  # 4 * 2
+        self.assertEqual(float(y * 2), 8.0)
+        self.assertEqual(float(2 * y), 8.0)
 
-        # Test addition with expression
-        expr = x + prod
-        self.assertEqual(float(expr), 11.0)  # 3 + (4 * 2)
+        # Test addition
+        self.assertEqual(float(x + y), 7.0)
+        self.assertEqual(float(5 + x), 8.0)
         
-        # Test reverse operations
-        rev_prod = 2 * y
-        self.assertEqual(float(rev_prod), 8.0)
+        # Test subtraction
+        self.assertEqual(float(y - x), 1.0)
+        self.assertEqual(float(5 - x), 2.0)
         
-        rev_sum = 5 + x
-        self.assertEqual(float(rev_sum), 8.0)  # 5 + 3
-
+        # Test division
+        self.assertEqual(float(y / 2), 2.0)
+        self.assertEqual(float(12 / y), 3.0)
     def test_arithmetic_operations(self):
         a = valuable.Valuable(5)
         b = valuable.Valuable(3)
