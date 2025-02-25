@@ -3,11 +3,11 @@ import unittest
 import variable
 
 #@unittest.skipIf(not VARIABLE_MODULE_AVAILABLE, "Python bindings not available")
-class Testvariable(unittest.TestCase):
+class TestValuable(unittest.TestCase):
     def test_variable_creation(self):
         x = variable.Variable()
         v = variable.Valuable("x")
-    
+
     def test_basic_arithmetic(self):
         x = variable.Variable()
         y = variable.Variable()
@@ -20,41 +20,29 @@ class Testvariable(unittest.TestCase):
         #prod = variable.Valuable("4 * 2")
         self.assertEqual(float(prod), 8.0)  # 4 * 2
         
-        print("Testing y * 2")
+        # Test multiplication
         prod = y * 2
-        print(f"y * 2 = {prod}")
-        prod_val = float(prod)
-        print(f"y * 2 evaluated = {prod_val}")
-        assert prod_val == 8.0  # 4 * 2
+        self.assertEqual(float(prod), 8.0)  # 4 * 2
 
-        print("Testing x + (y * 2)")
+        # Test addition with expression
         expr = x + prod
-        print(f"Expression: {expr}")
+        self.assertEqual(float(expr), 11.0)  # 3 + (4 * 2)
         
-        print("Evaluating expression")
-        result = expr.evaluate()
-        print(f"Result: {result}")
+        # Test reverse operations
+        rev_prod = 2 * y
+        self.assertEqual(float(rev_prod), 8.0)
         
-        # Convert to float for assertion
-        result_float = float(result)
-        print(f"Result as float: {result_float}")
-        assert result_float == 11.0  # 3 + 4 * 2
-        print("Test passed!")
-    except Exception as e:
-        print(f"Error in test_basic_arithmetic: {e}")
-        raise
+        rev_sum = 5 + x
+        self.assertEqual(float(rev_sum), 8.0)  # 5 + 3
 
-def test_arithmetic_operations():
-    # Test basic operations with constants
-    a = valuable.Valuable(5)
-    b = valuable.Valuable(3)
+    def test_arithmetic_operations(self):
+        a = valuable.Valuable(5)
+        b = valuable.Valuable(3)
 
-    assert float(a + b) == 8.0
-    assert float(a - b) == 2.0
-    assert float(a * b) == 15.0
-    assert float(a / b) == 5.0/3.0
+        self.assertEqual(float(a + b), 8.0)
+        self.assertEqual(float(a - b), 2.0)
+        self.assertEqual(float(a * b), 15.0)
+        self.assertAlmostEqual(float(a / b), 5.0/3.0)
 
 if __name__ == "__main__":
-    test_basic_arithmetic()
-    test_arithmetic_operations()
-    print("All tests passed!")
+    unittest.main()

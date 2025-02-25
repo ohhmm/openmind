@@ -314,30 +314,12 @@ BOOST_PYTHON_MODULE(variable)
         .def("__add__", +[](const Variable& v, double d) { return perform_operation(v, d, "+"); })
         .def("__radd__", +[](const Variable& v, double d) { return perform_operation(v, d, "+", true); })
         .def(self - self)
-        .def("__sub__", +[](const Variable& v, const Variable& other) {
-            auto result = v - other;
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
-        })
-        .def("__sub__", +[](const Variable& v, const Valuable& other) {
-            auto result = v - other;
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
-        })
-        .def("__sub__", +[](const Variable& v, int i) {
-            auto result = v - Valuable(i);
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
-        })
-        .def("__rsub__", +[](const Variable& v, int i) {
-            auto result = Valuable(i) - v;
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
-        })
-        .def("__sub__", +[](const Variable& v, double d) {
-            auto result = v - Valuable(d);
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
-        })
-        .def("__rsub__", +[](const Variable& v, double d) {
-            auto result = Valuable(d) - v;
-            return result.IsVa() ? result.as<Variable>() : Variable(result);
-        })
+        .def("__sub__", +[](const Variable& v, const Variable& other) { return perform_operation(v, other, "-"); })
+        .def("__sub__", +[](const Variable& v, const Valuable& other) { return perform_operation(v, other, "-"); })
+        .def("__sub__", +[](const Variable& v, int i) { return perform_operation(v, i, "-"); })
+        .def("__rsub__", +[](const Variable& v, int i) { return perform_operation(v, i, "-", true); })
+        .def("__sub__", +[](const Variable& v, double d) { return perform_operation(v, d, "-"); })
+        .def("__rsub__", +[](const Variable& v, double d) { return perform_operation(v, d, "-", true); })
         .def("__sub__", +[](const Valuable& v, const Valuable& i) { return v - i; })
         .def("__rsub__", +[](const Valuable& v, const Valuable& i) { return i - v; })
         .def(self * self)
