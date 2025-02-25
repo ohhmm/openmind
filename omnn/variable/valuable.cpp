@@ -169,22 +169,17 @@ BOOST_PYTHON_MODULE(variable)
 
                 // First evaluate the value
                 auto result = v.evaluate();
-                std::cout << "Evaluated to: " << result << std::endl;
 
                 // If result is a Variable, try to get its stored value
                 if (result.IsVa()) {
                     const auto& var = result.as<Variable>();
                     result = var.evaluate();
-                    std::cout << "Variable evaluated to: " << result << std::endl;
                 }
 
                 // Convert to double using operator double()
-                auto value = static_cast<double>(result);
-                std::cout << "Converted to double: " << value << std::endl;
-                return value;
+                return static_cast<double>(result);
             } catch (const std::exception& e) {
-                std::cerr << "Exception in float conversion: " << e.what() << std::endl;
-                throw;
+                throw std::runtime_error(std::string("Float conversion failed: ") + e.what());
             }
         })
         .def("__bool__", +[](const Valuable& v) { return static_cast<bool>(v); })
@@ -204,57 +199,36 @@ BOOST_PYTHON_MODULE(variable)
 
         // Basic arithmetic (inherited from Valuable)
         .def(self + self)
+        // Helper template for arithmetic operations
         .def("__add__", +[](const Variable& v, const Variable& other) -> Variable {
-            std::cout << "Variable + Variable" << std::endl;
             try {
-                // First evaluate both operands
-                auto v_val = v.evaluate();
-                auto other_val = other.evaluate();
-                // Perform addition
-                auto result = v_val + other_val;
-                std::cout << "Addition result: " << result << std::endl;
-                return Variable(result);
+                return Variable(v.evaluate() + other.evaluate());
             } catch (const std::exception& e) {
-                std::cerr << "Exception in addition: " << e.what() << std::endl;
-                throw;
+                throw std::runtime_error(std::string("Addition failed: ") + e.what());
             }
         })
         .def("__add__", +[](const Variable& v, const Valuable& other) -> Valuable {
-            std::cout << "Variable + Valuable" << std::endl;
             try {
-                // First evaluate both operands
-                auto v_val = v.evaluate();
-                auto other_val = other.evaluate();
-                std::cout << "v_val: " << v_val << ", other_val: " << other_val << std::endl;
-
-                // Perform addition and evaluate immediately
-                auto result = (v_val + other_val).evaluate();
-                std::cout << "Final result: " << result << std::endl;
-
+                auto result = (v.evaluate() + other.evaluate()).evaluate();
                 if (result.IsVa()) {
                     throw std::runtime_error("Addition result is still a variable");
                 }
 
                 return result;
             } catch (const std::exception& e) {
-                std::cerr << "Exception in addition: " << e.what() << std::endl;
-                throw;
+                throw std::runtime_error(std::string("Addition failed: ") + e.what());
             }
         })
         .def("__add__", +[](const Variable& v, int i) -> Variable {
-            std::cout << "Variable + int" << std::endl;
             return Variable(static_cast<const Valuable&>(v) + Valuable(i));
         })
         .def("__radd__", +[](const Variable& v, int i) -> Variable {
-            std::cout << "int + Variable" << std::endl;
             return Variable(Valuable(i) + static_cast<const Valuable&>(v));
         })
         .def("__add__", +[](const Variable& v, double d) -> Variable {
-            std::cout << "Variable + double" << std::endl;
             return Variable(static_cast<const Valuable&>(v) + Valuable(d));
         })
         .def("__radd__", +[](const Variable& v, double d) -> Variable {
-            std::cout << "double + Variable" << std::endl;
             return Variable(Valuable(d) + static_cast<const Valuable&>(v));
         })
         .def(self - self)
