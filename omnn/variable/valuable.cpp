@@ -152,6 +152,7 @@ BOOST_PYTHON_MODULE(variable)
         .def("sq", &Valuable::Sq)
         .def("sqrt", &Valuable::Sqrt)
         .def("optimize", &Valuable::optimize)
+        // Evaluation
         .def("eval", &Valuable::eval)
 
         // Type identification
@@ -357,150 +358,32 @@ BOOST_PYTHON_MODULE(variable)
         .def("__sub__", +[](const Valuable& v, const Valuable& i) { return v - i; })
         .def("__rsub__", +[](const Valuable& v, const Valuable& i) { return i - v; })
         .def(self * self)
+        // Multiplication operations
         .def("__mul__", +[](const Variable& v, const Variable& other) -> Variable {
-            std::cout << "Variable * Variable" << std::endl;
             try {
-                // First evaluate both operands
-                auto v_val = v.evaluate();
-                auto other_val = other.evaluate();
-                std::cout << "v_val: " << v_val << ", other_val: " << other_val << std::endl;
-
-                // Perform multiplication
-                auto result = v_val * other_val;
-                std::cout << "Multiplication result: " << result << std::endl;
-
-                // Create new variable with result
-                Variable var_result;
-                var_result.Eval(var_result, result);
-
-                // Verify the result
-                auto final_val = var_result.evaluate();
-                std::cout << "Final result: " << final_val << std::endl;
-
-                return var_result;
+                return Variable(v.evaluate() * other.evaluate());
             } catch (const std::exception& e) {
-                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
-                throw;
+                throw std::runtime_error(std::string("Multiplication failed: ") + e.what());
             }
         })
         .def("__mul__", +[](const Variable& v, const Valuable& other) -> Variable {
-            std::cout << "Variable * Valuable" << std::endl;
             try {
-                // First evaluate the variable
-                auto v_val = v.evaluate();
-                std::cout << "Variable evaluated to: " << v_val << std::endl;
-
-                // Perform multiplication
-                auto result = v_val * other;
-                std::cout << "Multiplication result: " << result << std::endl;
-
-                // Create new variable with result
-                Variable var_result;
-                var_result.Eval(var_result, result);
-
-                // Verify the result
-                auto final_val = var_result.evaluate();
-                std::cout << "Final result: " << final_val << std::endl;
-
-                return var_result;
+                return Variable(v.evaluate() * other.evaluate());
             } catch (const std::exception& e) {
-                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
-                throw;
+                throw std::runtime_error(std::string("Multiplication failed: ") + e.what());
             }
         })
         .def("__mul__", +[](const Variable& v, int i) -> Variable {
-            std::cout << "Variable * int" << std::endl;
-            try {
-                // First evaluate the variable
-                auto v_val = v.evaluate();
-                std::cout << "Variable evaluated to: " << v_val << std::endl;
-
-                // Create Valuable from int
-                Valuable val_i(i);
-                std::cout << "Created Valuable from int: " << val_i << std::endl;
-
-                // Perform multiplication
-                auto result = v_val * val_i;
-                std::cout << "Multiplication result: " << result << std::endl;
-
-                // Create new variable with result
-                Variable var_result;
-                var_result.Eval(var_result, result);
-
-                // Verify the result
-                auto final_val = var_result.evaluate();
-                std::cout << "Final result: " << final_val << std::endl;
-
-                return var_result;
-            } catch (const std::exception& e) {
-                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
-                throw;
-            }
+            return Variable(static_cast<const Valuable&>(v) * Valuable(i));
         })
         .def("__rmul__", +[](const Variable& v, int i) -> Variable {
-            std::cout << "int * Variable" << std::endl;
-            try {
-                // First evaluate the variable
-                auto v_val = v.evaluate();
-                std::cout << "Variable evaluated to: " << v_val << std::endl;
-
-                // Create Valuable from int
-                Valuable val_i(i);
-                std::cout << "Created Valuable from int: " << val_i << std::endl;
-
-                // Perform multiplication
-                auto result = val_i * v_val;
-                std::cout << "Multiplication result: " << result << std::endl;
-
-                // Create new variable with result
-                Variable var_result;
-                var_result.Eval(var_result, result);
-
-                // Verify the result
-                auto final_val = var_result.evaluate();
-                std::cout << "Final result: " << final_val << std::endl;
-
-                return var_result;
-            } catch (const std::exception& e) {
-                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
-                throw;
-            }
+            return Variable(Valuable(i) * static_cast<const Valuable&>(v));
         })
-        .def("__mul__", +[](const Variable& v, double d) -> Valuable {
-            std::cout << "Variable * double" << std::endl;
-            try {
-                // First evaluate the variable
-                auto v_val = v.evaluate();
-                std::cout << "Variable evaluated to: " << v_val << std::endl;
-
-                // Create Valuable from double
-                Valuable val_d(d);
-                std::cout << "Created Valuable from double: " << val_d << std::endl;
-
-                // Perform multiplication and evaluate immediately
-                auto result = (v_val * val_d).evaluate();
-                std::cout << "Final result: " << result << std::endl;
-
-                if (result.IsVa()) {
-                    throw std::runtime_error("Multiplication result is still a variable");
-                }
-
-                return result;
-            } catch (const std::exception& e) {
-                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
-                throw;
-            }
+        .def("__mul__", +[](const Variable& v, double d) -> Variable {
+            return Variable(static_cast<const Valuable&>(v) * Valuable(d));
         })
         .def("__rmul__", +[](const Variable& v, double d) -> Variable {
-            std::cout << "double * Variable" << std::endl;
-            try {
-                auto result = Valuable(d) * static_cast<const Valuable&>(v);
-                std::cout << "Multiplication successful" << std::endl;
-                return Variable(result);
-            } catch (const std::exception& e) {
-                std::cerr << "Exception in multiplication: " << e.what() << std::endl;
-                throw;
-            }
+            return Variable(Valuable(d) * static_cast<const Valuable&>(v));
         })
         .def(self / self)
         .def("__truediv__", +[](const Variable& v, const Variable& other) {
