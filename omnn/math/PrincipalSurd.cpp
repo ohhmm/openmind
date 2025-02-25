@@ -77,7 +77,19 @@ size_t PrincipalSurd::FillPolynomialCoefficients(std::vector<Valuable>& coeffici
 }
 
 void PrincipalSurd::optimize() {
-    DUO_OPT_PFX
+    if (!optimizations && !IsSimple()) {
+        hash = _1.Hash() ^ _2.Hash();
+        return;
+    }
+    if (optimized) {
+        return;
+    }
+    
+    // Use custom comparator for PrincipalSurd to avoid operator== ambiguity on Windows
+    ::omnn::rt::OptimizationLoopDetect<PrincipalSurd, PrincipalSurdComparator> antilooper(*this);
+    if (antilooper.isLoopDetected()) {
+        return;
+    }
     
     if (!optimizations || is_optimized())
         return;
