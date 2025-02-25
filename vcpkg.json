@@ -53,6 +53,7 @@
     "boost-uuid",
     "bzip2",
     "liblzma",
+    "zlib",
     "leveldb"
   ],
   "overrides": [
