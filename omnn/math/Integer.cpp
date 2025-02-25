@@ -316,13 +316,16 @@ namespace math {
                 if (arbitrary == -1) {
                     return 1;
                 }
-                IMPLEMENT
+                ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "bit of negative number " << *this)).str().c_str());
+                throw;
             }
             unsigned N = static_cast<unsigned>(n);
             return static_cast<int>(bit_test(arbitrary, N));
         }
-        else
-            LOG_AND_IMPLEMENT(n << "th bit of " << *this);
+        else {
+            ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << n << "th bit of " << *this)).str().c_str());
+            throw;
+        }
     }
 
     Valuable& Integer::shl()
@@ -360,14 +363,16 @@ namespace math {
     Valuable Integer::Shr(const Valuable& n) const
     {
         if (!n.IsInt()) {
-            IMPLEMENT
+            ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Shr with non-integer " << n)).str().c_str());
+            throw;
         }
         return Integer(decltype(arbitrary)(arbitrary>>static_cast<unsigned>(n)));
     }
 
     Valuable Integer::Or(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Or operation not implemented")).str().c_str());
+        throw;
     }
     Valuable Integer::And(const Valuable& n, const Valuable& v) const
     {
@@ -387,7 +392,8 @@ namespace math {
     }
     Valuable Integer::Xor(const Valuable& n, const Valuable& v) const
     {
-        IMPLEMENT
+        ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Xor operation not implemented")).str().c_str());
+        throw;
     }
     Valuable Integer::Not(const Valuable& n) const
     {
@@ -424,9 +430,11 @@ namespace math {
                     return {std::move(value), std::move(divisorPowerE.a())};
                 }
             } else if (e < constants::zero) {
-                LOG_AND_IMPLEMENT(arbitrary << " GreatestCommonExp " << e);
+                ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << arbitrary << " GreatestCommonExp " << e)).str().c_str());
+                throw;
             } else {
-                IMPLEMENT
+                ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "GreatestCommonExp with non-power-of-2 exponent")).str().c_str());
+                throw;
                 // auto v = boost::multiprecision::pow(boost::multiprecision::cpp_rational(divisor,1),
                 // boost::multiprecision::cpp_rational{1, e.ca()}); if ((v ^ e) == divisor)
                 //     return {std::move(v), divisor};
