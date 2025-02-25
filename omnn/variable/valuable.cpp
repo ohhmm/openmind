@@ -242,15 +242,28 @@ Variable perform_operation(const Variable& v, T value, const std::string& op, bo
         
         // Variable-specific methods
         .def("set_value", +[](Variable& v, double value) {
+#ifdef DEBUG_PYTHON_BINDINGS
+            std::cout << "Setting value: " << value << " to variable " << v << std::endl;
+#endif
             v.Eval(v, Valuable(value));
             auto result = v.evaluate();
             if (result.IsVa()) {
                 throw std::runtime_error("Failed to set value - still a variable after assignment");
             }
+#ifdef DEBUG_PYTHON_BINDINGS
+            std::cout << "Value set successfully, evaluates to: " << result << std::endl;
+#endif
         })
         .def("evaluate", +[](Variable& v) -> Valuable {
             try {
-                return v.evaluate();
+#ifdef DEBUG_PYTHON_BINDINGS
+                std::cout << "Evaluating variable: " << v << std::endl;
+#endif
+                auto result = v.evaluate();
+#ifdef DEBUG_PYTHON_BINDINGS
+                std::cout << "Evaluation result: " << result << std::endl;
+#endif
+                return result;
             } catch (const std::exception& e) {
                 throw std::runtime_error(std::string("Evaluation failed: ") + e.what());
             }
