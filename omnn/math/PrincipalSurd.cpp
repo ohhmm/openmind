@@ -62,7 +62,8 @@ std::pair<bool, Valuable> PrincipalSurd::IsMultiplicationSimplifiable(const Valu
 size_t PrincipalSurd::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
     if (IsPolynomial(v)) {
         if (HasVa(v)) {
-            IMPLEMENT
+            ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");
+            throw;
         } else {
             if (coefficients.empty()) {
                 coefficients.emplace_back(*this);
@@ -71,13 +72,26 @@ size_t PrincipalSurd::FillPolynomialCoefficients(std::vector<Valuable>& coeffici
             }
         }
     } else {
-        IMPLEMENT
+        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");
+        throw;
     }
     return 0;
 }
 
 void PrincipalSurd::optimize() {
-    DUO_OPT_PFX
+    if (!optimizations && !IsSimple()) {
+        hash = _1.Hash() ^ _2.Hash();
+        return;
+    }
+    if (optimized) {
+        return;
+    }
+    
+    // Use custom comparator for PrincipalSurd to avoid operator== ambiguity on Windows
+    ::omnn::rt::OptimizationLoopDetect<PrincipalSurd, PrincipalSurdComparator> antilooper(*this);
+    if (antilooper.isLoopDetected()) {
+        return;
+    }
     
     if (!optimizations || is_optimized())
         return;
@@ -107,7 +121,8 @@ void PrincipalSurd::optimize() {
                 }
                 auto& idx = Index().ca();
                 if (idx == 0) {
-                    IMPLEMENT
+                    ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");
+                    throw;
                 }
                 while (_2.bit().IsZero()) {
                     auto newRadicand = _1.Sqrt();
@@ -174,7 +189,8 @@ Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {
         for (auto& ve : vaExps)
             ve.second /= _2;
     } else {
-        IMPLEMENT
+        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");
+        throw;
     }
     return vaExps;
 }
@@ -259,7 +275,8 @@ Valuable PrincipalSurd::InCommonWith(const PrincipalSurd& surd) const {
         if (gcdRadicands == constants::one) {
             return gcdRadicands;
         }
-        LOG_AND_IMPLEMENT(*this << " InCommonWith " << surd);
+        ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << *this << " InCommonWith " << surd)).str().c_str());
+        throw;
     }
     return constants::one;
 }

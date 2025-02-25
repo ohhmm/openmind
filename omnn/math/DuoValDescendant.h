@@ -69,8 +69,10 @@ namespace omnn::math {
         }
 
         static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
-            if(_1.FindVa() || _2.FindVa())
-                IMPLEMENT // in Child
+            if(_1.FindVa() || _2.FindVa()) {
+                ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");
+                throw;
+            }
             return {};
         }
 
@@ -138,8 +140,10 @@ namespace omnn::math {
         }
 
         bool operator==(const Valuable& other) const override {
-            return (other.Is<Chld>() && operator==(other.as<Chld>()))
-                || ((other.IsSum() || other.IsProduct()) && other.operator==(*this));
+            if (other.Is<Chld>()) {
+                return operator==(other.as<Chld>());
+            }
+            return ((other.IsSum() || other.IsProduct()) && other.operator==(*this));
         }
 
         bool Same(const Valuable& value) const override {
@@ -286,7 +290,8 @@ namespace omnn::math {
     if (optimized) {                                                                                                   \
         auto h = _1.Hash() ^ _2.Hash();                                                                                \
         if (h != hash) {                                                                                               \
-            LOG_AND_IMPLEMENT("Fix hash updating for " << *this);                                                      \
+            ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << "Fix hash updating for " << *this)).str().c_str()); \
+            throw;                                                                                                     \
         }                                                                                                              \
         return;                                                                                                        \
     }                                                                                                                  \
