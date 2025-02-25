@@ -1,6 +1,8 @@
 #include "PrincipalSurd.h"
+#include "PrincipalSurdComparator.h"
 #include "Product.h"
 #include "Sum.h"
+#include "../rt/antiloop.hpp"
 
 using namespace omnn::math;
 
@@ -77,19 +79,7 @@ size_t PrincipalSurd::FillPolynomialCoefficients(std::vector<Valuable>& coeffici
 }
 
 void PrincipalSurd::optimize() {
-    if (!optimizations && !IsSimple()) {
-        hash = _1.Hash() ^ _2.Hash();
-        return;
-    }
-    if (optimized) {
-        return;
-    }
-    
-    // Use custom comparator for PrincipalSurd to avoid operator== ambiguity on Windows
-    ::omnn::rt::OptimizationLoopDetect<PrincipalSurd, PrincipalSurdComparator> antilooper(*this);
-    if (antilooper.isLoopDetected()) {
-        return;
-    }
+    DUO_OPT_PFX
     
     if (!optimizations || is_optimized())
         return;
