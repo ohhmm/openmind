@@ -47,9 +47,10 @@ namespace math {
     }
     
     Variable::Variable(const std::string_view& str, std::shared_ptr<VarHost> host)
-    : varSetHost(host ? host : VarHost::Global<std::string>().shared_from_this())
-    , varId(host->IsIntegerId()?host->Host(Valuable(a_int(str))):host->Host(str))
     {
+        varSetHost = host ? host : VarHost::Global<std::string>().shared_from_this();
+        varId = varSetHost->IsIntegerId() ? varSetHost->Host(Valuable(a_int(str))) : varSetHost->Host(str);
+        hash = varSetHost->Hash(varId);
         maxVaExp=1;
     }
 
