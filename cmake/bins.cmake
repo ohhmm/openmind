@@ -399,7 +399,14 @@ macro(lib)
 	#message("target_link_libraries(${this_target} PUBLIC ${deps})")
     deps(${TEST_DEPS} ${deps})
 
-    install(TARGETS ${this_target})
+    set(INSTALL_PARAMS TARGETS ${this_target})
+	if(LIBRARY_DESTINATION)
+		set(INSTALL_PARAMS ${INSTALL_PARAMS} LIBRARY DESTINATION ${LIBRARY_DESTINATION})
+	endif()
+	if(RUNTIME_DESTINATION)
+		set(INSTALL_PARAMS ${INSTALL_PARAMS} RUNTIME DESTINATION ${RUNTIME_DESTINATION})
+	endif()
+	install(${INSTALL_PARAMS})
 
     if (OPENMIND_BUILD_TESTS OR BUILD_TESTS)
 		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
@@ -419,7 +426,6 @@ macro(lib)
 
 endmacro()
 
-
 macro(dll)
 	set(USE_SHARED SHARED)
 	unset(CMAKE_SHARED_LIBRARY_PREFIX)
@@ -427,6 +433,23 @@ macro(dll)
 	unset(USE_SHARED)
 endmacro()
 
+macro(mod)
+	set(USE_SHARED MODULE)
+	if(NOT LIBRARY_DESTINATION)
+		set(LIBRARY_DESTINATION lib)
+	endif()
+	if(NOT RUNTIME_DESTINATION)
+		set(RUNTIME_DESTINATION ${LIBRARY_DESTINATION})
+	endif()
+	lib(${ARGN})
+	set_target_properties(${this_target} PROPERTIES
+		PREFIX ""
+		POSITION_INDEPENDENT_CODE ON
+	)
+	unset(USE_SHARED)
+	unset(LIBRARY_DESTINATION)
+	unset(RUNTIME_DESTINATION)
+endmacro()
 
 macro(exe)
     string(STRIP "${ARGN}" deps)
