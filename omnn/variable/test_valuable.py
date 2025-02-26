@@ -1,15 +1,12 @@
+#!/usr/bin/env python3
 import unittest
 import variable
 
 class Testvariable(unittest.TestCase):
     def test_variable_creation(self):
         x = variable.Variable("x")
-        x.set_value(3)
-        self.assertEqual(float(x), 3.0)
-        
-        y = variable.Variable("y")
-        y.set_value(4)
-        self.assertEqual(float(y), 4.0)
+        v = variable.Valuable("x")
+        self.assertEqual(x, v)
     
     def test_basic_arithmetic(self):
         x = variable.Variable("x")

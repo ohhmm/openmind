@@ -75,6 +75,10 @@ BOOST_PYTHON_MODULE(variable)
         .def("optimize", &Valuable::optimize)
         .def("eval", &Valuable::eval)
 
+        // Type conversion
+        .def("__int__", +[](const Valuable& v) { return static_cast<int>(v); })
+        .def("__float__", +[](const Valuable& v) { return static_cast<double>(v); })
+
         // String conversion
         .def("__str__", &Valuable::str)
         ;
