@@ -492,10 +492,15 @@ System::solutions_t System::Solve(const Variable& va)
                 for (auto& variable : vars) {
                     if (variable != va) {
                         try {
-                            for (auto& sol : total.Solutions(variable)) {
-                                Add(variable, sol);
-                            }
+                            auto sol = total(variable);
+                            Add(variable, std::move(sol));
                         } catch (...) {
+                            try {
+                                for (auto& sol : total.Solutions(variable)) {
+                                    Add(variable, sol);
+                                }
+                            } catch (...) {
+                            }
                         }
                     }
                 }
