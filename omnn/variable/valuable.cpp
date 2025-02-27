@@ -2,15 +2,50 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include "omnn/math/Variable.h"
 #include <sstream>
-
+#include <map>
 
 using namespace boost::python;
 using namespace omnn::math;
 using namespace std::string_literals;
 
+namespace {
+    // Converter function
+    std::map<omnn::math::Variable, omnn::math::Valuable> dict_to_map(const dict& py_dict) {
+        std::map<omnn::math::Variable, omnn::math::Valuable> cpp_map;
+        list keys = py_dict.keys();
+        for (int i = 0; i < len(keys); ++i) {
+            cpp_map[extract<omnn::math::Variable>(keys[i])] = extract<omnn::math::Valuable>(py_dict[keys[i]]);
+        }
+        return cpp_map;
+    }
+
+    // Register the converter
+    struct dict_to_map_converter {
+        dict_to_map_converter() {
+            converter::registry::push_back(
+                &convertible,
+                &construct,
+                type_id<std::map<omnn::math::Variable, omnn::math::Valuable>>());
+        }
+
+        // Check if the object can be converted
+        static void* convertible(PyObject* obj_ptr) {
+            return PyDict_Check(obj_ptr) ? obj_ptr : nullptr;
+        }
+
+        // Perform the conversion
+        static void construct(PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
+            void* storage = ((converter::rvalue_from_python_storage<std::map<omnn::math::Variable, omnn::math::Valuable>>*)data)->storage.bytes;
+            new (storage) std::map<omnn::math::Variable, omnn::math::Valuable>(dict_to_map(dict(handle<>(borrowed(obj_ptr)))));
+            data->convertible = storage;
+        }
+    };
+}
 
 BOOST_PYTHON_MODULE(variable)
 {
+    dict_to_map_converter();  // Register the converter
+
     // Expose View enum
     enum_<Valuable::View>("View")
         .value("None", Valuable::View::None)
@@ -34,29 +69,35 @@ BOOST_PYTHON_MODULE(variable)
         
         // Basic arithmetic with numeric conversion
         .def(self + self)
-        .def("__add__", +[](const Valuable& v, int i) { return v + Valuable(i); })
-        .def("__radd__", +[](const Valuable& v, int i) { return Valuable(i) + v; })
-        .def("__add__", +[](const Valuable& v, double d) { return v + Valuable(d); })
-        .def("__radd__", +[](const Valuable& v, double d) { return Valuable(d) + v; })
+        .def("__add__", +[](const Valuable& v, int i) { return v + i; })
+        .def("__radd__", +[](const Valuable& v, int i) { return i + v; })
+        .def("__add__", +[](const Valuable& v, double d) { return v + d; })
+        .def("__radd__", +[](const Valuable& v, double d) { return d + v; })
+        .def("__add__", +[](const Valuable& v, const Variable& d) { return v + d; })
+        .def("__radd__", +[](const Valuable& v, const Variable& d) { return d + v; })
         .def(self - self)
-        .def("__sub__", +[](const Valuable& v, int i) { return v - Valuable(i); })
-        .def("__rsub__", +[](const Valuable& v, int i) { return Valuable(i) - v; })
-        .def("__sub__", +[](const Valuable& v, double d) { return v - Valuable(d); })
-        .def("__rsub__", +[](const Valuable& v, double d) { return Valuable(d) - v; })
+        .def("__sub__", +[](const Valuable& v, int i) { return v - i; })
+        .def("__rsub__", +[](const Valuable& v, int i) { return i - v; })
+        .def("__sub__", +[](const Valuable& v, double d) { return v - d; })
+        .def("__rsub__", +[](const Valuable& v, double d) { return d - v; })
         .def(self * self)
-        .def("__mul__", +[](const Valuable& v, int i) { return v * Valuable(i); })
-        .def("__rmul__", +[](const Valuable& v, int i) { return Valuable(i) * v; })
-        .def("__mul__", +[](const Valuable& v, double d) { return v * Valuable(d); })
-        .def("__rmul__", +[](const Valuable& v, double d) { return Valuable(d) * v; })
+        .def("__mul__", +[](const Valuable& v, int i) { return v * i; })
+        .def("__rmul__", +[](const Valuable& v, int i) { return i * v; })
+        .def("__mul__", +[](const Valuable& v, double d) { return v * d; })
+        .def("__rmul__", +[](const Valuable& v, double d) { return d * v; })
         .def(self / self)
-        .def("__truediv__", +[](const Valuable& v, int i) { return v / Valuable(i); })
-        .def("__rtruediv__", +[](const Valuable& v, int i) { return Valuable(i) / v; })
-        .def("__truediv__", +[](const Valuable& v, double d) { return v / Valuable(d); })
-        .def("__rtruediv__", +[](const Valuable& v, double d) { return Valuable(d) / v; })
+        .def("__truediv__", +[](const Valuable& v, int i) { return v / i; })
+        .def("__rtruediv__", +[](const Valuable& v, int i) { return i / v; })
+        .def("__truediv__", +[](const Valuable& v, double d) { return v / d; })
+        .def("__rtruediv__", +[](const Valuable& v, double d) { return d / v; })
         .def(self % self)
-        .def("__mod__", +[](const Valuable& v, int i) { return v % Valuable(i); })
-        .def("__rmod__", +[](const Valuable& v, int i) { return Valuable(i) % v; })
+        .def("__mod__", +[](const Valuable& v, int i) { return v % i; })
+        .def("__rmod__", +[](const Valuable& v, int i) { return i % v; })
         .def(self ^ self)
+        .def("__pow__", +[](const Valuable& v, int i) { return v ^ i; })
+        .def("__rpow__", +[](const Valuable& v, int i) { return i ^ v; })
+        .def("__pow__", +[](const Valuable& v, double d) { return v ^ d; })
+        .def("__rpow__", +[](const Valuable& v, double d) { return d ^ v; })
         .def(-self)
 
         // Comparison
@@ -71,6 +112,7 @@ BOOST_PYTHON_MODULE(variable)
 
         // Mathematical functions
         .def("abs", &Valuable::Abs)
+        .def("sq", &Valuable::Sq)
         .def("sqrt", &Valuable::Sqrt)
         .def("optimize", &Valuable::optimize)
         .def("eval", &Valuable::eval)
@@ -86,5 +128,42 @@ BOOST_PYTHON_MODULE(variable)
     class_<Variable, bases<Valuable>>("Variable")
         // Constructors
         .def(init<>())
-        .def(init<const std::string&>());
+        .def(init<const std::string&>())
+
+        // Basic arithmetic with numeric conversion
+        .def(self + self)
+        .def("__add__", +[](const Variable& v, int i) { return v + i; })
+        .def("__radd__", +[](const Variable& v, int i) { return i + v; })
+        .def("__add__", +[](const Variable& v, double d) { return v + d; })
+        .def("__radd__", +[](const Variable& v, double d) { return d + v; })
+        .def(self - self)
+        .def("__sub__", +[](const Variable& v, int i) { return v - i; })
+        .def("__rsub__", +[](const Variable& v, int i) { return i - v; })
+        .def("__sub__", +[](const Variable& v, double d) { return v - d; })
+        .def("__rsub__", +[](const Variable& v, double d) { return d - v; })
+        .def(self * self)
+        .def("__mul__", +[](const Variable& v, int i) { return v * i; })
+        .def("__rmul__", +[](const Variable& v, int i) { return i * v; })
+        .def("__mul__", +[](const Variable& v, double d) { return v * d; })
+        .def("__rmul__", +[](const Variable& v, double d) { return d * v; })
+        .def(self / self)
+        .def("__truediv__", +[](const Variable& v, int i) { return v / i; })
+        .def("__rtruediv__", +[](const Variable& v, int i) { return i / v; })
+        .def("__truediv__", +[](const Variable& v, double d) { return v / d; })
+        .def("__rtruediv__", +[](const Variable& v, double d) { return d / v; })
+        .def(self % self)
+        .def("__mod__", +[](const Variable& v, int i) { return v % i; })
+        .def("__rmod__", +[](const Variable& v, int i) { return i % v; })
+        .def(self ^ self)
+        .def("__pow__", +[](const Variable& v, int i) { return v ^ i; })
+        .def("__rpow__", +[](const Variable& v, int i) { return i ^ v; })
+        .def("__pow__", +[](const Variable& v, double d) { return v ^ d; })
+        .def("__rpow__", +[](const Variable& v, double d) { return d ^ v; })
+        .def(-self)
+
+        // Comparison
+        .def(self < self)
+        .def(self == self)
+        .def(self != self)
+        ;
 }
