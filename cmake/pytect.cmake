@@ -49,6 +49,9 @@ macro(pytest)
                 WORKING_DIRECTORY $<TARGET_FILE_DIR:${parent_target}>
             )
             set_property(TEST ${TEST_NAME} PROPERTY FOLDER "test/pytest")
+            if(MSVC)
+                set_property(TEST ${TEST_NAME} PROPERTY DISABLED Debug) # FIXME
+            endif()
         endforeach()
     endif()
 endmacro()

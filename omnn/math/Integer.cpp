@@ -1003,7 +1003,7 @@ namespace math {
         auto scanIt = zz.second.end();
         Valuable up(absolute);
         if (up > max) up = max;
-        auto primeIdx = 0;
+        omnn::rt::prime_idx_t primeIdx = 0;
         if (zz.first.first < zz.first.second) {
             if (zz.first.second < up) {
                 if (zz.first.second.IsInt())
