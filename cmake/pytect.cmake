@@ -30,3 +30,25 @@ macro(pymod)
         )
     endif()
 endmacro()
+
+macro(pytest)
+    if(Python_EXECUTABLE)
+	    get_filename_component(parent_target ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+	    get_filename_component(parent_target ${parent_target} NAME)
+	    message("\nCreating Tests for ${parent_target}")
+        file(GLOB TEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.py)
+        foreach(TEST_FILE ${TEST_FILES})
+            get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+            file(GENERATE
+                OUTPUT $<TARGET_FILE_DIR:${parent_target}>/${TEST_NAME}.py
+                INPUT ${TEST_FILE}
+                TARGET ${parent_target}
+            )
+            add_test(NAME ${TEST_NAME}
+                COMMAND ${Python_EXECUTABLE} $<TARGET_FILE_DIR:${parent_target}>/${TEST_NAME}.py
+                WORKING_DIRECTORY $<TARGET_FILE_DIR:${parent_target}>
+            )
+            set_property(TEST ${TEST_NAME} PROPERTY FOLDER "test/pytest")
+        endforeach()
+    endif()
+endmacro()

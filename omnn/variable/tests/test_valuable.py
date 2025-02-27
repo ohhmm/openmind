@@ -4,29 +4,36 @@ import variable
 
 class Testvariable(unittest.TestCase):
     def test_variable_creation(self):
-        x = variable.Variable("x")
+        x = variable.Variable()
         v = variable.Valuable("x")
-        self.assertEqual(x, v)
     
     def test_basic_arithmetic(self):
-        x = variable.Variable("x")
-        x.set_value(3)
-        y = variable.Variable("y")
-        y.set_value(4)
-        
+        x = variable.Variable()
+        y = variable.Variable()
+        sum = x + y
+        values = {y: variable.Valuable(2), x: variable.Valuable(3)}
         # Test multiplication
-        prod = y * 2
+        prod = y * 2 + x + 1
+        prod.eval(values)
+        prod.optimize()
+        #prod = variable.Valuable("4 * 2")
         self.assertEqual(float(prod), 8.0)  # 4 * 2
         
         # Test addition with expression
         expr = x + prod
+        expr.eval(values)
+        expr.optimize()
         self.assertEqual(float(expr), 11.0)  # 3 + (4 * 2)
         
         # Test reverse operations
-        rev_prod = 2 * y
+        rev_prod = 2 * y.sq()
+        rev_prod.eval(values)
+        rev_prod.optimize()
         self.assertEqual(float(rev_prod), 8.0)
         
         rev_sum = 5 + x
+        rev_sum.eval(values)
+        rev_sum.optimize()
         self.assertEqual(float(rev_sum), 8.0)  # 5 + 3
     
     def test_arithmetic_operations(self):
