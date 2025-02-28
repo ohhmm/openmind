@@ -4,7 +4,7 @@ include(pytect)
 # Boost.Python and memory management. The test_valuable test is excluded from running
 # on Windows until these issues are resolved.
 if(Python_FOUND
-    AND OPENMIND_USE_VCPKG # FIXME
+    AND (OPENMIND_USE_VCPKG OR NOT DEFINED OPENMIND_USE_VCPKG) # Allow Python bindings without VCPKG
     AND NOT MSVC # FIXME
     AND NOT APPLE # FIXME
 )
