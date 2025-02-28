@@ -12,24 +12,20 @@ namespace boost { namespace python { namespace detail {
 #if PY_VERSION_HEX >= 0x03000000
 inline PyObject* fixed_init_module(const char* name, void(*init_function)())
 {
-    // Create the module definition
-    static PyModuleDef_Base initial_m_base = {
-        PyObject_HEAD_INIT(NULL),
-        0, /* m_init */
-        0, /* m_index */
-        0  /* m_copy */
-    };
-    static PyMethodDef initial_methods[] = { { 0, 0, 0, 0 } };
-    static struct PyModuleDef moduledef = {
-        initial_m_base,
+    // Create a simple module definition
+    static PyMethodDef initial_methods[] = { { nullptr, nullptr, 0, nullptr } };
+    
+    // Create the module definition structure
+    static PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
         name,
-        0, /* m_doc */
-        -1, /* m_size */
+        nullptr,  // m_doc
+        -1,       // m_size
         initial_methods,
-        0,  /* m_reload */
-        0, /* m_traverse */
-        0, /* m_clear */
-        0  /* m_free */
+        nullptr,  // m_reload
+        nullptr,  // m_traverse
+        nullptr,  // m_clear
+        nullptr   // m_free
     };
 
     // Create the module using PyModule_Create
