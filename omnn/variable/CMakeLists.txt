@@ -38,12 +38,28 @@ endif()
 if(OPENMIND_BUILD_TESTS)
     if(NOT MSVC)
         # Only register the test on non-Windows platforms
+        # Create the necessary directory structure for the Python module
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/python/omnn/variable/tests)
+        
+        # Copy the test file to the correct location in the build directory
+        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_valuable.py
+             DESTINATION ${CMAKE_BINARY_DIR}/python/omnn/variable/tests)
+             
+        # Create an __init__.py file in each directory to make it a proper Python package
+        file(WRITE ${CMAKE_BINARY_DIR}/python/omnn/__init__.py "")
+        file(WRITE ${CMAKE_BINARY_DIR}/python/omnn/variable/__init__.py "")
+        file(WRITE ${CMAKE_BINARY_DIR}/python/omnn/variable/tests/__init__.py "")
+        
+        # Use a simpler test command that just runs the test file directly
         add_test(
             NAME test_valuable 
-            COMMAND ${Python_EXECUTABLE} -c "import sys, os; sys.path.insert(0, '${CMAKE_BINARY_DIR}/python'); import unittest; from omnn.variable.tests.test_valuable import Testvariable; unittest.TextTestRunner().run(unittest.TestLoader().loadTestsFromTestCase(Testvariable))"
+            COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_valuable.py
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         )
-        set_tests_properties(test_valuable PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
+        
+        # Set the PYTHONPATH environment variable to include the build directory
+        set_tests_properties(test_valuable PROPERTIES 
+            ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python:${CMAKE_BINARY_DIR}")
     else()
         # Add a dummy test that always passes on Windows
         add_test(NAME test_valuable COMMAND ${CMAKE_COMMAND} -E echo "test_valuable skipped on Windows")
