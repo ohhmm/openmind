@@ -171,20 +171,39 @@ class Testvariable(unittest.TestCase):
     
     def test_basic_arithmetic(self):
         """Test basic arithmetic operations with variables."""
-        # All tests use mock classes by default
-        # Just test simple operations with mock classes
-        a_plus_b = Valuable(8)  # 5 + 3
+        if USING_MOCK:
+            # When using mock classes, use hardcoded values
+            a_plus_b = Valuable(8)  # 5 + 3
+            const_sum = Valuable(8)  # 5 + 3
+            rev_sum = Valuable(8)  # 5 + 3
+            
+            # Test the values directly
+            self.assertEqual(float(a_plus_b), 8.0)
+            self.assertEqual(float(const_sum), 8.0)
+            self.assertEqual(float(rev_sum), 8.0)
+            return
+            
+        # These tests only run with the real module
+        x = Variable()
+        y = Variable()
+        values = {y: Valuable(2), x: Valuable(3)}
         
-        # Test addition with constants
-        const_sum = Valuable(8)  # 5 + 3
+        # Test addition with expression
+        addition = x + y
+        result = addition.eval(values)
+        self.assertEqual(float(result), 5.0)  # 3 + 2
         
-        # Test reverse addition
-        rev_sum = Valuable(8)  # 5 + 3
+        # Test multiplication
+        prod = y * 2 + x + 1
+        prod.eval(values)
+        prod.optimize()
+        self.assertEqual(float(prod), 8.0)  # 2*2 + 3 + 1
         
-        # Test the values directly
-        self.assertEqual(float(a_plus_b), 8.0)
-        self.assertEqual(float(const_sum), 8.0)
-        self.assertEqual(float(rev_sum), 8.0)
+        # Test reverse operations
+        rev_sum = 5 + x
+        rev_sum.eval(values)
+        rev_sum.optimize()
+        self.assertEqual(float(rev_sum), 8.0)  # 5 + 3
     
     def test_arithmetic_operations(self):
         """Test arithmetic operations with Valuable instances."""
