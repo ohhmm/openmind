@@ -440,8 +440,12 @@ namespace omnn::math {
         std::cout << ']' << std::endl;
 #endif
         switch (s.size()) {
-        case 0: LOG_AND_IMPLEMENT("Empty solutions set"); break;
-        case 1: operator=(*it); break;
+        case 0: 
+            LOG_AND_IMPLEMENT("Empty solutions set"); 
+            break;
+        case 1: 
+            operator=(*it); 
+            break;
         case 2: {
             auto& _1 = *it++;
             auto& _2 = *it;
@@ -463,7 +467,7 @@ namespace omnn::math {
             operator=(MergeOr(_1, _2, _3, _4));
             break;
         }
-        default:
+        default: {
             solutions_t pairs;
             for (; it != s.end();) {
                 auto it2 = it;
@@ -492,23 +496,25 @@ namespace omnn::math {
             if (pairs.size()) {
                 operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
             } else {
-                while(s.size() > 1){
+                while(s.size() > 1) {
                     solutions_t ss;
-				    while(s.size() >= 4){
-					    auto it = s.begin();
-					    auto& _1 = *it++;
-					    auto& _2 = *it++;
+                    while(s.size() >= 4) {
+                        auto it = s.begin();
+                        auto& _1 = *it++;
+                        auto& _2 = *it++;
                         auto& _3 = *it++;
                         auto& _4 = *it++;
                         ss.emplace(MergeOr(_1, _2, _3, _4));
-				    }
-                    if(s.size()){
-					    ss.emplace(std::move(s));
+                    }
+                    if(s.size()) {
+                        ss.emplace(std::move(s));
                     }
                     s = std::move(ss);
                 }
                 operator=(std::move(s.extract(s.begin()).value()));
-			}
+            }
+            break;
+        }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
             std::stringstream ss;
