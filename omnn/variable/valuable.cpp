@@ -13,7 +13,7 @@ namespace {
     std::map<omnn::math::Variable, omnn::math::Valuable> dict_to_map(const dict& py_dict) {
         std::map<omnn::math::Variable, omnn::math::Valuable> cpp_map;
         list keys = py_dict.keys();
-        for (int i = 0; i < len(keys); ++i) {
+        for (ssize_t i = 0; i < len(keys); ++i) {
             cpp_map[extract<omnn::math::Variable>(keys[i])] = extract<omnn::math::Valuable>(py_dict[keys[i]]);
         }
         return cpp_map;
@@ -36,7 +36,7 @@ namespace {
         // Perform the conversion
         static void construct(PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
             void* storage = ((converter::rvalue_from_python_storage<std::map<omnn::math::Variable, omnn::math::Valuable>>*)data)->storage.bytes;
-            new (storage) std::map<omnn::math::Variable, omnn::math::Valuable>(dict_to_map(dict(handle<>(borrowed(obj_ptr)))));
+            new (storage) std::map<omnn::math::Variable, omnn::math::Valuable>(dict_to_map(dict(handle<>(borrowed(obj_ptr)).ptr())));
             data->convertible = storage;
         }
     };
