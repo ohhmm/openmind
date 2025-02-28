@@ -5,6 +5,7 @@
 #pragma once
 
 #include <omnn/math/ValuableDescendantContract.h>
+#include <omnn/math/platform/Macros.h>
 
 #include <iostream>
 #include <fstream>

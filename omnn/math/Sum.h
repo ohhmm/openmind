@@ -5,6 +5,7 @@
 #pragma once
 #include <list>
 #include <unordered_set>
+#include <omnn/math/platform/Macros.h>
 #include "ValuableCollectionDescendantContract.h"
 #include "Formula.h"
 #include "SumOrderComparator.h"
