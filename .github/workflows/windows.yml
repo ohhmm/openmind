@@ -48,12 +48,14 @@ jobs:
 
     - name: make check Release
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 2048 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "ts"  --output-on-failure
+      # Exclude test_valuable as Python bindings are intentionally disabled for MSVC builds
+      run: ctest --timeout 2048 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "ts|test_valuable"  --output-on-failure
             #   --rerun-failed --output-on-failure
 
     - name: make check Debug
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "ts" --output-on-failure
+      # Exclude test_valuable as Python bindings are intentionally disabled for MSVC builds
+      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "ts|test_valuable" --output-on-failure
             #   --rerun-failed --output-on-failure
 
     - name: Install
