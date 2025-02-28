@@ -9,6 +9,7 @@ if(Python_FOUND
     AND NOT APPLE # FIXME
 )
     set(DEFAULT_OPENMIND_BUILD_PYTHON_BINDINGS ON)
+endif()
 
 option(OPENMIND_BUILD_PYTHON_BINDINGS "Build Python bindings" ${DEFAULT_OPENMIND_BUILD_PYTHON_BINDINGS})
 if(OPENMIND_BUILD_PYTHON_BINDINGS)
@@ -17,8 +18,8 @@ if(OPENMIND_BUILD_PYTHON_BINDINGS)
         math
         Python::Python
         )
+endif()
 
-    else()
 # Conditionally register the test_valuable test
 if(OPENMIND_BUILD_TESTS)
     if(NOT MSVC)
