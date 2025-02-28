@@ -1,5 +1,6 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include "boost_python_fix.hpp"  // Include the custom header file
 #include "omnn/math/Variable.h"
 #include <sstream>
 #include <map>
@@ -43,7 +44,8 @@ namespace {
     };
 }
 
-BOOST_PYTHON_MODULE(variable)
+// Use the fixed module initialization macro
+FIXED_BOOST_PYTHON_MODULE(variable)
 {
     dict_to_map_converter();  // Register the converter
 
