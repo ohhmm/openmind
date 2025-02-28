@@ -139,6 +139,7 @@ class Variable(Valuable):
 
 # Try to import the real module if available
 try:
+    # First try to import the module
     import variable
     # If import succeeds, check if it has the expected classes
     if hasattr(variable, 'Variable') and hasattr(variable, 'Valuable'):
@@ -146,12 +147,14 @@ try:
         Variable = getattr(variable, 'Variable')
         Valuable = getattr(variable, 'Valuable')
         USING_MOCK = False
+        print("Successfully imported variable module with required classes")
     else:
         # Module exists but doesn't have the expected classes
         print("Module 'variable' found but missing expected classes")
 except ImportError as e:
     # If import fails, use the mock classes defined above
     print(f"Error importing variable module: {e}")
+    print(f"Python path: {sys.path}")
     print("Using mock classes instead")
 
 

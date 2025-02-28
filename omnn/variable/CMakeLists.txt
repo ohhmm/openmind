@@ -53,13 +53,13 @@ if(OPENMIND_BUILD_TESTS)
         # Use a simpler test command that just runs the test file directly
         add_test(
             NAME test_valuable 
-            COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_valuable.py
+            COMMAND ${Python_EXECUTABLE} ${CMAKE_BINARY_DIR}/python/omnn/variable/tests/test_valuable.py
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         )
         
         # Set the PYTHONPATH environment variable to include the build directory
         set_tests_properties(test_valuable PROPERTIES 
-            ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python:${CMAKE_BINARY_DIR}")
+            ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
     else()
         # Add a dummy test that always passes on Windows
         add_test(NAME test_valuable COMMAND ${CMAKE_COMMAND} -E echo "test_valuable skipped on Windows")
