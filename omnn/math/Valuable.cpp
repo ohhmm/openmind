@@ -134,8 +134,10 @@ namespace omnn::math {
             return *this;
         } else {
             LOG_AND_IMPLEMENT(typeid(method).name() << " for " << *this);
+            return *this;
         }
     }
+
 
     #define VALUABLE_POLYMORPHIC_METHOD(method)                                                                        \
         Valuable& Valuable::method(const Valuable& value) {                                                            \
@@ -143,6 +145,7 @@ namespace omnn::math {
                 return call_polymorphic_method(&Valuable::method, value);                                              \
             } else {                                                                                                   \
                 LOG_AND_IMPLEMENT(#method " for " << *this);                                                           \
+                return *this;                                                                                          \
             }                                                                                                          \
         }
 
