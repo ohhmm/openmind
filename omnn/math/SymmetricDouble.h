@@ -59,8 +59,7 @@ public:
         return std::abs(number.d - d) < 0.0000001;
     }
 
-    [[nodiscard]] constexpr
-    bool operator<(const SymmetricDouble &number) const {
+    [[nodiscard]] constexpr bool operator<(const SymmetricDouble &number) const {
         return d < number.d;
     }
 

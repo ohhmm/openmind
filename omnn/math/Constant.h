@@ -63,8 +63,7 @@ template <class Chld>
 
         NO_CLANG_CONSTEXPR Valuable* Clone() const override { return new Chld(); }
 
-        [[nodiscard]]
-        constexpr bool HasVa(const Variable& va) const override {
+        [[nodiscard]] constexpr bool HasVa(const Variable& va) const override {
             return {};
         }
 
@@ -79,9 +78,7 @@ template <class Chld>
         constexpr void Eval(const Variable&, const Valuable&) override
         { }
 
-        [[nodiscard]]
-        NO_APPLE_CONSTEXPR
-        Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
+        [[nodiscard]] NO_APPLE_CONSTEXPR Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
             return [](Valuable::universal_lambda_params_t) -> Valuable {
                 return GlobalObject;
             };
@@ -112,8 +109,7 @@ template <class Chld>
             return is;
         }
 
-        [[nodiscard]]
-        bool operator==(const Valuable& v) const override {
+        [[nodiscard]] bool operator==(const Valuable& v) const override {
             return this->OfSameType(v) || v.operator==(*this);
         }
 
@@ -124,25 +120,19 @@ template <class Chld>
                 return base::operator/=(v);
         }
 
-        [[nodiscard]]
-        const Valuable::vars_cont_t& getCommonVars() const override {
+        [[nodiscard]] const Valuable::vars_cont_t& getCommonVars() const override {
             return Valuable::emptyCommonVars();
         }
 
-        [[nodiscard]]
-        Valuable::vars_cont_t GetVaExps() const override { return {}; }
+        [[nodiscard]] Valuable::vars_cont_t GetVaExps() const override { return {}; }
 
-        [[nodiscard]]
-        NO_APPLE_CONSTEXPR
-        a_int Complexity() const override { return 1; }
+        [[nodiscard]] NO_APPLE_CONSTEXPR a_int Complexity() const override { return 1; }
 
         typename base::solutions_t Distinct() const override { return { *this }; }
         void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
-        [[nodiscard]]
-        Valuable Univariate() const override { return *this; }
+        [[nodiscard]] Valuable Univariate() const override { return *this; }
 
-        [[nodiscard]]
-        Valuable InCommonWith(const Valuable& v) const override {
+        [[nodiscard]] Valuable InCommonWith(const Valuable& v) const override {
             return v.IsConstant() && this->OfSameType(v) ? v
                 : ((v.IsSimple() || v.IsVa()) ? constants::one
                 : v.InCommonWith(*this));

@@ -72,12 +72,9 @@ public:
     [[nodiscard]] constexpr bool IsSimple() const override { return {}; }
     [[nodiscard]] constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::Maybe; }
     bool IsComesBefore(const Valuable& v) const override;
-    [[nodiscard]]
-    a_int Complexity() const override { return 1; }
+    [[nodiscard]] a_int Complexity() const override { return 1; }
 
-    [[nodiscard]]
-    constexpr 
-    const Variable* FindVa() const override { return this; }
+    [[nodiscard]] constexpr const Variable* FindVa() const override { return this; }
     [[nodiscard]]
     constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return {}; }
 

@@ -55,9 +55,7 @@ protected:
 	constexpr cont& GetCont() override { return members; }
 	std::ostream& print(std::ostream& out) const override;
     
-    [[nodiscard]]
-    MSVC_CONSTEXPR
-    Sum* Clone() const override
+    [[nodiscard]] MSVC_CONSTEXPR Sum* Clone() const override
     {
         auto sum = new Sum(*CPtr());
         sum->isOptimizing = {};

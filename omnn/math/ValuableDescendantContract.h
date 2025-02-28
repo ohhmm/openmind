@@ -68,36 +68,29 @@ namespace math {
     protected:
 #endif
 
-        [[nodiscard]]
-        NO_APPLE_CONSTEXPR auto CPtr() const noexcept {
+        [[nodiscard]] NO_APPLE_CONSTEXPR auto CPtr() const noexcept {
             return reinterpret_cast<const Chld*>(this);
         }
 
-        [[nodiscard]]
-        NO_APPLE_CONSTEXPR auto Ptr() noexcept {
+        [[nodiscard]] NO_APPLE_CONSTEXPR auto Ptr() noexcept {
             return reinterpret_cast<Chld*>(this);
         }
 
-        [[nodiscard]]
-        NO_APPLE_CONSTEXPR Chld& Ref() noexcept {
+        [[nodiscard]] NO_APPLE_CONSTEXPR Chld& Ref() noexcept {
             return *Ptr();
         }
 
-        [[nodiscard]]
-        NO_APPLE_CONSTEXPR const Chld& CRef() noexcept {
+        [[nodiscard]] NO_APPLE_CONSTEXPR const Chld& CRef() noexcept {
             return Ref();
         }
 
-        NO_CLANG_CONSTEXPR Valuable* Clone() const override
-        {
+        NO_CLANG_CONSTEXPR Valuable* Clone() const override {
             return new Chld(*CPtr());
         }
 
-        [[nodiscard]]
-        NO_CLANG_CONSTEXPR size_t getTypeSize() const override { return sizeof(Chld); }
+        [[nodiscard]] NO_CLANG_CONSTEXPR size_t getTypeSize() const override { return sizeof(Chld); }
 
-        [[nodiscard]]
-        Valuable* Move() override
+        [[nodiscard]] Valuable* Move() override
         {
             return static_cast<Valuable*>(new Chld(std::move(*Ptr())));
         }

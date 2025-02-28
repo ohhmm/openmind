@@ -85,8 +85,7 @@ public:
     constexpr YesNoMaybe IsRational() const override { return YesNoMaybe::Yes; }
     explicit operator int64_t() const;
 
-    [[nodiscard]]
-    constexpr bool IsInt() const override { return true; }
+    [[nodiscard]] constexpr bool IsInt() const override { return true; }
     [[nodiscard]]
     constexpr bool IsZero() const override { return arbitrary.is_zero(); }
     [[nodiscard]]
