@@ -121,9 +121,6 @@ class Valuable
     static const a_int a_int_cz;
     static const max_exp_t max_exp_cz;
 
-    typedef Valuable& (Valuable::*method_t)(const Valuable&);
-    Valuable& call_polymorphic_method(method_t, const Valuable& arg);
-
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
@@ -229,7 +226,7 @@ public:
     class [[maybe_unused]] OptimizeOn {
         bool opts;
     public:
-        MSVC_CONSTEXPR OptimizeOn() : opts(optimizations) {
+        OptimizeOn() : opts(optimizations) {
             optimizations = true;
         }
         ~OptimizeOn(){
@@ -240,7 +237,7 @@ public:
     class [[maybe_unused]] OptimizeOff {
         bool opts;
     public:
-        MSVC_CONSTEXPR OptimizeOff() : opts(optimizations) {
+        OptimizeOff() : opts(optimizations) {
 			optimizations = {};
         }
         ~OptimizeOff(){
@@ -366,7 +363,7 @@ public:
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
     void SetView(View v);
-    MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
+    bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
 
