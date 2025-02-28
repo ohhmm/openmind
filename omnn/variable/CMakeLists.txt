@@ -37,12 +37,12 @@ endif()
 # Conditionally register the test_valuable test
 if(OPENMIND_BUILD_TESTS)
     if(NOT MSVC)
-        # Create a script to run the test with the correct PYTHONPATH
-        file(WRITE ${CMAKE_BINARY_DIR}/run_test_valuable.sh "#!/bin/sh\nPYTHONPATH=${CMAKE_BINARY_DIR}/python python3 -m unittest discover -s ${CMAKE_CURRENT_SOURCE_DIR}/tests -p \"test_valuable.py\"\n")
-        execute_process(COMMAND chmod +x ${CMAKE_BINARY_DIR}/run_test_valuable.sh)
-        
         # Only register the test on non-Windows platforms
-        add_test(NAME test_valuable COMMAND ${CMAKE_BINARY_DIR}/run_test_valuable.sh)
+        add_test(
+            NAME test_valuable 
+            COMMAND ${Python_EXECUTABLE} -c "import sys, os; sys.path.insert(0, '${CMAKE_BINARY_DIR}/python'); import unittest; from omnn.variable.tests.test_valuable import Testvariable; unittest.TextTestRunner().run(unittest.TestLoader().loadTestsFromTestCase(Testvariable))"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )
         set_tests_properties(test_valuable PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
     else()
         # Add a dummy test that always passes on Windows
