@@ -61,7 +61,7 @@ template <class Chld>
             return {};
         }
 
-        NO_CLANG_CONSTEXPR Valuable* Clone() const override { return new Chld(); }
+        Valuable* Clone() const override { return new Chld(); }
 
         [[nodiscard]] constexpr bool HasVa(const Variable& va) const override {
             return {};
@@ -78,7 +78,7 @@ template <class Chld>
         constexpr void Eval(const Variable&, const Valuable&) override
         { }
 
-        [[nodiscard]] NO_APPLE_CONSTEXPR Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
+        [[nodiscard]] Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
             return [](Valuable::universal_lambda_params_t) -> Valuable {
                 return GlobalObject;
             };
@@ -109,7 +109,7 @@ template <class Chld>
             return is;
         }
 
-        [[nodiscard]] bool operator==(const Valuable& v) const override {
+        bool operator==(const Valuable& v) const override {
             return this->OfSameType(v) || v.operator==(*this);
         }
 
@@ -126,7 +126,7 @@ template <class Chld>
 
         [[nodiscard]] Valuable::vars_cont_t GetVaExps() const override { return {}; }
 
-        [[nodiscard]] NO_APPLE_CONSTEXPR a_int Complexity() const override { return 1; }
+        [[nodiscard]] a_int Complexity() const override { return 1; }
 
         typename base::solutions_t Distinct() const override { return { *this }; }
         void Values(const std::function<bool(const Valuable&)>& f) const override { f(*this); }
@@ -145,7 +145,7 @@ template <class Chld>
         static std::map<std::string_view, Valuable> SerializationNamesMap;
 
     public:
-        APPLE_CONSTEXPR ConstNameAdder(const std::string_view& name, const Valuable& obj);
+        ConstNameAdder(const std::string_view& name, const Valuable& obj);
         static constexpr auto& GetConstantNamesMap() { return SerializationNamesMap; }
     };
     } // namespace constants
