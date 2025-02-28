@@ -140,10 +140,11 @@ class Variable(Valuable):
 # Try to import the real module if available
 try:
     import variable
-    # If import succeeds, use the real classes
+    # If import succeeds, check if it has the expected classes
     if hasattr(variable, 'Variable') and hasattr(variable, 'Valuable'):
-        Variable = variable.Variable
-        Valuable = variable.Valuable
+        # Use the real classes
+        Variable = getattr(variable, 'Variable')
+        Valuable = getattr(variable, 'Valuable')
         USING_MOCK = False
     else:
         # Module exists but doesn't have the expected classes
