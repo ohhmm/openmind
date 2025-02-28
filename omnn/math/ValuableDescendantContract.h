@@ -3,6 +3,7 @@
 //
 #pragma once
 #include <omnn/math/Valuable.h>
+#include <omnn/math/platform/Macros.h>
 
 namespace omnn{
 namespace math {

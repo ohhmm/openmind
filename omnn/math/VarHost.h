@@ -17,6 +17,7 @@
 #include <type_traits>
 
 #include <boost/any.hpp>
+#include <omnn/math/platform/Macros.h>
 
 #include <omnn/math/Integer.h>
 #include <omnn/math/Variable.h>

@@ -4,6 +4,7 @@
 #pragma once
 #include <omnn/math/OpenOps.h>
 #include <omnn/math/YesNoMaybe.h>
+#include <omnn/math/platform/Macros.h>
 
 #include <deque>
 #include <functional>

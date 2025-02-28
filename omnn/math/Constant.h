@@ -4,6 +4,7 @@
 #pragma once
 #include <omnn/math/Exponentiation.h>
 #include <omnn/math/Product.h>
+#include <omnn/math/platform/Macros.h>
 
 namespace omnn{
 namespace math {
