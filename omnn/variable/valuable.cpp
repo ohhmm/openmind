@@ -36,6 +36,7 @@ namespace {
         // Perform the conversion
         static void construct(PyObject* obj_ptr, converter::rvalue_from_python_stage1_data* data) {
             void* storage = ((converter::rvalue_from_python_storage<std::map<omnn::math::Variable, omnn::math::Valuable>>*)data)->storage.bytes;
+            // Use handle<> without .ptr() to ensure proper reference counting
             new (storage) std::map<omnn::math::Variable, omnn::math::Valuable>(dict_to_map(dict(handle<>(borrowed(obj_ptr)))));
             data->convertible = storage;
         }
