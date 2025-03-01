@@ -87,7 +87,9 @@ namespace math {
 
         NO_CLANG_CONSTEXPR Valuable* Clone() const override
         {
-            return new Chld(*CPtr());
+            auto* clone = new Chld(*CPtr());
+            clone->setAllocSize(Valuable::DefaultAllocSize);
+            return clone;
         }
 
         [[nodiscard]]
@@ -96,11 +98,14 @@ namespace math {
         [[nodiscard]]
         Valuable* Move() override
         {
-            return static_cast<Valuable*>(new Chld(std::move(*Ptr())));
+            auto* moved = new Chld(std::move(*Ptr()));
+            moved->setAllocSize(Valuable::DefaultAllocSize);
+            return static_cast<Valuable*>(moved);
         }
 
         void New(void* addr, Valuable&& v) override {
-            new(addr) Chld(std::move(v.as<Chld>()));
+            auto* obj = new(addr) Chld(std::move(v.as<Chld>()));
+            obj->setAllocSize(Valuable::DefaultAllocSize);
         }
 
     public:
