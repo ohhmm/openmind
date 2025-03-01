@@ -28,6 +28,28 @@ Compilation:
     cd build
     cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_INCLUDE_DIR=/usr/include -DOPENMIND_BUILD_TESTS=OFF
     make -j8
+    
+  Alternatively, you can use vcpkg for dependency management:
+
+    # Install required system packages for vcpkg
+    sudo apt install -y cmake ninja-build g++-10 git pkg-config autoconf automake autoconf-archive
+    
+    # Clone vcpkg if you don't have it already
+    git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+    cd ~/vcpkg
+    ./bootstrap-vcpkg.sh
+    
+    # Clone the OpenMind repository
+    git clone https://github.com/ohhmm/openmind
+    cd openmind
+    
+    # Configure with CMake using vcpkg toolchain
+    cmake -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake -S. -B./build -G "Ninja Multi-Config"
+    
+    # Build the project
+    cmake --build ./build --config Release
+    
+    This approach automatically installs all required dependencies listed in vcpkg.json through the vcpkg package manager.
 
     As result you can see following libraries produced:
     FEATURED ./omnn/math/libmath.a - the libmath which describes Valuable and Variable polymorphic types
