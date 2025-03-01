@@ -437,15 +437,13 @@ namespace omnn::math {
 #endif
         // Process solutions based on size
         switch (s.size()) {
-            case 0: {
+            case 0:
                 std::cerr << "Empty solutions set" << std::endl;
                 return;
-            }
 
-            case 1: {
+            case 1:
                 operator=(std::move(*s.begin()));
                 return;
-            }
 
             case 2: {
                 auto it = s.begin();
@@ -474,7 +472,7 @@ namespace omnn::math {
                 return;
             }
 
-            default: {
+            default:
                 // Handle pairs of solutions
                 solutions_t pairs;
                 for (auto it = s.begin(); it != s.end();) {
