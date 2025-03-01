@@ -506,12 +506,10 @@ namespace omnn::math {
             }
 
             default: {
-                // Handle pairs of solutions
                 solutions_t pairs;
                 for (auto it = s.begin(); it != s.end();) {
                     auto neg = -*it;
                     bool found = false;
-
                     for (auto it2 = std::next(it); it2 != s.end(); ++it2) {
                         if (it2->operator==(neg)) {
                             pairs.emplace(MergeOr(std::move(*it), std::move(neg)));
@@ -521,13 +519,11 @@ namespace omnn::math {
                             break;
                         }
                     }
-
                     if (!found) {
                         ++it;
                     }
                 }
 
-                // Process solutions
                 if (s.empty()) {
                     s = std::move(pairs);
                 } else if (!pairs.empty()) {
@@ -535,7 +531,6 @@ namespace omnn::math {
                     return;
                 }
 
-                // Merge remaining solutions in groups of 4
                 while (s.size() > 1) {
                     solutions_t ss;
                     while (s.size() >= 4) {
@@ -548,7 +543,6 @@ namespace omnn::math {
                                          std::move(_3), std::move(_4)));
                         s.erase(s.begin(), std::next(s.begin(), 4));
                     }
-
                     if (!s.empty()) {
                         ss.emplace(std::move(s));
                     }
@@ -570,7 +564,8 @@ namespace omnn::math {
                     std::cerr << "Disjunctive merging needed for " << s.size() << " items: " << ss.str() << std::endl;
                 }
 #endif
-            } // end default case
+                break;
+            }
         } // end switch
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
