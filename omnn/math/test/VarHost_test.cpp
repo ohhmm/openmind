@@ -59,11 +59,11 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
         BOOST_TEST(tt==a);
     }
     
-    BOOST_CHECK_THROW((void)(a!=v), const char*);
+    BOOST_CHECK_THROW((void)(a!=v), std::runtime_error);
     
     {
         std::string s = "any str";
-        boost::any a = s;
+        boost::any str_any = s;
         auto _ = a;
         auto host = VarHost::make<std::string>();
         v1 = host->New(s);
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(Varhost_test)
         BOOST_TEST(v1==v2);
         auto host2 = VarHost::make<std::string>();
         v1 = host2->New(s);
-        BOOST_CHECK_THROW((void)(v1!=v2), const char*);
+        BOOST_CHECK_THROW((void)(v1!=v2), std::runtime_error);
         v1 = host->New(std::string("t"));
         BOOST_TEST(v1!=v2);
     }
