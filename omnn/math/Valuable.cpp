@@ -503,7 +503,8 @@ namespace omnn::math {
                 return;
             }
             default: {
-            solutions_t pairs;
+                solutions_t pairs;
+                auto it = s.begin();
             for (; it != s.end();) {
                 auto it2 = it;
                 ++it2;
@@ -562,11 +563,11 @@ namespace omnn::math {
                 }
 #endif
             } // end default case
+            } // end default case
         } // end switch
-        }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if(s.size() > 1){
+        if (s.size() > 1) {
             std::stringstream ss;
             OptimizeOn oo;
             auto distinct = Distinct();
