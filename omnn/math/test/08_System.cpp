@@ -69,9 +69,7 @@ BOOST_AUTO_TEST_CASE(Basic_System_tests) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(Multivariable_System_tests
-    , *disabled() // FIXME:
-) {
+BOOST_AUTO_TEST_CASE(Multivariable_System_tests) {
         DECL_VARS(x, y, z);
         System sys;
         sys << x - 3*y + 3*z + 4;
