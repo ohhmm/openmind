@@ -470,27 +470,31 @@ namespace omnn::math {
         std::cout << ']' << std::endl;
 #endif
         switch (s.size()) {
-        case 0: LOG_AND_IMPLEMENT("Empty solutions set"); break;
-        case 1: operator=(*it); break;
+        case 0:
+            LOG_AND_IMPLEMENT("Empty solutions set");
+            break;
+        case 1:
+            operator=(*it);
+            break;
         case 2: {
-            auto& _1 = *it++;
-            auto& _2 = *it;
-            operator=(MergeOr(_1, _2));
+            auto _1 = std::move(*it++);
+            auto _2 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2)));
             break;
         }
         case 3: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it;
-            operator=(MergeOr(_1, _2, _3));
+            auto _1 = std::move(*it++);
+            auto _2 = std::move(*it++);
+            auto _3 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3)));
             break;
         }
         case 4: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it++;
-            auto& _4 = *it;
-            operator=(MergeOr(_1, _2, _3, _4));
+            auto _1 = std::move(*it++);
+            auto _2 = std::move(*it++);
+            auto _3 = std::move(*it++);
+            auto _4 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3), std::move(_4)));
             break;
         }
         default:
@@ -499,13 +503,13 @@ namespace omnn::math {
                 auto it2 = it;
                 ++it2;
                 auto neg = -*it;
-                bool found = {};
+                bool found = false;
                 for (; it2 != s.end();) {
                     found = it2->operator==(neg);
                     if (found) {
-                        pairs.emplace(MergeOr(*it, neg));
-                        s.erase(it2);
-                        s.erase(it++);
+                        pairs.emplace(MergeOr(std::move(*it), std::move(neg)));
+                        it2 = s.erase(it2);
+                        it = s.erase(it);
                         break;
                     } else {
                         ++it2;
