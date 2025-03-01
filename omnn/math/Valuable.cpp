@@ -444,20 +444,19 @@ namespace omnn::math {
     void Optimize(Valuable::solutions_t& s) {
         Valuable::solutions_t distinct;
         Valuable::OptimizeOn enable;
-        while (s.size()) {
-			auto it = s.begin();
-			auto v = std::move(s.extract(it).value());
+        while (!s.empty()) {
+            auto it = s.begin();
+            auto v = std::move(s.extract(it).value());
             v.optimize();
             distinct.emplace(std::move(v));
-		}
-		std::swap(s, distinct);
+        }
+        std::swap(s, distinct);
     }
     } // namespace
     Valuable::Valuable(solutions_t&& s)
     {
-        if (!optimizations
-            || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
-        ) {
+        if (!optimizations || !std::all_of(s.begin(), s.end(), 
+            [](const auto& v) { return v.is_optimized(); })) {
             Optimize(s);
         }
 
@@ -523,37 +522,38 @@ namespace omnn::math {
                 s = std::move(pairs);
             }
 
-            if (pairs.size()) {
+            if (!pairs.empty()) {
                 operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
             } else {
-                while(s.size() > 1){
+                while (s.size() > 1) {
                     solutions_t ss;
-				    while(s.size() >= 4){
-					    auto it = s.begin();
-					    auto& _1 = *it++;
-					    auto& _2 = *it++;
-                        auto& _3 = *it++;
-                        auto& _4 = *it++;
-                        ss.emplace(MergeOr(_1, _2, _3, _4));
-				    }
-                    if(s.size()){
-					    ss.emplace(std::move(s));
+                    while (s.size() >= 4) {
+                        auto it = s.begin();
+                        auto _1 = std::move(*it++);
+                        auto _2 = std::move(*it++);
+                        auto _3 = std::move(*it++);
+                        auto _4 = std::move(*it++);
+                        ss.emplace(MergeOr(std::move(_1), std::move(_2), std::move(_3), std::move(_4)));
+                    }
+                    if (!s.empty()) {
+                        ss.emplace(std::move(s));
                     }
                     s = std::move(ss);
                 }
-                operator=(std::move(s.extract(s.begin()).value()));
-			}
+                if (!s.empty()) {
+                    operator=(std::move(s.extract(s.begin()).value()));
+                }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            std::stringstream ss;
-            ss << '(';
-            for (auto& v : s)
-                ss << ' ' << v;
-            ss << " )";
-            std::cout << ss.str();
-            LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << s.size() << " items " << ss.str());
-#else
-            LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
+            if (!s.empty()) {
+                std::stringstream ss;
+                ss << '(';
+                for (const auto& v : s) {
+                    ss << ' ' << v;
+                }
+                ss << " )";
+                std::cerr << "Disjunctive merging needed for " << s.size() << " items: " << ss.str() << std::endl;
+            }
 #endif
         }
 
