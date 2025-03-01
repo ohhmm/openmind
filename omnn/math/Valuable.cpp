@@ -441,14 +441,14 @@ namespace omnn::math {
 #endif
         // Process solutions based on size
         switch (s.size()) {
-            case 0:
+            case 0: {
                 std::cerr << "Empty solutions set" << std::endl;
                 return;
-
-            case 1:
+            }
+            case 1: {
                 operator=(std::move(*s.begin()));
                 return;
-
+            }
             case 2: {
                 auto it = s.begin();
                 Valuable _1 = std::move(*it++);
@@ -456,7 +456,6 @@ namespace omnn::math {
                 operator=(MergeOr(std::move(_1), std::move(_2)));
                 return;
             }
-
             case 3: {
                 auto it = s.begin();
                 Valuable _1 = std::move(*it++);
@@ -465,7 +464,6 @@ namespace omnn::math {
                 operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3)));
                 return;
             }
-
             case 4: {
                 auto it = s.begin();
                 Valuable _1 = std::move(*it++);
@@ -475,7 +473,6 @@ namespace omnn::math {
                 operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3), std::move(_4)));
                 return;
             }
-
             default: {
                 solutions_t pairs;
                 for (auto it = s.begin(); it != s.end();) {
@@ -537,6 +534,7 @@ namespace omnn::math {
 #endif
                 break;
             }
+        }
         } // end switch
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
