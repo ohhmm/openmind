@@ -1,8 +1,7 @@
 include(pytect)
 
 if(Python_FOUND
-    AND OPENMIND_USE_VCPKG # FIXME
-    AND NOT MSVC # FIXME : remove this line or OPENMIND_BUILD_PYTHON_BINDINGS=ON to try on Visual Studio (Release, VCPKG)
+    AND OPENMIND_USE_VCPKG # FIXME : remove this line to enable Python bindings for non-VCPKG builds as well
 )
     set(DEFAULT_OPENMIND_BUILD_PYTHON_BINDINGS ON)
 endif()
