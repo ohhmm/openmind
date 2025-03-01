@@ -54,10 +54,8 @@ namespace math {
         class DepSz {
         public:
             constexpr DepSz(self* ths) {
-                ths->setAllocSize(sizeof(Chld));
-#ifndef NOOMDEBUG
-                assert(Valuable::DefaultAllocSize >= sizeof(Chld) && "Increase DefaultAllocSize");
-#endif
+                static_assert(Valuable::DefaultAllocSize >= sizeof(Chld), "Increase DefaultAllocSize");
+                ths->setAllocSize(Valuable::DefaultAllocSize);
             }
         };
         DepSz depSz = this;
