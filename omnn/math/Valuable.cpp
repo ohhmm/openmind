@@ -469,45 +469,45 @@ namespace omnn::math {
         std::cout << ']' << std::endl;
 #endif
         // Process solutions based on size
-        const auto size = s.size();
-        if (size == 0) {
-            std::cerr << "Empty solutions set" << std::endl;
-            return;
-        }
-        
-        if (size == 1) {
-            operator=(std::move(*s.begin()));
-            return;
-        }
-        
-        if (size == 2) {
-            auto it = s.begin();
-            Valuable _1 = std::move(*it++);
-            Valuable _2 = std::move(*it);
-            operator=(MergeOr(std::move(_1), std::move(_2)));
-            return;
-        }
-        
-        if (size == 3) {
-            auto it = s.begin();
-            Valuable _1 = std::move(*it++);
-            Valuable _2 = std::move(*it++);
-            Valuable _3 = std::move(*it);
-            operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3)));
-            return;
-        }
-        
-        if (size == 4) {
-            auto it = s.begin();
-            Valuable _1 = std::move(*it++);
-            Valuable _2 = std::move(*it++);
-            Valuable _3 = std::move(*it++);
-            Valuable _4 = std::move(*it);
-            operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3), std::move(_4)));
-            return;
-        }
-        
-        // Handle larger sets (size > 4)
+        switch (s.size()) {
+            case 0: {
+                std::cerr << "Empty solutions set" << std::endl;
+                return;
+            }
+
+            case 1: {
+                operator=(std::move(*s.begin()));
+                return;
+            }
+
+            case 2: {
+                auto it = s.begin();
+                Valuable _1 = std::move(*it++);
+                Valuable _2 = std::move(*it);
+                operator=(MergeOr(std::move(_1), std::move(_2)));
+                return;
+            }
+
+            case 3: {
+                auto it = s.begin();
+                Valuable _1 = std::move(*it++);
+                Valuable _2 = std::move(*it++);
+                Valuable _3 = std::move(*it);
+                operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3)));
+                return;
+            }
+
+            case 4: {
+                auto it = s.begin();
+                Valuable _1 = std::move(*it++);
+                Valuable _2 = std::move(*it++);
+                Valuable _3 = std::move(*it++);
+                Valuable _4 = std::move(*it);
+                operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3), std::move(_4)));
+                return;
+            }
+
+            default: {
                 // Handle pairs of solutions
                 solutions_t pairs;
                 for (auto it = s.begin(); it != s.end();) {
@@ -572,7 +572,8 @@ namespace omnn::math {
                     std::cerr << "Disjunctive merging needed for " << s.size() << " items: " << ss.str() << std::endl;
                 }
 #endif
-                // End of large set handling
+            } // end default case
+        } // end switch
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         // Debug output for final state
@@ -589,8 +590,8 @@ namespace omnn::math {
                 for (const auto& v : distinct) {
                     ss << ' ' << v;
                 }
-                ss << " ), ";
-                std::cout << ss.str();
+                ss << " )";
+                std::cerr << "Fix merge algorithm: " << ss.str() << std::endl;
 
                 constexpr auto isMultival = [](const auto& item) {
                     return item.IsMultival() == YesNoMaybe::Yes;
