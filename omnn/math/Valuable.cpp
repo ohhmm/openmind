@@ -469,40 +469,40 @@ namespace omnn::math {
         std::cout << ']' << std::endl;
 #endif
         // Process solutions based on size
-        switch (s.size()) {
-            case 0: {
-                std::cerr << "Empty solutions set" << std::endl;
-                return;
-            }
-            case 1: {
-                operator=(std::move(*s.begin()));
-                return;
-            }
-            case 2: {
-                auto it = s.begin();
-                Valuable _1 = std::move(*it++);
-                Valuable _2 = std::move(*it);
-                operator=(MergeOr(std::move(_1), std::move(_2)));
-                return;
-            }
-            case 3: {
-                auto it = s.begin();
-                Valuable _1 = std::move(*it++);
-                Valuable _2 = std::move(*it++);
-                Valuable _3 = std::move(*it);
-                operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3)));
-                return;
-            }
-            case 4: {
-                auto it = s.begin();
-                Valuable _1 = std::move(*it++);
-                Valuable _2 = std::move(*it++);
-                Valuable _3 = std::move(*it++);
-                Valuable _4 = std::move(*it);
-                operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3), std::move(_4)));
-                return;
-            }
-            default: {
+        const auto size = s.size();
+        if (size == 0) {
+            std::cerr << "Empty solutions set" << std::endl;
+            return;
+        }
+        if (size == 1) {
+            operator=(std::move(*s.begin()));
+            return;
+        }
+        if (size == 2) {
+            auto it = s.begin();
+            Valuable _1 = std::move(*it++);
+            Valuable _2 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2)));
+            return;
+        }
+        if (size == 3) {
+            auto it = s.begin();
+            Valuable _1 = std::move(*it++);
+            Valuable _2 = std::move(*it++);
+            Valuable _3 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3)));
+            return;
+        }
+        if (size == 4) {
+            auto it = s.begin();
+            Valuable _1 = std::move(*it++);
+            Valuable _2 = std::move(*it++);
+            Valuable _3 = std::move(*it++);
+            Valuable _4 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3), std::move(_4)));
+            return;
+        }
+        {
                 solutions_t pairs;
                 for (auto it = s.begin(); it != s.end();) {
                     auto neg = -*it;
