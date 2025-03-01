@@ -505,10 +505,10 @@ namespace omnn::math {
             default: {
                 solutions_t pairs;
                 auto it = s.begin();
-            for (; it != s.end();) {
-                auto it2 = it;
-                ++it2;
-                auto neg = -*it;
+                for (; it != s.end();) {
+                    auto it2 = it;
+                    ++it2;
+                    auto neg = -*it;
                 bool found = false;
                 for (; it2 != s.end();) {
                     found = it2->operator==(neg);
@@ -563,9 +563,9 @@ namespace omnn::math {
                 }
 #endif
             } // end default case
-            } // end default case
         } // end switch
 
+        // Debug output for remaining solutions
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (s.size() > 1) {
             std::stringstream ss;
