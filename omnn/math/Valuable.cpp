@@ -476,7 +476,7 @@ namespace omnn::math {
                 return;
             }
 
-            default:
+            default: {
                 // Handle pairs of solutions
                 solutions_t pairs;
                 for (auto it = s.begin(); it != s.end();) {
