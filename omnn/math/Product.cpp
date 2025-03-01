@@ -212,12 +212,12 @@ using namespace omnn::math;
         else if (it->IsExponentiation())
         {
             auto& e = it->as<Exponentiation>();
-            auto& ebase = e.getBase();
+            auto& ebase = e.ebase();
             if (ebase.IsVa()) {
-                addToVars = std::bind(&Product::AddToVars, this, ebase.as<Variable>(), -e.getExponentiation());
+                addToVars = std::bind(&Product::AddToVars, this, ebase.as<Variable>(), -e.eexp());
             }
         }
-        
+
         base::Delete(it);
 
         if(addToVars)
@@ -446,7 +446,7 @@ using namespace omnn::math;
                             Delete(it);
                             fo *= dn;
                             break;
-                        } else if (it->IsExponentiation() && it->as<Exponentiation>().getBase() == dn) {
+                        } else if (it->IsExponentiation() && it->as<Exponentiation>().ebase() == dn) {
                             Update(it, *it/dn);
                             fo *= dn;
                             break;
@@ -816,7 +816,7 @@ using namespace omnn::math;
                 if (!is.first) {
                     if (m.IsExponentiation()) {
                         auto& e = m.as<Exponentiation>();
-                        if (e.getBase().IsSum()) {
+                        if (e.ebase().IsSum()) {
                             is = m.IsMultiplicationSimplifiable(v);
                             if (is.first) {
                                 p.Add(is.second);
@@ -1001,8 +1001,8 @@ using namespace omnn::math;
                 else if (it->IsExponentiation())
                 {
                     auto& e = it->as<Exponentiation>();
-                    if (e.getBase() == va) {
-                        Update(it, va ^ (e.getExponentiation()+1));
+                    if (e.ebase() == va) {
+                        Update(it, va ^ (e.eexp()+1));
                         optimize();
                         return *this;
                     }
@@ -1012,11 +1012,11 @@ using namespace omnn::math;
         else if (v.IsExponentiation())
         {
             auto& exponentiation = v.as<Exponentiation>();
-            auto& vExpBase = exponentiation.getBase();
+            auto& vExpBase = exponentiation.ebase();
             for (auto it = members.begin(); it != members.end();)
             {
                 if (it->IsExponentiation() &&
-                    it->as<Exponentiation>().getBase() == vExpBase)
+                    it->as<Exponentiation>().ebase() == vExpBase)
                 {
                     Update(it, *it*v);
                     optimize();
@@ -1024,7 +1024,7 @@ using namespace omnn::math;
                 }
                 else if (vExpBase == *it)
                 {
-                    Update(it, vExpBase ^ (exponentiation.getExponentiation() + 1));
+                    Update(it, vExpBase ^ (exponentiation.eexp() + 1));
                     optimize();
                     return *this;
                 }
@@ -1055,10 +1055,10 @@ using namespace omnn::math;
                     ++it;
             }
         }
-        
+
         // add new member
         Add(v);
-        
+
         optimize();
         return *this;
     }
@@ -1134,11 +1134,11 @@ using namespace omnn::math;
                         return *this;
                     }
                 }
-                else if (vIsExp && *it == e->getBase())
+                else if (vIsExp && *it == e->ebase())
                 {
-                    return *this *= e->getBase() ^ (-e->getExponentiation());
+                    return *this *= e->ebase() ^ (-e->eexp());
                 }
-                else if (it->IsExponentiation() && it->as<Exponentiation>().getBase() == v)
+                else if (it->IsExponentiation() && it->as<Exponentiation>().ebase() == v)
                 {
                     Update(it, *it / v);
                     optimize();
@@ -1346,7 +1346,7 @@ using namespace omnn::math;
                     auto& e = v.as<Exponentiation>();
                     same = e.IsMultiSign() && sz1 == 2 && Has(constants::minus_1);
                     if (!same && Has(constants::i)) {
-                        auto& ee = e.getExponentiation();
+                        auto& ee = e.eexp();
                         if (ee.IsFraction()) {
                             auto& eef = ee.as<Fraction>();
                             auto& eefdn = eef.getDenominator();
@@ -1359,10 +1359,10 @@ using namespace omnn::math;
             }
             else {
                 auto& e = v.as<Exponentiation>();
-                auto& ee = e.getExponentiation();
+                auto& ee = e.eexp();
                 if (ee.IsSimple() && ee < constants::zero) {
                     OptimizeOn on;
-                    auto potentiallyAlternativeForm = e.getBase().Reciprocal() ^ -ee;
+                    auto potentiallyAlternativeForm = e.ebase().Reciprocal() ^ -ee;
                     if (!potentiallyAlternativeForm.Same(v)) {
                         same = operator==(potentiallyAlternativeForm);
                     }
@@ -1410,7 +1410,7 @@ using namespace omnn::math;
     Valuable Product::operator()(const Variable& va, const Valuable& augmentation) const
     {
         Valuable s; s.SetView(Valuable::View::Flat);
-       
+
         if(augmentation.HasVa(va)) {
             IMPLEMENT;
         } else {
@@ -1435,12 +1435,12 @@ using namespace omnn::math;
                     else
                         aug *= m;
                 if (a==1) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Unhandled case in Product::operator()")
                 }
                 s = a(va,aug);
             }
         }
-        
+
 //        if(augmentation.HasVa(va)) {
 //            IMPLEMENT;
 //        } else {
@@ -1454,12 +1454,12 @@ using namespace omnn::math;
 //                    _ /= m;
 //                }
 //            }
-//            
+//
 //            left.optimize();
 //            if (left.IsProduct()) {
 //                IMPLEMENT
 //            }
-//            
+//
 //            return left(va, _);
 //        }
 //        auto cova = getCommonVars();
@@ -1479,7 +1479,7 @@ using namespace omnn::math;
 //        }
         return s;
     }
-    
+
     void Product::solve(const Variable& va, solutions_t& solutions) const
     {
         auto it = std::find(members.begin(), members.end(), va);
@@ -1491,13 +1491,13 @@ using namespace omnn::math;
             const Exponentiation* e = {};
             while (it != end()
                     && !(it->IsExponentiation()
-                     && (found = it->as<Exponentiation>().getBase() == va)
+                     && (found = it->as<Exponentiation>().ebase() == va)
                      ) ) {
                 ++it;
             }
             if (found) {
-                if (e->getExponentiation().IsZero()) {
-                    IMPLEMENT
+                if (e->eexp().IsZero()) {
+                    LOG_AND_IMPLEMENT("Zero exponent case in Product::solve")
                 }
                 solutions.insert(0_v);
             }
@@ -1548,14 +1548,14 @@ using namespace omnn::math;
         out << cstr;
         return out;
 	}
-    
+
     Valuable::vars_cont_t Product::GetVaExps() const {
         vars_cont_t vaExps;
         for (auto& m : members) {
             auto mVaExps = m.GetVaExps();
             for (auto& mve : mVaExps) {
                 vaExps[mve.first] += mve.second;
-            }            
+            }
         }
         return vaExps;
     }
