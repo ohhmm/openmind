@@ -564,8 +564,6 @@ namespace omnn::math {
                 break;
             }
         }
-        } // end switch
-
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         // Debug output for final state
         if (s.size() > 1) {
