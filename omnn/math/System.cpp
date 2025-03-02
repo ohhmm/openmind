@@ -34,12 +34,17 @@ System& System::operator<<(const Valuable& v)
     return *this;
 }
 
-bool System::Add(const Variable& va, const Valuable& v)
+bool System::Inquire(const Variable& va, const Valuable& expression)
 {
     auto& es = Yarns(va);
-    return !v.IsZero()
-        && es[v.Vars()].insert(v).second
-        && Add(va.Equals(v));
+    return !expression.IsZero()
+        && es[expression.Vars()].insert(expression).second;
+}
+
+bool System::Add(const Variable& va, const Valuable& expression)
+{
+    return Inquire(va, expression)
+        && Add(va.Equals(expression));
 }
 
 bool System::Test(const Valuable::vars_cont_t& values) const {
@@ -520,11 +525,11 @@ Valuable System::CalculateTotalExpression() const {
 }
 
 System::es_t& System::Yarns(const Variable& variable) {
-    auto& pyarn = vEs[variable];
-    if (!pyarn) {
-        pyarn = ptrs::make_shared<es_t>();
+    auto& pExpressedVariable = vEs[variable];
+    if (!pExpressedVariable) {
+        pExpressedVariable = ptrs::make_shared<es_t>();
     }
-    return *pyarn;
+    return *pExpressedVariable;
 }
 
 bool System::EvalInvariantKnowns(Valuable& expression) {
