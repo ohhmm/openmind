@@ -69,33 +69,31 @@ BOOST_AUTO_TEST_CASE(Basic_System_tests) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(Multivariable_System_tests
-    , *disabled() // FIXME:
-) {
-        DECL_VARS(x, y, z);
-        System sys;
-        sys << x - 3*y + 3*z + 4;
-        sys << 2*x + 3*y - z - 15;
-        sys << 4*x - 3*y - z - 19;
-        auto sol = sys.Solve(x);
-        BOOST_TEST(sol.size() == 1);
-        if (sol.size()) {
-            auto _ = *sol.begin();
-            BOOST_TEST(_ == 5);
-        }
-        sol = sys.Solve(y);
-        BOOST_TEST(sol.size() == 1);
-        if (sol.size()) {
-            auto _ = *sol.begin();
-            BOOST_TEST(_ == 1);
-        }
-        sol = sys.Solve(z);
-        BOOST_TEST(sol.size() == 1);
-        if (sol.size()) {
-            auto _ = *sol.begin();
-            BOOST_TEST(_ == -2);
-        }
-
+BOOST_AUTO_TEST_CASE(Multivariable_System_tests)
+{
+    DECL_VARS(x, y, z);
+    System sys;
+    sys << x - 3*y + 3*z + 4;
+    sys << 2*x + 3*y - z - 15;
+    sys << 4*x - 3*y - z - 19;
+    auto sol = sys.Solve(x);
+    BOOST_TEST(sol.size() == 1);
+    if (sol.size()) {
+        auto _ = *sol.begin();
+        BOOST_TEST(_ == 5);
+    }
+    sol = sys.Solve(y);
+    BOOST_TEST(sol.size() == 1);
+    if (sol.size()) {
+        auto _ = *sol.begin();
+        BOOST_TEST(_ == 1);
+    }
+    sol = sys.Solve(z);
+    BOOST_TEST(sol.size() == 1);
+    if (sol.size()) {
+        auto _ = *sol.begin();
+        BOOST_TEST(_ == -2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(NonLinear_System_tests
