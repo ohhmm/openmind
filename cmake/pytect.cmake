@@ -50,7 +50,11 @@ macro(pytest)
             )
             set_property(TEST ${TEST_NAME} PROPERTY FOLDER "test/pytest")
             if(MSVC)
-                set_property(TEST ${TEST_NAME} PROPERTY DISABLED Debug) # FIXME
+                set_property(TEST ${TEST_NAME} PROPERTY DISABLE
+				    $<$<CONFIG:DEBUG>:ON>
+				    $<$<CONFIG:Release>:ON>
+				    # FIXME : only RelWithDebInfo and MinSizeRel known to work for boost::python on MSVC+vcpkg x64-windows triplet so far
+                )
             endif()
         endforeach()
     endif()
