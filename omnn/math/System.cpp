@@ -21,16 +21,16 @@ bool is_subset(const auto& smaller_set, const auto& larger_set) {
     return std::includes(larger_set.begin(), larger_set.end(), smaller_set.begin(), smaller_set.end());
 }
 
-System& System::operator()(const Variable& v)
+System& System::operator()(const Variable& variable)
 {
-    if(Fetch(v))
-        Solve(v);
+    if(Fetch(variable))
+        Solve(variable);
     return *this;
 }
 
-System& System::operator<<(const Valuable& v)
+System& System::operator<<(const Valuable& expression)
 {
-    Add(v);
+    Add(expression);
     return *this;
 }
 
@@ -121,7 +121,7 @@ bool System::Add(const Valuable& v)
         if (doEarlyFetch)
             for (auto& va : _.Vars())
                 for (auto& s : _.Solutions(va))
-                    Add(va, s);
+                    Inquire(va, s);
     }
     return isNew;
 }
@@ -232,7 +232,7 @@ bool System::Fetch(const Variable& va)
 
                     bool evaluated = {};
                     for (auto& sol : e.solve(va)) {
-                        auto addedNewOne = Add(va, sol);
+                        auto addedNewOne = Inquire(va, sol);
                         modified = addedNewOne || modified;
                         if (sol.FindVa() == nullptr) {
                             fetched = true;
@@ -308,7 +308,7 @@ System::solutions_t System::Solve(const Variable& va)
             auto vaSzWas = vars.size();
             s.CollectVa(vars);
             if (vaSzWas!=vars.size()) {
-                Add(va, s);
+                Inquire(va, s);
             }
         }
         
@@ -491,7 +491,7 @@ System::solutions_t System::Solve(const Variable& va)
             if (vars.size() == 1 && vars.begin()->Same(va)) {
                 total.solve(va, solutions);
                 for (auto& solution : solutions) {
-                    Add(va, solution);
+                    Inquire(va, solution);
                 }
             } else {
                 for (auto& variable : vars) {
@@ -502,7 +502,7 @@ System::solutions_t System::Solve(const Variable& va)
                         } catch (...) {
                             try {
                                 for (auto& sol : total.Solutions(variable)) {
-                                    Add(variable, sol);
+                                    Inquire(variable, sol);
                                 }
                             } catch (...) {
                             }
@@ -517,7 +517,7 @@ System::solutions_t System::Solve(const Variable& va)
 }
 
 Valuable System::CalculateTotalExpression() const {
-    Sum total; // TODO: use intersection
+    Sum total; // TODO: use intersection for same varset expressions
     for (auto& e : Expressions()) {
 		total.Add(e.Sq());
 	}
@@ -543,4 +543,17 @@ bool System::EvalInvariantKnowns(Valuable& expression) {
     }
     return evaluate.size() > 0
         && expression.eval(evaluate);
+}
+
+System::InProgress::InProgress(std::set<Variable>& varset, const Variable& v)
+    : varsInProgress(varset) {
+    this->v = v;
+    auto insertion = varsInProgress.insert(v);
+    auto inserted = insertion.second;
+    wasInProgress = !inserted;
+}
+
+System::InProgress::~InProgress() {
+    if (!wasInProgress)
+        varsInProgress.erase(v);
 }

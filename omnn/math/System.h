@@ -28,21 +28,11 @@ class System
         std::set<Variable>& varsInProgress;
 
     public:
-        InProgress(std::set<Variable>& varset, const Variable& v)
-            : varsInProgress(varset)
-        {
-            this->v = v;
-            auto insertion = varsInProgress.insert(v);
-            auto inserted = insertion.second;
-            wasInProgress = !inserted;
-        }
+        InProgress(std::set<Variable>& varset, const Variable& v);
 
-        operator bool() const { return wasInProgress; }
+        constexpr operator bool() const { return wasInProgress; }
 
-        ~InProgress() {
-            if (!wasInProgress)
-                varsInProgress.erase(v);
-        }
+        ~InProgress();
     };
 
 public:
@@ -71,16 +61,16 @@ public:
     using base::size;
 
 
-    System& operator()(const Variable& v);
-    System& operator<<(const Valuable& v);
-    bool Add(const Variable&, const Valuable& v);
-    bool Add(const Valuable& v);
+    System& operator()(const Variable&);
+    System& operator<<(const Valuable&);
+    bool Add(const Variable&, const Valuable&);
+    bool Add(const Valuable&);
     Valuable::var_set_t Vars() const;
-    Valuable::var_set_t CollectVarsFromEquationsWithThisVar(const Variable& v) const;
-    bool Eval(const Variable&, const Valuable& v);
+    Valuable::var_set_t CollectVarsFromEquationsWithThisVar(const Variable&) const;
+    bool Eval(const Variable&, const Valuable&);
     bool Fetch(const Variable&);
     bool Has(const Valuable&) const;
-    solutions_t Solve(const Variable& v);
+    solutions_t Solve(const Variable&);
     
     constexpr 
 	virtual bool Validate() const {
