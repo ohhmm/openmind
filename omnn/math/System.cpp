@@ -480,6 +480,10 @@ System::solutions_t System::Solve(const Variable& va)
         throw "Contradiction!";
     }
     
+    if (solutions.empty()) {
+        solutions = Known(va);
+    }
+
     if (solutions.empty() && !makeTotalEqu) {
         auto total = CalculateTotalExpression();
         auto start = true;
