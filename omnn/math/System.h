@@ -105,7 +105,8 @@ public:
 
     auto IsEmpty() const { return empty(); }
 
-    es_t& Yarns(const Variable& v);
+    es_t& Yarns(const Variable&);
+    bool Inquire(const Variable&, const Valuable&);
     const solutions_t& Known(const Variable& v) { return Yarns(v)[{}]; }
     bool EvalInvariantKnowns(Valuable&);
 
