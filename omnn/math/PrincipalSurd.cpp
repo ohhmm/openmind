@@ -290,9 +290,11 @@ Valuable PrincipalSurd::varless() const {
     auto variablesless =
         is1 ? constants::one : Valuable(ptrs::make_shared<PrincipalSurd>(Radicand().varless(), Index()));
     if (!is1)
-}
         variablesless.optimize();
     return variablesless;
+}
+
+
 void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
     if (IsEquation()) {
         // For equations like a*sqrt(expr)=b, we need to:
