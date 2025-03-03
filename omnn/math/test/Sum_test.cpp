@@ -293,9 +293,7 @@ BOOST_AUTO_TEST_CASE(Mixed_SumOrderComparator_test)
     BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
 }
 
-BOOST_AUTO_TEST_CASE(SumToProductOrderComparator_test
-    , *disabled()
-)
+BOOST_AUTO_TEST_CASE(SumToProductOrderComparator_test)
 {
     auto _1 = "(-256*(x^6) + 2048*(x^4))"_v;
     auto _2 = "16777216*(x^12)"_v;

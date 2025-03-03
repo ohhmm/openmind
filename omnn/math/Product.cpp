@@ -611,6 +611,11 @@ using namespace omnn::math;
     // NOTE : inequality must cover all cases for bugless Sum::Add
     bool Product::IsComesBefore(const Valuable& v) const
     {
+        // Special case for Sum comparison - Product never comes before Sum
+        if (v.IsSum()) {
+            return false;
+        }
+        
         if (size() == 1 && !v.IsProduct()) {
             return begin()->IsComesBefore(v);
         }
