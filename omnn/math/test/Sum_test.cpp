@@ -3,6 +3,7 @@
 #include "Sum.h"
 #include "Infinity.h"
 #include "Variable.h"
+#include "generic.hpp"
 
 
 using namespace omnn::math;
@@ -290,6 +291,15 @@ BOOST_AUTO_TEST_CASE(Mixed_SumOrderComparator_test)
     _1 = "(8/32)*((-1)^(((-2)/(-8))*((-1)^(v1 + 11)) + ((-42)/(-8))))"_v;
     _2 = "(1/4)*((-1)^v1)"_v;
     BOOST_TEST(cmp(_1, _2) != cmp(_2, _1));
+}
+
+BOOST_AUTO_TEST_CASE(SumToProductOrderComparator_test
+    , *disabled()
+)
+{
+    auto _1 = "(-256*(x^6) + 2048*(x^4))"_v;
+    auto _2 = "16777216*(x^12)"_v;
+    InequalOrderCheck(_1, _2);
 }
 
 BOOST_AUTO_TEST_CASE(SumFindMember_test) {
