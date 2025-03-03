@@ -21,7 +21,6 @@ class System
     using var_set_t = Valuable::var_set_t;
 
     var_set_t solving;
-    var_set_t fetching;
     var_set_t fetched;
 
     class InProgress {
@@ -31,11 +30,11 @@ class System
 
     public:
         InProgress(var_set_t& varset, const Variable& v);
-
-        constexpr operator bool() const { return wasInProgress; }
-
         ~InProgress();
+        constexpr operator bool() const { return wasInProgress; }
     };
+
+    bool UnmarkVariablesFetched(const var_set_t& unmark);
 
 public:
     using base::const_iterator;
@@ -53,6 +52,7 @@ public:
     using es_ptr_t = ptrs::shared_ptr<es_t>;
     using v_es_t = std::map<Variable, es_ptr_t>; // variable => [(set of other variables in expression) => expressions of the key variable from equations of the system]
                                       // NOTE: empty set means the key variable is expressed therefore has known values
+    using v_es_ptr_t = ptrs::shared_ptr<v_es_t>;
     
     using base::begin;
     using base::end;
@@ -62,6 +62,8 @@ public:
     using base::find;
     using base::size;
 
+    System() : vEs(ptrs::make_shared<v_es_t>()) {}
+    System(v_es_ptr_t yarns) : vEs(std::move(yarns)) {}
 
     System& operator()(const Variable&);
     System& operator<<(const Valuable&);
@@ -103,7 +105,7 @@ public:
     bool EvalInvariantKnowns(Valuable&);
 
 private:
-    v_es_t vEs;
+    v_es_ptr_t vEs;
     Valuable sqs;
     bool makeTotalEqu = {};
     bool doEarlyFetch = {};
