@@ -708,7 +708,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 std::cout << "SerializedStrEqual detected deserialization issue: " << _ << " != " << s << std::endl
                           << _1 << "\n !=\n"
                           << _2 << std::endl;
-                ::omnn::rt::OptimizationLoopDetect<Valuable> antilooper(*this);
+                ::omnn::rt::LoopDetectionGuard<Valuable> antilooper(*this);
                 if (antilooper.isLoopDetected()) {
                     std::cout << "Loop of optimizing detected in " << *this << std::endl;
                 } else {

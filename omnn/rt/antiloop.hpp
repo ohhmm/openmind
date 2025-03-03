@@ -7,19 +7,19 @@ template <typename ValueT,
         typename ComparatorT = std::equal_to<ValueT>, 
         typename ContainerT = std::unordered_set<ValueT, std::hash<ValueT>, ComparatorT>
 >
-    class OptimizationLoopDetect {
+class LoopDetectionGuard {
     static thread_local ContainerT LoopDetectionStack;
     bool isLoop;
     const ValueT* value;
 
 public:
-    OptimizationLoopDetect(const ValueT& value) {
+    LoopDetectionGuard(const ValueT& value) {
         auto emplaced = LoopDetectionStack.emplace(value);
         this->value = &*emplaced.first;
         isLoop = !emplaced.second;
     }
 
-    ~OptimizationLoopDetect() {
+    ~LoopDetectionGuard() {
         if (!isLoop)
             LoopDetectionStack.erase(*value);
     }
@@ -28,20 +28,20 @@ public:
 };
 
 template <typename ValueT, typename ComparatorT, typename ContainerT>
-thread_local ContainerT OptimizationLoopDetect<ValueT, ComparatorT, ContainerT>::LoopDetectionStack;
+thread_local ContainerT LoopDetectionGuard<ValueT, ComparatorT, ContainerT>::LoopDetectionStack;
 
 }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
 #define ANTILOOP(Type)                                                                                                 \
-    ::omnn::rt::OptimizationLoopDetect<Type> antilooper(*this);                                                        \
+    ::omnn::rt::LoopDetectionGuard<Type> antilooper(*this);                                                            \
     if (antilooper.isLoopDetected()) {                                                                                 \
-        std::cout << "Loop of optimizing detected in " << *this << std::endl;                                          \
+        std::cout << "LoopDetectionGuard detected a loop in " << __func__ << " : " << *this << std::endl;              \
         return;                                                                                                        \
     }
 #else
 #define ANTILOOP(Type)                                                                                                 \
-    ::omnn::rt::OptimizationLoopDetect<Type> antilooper(*this);                                                        \
+    ::omnn::rt::LoopDetectionGuard<Type> antilooper(*this);                                                        \
     if (antilooper.isLoopDetected()) {                                                                                 \
         return;                                                                                                        \
     }

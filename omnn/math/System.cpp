@@ -10,6 +10,7 @@
 #include <numeric>
 #include <set>
 
+#include <rt/antiloop.hpp>
 #include <rt/each.hpp>
 
 
@@ -34,17 +35,46 @@ System& System::operator<<(const Valuable& expression)
     return *this;
 }
 
+bool System::UnmarkVariablesFetched(const var_set_t& unmark) {
+    bool alter = {};
+    for (auto& variable : unmark) {
+        auto erased = fetched.erase(variable);
+        alter = erased || alter;
+    }
+    return alter;
+}
+
 bool System::Inquire(const Variable& va, const Valuable& expression)
 {
     auto& es = Yarns(va);
-    return !expression.IsZero()
-        && es[expression.Vars()].insert(expression).second;
+    auto alter = !expression.IsZero();
+    if (alter) {
+        auto vars = expression.Vars();
+        auto it = es.find(vars);
+        if (it == es.end()) {
+            auto emplaced = es.emplace(vars, expressions_t(vEs));
+            it = emplaced.first;
+        } 
+        auto& expressions = it->second;
+        alter = expressions.insert(expression).second;
+    }
+    if (alter) {
+        auto vars = expression.Vars();
+        vars.insert(va);
+        UnmarkVariablesFetched(vars);
+    }
+    return alter;
 }
 
 bool System::Add(const Variable& va, const Valuable& expression)
 {
-    return Inquire(va, expression)
-        && Add(va.Equals(expression));
+    auto alter = Inquire(va, expression);
+    if (alter) {
+        auto equals = va.Equals(expression);
+        alter = Add(equals);
+        UnmarkVariablesFetched(equals.Vars());
+    }
+    return alter;
 }
 
 bool System::Test(const Valuable::vars_cont_t& values) const {
@@ -195,9 +225,13 @@ bool System::Fetch(const Variable& va)
     if (AlreadyFetchedBefore)
         return modified;
 
-    InProgress FetchingInProgress(fetching, va);
-    if (FetchingInProgress)
+    ::omnn::rt::LoopDetectionGuard<Variable> fetching(va);
+    if (fetching.isLoopDetected()) {
+#if !defined(NDEBUG) && !defined(NOOMDEBUG)
+        std::cout << "System::Fetch loop for " << va << std::endl;
+#endif
         return modified;
+    };
 
     bool fetched = {};
 
@@ -395,14 +429,15 @@ System::solutions_t System::Solve(const Variable& va)
                 modified = {};
                 auto otherVars = CollectVarsFromEquationsWithThisVar(va);
                 if (otherVars.empty()) {
-                    auto& solved = Yarns(va)[{}];
+                    auto& solved = Known(va);
                     if (solved.size()) {
                         return solved;
                     }
                 }
                 else for(auto& v : otherVars)
                 {
-                    auto& vaFuncs = *vEs[v];
+                    auto ves = *vEs;
+                    auto& vaFuncs = *ves[v];
                     auto toSolve = vaFuncs.size();
                     if (!toSolve) {
                         auto numKnownSolutions = Known(v).size();
@@ -412,15 +447,18 @@ System::solutions_t System::Solve(const Variable& va)
                         continue;
                     }
                     
-                    //auto mm = std::minmax(vaFuncs.begin(), vaFuncs.end(), [](auto& _1, auto& _2){
-                    //    return _1->first.size() < _2->first.size();
-                    //});
+                    auto mm = std::minmax_element(vaFuncs.begin(), vaFuncs.end(),
+                                                  [](auto& _1, auto& _2) { return _1.first.size() < _2.first.size(); });
+                    auto nParamsFrom = mm.first != vaFuncs.end() ? mm.first->first.size() : 0;
+                    auto nParamsTo = mm.second != vaFuncs.end() ? mm.second->first.size() : 0;
                     --toSolve;
-                    for(auto nParams = 0; toSolve; ++nParams)
+                    for (auto nParams = nParamsFrom;
+                        toSolve > 0 && nParams <= nParamsTo;
+                        ++nParams)
                     {
-                        for(auto& f : vaFuncs)
+                        for(auto& func : vaFuncs)
                         {
-                            if (f.first.size() == nParams)
+                            if (func.first.size() == nParams)
                             {
                                 auto numKnownSolutions = Known(v).size();
                                 auto s = Solve(v);
@@ -554,7 +592,7 @@ Valuable System::CalculateTotalExpression() const {
 }
 
 System::es_t& System::Yarns(const Variable& variable) {
-    auto& pExpressedVariable = vEs[variable];
+    auto& pExpressedVariable = vEs->operator[](variable);
     if (!pExpressedVariable) {
         pExpressedVariable = ptrs::make_shared<es_t>();
     }
@@ -575,7 +613,8 @@ bool System::EvalInvariantKnowns(Valuable& expression) {
 }
 
 System::InProgress::InProgress(std::set<Variable>& varset, const Variable& v)
-    : varsInProgress(varset) {
+    : varsInProgress(varset)
+{
     this->v = v;
     auto insertion = varsInProgress.insert(v);
     auto inserted = insertion.second;
