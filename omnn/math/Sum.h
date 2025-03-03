@@ -105,8 +105,9 @@ public:
     Valuable& sq() override;
     Valuable calcFreeMember() const override;
     solutions_t GetIntegerSolution(const Variable& va) const override;
-    void solve(const Variable& va, solutions_t& solutions) const override;
-    void solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const;
+    void solve(const Variable&, solutions_t&) const override;
+    void solve(const Variable&, solutions_t&, const std::vector<Valuable>& coefficients) const;
+    void solve(const Variable&, solutions_t&, const std::vector<Valuable>& coefficients, size_t grade) const;
     Valuable SumOfRoots() const override;
     Valuable ProductOfRoots() const override;
     solutions_t Distinct() const override;
