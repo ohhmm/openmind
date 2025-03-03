@@ -290,11 +290,9 @@ Valuable PrincipalSurd::varless() const {
     auto variablesless =
         is1 ? constants::one : Valuable(ptrs::make_shared<PrincipalSurd>(Radicand().varless(), Index()));
     if (!is1)
+}
         variablesless.optimize();
     return variablesless;
-}
-
-void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
 void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
     if (IsEquation()) {
         // For equations like a*sqrt(expr)=b, we need to:
@@ -342,7 +340,7 @@ void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
         }
         
         // If right side contains a radical, swap sides and try again
-        if (rhs.IsProduct() && rhs.FindVa() || rhs.IsPrincipalSurd()) {
+        if ((rhs.IsProduct() && rhs.FindVa()) || rhs.IsPrincipalSurd()) {
             auto swapped_equation = rhs - lhs;
             swapped_equation.solve(va, solutions);
             return;
