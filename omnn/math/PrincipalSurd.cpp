@@ -296,6 +296,8 @@ Valuable PrincipalSurd::varless() const {
 
 
 
+
+
 void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
     if (IsEquation()) {
         // For equations like sqrt(expr)=b or a*sqrt(expr)=b, we need to:
@@ -323,7 +325,7 @@ void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
         Valuable nonRadical;
         
         // If we're a Sum, we can try to separate the parts
-        if (Is<Sum>()) {
+        if (IsSum()) {
             auto& sum = as<Sum>();
             for (const auto& term : sum.getItems()) {
                 if (term.IsPrincipalSurd() || (term.IsProduct() && term.FindVa())) {
