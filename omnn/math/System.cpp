@@ -249,6 +249,19 @@ bool System::Fetch(const Variable& va)
 
             }
         }
+
+        for (auto& [subSystemVars, subsystem] : Yarns(va)) {
+            if (subsystem.Fetch(va)) {
+                modified = true; // this means that subsystem obtained info on new yarns
+                // synchronize new yarns into this system
+                for (auto& yarn : subsystem.Yarns(va)) {
+                    auto& thisYarn = Yarns(va)[yarn.first];
+                    thisYarn.insert(yarn.second.begin(), yarn.second.end());
+                }
+
+            }
+
+        }
 		//);
     } while (again);
     
@@ -501,15 +514,27 @@ System::solutions_t System::Solve(const Variable& va)
                 for (auto& variable : vars) {
                     if (variable != va) {
                         try {
-                            auto sol = total(variable);
-                            Add(variable, std::move(sol));
-                        } catch (...) {
-                            try {
-                                for (auto& sol : total.Solutions(variable)) {
-                                    Inquire(variable, sol);
+                            if (total.IsPolynomial(variable)) {
+                                auto coefficients = total.Coefficients(variable);
+                                if (coefficients.size()<=3) {
+                                    auto sol = total(variable);
+                                    Add(variable, std::move(sol));
+                                } else if(total.IsSum()) {
+                                    decltype(solutions) sols;
+                                    total.as<Sum>().solve(variable, sols, coefficients);
+                                    for (auto& sol : sols) {
+                                        Add(variable, std::move(sol));
+                                    }
                                 }
-                            } catch (...) {
+                                continue;
                             }
+                        } catch (...) {
+                        }
+                        try {
+                            for (auto& sol : total.Solutions(variable)) {
+                                Inquire(variable, sol);
+                            }
+                        } catch (...) {
                         }
                     }
                 }

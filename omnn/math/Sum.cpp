@@ -2032,6 +2032,10 @@ namespace
         }
     }
     
+    void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients) const {
+        solve(va, solutions, coefficients, coefficients.size() - 1);
+    }
+
     void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const
     {
         if(coefficients.size() == grade && grade == 0)

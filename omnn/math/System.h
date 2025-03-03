@@ -18,17 +18,19 @@ class System
 {
     using base = system_base_t;
 
-    std::set<Variable> solving;
-    std::set<Variable> fetching;
-    std::set<Variable> fetched;
+    using var_set_t = Valuable::var_set_t;
+
+    var_set_t solving;
+    var_set_t fetching;
+    var_set_t fetched;
 
     class InProgress {
         bool wasInProgress = {};
         Variable v;
-        std::set<Variable>& varsInProgress;
+        var_set_t& varsInProgress;
 
     public:
-        InProgress(std::set<Variable>& varset, const Variable& v);
+        InProgress(var_set_t& varset, const Variable& v);
 
         constexpr operator bool() const { return wasInProgress; }
 
@@ -47,7 +49,7 @@ public:
 
     using expressions_t = System;
     using solutions_t = Valuable::solutions_t;
-    using es_t = std::map<std::set<Variable>, expressions_t>; // expressions set: set of variables => set of expressions
+    using es_t = std::map<var_set_t, expressions_t>; // expressions set: set of variables => set of expressions
     using es_ptr_t = ptrs::shared_ptr<es_t>;
     using v_es_t = std::map<Variable, es_ptr_t>; // variable => [(set of other variables in expression) => expressions of the key variable from equations of the system]
                                       // NOTE: empty set means the key variable is expressed therefore has known values
