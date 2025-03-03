@@ -164,11 +164,8 @@ BOOST_AUTO_TEST_CASE(ComplexRadicalExpression_no_hang_test
 }
 
 BOOST_AUTO_TEST_CASE(RadicalEquationWithCoefficient_test
-    , *disabled()
 ) {
     // Test for equation: 7√(4x+1+2)=16, which simplifies to 7√(4x+3)=16
-    // This test is currently disabled as we need to investigate why the equation solver
-    // is not finding solutions for this particular equation format
     DECL_VA(x);
     
     // Create the equation in the form that the library can solve
