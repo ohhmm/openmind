@@ -295,57 +295,76 @@ Valuable PrincipalSurd::varless() const {
 }
 
 
+
 void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
     if (IsEquation()) {
-        // For equations like a*sqrt(expr)=b, we need to:
-        // 1. Square both sides: a²*expr=b²
-        // 2. Solve for the variable: expr=b²/a²
+        // For equations like sqrt(expr)=b or a*sqrt(expr)=b, we need to:
+        // 1. Square both sides: expr=b² or a²*expr=b²
+        // 2. Solve for the variable: expr=b² or expr=b²/a²
         // 3. Then solve the radicand with this constraint
         
-        // Get the left and right sides of the equation
-        auto equation = *this;
-        auto lhs = equation.lhs();
-        auto rhs = equation.rhs();
+        // Since we don't have direct lhs() and rhs() methods, we'll use a different approach
+        // We know that an equation is stored as a difference that equals zero: lhs - rhs = 0
+        // So we can extract the parts by analyzing the structure
         
-        // Check if left side contains a radical
-        if (lhs.IsProduct() && lhs.FindVa()) {
+        // First, check if this is a simple radical equation: sqrt(expr) = b
+        if (IsPrincipalSurd()) {
+            // This is not a simple equation, it's just a radical
+            // Default to the standard behavior
+            Radicand().solve(va, solutions);
+            return;
+        }
+        
+        // For more complex equations, we need to analyze the structure
+        // Assuming the equation is in the form: a*sqrt(expr) - b = 0 or sqrt(expr) - b = 0
+        
+        // Try to identify the radical and non-radical parts
+        Valuable radical;
+        Valuable nonRadical;
+        
+        // If we're a Sum, we can try to separate the parts
+        if (Is<Sum>()) {
+            auto& sum = as<Sum>();
+            for (const auto& term : sum.getItems()) {
+                if (term.IsPrincipalSurd() || (term.IsProduct() && term.FindVa())) {
+                    radical = term;
+                } else {
+                    nonRadical = nonRadical - term; // Negate because we're moving to the right side
+                }
+            }
+        }
+        
+        if (!radical.IsZero()) {
             Valuable coefficient = constants::one;
-            Valuable radical;
+            Valuable radicalTerm;
             
-            // Extract coefficient and radical from the product
-            if (lhs.IsProduct()) {
-                auto& product = lhs.as<Product>();
+            // Extract coefficient and radical from the product if needed
+            if (radical.IsProduct()) {
+                auto& product = radical.as<Product>();
                 for (const auto& factor : product.getItems()) {
                     if (factor.IsPrincipalSurd()) {
-                        radical = factor;
+                        radicalTerm = factor;
                     } else {
                         coefficient *= factor;
                     }
                 }
-            } else if (lhs.IsPrincipalSurd()) {
-                radical = lhs;
+            } else if (radical.IsPrincipalSurd()) {
+                radicalTerm = radical;
             }
             
-            if (!radical.IsZero()) {
+            if (!radicalTerm.IsZero()) {
                 // Square both sides: (a*sqrt(expr))² = b²
                 // This gives: a²*expr = b²
                 auto a_squared = coefficient.Sq();
-                auto b_squared = rhs.Sq();
+                auto b_squared = nonRadical.Sq();
                 
                 // Create the new equation: expr = b²/a²
-                auto new_equation = radical.as<PrincipalSurd>().Radicand() - (b_squared / a_squared);
+                auto new_equation = radicalTerm.as<PrincipalSurd>().Radicand() - (b_squared / a_squared);
                 
                 // Solve the new equation
                 new_equation.solve(va, solutions);
                 return;
             }
-        }
-        
-        // If right side contains a radical, swap sides and try again
-        if ((rhs.IsProduct() && rhs.FindVa()) || rhs.IsPrincipalSurd()) {
-            auto swapped_equation = rhs - lhs;
-            swapped_equation.solve(va, solutions);
-            return;
         }
     }
     
