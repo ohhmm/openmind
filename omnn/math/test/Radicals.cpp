@@ -224,9 +224,8 @@ BOOST_AUTO_TEST_CASE(SimpleRadicalEquation_test) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(RadicalExponentiationOrdering_test
-    , *disabled()
-) {
+BOOST_AUTO_TEST_CASE(RadicalExponentiationOrdering_test)
+{
     auto _1 = "((sqrt(16777216*(x^12)))^(-1))"_v;
     auto _2 = "((sqrt((-256*(x^6) + 2048*(x^4))))^(-1))"_v;
     InequalOrderCheck(_1, _2);
