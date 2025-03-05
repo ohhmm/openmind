@@ -852,6 +852,11 @@ namespace math {
         return *this;
     }
 
+    void Integer::gamma() { 
+        --arbitrary;
+        factorial();
+    }
+
     Valuable& Integer::reciprocal() {
         if(!operator==(constants::one)) {
             Become(Fraction{constants::one, std::move(*this)});
