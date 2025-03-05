@@ -167,6 +167,32 @@ BOOST_AUTO_TEST_CASE(Integer_ParseFunctionFactorial) {
     BOOST_TEST(nested_calls == 2);  // factorial(2) = 2, then factorial(2) = 2
 }
 
+BOOST_AUTO_TEST_CASE(Integer_ParseGamma) {
+    // Basic gamma function parsing
+    Valuable expr("gamma(3)");
+    BOOST_TEST(expr == 2);  // Gamma(3) = 2! = 2
+    
+    // Nested expression gamma
+    Valuable nested("gamma(2+1)");
+    BOOST_TEST(nested == 2);  // Gamma(3) = 2! = 2
+    
+    // Multiple gamma functions in expression
+    Valuable multi("gamma(2) + gamma(3)");
+    BOOST_TEST(multi == 3);  // Gamma(2) = 1! = 1, Gamma(3) = 2! = 2, 1 + 2 = 3
+    
+    // Negative number gamma
+    // For negative integers, gamma function has poles (undefined)
+    // This test might need to be adjusted based on how the implementation handles this case
+    
+    // Zero gamma
+    Valuable zero("gamma(1)");
+    BOOST_TEST(zero == 1);  // Gamma(1) = 0! = 1
+    
+    // Nested gamma calls
+    Valuable nested_calls("gamma(gamma(3))");
+    BOOST_TEST(nested_calls == 1);  // Gamma(3) = 2, Gamma(2) = 1
+}
+
 BOOST_AUTO_TEST_CASE(Integer_exptests)
 {
 	auto a = 25_v;

@@ -49,7 +49,8 @@ ProductOrderComparator::index_t ProductOrderComparator::Order(const Valuable& va
     auto it = std::find(ob, oe, value.Type());
     if (it == oe)
         LOG_AND_IMPLEMENT("Introduce new type to Product ordering:" << value);
-    return it - ob;
+    static_assert(std::numeric_limits<index_t>::max() >= std::size(order), "it is a big day");
+    return static_cast<index_t>(it - ob);
 }
 
 bool ProductOrderComparator::operator()(const Valuable& x, const Valuable& y) const {

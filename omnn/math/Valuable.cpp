@@ -1102,6 +1102,15 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                     mulByNeg = {};
                                 }
                                 o(std::move(arg));
+                            } else if (id == "gamma"sv) {
+                                auto next = to + 1;
+                                auto arg = Valuable(str.substr(next, cb - next), host, itIsOptimized);
+                                arg.gamma();
+                                if (mulByNeg) {
+                                    arg *= -1;
+                                    mulByNeg = {};
+                                }
+                                o(std::move(arg));
                             } else if (id == "log"sv) {
                                 auto next = to + 1;
                                 auto args = str.substr(next, cb - next);
