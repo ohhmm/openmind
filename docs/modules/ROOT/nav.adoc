@@ -9,6 +9,8 @@
 * Development
 ** xref:development/building.adoc[Building]
 ** xref:development/contributing.adoc[Contributing]
+* Business
+** xref:business/profit-potential.adoc[Profit Potential Evaluation]
 * Reference
 ** xref:reference/api.adoc[API Reference]
 ** xref:reference/configuration.adoc[Configuration]
