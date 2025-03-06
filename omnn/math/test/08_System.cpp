@@ -908,6 +908,9 @@ BOOST_AUTO_TEST_CASE(Sudoku_test
 //    BOOST_TEST(values);
 }
 
+#ifdef _WIN32
+#pragma comment(lib, "User32.lib") // EnableMenuItem / GetSystemMenu
+#endif // _WIN32
 BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
 {
     using namespace boost;
