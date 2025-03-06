@@ -7,9 +7,6 @@ if(VCPKG_TARGET_IS_OSX)
 else()
     # For other platforms, use the regular port
     # This will delegate to the regular port for non-macOS platforms
-    set(VCPKG_TARGET_IS_OSX_ORIGINAL ${VCPKG_TARGET_IS_OSX})
-    set(VCPKG_TARGET_IS_OSX OFF)
-    include(${CURRENT_INSTALLED_DIR}/share/vcpkg-cmake/vcpkg-port-config.cmake)
-    include(${CURRENT_BUILTIN_PORT_DIR}/portfile.cmake)
-    set(VCPKG_TARGET_IS_OSX ${VCPKG_TARGET_IS_OSX_ORIGINAL})
+    # Use the builtin port directly
+    include(${CMAKE_CURRENT_LIST_DIR}/../../libbacktrace/portfile.cmake)
 endif()
