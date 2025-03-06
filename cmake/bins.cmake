@@ -248,8 +248,8 @@ function(apply_target_commons this_target)
     target_link_directories(${this_target} INTERFACE ${ldirs})
 	get_target_property(target_type ${this_target} TYPE)
 	if(target_type STREQUAL "INTERFACE_LIBRARY")
+		set(visibility INTERFACE PARENT_SCOPE)
 		message(STATUS "${this_target} is INTERFACE")
-		set(visibility INTERFACE)
 		set(defs INTERFACE ${defs})
 		set(opts INTERFACE ${opts})
 		target_compile_features(${this_target} INTERFACE cxx_std_23)
@@ -259,7 +259,7 @@ function(apply_target_commons this_target)
 			$<INSTALL_INTERFACE:include>
         )
 	else()
-		set(visibility PUBLIC)
+		set(visibility PUBLIC PARENT_SCOPE)
 		set(defs INTERFACE ${defs} PUBLIC ${defs})
 		set(opts INTERFACE ${opts} PUBLIC ${opts})
 		target_compile_features(${this_target} INTERFACE cxx_std_23 PUBLIC cxx_std_23)
@@ -282,7 +282,7 @@ macro(link_boost_libs)
 			foreach (boostlibtarget ${BOOST_LINK_LIBS})
 				if(TARGET ${boostlibtarget})
 					message("linking boostlibtarget: ${boostlibtarget}")
-					target_link_libraries(${this_target} PUBLIC ${boostlibtarget})
+					target_link_libraries(${this_target} ${visibility} ${boostlibtarget})
 				else()
 					message("skipping linking ${boostlibtarget}, the target not found")
 				endif()
@@ -290,13 +290,13 @@ macro(link_boost_libs)
 			foreach (boostcomponent ${BOOST_ADDITIONAL_COMPONENTS})
 				if(TARGET Boost::${boostcomponent})
 					message("linking boostlibtarget: Boost::${boostcomponent}")
-					target_link_libraries(${this_target} PUBLIC Boost::${boostcomponent})
+					target_link_libraries(${this_target} ${visibility} Boost::${boostcomponent})
 				else()
 					string(TOUPPER ${boostcomponent} boostcomponent)
 					message("include ${boostcomponent}: ${Boost_${boostcomponent}_INCLUDE_DIR}")
-					target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_INCLUDE_DIR})
+					target_link_libraries(${this_target} ${visibility} ${Boost_${boostcomponent}_INCLUDE_DIR})
 					message("linking ${boostcomponent}: ${Boost_${boostcomponent}_LIBRARY}")
-					target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_LIBRARY})
+					target_link_libraries(${this_target} ${visibility} ${Boost_${boostcomponent}_LIBRARY})
 				endif()
 			endforeach()
 		endif()
@@ -427,7 +427,19 @@ macro(lib)
 		set(USE_SHARED INTERFACE)
 	endif()
     add_library(${this_target} ${USE_SHARED} ${all_source_files})
+	set(incls
+        ${OPENMIND_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${${this_target}_INCLUDE_DIR}
+        )
 	APPLY_TARGET_COMMONS(${this_target})
+	if(target_type STREQUAL "INTERFACE_LIBRARY")
+		target_include_directories(${this_target} ${visibility}
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+			$<INSTALL_INTERFACE:include>
+		)
+	endif()
+
 	if(CMAKE_CXX_STANDARD)
 		set_target_properties(${this_target} PROPERTIES CXX_STANDARD ${CMAKE_CXX_STANDARD})
 	endif(CMAKE_CXX_STANDARD)
@@ -435,14 +447,6 @@ macro(lib)
 		FOLDER "libs"
 		PUBLIC_HEADER "${headers}"
 		)
-    target_include_directories(${this_target} PUBLIC
-        ${OPENMIND_INCLUDE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${${this_target}_INCLUDE_DIR}
-        INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-        )
     #add_dependencies(${this_target} prerequisites)
 	message("add_library(${this_target} ${src})")
 	link_boost_libs()
