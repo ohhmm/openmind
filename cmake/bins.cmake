@@ -100,7 +100,7 @@ endmacro(glob_source_files)
 function(apply_target_commons this_target)
 	string(REPLACE "-" "" dashless ${this_target})
 	string(TOUPPER ${dashless} this_target_up)
-	target_compile_definitions(${this_target} PUBLIC
+	set(defs 
 		HAS_BOOST
 		BOOST_SYSTEM_NO_DEPRECATED
 		BOOST_ERROR_CODE_HEADER_ONLY
@@ -112,22 +112,23 @@ function(apply_target_commons this_target)
 		-D_${dashless}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		-D_${this_target_up}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 	)
+	set(opts
+		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-fcoroutines>
+	)
 	if(OPENMIND_USE_OPENCL)
-		target_compile_definitions(${this_target} PUBLIC
+		set(defs ${defs}
 			OPENMIND_USE_OPENCL
 			OPENMIND_MATH_USE_OPENCL
 			)
 		if(OPENMIND_DEBUG_CHECKS)
-			target_compile_definitions(${this_target} PUBLIC BOOST_COMPUTE_DEBUG_KERNEL_COMPILATION)
+			set(defs ${defs} BOOST_COMPUTE_DEBUG_KERNEL_COMPILATION)
 		endif()
 		if(OPENMIND_USE_OPENGL)
-			target_compile_definitions(${this_target} PUBLIC
-				OPENMIND_USE_OPENGL
-				)
+			set(defs ${defs} OPENMIND_USE_OPENGL)
 		endif()
 	endif()
 	if(NOT OPENMIND_DEBUG_CHECKS)
-		target_compile_definitions(${this_target} PUBLIC NOOMDEBUG)
+		set(defs ${defs} NOOMDEBUG)
 	endif()
 	set_target_properties(${this_target} PROPERTIES
 		CXX_STANDARD 23
@@ -138,21 +139,19 @@ function(apply_target_commons this_target)
 		MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:DebugDLL>
 		POSITION_INDEPENDENT_CODE ON
 		)
-	target_compile_options(${this_target} PUBLIC
-		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-fcoroutines>
-	)
-	target_compile_features(${this_target} PUBLIC
-		cxx_std_23
-	)
 	if(OPENMIND_USE_OPENCL_INTEL_SYCL)
-		target_compile_options(${this_target} PUBLIC ${SYCL_FLAGS})
-		target_include_directories(${this_target} PUBLIC
+		set(opts ${opts} ${SYCL_FLAGS})
+		set(incls ${incls} 
 			"${IntelSYCL_DIR}/../../../include"
 			"${IntelSYCL_DIR}/../../../include/sycl"
 		)
 	endif(OPENMIND_USE_OPENCL_INTEL_SYCL)
+    set(ldirs
+		${Boost_LIBRARY_DIRS}
+		${CMAKE_BINARY_DIR}/bin
+		)
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-		target_compile_definitions(${this_target} PUBLIC
+		set(defs ${defs} 
 			APPLE_CONSTEXPR=
 			NO_APPLE_CONSTEXPR=constexpr
 			NO_CLANG_CONSTEXPR=constexpr
@@ -161,7 +160,7 @@ function(apply_target_commons this_target)
 			MSVC
 			)
 		if(NOT OPENMIND_USE_VCPKG)
-			target_compile_definitions(${this_target} PUBLIC
+			set(defs ${defs} 
 				$<$<CONFIG:DEBUG>:BOOST_ALL_STATIC_LINK>
 				$<$<CONFIG:Release>:BOOST_ALL_STATIC_LINK>
 				$<$<CONFIG:RelWithDebInfo>:BOOST_ALL_STATIC_LINK>
@@ -169,11 +168,11 @@ function(apply_target_commons this_target)
 				)
 		endif()
 		if(OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
-			target_compile_definitions(${this_target} PUBLIC
+			set(defs ${defs} 
 				BOOST_ALL_NO_LIB
 				)
 		endif()
-		target_compile_options(${this_target} PUBLIC
+		set(opts ${opts}
 			/bigobj
 			/FS
 			/MP
@@ -183,38 +182,38 @@ function(apply_target_commons this_target)
 			$<$<CONFIG:Release>:/MT>
 			$<$<CONFIG:RelWithDebInfo>:/ZI>
 			)
-		#target_compile_options(${this_target} PUBLIC REMOVE
+		#target_compile_options(${this_target} INTERFACE REMOVE
 		#	$<$<CONFIG:DEBUG>:/Zi>
 		#	$<$<CONFIG:RelWithDebInfo>:/Zi>
 		#)
-		target_link_options(${this_target} PUBLIC
+		set(lopts
 			$<$<CONFIG:DEBUG>:/LTCG:OFF>
 			$<$<CONFIG:RelWithDebInfo>:/LTCG:OFF>
 			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-wunicode>
 			)
 		message("${CMAKE_BINARY_DIR}/bin")
         if(EXISTS ${Boost_INCLUDE_DIR}/stage/lib)
-            target_link_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR}/stage/lib)
+			set(ldirs ${Boost_INCLUDE_DIR}/stage/lib)
         endif()
         if(EXISTS ${EXTERNAL_FETCHED_BOOST}/stage/lib)
-            target_link_directories(${this_target} PUBLIC ${EXTERNAL_FETCHED_BOOST}/stage/lib)
+            set(ldirs ${EXTERNAL_FETCHED_BOOST}/stage/lib)
         endif()
         if(EXISTS C:/Boost/lib)
-            target_link_directories(${this_target} PUBLIC C:/Boost/lib)
+            set(ldirs C:/Boost/lib)
         endif()
 	else()
-		target_compile_definitions(${this_target} PUBLIC
+		set(defs ${defs} 
 			MSVC_CONSTEXPR=
             NO_MSVC_CONSTEXPR=constexpr
 			)
 		if(APPLE)
-			target_compile_definitions(${this_target} PUBLIC
+			set(defs ${defs} 
 				APPLE_CONSTEXPR=constexpr
 				NO_APPLE_CONSTEXPR=
 				NO_CLANG_CONSTEXPR=
 				)
 		else()
-			target_compile_definitions(${this_target} PUBLIC
+			set(defs ${defs} 
 				APPLE_CONSTEXPR=
 				NO_APPLE_CONSTEXPR=constexpr
                 $<$<CXX_COMPILER_ID:Clang>:NO_CLANG_CONSTEXPR=>
@@ -223,27 +222,41 @@ function(apply_target_commons this_target)
 		endif()
 	endif()
 
-	target_include_directories(${this_target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+	set(incls ${incls}  ${CMAKE_CURRENT_SOURCE_DIR})
 	if(Boost_INCLUDE_DIR)
-		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIR})
+		set(incls ${incls}  ${Boost_INCLUDE_DIR})
 	endif()
 	if(Boost_INCLUDE_DIRS)
-		target_include_directories(${this_target} PUBLIC ${Boost_INCLUDE_DIRS})
+		set(incls ${incls}  ${Boost_INCLUDE_DIRS})
 	endif()
 	if(EXTERNAL_FETCHED_BOOST)
-		target_include_directories(${this_target} PUBLIC ${EXTERNAL_FETCHED_BOOST})
+		set(incls ${incls}  ${EXTERNAL_FETCHED_BOOST})
 	endif()
 
-    target_link_directories(${this_target} PUBLIC
-		${Boost_LIBRARY_DIRS}
-		${CMAKE_BINARY_DIR}/bin
-		)
-
+	target_include_directories(${this_target} INTERFACE ${incls})
+    target_link_directories(${this_target} INTERFACE ${ldirs})
 	get_target_property(target_type ${this_target} TYPE)
+	if(target_type STREQUAL "INTERFACE_LIBRARY")
+		message(STATUS "${this_target} is INTERFACE")
+		set(defs INTERFACE ${defs})
+		set(opts INTERFACE ${opts})
+		target_compile_features(${this_target} INTERFACE cxx_std_23)
+		set(lopts INTERFACE ${lopts})
+	else()
+		set(defs INTERFACE ${defs} PUBLIC ${defs})
+		set(opts INTERFACE ${opts} PUBLIC ${opts})
+		target_compile_features(${this_target} INTERFACE cxx_std_23 PUBLIC cxx_std_23)
+		target_include_directories(${this_target} PUBLIC ${incls})
+		set(lopts INTERFACE ${lopts} PUBLIC ${lopts})
+	    target_link_directories(${this_target} PUBLIC ${ldirs})
+	endif()
+	target_compile_definitions(${this_target} ${defs})
+	target_compile_options(${this_target} ${opts})
+	target_link_options(${this_target} ${lopts})
+
 	if (target_type STREQUAL "EXECUTABLE")
 
 	endif ()
-
 endfunction(apply_target_commons)
 
 macro(link_boost_libs)
