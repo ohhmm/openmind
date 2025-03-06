@@ -104,7 +104,7 @@ macro(glob_source_files)
     SET_SOURCE_FILES_PROPERTIES(${headers} PROPERTIES HEADER_FILE_ONLY ON)
 endmacro(glob_source_files)
 
-function(apply_target_commons this_target)
+macro(apply_target_commons this_target)
 	string(REPLACE "-" "" dashless ${this_target})
 	string(TOUPPER ${dashless} this_target_up)
 	set(defs 
@@ -247,6 +247,7 @@ function(apply_target_commons this_target)
     target_link_directories(${this_target} INTERFACE ${ldirs})
 	get_target_property(target_type ${this_target} TYPE)
 	if(target_type STREQUAL "INTERFACE_LIBRARY")
+		set(visibility INTERFACE)
 		message(STATUS "${this_target} is INTERFACE")
 		set(visibility INTERFACE)
 		set(defs INTERFACE ${defs})
@@ -269,7 +270,7 @@ function(apply_target_commons this_target)
 	if (target_type STREQUAL "EXECUTABLE")
 
 	endif ()
-endfunction(apply_target_commons)
+endmacro(apply_target_commons)
 
 macro(link_boost_libs)
 	if(Boost_FOUND)
@@ -277,7 +278,7 @@ macro(link_boost_libs)
 			foreach (boostlibtarget ${BOOST_LINK_LIBS})
 				if(TARGET ${boostlibtarget})
 					message("linking boostlibtarget: ${boostlibtarget}")
-					target_link_libraries(${this_target} PUBLIC ${boostlibtarget})
+					target_link_libraries(${this_target} ${visibility} ${boostlibtarget})
 				else()
 					message("skipping linking ${boostlibtarget}, the target not found")
 				endif()
@@ -285,18 +286,34 @@ macro(link_boost_libs)
 			foreach (boostcomponent ${BOOST_ADDITIONAL_COMPONENTS})
 				if(TARGET Boost::${boostcomponent})
 					message("linking boostlibtarget: Boost::${boostcomponent}")
-					target_link_libraries(${this_target} PUBLIC Boost::${boostcomponent})
+					target_link_libraries(${this_target} ${visibility} Boost::${boostcomponent})
 				else()
 					string(TOUPPER ${boostcomponent} boostcomponent)
 					message("include ${boostcomponent}: ${Boost_${boostcomponent}_INCLUDE_DIR}")
-					target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_INCLUDE_DIR})
+					target_link_libraries(${this_target} ${visibility} ${Boost_${boostcomponent}_INCLUDE_DIR})
 					message("linking ${boostcomponent}: ${Boost_${boostcomponent}_LIBRARY}")
-					target_link_libraries(${this_target} PUBLIC ${Boost_${boostcomponent}_LIBRARY})
+					target_link_libraries(${this_target} ${visibility} ${Boost_${boostcomponent}_LIBRARY})
 				endif()
 			endforeach()
 		endif()
 	endif()
 endmacro()
+
+macro(apply_test_commons this_target)
+	foreach(dir
+		/usr/local/lib
+		${Boost_INCLUDE_DIR}/stage/lib
+		${Boost_INCLUDE_DIR}/../../lib
+		${EXTERNAL_FETCHED_BOOST}/stage/lib
+		${EXTERNAL_FETCHED_BOOST}/../../lib
+		${CMAKE_BINARY_DIR}/lib
+		${CMAKE_BINARY_DIR}/lib64
+		)
+		if(EXISTS ${dir})
+			target_link_directories(${this_target} ${visibility} ${dir})
+		endif()
+	endforeach()	
+endmacro(apply_test_commons)
 
 function(test)
     string(STRIP "${ARGN}" test_libs)
@@ -338,22 +355,8 @@ function(test)
 
 		set(this_target ${TEST_NAME})
 		apply_target_commons(${TEST_NAME})
-
-		foreach(dir
-			/usr/local/lib
-			${Boost_INCLUDE_DIR}/stage/lib
-			${Boost_INCLUDE_DIR}/../../lib
-			${EXTERNAL_FETCHED_BOOST}/stage/lib
-			${EXTERNAL_FETCHED_BOOST}/../../lib
-			${CMAKE_BINARY_DIR}/lib
-			${CMAKE_BINARY_DIR}/lib64
-			)
-
-			if(EXISTS ${dir})
-				target_link_directories(${TEST_NAME} PUBLIC ${dir})
-			endif()
-
-		endforeach()
+		apply_test_commons(${TEST_NAME})
+		target_link_libraries(${TEST_NAME} PUBLIC ${parent_target})
 
 		if(Boost_FOUND)
 			message("Boost_FOUND: ${Boost_FOUND}")
@@ -407,7 +410,15 @@ macro(lib)
     message("\nCreating Library: ${this_target}")
 	check_dep_file()
 	glob_source_files()
+	if(NOT all_source_files)
+		set(USE_SHARED INTERFACE)
+	endif()
     add_library(${this_target} ${USE_SHARED} ${all_source_files})
+	set(incls
+        ${OPENMIND_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${${this_target}_INCLUDE_DIR}
+        )
 	APPLY_TARGET_COMMONS(${this_target})
 	if(CMAKE_CXX_STANDARD)
 		set_target_properties(${this_target} PROPERTIES CXX_STANDARD ${CMAKE_CXX_STANDARD})
@@ -416,11 +427,6 @@ macro(lib)
 		FOLDER "libs"
 		PUBLIC_HEADER "${headers}"
 		)
-    target_include_directories(${this_target} PUBLIC
-        ${OPENMIND_INCLUDE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${${this_target}_INCLUDE_DIR}
-        )
     #add_dependencies(${this_target} prerequisites)
 	message("add_library(${this_target} ${src})")
 	link_boost_libs()
