@@ -63,7 +63,9 @@ jobs:
         command: |
           echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
           brew update || brew update || brew update || brew update || brew update
-          brew install cmake ninja autoconf automake autoconf-archive
+          brew install cmake ninja autoconf automake autoconf-archive libtool texinfo
+        # Ensure autoconf tools are properly linked and in PATH
+        brew link --force autoconf automake libtool
           cmake --version
           ninja --version
           clang --version
@@ -91,7 +93,7 @@ jobs:
       with:
         timeout_minutes: 10
         max_attempts: 3
-        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_OVERLAY_PORTS=${{github.workspace}}/vcpkg-overlays/ports ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
