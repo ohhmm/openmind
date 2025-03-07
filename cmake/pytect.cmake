@@ -49,8 +49,8 @@ macro(pytest)
                 WORKING_DIRECTORY $<TARGET_FILE_DIR:${parent_target}>
             )
             set_property(TEST ${TEST_NAME} PROPERTY FOLDER "test/pytest")
-            if(MSVC)
-                set_property(TEST ${TEST_NAME} PROPERTY DISABLED Debug) # FIXME
+            if(OPENMIND_USE_VCPKG)
+                set_property(TEST ${TEST_NAME} PROPERTY DISABLED $<$<CONFIG:DEBUG>:ON>)
             endif()
         endforeach()
     endif()
