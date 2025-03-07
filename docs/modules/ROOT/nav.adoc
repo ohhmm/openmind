@@ -14,3 +14,4 @@
 * Reference
 ** xref:reference/api.adoc[API Reference]
 ** xref:reference/configuration.adoc[Configuration]
+** xref:reference/knowledge_base.adoc[Knowledge Base]
