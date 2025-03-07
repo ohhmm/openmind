@@ -14,6 +14,7 @@ OpenMind is a C++ AGI infrastructure framework implementing:
 * xref:development/building.adoc[Development]: Build process and contribution
 * xref:reference/api.adoc[API]: Interface specifications
 * xref:reference/configuration.adoc[Configuration]: System parameters
+* xref:skrypt/screenshots.adoc[SKRYPT Screenshots]: Visual documentation of the SKRYPT system
 
 == Quick Links
 

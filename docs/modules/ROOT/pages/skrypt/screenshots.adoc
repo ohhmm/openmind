@@ -1,0 +1,56 @@
+= SKRYPT Screenshots
+:description: Visual documentation of the SKRYPT system
+
+[.lead]
+This page contains screenshots of the SKRYPT system, providing visual documentation of its components and functionality.
+
+== Overview
+
+The SKRYPT system is a component that works with the OpenMind framework, providing specialized capabilities for mathematical expressions and variable management.
+
+== Screenshots Gallery
+
+=== Screenshot 1
+image::../../../../../screenshots/skrypt/image-01.png[SKRYPT Screenshot 1, 800]
+
+=== Screenshot 2
+image::../../../../../screenshots/skrypt/image-02.png[SKRYPT Screenshot 2, 800]
+
+=== Screenshot 3
+image::../../../../../screenshots/skrypt/image-03.png[SKRYPT Screenshot 3, 800]
+
+=== Screenshot 4
+image::../../../../../screenshots/skrypt/image-04.png[SKRYPT Screenshot 4, 800]
+
+=== Screenshot 5
+image::../../../../../screenshots/skrypt/image-05.png[SKRYPT Screenshot 5, 800]
+
+=== Screenshot 6
+image::../../../../../screenshots/skrypt/image-06.png[SKRYPT Screenshot 6, 800]
+
+=== Screenshot 7
+image::../../../../../screenshots/skrypt/image-07.png[SKRYPT Screenshot 7, 800]
+
+=== Screenshot 8
+image::../../../../../screenshots/skrypt/image-08.png[SKRYPT Screenshot 8, 800]
+
+=== Screenshot 9
+image::../../../../../screenshots/skrypt/image-09.png[SKRYPT Screenshot 9, 800]
+
+=== Screenshot 10
+image::../../../../../screenshots/skrypt/image-10.png[SKRYPT Screenshot 10, 800]
+
+=== Screenshot 11
+image::../../../../../screenshots/skrypt/image-11.png[SKRYPT Screenshot 11, 800]
+
+=== Screenshot 12
+image::../../../../../screenshots/skrypt/image-12.png[SKRYPT Screenshot 12, 800]
+
+=== Screenshot 13
+image::../../../../../screenshots/skrypt/image-13.png[SKRYPT Screenshot 13, 800]
+
+=== Screenshot 14
+image::../../../../../screenshots/skrypt/image-14.png[SKRYPT Screenshot 14, 800]
+
+=== Screenshot 15
+image::../../../../../screenshots/skrypt/image-15.png[SKRYPT Screenshot 15, 800]
