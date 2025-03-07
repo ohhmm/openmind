@@ -1,0 +1,39 @@
+= Knowledge Base
+:description: Consolidated knowledge base for the ohhmm/openmind repository
+
+This page provides access to the consolidated knowledge base for the ohhmm/openmind repository.
+
+== Consolidated Knowledge Base
+
+The consolidated knowledge base document contains comprehensive information about the ohhmm/openmind repository, including:
+
+* Project structure
+* Core systems
+* Build system and dependencies
+* Development environment
+* Testing
+* Implementation details
+* Development guidelines
+
+link:https://app.devin.ai/attachments/422f0be7-baa9-45bf-905c-45ebe3462f20/consolidated_knowledge_base.pdf[Download Consolidated Knowledge Base (PDF)]
+
+== Contradictions Analysis
+
+The contradictions analysis document identifies and resolves contradictions found in the knowledge base:
+
+* Testing approach contradictions
+* Root cause analysis timing
+* Approach to refactoring
+* New method implementation workflow
+* Effectiveness measurement
+
+link:https://app.devin.ai/attachments/123dee80-8f57-4ef6-8aef-097848978abf/contradictions.pdf[Download Contradictions Analysis (PDF)]
+
+== Local Copies
+
+Local copies of these documents are available in the `docs/knowledge_base/` directory:
+
+* `consolidated_knowledge_base.md` - Markdown version of the consolidated knowledge base
+* `consolidated_knowledge_base.pdf` - PDF version of the consolidated knowledge base
+* `contradictions.md` - Markdown version of the contradictions analysis
+* `contradictions.pdf` - PDF version of the contradictions analysis

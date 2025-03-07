@@ -14,6 +14,15 @@ The OpenMind project is an infrastructure framework which mission is to allow ne
 1. can make modified self copy within required inherited constraints (morphing)
 1. impossible modification or deletion of existing knowledge or constraints 
 
+## Knowledge Base
+
+The project maintains a consolidated knowledge base with comprehensive information about the repository structure, development guidelines, and best practices:
+
+- [Consolidated Knowledge Base](docs/knowledge_base/consolidated_knowledge_base.pdf) - Contains unified project knowledge
+- [Contradictions Analysis](docs/knowledge_base/contradictions.pdf) - Documents and resolves contradictions in the knowledge base
+
+For more information, see the [Knowledge Base documentation](docs/modules/ROOT/pages/reference/knowledge_base.adoc).
+
 Compilation:
 
   Debian/Ubuntu:
