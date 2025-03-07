@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        config: [RelWithDebInfo]
+        config: [RelWithDebInfo, Debug]
     runs-on: ${{ matrix.os }}
 
     steps:
