@@ -64,6 +64,42 @@ This document identifies contradictions and inconsistencies found in the knowled
 
 **Resolution**: The first statement provides a relative comparison of time spent, while the second suggests an absolute measurement as a percentage of life expectancy. Both can be valid perspectives on measuring effectiveness, with the second providing a more dramatic framing of the same underlying concept.
 
+### 6. PR Creation Workflow
+
+**Contradiction**: There are conflicting instructions about creating PRs.
+
+**Source 1**:
+> "Create pull requests directly from existing commits first, without making any local code changes or running tests."
+
+**Source 2**:
+> "Before pushing changes, perform `git pull --rebase --autostash origin main`."
+
+**Resolution**: The first statement suggests creating PRs directly from existing commits without local changes, while the second implies making local changes and then rebasing before pushing. The correct approach depends on the specific task - use the first approach when working with existing code that doesn't need modification, and the second when making new changes.
+
+### 7. Commit Organization in PRs
+
+**Contradiction**: There are different instructions about how many commits should be in a PR.
+
+**Source 1**:
+> "Each PR must contain exactly one commit, even when working with multiple related commits."
+
+**Source 2**:
+> "When resolving merge conflicts in pull requests, squash commits to remove the conflict resolution history before merging."
+
+**Resolution**: Both statements actually align on the principle that PRs should ultimately contain a single commit, but the second provides additional guidance for handling merge conflicts. The correct approach is to ensure each PR contains exactly one commit, and if merge conflicts occur, squash the resolution commits.
+
+### 8. Local Testing vs. CI Testing
+
+**Contradiction**: There are different emphases on local testing versus CI testing.
+
+**Source 1**:
+> "Before pushing changes that enable or modify tests, verify that the tests pass successfully in a local environment first."
+
+**Source 2**:
+> "You should generally not worry about running the code or local testing. Prefer to use the tests that are automatically run in CI as a feedback loop for your PRs."
+
+**Resolution**: The first statement recommends local testing before pushing test changes, while the second suggests relying on CI for testing. The correct approach is to use local testing for test-specific changes to avoid unnecessary CI runs, but rely on CI for general validation of other changes.
+
 ## Conclusion
 
-The contradictions identified are mostly differences in emphasis or context rather than direct logical contradictions. In most cases, the more specific or conservative approach should be followed when there's any ambiguity.
+The contradictions identified are mostly differences in emphasis or context rather than direct logical contradictions. In most cases, the more specific or conservative approach should be followed when there's any ambiguity. The key principle is to adapt the approach based on the specific task at hand, while maintaining the core values of integrity, thoroughness, and efficiency.
