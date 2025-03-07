@@ -14,10 +14,6 @@
 * Reference
 ** xref:reference/api.adoc[API Reference]
 ** xref:reference/configuration.adoc[Configuration]
-<<<<<<< Updated upstream
 ** xref:reference/knowledge_base.adoc[Knowledge Base]
-||||||| constructed merge base
-=======
 * SKRYPT
 ** xref:skrypt/screenshots.adoc[Screenshots]
->>>>>>> Stashed changes
