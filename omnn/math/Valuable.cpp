@@ -411,20 +411,19 @@ namespace omnn::math {
     void Optimize(Valuable::solutions_t& s) {
         Valuable::solutions_t distinct;
         Valuable::OptimizeOn enable;
-        while (s.size()) {
-			auto it = s.begin();
-			auto v = std::move(s.extract(it).value());
+        while (!s.empty()) {
+            auto it = s.begin();
+            auto v = std::move(s.extract(it).value());
             v.optimize();
             distinct.emplace(std::move(v));
-		}
-		std::swap(s, distinct);
+        }
+        std::swap(s, distinct);
     }
     } // namespace
     Valuable::Valuable(solutions_t&& s)
     {
-        if (!optimizations
-            || !std::all_of(s.begin(), s.end(), [](auto& v){ return v.is_optimized(); })
-        ) {
+        if (!optimizations || !std::all_of(s.begin(), s.end(), 
+            [](const auto& v) { return v.is_optimized(); })) {
             Optimize(s);
         }
 
@@ -436,117 +435,132 @@ namespace omnn::math {
         }
         std::cout << ']' << std::endl;
 #endif
-        switch (s.size()) {
-        case 0: LOG_AND_IMPLEMENT("Empty solutions set"); break;
-        case 1: operator=(*it); break;
-        case 2: {
-            auto& _1 = *it++;
-            auto& _2 = *it;
-            operator=(MergeOr(_1, _2));
-            break;
+        // Process solutions based on size
+        const auto size = s.size();
+        if (size == 0) {
+            std::cerr << "Empty solutions set" << std::endl;
+            return;
         }
-        case 3: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it;
-            operator=(MergeOr(_1, _2, _3));
-            break;
+        if (size == 1) {
+            operator=(std::move(*s.begin()));
+            return;
         }
-        case 4: {
-            auto& _1 = *it++;
-            auto& _2 = *it++;
-            auto& _3 = *it++;
-            auto& _4 = *it;
-            operator=(MergeOr(_1, _2, _3, _4));
-            break;
+        if (size == 2) {
+            auto it = s.begin();
+            Valuable _1 = std::move(*it++);
+            Valuable _2 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2)));
+            return;
         }
-        default:
-            solutions_t pairs;
-            for (; it != s.end();) {
-                auto it2 = it;
-                ++it2;
-                auto neg = -*it;
-                bool found = {};
-                for (; it2 != s.end();) {
-                    found = it2->operator==(neg);
-                    if (found) {
-                        pairs.emplace(MergeOr(*it, neg));
-                        s.erase(it2);
-                        s.erase(it++);
-                        break;
-                    } else {
-                        ++it2;
+        if (size == 3) {
+            auto it = s.begin();
+            Valuable _1 = std::move(*it++);
+            Valuable _2 = std::move(*it++);
+            Valuable _3 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3)));
+            return;
+        }
+        if (size == 4) {
+            auto it = s.begin();
+            Valuable _1 = std::move(*it++);
+            Valuable _2 = std::move(*it++);
+            Valuable _3 = std::move(*it++);
+            Valuable _4 = std::move(*it);
+            operator=(MergeOr(std::move(_1), std::move(_2), std::move(_3), std::move(_4)));
+            return;
+        }
+        {
+                solutions_t pairs;
+                for (auto it = s.begin(); it != s.end();) {
+                    auto neg = -*it;
+                    bool found = false;
+                    for (auto it2 = std::next(it); it2 != s.end(); ++it2) {
+                        if (it2->operator==(neg)) {
+                            pairs.emplace(MergeOr(std::move(*it), std::move(neg)));
+                            it = s.erase(it);
+                            s.erase(it2);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        ++it;
                     }
                 }
-                if (!found) {
-                    ++it;
-                }
-            }
-            if (s.size() == 0) {
-                s = std::move(pairs);
-            }
 
-            if (pairs.size()) {
-                operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
-            } else {
-                while(s.size() > 1){
+                if (s.empty()) {
+                    s = std::move(pairs);
+                } else if (!pairs.empty()) {
+                    operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
+                    return;
+                }
+
+                while (s.size() > 1) {
                     solutions_t ss;
-				    while(s.size() >= 4){
-					    auto it = s.begin();
-					    auto& _1 = *it++;
-					    auto& _2 = *it++;
-                        auto& _3 = *it++;
-                        auto& _4 = *it++;
-                        ss.emplace(MergeOr(_1, _2, _3, _4));
-				    }
-                    if(s.size()){
-					    ss.emplace(std::move(s));
+                    while (s.size() >= 4) {
+                        auto it = s.begin();
+                        Valuable _1 = std::move(*it++);
+                        Valuable _2 = std::move(*it++);
+                        Valuable _3 = std::move(*it++);
+                        Valuable _4 = std::move(*it);
+                        ss.emplace(MergeOr(std::move(_1), std::move(_2), 
+                                         std::move(_3), std::move(_4)));
+                        s.erase(s.begin(), std::next(s.begin(), 4));
+                    }
+                    if (!s.empty()) {
+                        ss.emplace(std::move(s));
                     }
                     s = std::move(ss);
                 }
-                operator=(std::move(s.extract(s.begin()).value()));
-			}
+
+                if (!s.empty()) {
+                    operator=(std::move(s.extract(s.begin()).value()));
+                }
 
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-            std::stringstream ss;
-            ss << '(';
-            for (auto& v : s)
-                ss << ' ' << v;
-            ss << " )";
-            std::cout << ss.str();
-            LOG_AND_IMPLEMENT("Implement disjunctive merging algorithm for " << s.size() << " items " << ss.str());
-#else
-            LOG_AND_IMPLEMENT("Implement MergeOr for three items and research if we could combine with case 2 for each couple in the set in paralell and then to the resulting set 'recoursively'")
+                if (!s.empty()) {
+                    std::stringstream ss;
+                    ss << '(';
+                    for (const auto& v : s) {
+                        ss << ' ' << v;
+                    }
+                    ss << " )";
+                    std::cerr << "Disjunctive merging needed for " << s.size() << " items: " << ss.str() << std::endl;
+                }
 #endif
+                break;
+            }
         }
-
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
-        if(s.size() > 1){
+        // Debug output for final state
+        if (s.size() > 1) {
             std::stringstream ss;
             OptimizeOn oo;
             auto distinct = Distinct();
             if (distinct != s) {
                 ss << '(';
-                for (auto& v : s)
+                for (const auto& v : s) {
                     ss << ' ' << v;
+                }
                 ss << " ) <> (";
-                for (auto& v : distinct)
+                for (const auto& v : distinct) {
                     ss << ' ' << v;
-                ss << " ), ";
-                std::cout << ss.str();
+                }
+                ss << " )";
+                std::cerr << "Fix merge algorithm: " << ss.str() << std::endl;
 
-                constexpr auto isMultival = [](auto& item) {
+                constexpr auto isMultival = [](const auto& item) {
                     return item.IsMultival() == YesNoMaybe::Yes;
                 };
                 auto someWasMultival = std::any_of(s.begin(), s.end(), isMultival);
                 if (someWasMultival) {
                     solutions_t sDistinct;
-                    while (s.size()) {
+                    while (!s.empty()) {
                         auto item = std::move(s.extract(s.begin()).value());
                         item.optimize();
                         if (item.IsMultival() == YesNoMaybe::Yes) {
                             auto itemDistinct = item.Distinct();
-                            while (itemDistinct.size()) {
+                            while (!itemDistinct.empty()) {
                                 auto subitem = std::move(itemDistinct.extract(itemDistinct.begin()).value());
                                 subitem.optimize();
                                 sDistinct.emplace(std::move(subitem));
@@ -557,18 +571,21 @@ namespace omnn::math {
                     }
                     s = std::move(sDistinct);
                 }
-            }
 
-            if (distinct != s) {
-                ss << '(';
-                for (auto& v : s)
-                    ss << ' ' << v;
-                ss << " ) <> (";
-                for (auto& v : distinct)
-                    ss << ' ' << v;
-                ss << " )";
-                std::cout << ss.str();
-                LOG_AND_IMPLEMENT("Fix merge algorithm:" << ss.str());
+                // Output debug info for distinct solutions
+                if (distinct != s) {
+                    ss.str("");
+                    ss << '(';
+                    for (const auto& v : s) {
+                        ss << ' ' << v;
+                    }
+                    ss << " ) <> (";
+                    for (const auto& v : distinct) {
+                        ss << ' ' << v;
+                    }
+                    ss << " )";
+                    std::cerr << "Fix merge algorithm: " << ss.str() << std::endl;
+                }
             }
         }
 #endif
