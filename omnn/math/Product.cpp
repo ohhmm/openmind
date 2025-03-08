@@ -551,36 +551,78 @@ using namespace omnn::math;
         return std::any_of(begin(), end(), [](auto& m) { return m.IsZero(); });
     }
 
-    size_t Product::FillPolynomialCoefficients(std::vector<Valuable>& coefficients, const Variable& v) const {
-        size_t grade = 0;
-        std::vector<Valuable> productCoefficients;
-        std::vector<Valuable> memberCoefficients;
-        for (auto& item : members) {
-            auto g = item.FillPolynomialCoefficients(memberCoefficients, v);
-            if (g > grade)
-            {
-                grade = g;
-                if (productCoefficients.empty())
-                    productCoefficients = std::move(memberCoefficients);
-                else{
-                    auto memberCoefficientsSize = memberCoefficients.size();
-                    for (size_t i = 0; i < memberCoefficientsSize; ++i) {
-                        if (i == productCoefficients.size()) {
-                            productCoefficients.emplace_back(std::move(memberCoefficients[i]));
-                        } else {
-                            productCoefficients[i] *= std::move(memberCoefficients[i]);
-                        }
-                    }
-                }
-                memberCoefficients.clear();
+    const a_int& Product::ca() const {
+        static a_int coef = 1;
+        coef = 1;
+        // Handle direct integer coefficients
+        for (const auto& m : members) {
+            if (m.IsInt()) {
+                coef *= m.ca();
             }
         }
-        auto productCoefficientsSize = productCoefficients.size();
-        if (coefficients.size() < productCoefficientsSize)
-            coefficients.resize(productCoefficientsSize);
-        for (size_t i = 0; i < productCoefficientsSize; ++i)
-            coefficients[i] += std::move(productCoefficients[i]);
-        return grade;
+        // Handle coefficient in front of variable
+        if (size() == 2) {
+            auto it = begin();
+            if (it->IsInt()) {
+                auto next = std::next(it);
+                if (next->IsVa() || (next->IsExponentiation() && next->as<Exponentiation>().getBase().IsVa())) {
+                    coef *= it->ca();
+                }
+            }
+        }
+        return coef;
+    }
+
+    bool Product::MultiplyIfSimplifiable(const Valuable& v) {
+        // Handle coefficient multiplication with variables
+        if (v.IsProduct()) {
+            const auto& p = v.as<Product>();
+            if (p.size() == 2) {
+                auto it = p.begin();
+                if (it->IsInt()) {
+                    auto next = std::next(it);
+                    if (next->IsVa() || (next->IsExponentiation() && next->as<Exponentiation>().getBase().IsVa())) {
+                        // Combine coefficients and variables
+                        operator*=(v);
+                        optimize();
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        // Handle variable multiplication and exponentiation
+        if (v.IsVa()) {
+            const auto& va = v.as<Variable>();
+            for (auto it = members.begin(); it != members.end(); ++it) {
+                // Direct variable multiplication
+                if (it->Same(v)) {
+                    Update(it, Exponentiation(va, 2));
+                    optimize();
+                    return true;
+                }
+                // Increment existing exponentiation
+                if (it->IsExponentiation() && it->as<Exponentiation>().getBase() == va) {
+                    const auto& e = it->as<Exponentiation>();
+                    Update(it, va ^ (e.getExponentiation() + 1));
+                    optimize();
+                    return true;
+                }
+            }
+            // Handle coefficient normalization
+            if (size() >= 2) {
+                auto firstIt = begin();
+                auto secondIt = std::next(firstIt);
+                if (firstIt->IsInt() && secondIt->IsVa() && secondIt->as<Variable>() == va) {
+                    // Combine coefficient with variable
+                    Update(firstIt, *firstIt * va);
+                    members.erase(secondIt);
+                    optimize();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     Valuable Product::InCommonWith(const Valuable& v) const
@@ -874,37 +916,11 @@ using namespace omnn::math;
         return is;
     }
 
-   std::pair<bool, Valuable> Product::IsSummationSimplifiable(const Product& prod) const {
-       std::pair<bool, Valuable> is;
-       auto vars1 = getVaVal();
-       auto vars2 = prod.getVaVal();
-       auto commonVars = vars1.InCommonWith(vars2);
-       if (vars1 != constants::one && vars2 != constants::one && commonVars == constants::one) {
-           is.first = {};
-       } else {
-           auto common = InCommonWith(prod);
-           if (common != constants::one) {
-               auto thisNoCommon = *this / common;
-               if (!operator==(thisNoCommon) // multivalue scenarios
-                   && thisNoCommon.Complexity() <= Complexity())
-               {
-                   auto vNoCommon = prod / common;
-                   if (vNoCommon != prod && vNoCommon.Complexity() <= prod.Complexity()) {
-                       is = thisNoCommon.IsSummationSimplifiable(vNoCommon);
-                       if (is.first) {
-                           is.second *= common;
-                       }
-                   }
-               }
-           }
-       }
-       return is;
-   }
 
    std::pair<bool,Valuable> Product::IsSummationSimplifiable(const Valuable& v) const
    {
        std::pair<bool,Valuable> is;
-       is.first = v.IsZero();
+       is.first = v == 0;
        if (is.first)
            is.second = *this;
        else if ((is.first = operator==(v)))
@@ -933,9 +949,8 @@ using namespace omnn::math;
                  )
        {
            is = v.IsSummationSimplifiable(*this);
-       } else if (v.IsProduct()) {
-           is = IsSummationSimplifiable(v.as<Product>());
-       } else if (v.IsVa()
+       } else if (v.IsProduct()
+                  || v.IsVa()
                   || v.IsFraction()
                   ) {
            //OptimizeOn o;
@@ -956,6 +971,13 @@ using namespace omnn::math;
                    }
                }
            }
+//           auto& vp = v.as<Product>();
+//           auto sp = SplitSimplePart();
+//           auto vsp = vp.SplitSimplePart();
+//           if(sp.second == vsp.second){
+//
+//               IMPLEMENT
+//           }
        } else if (v.Is_i()) {
            auto it = GetFirstOccurence<MinusOneSurd>();
            is.first = it != end();
