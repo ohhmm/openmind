@@ -7,11 +7,14 @@ on:
 permissions:
   contents: read
   issues: read
+  pull-requests: read
 
 jobs:
   create-devin-session:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Get issue content
         id: issue-content
         run: |
