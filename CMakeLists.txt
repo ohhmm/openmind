@@ -447,6 +447,7 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib
                     )
 
 fold(
+	cmake
     omnn
     OpenMind
 )
