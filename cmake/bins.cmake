@@ -375,7 +375,7 @@ function(test)
 		apply_test_commons(${TEST_NAME})
 		target_link_libraries(${TEST_NAME} PUBLIC
 			${parent_target}
-			#testlibs
+			testlibs
 		)
 
 		message("using deps ${libs}")
