@@ -1,0 +1,25 @@
+name: Create Issue on Workflow Failure
+
+on:
+  workflow_run:
+    workflows: ['*']
+    types:
+      - completed
+
+jobs:
+  create-issue:
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "Workflow Failure: ${{ github.workflow }}",
+              body: `The workflow **${{ github.workflow }}** failed. Please investigate.`,
+              labels: ["automation", "devin"]
+            });
+            console.log(`Created issue: ${issue.html_url}`);
