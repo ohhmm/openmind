@@ -254,6 +254,10 @@ function(apply_target_commons this_target)
 		set(opts INTERFACE ${opts})
 		target_compile_features(${this_target} INTERFACE cxx_std_23)
 		set(lopts INTERFACE ${lopts})
+		target_include_directories(${this_target} INTERFACE
+		    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+			$<INSTALL_INTERFACE:include>
+        )
 	else()
 		set(visibility PUBLIC)
 		set(defs INTERFACE ${defs} PUBLIC ${defs})
@@ -299,6 +303,35 @@ macro(link_boost_libs)
 	endif()
 endmacro()
 
+function(apply_test_commons this_target)
+	get_target_property(target_type ${this_target} TYPE)
+	if(target_type STREQUAL "INTERFACE_LIBRARY")
+		set(visibility INTERFACE)
+	else()
+		set(visibility PUBLIC)
+	endif()
+	foreach(dir
+		/usr/local/lib
+		${Boost_INCLUDE_DIR}/stage/lib
+		${Boost_INCLUDE_DIR}/../../lib
+		${EXTERNAL_FETCHED_BOOST}/stage/lib
+		${EXTERNAL_FETCHED_BOOST}/../../lib
+		${CMAKE_BINARY_DIR}/lib
+		${CMAKE_BINARY_DIR}/lib64
+		)
+		if(EXISTS ${dir})
+			target_link_directories(${this_target} ${visibility} ${dir})
+		endif()
+	endforeach()	
+	if(Boost_FOUND)
+		message("Boost_FOUND: ${Boost_FOUND}")
+		if(NOT MSVC OR OPENMIND_USE_CONAN)
+			message("NOT MSVC OR OPENMIND_USE_CONAN, using deps ${BOOST_TEST_LINK_LIBS}")
+			deps(${BOOST_TEST_LINK_LIBS})
+		endif()
+	endif()
+endfunction(apply_test_commons)
+
 function(test)
     string(STRIP "${ARGN}" test_libs)
 	get_filename_component(parent_target ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
@@ -339,30 +372,12 @@ function(test)
 
 		set(this_target ${TEST_NAME})
 		apply_target_commons(${TEST_NAME})
+		apply_test_commons(${TEST_NAME})
+		target_link_libraries(${TEST_NAME} PUBLIC
+			${parent_target}
+			#testlibs
+		)
 
-		foreach(dir
-			/usr/local/lib
-			${Boost_INCLUDE_DIR}/stage/lib
-			${Boost_INCLUDE_DIR}/../../lib
-			${EXTERNAL_FETCHED_BOOST}/stage/lib
-			${EXTERNAL_FETCHED_BOOST}/../../lib
-			${CMAKE_BINARY_DIR}/lib
-			${CMAKE_BINARY_DIR}/lib64
-			)
-
-			if(EXISTS ${dir})
-				target_link_directories(${TEST_NAME} PUBLIC ${dir})
-			endif()
-
-		endforeach()
-
-		if(Boost_FOUND)
-			message("Boost_FOUND: ${Boost_FOUND}")
-			if(NOT MSVC OR OPENMIND_USE_CONAN)
-				message("NOT MSVC OR OPENMIND_USE_CONAN, using deps ${BOOST_TEST_LINK_LIBS}")
-				deps(${BOOST_TEST_LINK_LIBS})
-			endif()
-		endif()
 		message("using deps ${libs}")
 		deps(${libs})
 
@@ -408,6 +423,9 @@ macro(lib)
     message("\nCreating Library: ${this_target}")
 	check_dep_file()
 	glob_source_files()
+	if(NOT all_source_files)
+		set(USE_SHARED INTERFACE)
+	endif()
     add_library(${this_target} ${USE_SHARED} ${all_source_files})
 	APPLY_TARGET_COMMONS(${this_target})
 	if(CMAKE_CXX_STANDARD)
@@ -421,6 +439,9 @@ macro(lib)
         ${OPENMIND_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${${this_target}_INCLUDE_DIR}
+        INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
         )
     #add_dependencies(${this_target} prerequisites)
 	message("add_library(${this_target} ${src})")
