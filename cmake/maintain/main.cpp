@@ -91,8 +91,10 @@ bool rebase(std::string_view branch, std::string_view onto = "origin/main") {
                 code = continius.exit_code();
                 std::cout << "exit code: " << code << ' ' << line << std::endl;
                 ok = code == 0;
-            } else {
+            } else if(build()) {
                 break;
+            } else {
+                std::cerr << "Build failed after resolving conflict" << std::endl;
             }
         } else {
             break;
