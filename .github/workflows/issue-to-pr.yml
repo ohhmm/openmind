@@ -60,5 +60,8 @@ jobs:
             exit 1
           fi
 
+          # Add label to indicate issue is being processed
+          gh issue edit "${{ github.event.issue.number }}" --add-label "in-progress"
+          
           # Add comment to issue with session link
           gh issue comment "${{ github.event.issue.number }}" --body "Created Devin session: $SESSION_URL"
