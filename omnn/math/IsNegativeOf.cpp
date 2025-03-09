@@ -1,4 +1,5 @@
 #include "Integer.h"
+#include "Variable.h"
 
 namespace omnn {
 namespace math {
