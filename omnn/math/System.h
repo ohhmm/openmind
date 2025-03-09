@@ -7,6 +7,7 @@
 #include "Variable.h"
 
 #include <map>
+#include <boost/numeric/ublas/matrix.hpp>
 
 namespace omnn{
 namespace math {
@@ -64,6 +65,13 @@ public:
 
     System() : vEs(ptrs::make_shared<v_es_t>()) {}
     System(v_es_ptr_t yarns) : vEs(std::move(yarns)) {}
+    
+    /**
+     * Construct a system from a matrix where columns represent variables
+     * @param matrix The matrix to construct the system from
+     */
+    System(const boost::numeric::ublas::matrix<Valuable>& matrix);
+
 
     System& operator()(const Variable&);
     System& operator<<(const Valuable&);
