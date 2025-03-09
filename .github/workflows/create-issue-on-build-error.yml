@@ -11,6 +11,9 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
       - name: Create GitHub Issue
         uses: actions/github-script@v6
         with:
@@ -18,8 +21,8 @@ jobs:
             const { data: issue } = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: "Workflow Failure: ${{ github.workflow }}",
-              body: `The workflow **${{ github.workflow }}** failed. Please investigate.`,
+              title: "Workflow Failure: ${{ github.event.workflow_run.name }}",
+              body: `The workflow **${{ github.event.workflow_run.name }}** failed. Please investigate.`,
               labels: ["automation", "devin"]
             });
             console.log(`Created issue: ${issue.html_url}`);
