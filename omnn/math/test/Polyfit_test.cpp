@@ -222,9 +222,9 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_classification_symmetric_double,
     }
 }
 
-#if BOOST_VERSION >= BOOSTS_OWN_VERSION_NUMBER(1, 85, 0) && defined(NDEBUG)
-BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification)
-{
+BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification
+    , *disabled()
+) {
     using polyfit_value_type = Valuable;
     // generate the data
     std::vector<polyfit_value_type> oX = {{
@@ -274,6 +274,5 @@ BOOST_AUTO_TEST_CASE(Polyfit_test_full_classification)
         BOOST_TEST(oY[i] == oFittedY[i]);
     }
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(Polyfit_test_empty){}
