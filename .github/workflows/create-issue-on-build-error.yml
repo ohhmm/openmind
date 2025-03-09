@@ -8,7 +8,7 @@ on:
 
 jobs:
   create-issue:
-    if: ${{ failure() }}
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub Issue
