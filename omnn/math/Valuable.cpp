@@ -2555,6 +2555,14 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             LOG_AND_IMPLEMENT("uint32_t conversion for " << *this)
     }
 
+    Valuable::operator const_base_int_ref() const
+    {
+        if (exp)
+            return exp->operator const_base_int_ref();
+        else
+            LOG_AND_IMPLEMENT("const_base_int_ref conversion for " << *this)
+    }
+
     Valuable::operator unsigned char() const
     {
         if (exp)
