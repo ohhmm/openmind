@@ -41,8 +41,6 @@ protected:
 public:
     using base_int = a_int;
 
-	using const_base_int_ref = const base_int&;
-
 	using base::base;
 
     MSVC_CONSTEXPR Integer(const Integer&)=default;
@@ -134,7 +132,6 @@ public:
     Valuable& d(const Variable& x) override;
 
     Valuable Sign() const override;
-    Valuable IsNegativeOf(const Valuable& other) const override;
     bool operator <(const Valuable& v) const override;
     friend bool operator<(const Integer& _1, const Integer& _2) { return _1.arbitrary < _2.arbitrary; }
     friend bool operator<=(const Integer& _1, const Integer& _2) { return _1.arbitrary <= _2.arbitrary; }
@@ -146,7 +143,10 @@ public:
 
     explicit operator int() const override;
     explicit operator a_int() const override;
-    [[nodiscard]] constexpr explicit operator const_base_int_ref() { return arbitrary; }
+    [[nodiscard]] 
+    constexpr operator const_base_int_ref() const override {
+        return as_const_base_int_ref();
+    }
     explicit operator uint64_t() const override;
     explicit operator double() const override;
     explicit operator long double() const override;

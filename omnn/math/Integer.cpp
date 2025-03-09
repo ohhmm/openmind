@@ -206,7 +206,10 @@ namespace math {
         if (variable) {
             variable->getVaHost()->LogNotZero(v);
         }
-        if (arbitrary.is_zero()) {
+        if (arbitrary.is_zero() ) {
+            if (v.IsZero()) {
+                Become(NaN());
+            }
         }
         else if (v.IsInt())
         {
@@ -804,19 +807,6 @@ namespace math {
             return {};
         else
             return v.operator==(*this);
-    }
-
-    Valuable Integer::IsNegativeOf(const Valuable& other) const
-    {
-        if (other.IsInt()) {
-            return (arbitrary < 0 && arbitrary == -other.ca()) ? Integer(1) : Integer(0);
-        }
-        else if (other.IsFraction()) {
-            return Integer(0);
-        }
-        else {
-            return Integer(0);
-        }
     }
 
     std::ostream& Integer::print(std::ostream& out) const

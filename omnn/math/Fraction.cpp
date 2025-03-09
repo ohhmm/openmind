@@ -797,14 +797,16 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
   
     Fraction::operator a_int() const
     {
-        if (!IsSimple()) {
+        if (IsRational() == YesNoMaybe::Yes) {
+            auto rational = operator a_rational();
+            return static_cast<a_int>(rational);
+        } else {
 #if defined(__APPLE__) || defined(NDEBUG)
             LOG_AND_IMPLEMENT("Converting " << *this << " to integer value");
 #else
             LOG_AND_IMPLEMENT("Converting " << *this << " to integer value:\n" << boost::stacktrace::stacktrace());
 #endif
         }
-        return static_cast<a_int>(numerator())/static_cast<a_int>(denominator());
     }
     
     Fraction::operator boost::multiprecision::cpp_dec_float_100() const
