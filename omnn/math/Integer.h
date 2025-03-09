@@ -50,7 +50,8 @@ public:
     MSVC_CONSTEXPR Integer& operator=(const Integer&) = default;
     MSVC_CONSTEXPR Integer& operator=(Integer&&) = default;
 
-    template<typename IntT>
+    template<typename IntT, 
+              typename = std::enable_if_t<!std::is_same_v<std::decay_t<IntT>, Integer>>>
     constexpr Integer(IntT&& i = 0)
     : arbitrary(std::forward<IntT>(i))
     {
