@@ -99,6 +99,8 @@ extern const Variable& integration_result_constant;
 }
 
     using a_int = boost::multiprecision::cpp_int;
+    using const_base_int_ref = const a_int&;
+
 
     using a_rational = boost::multiprecision::cpp_rational;
     //using a_rational = boost::rational<a_int>;
@@ -552,6 +554,7 @@ public:
     virtual explicit operator a_rational() const;
     virtual explicit operator uint32_t() const;
     virtual explicit operator unsigned char() const;
+    virtual explicit operator const_base_int_ref() const;
     virtual a_int& a();
     virtual const a_int& ca() const;
 
