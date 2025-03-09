@@ -14,7 +14,7 @@ using namespace constant;
 
 Valuable Euler::Sq() const {
     auto exponentiation = ptrs::make_shared<Exponentiation>(*this, 2);
-    return Valuable(exponentiation);
+    return Valuable(std::move(exponentiation));
 }
 
 Valuable& Euler::sq() { return Become(Sq()); }
