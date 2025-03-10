@@ -1,0 +1,209 @@
+name: React to PR Review Comments
+
+on:
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  process-review-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Process Review Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              const comment = context.payload.comment;
+              const commentBody = comment.body;
+              const prNumber = context.payload.pull_request.number;
+              const repo = context.repo;
+              
+              console.log(`Processing review comment on PR #${prNumber}`);
+              
+              // Check if the comment suggests adding null checks
+              const suggestsNullChecks = commentBody.includes('null') || 
+                                        commentBody.includes('undefined') || 
+                                        commentBody.includes('?.') || 
+                                        commentBody.includes('optional chaining');
+              
+              // Check if the comment suggests adding try/catch
+              const suggestsTryCatch = commentBody.includes('try/catch') || 
+                                      commentBody.includes('error handling');
+              
+              // Check if the comment suggests URL construction improvements
+              const suggestsUrlImprovements = commentBody.includes('URL construction') || 
+                                            commentBody.includes('repository URL');
+              
+              if (!suggestsNullChecks && !suggestsTryCatch && !suggestsUrlImprovements) {
+                console.log('Comment does not suggest code improvements we can automatically apply');
+                return;
+              }
+              
+              // Get the file path from the comment
+              const filePath = comment.path;
+              if (!filePath || !filePath.endsWith('.yml')) {
+                console.log('Comment is not on a YAML file');
+                return;
+              }
+              
+              // Get the file content
+              const { data: fileContent } = await github.rest.repos.getContent({
+                owner: repo.owner,
+                repo: repo.repo,
+                path: filePath,
+                ref: context.payload.pull_request.head.sha
+              });
+              
+              let content = Buffer.from(fileContent.content, 'base64').toString();
+              let modified = false;
+              
+              // Apply improvements based on the comment suggestions
+              if (suggestsNullChecks) {
+                // Look for patterns like 'context.payload.X.Y.Z' and add optional chaining
+                const propertyAccessPattern = /context\.payload\.[a-zA-Z_]+(\.[a-zA-Z_]+)+/g;
+                content = content.replace(propertyAccessPattern, (match) => {
+                  // Add optional chaining to property accesses
+                  return match.replace(/\.([a-zA-Z_]+)/g, (_, prop) => {
+                    // Don't add optional chaining to the first property (payload)
+                    if (prop === 'payload') return `.${prop}`;
+                    return `?.${prop}`;
+                  });
+                });
+                
+                // Add fallback values for variables that might be undefined
+                const variableAssignmentPattern = /const\s+([a-zA-Z_]+)\s*=\s*(context\.payload\.[a-zA-Z_]+(\.[a-zA-Z_]+)+);/g;
+                content = content.replace(variableAssignmentPattern, (match, varName, accessor) => {
+                  // Add fallback values based on variable name
+                  let fallback = "'unknown'";
+                  if (varName.includes('message')) fallback = "'No message'";
+                  if (varName.includes('url')) fallback = "'#'";
+                  if (varName.includes('id')) fallback = "'unknown-id'";
+                  if (varName.includes('commit')) fallback = "'unknown-commit'";
+                  
+                  return `const ${varName} = ${accessor} || ${fallback};`;
+                });
+                
+                modified = true;
+              }
+              
+              if (suggestsTryCatch) {
+                // Add try/catch block around the script content
+                if (!content.includes('try {') && !content.includes('catch')) {
+                  // Find the script section
+                  const scriptPattern = /script: \|\n([\s\S]+?)(\n\s+[a-zA-Z-]+:|\n\s*$)/;
+                  content = content.replace(scriptPattern, (match, scriptContent, ending) => {
+                    return `script: |
+            try {
+        ${scriptContent.trim().split('\n').map(line => '      ' + line).join('\n')}
+            } catch (error) {
+              console.error(\`Error processing workflow: \${error.message}\`);
+              // Create a simpler issue with error details
+              const { data: errorIssue } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: \`Error in workflow execution\`,
+                body: \`The workflow encountered an error: \${error.message}\`,
+                labels: ["automation", "bug"]
+              });
+              console.log(\`Created error issue: \${errorIssue.html_url}\`);
+            }${ending}`;
+                  });
+                  
+                  modified = true;
+                }
+              }
+              
+              if (suggestsUrlImprovements) {
+                // Replace hardcoded URL construction with repository URL from context
+                const urlConstructionPattern = /\$\{commit\.substring\(0, 7\)\}\]\(https:\/\/github\.com\/\$\{context\.repo\.owner\}\/\$\{context\.repo\.repo\}\/commit\/\$\{commit\}\)/g;
+                if (content.match(urlConstructionPattern)) {
+                  content = content.replace(urlConstructionPattern, 
+                    '${commit.substring(0, 7)}](${context.payload.repository?.html_url || `https://github.com/${context.repo.owner}/${context.repo.repo}`}/commit/${commit})');
+                  modified = true;
+                }
+              }
+              
+              if (!modified) {
+                console.log('No modifications were made to the file');
+                return;
+              }
+              
+              // Create a new branch for the changes
+              const timestamp = Math.floor(Date.now() / 1000);
+              const newBranch = `devin/${timestamp}-auto-fix`;
+              
+              // Get the default branch to use as base
+              const { data: repoData } = await github.rest.repos.get({
+                owner: repo.owner,
+                repo: repo.repo
+              });
+              
+              const defaultBranch = repoData.default_branch;
+              
+              // Get the reference to the default branch
+              const { data: ref } = await github.rest.git.getRef({
+                owner: repo.owner,
+                repo: repo.repo,
+                ref: `heads/${defaultBranch}`
+              });
+              
+              // Create a new branch
+              await github.rest.git.createRef({
+                owner: repo.owner,
+                repo: repo.repo,
+                ref: `refs/heads/${newBranch}`,
+                sha: ref.object.sha
+              });
+              
+              // Update the file in the new branch
+              await github.rest.repos.createOrUpdateFileContents({
+                owner: repo.owner,
+                repo: repo.repo,
+                path: filePath,
+                message: `Apply suggested improvements from PR #${prNumber} review comments`,
+                content: Buffer.from(content).toString('base64'),
+                branch: newBranch,
+                sha: fileContent.sha
+              });
+              
+              // Create a PR with the changes
+              const { data: pr } = await github.rest.pulls.create({
+                owner: repo.owner,
+                repo: repo.repo,
+                title: `Auto-fix: Apply suggested improvements from PR #${prNumber}`,
+                body: `This PR automatically applies improvements suggested in review comments on PR #${prNumber}.
+                
+                Changes made:
+                ${suggestsNullChecks ? '- Added null/undefined checks with optional chaining and fallback values\n' : ''}
+                ${suggestsTryCatch ? '- Added try/catch blocks for error handling\n' : ''}
+                ${suggestsUrlImprovements ? '- Improved URL construction using repository URL from context\n' : ''}
+                
+                Original comment: ${commentBody}
+                
+                Link to Devin run: https://app.devin.ai/sessions/477bfdba749c4575a772565596f260a0
+                Requested by: Serg`,
+                head: newBranch,
+                base: defaultBranch
+              });
+              
+              console.log(`Created PR #${pr.number}: ${pr.html_url}`);
+              
+              // Add a comment to the original PR
+              await github.rest.issues.createComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                issue_number: prNumber,
+                body: `I've created PR #${pr.number} to automatically apply the suggested improvements from this review comment.`
+              });
+            } catch (error) {
+              console.error(`Error processing review comment: ${error.message}`);
+            }

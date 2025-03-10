@@ -1,0 +1,239 @@
+name: React to PR Review Comments for Workflow Files
+
+on:
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  process-workflow-review-comment:
+    runs-on: ubuntu-latest
+    if: contains(github.event.comment.path, '.github/workflows/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Process Workflow Review Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              const comment = context.payload.comment;
+              const commentBody = comment.body;
+              const prNumber = context.payload.pull_request.number;
+              const filePath = comment.path;
+              const repo = context.repo;
+              
+              console.log(`Processing review comment on workflow file: ${filePath}`);
+              
+              // Get the file content
+              const { data: fileContent } = await github.rest.repos.getContent({
+                owner: repo.owner,
+                repo: repo.repo,
+                path: filePath,
+                ref: context.payload.pull_request.head.sha
+              });
+              
+              let content = Buffer.from(fileContent.content, 'base64').toString();
+              let modified = false;
+              let changes = [];
+              
+              // Check for specific improvement suggestions in the comment
+              if (commentBody.includes('null/undefined checks') || 
+                  commentBody.includes('optional chaining') || 
+                  commentBody.includes('?.')) {
+                
+                // Apply null checks using optional chaining
+                const beforeNullChecks = content;
+                
+                // Find JavaScript code blocks in the workflow file
+                const scriptBlocks = content.match(/script: \|\n([\s\S]+?)(?=\n\s+[a-zA-Z-]+:|\n\s*$)/g) || [];
+                
+                for (const scriptBlock of scriptBlocks) {
+                  const updatedScriptBlock = scriptBlock.replace(
+                    /context\.payload\.([a-zA-Z_]+)\.([a-zA-Z_]+)(?!\.)/g, 
+                    'context.payload.$1?.$2'
+                  ).replace(
+                    /context\.payload\.([a-zA-Z_]+)\.([a-zA-Z_]+)\.([a-zA-Z_]+)(?!\.)/g, 
+                    'context.payload.$1?.$2?.$3'
+                  ).replace(
+                    /context\.payload\.([a-zA-Z_]+)\.([a-zA-Z_]+)\.([a-zA-Z_]+)\.([a-zA-Z_]+)(?!\.)/g, 
+                    'context.payload.$1?.$2?.$3?.$4'
+                  );
+                  
+                  content = content.replace(scriptBlock, updatedScriptBlock);
+                }
+                
+                // Add fallback values for common properties
+                content = content.replace(
+                  /const\s+([a-zA-Z_]+)\s*=\s*context\.payload\.[a-zA-Z_]+(?:\??\.[a-zA-Z_]+)+;/g,
+                  (match, varName) => {
+                    let fallback = "'unknown'";
+                    if (varName.includes('Name') || varName.includes('name')) fallback = "'unknown'";
+                    if (varName.includes('Url') || varName.includes('url')) fallback = "'#'";
+                    if (varName.includes('Id') || varName.includes('id')) fallback = "'unknown-id'";
+                    if (varName.includes('Commit') || varName.includes('commit')) fallback = "'unknown-commit'";
+                    if (varName.includes('Message') || varName.includes('message')) fallback = "'No message'";
+                    if (varName.includes('Branch') || varName.includes('branch')) fallback = "'unknown-branch'";
+                    if (varName.includes('Actor') || varName.includes('actor') || 
+                        varName.includes('User') || varName.includes('user') || 
+                        varName.includes('By') || varName.includes('by')) fallback = "'unknown-user'";
+                    
+                    return match.replace(';', ` || ${fallback};`);
+                  }
+                );
+                
+                if (content !== beforeNullChecks) {
+                  modified = true;
+                  changes.push('Added null/undefined checks with optional chaining and fallback values');
+                }
+              }
+              
+              if (commentBody.includes('try/catch') || 
+                  commentBody.includes('error handling')) {
+                
+                // Add try/catch blocks for error handling
+                const beforeTryCatch = content;
+                
+                // Find JavaScript code blocks in the workflow file
+                const scriptPattern = /script: \|\n([\s\S]+?)(?=\n\s+[a-zA-Z-]+:|\n\s*$)/g;
+                const scriptMatches = content.matchAll(scriptPattern);
+                
+                for (const match of scriptMatches) {
+                  const scriptBlock = match[0];
+                  const scriptContent = match[1];
+                  
+                  // Skip if already has try/catch
+                  if (scriptBlock.includes('try {') && scriptBlock.includes('catch')) {
+                    continue;
+                  }
+                  
+                  // Add try/catch block
+                  const indentation = scriptContent.match(/^(\s*)/)[1];
+                  const updatedScriptBlock = `script: |
+            try {
+        ${scriptContent.trim().split('\n').map(line => '      ' + line).join('\n')}
+            } catch (error) {
+              console.error(\`Error in workflow execution: \${error.message}\`);
+              // Optionally create a simpler issue with error details
+              try {
+                const { data: errorIssue } = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: \`Error in workflow execution\`,
+                  body: \`The workflow encountered an error: \${error.message}\`,
+                  labels: ["automation", "bug"]
+                });
+                console.log(\`Created error issue: \${errorIssue.html_url}\`);
+              } catch (issueError) {
+                console.error(\`Failed to create error issue: \${issueError.message}\`);
+              }
+            }`;
+                  
+                  content = content.replace(scriptBlock, updatedScriptBlock);
+                }
+                
+                if (content !== beforeTryCatch) {
+                  modified = true;
+                  changes.push('Added try/catch blocks for error handling');
+                }
+              }
+              
+              if (commentBody.includes('repository URL') || 
+                  commentBody.includes('URL construction')) {
+                
+                // Improve URL construction
+                const beforeUrlImprovements = content;
+                
+                // Replace hardcoded URL construction with repository URL from context
+                content = content.replace(
+                  /\$\{([a-zA-Z_]+)\.substring\(0, 7\)\}\]\(https:\/\/github\.com\/\$\{context\.repo\.owner\}\/\$\{context\.repo\.repo\}\/commit\/\$\{([a-zA-Z_]+)\}\)/g,
+                  (match, commitVar1, commitVar2) => {
+                    return `\${${commitVar1}.substring(0, 7)}](\${context.payload.repository?.html_url || \`https://github.com/\${context.repo.owner}/\${context.repo.repo}\`}/commit/\${${commitVar2}})`;
+                  }
+                );
+                
+                if (content !== beforeUrlImprovements) {
+                  modified = true;
+                  changes.push('Improved URL construction using repository URL from context');
+                }
+              }
+              
+              if (!modified) {
+                console.log('No modifications were made to the file');
+                return;
+              }
+              
+              // Create a new branch for the changes
+              const timestamp = Math.floor(Date.now() / 1000);
+              const newBranch = `devin/${timestamp}-workflow-improvements`;
+              
+              // Get the default branch to use as base
+              const { data: repoData } = await github.rest.repos.get({
+                owner: repo.owner,
+                repo: repo.repo
+              });
+              
+              const defaultBranch = repoData.default_branch;
+              
+              // Get the reference to the default branch
+              const { data: ref } = await github.rest.git.getRef({
+                owner: repo.owner,
+                repo: repo.repo,
+                ref: `heads/${defaultBranch}`
+              });
+              
+              // Create a new branch
+              await github.rest.git.createRef({
+                owner: repo.owner,
+                repo: repo.repo,
+                ref: `refs/heads/${newBranch}`,
+                sha: ref.object.sha
+              });
+              
+              // Update the file in the new branch
+              await github.rest.repos.createOrUpdateFileContents({
+                owner: repo.owner,
+                repo: repo.repo,
+                path: filePath,
+                message: `Apply workflow improvements suggested in PR #${prNumber} review comments`,
+                content: Buffer.from(content).toString('base64'),
+                branch: newBranch,
+                sha: fileContent.sha
+              });
+              
+              // Create a PR with the changes
+              const { data: pr } = await github.rest.pulls.create({
+                owner: repo.owner,
+                repo: repo.repo,
+                title: `Auto-fix: Apply workflow improvements from PR #${prNumber} review`,
+                body: `This PR automatically applies workflow improvements suggested in review comments on PR #${prNumber}.
+                
+                Changes made:
+                ${changes.map(change => `- ${change}`).join('\n')}
+                
+                Original comment: ${commentBody}
+                
+                Link to Devin run: https://app.devin.ai/sessions/477bfdba749c4575a772565596f260a0
+                Requested by: Serg`,
+                head: newBranch,
+                base: defaultBranch
+              });
+              
+              console.log(`Created PR #${pr.number}: ${pr.html_url}`);
+              
+              // Add a comment to the original PR
+              await github.rest.issues.createComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                issue_number: prNumber,
+                body: `I've created PR #${pr.number} to automatically apply the suggested workflow improvements from this review comment.`
+              });
+            } catch (error) {
+              console.error(`Error processing workflow review comment: ${error.message}`);
+            }
