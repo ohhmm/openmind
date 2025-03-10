@@ -11,36 +11,15 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
       - name: Create GitHub Issue
         uses: actions/github-script@v6
         with:
           script: |
-            const workflowName = context.payload.workflow_run.name;
-            const workflowUrl = context.payload.workflow_run.html_url;
-            const branch = context.payload.workflow_run.head_branch;
-            const commit = context.payload.workflow_run.head_commit.id;
-            const commitMessage = context.payload.workflow_run.head_commit.message;
-            const triggeredBy = context.payload.workflow_run.actor.login;
-
-            const issueBody = `
-The workflow **${workflowName}** failed. Please investigate.
-
-### Details:
-- **Workflow Name**: ${workflowName}
-- **Workflow URL**: [View Workflow Run](${workflowUrl})
-- **Branch**: ${branch}
-- **Commit**: [${commit.substring(0, 7)}](https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${commit}) - "${commitMessage}"
-- **Triggered By**: @${triggeredBy}
-`;
-
             const { data: issue } = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Workflow Failure: ${workflowName}`,
-              body: issueBody,
+              title: `Workflow Failure: ${context.payload.workflow_run.name}`,
+              body: `The workflow **${context.payload.workflow_run.name}** failed. Please investigate.\n\n[View the failed workflow run](${context.payload.workflow_run.html_url})`,
               labels: ["automation", "devin"]
             });
             console.log(`Created issue: ${issue.html_url}`);
