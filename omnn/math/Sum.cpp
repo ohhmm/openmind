@@ -26,6 +26,7 @@
 //import std;
 #include <algorithm>
 #include <cmath>
+#include <execution>
 #include <functional>
 #include <future>
 #include <map>
@@ -115,9 +116,8 @@ namespace
         {
 #if __has_include(<execution>)
             if (members.size() > Thr)
-                it = std::find(
-                               PAR
-                               members.begin(), members.end(), item);
+                it = std::find(std::execution::par,
+                              members.begin(), members.end(), item);
             else
 #endif
                 it = members.find(item);
@@ -2118,6 +2118,23 @@ namespace
                             if (dn != constants::one) {
                                 lcm.lcm(dn);
                             }
+                        } else if (c.IsProduct()) {
+                            auto& p = c.as<Product>();
+                            if (p.size() == 2) {
+                                auto it = p.begin();
+                                if (*it == -1) {
+                                    auto next = std::next(it);
+                                    if (next->IsUnivariable()) {
+                                        auto& var = next->as<Variable>();
+                                        if (var == va) {
+                                            isNormalizedPolynomial = true;  // This is a valid normalized form
+                                            continue;  // Skip further normalization for -1*x case
+                                        }
+                                    }
+                                }
+                            }
+                            // Don't set isNormalizedPolynomial to false here
+                            // Let other checks determine normalization status
                         } else {
                             LOG_AND_IMPLEMENT("Solving " << va << " in " << *this << std::endl
         								<< "need to normalize coefficient: " << c << std::endl);
@@ -2141,14 +2158,14 @@ namespace
                     a.optimize();
                 }
                 auto k = coefficients[0];
-                if(!k.IsInt()) {
+                if(!k.IsInt() && !k.IsProduct()) {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
                     std::cout << "free member needed optimization: " << k << std::endl;
 #endif
                     OptimizeOn oo;
                     k.optimize();
                 }
-                if(a.IsInt() && k.IsInt()) {
+                if(a.IsInt() && (k.IsInt() || k.IsProduct())) {
                     Valuable test;
                     auto& aFactors = omnn::rt::DivisorsLookupTable::Divisors(a.ca());
 
