@@ -18,22 +18,29 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const workflowRun = context.payload.workflow_run;
+            const workflowName = context.payload.workflow_run.name;
+            const workflowUrl = context.payload.workflow_run.html_url;
+            const branch = context.payload.workflow_run.head_branch;
+            const commit = context.payload.workflow_run.head_commit.id;
+            const commitMessage = context.payload.workflow_run.head_commit.message;
+            const triggeredBy = context.payload.workflow_run.actor.login;
+
+            const issueBody = `
+The workflow **${workflowName}** failed. Please investigate.
+
+### Details:
+- **Workflow Name**: ${workflowName}
+- **Workflow URL**: [View Workflow Run](${workflowUrl})
+- **Branch**: ${branch}
+- **Commit**: [${commit.substring(0, 7)}](https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${commit}) - "${commitMessage}"
+- **Triggered By**: @${triggeredBy}
+`;
+
             const { data: issue } = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Workflow Failure: ${workflowRun.name}`,
-              body: `
-## Failed Workflow Details
-
-- **Workflow Name**: ${workflowRun.name}
-- **Workflow URL**: [View Failed Run](${workflowRun.html_url})
-- **Commit**: [${workflowRun.head_sha.substring(0, 7)}](${workflowRun.head_repository.html_url}/commit/${workflowRun.head_sha})
-- **Branch**: ${workflowRun.head_branch}
-- **Triggered By**: ${workflowRun.event}
-
-Please investigate the failure and fix the issue. You can view the detailed logs by clicking on the workflow URL above.
-              `,
+              title: `Workflow Failure: ${workflowName}`,
+              body: issueBody,
               labels: ["automation", "devin"]
             });
             console.log(`Created issue: ${issue.html_url}`);
