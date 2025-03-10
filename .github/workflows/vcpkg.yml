@@ -129,7 +129,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Release
+        name: Release-${{ matrix.os }}-${{ matrix.config }}
         path: release
 
     - name: Create Changelog
