@@ -286,6 +286,32 @@ macro(link_boost_libs)
 	endif()
 endmacro()
 
+macro(apply_test_commons this_target)
+	if(NOT visibility)
+		set(visibility PUBLIC)
+	endif()
+	foreach(dir
+		/usr/local/lib
+		${Boost_INCLUDE_DIR}/stage/lib
+		${Boost_INCLUDE_DIR}/../../lib
+		${EXTERNAL_FETCHED_BOOST}/stage/lib
+		${EXTERNAL_FETCHED_BOOST}/../../lib
+		${CMAKE_BINARY_DIR}/lib
+		${CMAKE_BINARY_DIR}/lib64
+		)
+		if(EXISTS ${dir})
+			target_link_directories(${this_target} ${visibility} ${dir})
+		endif()
+	endforeach()	
+	if(Boost_FOUND)
+		message("Boost_FOUND: ${Boost_FOUND}")
+		if(NOT MSVC OR OPENMIND_USE_CONAN)
+			message("NOT MSVC OR OPENMIND_USE_CONAN, using deps ${BOOST_TEST_LINK_LIBS}")
+			deps(${BOOST_TEST_LINK_LIBS})
+		endif()
+	endif()
+endmacro(apply_test_commons)
+
 function(test)
     string(STRIP "${ARGN}" test_libs)
 	get_filename_component(parent_target ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
@@ -326,30 +352,12 @@ function(test)
 
 		set(this_target ${TEST_NAME})
 		apply_target_commons(${TEST_NAME})
+		apply_test_commons(${TEST_NAME})
+		target_link_libraries(${TEST_NAME} PUBLIC
+			${parent_target}
+			testlibs
+		)
 
-		foreach(dir
-			/usr/local/lib
-			${Boost_INCLUDE_DIR}/stage/lib
-			${Boost_INCLUDE_DIR}/../../lib
-			${EXTERNAL_FETCHED_BOOST}/stage/lib
-			${EXTERNAL_FETCHED_BOOST}/../../lib
-			${CMAKE_BINARY_DIR}/lib
-			${CMAKE_BINARY_DIR}/lib64
-			)
-
-			if(EXISTS ${dir})
-				target_link_directories(${TEST_NAME} PUBLIC ${dir})
-			endif()
-
-		endforeach()
-
-		if(Boost_FOUND)
-			message("Boost_FOUND: ${Boost_FOUND}")
-			if(NOT MSVC OR OPENMIND_USE_CONAN)
-				message("NOT MSVC OR OPENMIND_USE_CONAN, using deps ${BOOST_TEST_LINK_LIBS}")
-				deps(${BOOST_TEST_LINK_LIBS})
-			endif()
-		endif()
 		message("using deps ${libs}")
 		deps(${libs})
 
