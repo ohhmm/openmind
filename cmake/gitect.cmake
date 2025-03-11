@@ -131,7 +131,7 @@ if(GIT_EXECUTABLE)
 
 	add_git_target(force-push-head push -f)
 	add_git_target(force-push-origin push -f origin)
-
+	add_git_target(rebase-abort rebase --abort)
 	add_git_target(rebase-continue rebase --continue)
 
 	add_custom_target(rebase-and-force-push-origin
