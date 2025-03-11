@@ -138,6 +138,9 @@ namespace math {
             return typeid(Chld);
         }
 
+        // Forward declaration for use in Constant.h CompileIntoLambda method
+        static constexpr Valuable NewDefaultValuable();
+
         Valuable::encapsulated_instance SharedFromThis() override {
             auto allocated = getAllocSize();
             auto ptr = std::make_shared<Chld>(std::move(as<Chld>()));
@@ -145,6 +148,13 @@ namespace math {
             new (this) Valuable(std::static_pointer_cast<Valuable>(ptr));
             setAllocSize(allocated);
             return exp;
+        }
+
+        // Creates a new default valuable object for use in lambda functions and other contexts
+        // where a static instance is needed instead of the GlobalObject pattern
+        static constexpr Valuable NewDefaultValuable() {
+            auto obj = ptrs::make_shared<Chld>();
+            return Valuable(std::static_pointer_cast<Valuable>(obj));
         }
     };
 }
