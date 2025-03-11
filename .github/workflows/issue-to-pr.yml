@@ -21,8 +21,18 @@ jobs:
           ISSUE_BODY="${{ github.event.issue.body }}"
           ISSUE_TITLE="${{ github.event.issue.title }}"
           
-          # Combine title and body into prompt
+          # Combine title and body into prompt with detailed issue link
+          ISSUE_URL="${{ github.server_url }}/${{ github.repository }}/issues/${{ github.event.issue.number }}"
+          ISSUE_AUTHOR="${{ github.event.issue.user.login }}"
+          ISSUE_CREATED_AT="${{ github.event.issue.created_at }}"
+          
           PROMPT="Resolve & PR fix, autoconfirming your plan, Issue #${{ github.event.issue.number }}: $ISSUE_TITLE
+
+          ### Issue Details:
+          - **Issue Number**: #${{ github.event.issue.number }}
+          - **Created By**: @${ISSUE_AUTHOR}
+          - **Created At**: ${ISSUE_CREATED_AT}
+          - **Direct Link to Issue**: [View Issue](${ISSUE_URL})
 
           $ISSUE_BODY"
           
