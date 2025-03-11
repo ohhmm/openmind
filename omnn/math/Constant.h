@@ -82,7 +82,7 @@ template <class Chld>
         NO_APPLE_CONSTEXPR
         Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t) const override {
             return [](Valuable::universal_lambda_params_t) -> Valuable {
-                return GlobalObject;
+                return Chld::GlobalObject;
             };
         }
 
