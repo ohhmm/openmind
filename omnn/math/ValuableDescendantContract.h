@@ -139,6 +139,7 @@ namespace math {
         }
 
         // Forward declaration for use in Constant.h CompileIntoLambda method
+        // Implementation is below after SharedFromThis()
         static constexpr Valuable NewDefaultValuable();
 
         Valuable::encapsulated_instance SharedFromThis() override {
