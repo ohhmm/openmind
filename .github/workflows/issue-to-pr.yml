@@ -22,7 +22,7 @@ jobs:
           ISSUE_TITLE="${{ github.event.issue.title }}"
           
           # Combine title and body into prompt
-          PROMPT="Issue #${{ github.event.issue.number }}: $ISSUE_TITLE
+          PROMPT="Resolve & PR fix, autoconfirming your plan, Issue #${{ github.event.issue.number }}: $ISSUE_TITLE
 
           $ISSUE_BODY"
           
