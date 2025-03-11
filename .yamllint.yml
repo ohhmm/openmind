@@ -19,4 +19,3 @@ rules:
 # Ignore patterns for files with complex JavaScript template literals
 ignore: |
   .github/workflows/pr-review-comment-reaction.yml
-  .github/workflows/pr-review-reaction.yml

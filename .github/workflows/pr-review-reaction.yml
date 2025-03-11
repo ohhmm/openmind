@@ -27,7 +27,7 @@ jobs:
               const prNumber = context.payload.pull_request.number;
               const repo = context.repo;
               
-              console.log(`Processing review comment on PR #${prNumber}`);
+              console.log(`Processing review comment on PR #\${prNumber}`);
               
               // Check if the comment suggests adding null checks
               const suggestsNullChecks = commentBody.includes('null') || 
@@ -101,21 +101,21 @@ jobs:
                   // Find the script section
                   const scriptPattern = /script: \|\n([\s\S]+?)(\n\s+[a-zA-Z-]+:|\n\s*$)/;
                   content = content.replace(scriptPattern, (match, scriptContent, ending) => {
-                    return `script: |
-            try {
-        ${scriptContent.trim().split('\n').map(line => '      ' + line).join('\n')}
-            } catch (error) {
-              console.error(\`Error processing workflow: \${error.message}\`);
-              // Create a simpler issue with error details
-              const { data: errorIssue } = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: \`Error in workflow execution\`,
-                body: \`The workflow encountered an error: \${error.message}\`,
-                labels: ["automation", "bug"]
-              });
-              console.log(\`Created error issue: \${errorIssue.html_url}\`);
-            }${ending}`;
+                    const wrappedScript = 'try {\n' + 
+                      scriptContent.trim() + 
+                      '\n} catch (error) {\n' +
+                      '  console.error("Error processing workflow: " + error.message);\n' +
+                      '  // Create a simpler issue with error details\n' +
+                      '  const errorIssue = await github.rest.issues.create({\n' +
+                      '    owner: context.repo.owner,\n' +
+                      '    repo: context.repo.repo,\n' +
+                      '    title: "Error in workflow execution",\n' +
+                      '    body: "The workflow encountered an error: " + error.message,\n' +
+                      '    labels: ["automation", "bug"]\n' +
+                      '  }).data;\n' +
+                      '  console.log("Created error issue: " + errorIssue.html_url);\n' +
+                      '}';
+                    return 'script: |\n' + wrappedScript + ending;
                   });
                   
                   modified = true;
@@ -127,7 +127,7 @@ jobs:
                 const urlConstructionPattern = /\$\{commit\.substring\(0, 7\)\}\]\(https:\/\/github\.com\/\$\{context\.repo\.owner\}\/\$\{context\.repo\.repo\}\/commit\/\$\{commit\}\)/g;
                 if (content.match(urlConstructionPattern)) {
                   content = content.replace(urlConstructionPattern, 
-                    '${commit.substring(0, 7)}](${context.payload.repository?.html_url || `https://github.com/${context.repo.owner}/${context.repo.repo}`}/commit/${commit})');
+                    '\${commit.substring(0, 7)}](\${context.payload.repository?.html_url || `https://github.com/\${context.repo.owner}/\${context.repo.repo}`}/commit/\${commit})');
                   modified = true;
                 }
               }
@@ -169,7 +169,7 @@ jobs:
                 owner: repo.owner,
                 repo: repo.repo,
                 path: filePath,
-                message: `Apply suggested improvements from PR #${prNumber} review comments`,
+                message: `Apply suggested improvements from PR #\${prNumber} review comments`,
                 content: Buffer.from(content).toString('base64'),
                 branch: newBranch,
                 sha: fileContent.sha
@@ -179,15 +179,15 @@ jobs:
               const { data: pr } = await github.rest.pulls.create({
                 owner: repo.owner,
                 repo: repo.repo,
-                title: `Auto-fix: Apply suggested improvements from PR #${prNumber}`,
-                body: `This PR automatically applies improvements suggested in review comments on PR #${prNumber}.
+                title: `Auto-fix: Apply suggested improvements from PR #\${prNumber}`,
+                body: `This PR automatically applies improvements suggested in review comments on PR #\${prNumber}.
                 
                 Changes made:
-                ${suggestsNullChecks ? '- Added null/undefined checks with optional chaining and fallback values\n' : ''}
-                ${suggestsTryCatch ? '- Added try/catch blocks for error handling\n' : ''}
-                ${suggestsUrlImprovements ? '- Improved URL construction using repository URL from context\n' : ''}
+                \${suggestsNullChecks ? '- Added null/undefined checks with optional chaining and fallback values\n' : ''}
+                \${suggestsTryCatch ? '- Added try/catch blocks for error handling\n' : ''}
+                \${suggestsUrlImprovements ? '- Improved URL construction using repository URL from context\n' : ''}
                 
-                Original comment: ${commentBody}
+                Original comment: \${commentBody}
                 
                 Link to Devin run: https://app.devin.ai/sessions/477bfdba749c4575a772565596f260a0
                 Requested by: Serg`,
@@ -195,14 +195,14 @@ jobs:
                 base: defaultBranch
               });
               
-              console.log(`Created PR #${pr.number}: ${pr.html_url}`);
+              console.log(`Created PR #\${pr.number}: \${pr.html_url}`);
               
               // Add a comment to the original PR
               await github.rest.issues.createComment({
                 owner: repo.owner,
                 repo: repo.repo,
                 issue_number: prNumber,
-                body: `I've created PR #${pr.number} to automatically apply the suggested improvements from this review comment.`
+                body: `I've created PR #\${pr.number} to automatically apply the suggested improvements from this review comment.`
               });
             } catch (error) {
               console.error(`Error processing review comment: ${error.message}`);
