@@ -205,5 +205,5 @@ jobs:
                 body: `I've created PR #\${pr.number} to automatically apply the suggested improvements from this review comment.`
               });
             } catch (error) {
-              console.error(`Error processing review comment: ${error.message}`);
+              console.error("Error processing review comment: ${error.message}");
             }
