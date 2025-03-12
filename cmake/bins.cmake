@@ -5,6 +5,9 @@ include(qtect)
 
 if(WIN32)
 	set(platform windows CACHE STRING "")
+	if(EXISTS $ENV{VCToolsInstallDir})
+		string(REGEX REPLACE "\\\\" "/" VCToolsInstallDir $ENV{VCToolsInstallDir})
+	endif()
 elseif(APPLE)
 	set(platform apple CACHE STRING "")
 else()
@@ -178,14 +181,16 @@ function(apply_target_commons this_target)
 				)
 		endif()
 		set(opts ${opts}
-			/bigobj
-			/FS
-			/MP
-			/constexpr:steps1000000000
-			/source-charset:utf-8
 			$<$<CONFIG:DEBUG>:/ZI>
 			$<$<CONFIG:Release>:/MT>
 			$<$<CONFIG:RelWithDebInfo>:/ZI>
+			/bigobj
+			/constexpr:steps1000000000
+			/experimental:module
+			/FS
+			/MP
+			/source-charset:utf-8
+			/std:c++latest
 			)
 		#target_compile_options(${this_target} INTERFACE REMOVE
 		#	$<$<CONFIG:DEBUG>:/Zi>
@@ -243,11 +248,13 @@ function(apply_target_commons this_target)
 	get_target_property(target_type ${this_target} TYPE)
 	if(target_type STREQUAL "INTERFACE_LIBRARY")
 		message(STATUS "${this_target} is INTERFACE")
+		set(visibility INTERFACE)
 		set(defs INTERFACE ${defs})
 		set(opts INTERFACE ${opts})
 		target_compile_features(${this_target} INTERFACE cxx_std_23)
 		set(lopts INTERFACE ${lopts})
 	else()
+		set(visibility PUBLIC)
 		set(defs INTERFACE ${defs} PUBLIC ${defs})
 		set(opts INTERFACE ${opts} PUBLIC ${opts})
 		target_compile_features(${this_target} INTERFACE cxx_std_23 PUBLIC cxx_std_23)
@@ -395,6 +402,7 @@ macro(lib)
     string(STRIP "${ARGN}" deps)
     get_target_name(this_target)
     set(${this_target}_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE FILEPATH "${this_target} include path")
+	string(TOLOWER ${this_target} this_target_name_lowcase)
     project(${this_target})
     message("\nCreating Library: ${this_target}")
 	check_dep_file()
@@ -633,8 +641,8 @@ macro(exe)
 	if(CPACK_BINARY_NSIS)
 		LIST(APPEND CPACK_NSIS_CREATE_ICONS_EXTRA "  CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\${this_target}.lnk' '$INSTDIR\\\\bin\\\\${this_target}.exe' '' '$INSTDIR\\\\bin\\\\${this_target}.exe' 0 SW_SHOWNORMAL '' '%APPDATA%\\\\${this_target}'")
 		LIST(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA "  Delete '$SMPROGRAMS\\\\$START_MENU\\\\${this_target}.lnk'")
-		LIST(APPEND CPACK_NSIS_CREATE_ICONS_EXTRA  "  CreateShortCut '$DESKTOP\\\\${this_target}.lnk' '$INSTDIR\\\\bin\\\\${this_target}.exe' '' '$INSTDIR\\\\bin\\\\${this_target}.exe' 0 SW_SHOWNORMAL '' '%APPDATA%\\\\${this_target}'")
-		LIST(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA  "  Delete '$DESKTOP\\\\${this_target}.lnk'")
+		LIST(APPEND CPACK_NSIS_CREATE_ICONS_EXTRA "  CreateShortCut '$DESKTOP\\\\${this_target}.lnk' '$INSTDIR\\\\bin\\\\${this_target}.exe' '' '$INSTDIR\\\\bin\\\\${this_target}.exe' 0 SW_SHOWNORMAL '' '%APPDATA%\\\\${this_target}'")
+		LIST(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA "  Delete '$DESKTOP\\\\${this_target}.lnk'")
 	endif()
 
 endmacro()
