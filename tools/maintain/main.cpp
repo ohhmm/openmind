@@ -1,3 +1,5 @@
+import git.list_branches;
+
 #include <boost/process.hpp>
 
 #include <algorithm>
@@ -6,8 +8,6 @@
 #include <sstream>
 #include <system_error>
 #include <utility>
-#include <coroutine>
-#include "stl-waitwrap-generator.hpp"
 
 
 // used for maintain target
@@ -17,41 +17,15 @@
 #define GIT_REBASE_CONTINUE "\"" GIT_EXECUTABLE_PATH "\" rebase --continue"
 #define GIT_IS_UPTODATE_WITH_ORIGIN_MAIN "\"" GIT_EXECUTABLE_PATH "\" merge-base --is-ancestor HEAD origin/main"
 #define GIT_FETCH_ALL "\"" GIT_EXECUTABLE_PATH "\" fetch --all --prune"
-#define CMD_LIST_LOCAL_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/heads/ --no-contains main"
-#define CMD_LIST_ORIGIN_BRANCHES "\"" GIT_EXECUTABLE_PATH "\" for-each-ref --format=%(refname:short) refs/remotes/origin/ --no-contains main"
 #define CMAKE_BUILD_COMMAND "\"" CMAKE_COMMAND "\" --build \"" SRC_DIR "\""
 
 
 using namespace std;
+using namespace git;
 
 
 namespace {
 bool silent = {};
-}
-
-generator<std::string_view> list_local_branches() {
-    boost::process::ipstream pipe; // Create a pipe for stdout
-    boost::process::child branches(CMD_LIST_LOCAL_BRANCHES,
-                                   boost::process::std_out > pipe);
-    std::string line;
-    while (std::getline(pipe, line)) {
-        co_yield line;
-    }
-    pipe.close();
-    branches.join();
-}
-
-generator<std::string_view> list_origin_branches() {
-    boost::process::ipstream pipe; // Create a pipe for stdout
-    boost::process::child branches(CMD_LIST_ORIGIN_BRANCHES, boost::process::std_out > pipe);
-    std::string line;
-    while (std::getline(pipe, line)) {
-        if (line != "origin" && line != "origin/main") {
-            co_yield line;
-        }
-    }
-    pipe.close();
-    branches.join();
 }
 
 bool build() {

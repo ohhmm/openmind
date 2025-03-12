@@ -39,7 +39,8 @@ macro(glob_add_dir_source_files)
         )
 
 		file(GLOB ${varnameprefix}headers ${ARGN}/*.h ${ARGN}/*.hpp ${ARGN}/*.inc ${ARGN}/*.hxx)
-		file(GLOB ${varnameprefix}src ${ARGN}/*.cpp ${ARGN}/*.c ${ARGN}/*.CC ${ARGN}/*.cc ${ARGN}/*.m ${ARGN}/*.mm)
+		file(GLOB ${varnameprefix}interfaces ${ARGN}/*.ixx)
+		file(GLOB ${varnameprefix}src ${ARGN}/*.ixx ${ARGN}/*.cpp ${ARGN}/*.cppm ${ARGN}/*.c ${ARGN}/*.CC ${ARGN}/*.cc ${ARGN}/*.m ${ARGN}/*.mm)
 		file(GLOB ${varnameprefix}qmlsrc ${ARGN}/*.qml)
 		file(GLOB ${varnameprefix}qtsrc ${ARGN}/*.qrc)
 		file(GLOB ${varnameprefix}resources ${ARGN}/*.rc)
@@ -56,6 +57,7 @@ macro(glob_add_dir_source_files)
 			)
 		list(APPEND ${varnameprefix}all_source_files
 			${${varnameprefix}headers}
+			${${varnameprefix}interfaces}
 			${${varnameprefix}src}
 			${${varnameprefix}qmlsrc}
 			${${varnameprefix}qtsrc}
@@ -66,6 +68,7 @@ macro(glob_add_dir_source_files)
 			)
         if(varnameprefix)
 		    list(APPEND headers ${${varnameprefix}headers})
+		    list(APPEND interfaces ${${varnameprefix}interfaces})
 		    list(APPEND src ${${varnameprefix}src})
 		    list(APPEND qmlsrc ${${varnameprefix}qmlsrc})
 		    list(APPEND qtsrc ${${varnameprefix}qtsrc})
@@ -76,15 +79,16 @@ macro(glob_add_dir_source_files)
 			list(APPEND all_source_files ${${varnameprefix}all_source_files})
         endif(varnameprefix)
     else()
-    	unset(${varnameprefix}src)
+		unset(${varnameprefix}all_source_files)
+		unset(${varnameprefix}headers)
+		unset(${varnameprefix}interfaces)
+		unset(${varnameprefix}pch)
+		unset(${varnameprefix}pcs)
+		unset(${varnameprefix}qmlsrc)
+		unset(${varnameprefix}qtsrc)
 		unset(${varnameprefix}resources)
 		unset(${varnameprefix}script)
-		unset(${varnameprefix}qtsrc)
-		unset(${varnameprefix}qmlsrc)
-		unset(${varnameprefix}pcs)
-		unset(${varnameprefix}pch)
-		unset(${varnameprefix}headers)
-		unset(${varnameprefix}all_source_files)
+    	unset(${varnameprefix}src)
 	endif()
 endmacro(glob_add_dir_source_files)
 
@@ -114,6 +118,7 @@ function(apply_target_commons this_target)
 	)
 	set(opts
 		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-fcoroutines>
+		$<$<CXX_COMPILER_ID:GNU>:-fmodules-ts>
 	)
 	if(OPENMIND_USE_OPENCL)
 		set(defs ${defs}
