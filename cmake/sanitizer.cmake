@@ -1,5 +1,5 @@
 # AddressSanitizer Configuration
-option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ENABLE_ASAN "Enable AddressSanitizer" NO)
 
 if(ENABLE_ASAN)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -34,6 +34,6 @@ if(ENABLE_ASAN)
         endfunction()
     else()
         message(WARNING "AddressSanitizer is only supported with GCC and Clang")
-        set(ENABLE_ASAN OFF CACHE BOOL "Enable AddressSanitizer" FORCE)
+        set(ENABLE_ASAN NO CACHE BOOL "Enable AddressSanitizer" FORCE)
     endif()
 endif()

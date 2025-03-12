@@ -94,7 +94,7 @@ macro(glob_source_files)
     glob_add_dir_source_files(${platform})
     glob_add_dir_source_files(src)
     glob_add_dir_source_files(cpp)
-    SET_SOURCE_FILES_PROPERTIES(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
+    SET_SOURCE_FILES_PROPERTIES(${headers} PROPERTIES HEADER_FILE_ONLY ON)
 endmacro(glob_source_files)
 
 function(apply_target_commons this_target)
@@ -132,7 +132,7 @@ function(apply_target_commons this_target)
 	endif()
 	set_target_properties(${this_target} PROPERTIES
 		CXX_STANDARD 23
-		CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE
+		CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON
 		EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -385,6 +385,7 @@ function(test)
 	endforeach()
 endfunction()
 
+
 macro(lib)
     string(STRIP "${ARGN}" deps)
     get_target_name(this_target)
@@ -440,12 +441,14 @@ macro(lib)
 
 endmacro()
 
+
 macro(dll)
 	set(USE_SHARED SHARED)
 	unset(CMAKE_SHARED_LIBRARY_PREFIX)
 	lib(${ARGN})
 	unset(USE_SHARED)
 endmacro()
+
 
 macro(mod)
 	set(USE_SHARED MODULE)
@@ -464,6 +467,7 @@ macro(mod)
 	unset(LIBRARY_DESTINATION)
 	unset(RUNTIME_DESTINATION)
 endmacro()
+
 
 macro(exe)
     string(STRIP "${ARGN}" deps)
@@ -532,8 +536,8 @@ macro(exe)
 				)
 			endif()
 			set_target_properties(${this_target} PROPERTIES
-				MACOSX_BUNDLE TRUE
-				WIN32_EXECUTABLE TRUE
+				MACOSX_BUNDLE ON
+				WIN32_EXECUTABLE ON
 			)
 			install(TARGETS ${this_target} BUNDLE DESTINATION .
 				LIBRARY DESTINATION lib
@@ -628,4 +632,12 @@ macro(exe)
 		LIST(APPEND CPACK_NSIS_DELETE_ICONS_EXTRA  "  Delete '$DESKTOP\\\\${this_target}.lnk'")
 	endif()
 
+endmacro()
+
+macro(util)
+	exe(${ARGN})
+	set_target_properties(${this_target} PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util")
 endmacro()

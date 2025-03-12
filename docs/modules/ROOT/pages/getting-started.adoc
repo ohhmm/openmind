@@ -19,7 +19,7 @@ sudo apt install -y cmake ninja-build g++-10 libboost-all-dev \
     libopengl-dev freeglut3-dev libleveldb-dev libvulkan-dev
 
 # Build
-cmake -B build -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON
+cmake -B build -DOPENMIND_BUILD_SAMPLES=NO -DOPENMIND_BUILD_TESTS=ON
 cmake --build build -j$(nproc)
 ----
 

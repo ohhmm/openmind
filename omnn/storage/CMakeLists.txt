@@ -1,10 +1,10 @@
-option(OPENMIND_STORAGE_FOUNDATIONDB "Use Apple FoundationDB library for one of the multistorage levels" OFF)
+option(OPENMIND_STORAGE_FOUNDATIONDB "Use Apple FoundationDB library for one of the multistorage levels" NO)
 option(OPENMIND_STORAGE_LEVELDB "Use Google LevelDB library for one of the multistorage levels" ON)
 
 set(DEPENDENCIES rt)
 if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB)
     option(OPENMIND_STORAGE_ALLOW_UPGRADE "Update optimized cached values during fetch if new optimizations applied" ON)
-    option(OPENMIND_STORAGE_VOLATILE "Clean cache each start (for debugging purposes)" OFF)
+    option(OPENMIND_STORAGE_VOLATILE "Clean cache each start (for debugging purposes)" NO)
 
 	if(OPENMIND_STORAGE_LEVELDB)
 		find_package(Threads) # workaround leveldb config bug
