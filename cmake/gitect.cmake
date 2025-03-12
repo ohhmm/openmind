@@ -144,24 +144,30 @@ if(GIT_EXECUTABLE)
 		FOLDER "util/git")
 
 	if(WIN32)
-		set(CMD_LIST_BRANCHES "${GIT_EXE_CMD} for-each-ref --format=%(refname:short) refs/heads/ --no-contains main")
-		set(CMD_REBASE_BRANCH "${GIT_EXE_CMD} rebase --autostash origin/main %b")
-		set(CMD_ITERATE_BRANCHES "for /f \"usebackq tokens=*\" %b in ( branches.txt ) do ( ${CMD_REBASE_BRANCH} )")
-		set(CMD_LINE_SUFFIX " ^|^| ${GIT_EXE_CMD} rebase --abort")
-		add_custom_target(rebase-all-branches
-			DEPENDS process-cmd-rebase-or-abort
+		if(OPENMIND_BUILD_UTIILS)
+			set(CMD_LIST_BRANCHES "${GIT_EXE_CMD} for-each-ref --format=%(refname:short) refs/heads/ --no-contains main")
+			set(CMD_REBASE_BRANCH "${GIT_EXE_CMD} rebase --autostash origin/main %b")
+			set(CMD_ITERATE_BRANCHES "for /f \"usebackq tokens=*\" %b in ( branches.txt ) do ( ${CMD_REBASE_BRANCH} )")
+			set(CMD_LINE_SUFFIX " ^|^| ${GIT_EXE_CMD} rebase --abort")
+			add_custom_target(rebase-all-branches
+				DEPENDS process-cmd-rebase-or-abort
 
-            COMMAND ${CMAKE_COMMAND} -E echo "Rebasing all branches onto origin/main"
-			COMMAND ${GIT_EXECUTABLE} fetch --all || echo git fetch error
+				COMMAND ${CMAKE_COMMAND} -E echo "Rebasing all branches onto origin/main"
+				COMMAND ${GIT_EXECUTABLE} fetch --all || echo git fetch error
 
-			COMMAND cmd /c ${CMD_LIST_BRANCHES} > branches.txt
-			COMMAND type NUL > rebase.cmd
-			COMMAND cmd /c ( for /f "usebackq tokens=*" %b in ( branches.txt ) do @echo ${CMD_REBASE_BRANCH} ) >> rebase.cmd
-			COMMAND $<TARGET_FILE:process-cmd-rebase-or-abort>
+				COMMAND cmd /c ${CMD_LIST_BRANCHES} > branches.txt
+				COMMAND type NUL > rebase.cmd
+				COMMAND cmd /c ( for /f "usebackq tokens=*" %b in ( branches.txt ) do @echo ${CMD_REBASE_BRANCH} ) >> rebase.cmd
+				COMMAND $<TARGET_FILE:process-cmd-rebase-or-abort>
 
-            COMMENT "Rebasing all branches onto origin/main using cmd with improved branch handling."
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		)
+				COMMENT "Rebasing all branches onto origin/main using cmd with improved branch handling."
+				WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			)
+			set_target_properties(rebase-all-branches PROPERTIES
+				EXCLUDE_FROM_ALL 1
+				EXCLUDE_FROM_DEFAULT_BUILD 1
+				FOLDER "util/git")
+		endif()
 	else()
 		add_custom_target(rebase-all-branches
 			COMMAND ${GIT_EXECUTABLE} fetch --all || echo git fetch error
@@ -169,22 +175,24 @@ if(GIT_EXECUTABLE)
 			COMMAND ${CMAKE_COMMAND} -E env bash "${CMAKE_SOURCE_DIR}/cmake/rebase-all-branches.sh"
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
+		set_target_properties(rebase-all-branches PROPERTIES
+			EXCLUDE_FROM_ALL 1
+			EXCLUDE_FROM_DEFAULT_BUILD 1
+			FOLDER "util/git")
 	endif()
-	set_target_properties(rebase-all-branches PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
 
-	add_custom_target(origin-remote-maintain
-		DEPENDS maintain
-		COMMAND ${CMAKE_COMMAND} -E echo "Maintain branches including origin remote"
-		COMMAND $<TARGET_FILE:maintain> --silent
+	if(OPENMIND_BUILD_UTIILS)
+		add_custom_target(origin-remote-maintain
+			DEPENDS maintain
+			COMMAND ${CMAKE_COMMAND} -E echo "Maintain branches including origin remote"
+			COMMAND $<TARGET_FILE:maintain> --silent
 
-		COMMENT "Maintain branches including origin remote"
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	)
-	set_target_properties(origin-remote-maintain PROPERTIES
-		EXCLUDE_FROM_ALL 1
-		EXCLUDE_FROM_DEFAULT_BUILD 1
-		FOLDER "util/git")
+			COMMENT "Maintain branches including origin remote"
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		)
+		set_target_properties(origin-remote-maintain PROPERTIES
+			EXCLUDE_FROM_ALL 1
+			EXCLUDE_FROM_DEFAULT_BUILD 1
+			FOLDER "util/git")
+	endif()
 endif()
