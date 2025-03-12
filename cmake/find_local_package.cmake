@@ -9,7 +9,7 @@ if(NOT PKG_CONFIG_FOUND)
 	find_package(PkgConfig)
 	option(OPENMIND_USE_PKG_CONFIG_DEPS "Use pkg-config dependencies"
 		# ${PKG_CONFIG_FOUND}) # bug in pkg_check_modules macro: no REQUIRED keyword still leads to fatal error if package not found
-		OFF)
+		NO)
 	if(PKG_CONFIG_FOUND)
 		message("pkg-config may be used to detect some of dependencies")
 	endif()

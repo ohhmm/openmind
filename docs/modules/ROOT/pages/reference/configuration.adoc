@@ -6,11 +6,11 @@
 [source,cmake]
 ----
 # Core build options
-set(OPENMIND_BUILD_SAMPLES OFF)      # Build example applications
+set(OPENMIND_BUILD_SAMPLES NO)      # Build example applications
 set(OPENMIND_BUILD_TESTS ON)         # Build test suite
 set(OPENMIND_USE_OPENCL ON)          # Enable OpenCL support
-set(OPENMIND_USE_VULKAN OFF)         # Enable Vulkan compute
-set(OPENMIND_ENABLE_PROFILING OFF)   # Enable performance profiling
+set(OPENMIND_USE_VULKAN NO)         # Enable Vulkan compute
+set(OPENMIND_ENABLE_PROFILING NO)   # Enable performance profiling
 
 # Compiler flags
 set(CMAKE_CXX_STANDARD 20)           # C++20 required

@@ -35,7 +35,7 @@ Compilation:
     cd openmind
     mkdir build
     cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_INCLUDE_DIR=/usr/include -DOPENMIND_BUILD_TESTS=OFF
+    cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_INCLUDE_DIR=/usr/include -DOPENMIND_BUILD_TESTS=NO
     make -j8
     
   Alternatively, you can use vcpkg for dependency management:

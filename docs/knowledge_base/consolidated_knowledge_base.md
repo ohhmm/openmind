@@ -149,7 +149,7 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -G "Ninja Multi-Config"
+      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=NO -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=NO -G "Ninja Multi-Config"
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`

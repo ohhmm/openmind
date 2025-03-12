@@ -108,7 +108,7 @@ ENDIF(MSVC)
 #ADD_LIBRARY(MyLibrary ${MySources})
 
 SET_SOURCE_FILES_PROPERTIES(${this_target}_HEADER_FILES
-                            PROPERTIES HEADER_FILE_ONLY TRUE)
+                            PROPERTIES HEADER_FILE_ONLY ON)
 LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 
 IF(NOT MSVC)

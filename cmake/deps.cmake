@@ -6,22 +6,22 @@ function(ext_configure_args name args)
 	string(REPLACE "-" "_" name ${name})
 
 	set(add_args
-		-D${name}_TESTS=OFF
-		-D${name}_BUILD_TESTS:BOOL=OFF
-		-D${name}_BENCHMARK=OFF
-		-D${name}_BENCHMARKS=OFF
-		-D${name}_BENCHMARKING=OFF
-		-D${name}_BUILD_BENCHMARK=OFF
-		-D${name}_BUILD_BENCHMARKS=OFF
-		-D${name}_BUILD_BENCHMARKING=OFF
-		-D${name}_BUILD_GMOCK=OFF
+		-D${name}_TESTS=NO
+		-D${name}_BUILD_TESTS:BOOL=NO
+		-D${name}_BENCHMARK=NO
+		-D${name}_BENCHMARKS=NO
+		-D${name}_BENCHMARKING=NO
+		-D${name}_BUILD_BENCHMARK=NO
+		-D${name}_BUILD_BENCHMARKS=NO
+		-D${name}_BUILD_BENCHMARKING=NO
+		-D${name}_BUILD_GMOCK=NO
 		-D${name}_FRAMEWORK=${APPLE}
 		-D${name}_STATIC=ON
-		-D${name}_BUILD_APIDOC=OFF
-		-D${name}_BUILD_DEMOS=OFF
-		-D${name}_BUILD_EXAMPLES=OFF
+		-D${name}_BUILD_APIDOC=NO
+		-D${name}_BUILD_DEMOS=NO
+		-D${name}_BUILD_EXAMPLES=NO
 
-		-DBENCHMARK_ENABLE_GTEST_TESTS:BOOL=OFF
+		-DBENCHMARK_ENABLE_GTEST_TESTS:BOOL=NO
 		-DCMAKE_CXX_FLAGS=-D_CRT_SECURE_NO_WARNINGS
 		)
 
@@ -64,7 +64,7 @@ macro(ext name location)
 
 		set(ARGS
 			${build_type}
-			-DBUILD_TESTS=OFF
+			-DBUILD_TESTS=NO
 			-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 			-DGIT_EXECUTABLE=${GIT_EXECUTABLE}
 			-DHAVE_STD_REGEX=ON
@@ -84,7 +84,7 @@ macro(ext name location)
 		endif()
 
 		if(APPLE)
-			set(ARGS ${ARGS} -DBUILD_ZLIB=OFF)
+			set(ARGS ${ARGS} -DBUILD_ZLIB=NO)
 		endif()
 		if(CMAKE_SYSTEM_NAME)
 			set(ARGS ${ARGS} -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME})
