@@ -143,6 +143,16 @@ if(GIT_EXECUTABLE)
 		EXCLUDE_FROM_DEFAULT_BUILD 1
 		FOLDER "util/git")
 
+	add_custom_target(update-and-force-push-origin
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash
+		COMMAND ${GIT_EXECUTABLE} pull --rebase --autostash origin main && ${GIT_EXECUTABLE} push -f origin
+	)
+	set_target_properties(update-and-force-push-origin PROPERTIES
+		EXCLUDE_FROM_ALL 1
+		EXCLUDE_FROM_DEFAULT_BUILD 1
+		FOLDER "util/git")
+
 	if(WIN32)
 		set(CMD_LIST_BRANCHES "${GIT_EXE_CMD} for-each-ref --format=%(refname:short) refs/heads/ --no-contains main")
 		set(CMD_REBASE_BRANCH "${GIT_EXE_CMD} rebase --autostash origin/main %b")
