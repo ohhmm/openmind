@@ -26,7 +26,7 @@ thread_local bool VarHost::add_non_zero_mode_on = true;
 const ::std::any& VarHost::GetId(const Variable& va) const { return va.GetId(); }
 
 Variable VarHost::New(const ::std::any& id) {
-    Variable v(sh());
+    Variable v(shared_from_this());
     v.SetId(id);
     return v;
 }

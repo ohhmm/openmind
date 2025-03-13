@@ -112,8 +112,7 @@ namespace omnn::math {
 
     Valuable& Valuable::call_polymorphic_method(Valuable::method_t method, const Valuable& arg) {
         if (exp) {
-            // Implement Copy-on-Write: ensure we have a unique copy before modification
-            ensureUnique();
+            clone_on_write();
             
             auto view = GetView();
             auto equation = IsEquation();
@@ -149,6 +148,12 @@ namespace omnn::math {
             }                                                                                                          \
         }
 
+    void Valuable::clone_on_write() {
+        if (exp && exp.use_count() > 1) {
+            exp.reset(exp->Clone());
+        }
+    }
+
     bool Valuable::IsSubObject(const Valuable& o) const {
         if (exp)
             return exp->IsSubObject(o);
@@ -172,9 +177,10 @@ namespace omnn::math {
 
     Valuable* Valuable::Move()
     {
-        if (exp)
+        if (exp) {
+            clone_on_write();
             return exp->Move();
-        else
+        } else
             LOG_AND_IMPLEMENT("Move for " << *this)
     }
 
@@ -225,6 +231,7 @@ namespace omnn::math {
     {
         if (Same(i))
             return *this;
+        clone_on_write();
         auto newWasView = this->GetView();
         i.SetView(newWasView);
         auto h = i.Hash();
@@ -303,17 +310,36 @@ namespace omnn::math {
 
     Valuable& Valuable::operator =(Valuable&& v)
     {
-        return Become(std::move(v));
+        Become(std::move(v));
+        return *this;
     }
 
     Valuable& Valuable::operator =(const Valuable& v)
     {
-        // No need to call ensureUnique() here as we're replacing the entire object
         exp.reset(v.Clone());
+        //auto& inst = v.getInst();
+        //if (exp && exp.get() != inst.get())
+        //    DispatchDispose(std::move(exp));
+        //if (inst)
+        //    exp = inst;
+        //else {
+        //    auto weak = v.weak_from_this();
+        //    if (weak.expired()) {
+        //        Become(Valuable(v.Clone()));
+        //    } else {
+        //        auto locked = weak.lock();
+        //        exp = std::const_pointer_cast<Valuable>(locked);
+        //    }
+        //}
         return *this;
     }
 
     Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
+
+    //Valuable::Valuable(const Valuable& v) {
+    //    Valuable::operator =(v);
+    //}
+
     Valuable::Valuable(Valuable* v) : exp(v) {}
     Valuable::Valuable(encapsulated_instance&& enc) : exp(enc) {}
     Valuable::Valuable(const encapsulated_instance& enc) : exp(enc) {}
@@ -1354,11 +1380,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::operator *=(const Valuable& v)
     {
-        // Ensure unique copy before modification (COW pattern)
-        if (exp && exp.use_count() > 1) {
-            ensureUnique();
-        }
-        
         if (operator==(v))
         {
             sq();
@@ -1392,7 +1413,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     bool Valuable::MultiplyIfSimplifiable(const Valuable& v)
     {
         if(exp)
+        {
+            clone_on_write();
             return exp->MultiplyIfSimplifiable(v);
+        }
         else {
             auto is = IsMultiplicationSimplifiable(v);
             if (is.first)
@@ -1417,7 +1441,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     bool Valuable::SumIfSimplifiable(const Valuable& v)
     {
         if(exp)
+        {
+            clone_on_write();
             return exp->SumIfSimplifiable(v);
+        }
         IMPLEMENT
     }
 
@@ -1454,7 +1481,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable& Valuable::operator--()
     {
         if(exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             Valuable& o = exp->operator--();
             if (o.exp) {
                 exp = o.exp;
@@ -1468,7 +1495,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable& Valuable::operator++()
     {
         if(exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             Valuable& o = exp->operator++();
             if (o.exp) {
                 exp = o.exp;
@@ -1513,6 +1540,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::gcd(const Valuable& v) {
         if (exp) {
+            clone_on_write();
             exp->gcd(v);
         } else {
             Become(GCD(v));
@@ -1532,6 +1560,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::lcm(const Valuable& v) {
         if (exp) {
+            clone_on_write();
             Valuable& o = exp->lcm(v);
             if (o.exp) {
                 exp = o.exp;
@@ -1552,6 +1581,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable& Valuable::d(const Variable& x)
     {
         if(exp) {
+            clone_on_write();
             return exp->d(x);
         }
         else
@@ -1585,6 +1615,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 	Valuable& Valuable::integral(const Variable& x, const Variable& C)
     {
         if(exp) {
+            clone_on_write();
             return exp->integral(x, C);
         }
         else
@@ -2095,7 +2126,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     void Valuable::SetView(View v)
     {
         if(exp)
+        {
+            clone_on_write();
             exp->SetView(v);
+        }
         else {
             if (IsEquation()
                 && v == View::Equation
@@ -2109,20 +2143,20 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     void Valuable::optimize()
     {
-        if (exp) {
-            if (optimizations) {
+        if (optimizations && !is_optimized()) {
+            if (exp) {
                 while (exp->exp) {
                     exp = exp->exp;
                 }
+                clone_on_write();
                 exp->optimize();
                 while (exp->exp) {
                     exp = exp->exp;
                 }
                 return;
-            }
+            } else
+                LOG_AND_IMPLEMENT("Implement optimize() for " << *this);
         }
-        else
-            LOG_AND_IMPLEMENT("Implement optimize() for " << *this);
     }
 
 	Valuable Valuable::Cos() const {
@@ -2151,7 +2185,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::sqrt() {
         if (exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             return exp->sqrt();
         }
         else
@@ -2176,7 +2210,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
 	Valuable& Valuable::sq() {
         if (exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             return exp->sq();
         }
         else
@@ -2192,7 +2226,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
 	void Valuable::gamma() { // https://en.wikipedia.org/wiki/Gamma_function
         if (exp)
+        {
+            clone_on_write();
             exp->gamma();
+        }
         else {
             IMPLEMENT
             //Integral({});
@@ -2211,7 +2248,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
 	Valuable& Valuable::factorial() {
         if (exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             exp->factorial();
         }
         else {
@@ -2258,7 +2295,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
 	Valuable& Valuable::reciprocal() {
         if (exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             return exp->reciprocal();
         }
         else {
@@ -2337,9 +2374,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     bool Valuable::eval(const vars_cont_t& with) {
-        if (exp)
+        if (exp) {
+            clone_on_write();
             return exp->eval(with);
-        else
+        } else
             LOG_AND_IMPLEMENT("eval for " << *this << " with " << with)
     }
 
@@ -2352,6 +2390,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     void Valuable::Eval(const Variable& va, const Valuable& v)
     {
         if (exp) {
+            clone_on_write();
             if (v.HasVa(va)) {
                 Variable t(va.getVaHost());
                 Eval(va, t);
@@ -2520,9 +2559,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     a_int& Valuable::a()
     {
-        if (exp)
+        if (exp) {
+            clone_on_write();
             return exp->a();
-        else
+        } else
             LOG_AND_IMPLEMENT("a() for " << *this)
     }
 
@@ -3095,7 +3135,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::shl() {
         if (exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             return exp->shl();
         }
         else {
@@ -3105,7 +3145,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::shl(const Valuable& n) {
         if (exp && n.IsInt()) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             return exp->shl(n);
         }
         else {
@@ -3118,7 +3158,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(!n.IsInt()){
             IMPLEMENT
         } else if (exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             return exp->shr(n);
         }
         else if (n > constants::one)
@@ -3132,7 +3172,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable& Valuable::shr()
     {
         if (exp) {
-            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            clone_on_write();
             return exp->shr();
         }
         else {
@@ -3309,16 +3349,18 @@ d(i)+=h(i);h(i)+=S0(a(i))+Maj(a(i),b(i),c(i))
     }
 
     void Valuable::MarkAsOptimized() {
-        if (exp)
+        if (exp) {
+            clone_on_write();
             exp->MarkAsOptimized();
-        else
+        } else
             optimized = true;
     }
 
     void Valuable::MarkNotOptimized() {
-        if (exp)
+        if (exp) {
+            clone_on_write();
             exp->MarkNotOptimized();
-        else
+        } else
             optimized = {};
     }
 
