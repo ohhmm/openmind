@@ -2,7 +2,7 @@ name: Build Maintain Target After Main
 
 on:
   workflow_run:
-    workflows: ["C/C++ CI Ubuntu", "C/C++ CI MSVC", "C/C++ CI macOS"]
+    workflows: ["ubuntu.yml", "windows.yml", "macos.yml"]
     branches: [main]
     types:
       - completed
