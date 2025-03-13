@@ -18,9 +18,9 @@ BOOST_AUTO_TEST_CASE(TestCopyOnWriteModification)
     
     // Verify they are equal before modification
     BOOST_CHECK_EQUAL(v1, v2);
-    // FIXME: BOOST_CHECK(v1.getInst() == v2.getInst());
-    // FIXME: BOOST_CHECK(v1.getInst().get() == v2.getInst().get());
-
+    BOOST_CHECK(v1.getInst() == v2.getInst());
+    BOOST_CHECK(v1.getInst().get() == v2.getInst().get());
+    
     // Modify v2
     v2 += 10_v;
     
