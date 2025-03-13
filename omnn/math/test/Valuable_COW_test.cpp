@@ -18,9 +18,9 @@ BOOST_AUTO_TEST_CASE(TestCopyOnWriteModification)
     
     // Verify they are equal before modification
     BOOST_CHECK_EQUAL(v1, v2);
-    // FIXME: BOOST_CHECK(v1.getInst() == v2.getInst());
-    // FIXME: BOOST_CHECK(v1.getInst().get() == v2.getInst().get());
-
+    // FIXME : BOOST_CHECK(v1.getInst() == v2.getInst());
+    // FIXME : BOOST_CHECK(v1.getInst().get() == v2.getInst().get());
+    
     // Modify v2
     v2 += 10_v;
     
@@ -164,6 +164,30 @@ BOOST_AUTO_TEST_CASE(TestCopyOnWriteEfficiency)
     BOOST_CHECK_EQUAL(v1, 42_v);
     BOOST_CHECK_EQUAL(v2, 52_v);
     BOOST_CHECK_EQUAL(v3, 84_v);
+}
+
+BOOST_AUTO_TEST_CASE(TestCopyOnWriteMove)
+{
+    // Create a Valuable object
+    Valuable v1 = 42_v;
+
+    // Create a second reference to the same object
+    Valuable v2 = v1;
+
+    // Verify they are equal before modification
+    BOOST_CHECK_EQUAL(v1, v2);
+    // FIXME : BOOST_CHECK(v1.getInst() == v2.getInst());
+    // FIXME : BOOST_CHECK(v1.getInst().get() == v2.getInst().get());
+
+    // Modify v2
+    auto moved = std::move(v2);
+
+    // Verify that v1 is unchanged (COW should have created a copy for v2)
+    BOOST_CHECK_EQUAL(v1, 42_v);
+    BOOST_CHECK_EQUAL(moved, 42);
+    BOOST_CHECK(nullptr == v2.getInst());
+    // FIXME : BOOST_CHECK(v1.getInst() == moved.getInst());
+    // FIXME : BOOST_CHECK(v1.getInst().get() == moved.getInst().get());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

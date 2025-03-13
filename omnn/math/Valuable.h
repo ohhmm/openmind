@@ -115,7 +115,8 @@ extern const Variable& integration_result_constant;
 
 
 class Valuable
-        : public OpenOps<Valuable>
+    : public OpenOps<Valuable>
+    , public std::enable_shared_from_this<Valuable>
 {
     using self = Valuable;
 
@@ -129,13 +130,8 @@ protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
     
-    // Ensures a unique copy of the object before modification (Copy-on-Write)
-    void ensureUnique() {
-        if (exp && exp.use_count() > 1) {
-            // Create a deep copy only when needed
-            exp = encapsulated_instance(exp->Clone());
-        }
-    }
+    /// Ensures a unique copy of the object before modification (Copy-on-Write)
+    void clone_on_write();
 
     virtual bool IsSubObject(const Valuable& o) const;
     virtual Valuable* Clone() const;
@@ -210,7 +206,7 @@ public:
     const Valuable& get() const { return exp ? exp->get() : *this; }
     Valuable& get() { 
         if (exp) {
-            ensureUnique(); // Ensure unique copy before returning non-const reference
+            clone_on_write(); // Ensure unique copy before returning non-const reference
             return exp->get();
         }
         return *this;
@@ -221,6 +217,7 @@ public:
 
     template<class T>
     T& as() {
+        clone_on_write();
         auto& the = get();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
         if (!the.Is<T>()) {
@@ -383,7 +380,7 @@ public:
     virtual bool operator==(const Valuable&) const;
     virtual void optimize(); /// if it simplifies than it should become the type
     View GetView() const;
-    void SetView(View v);
+    void SetView(View);
     MSVC_CONSTEXPR APPLE_CONSTEXPR bool IsEquation() const {
         return (GetView() & View::Equation) != View::None;
     }
@@ -594,6 +591,7 @@ public:
     static Valuable Abet(const Variable& x, std::initializer_list<Valuable>);
     template <class Fwd>
     constexpr Valuable& equals(Fwd&& valuable) {
+        clone_on_write();
 //        SetView(View::Equation);  // FIXME: see ifz test
         return operator -=(std::forward<Fwd>(valuable));
     }
