@@ -2150,8 +2150,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable& Valuable::sqrt() {
-        if (exp)
+        if (exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
             return exp->sqrt();
+        }
         else
             return Become(Sqrt());
     }
@@ -2208,8 +2210,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
 	Valuable& Valuable::factorial() {
-        if (exp)
+        if (exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
             exp->factorial();
+        }
         else {
             operator++().gamma();
         }
@@ -2253,8 +2257,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 	}
 
 	Valuable& Valuable::reciprocal() {
-        if (exp)
+        if (exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
             return exp->reciprocal();
+        }
         else {
             return Become(Exponentiation{Move(), constants::minus_1});
         }
@@ -3088,23 +3094,33 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
     Valuable& Valuable::shl() {
-        return exp
-            ? exp->shl()
-            : *this *= constants::two;
+        if (exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            return exp->shl();
+        }
+        else {
+            return *this *= constants::two;
+        }
     }
 
     Valuable& Valuable::shl(const Valuable& n) {
-        return exp && n.IsInt()
-            ? exp->shl(n)
-            : *this *= constants::two ^ n;
+        if (exp && n.IsInt()) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            return exp->shl(n);
+        }
+        else {
+            return *this *= constants::two ^ n;
+        }
     }
 
     Valuable& Valuable::shr(const Valuable& n)
     {
         if(!n.IsInt()){
             IMPLEMENT
-        } else if (exp)
+        } else if (exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
             return exp->shr(n);
+        }
         else if (n > constants::one)
             return shr(n + constants::minus_1).shr();
         else if (n != constants::zero)
@@ -3115,9 +3131,13 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::shr()
     {
-        return exp
-            ? exp->shr()
-            : operator+=(-bit(constants::zero)).operator/=(constants::two);
+        if (exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
+            return exp->shr();
+        }
+        else {
+            return operator+=(-bit(constants::zero)).operator/=(constants::two);
+        }
     }
 
     Valuable Valuable::Shl() const
