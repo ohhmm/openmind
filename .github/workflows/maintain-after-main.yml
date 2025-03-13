@@ -2,7 +2,7 @@ name: Build Maintain Target After Main
 
 on:
   workflow_run:
-    workflows: ["ubuntu.yml", "windows.yml", "macos.yml"]
+    workflows: ["ubuntu.yml", "windows.yml", "macos.yml", "vcpkg.yml"]
     branches: [main]
     types:
       - completed
