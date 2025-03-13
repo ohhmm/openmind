@@ -128,6 +128,14 @@ class Valuable
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
+    
+    // Ensures a unique copy of the object before modification (Copy-on-Write)
+    void ensureUnique() {
+        if (exp && exp.use_count() > 1) {
+            // Create a deep copy only when needed
+            exp = encapsulated_instance(exp->Clone());
+        }
+    }
 
     virtual bool IsSubObject(const Valuable& o) const;
     virtual Valuable* Clone() const;
@@ -200,7 +208,13 @@ public:
     }
 
     const Valuable& get() const { return exp ? exp->get() : *this; }
-    Valuable& get() { return exp ? exp->get() : *this; }
+    Valuable& get() { 
+        if (exp) {
+            ensureUnique(); // Ensure unique copy before returning non-const reference
+            return exp->get();
+        }
+        return *this;
+    }
 
     template<class T>
     const T& as() const;

@@ -112,6 +112,9 @@ namespace omnn::math {
 
     Valuable& Valuable::call_polymorphic_method(Valuable::method_t method, const Valuable& arg) {
         if (exp) {
+            // Implement Copy-on-Write: ensure we have a unique copy before modification
+            ensureUnique();
+            
             auto view = GetView();
             auto equation = IsEquation();
             if (equation) {
@@ -305,6 +308,7 @@ namespace omnn::math {
 
     Valuable& Valuable::operator =(const Valuable& v)
     {
+        // No need to call ensureUnique() here as we're replacing the entire object
         exp.reset(v.Clone());
         return *this;
     }
@@ -1350,6 +1354,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     Valuable& Valuable::operator *=(const Valuable& v)
     {
+        // Ensure unique copy before modification (COW pattern)
+        if (exp && exp.use_count() > 1) {
+            ensureUnique();
+        }
+        
         if (operator==(v))
         {
             sq();
@@ -1445,6 +1454,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable& Valuable::operator--()
     {
         if(exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
             Valuable& o = exp->operator--();
             if (o.exp) {
                 exp = o.exp;
@@ -1458,6 +1468,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     Valuable& Valuable::operator++()
     {
         if(exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
             Valuable& o = exp->operator++();
             if (o.exp) {
                 exp = o.exp;
@@ -2162,8 +2173,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     }
 
 	Valuable& Valuable::sq() {
-        if (exp)
+        if (exp) {
+            ensureUnique(); // Ensure unique copy before modification (COW pattern)
             return exp->sq();
+        }
         else
             IMPLEMENT
     }
