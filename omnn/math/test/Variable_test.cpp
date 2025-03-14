@@ -1,6 +1,10 @@
-//
-// Created by Devin AI on 14.03.25.
-//
+/*
+ * Variable_test.cpp
+ *
+ * Created on: 14 Mar 2025
+ * Author: Devin AI
+ */
+#define BOOST_TEST_MODULE Variable test
 #include <boost/test/unit_test.hpp>
 
 #include "Variable.h"
@@ -15,38 +19,46 @@ BOOST_AUTO_TEST_CASE(Variable_Clone_test)
     // Create a Variable
     Variable a;
     
-    // Clone the variable
-    Valuable cloned(a.Clone());
-    
-    // Test that the clone equals the original
-    BOOST_TEST(cloned == a);
-    
-    // Test that they are different objects (not the same memory address)
-    BOOST_TEST(&cloned.get() != &a);
+    // Test cloning through Valuable constructor (which uses Clone() internally)
+    {
+        Valuable t(a);
+        BOOST_TEST(t == a);
+        
+        t = a;
+        BOOST_TEST(t == a);
+        
+        Valuable tt(t.as<Variable>().Move());
+        BOOST_TEST(tt == a);
+    }
     
     // Test with a variable from a specific VarHost
     auto vh = VarHost::make<int>();
     auto v = vh->New();
-    Valuable clonedV(v.Clone());
-    BOOST_TEST(clonedV == v);
-    BOOST_TEST(&clonedV.get() != &v);
+    {
+        Valuable t(v);
+        BOOST_TEST(t == v);
+        BOOST_TEST(&t.get() != &v);
+    }
     
     // Test with a named variable
     Variable named("test_var");
-    Valuable clonedNamed(named.Clone());
-    BOOST_TEST(clonedNamed == named);
-    BOOST_TEST(&clonedNamed.get() != &named);
-    
-    // Test that the clone maintains the same VarHost
-    BOOST_TEST(named.getVaHost() == clonedNamed.as<Variable>().getVaHost());
-    
-    // Test cloning a variable with a specific value
-    Variable x("x");
-    Valuable clonedX(x.Clone());
-    BOOST_TEST(clonedX == x);
+    {
+        Valuable t(named);
+        BOOST_TEST(t == named);
+        BOOST_TEST(&t.get() != &named);
+        
+        // Test that the clone maintains the same VarHost
+        BOOST_TEST(named.getVaHost() == t.as<Variable>().getVaHost());
+    }
     
     // Test that modifications to the clone don't affect the original
-    clonedX += 5;
-    BOOST_TEST(clonedX != x);
-    BOOST_TEST(x == Variable("x"));
+    {
+        Variable x("x");
+        Valuable clonedX = x;
+        BOOST_TEST(clonedX == x);
+        
+        clonedX += 5;
+        BOOST_TEST(clonedX != x);
+        BOOST_TEST(x == Variable("x"));
+    }
 }
