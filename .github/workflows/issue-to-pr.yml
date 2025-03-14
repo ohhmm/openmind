@@ -2,7 +2,7 @@ name: Create Devin Session from Issue
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
 
 permissions:
   contents: read
@@ -12,6 +12,11 @@ permissions:
 jobs:
   create-devin-session:
     runs-on: ubuntu-latest
+    # Only run on issues that are either newly created by humans
+    # or labeled with "devin" (including those created by automation)
+    if: >
+      (github.event.action == 'opened' && !contains(github.event.issue.user.login, '[bot]')) ||
+      (github.event.action == 'labeled' && github.event.label.name == 'devin')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,8 +35,32 @@ jobs:
           echo "$PROMPT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Check for existing Devin session
+        id: check-session
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if issue already has in-progress label or Devin session comment
+          LABELS=$(gh issue view "${{ github.event.issue.number }}" --json labels -q '.labels[].name')
+          if echo "$LABELS" | grep -q "in-progress"; then
+            echo "Issue already has in-progress label, skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check comments for existing Devin session
+          COMMENTS=$(gh issue view "${{ github.event.issue.number }}" --json comments -q '.comments[].body')
+          if echo "$COMMENTS" | grep -q "Created Devin session:"; then
+            echo "Issue already has a Devin session comment, skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "skip=false" >> $GITHUB_OUTPUT
+
       - name: Create Devin Session
         id: devin-session
+        if: steps.check-session.outputs.skip != 'true'
         env:
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
