@@ -1,6 +1,8 @@
+#include <sstream>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include "omnn/math/Variable.h"
+#include "omnn/math/System.h"
 #include <sstream>
 #include <map>
 
@@ -9,6 +11,15 @@ using namespace omnn::math;
 using namespace std::string_literals;
 
 namespace {
+    // Converter for solutions_t (std::unordered_set<Valuable>)
+    boost::python::list solutions_to_list(const omnn::math::Valuable::solutions_t& solutions) {
+        boost::python::list result;
+        for (const auto& solution : solutions) {
+            result.append(solution);
+        }
+        return result;
+    }
+    
     // Converter function
     std::map<omnn::math::Variable, omnn::math::Valuable> dict_to_map(const dict& py_dict) {
         std::map<omnn::math::Variable, omnn::math::Valuable> cpp_map;
@@ -165,5 +176,44 @@ BOOST_PYTHON_MODULE(variable)
         .def(self < self)
         .def(self == self)
         .def(self != self)
+        ;
+        
+    class_<System>("System")
+        // Constructors
+        .def(init<>())
+        .def(init<const boost::numeric::ublas::matrix<Valuable>&>())
+        
+        // Methods
+        .def("Add", static_cast<bool (System::*)(const Valuable&)>(&System::Add))
+        .def("Add", static_cast<bool (System::*)(const Variable&, const Valuable&)>(&System::Add))
+        .def("Eval", &System::Eval)
+        .def("Fetch", &System::Fetch)
+        .def("Has", &System::Has)
+        .def("Solve", +[](System& sys, const Variable& va) {
+            return solutions_to_list(sys.Solve(va));
+        })
+        .def("Vars", +[](const System& sys) {
+            boost::python::list result;
+            for (const auto& var : sys.Vars()) {
+                result.append(var);
+            }
+            return result;
+        })
+        .def("Test", +[](const System& sys, const Valuable::vars_cont_t& vars) {
+            return sys.Test(vars);
+        })
+        .def("MakesTotalEqu", static_cast<void (System::*)(bool)>(&System::MakesTotalEqu))
+        .def("CalculateTotalExpression", &System::CalculateTotalExpression)
+        .def("IsEmpty", &System::IsEmpty)
+        
+        // Operators
+        .def("__str__", +[](const System& sys) {
+            std::ostringstream ss;
+            ss << "System with " << sys.size() << " equations";
+            return ss.str();
+        })
+        .def("__lshift__", +[](System& sys, const Valuable& val) -> System& {
+            return sys << val;
+        }, return_internal_reference<>())
         ;
 }
