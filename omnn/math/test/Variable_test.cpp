@@ -1,7 +1,6 @@
 //
 // Created by Devin AI on 14.03.25.
 //
-#define BOOST_TEST_MODULE Variable test
 #include <boost/test/unit_test.hpp>
 
 #include "Variable.h"
