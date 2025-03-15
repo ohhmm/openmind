@@ -24,7 +24,7 @@ public:
             LoopDetectionStack.erase(*value);
     }
 
-    auto isLoopDetected() const { return isLoop; }
+    constexpr auto isLoopDetected() const { return isLoop; }
 };
 
 template <typename ValueT, typename ComparatorT, typename ContainerT>

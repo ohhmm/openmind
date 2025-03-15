@@ -317,7 +317,7 @@ namespace
             : DbSumOptimizationCache);
         auto cached = doCheckCache ? db.AsyncFetch(*this, true) : Cache::TaskNoCache;
 
-        Valuable w;
+        Sum w;
         do
         {
             CHECK_OPTIMIZATION_CACHE

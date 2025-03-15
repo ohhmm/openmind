@@ -30,6 +30,7 @@ namespace math {
     class VarHost
         : public std::enable_shared_from_this<VarHost>
     {
+        using base = std::enable_shared_from_this<VarHost>;
         using non_zero_log_t = std::map<Valuable::var_set_t, Valuable::solutions_t>;
         non_zero_log_t nonZeroItems;
         static thread_local bool add_non_zero_mode_on;
@@ -60,7 +61,7 @@ namespace math {
                 LOG_AND_IMPLEMENT("wrong id type");
             }
 #endif
-                Variable v(sh());
+                Variable v(shared_from_this());
                 v.SetId(id);
                 return v;
             }
@@ -80,9 +81,8 @@ namespace math {
         virtual const hosted_storage_t& HostedStorage(const ::std::any& id) = 0;
 
     public:
-        ptr sh() {
-            return shared_from_this();
-        }
+        using base::shared_from_this;
+
         template<class T = int>
         static ptr make(){
             return ptr(static_cast<VarHost*>(new TypedVarHost<T>()));
