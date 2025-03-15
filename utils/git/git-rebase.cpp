@@ -34,9 +34,13 @@ bool rebase(std::string_view branch, std::string_view onto) {
     rebase.join();
     auto code = rebase.exit_code();
     std::cout << "exit code: " << code << ' ' << line << std::endl;
-    auto ok = code == 0;
-
-    while (!ok && !silent) {
+    auto resolved = code == 0;
+    auto built = (resolved && !silent) ? cmake::build() : false;
+    while (!(resolved && built) && !silent) {
+        if (!resolved)
+            std::cout << "There are conflicts" << std::endl;
+        if (!built)
+            std::cout << "Build isn't successful" << std::endl;
         std::cout << "Would you like to resolve?" << std::endl;
         std::string line;
         if (std::getline(std::cin, line)) {
@@ -51,9 +55,8 @@ bool rebase(std::string_view branch, std::string_view onto) {
                 continius.join();
                 code = continius.exit_code();
                 std::cout << "exit code: " << code << ' ' << line << std::endl;
-                ok = code == 0;
-            } else if (cmake::build()) {
-                break;
+                resolved = code == 0;
+                built = cmake::build();
             } else {
                 std::cerr << "Build failed after resolving conflict" << std::endl;
             }
@@ -62,7 +65,7 @@ bool rebase(std::string_view branch, std::string_view onto) {
         }
     }
 
-    if (!ok) {
+    if (!resolved) {
         boost::process::child abort(GIT_REBASE_ABORT);
         abort.join();
         code = abort.exit_code();
@@ -73,7 +76,7 @@ bool rebase(std::string_view branch, std::string_view onto) {
             std::exit(1);
         }
     }
-    return ok;
+    return resolved;
 }
 
 void rebase_remote_branches() {
