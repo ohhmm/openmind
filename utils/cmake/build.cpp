@@ -5,7 +5,7 @@
 #include <string>
 
 
-#define CMAKE_BUILD_COMMAND "\"" CMAKE_COMMAND "\" --build \"" SRC_DIR "\""
+#define CMAKE_BUILD_COMMAND "\"" CMAKE_COMMAND "\" --build \"" BUILD_DIR "\""
 
 
 namespace cmake {
