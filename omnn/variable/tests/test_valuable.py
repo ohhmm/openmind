@@ -1,49 +1,74 @@
-#!/usr/bin/env python3
 import unittest
-import variable
+import valuable
 
-class Testvariable(unittest.TestCase):
-    def test_variable_creation(self):
-        x = variable.Variable()
-        v = variable.Valuable("x")
+class TestValuable(unittest.TestCase):
+    def setUp(self):
+        """Set up test variables."""
+        self.x = valuable.Variable("x")
+        self.y = valuable.Variable("y")
+        self.x.set_value(3)
+        self.y.set_value(4)
+        
+        self.a = valuable.Valuable(5)
+        self.b = valuable.Valuable(3)
     
-    def test_basic_arithmetic(self):
-        x = variable.Variable()
-        y = variable.Variable()
-        sum = x + y
-        values = {y: variable.Valuable(2), x: variable.Valuable(3)}
-        # Test multiplication
-        prod = y * 2 + x + 1
-        prod.eval(values)
-        prod.optimize()
-        #prod = variable.Valuable("4 * 2")
-        self.assertEqual(float(prod), 8.0)  # 4 * 2
-        
-        # Test addition with expression
-        expr = x + prod
-        expr.eval(values)
-        expr.optimize()
-        self.assertEqual(float(expr), 11.0)  # 3 + (4 * 2)
-        
-        # Test reverse operations
-        rev_prod = 2 * y.sq()
-        rev_prod.eval(values)
-        rev_prod.optimize()
-        self.assertEqual(float(rev_prod), 8.0)
-        
-        rev_sum = 5 + x
-        rev_sum.eval(values)
-        rev_sum.optimize()
-        self.assertEqual(float(rev_sum), 8.0)  # 5 + 3
+    def test_variable_creation_and_value_setting(self):
+        """Test variable creation and value assignment."""
+        self.assertEqual(float(self.x), 3.0)
+        self.assertEqual(float(self.y), 4.0)
     
-    def test_arithmetic_operations(self):
-        a = variable.Valuable(5)
-        b = variable.Valuable(3)
+    def test_variable_arithmetic(self):
+        """Test arithmetic operations between variables."""
+        # Addition
+        self.assertEqual(float(self.x + self.y), 7.0)
+        self.assertEqual(float(self.y + self.x), 7.0)
         
-        self.assertEqual(float(a + b), 8.0)
-        self.assertEqual(float(a - b), 2.0)
-        self.assertEqual(float(a * b), 15.0)
-        self.assertAlmostEqual(float(a / b), 5.0/3.0)
+        # Subtraction
+        self.assertEqual(float(self.y - self.x), 1.0)
+        self.assertEqual(float(self.x - self.y), -1.0)
+        
+        # Multiplication
+        self.assertEqual(float(self.x * self.y), 12.0)
+        self.assertEqual(float(self.y * self.x), 12.0)
+        
+        # Division
+        self.assertAlmostEqual(float(self.y / self.x), 4.0/3.0)
+        self.assertAlmostEqual(float(self.x / self.y), 3.0/4.0)
+    
+    def test_variable_numeric_operations(self):
+        """Test arithmetic operations between variables and numbers."""
+        # Addition
+        self.assertEqual(float(self.x + 2), 5.0)
+        self.assertEqual(float(2 + self.x), 5.0)
+        
+        # Subtraction
+        self.assertEqual(float(self.x - 2), 1.0)
+        self.assertEqual(float(2 - self.x), -1.0)
+        
+        # Multiplication
+        self.assertEqual(float(self.y * 2), 8.0)
+        self.assertEqual(float(2 * self.y), 8.0)
+        
+        # Division
+        self.assertEqual(float(self.y / 2), 2.0)
+        self.assertEqual(float(12 / self.y), 3.0)
+    
+    def test_valuable_arithmetic(self):
+        """Test arithmetic operations between Valuable objects."""
+        self.assertEqual(float(self.a + self.b), 8.0)
+        self.assertEqual(float(self.a - self.b), 2.0)
+        self.assertEqual(float(self.a * self.b), 15.0)
+        self.assertAlmostEqual(float(self.a / self.b), 5.0/3.0)
+    
+    def test_error_handling(self):
+        """Test error handling in arithmetic operations."""
+        z = valuable.Variable("z")  # Unassigned variable
+        
+        with self.assertRaises(RuntimeError):
+            _ = float(z + self.x)  # Operation with unassigned variable should fail
+        
+        with self.assertRaises(RuntimeError):
+            _ = float(self.y / 0)  # Division by zero should fail
 
 if __name__ == "__main__":
     unittest.main()

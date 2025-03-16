@@ -1,0 +1,163 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            triplet: x64-linux
+            python-dev: python3-dev libpython3-dev
+          - os: windows-latest
+            triplet: x64-windows
+            python-dev: ""
+          - os: macos-latest
+            triplet: arm64-osx
+            python-dev: ""
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build autoconf automake libtool m4 autoconf-archive python3-dev python3-pip libbz2-dev
+
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install python@3.10 autoconf automake libtool pkg-config ninja cmake bzip2
+        brew link --force python@3.10
+        python3 -m venv venv
+        source venv/bin/activate
+        python3 -m pip install --upgrade pip setuptools wheel
+        python3 -m pip install -r requirements.txt
+
+    - name: Setup Python 3.10 (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+
+    - name: Install Python dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install ninja cmake --timeout 1800 --execution-timeout=1800
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install -r requirements.txt
+
+    - name: Cache vcpkg
+      uses: actions/cache@v3
+      with:
+        path: |
+          vcpkg
+          build/vcpkg_installed
+        key: vcpkg-${{ matrix.os }}-${{ hashFiles('vcpkg.json') }}
+
+    - name: Setup vcpkg
+      shell: bash
+      run: |
+        # Clone vcpkg if not already present
+        if [[ ! -d "vcpkg" ]]; then
+          git clone https://github.com/Microsoft/vcpkg.git
+        fi
+
+        # Bootstrap vcpkg
+        pushd vcpkg
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          ./bootstrap-vcpkg.bat
+        else
+          chmod +x ./bootstrap-vcpkg.sh
+          ./bootstrap-vcpkg.sh
+        fi
+
+        # Install BZip2 first
+        ./vcpkg install bzip2[tool] --triplet=${{ matrix.triplet }} --debug
+
+        # Install other dependencies
+        ./vcpkg install --triplet=${{ matrix.triplet }} --clean-after-build
+        popd
+
+    - name: Configure CMake
+      shell: bash
+      run: |
+        # Get vcpkg installation path
+        VCPKG_ROOT="${{ github.workspace }}/vcpkg"
+        VCPKG_INSTALL_PATH="${VCPKG_ROOT}/installed/${{ matrix.triplet }}"
+        
+        # Install BZip2 explicitly first
+        ./vcpkg/vcpkg install bzip2[tool] --triplet=${{ matrix.triplet }} --debug
+        
+        # Set BZip2 paths based on platform
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/bz2.lib"
+        elif [[ "${{ runner.os }}" == "Darwin" ]]; then
+          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
+          # On macOS, we need to ensure BZip2 is built as a static library
+          export BZIP2_USE_STATIC_LIBS=ON
+        else
+          BZIP2_LIB="${VCPKG_INSTALL_PATH}/lib/libbz2.a"
+        fi
+        
+        # Export BZip2 variables for CMake
+        export BZIP2_ROOT="${VCPKG_INSTALL_PATH}"
+        export BZIP2_INCLUDE_DIR="${VCPKG_INSTALL_PATH}/include"
+        export BZIP2_LIBRARIES="${BZIP2_LIB}"
+        
+        echo "BZip2 configuration:"
+        echo "BZIP2_ROOT=${BZIP2_ROOT}"
+        echo "BZIP2_INCLUDE_DIR=${BZIP2_INCLUDE_DIR}"
+        echo "BZIP2_LIBRARIES=${BZIP2_LIB}"
+          
+        # Configure CMake with explicit vcpkg and BZip2 configuration
+        cmake -B build -S . \
+          -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DOPENMIND_USE_VCPKG=ON \
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+          -DBZIP2_ROOT="${VCPKG_INSTALL_PATH}" \
+          -DBZIP2_INCLUDE_DIR="${VCPKG_INSTALL_PATH}/include" \
+          -DBZIP2_LIBRARIES="${VCPKG_INSTALL_PATH}/lib/libbz2.a" \
+          -DBZIP2_USE_STATIC_LIBS=ON \
+          -DCMAKE_PREFIX_PATH="${VCPKG_INSTALL_PATH}" \
+          -DCMAKE_FIND_ROOT_PATH="${VCPKG_INSTALL_PATH}" \
+          -DCMAKE_FIND_DEBUG_MODE=ON \
+          -DCMAKE_DEBUG_FIND_PACKAGE=BZip2
+        else
+          # Configure CMake with explicit vcpkg and BZip2 configuration
+          cmake -B build -S . \
+            -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOPENMIND_USE_VCPKG=ON \
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+            -DBZIP2_ROOT="${VCPKG_INSTALL_PATH}" \
+            -DBZIP2_INCLUDE_DIR="${VCPKG_INSTALL_PATH}/include" \
+            -DBZIP2_LIBRARIES="${BZIP2_LIB}" \
+            -DBZIP2_USE_STATIC_LIBS=ON \
+            -DCMAKE_PREFIX_PATH="${VCPKG_INSTALL_PATH}" \
+            -DCMAKE_FIND_ROOT_PATH="${VCPKG_INSTALL_PATH}" \
+            -DCMAKE_FIND_DEBUG_MODE=ON \
+            -DCMAKE_DEBUG_FIND_PACKAGE=BZip2 \
+            -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
+        fi
+
+    - name: Build
+      shell: bash
+      run: cmake --build build --config Release
+
+    - name: Test
+      working-directory: build
+      shell: bash
+      run: ctest -C Release --output-on-failure
