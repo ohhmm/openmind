@@ -56,7 +56,7 @@ bool rebase(std::string_view branch, std::string_view onto) {
                 code = continius.exit_code();
                 std::cout << "exit code: " << code << ' ' << line << std::endl;
                 resolved = code == 0;
-                built = cmake::build();
+                built = resolved && cmake::build();
             } else {
                 std::cerr << "Build failed after resolving conflict" << std::endl;
             }
