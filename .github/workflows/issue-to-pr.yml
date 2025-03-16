@@ -12,10 +12,15 @@ permissions:
 jobs:
   create-devin-session:
     runs-on: ubuntu-latest
-    # Only run on issues that are either newly created by humans
-    # or labeled with "devin" (including those created by automation)
+    # Run on issues that are either:
+    # 1. Newly created by humans
+    # 2. Labeled with "devin" after creation
+    # 3. Created by automation with "devin" label already applied
     if: >
-      (github.event.action == 'opened' && !contains(github.event.issue.user.login, '[bot]')) ||
+      (github.event.action == 'opened' && (
+        !contains(github.event.issue.user.login, '[bot]') || 
+        contains(fromJSON(toJSON(github.event.issue.labels)).*.name, 'devin')
+      )) ||
       (github.event.action == 'labeled' && github.event.label.name == 'devin')
     steps:
       - name: Checkout code
@@ -26,10 +31,18 @@ jobs:
           ISSUE_BODY="${{ github.event.issue.body }}"
           ISSUE_TITLE="${{ github.event.issue.title }}"
           
-          # Combine title and body into prompt
+          # Extract workflow run URL if present
+          WORKFLOW_URL=$(echo "$ISSUE_BODY" | grep -o 'https://github.com/[^)]*' || echo "")
+          
+          # Combine title and body into prompt with enhanced context
           PROMPT="Resolve & PR (with link to original issue) fix, autoconfirming your plan, Issue #${{ github.event.issue.number }}: $ISSUE_TITLE
 
-          $ISSUE_BODY"
+          $ISSUE_BODY
+          
+          Task: Analyze the workflow failure, identify the root cause, and create a fix. Focus on the specific error in the build logs.
+          If this is a Vcpkg CI failure, pay special attention to compiler errors related to 'constexpr' static data member initialization in omnn/rt/antiloop.hpp.
+          
+          Workflow URL: $WORKFLOW_URL"
           
           echo "prompt<<EOF" >> $GITHUB_OUTPUT
           echo "$PROMPT" >> $GITHUB_OUTPUT
@@ -42,6 +55,12 @@ jobs:
         run: |
           # Check if issue already has in-progress label or Devin session comment
           LABELS=$(gh issue view "${{ github.event.issue.number }}" --json labels -q '.labels[].name')
+          
+          # Log the issue details for debugging
+          echo "Processing issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}"
+          echo "Issue created by: ${{ github.event.issue.user.login }}"
+          echo "Issue labels: $LABELS"
+          
           if echo "$LABELS" | grep -q "in-progress"; then
             echo "Issue already has in-progress label, skipping"
             echo "skip=true" >> $GITHUB_OUTPUT
@@ -92,5 +111,12 @@ jobs:
           # Add label to indicate issue is being processed
           gh issue edit "${{ github.event.issue.number }}" --add-label "in-progress"
           
-          # Add comment to issue with session link
-          gh issue comment "${{ github.event.issue.number }}" --body "Created Devin session: $SESSION_URL"
+          # Add comment to issue with session link and context
+          gh issue comment "${{ github.event.issue.number }}" --body "Created Devin session to analyze and fix this workflow failure: $SESSION_URL
+          
+          This automated process will:
+          1. Analyze the workflow failure logs
+          2. Identify the root cause of the failure
+          3. Create a fix and submit a PR
+          
+          The session is using snapshot ID: snapshot-9dbc293445474e4498a0c5a4fd32e36b"
