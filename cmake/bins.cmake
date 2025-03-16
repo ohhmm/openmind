@@ -115,6 +115,7 @@ function(apply_target_commons this_target)
 		_CRT_SECURE_NO_WARNINGS
 		-DCMAKE_COMMAND="${CMAKE_COMMAND}"
 		-DGIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+		-DBUILD_DIR="${CMAKE_BINARY_DIR}/"
 		-DSRC_DIR="${CMAKE_SOURCE_DIR}/"
 		-D_${dashless}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 		-D_${this_target_up}_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
