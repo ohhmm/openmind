@@ -712,7 +712,6 @@ namespace math {
         if (sqrtIntegerPart * sqrtIntegerPart != arbitraryAbsoluteValue) { // no integer square root
             auto d = GreatestCommonExp(constants::two);
             if (d.second != constants::one) {
-                std::cout << *this << ".GreatestCommonExp(2): " << d.first << " , " << d.second << " ; sqrtIntegerPart=" << sqrtIntegerPart << std::endl;
                 return (*this / d.second).Sqrt() * d.first;
             }
             else
