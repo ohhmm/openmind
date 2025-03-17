@@ -163,6 +163,6 @@ BOOST_AUTO_TEST_CASE(NumericalODE_test
         
         // Verify the derivative matches the ODE
         auto error = (numerical_derivative - dy_dx_val).abs();
-        BOOST_TEST(error < 0.01);  // Allow small numerical error
+        BOOST_TEST(error < Valuable(0.01));  // Allow small numerical error
     }
 }
