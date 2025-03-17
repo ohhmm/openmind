@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(SolveODE_test
 
 // Test case for numerical approximation of ODE solutions
 BOOST_AUTO_TEST_CASE(NumericalODE_test
-    , *disabled()  // Initially disabled following TDD workflow
+    // Enabled to avoid linking issues as per maintainer's request
 )
 {
     Variable x = Variable("x");
