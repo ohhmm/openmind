@@ -61,6 +61,7 @@ namespace std {
 omnn::math::Valuable abs(const omnn::math::Valuable&);
 omnn::math::Valuable log(const omnn::math::Valuable&);
 omnn::math::Valuable pow(const omnn::math::Valuable&, const omnn::math::Valuable&);
+omnn::math::Valuable&& move(omnn::math::Valuable&&);
 omnn::math::Valuable sqrt(const omnn::math::Valuable&);
 omnn::math::Valuable tanh(const omnn::math::Valuable&);
 
@@ -170,6 +171,7 @@ public:
     constexpr const encapsulated_instance& getInst() const { return exp; }
     void MarkNotOptimized();
 
+    static Valuable&& move(Valuable&&) noexcept;
 
     /// <summary>
     /// Depends on optimizing goals, the view may set different.
