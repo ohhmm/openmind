@@ -10,9 +10,7 @@ using namespace omnn::math;
 using namespace boost::unit_test;
 
 // Test case for first-order linear ODE: dy/dx + P(x)y = Q(x)
-BOOST_AUTO_TEST_CASE(FirstOrderLinearODE_test
-    , *disabled()  // Initially disabled following TDD workflow
-)
+BOOST_AUTO_TEST_CASE(FirstOrderLinearODE_test)
 {
     Variable x = Variable("x");
     Variable y = Variable("y");
