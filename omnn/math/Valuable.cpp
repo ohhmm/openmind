@@ -321,29 +321,27 @@ namespace omnn::math {
 
     Valuable& Valuable::operator =(const Valuable& v)
     {
-        exp.reset(v.Clone());
-        //auto& inst = v.getInst();
-        //if (exp && exp.get() != inst.get())
-        //    DispatchDispose(std::move(exp));
-        //if (inst)
-        //    exp = inst;
-        //else {
-        //    auto weak = v.weak_from_this();
-        //    if (weak.expired()) {
-        //        Become(Valuable(v.Clone()));
-        //    } else {
-        //        auto locked = weak.lock();
-        //        exp = std::const_pointer_cast<Valuable>(locked);
-        //    }
-        //}
+        auto& inst = v.getInst();
+        if (exp && exp.get() != inst.get())
+            DispatchDispose(std::move(exp));
+        if (inst)
+            exp = inst;
+        else {
+            exp.reset(v.Clone());
+            //auto weak = v.weak_from_this();
+            //if (weak.expired()) {
+            //    Become(Valuable(v.Clone()));
+            //} else {
+            //    auto locked = weak.lock();
+            //    exp = std::const_pointer_cast<Valuable>(locked);
+            //}
+        }
         return *this;
     }
 
-    Valuable::Valuable(const Valuable& v) : exp(v.Clone()) {}
-
-    //Valuable::Valuable(const Valuable& v) {
-    //    Valuable::operator =(v);
-    //}
+    Valuable::Valuable(const Valuable& v) {
+        Valuable::operator =(v);
+    }
 
     Valuable::Valuable(Valuable* v) : exp(v) {}
     Valuable::Valuable(encapsulated_instance&& enc) : exp(enc) {}
