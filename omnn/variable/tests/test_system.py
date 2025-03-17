@@ -28,5 +28,28 @@ class TestSystem(unittest.TestCase):
         self.assertEqual(len(y_solutions), 1)
         self.assertEqual(float(y_solutions[0]), 4.0)
 
+    def test_solve_multivar(self):
+        x = variable.Variable()
+        y = variable.Variable()
+        z = variable.Variable()
+
+        sys = variable.System()
+
+        sys << (x - 3*y + 3*z + 4)
+        sys << (2*x + 3*y - z - 15)
+        sys << (4*x - 3*y - z - 19)
+
+        sol = sys.Solve(x)
+        self.assertEqual(len(sol), 1)
+        self.assertEqual(float(sol[0]), 5.0)
+
+        sol = sys.Solve(y)
+        self.assertEqual(len(sol), 1)
+        self.assertEqual(float(sol[0]), 1.0)
+
+        sol = sys.Solve(z)
+        self.assertEqual(len(sol), 1)
+        self.assertEqual(float(sol[0]), -2.0)
+
 if __name__ == "__main__":
     unittest.main()
