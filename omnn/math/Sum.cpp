@@ -2415,26 +2415,167 @@ namespace
                             std::make_move_iterator(sqrtSquareSolutions.end()));
                     }
                 } else {
-                    auto sa = a * a;
-                    auto sb = b * b;
-                    auto p1 = 2 * c * c * c - 9 * b * c * d + 27 * a * d * d + 27 * b * b * e - 72 * a * c * e;
-                    auto p2 = p1 + (4 * ((c * c - 3 * b * d + 12 * a * e) ^ 3) + (p1 ^ 2)).Sqrt();
-                    auto qp2 = (p2 / 2) ^ (constants::one / 3);
-                    p1.optimize();
-                    p2.optimize();
-                    qp2.optimize();
-                    auto p3 = (c * c - 3 * b * d + 12 * a * e) / (3 * a * qp2) + qp2 / (3 * a);
-                    auto p4 = (sb / (4 * sa) - (2 * c) / (3 * a) + p3).Sqrt();
-                    auto p5 = sb / (2 * sa) - (4 * c) / (4 * a) - p3;
-                    auto p6 = (-sb * b / (sa * a) + 4 * b * c / sa - 8 * d / a) / (4 * p4);
-                    auto xp1 = b / (-4 * a);
-                    auto xp2 = p4 / 2;
-                    auto xp3_1 = (p5 - p6).Sqrt() / 2;
-                    auto xp3_2 = (p5 + p6).Sqrt() / 2;
-                    solutions.emplace(xp1 - xp2 - xp3_1);
-                    solutions.emplace(xp1 - xp2 + xp3_1);
-                    solutions.emplace(xp1 + xp2 - xp3_2);
-                    solutions.emplace(xp1 + xp2 + xp3_2);
+                    // Implement recursive approach for quartic equations
+                    // Convert quartic to square equation with double-multivalues
+                    
+                    // First try to use the recursive approach
+                    bool recursiveSolutionFound = false;
+                    
+                    // Step 1: Normalize the equation to the form x^4 + bx^3 + cx^2 + dx + e = 0
+                    auto normalizedB = b / a;
+                    auto normalizedC = c / a;
+                    auto normalizedD = d / a;
+                    auto normalizedE = e / a;
+                    
+                    // Step 2: Substitute x = y - b/(4a) to eliminate the cubic term
+                    // This transforms to y^4 + py^2 + qy + r = 0
+                    auto bDiv4 = normalizedB / 4_v;
+                    auto bDiv4Sq = bDiv4 * bDiv4;
+                    auto p = normalizedC - 6_v * bDiv4Sq;
+                    auto q = normalizedD - 2_v * normalizedC * bDiv4 + 8_v * bDiv4 * bDiv4Sq;
+                    auto r = normalizedE - normalizedD * bDiv4 + normalizedC * bDiv4Sq - 3_v * bDiv4Sq * bDiv4Sq;
+                    
+                    // Step 3: If q is zero, we have a biquadratic equation in disguise
+                    if (q.IsZero()) {
+                        auto squareSolutions = solutions_t{};
+                        solve(va, squareSolutions, {r, p, 1_v}, 2);
+                        for (auto& s : squareSolutions) {
+                            if (s.IsZero()) {
+                                solutions.emplace(-bDiv4);
+                            } else {
+                                auto ySolution = s ^ constants::half;
+                                auto yRoots = ySolution.Distinct();
+                                for (auto& yRoot : yRoots) {
+                                    solutions.emplace(yRoot - bDiv4);
+                                    solutions.emplace(-yRoot - bDiv4);
+                                }
+                            }
+                        }
+                        recursiveSolutionFound = true;
+                    } else {
+                        // Step 4: Try to convert to a system of two quadratics
+                        // y^4 + py^2 + qy + r = 0 can be rewritten as:
+                        // (y^2 + uy + v)(y^2 - uy + w) = 0
+                        // This expands to: y^4 + (v+w-u^2)y^2 + u(w-v)y + vw = 0
+                        
+                        // Comparing coefficients:
+                        // v+w-u^2 = p
+                        // u(w-v) = q
+                        // vw = r
+                        
+                        // Solving for u, v, w:
+                        // From u(w-v) = q, we get w-v = q/u
+                        // From vw = r, we get w = r/v
+                        // Substituting: v + r/v - u^2 = p
+                        // This gives: v^2 + pv^2 - u^2v^2 = r
+                        // Or: v^2(1 + p - u^2) = r
+                        
+                        // We need to find a value of u such that this equation has a solution
+                        // Try a few values of u based on the coefficients
+                        auto tryResolveQuadraticSystem = [&](const Valuable& u) -> bool {
+                            if (u.IsZero()) return false; // Avoid division by zero
+                            
+                            auto vMinusW = -q / u;
+                            auto vTimesW = r;
+                            
+                            // Solve the quadratic for v: v^2 - (vMinusW)v - vTimesW = 0
+                            auto discriminant = vMinusW * vMinusW + 4_v * vTimesW;
+                            
+                            if (discriminant.IsNegative()) return false;
+                            
+                            auto sqrtDisc = discriminant.Sqrt();
+                            auto v1 = (vMinusW + sqrtDisc) / 2_v;
+                            auto v2 = (vMinusW - sqrtDisc) / 2_v;
+                            
+                            // Check if our solution is consistent
+                            auto w1 = r / v1;
+                            auto w2 = r / v2;
+                            
+                            // Verify: v+w-u^2 = p
+                            if ((v1 + w1 - u * u).IsEqual(p)) {
+                                // Solve the two quadratics: y^2 + uy + v1 = 0 and y^2 - uy + w1 = 0
+                                auto quad1Solutions = solutions_t{};
+                                auto quad2Solutions = solutions_t{};
+                                
+                                solve(va, quad1Solutions, {v1, u, 1_v}, 2);
+                                solve(va, quad2Solutions, {w1, -u, 1_v}, 2);
+                                
+                                for (auto& s : quad1Solutions) {
+                                    solutions.emplace(s - bDiv4);
+                                }
+                                
+                                for (auto& s : quad2Solutions) {
+                                    solutions.emplace(s - bDiv4);
+                                }
+                                
+                                return true;
+                            } else if ((v2 + w2 - u * u).IsEqual(p)) {
+                                // Solve the two quadratics: y^2 + uy + v2 = 0 and y^2 - uy + w2 = 0
+                                auto quad1Solutions = solutions_t{};
+                                auto quad2Solutions = solutions_t{};
+                                
+                                solve(va, quad1Solutions, {v2, u, 1_v}, 2);
+                                solve(va, quad2Solutions, {w2, -u, 1_v}, 2);
+                                
+                                for (auto& s : quad1Solutions) {
+                                    solutions.emplace(s - bDiv4);
+                                }
+                                
+                                for (auto& s : quad2Solutions) {
+                                    solutions.emplace(s - bDiv4);
+                                }
+                                
+                                return true;
+                            }
+                            
+                            return false;
+                        };
+                        
+                        // Try different values of u to find a working decomposition
+                        auto uCandidates = std::vector<Valuable>{
+                            1_v, 
+                            2_v, 
+                            q / (2_v * r.Sqrt()),
+                            (p * p - 4_v * r).Sqrt() / 2_v
+                        };
+                        
+                        for (const auto& uCandidate : uCandidates) {
+                            if (tryResolveQuadraticSystem(uCandidate)) {
+                                recursiveSolutionFound = true;
+                                break;
+                            }
+                            
+                            // Also try negative value
+                            if (tryResolveQuadraticSystem(-uCandidate)) {
+                                recursiveSolutionFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If recursive approach failed, fall back to Ferrari's method
+                    if (!recursiveSolutionFound) {
+                        auto sa = a * a;
+                        auto sb = b * b;
+                        auto p1 = 2 * c * c * c - 9 * b * c * d + 27 * a * d * d + 27 * b * b * e - 72 * a * c * e;
+                        auto p2 = p1 + (4 * ((c * c - 3 * b * d + 12 * a * e) ^ 3) + (p1 ^ 2)).Sqrt();
+                        auto qp2 = (p2 / 2) ^ (constants::one / 3);
+                        p1.optimize();
+                        p2.optimize();
+                        qp2.optimize();
+                        auto p3 = (c * c - 3 * b * d + 12 * a * e) / (3 * a * qp2) + qp2 / (3 * a);
+                        auto p4 = (sb / (4 * sa) - (2 * c) / (3 * a) + p3).Sqrt();
+                        auto p5 = sb / (2 * sa) - (4 * c) / (4 * a) - p3;
+                        auto p6 = (-sb * b / (sa * a) + 4 * b * c / sa - 8 * d / a) / (4 * p4);
+                        auto xp1 = b / (-4 * a);
+                        auto xp2 = p4 / 2;
+                        auto xp3_1 = (p5 - p6).Sqrt() / 2;
+                        auto xp3_2 = (p5 + p6).Sqrt() / 2;
+                        solutions.emplace(xp1 - xp2 - xp3_1);
+                        solutions.emplace(xp1 - xp2 + xp3_1);
+                        solutions.emplace(xp1 + xp2 - xp3_2);
+                        solutions.emplace(xp1 + xp2 + xp3_2);
+                    }
                 }
                 break;
             }
