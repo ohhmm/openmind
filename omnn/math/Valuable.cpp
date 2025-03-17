@@ -154,6 +154,11 @@ namespace omnn::math {
         }
     }
 
+    Valuable&& Valuable::move(Valuable&& value) noexcept {
+        value.clone_on_write();
+        return static_cast<Valuable&&>(value);
+    }
+
     bool Valuable::IsSubObject(const Valuable& o) const {
         if (exp)
             return exp->IsSubObject(o);
@@ -193,7 +198,7 @@ namespace omnn::math {
         if (exp)
             return exp;
         else
-            LOG_AND_IMPLEMENT("SharedFromThis for " << *this);
+            return weak_from_this().lock();
     }
 
     Valuable::Valuable(const Valuable& v, ValuableDescendantMarker)
@@ -3425,6 +3430,10 @@ namespace std
     ::omnn::math::Valuable sqrt(const ::omnn::math::Valuable& v)
     {
         return v.Sqrt();
+    }
+
+    ::omnn::math::Valuable&& move(::omnn::math::Valuable&& value) {
+        return ::omnn::math::Valuable::move(static_cast<::omnn::math::Valuable&&>(value));
     }
 
     ::omnn::math::Valuable tanh(const ::omnn::math::Valuable& value)
