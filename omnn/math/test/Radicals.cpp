@@ -230,3 +230,79 @@ BOOST_AUTO_TEST_CASE(RadicalExponentiationOrdering_test)
     auto _2 = "((sqrt((-256*(x^6) + 2048*(x^4))))^(-1))"_v;
     InequalOrderCheck(_1, _2);
 }
+
+BOOST_AUTO_TEST_CASE(RadicalEquationMultipleRoots_test
+    , *disabled()
+) {
+    // Test for equation with multiple roots: x^2 = 1, which comes from x = 1^(1/2)
+    // This test verifies that the solver correctly identifies both roots (1 and -1)
+    DECL_VA(x);
+    
+    // Create the equation in the form that the library can solve
+    Valuable _1 = "x^2=1"sv;
+    
+    // Solve for x
+    auto solutions = _1.Solutions(x);
+    
+    // Verify we have both solutions
+    BOOST_TEST(solutions.size() == 2);
+    
+    if (solutions.size() > 0) {
+        // Check that both 1 and -1 are in the solutions
+        bool foundPositive = false;
+        bool foundNegative = false;
+        
+        for (const auto& sol : solutions) {
+            auto& solution = sol.get();
+            if (solution == 1) {
+                foundPositive = true;
+            } else if (solution == -1) {
+                foundNegative = true;
+            }
+        }
+        
+        BOOST_TEST(foundPositive);
+        BOOST_TEST(foundNegative);
+        
+        // Verify by substituting back into original equation
+        for (const auto& sol : solutions) {
+            auto& solution = sol.get();
+            Valuable leftSide = "x^2"sv;
+            leftSide.eval({{x, solution}});
+            leftSide.optimize();
+            
+            BOOST_TEST(leftSide == 1);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE(RadicalEquationWithVariableInRadicand_test
+    , *disabled()
+) {
+    // Test for equation: sqrt(x+3) = 2
+    // This test verifies that the solver correctly handles variables inside the radicand
+    DECL_VA(x);
+    
+    // Create the equation in the form that the library can solve
+    Valuable _1 = "sqrt(x+3)=2"sv;
+    
+    // Solve for x
+    auto solutions = _1.Solutions(x);
+    
+    // Verify we have a solution
+    BOOST_TEST(solutions.size() > 0);
+    
+    if (solutions.size() > 0) {
+        auto solution = solutions.begin()->get();
+        
+        // Expected solution: x = 1
+        BOOST_TEST(solution == 1);
+        
+        // Verify by substituting back into original equation
+        Valuable leftSide = "sqrt(x+3)"sv;
+        leftSide.eval({{x, solution}});
+        leftSide.optimize();
+        
+        BOOST_TEST(leftSide == 2);
+    }
+}
