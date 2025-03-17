@@ -1,6 +1,7 @@
 #include "PrincipalSurd.h"
 #include "Product.h"
 #include "Sum.h"
+#include "SquareRootAlgorithm.h"
 
 using namespace omnn::math;
 
@@ -152,12 +153,24 @@ Valuable PrincipalSurd::abs() const {
 
 PrincipalSurd::operator double() const {
     auto d = static_cast<double>(_1);
-    return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<double>(_2));
+    if (_2 == 2 && _1.IsInt() && _1 > constants::zero) {
+        // Use the new square root algorithm for integer values
+        std::string result = SquareRootAlgorithm::calculate(_1.ca(), 10);
+        return std::stod(result);
+    } else {
+        return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<double>(_2));
+    }
 }
 
 PrincipalSurd::operator long double() const {
     auto d = static_cast<long double>(_1);
-    return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<long double>(_2));
+    if (_2 == 2 && _1.IsInt() && _1 > constants::zero) {
+        // Use the new square root algorithm for integer values
+        std::string result = SquareRootAlgorithm::calculate(_1.ca(), 15);
+        return std::stold(result);
+    } else {
+        return _2 == 2 ? std::sqrt(d) : std::pow(d, 1./static_cast<long double>(_2));
+    }
 }
 
 Valuable::vars_cont_t PrincipalSurd::GetVaExps() const {

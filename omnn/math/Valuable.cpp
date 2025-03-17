@@ -3430,6 +3430,11 @@ namespace std
     {
         return v.Sqrt();
     }
+    
+    // Implementation of the square root algorithm from
+    // https://www.basic-mathematics.com/square-root-algorithm.html
+    // This is used in PrincipalSurd for calculating square roots of integers
+    // without relying on floating-point operations.
 
     ::omnn::math::Valuable&& move(::omnn::math::Valuable&& value) {
         return ::omnn::math::Valuable::move(static_cast<::omnn::math::Valuable&&>(value));
