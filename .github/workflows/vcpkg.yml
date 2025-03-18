@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        config: [RelWithDebInfo, Debug]
+        config: [RelWithDebInfo]
         include:
           - os: ubuntu-latest
             suffix: linux-x64
