@@ -532,4 +532,8 @@ BOOST_AUTO_TEST_CASE(Integer_bit_test)
     BOOST_TEST(negOne.bit(0) == 1);
     BOOST_TEST(negOne.bit(1) == 1);
     BOOST_TEST(negOne.bit(5) == 1);
+    
+    // Test bit function for other negative numbers
+    // For negative numbers other than -1, bit(n) returns 1-bit(-n)
+    // We would add more tests here in the future
 }
