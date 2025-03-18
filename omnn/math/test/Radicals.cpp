@@ -231,9 +231,7 @@ BOOST_AUTO_TEST_CASE(RadicalExponentiationOrdering_test)
     InequalOrderCheck(_1, _2);
 }
 
-BOOST_AUTO_TEST_CASE(RadicalEquationMultipleRoots_test
-    , *disabled()
-) {
+BOOST_AUTO_TEST_CASE(RadicalEquationMultipleRoots_test) {
     // Test for equation with multiple roots: x^2 = 1, which comes from x = 1^(1/2)
     // This test verifies that the solver correctly identifies both roots (1 and -1)
     DECL_VA(x);
@@ -276,9 +274,7 @@ BOOST_AUTO_TEST_CASE(RadicalEquationMultipleRoots_test
     }
 }
 
-BOOST_AUTO_TEST_CASE(RadicalEquationWithVariableInRadicand_test
-    , *disabled()
-) {
+BOOST_AUTO_TEST_CASE(RadicalEquationWithVariableInRadicand_test) {
     // Test for equation: sqrt(x+3) = 2
     // This test verifies that the solver correctly handles variables inside the radicand
     DECL_VA(x);
