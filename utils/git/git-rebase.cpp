@@ -17,7 +17,7 @@
 
 
 #define GIT_REBASE_ABORT "\"" GIT_EXECUTABLE_PATH "\" rebase --abort"
-#define GIT_REBASE_CONTINUE "\"" GIT_EXECUTABLE_PATH "\" rebase --continue"
+#define GIT_REBASE_CONTINUE "\"" GIT_EXECUTABLE_PATH "\" rebase --continue --no-edit"
 
 
 namespace git {
@@ -43,6 +43,8 @@ bool rebase(std::string_view branch, std::string_view onto) {
             std::cout << "Build isn't successful" << std::endl;
         std::cout << "Would you like to resolve?" << std::endl;
         std::string line;
+        boost::process::child status("\"" GIT_EXECUTABLE_PATH "\" status");
+        boost::process::child show("\"" GIT_EXECUTABLE_PATH "\" show");
         if (std::getline(std::cin, line)) {
             std::for_each(line.begin(), line.end(), [](auto ch) { return std::tolower(ch); });
             std::string_view response = line;
