@@ -318,8 +318,9 @@ namespace math {
             if (arbitrary < 0) {
                 if (arbitrary == -1) {
                     return 1;
+                } else {
+                    return 1-bit(-n);
                 }
-                IMPLEMENT
             }
             unsigned N = static_cast<unsigned>(n);
             return static_cast<int>(bit_test(arbitrary, N));
