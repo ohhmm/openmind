@@ -27,7 +27,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
-      run: cmake ${{github.workspace}} -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -G "Ninja Multi-Config" -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO
+      run: cmake ${{github.workspace}} -G "Ninja Multi-Config" -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO
 
     - name: Install prerequisites
       run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
@@ -49,11 +49,6 @@ jobs:
     - name: make check Release
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 2048 -C Release -j ${{steps.cpu-cores.outputs.count}}  -E "ts"  --output-on-failure
-            #   --rerun-failed --output-on-failure
-
-    - name: make check Debug
-      working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 2048 -C Debug -j ${{steps.cpu-cores.outputs.count}}  -E "ts" --output-on-failure
             #   --rerun-failed --output-on-failure
 
     - name: Install
