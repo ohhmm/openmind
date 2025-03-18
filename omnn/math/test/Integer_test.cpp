@@ -515,3 +515,21 @@ BOOST_AUTO_TEST_CASE(Complex_Expression_Test
     auto pow2_2 = "2^2"_v;
     BOOST_TEST(pow2_2 == 4);
 }
+
+BOOST_AUTO_TEST_CASE(Integer_bit_test)
+{
+    // Test bit function for positive numbers
+    Integer positive(42);  // 101010 in binary
+    BOOST_TEST(positive.bit(0) == 0);  // Least significant bit
+    BOOST_TEST(positive.bit(1) == 1);
+    BOOST_TEST(positive.bit(2) == 0);
+    BOOST_TEST(positive.bit(3) == 1);
+    BOOST_TEST(positive.bit(4) == 0);
+    BOOST_TEST(positive.bit(5) == 1);
+
+    // Test bit function for -1 (special case)
+    Integer negOne(-1);
+    BOOST_TEST(negOne.bit(0) == 1);
+    BOOST_TEST(negOne.bit(1) == 1);
+    BOOST_TEST(negOne.bit(5) == 1);
+}
