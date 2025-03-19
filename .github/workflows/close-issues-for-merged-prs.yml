@@ -1,0 +1,128 @@
+name: Close Issues for Merged/Closed PRs
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Run every 6 hours
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  close-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Close issues for merged/closed PRs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Get open issues with the automation label
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'automation'
+            });
+            
+            console.log(`Found ${issues.length} open issues with automation label`);
+            
+            for (const issue of issues) {
+              // Check if this is a workflow failure issue
+              if (!issue.title.startsWith('Workflow Failure:')) {
+                continue;
+              }
+              
+              // Extract the workflow run URL from the issue body
+              const runUrlMatch = issue.body.match(/\[View the failed workflow run\]\((https:\/\/github\.com\/.*\/actions\/runs\/\d+)\)/);
+              if (!runUrlMatch) {
+                console.log(`Issue #${issue.number} doesn't contain a workflow run URL`);
+                continue;
+              }
+              
+              const runUrl = runUrlMatch[1];
+              const runId = runUrl.split('/').pop();
+              
+              // Get the workflow run details
+              try {
+                const { data: run } = await github.rest.actions.getWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: runId
+                });
+                
+                // If the run has associated PRs, check their status
+                if (run.pull_requests && run.pull_requests.length > 0) {
+                  for (const pr of run.pull_requests) {
+                    const { data: prData } = await github.rest.pulls.get({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      pull_number: pr.number
+                    });
+                    
+                    if (prData.state === 'closed') {
+                      // Close the issue with a comment
+                      await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: issue.number,
+                        body: `Automatically closing this issue as it was created for a workflow failure in PR #${pr.number} which is now ${prData.merged ? 'merged' : 'closed'}.`
+                      });
+                      
+                      await github.rest.issues.update({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: issue.number,
+                        state: 'closed'
+                      });
+                      
+                      console.log(`Closed issue #${issue.number} related to PR #${pr.number} which is ${prData.merged ? 'merged' : 'closed'}`);
+                      break;
+                    }
+                  }
+                } else {
+                  // If no PRs are directly associated, check the branch name
+                  const branchName = run.head_branch;
+                  
+                  // Search for PRs with this branch
+                  const { data: prs } = await github.rest.pulls.list({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    head: `${context.repo.owner}:${branchName}`,
+                    state: 'closed'
+                  });
+                  
+                  // Also search for PRs with just the branch name (without owner)
+                  const { data: morePrs } = await github.rest.pulls.list({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    head: branchName,
+                    state: 'closed'
+                  });
+                  
+                  const allPrs = [...prs, ...morePrs];
+                  
+                  if (allPrs.length > 0) {
+                    // Close the issue with a comment
+                    const pr = allPrs[0]; // Use the first PR found
+                    
+                    await github.rest.issues.createComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      body: `Automatically closing this issue as it was created for a workflow failure in branch \`${branchName}\` which is associated with PR #${pr.number} that is now ${pr.merged ? 'merged' : 'closed'}.`
+                    });
+                    
+                    await github.rest.issues.update({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      state: 'closed'
+                    });
+                    
+                    console.log(`Closed issue #${issue.number} related to branch ${branchName} associated with PR #${pr.number} which is ${pr.merged ? 'merged' : 'closed'}`);
+                  }
+                }
+              } catch (error) {
+                console.error(`Error processing issue #${issue.number}: ${error.message}`);
+              }
+            }
