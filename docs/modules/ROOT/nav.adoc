@@ -9,6 +9,7 @@
 * Development
 ** xref:development/building.adoc[Building]
 ** xref:development/contributing.adoc[Contributing]
+** xref:development/python_wrapper.adoc[Python Bindings]
 * Business
 ** xref:business/profit-potential.adoc[Profit Potential Evaluation]
 * Reference

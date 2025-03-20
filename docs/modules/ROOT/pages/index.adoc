@@ -6,12 +6,16 @@ OpenMind is a C++ AGI infrastructure framework implementing:
 * Knowledge accumulation in universal distributed forms
 * Deduction capabilities for information processing
 * Self-modification with system integrity preservation
+* Efficient memory management using Copy-on-Write
+* Python integration through Boost.Python bindings
 
 == Documentation Structure
 
 * xref:getting-started.adoc[Getting Started]: Environment setup and basic usage
 * xref:architecture/overview.adoc[Architecture]: Core systems and data flows
 * xref:development/building.adoc[Development]: Build process and contribution
+* xref:development/python_wrapper.adoc[Python Bindings]: Using OpenMind from Python
+* xref:features/copy_on_write.adoc[Copy-on-Write]: Memory optimization feature
 * xref:reference/api.adoc[API]: Interface specifications
 * xref:reference/configuration.adoc[Configuration]: System parameters
 * xref:skrypt/screenshots.adoc[SKRYPT Screenshots]: Visual documentation of the SKRYPT system

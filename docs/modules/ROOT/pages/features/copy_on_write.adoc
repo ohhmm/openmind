@@ -1,0 +1,61 @@
+= Copy-on-Write Feature
+:description: Implementation and usage of the Copy-on-Write memory model in OpenMind
+
+== Overview
+
+OpenMind implements a Copy-on-Write (COW) memory model in the `Valuable` class to optimize memory usage and performance. This allows multiple objects to share the same underlying data until one of them needs to modify it, at which point a unique copy is created for the modifying object.
+
+== Implementation
+
+The COW implementation is centered around the `clone_on_write()` method in the `Valuable` class:
+
+[source,cpp]
+----
+// From omnn/math/Valuable.h
+protected:
+    using encapsulated_instance = ptrs::shared_ptr<Valuable>;
+    encapsulated_instance exp = nullptr;
+    
+    /// Ensures a unique copy of the object before modification (Copy-on-Write)
+    void clone_on_write();
+----
+
+When a modifying operation (like `operator+=`) is called on a `Valuable` object, the `clone_on_write()` method is invoked to ensure the object has exclusive ownership of its data before making any changes.
+
+== Benefits
+
+* **Memory Efficiency**: Multiple objects can share the same memory until modification
+* **Performance**: Reduces unnecessary copying of large objects
+* **Thread Safety**: When properly used, helps manage access to shared data
+* **Simplicity**: Implementation details are hidden from the user
+
+== Usage Example
+
+[source,cpp]
+----
+#include <omnn/math/Valuable.h>
+
+using namespace omnn::math;
+
+int main() {
+    // Create a Valuable object
+    Valuable v1 = 42_v;
+    
+    // Create a second reference to the same object
+    Valuable v2 = v1;
+    
+    // At this point, v1 and v2 share the same data
+    // Modifying v2 will trigger a copy
+    v2 += 10_v;
+    
+    // Now v1 is still 42, but v2 is 52
+    std::cout << "v1: " << v1 << std::endl;  // Output: v1: 42
+    std::cout << "v2: " << v2 << std::endl;  // Output: v2: 52
+    
+    return 0;
+}
+----
+
+== Testing
+
+The COW functionality is verified through unit tests in `omnn/math/test/Valuable_COW_test.cpp`, which tests various scenarios to ensure proper copying behavior.

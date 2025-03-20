@@ -6,6 +6,7 @@
 * Matrix algebra with optimized memory layout
 * Equation solver supporting arithmetic, logarithmic, exponential operations
 * Constants: pi (π), e, i with arbitrary precision
+* Copy-on-Write (COW) memory model for efficient object sharing and modification
 
 == Runtime (`omnn/rt`)
 * Lock-free neuron implementation with async message passing
