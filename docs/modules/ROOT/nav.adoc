@@ -4,6 +4,13 @@
 ** xref:architecture/overview.adoc[Overview]
 ** xref:architecture/components.adoc[Components]
 ** xref:architecture/modules.adoc[Modules]
+* Features
+** xref:features/copy_on_write.adoc[Copy-on-Write]
+** xref:features/quantum_computing.adoc[Quantum Computing]
+** xref:features/logic_system.adoc[Logic System]
+** xref:features/bit_operations.adoc[Bit Operations]
+** xref:features/storage.adoc[Storage System]
+** xref:features/advanced_math.adoc[Advanced Mathematics]
 * Examples
 ** xref:examples/index.adoc[Example Usage]
 * Development

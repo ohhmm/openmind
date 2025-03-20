@@ -1,0 +1,144 @@
+= Quantum Computing
+:description: Quantum computing capabilities in OpenMind
+
+== Overview
+
+OpenMind includes quantum computing capabilities through the `QuantumRegister` class, which provides a framework for quantum state manipulation and operations. This module enables simulation of quantum systems, representation of quantum states, and implementation of quantum gates.
+
+== Implementation
+
+The quantum computing module is implemented in the `omnn/quantum` directory:
+
+[source,cpp]
+----
+// From omnn/quantum/QuantumRegister.h
+class QuantumRegister {
+public:
+    // Constructor for n-qubit register initialized to |0...0⟩ state
+    explicit QuantumRegister(size_t num_qubits)
+        : num_qubits(num_qubits), state_vector(1ULL << num_qubits) {
+        // Initialize to |0...0⟩ state
+        state_vector[0] = std::complex<double>(1.0, 0.0);
+    }
+    
+    // Apply controlled phase rotation
+    void apply_controlled_phase(size_t control, size_t target, double angle);
+    
+    // Normalize the quantum state
+    void normalize();
+    
+private:
+    size_t num_qubits;
+    std::vector<std::complex<double>> state_vector;
+};
+----
+
+The implementation of the quantum operations is provided in `QuantumRegister.cpp`:
+
+[source,cpp]
+----
+void QuantumRegister::apply_controlled_phase(size_t control, size_t target, double angle) {
+    // Validate qubit indices
+    if (control >= num_qubits || target >= num_qubits) {
+        throw std::out_of_range("Qubit index out of range");
+    }
+    if (control == target) {
+        throw std::invalid_argument("Control and target qubits must be different");
+    }
+
+    // Calculate controlled phase rotation
+    const std::complex<double> phase_factor(std::cos(angle), std::sin(angle));
+    
+    // Size of the state vector
+    const size_t n = 1ULL << num_qubits;
+    
+    // Apply controlled phase rotation
+    for (size_t i = 0; i < n; ++i) {
+        // Check if both control and target qubits are 1
+        if ((i & (1ULL << control)) && (i & (1ULL << target))) {
+            state_vector[i] *= phase_factor;
+        }
+    }
+    
+    // Normalize the state vector
+    normalize();
+}
+
+void QuantumRegister::normalize() {
+    double norm = 0.0;
+    const double epsilon = 1e-10;  // Threshold for numerical stability
+    
+    // Calculate the norm
+    for (const auto& amplitude : state_vector) {
+        norm += std::norm(amplitude);
+    }
+    
+    // Only normalize if the norm deviates significantly from 1
+    if (std::abs(norm - 1.0) > epsilon) {
+        const double scale_factor = 1.0 / std::sqrt(norm);
+        for (auto& amplitude : state_vector) {
+            amplitude *= scale_factor;
+        }
+    }
+}
+----
+
+== Usage Example
+
+[source,cpp]
+----
+#include <omnn/quantum/QuantumRegister.h>
+#include <iostream>
+#include <complex>
+
+using namespace omnn::math;
+
+int main() {
+    // Create a 2-qubit register (initialized to |00⟩)
+    QuantumRegister qreg(2);
+    
+    // Apply controlled phase rotation (creates entanglement)
+    qreg.apply_controlled_phase(0, 1, M_PI/2);
+    
+    // Additional operations would be performed here
+    // ...
+    
+    return 0;
+}
+----
+
+== Quantum Operations
+
+The `QuantumRegister` class currently supports the following operations:
+
+1. *Initialization*: Create a quantum register with a specified number of qubits, initialized to the |0...0⟩ state.
+
+2. *Controlled Phase Rotation*: Apply a phase rotation to the target qubit when the control qubit is in the |1⟩ state. This operation is essential for creating entanglement between qubits.
+
+3. *Normalization*: Ensure that the quantum state remains normalized (sum of squared amplitudes equals 1), which is a requirement for valid quantum states.
+
+== Integration with OpenMind
+
+The quantum computing module integrates with the rest of the OpenMind framework, allowing for:
+
+* Combination of quantum and classical computation
+* Representation of quantum algorithms as mathematical expressions
+* Potential for quantum machine learning applications
+
+== Future Developments
+
+As indicated by the placeholder comment in the implementation, additional features planned for the quantum computing module include:
+
+* Additional quantum gates (Hadamard, X, Y, Z, CNOT)
+* Measurement operations
+* Multi-qubit operations
+* Quantum circuit representation
+* Quantum algorithm implementations
+
+== Benefits and Applications
+
+* *Quantum Simulation*: Model quantum systems and algorithms
+* *Entanglement Representation*: Create and manipulate entangled states
+* *Quantum Algorithm Development*: Provide a framework for implementing and testing quantum algorithms
+* *Educational Tool*: Learn about quantum computing concepts through practical implementation
+* *Integration with Classical Computation*: Combine quantum and classical approaches for hybrid algorithms
