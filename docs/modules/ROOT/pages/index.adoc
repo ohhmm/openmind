@@ -8,6 +8,11 @@ OpenMind is a C++ AGI infrastructure framework implementing:
 * Self-modification with system integrity preservation
 * Efficient memory management using Copy-on-Write
 * Python integration through Boost.Python bindings
+* Quantum computing capabilities
+* Advanced bit manipulation operations
+* Logic system for propositional reasoning
+* Persistent storage with LevelDB integration
+* Advanced mathematical operations
 
 == Documentation Structure
 
@@ -16,6 +21,11 @@ OpenMind is a C++ AGI infrastructure framework implementing:
 * xref:development/building.adoc[Development]: Build process and contribution
 * xref:development/python_wrapper.adoc[Python Bindings]: Using OpenMind from Python
 * xref:features/copy_on_write.adoc[Copy-on-Write]: Memory optimization feature
+* xref:features/quantum_computing.adoc[Quantum Computing]: Quantum state manipulation
+* xref:features/logic_system.adoc[Logic System]: Propositional logic and inference
+* xref:features/bit_operations.adoc[Bit Operations]: Low-level bit manipulation
+* xref:features/storage.adoc[Storage System]: Persistent data storage
+* xref:features/advanced_math.adoc[Advanced Mathematics]: Complex mathematical operations
 * xref:reference/api.adoc[API]: Interface specifications
 * xref:reference/configuration.adoc[Configuration]: System parameters
 * xref:skrypt/screenshots.adoc[SKRYPT Screenshots]: Visual documentation of the SKRYPT system

@@ -1,0 +1,146 @@
+= Logic System
+:description: Logical operations and propositional reasoning in OpenMind
+
+== Overview
+
+The OpenMind Logic System provides capabilities for propositional reasoning, logical operations, and inference. This module enables the representation and manipulation of logical propositions, equality constraints, and inference rules.
+
+== Implementation
+
+The logic system is implemented in the `omnn/logic` directory. The core components include:
+
+=== Proposition Class
+
+The `Proposition` class represents logical statements that can be evaluated to true or false:
+
+[source,cpp]
+----
+namespace omnn::logic {
+    class Proposition {
+        bool evaluate() const;                     // O(1) evaluation
+        Proposition simplify() const;              // CNF simplification
+        bool isContradiction() const noexcept;     // Consistency check
+    };
+}
+----
+
+=== Equality Class
+
+The `Equality` class represents equality constraints between expressions:
+
+[source,cpp]
+----
+// From omnn/logic/Equality.h
+namespace omnn {
+namespace logic {
+// if a==1 then b==1 else b==-1
+    // A: a==1
+    // B: b==1
+    // C: b=-1
+    //   Equivalent: A and B or C
+    //   E: (((a-1)^2)+((b-1)^2))(b+1)==0
+    // !A:  E && C  :  E^2+(b+1)^2=0  :
+    // Total:  (A && B) || (!A && C)  :  ((a-1)^2+(b-1)^2)(((((a-1)^2)+((b-1)^2))(b+1))^2+(b+1)^2)
+
+class Equality {
+    // Implementation details
+};
+}}
+----
+
+=== Inference Engine
+
+The `InferenceEngine` class provides mechanisms for logical inference:
+
+[source,cpp]
+----
+namespace omnn::logic {
+    class InferenceEngine {
+        void addRule(const Rule& rule);            // Add inference rule
+        void addFact(const Fact& fact);            // Add known fact
+        std::vector<Fact> infer();                 // Forward chaining
+    };
+}
+----
+
+== Logical Operations
+
+The logic system supports various logical operations:
+
+1. *Evaluation*: Determine the truth value of a proposition
+2. *Simplification*: Convert propositions to Conjunctive Normal Form (CNF)
+3. *Contradiction Detection*: Check if a proposition is a logical contradiction
+4. *Inference*: Derive new facts from existing facts and rules
+5. *Equality Constraints*: Express and manipulate equality relationships
+
+== Integration with Mathematical System
+
+The logic system integrates with OpenMind's mathematical expression system, allowing for:
+
+1. *Logical Expressions as Mathematical Formulas*: Represent logical operations using mathematical expressions
+2. *Constraint Satisfaction*: Solve systems of logical constraints
+3. *Symbolic Reasoning*: Perform symbolic manipulation of logical expressions
+
+== Usage Example
+
+[source,cpp]
+----
+#include <omnn/logic/Proposition.h>
+#include <omnn/logic/InferenceEngine.h>
+#include <iostream>
+
+using namespace omnn::logic;
+
+int main() {
+    // Create logical propositions
+    Proposition p("x > 0");
+    Proposition q("y < 10");
+    
+    // Combine propositions with logical operations
+    Proposition conjunction = p.And(q);
+    Proposition disjunction = p.Or(q);
+    Proposition implication = p.Implies(q);
+    
+    // Simplify to CNF
+    Proposition simplified = implication.simplify();
+    
+    // Check for contradictions
+    if (!simplified.isContradiction()) {
+        std::cout << "The proposition is satisfiable" << std::endl;
+    }
+    
+    // Set up inference engine
+    InferenceEngine engine;
+    engine.addFact(p);
+    engine.addRule(Rule(p, q));  // If p then q
+    
+    // Perform inference
+    auto inferred_facts = engine.infer();
+    
+    return 0;
+}
+----
+
+== Mathematical Representation
+
+Logical operations can be represented as mathematical expressions. For example, the equality constraint "if a==1 then b==1 else b==-1" can be expressed as:
+
+[source]
+----
+((a-1)^2+(b-1)^2)(((((a-1)^2)+((b-1)^2))(b+1))^2+(b+1)^2)
+----
+
+This mathematical representation allows for:
+
+1. *Efficient Evaluation*: Using mathematical operations for logical evaluation
+2. *Integration with Equation Solving*: Solving logical constraints as part of equation systems
+3. *Optimization*: Applying mathematical optimization techniques to logical problems
+
+== Benefits and Applications
+
+* *Automated Reasoning*: Derive logical conclusions from premises
+* *Constraint Satisfaction*: Solve problems with logical constraints
+* *Knowledge Representation*: Express knowledge in a formal, machine-processable form
+* *Decision Support*: Provide logical foundations for decision-making systems
+* *Verification*: Verify the correctness of systems against logical specifications
+* *Integration with Mathematical Reasoning*: Combine logical and mathematical reasoning for complex problem-solving

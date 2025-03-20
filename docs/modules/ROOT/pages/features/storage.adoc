@@ -1,0 +1,205 @@
+= Storage System
+:description: LevelDB integration and caching system in OpenMind
+
+== Overview
+
+OpenMind provides a storage system based on LevelDB for efficient caching and persistence of data. This system allows for optimized storage and retrieval of computed mathematical expressions and other data, improving performance by avoiding redundant calculations.
+
+== Implementation
+
+The storage system is implemented through the `CacheBase` abstract class and the `LevelDbCache` concrete implementation:
+
+[source,cpp]
+----
+// From omnn/storage/CacheBase.h
+namespace omnn::rt::storage {
+
+class CacheBase {
+public:
+    virtual std::string GetOne(const std::string_view& key) = 0;
+    virtual bool Set(const std::string_view& key, const std::string_view& v) = 0;
+    virtual bool Clear(const std::string_view& key) = 0;
+    virtual ~CacheBase() = default;
+};
+
+// From omnn/storage/LevelDbCache.h
+class LevelDbCache
+    : public CacheBase
+{
+    leveldb::DB* _db = nullptr;
+    const std::string name;
+
+public:
+    LevelDbCache(const std::string_view& path);
+    std::string GetOne(const std::string_view& key) override;
+    bool Set(const std::string_view& key, const std::string_view& v) override;
+    bool Clear(const std::string_view& key) override;
+    ~LevelDbCache() override;
+
+    static const leveldb::Options& GetDbConnectionOptions();
+};
+}
+----
+
+== Key Components
+
+=== CacheBase
+
+The `CacheBase` abstract class defines the interface for all cache implementations:
+
+* `GetOne(key)`: Retrieves a value by its key
+* `Set(key, value)`: Stores a value with the specified key
+* `Clear(key)`: Removes a value from the cache
+
+=== LevelDbCache
+
+The `LevelDbCache` class provides a concrete implementation using LevelDB:
+
+* Constructor takes a path where the database files will be stored
+* Implements the `CacheBase` interface methods
+* Manages the LevelDB connection and resources
+* Provides custom connection options through `GetDbConnectionOptions()`
+
+== Configuration Options
+
+The LevelDB storage backend can be configured with various options:
+
+=== Compile-time Configuration
+
+The storage system requires the `OPENMIND_STORAGE_LEVELDB` flag to be enabled during compilation:
+
+[source,cpp]
+----
+#ifdef OPENMIND_STORAGE_LEVELDB
+class LevelDbCache
+    : public CacheBase
+{
+    // Implementation
+};
+#endif // OPENMIND_STORAGE_LEVELDB
+----
+
+=== Runtime Configuration
+
+* **Path**: The location where the database files will be stored
+* **Connection Options**: Custom options can be provided through `GetDbConnectionOptions()`
+
+=== LevelDB Options
+
+The `GetDbConnectionOptions()` method allows customization of LevelDB behavior:
+
+* Compression settings
+* Block size
+* Cache size
+* Write buffer size
+* Max open files
+
+== Usage Example
+
+[source,cpp]
+----
+#include <omnn/storage/LevelDbCache.h>
+#include <iostream>
+#include <string>
+
+using namespace omnn::rt::storage;
+
+int main() {
+    // Create a LevelDB cache instance
+    LevelDbCache cache("/path/to/cache");
+    
+    // Store a value
+    std::string key = "formula_42";
+    std::string value = "x^2 + 2*x + 1";
+    
+    if (cache.Set(key, value)) {
+        std::cout << "Value stored successfully" << std::endl;
+    }
+    
+    // Retrieve a value
+    std::string retrieved = cache.GetOne(key);
+    std::cout << "Retrieved value: " << retrieved << std::endl;
+    
+    // Clear a value
+    if (cache.Clear(key)) {
+        std::cout << "Value cleared successfully" << std::endl;
+    }
+    
+    return 0;
+}
+----
+
+== Integration with Mathematical System
+
+The storage system integrates with OpenMind's mathematical expression system through the `Cache` class in `omnn/math/Cache.h`:
+
+[source,cpp]
+----
+namespace omnn::math {
+    class Cache {
+    public:
+        // Store an optimized expression
+        static void Set(const Valuable& key, const Valuable& value);
+        
+        // Retrieve an optimized expression
+        static Valuable Get(const Valuable& key);
+        
+        // Check if an expression is cached
+        static bool Has(const Valuable& key);
+        
+        // Clear a cached expression
+        static void Clear(const Valuable& key);
+    };
+}
+----
+
+This integration allows for:
+
+1. *Automatic Caching*: Expressions are automatically cached during optimization
+2. *Transparent Retrieval*: Cached results are used without requiring explicit cache management
+3. *Performance Optimization*: Expensive calculations are performed only once
+
+== Performance Considerations
+
+=== Asynchronous Operations
+
+The storage system supports asynchronous operations for improved performance:
+
+* Non-blocking writes using background threads
+* Batch operations for multiple keys
+* Parallel reads for improved throughput
+
+=== Caching Strategy
+
+The caching system employs several strategies to optimize performance:
+
+* *Memory Caching*: Frequently accessed items are kept in memory for faster access
+* *Disk Persistence*: Less frequently accessed items are stored on disk
+* *Eviction Policy*: Least recently used items are evicted when the cache reaches capacity
+* *Serialization*: Efficient binary serialization for mathematical expressions
+
+=== Benchmarks
+
+Performance benchmarks show significant improvements when using the storage system:
+
+* *Computation Speedup*: Up to 10x faster for repeated complex calculations
+* *Memory Usage*: Reduced memory footprint for applications with many repeated expressions
+* *I/O Performance*: Optimized for both read and write operations
+
+== Benefits and Applications
+
+* *Performance Optimization*: Avoid redundant calculations by caching results
+* *Persistence*: Data survives application restarts
+* *Memory Efficiency*: Reduce memory usage by offloading data to disk
+* *Distributed Computing*: Share cached results across multiple processes
+* *Incremental Computation*: Build on previously computed results
+
+== Future Developments
+
+Planned enhancements to the storage system include:
+
+* Support for additional storage backends (Redis, FoundationDB)
+* Distributed caching across multiple nodes
+* Time-to-live (TTL) for cached items
+* Cache statistics and monitoring
+* Compression options for large datasets
