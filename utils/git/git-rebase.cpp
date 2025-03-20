@@ -65,7 +65,10 @@ bool rebase(std::string_view branch, std::string_view onto) {
                 }
                 built = resolved && cmake::build();
             } else {
-                std::cerr << "Build failed after resolving conflict" << std::endl;
+                if(resolved && !built) {
+                    std::cerr << "Build failed after resolving conflict" << std::endl;
+                }
+                break;
             }
         } else {
             break;
