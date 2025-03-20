@@ -39,6 +39,20 @@ The ohhmm/openmind repository is organized into the following main directories:
 - Multiple generator types (GeneralGoalGenerator, SingletonGoalGenerator, IdleTimeGoalGenerator)
 - Uses facilities for reusable operations
 
+### 5. Quantum Computing (`omnn/quantum`)
+- Quantum state manipulation and operations
+- QuantumRegister class for quantum state representation
+- Support for controlled phase rotation and normalization
+- Framework for quantum algorithm implementation
+- Integration with classical computation
+
+### 6. Logic System (`omnn/logic`)
+- Propositional reasoning and logical operations
+- Equality constraints and inference rules
+- Mathematical representation of logical expressions
+- Integration with equation solving
+- Support for logical inference and constraint satisfaction
+
 ### 2. Mathematical Framework (`omnn/math`)
 - Extensive type system for mathematical operations
 - Support for variables, equations, matrices
@@ -46,6 +60,11 @@ The ohhmm/openmind repository is organized into the following main directories:
 - Constants (pi, e, i) and special values
 - Heavy template usage for generic operations
 - Derivative expression format follows the pattern "(expression)'variable", where 'variable represents the variable to differentiate with respect to
+- Advanced mathematical operations including integration, differentiation, and special functions
+- Bit manipulation operations for low-level optimization
+- Copy-on-Write (COW) memory model for efficient object sharing and modification
+- Conditional operations (Ifz, IfNZ, IfEq) for complex mathematical expressions
+- Symbolic computation capabilities for mathematical precision
 
 ### 3. Neural Network Components (`omnn/rt`)
 - Async neuron implementation
@@ -57,6 +76,11 @@ The ohhmm/openmind repository is organized into the following main directories:
 - Multiple backend support (LevelDB, FoundationDB)
 - Thread-safe operations
 - Abstract CacheBase class with concrete implementations
+- Efficient caching and persistence of data
+- Optimized storage and retrieval of computed mathematical expressions
+- LevelDbCache implementation with custom connection options
+- Asynchronous operations for improved performance
+- Memory caching for frequently accessed items
 
 ## Development Guidelines
 
@@ -193,6 +217,13 @@ jobs:
 - Thread-safe storage operations
 - Lockfree data structures in runtime
 - Parallel task execution
+
+### 5. Python Bindings (`omnn/variable`):
+- Integration with Python through Boost.Python
+- Exposes mathematical operations to Python scripts
+- Allows seamless integration of OpenMind's functionality into Python workflows
+- Supports mathematical operations, neural networks, and extrapolator functionality
+- Built when the `OPENMIND_BUILD_PYTHON_BINDINGS` CMake option is enabled
 
 ### 2. Memory Management:
 - Custom allocators
