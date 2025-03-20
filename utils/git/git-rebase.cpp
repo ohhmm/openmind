@@ -16,6 +16,9 @@
 #include <algorithm>
 
 
+#define GIT_SHOW "\"" GIT_EXECUTABLE_PATH "\" show -q"
+#define GIT_STATUS "\"" GIT_EXECUTABLE_PATH "\" status"
+#define GIT_REBASE_PREFIX "\"" GIT_EXECUTABLE_PATH "\" rebase --autostash "
 #define GIT_REBASE_ABORT "\"" GIT_EXECUTABLE_PATH "\" rebase --abort"
 #define GIT_REBASE_CONTINUE "\"" GIT_EXECUTABLE_PATH "\" rebase --continue"
                                                                     //--no-edit"
@@ -26,8 +29,7 @@ bool silent = {};
 
 bool rebase(std::string_view branch, std::string_view onto) {
     std::stringstream cmd;
-    cmd << "\"" GIT_EXECUTABLE_PATH "\" rebase --autostash ";
-    cmd << onto << ' ' << branch;
+    cmd << GIT_REBASE_PREFIX << onto << ' ' << branch;
     auto line = cmd.str();
 
     boost::process::child rebase(line);
@@ -44,10 +46,8 @@ bool rebase(std::string_view branch, std::string_view onto) {
             std::cout << "Build isn't successful" << std::endl;
         std::cout << "Would you like to resolve?" << std::endl;
         std::string line;
-        boost::process::child status("\"" GIT_EXECUTABLE_PATH "\" status");
-#ifndef _WIN32
-        boost::process::child show("\"" GIT_EXECUTABLE_PATH "\" show");
-#endif
+        boost::process::child status(GIT_STATUS);
+        boost::process::child show(GIT_SHOW);
         if (std::getline(std::cin, line)) {
             std::for_each(line.begin(), line.end(), [](auto ch) { return std::tolower(ch); });
             std::string_view response = line;
