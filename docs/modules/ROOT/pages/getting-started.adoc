@@ -30,6 +30,35 @@ cmake --build build -j$(nproc)
 This section will be expanded with actual usage examples from the codebase.
 ====
 
+== Python Integration
+
+OpenMind can be used from Python through its Python bindings:
+
+[source,python]
+----
+# Import OpenMind Python module
+import openmind.math as om_math
+
+# Create and manipulate variables
+x = om_math.Variable("x")
+y = om_math.Variable("y")
+
+# Create expressions
+expr = x * y + x / y
+
+# Evaluate with specific values
+result = expr.evaluate({"x": 10, "y": 5})
+print(f"Result: {result}")
+----
+
+To enable Python bindings during build:
+
+[source,bash]
+----
+cmake -B build -DOPENMIND_BUILD_PYTHON_BINDINGS=ON
+cmake --build build
+----
+
 == Next Steps
 
 * Learn about the xref:architecture/overview.adoc[architecture]

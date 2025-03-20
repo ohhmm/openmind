@@ -1,0 +1,46 @@
+= Python Bindings
+:description: Python wrapper usage and implementation details for OpenMind
+
+== Overview
+
+OpenMind provides Python bindings to make its functionality accessible from Python scripts and applications. The Python wrapper allows for seamless integration of OpenMind's mathematical operations, neural networks, and knowledge representation into Python workflows.
+
+== Building Python Bindings
+
+Python bindings can be enabled during the build process:
+
+[source,bash]
+----
+cmake -B build -DOPENMIND_BUILD_PYTHON_BINDINGS=ON
+cmake --build build
+----
+
+This will generate the Python modules in the build directory.
+
+== Usage Example
+
+[source,python]
+----
+import openmind.math as om_math
+
+# Create variable
+var = om_math.Variable("x")
+
+# Create mathematical expression
+expr = var * 2 + 5
+
+# Evaluate expression
+result = expr.evaluate({"x": 10})
+print(f"Result: {result}")  # Output: Result: 25
+----
+
+== Supported Features
+
+* Mathematical operations (Variables, Equations, Matrices)
+* Neural network components
+* Extrapolator functionality
+* Goal management system
+
+== Implementation Details
+
+The Python bindings are implemented using Boost.Python and are built when the `OPENMIND_BUILD_PYTHON_BINDINGS` CMake option is enabled. The bindings are defined in the `omnn/variable` directory.
