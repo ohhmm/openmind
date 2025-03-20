@@ -116,7 +116,7 @@ Please Donate to help reach this plans:
 
 Special thanks to all contributors and supporters who have helped make this project possible:
 
-- Sergii Kryvonos (Project Lead)
+- Sergii Kryvonos (Author of idea, Architect, owner)
 - Iryna Galchenko (CFO) for help during release on copy-on-write feature
 - Makogon Yurii for help on Python wrapper
 - Olena Dobromyslova for contributing
