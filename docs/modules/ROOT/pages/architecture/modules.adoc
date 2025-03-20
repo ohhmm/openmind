@@ -88,3 +88,20 @@ namespace omnn::core {
     };
 }
 ----
+
+== Python Bindings (`omnn/variable`)
+[source,cpp]
+----
+namespace omnn::variable {
+    // Python module initialization
+    BOOST_PYTHON_MODULE(openmind) {
+        // Expose classes to Python
+        py::class_<Variable>("Variable", py::init<std::string>())
+            .def("__add__", &Variable::operator+)
+            .def("__mul__", &Variable::operator*)
+            .def("evaluate", &Variable::evaluate);
+            
+        // Additional module exports...
+    }
+}
+----

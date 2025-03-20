@@ -51,6 +51,16 @@ namespace omnn::math {
         Variable<T> operator+(const Variable<T>&) const;
         Variable<T> operator*(const Variable<T>&) const;
     };
+
+    class Valuable {
+        // Copy-on-Write implementation
+        void clone_on_write();                     // Creates unique copy on modification
+        bool is_shared() const;                    // Checks if memory is shared
+        
+        // Common operations with COW semantics
+        Valuable& operator+=(const Valuable&);     // Modifies with COW check
+        Valuable& operator*=(const Valuable&);     // Modifies with COW check
+    };
 }
 ----
 

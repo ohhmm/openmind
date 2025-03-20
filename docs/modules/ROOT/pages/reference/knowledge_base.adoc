@@ -14,6 +14,8 @@ The consolidated knowledge base document contains comprehensive information abou
 * Testing
 * Implementation details
 * Development guidelines
+* Python bindings
+* Copy-on-Write memory model
 
 link:https://app.devin.ai/attachments/422f0be7-baa9-45bf-905c-45ebe3462f20/consolidated_knowledge_base.pdf[Download Consolidated Knowledge Base (PDF)]
 
