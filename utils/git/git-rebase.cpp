@@ -55,12 +55,14 @@ bool rebase(std::string_view branch, std::string_view onto) {
             response.remove_suffix((response.size() - 1) -
                                    ::std::min(response.find_last_not_of(" \t\r\v\n"), response.size() - 1));
             if (response != "n" && response != "no" && response != "skip") {
-                boost::process::child continius(GIT_REBASE_CONTINUE);
-                std::cout << "Continue rebasing " << branch << " onto " << onto << std::endl;
-                continius.join();
-                code = continius.exit_code();
-                std::cout << "exit code: " << code << ' ' << line << std::endl;
-                resolved = code == 0;
+                if(!resolved) {
+                    boost::process::child continius(GIT_REBASE_CONTINUE);
+                    std::cout << "Continue rebasing " << branch << " onto " << onto << std::endl;
+                    continius.join();
+                    code = continius.exit_code();
+                    std::cout << "exit code: " << code << ' ' << line << std::endl;
+                    resolved = code == 0;
+                }
                 built = resolved && cmake::build();
             } else {
                 std::cerr << "Build failed after resolving conflict" << std::endl;

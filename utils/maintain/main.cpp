@@ -2,6 +2,9 @@
 #include "git-fetch.h"
 #include "git-stash.h"
 
+#include <boost/process.hpp>
+
+
 using namespace git;
 
 int main(int argc, char* argv[]) {
@@ -16,5 +19,6 @@ int main(int argc, char* argv[]) {
 
     rebase("main");
 
+    boost::process::child("\"" GIT_EXECUTABLE_PATH "\" gc");
     return 0;
 }
