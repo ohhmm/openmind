@@ -1,0 +1,312 @@
+= Advanced Mathematics
+:description: Complex mathematical operations in OpenMind
+
+== Overview
+
+OpenMind provides a comprehensive set of advanced mathematical operations through the `Valuable` class. These operations enable complex mathematical manipulations, including integration, differentiation, logical operations, and special functions.
+
+== Implementation
+
+The advanced mathematical operations are implemented in the `Valuable` class in `omnn/math/Valuable.h`. The core operations include:
+
+=== Integration and Differentiation
+
+[source,cpp]
+----
+// From omnn/math/Valuable.h
+class Valuable {
+    // Integration methods
+    virtual Valuable integral(const Variable& va) const;
+    Valuable Integral(const Variable& va) const;
+    
+    // Differentiation methods
+    virtual Valuable d(const Variable& va) const;
+    Valuable D(const Variable& va) const;
+    
+    // Higher-order derivatives
+    Valuable d(const Variable& va, const Valuable& order) const;
+};
+----
+
+=== Logical Operations
+
+[source,cpp]
+----
+// From omnn/math/Valuable.h
+class Valuable {
+    // Logical operations
+    Valuable LogicAnd(const Valuable& valuable) const;
+    Valuable operator&&(const Valuable& valuable) const { return LogicAnd(valuable); }
+    Valuable LogicOr(const Valuable& valuable) const;
+    Valuable operator||(const Valuable& valuable) const { return LogicOr(valuable); }
+    
+    // Boolean operations
+    virtual Valuable BoolNot() const;
+    virtual Valuable BoolIntModNotZero() const;
+    virtual Valuable ToBool() const;
+};
+----
+
+=== Comparison Operations
+
+[source,cpp]
+----
+// From omnn/math/Valuable.h
+class Valuable {
+    // Comparison operations
+    Valuable Equals(const Valuable&) const;
+    Valuable NotEquals(const Valuable&) const;
+    
+    // Inequality operations
+    virtual Valuable IntMod_Less(const Valuable& than) const;
+    virtual Valuable Less(const Valuable& than) const;
+    virtual Valuable LessOrEqual(const Valuable& than) const;
+    virtual Valuable GreaterOrEqual(const Valuable& than) const;
+};
+----
+
+=== Special Functions
+
+[source,cpp]
+----
+// From omnn/math/Valuable.h
+class Valuable {
+    // Special functions
+    Valuable Minimum(const Valuable& second) const;
+    Valuable Maximum(const Valuable& with) const;
+    Valuable Distance(const Valuable& with) const;
+    
+    // Sign and positivity
+    virtual Valuable IntMod_Sign() const;
+    virtual Valuable IsPositive() const;
+    virtual Valuable IsNegative() const;
+    virtual Valuable NegativeOrZero() const;
+};
+----
+
+=== Conditional Operations
+
+[source,cpp]
+----
+// From omnn/math/Valuable.h
+class Valuable {
+    // Conditional operators
+    Valuable Ifz(const Valuable& Then, const Valuable& Else) const;
+    Valuable IfNZ(const Valuable& Then, const Valuable& Else) const;
+    Valuable IfEq(const Valuable& v, const Valuable& Then, const Valuable& Else) const;
+};
+----
+
+== Core Mathematical Operations
+
+=== Integration
+
+* `integral(va)`: Computes the indefinite integral of the expression with respect to variable `va`
+* `Integral(va)`: Wrapper around `integral(va)` that may provide additional optimizations
+
+Integration is implemented using symbolic integration techniques, including:
+
+* Power rule: ∫xⁿ dx = xⁿ⁺¹/(n+1) for n ≠ -1
+* Logarithmic rule: ∫1/x dx = ln|x|
+* Sum rule: ∫(f(x) + g(x)) dx = ∫f(x) dx + ∫g(x) dx
+* Product rule and integration by parts for more complex expressions
+
+=== Differentiation
+
+* `d(va)`: Computes the derivative of the expression with respect to variable `va`
+* `D(va)`: Wrapper around `d(va)` that may provide additional optimizations
+* `d(va, order)`: Computes the nth-order derivative, where n is specified by `order`
+
+Differentiation is implemented using symbolic differentiation techniques, including:
+
+* Power rule: d/dx(xⁿ) = n·xⁿ⁻¹
+* Product rule: d/dx(f(x)·g(x)) = f(x)·g'(x) + f'(x)·g(x)
+* Chain rule: d/dx(f(g(x))) = f'(g(x))·g'(x)
+* Quotient rule for fractions
+
+=== Logical Operations
+
+* `LogicAnd(v)`: Logical AND operation (returns 1 if both expressions are non-zero, 0 otherwise)
+* `LogicOr(v)`: Logical OR operation (returns 1 if either expression is non-zero, 0 otherwise)
+* `BoolNot()`: Logical NOT operation (returns 1 if the expression is zero, 0 otherwise)
+* `ToBool()`: Converts the expression to a boolean value (0 or 1)
+
+=== Comparison Operations
+
+* `Equals(v)`: Returns an expression that equals zero when this expression equals `v`
+* `NotEquals(v)`: Returns an expression that equals zero when this expression does not equal `v`
+* `Less(v)`: Returns an expression that equals zero when this expression is less than `v`
+* `LessOrEqual(v)`: Returns an expression that equals zero when this expression is less than or equal to `v`
+* `GreaterOrEqual(v)`: Returns an expression that equals zero when this expression is greater than or equal to `v`
+
+=== Special Functions
+
+* `Minimum(v)`: Returns the minimum of this expression and `v`
+* `Maximum(v)`: Returns the maximum of this expression and `v`
+* `Distance(v)`: Returns the absolute difference between this expression and `v`
+* `IntMod_Sign()`: Returns the sign of the expression (-1, 0, or 1)
+* `IsPositive()`: Returns an expression that equals zero when this expression is positive
+* `IsNegative()`: Returns an expression that equals zero when this expression is negative
+
+=== Conditional Operations
+
+* `Ifz(Then, Else)`: Returns `Then` when this expression is zero, `Else` otherwise
+* `IfNZ(Then, Else)`: Returns `Then` when this expression is non-zero, `Else` otherwise
+* `IfEq(v, Then, Else)`: Returns `Then` when this expression equals `v`, `Else` otherwise
+
+== Usage Examples
+
+=== Integration and Differentiation
+
+[source,cpp]
+----
+#include <omnn/math/Valuable.h>
+#include <omnn/math/Variable.h>
+#include <iostream>
+
+using namespace omnn::math;
+
+int main() {
+    // Create a variable
+    Variable x("x");
+    
+    // Create an expression: f(x) = x^2 + 2*x + 1
+    Valuable f = x*x + 2*x + 1;
+    
+    // Compute the derivative: f'(x) = 2*x + 2
+    Valuable df = f.d(x);
+    
+    // Compute the integral: ∫f(x)dx = x^3/3 + x^2 + x + C
+    Valuable intf = f.integral(x);
+    
+    // Compute the second derivative: f''(x) = 2
+    Valuable d2f = f.d(x, 2_v);
+    
+    std::cout << "f(x) = " << f << std::endl;
+    std::cout << "f'(x) = " << df << std::endl;
+    std::cout << "∫f(x)dx = " << intf << std::endl;
+    std::cout << "f''(x) = " << d2f << std::endl;
+    
+    return 0;
+}
+----
+
+=== Logical and Comparison Operations
+
+[source,cpp]
+----
+#include <omnn/math/Valuable.h>
+#include <omnn/math/Variable.h>
+#include <iostream>
+
+using namespace omnn::math;
+
+int main() {
+    // Create variables
+    Variable x("x");
+    Variable y("y");
+    
+    // Create expressions
+    Valuable expr1 = x > 0_v;  // x > 0
+    Valuable expr2 = y < 10_v; // y < 10
+    
+    // Logical operations
+    Valuable conjunction = expr1.LogicAnd(expr2); // x > 0 AND y < 10
+    Valuable disjunction = expr1.LogicOr(expr2);  // x > 0 OR y < 10
+    Valuable negation = expr1.BoolNot();          // NOT (x > 0)
+    
+    // Comparison operations
+    Valuable equality = x.Equals(y);              // x == y
+    Valuable inequality = x.NotEquals(y);         // x != y
+    Valuable less_than = x.Less(y);               // x < y
+    
+    std::cout << "x > 0 AND y < 10: " << conjunction << std::endl;
+    std::cout << "x > 0 OR y < 10: " << disjunction << std::endl;
+    std::cout << "NOT (x > 0): " << negation << std::endl;
+    std::cout << "x == y: " << equality << std::endl;
+    std::cout << "x != y: " << inequality << std::endl;
+    std::cout << "x < y: " << less_than << std::endl;
+    
+    return 0;
+}
+----
+
+=== Conditional Operations
+
+[source,cpp]
+----
+#include <omnn/math/Valuable.h>
+#include <omnn/math/Variable.h>
+#include <iostream>
+
+using namespace omnn::math;
+
+int main() {
+    // Create a variable
+    Variable x("x");
+    
+    // Create conditional expressions
+    Valuable abs_x = x.Ifz(0_v, x.IfNZ(x.IsPositive().Ifz(x, -x), 0_v));
+    Valuable max_xy = x.Less(y).Ifz(y, x);
+    
+    // Create a piecewise function:
+    // f(x) = {
+    //   x^2 if x >= 0
+    //   -x  if x < 0
+    // }
+    Valuable f = x.IsPositive().Ifz(x*x, -x);
+    
+    std::cout << "abs(x) = " << abs_x << std::endl;
+    std::cout << "max(x,y) = " << max_xy << std::endl;
+    std::cout << "f(x) = " << f << std::endl;
+    
+    return 0;
+}
+----
+
+== Mathematical Rigor
+
+OpenMind's mathematical operations are implemented with a focus on mathematical rigor:
+
+* *Symbolic Computation*: Operations are performed symbolically rather than numerically, preserving mathematical precision
+* *Formal Verification*: Mathematical transformations are rigorously validated and proven correct
+* *Edge Case Handling*: Special attention is given to edge cases and singularities
+* *Consistency Checks*: Results are verified for mathematical consistency
+
+== Performance Characteristics
+
+The advanced mathematical operations are designed with performance in mind:
+
+* *Time Complexity*:
+  * Differentiation: O(n) where n is the size of the expression
+  * Integration: O(n log n) for simple expressions, potentially higher for complex expressions
+  * Logical operations: O(1) to O(n) depending on the expression complexity
+  * Comparison operations: O(1) to O(n) depending on the expression complexity
+
+* *Space Complexity*:
+  * Most operations: O(n) where n is the size of the expression
+  * Some operations may require additional temporary space for intermediate results
+
+* *Optimization*:
+  * Automatic simplification of expressions
+  * Caching of intermediate results
+  * Special case handling for common patterns
+
+== Integration with Other Systems
+
+The advanced mathematical operations integrate with other OpenMind systems:
+
+1. *Extrapolator System*: Use derivatives for pattern recognition and extrapolation
+2. *Logic System*: Combine mathematical and logical reasoning
+3. *Caching System*: Cache complex mathematical results for improved performance
+4. *Python Bindings*: Access advanced mathematical operations from Python
+
+== Benefits and Applications
+
+* *Symbolic Mathematics*: Perform symbolic computation without numerical approximation
+* *Mathematical Modeling*: Create and manipulate mathematical models
+* *Optimization*: Solve optimization problems using derivatives
+* *Control Systems*: Design and analyze control systems
+* *Machine Learning*: Implement gradient-based learning algorithms
+* *Scientific Computing*: Solve differential equations and perform scientific calculations
+* *Education*: Explore mathematical concepts through symbolic manipulation
