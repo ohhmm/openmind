@@ -76,7 +76,7 @@ Compilation:
 
     ![Screenshot](build.png)
 
-Features:
+Features [outdated]:
 
   Basic Goals Framework 
   
@@ -93,28 +93,10 @@ Features:
     Basically its meant to be like Sufix tree (like Trie, but Sufix tree) but more generic upon finish.
     Its planned to make its nodes able to be the Context structures as well.
 
-Plans:
+Plans [outdated list]:
 
     To complete Generic Context Framework
     Implement self learning Chatbot as OpenMind sample
     lobby of dynamic class generation to C++ standard
     Introduce Neural network support as part of current Facilities framework
-    context based neural network serialization and swapping
-  
-Q&A:
-
-  Plese, feel free to ask questions on this StackOverflow team: 
-
-    https://stackoverflowteams.com/c/skrypt/questions
-
-  
-Please Donate to help reach this plans:
-
-    Bountysource: <https://salt.bountysource.com/teams/open-mind>
-
-Support: sergeikrivonos@gmail.com
-
-Bitcoin: 17JNBmpsDxp1d4jcAh7qthSN4VRcN9EDxQ
-
-Thank you very much, appreciate your support.
-
+    context based neural network serialization and swapping to disk
