@@ -112,6 +112,19 @@ Please Donate to help reach this plans:
 
     Bountysource: <https://salt.bountysource.com/teams/open-mind>
 
+## Special Thanks
+
+Special thanks to all contributors and supporters who have helped make this project possible:
+
+- Sergii Kryvonos (Project Lead)
+- Iryna Galchenko (CFO) for help during release on copy-on-write feature
+- Makogon Yurii for help on Python wrapper
+- Olena Dobromyslova for contributing
+- All GitHub contributors who have submitted code, reported issues, and provided feedback
+- The open-source community for providing valuable tools and libraries
+- Devin AI for documentation assistance and improvements
+- All financial supporters who have donated to the project
+
 Support: sergeikrivonos@gmail.com
 
 Bitcoin: 17JNBmpsDxp1d4jcAh7qthSN4VRcN9EDxQ
