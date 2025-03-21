@@ -27,7 +27,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       env:
         CC: cl
-      run: cmake ${{github.workspace}} -G "Ninja Multi-Config" -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO
+      run: cmake ${{github.workspace}} -G "Ninja Multi-Config" -DOPENMIND_USE_VCPKG=NO -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -D CMAKE_C_COMPILER="cl.exe" -D CMAKE_CXX_COMPILER="cl.exe" -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=NO -DOPENMIND_STORAGE_LEVELDB=NO -Dprotected=public
 
     - name: Install prerequisites
       run: cmake --build ${{github.workspace}}/build --target prerequisites --config Release
