@@ -40,25 +40,33 @@ jobs:
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive
-        cmake --version
-        ninja --version
-        gcc --version
-        g++ --version
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        command: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build autoconf automake autoconf-archive
+          cmake --version
+          ninja --version
+          gcc --version
+          g++ --version
 
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       env:
         VCPKG_PYTHON3: $(which python3)
-      run: |
-        echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
-        brew update
-        brew install cmake ninja autoconf automake autoconf-archive
-        cmake --version
-        ninja --version
-        clang --version
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        command: |
+          echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
+          brew update || brew update || brew update || brew update || brew update
+          brew install cmake ninja autoconf automake autoconf-archive
+          cmake --version
+          ninja --version
+          clang --version
 
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
