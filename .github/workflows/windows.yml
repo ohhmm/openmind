@@ -1,0 +1,37 @@
+name: C/C++ CI Windows
+
+on: [push]
+
+jobs:
+  build-in-windows:
+
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/build/vcpkg_installed
+          ${{ github.workspace }}/build/bin/Db*.solutions
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/windows.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
+    - name: Create Build Dir
+      run: cmake -E make_directory ${{github.workspace}}/build
+    - name: Configure
+      working-directory: ${{github.workspace}}/build
+      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build -j $env:NUMBER_OF_PROCESSORS --config Debug
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build -j $env:NUMBER_OF_PROCESSORS --config Release
+    - name: Check
+      working-directory: ${{github.workspace}}/build
+      run: ctest . -j $env:NUMBER_OF_PROCESSORS -C Release -E "ts" --rerun-failed --output-on-failure
+    - name: Check
+      working-directory: ${{github.workspace}}/build
+      run: ctest . -j $env:NUMBER_OF_PROCESSORS -C Debug -E "ts" --rerun-failed --output-on-failure
