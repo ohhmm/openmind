@@ -20,9 +20,22 @@ jobs:
           ${{ runner.os }}-vcpkg-
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
+    - name: Install Boost
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 15
+        max_attempts: 3
+        command: |
+          vcpkg install boost:x64-windows
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF
+      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+    - name: Install prerequisites
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --target prerequisites -j $env:NUMBER_OF_PROCESSORS --config Release
+    - name: Reconfigure to detect newly installed prerequisites
+      working-directory: ${{github.workspace}}/build
+      run: cmake .
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build -j $env:NUMBER_OF_PROCESSORS --config Debug
