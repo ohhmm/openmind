@@ -112,8 +112,10 @@ void PrincipalSurd::optimize() {
                     if (newRadicand.IsPrincipalSurd())
                         break;
                     else {
-                        update1(newRadicand);
-                        update2(_2.shr());
+                        // FIXME : update1(newRadicand);  // should work too (Exponentiation_test)
+                        // FIXME : update2(_2.shr());
+                        update1(std::move(newRadicand));
+                        update2(std::move(_2.shr()));
                     }
                 }
             }
