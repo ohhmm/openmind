@@ -17,6 +17,7 @@ SET(${this_target}_HEADER_FILES
 	Goal.h
 	GoalGenerator.h
 	GoalGeneratorBase.h
+	HierarchicalKnowledgeMatrix.h
 	IdleTimeGoalGenerator.h
     LogicOffloadFacility.h
     Mind.h
@@ -85,6 +86,8 @@ SOURCE_GROUP("Facilities" FILES
 	Facility.h
 	FunctorFacility.cpp
 	FunctorFacility.h
+	HierarchicalKnowledgeMatrix.cpp
+	HierarchicalKnowledgeMatrix.h
 	LogicOffloadFacility.cpp
 	LogicOffloadFacility.h
 	ReachGoal.cpp
