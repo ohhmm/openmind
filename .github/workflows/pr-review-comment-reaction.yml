@@ -116,24 +116,24 @@ jobs:
                   // Add try/catch block
                   const indentation = scriptContent.match(/^(\s*)/)[1];
                   const updatedScriptBlock = `script: |
-            try {
-        ${scriptContent.trim().split('\n').map(line => '      ' + line).join('\n')}
-            } catch (error) {
-              console.error(\`Error in workflow execution: \${error.message}\`);
-              // Optionally create a simpler issue with error details
-              try {
-                const { data: errorIssue } = await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: \`Error in workflow execution\`,
-                  body: \`The workflow encountered an error: \${error.message}\`,
-                  labels: ["automation", "bug"]
-                });
-                console.log(\`Created error issue: \${errorIssue.html_url}\`);
-              } catch (issueError) {
-                console.error(\`Failed to create error issue: \${issueError.message}\`);
-              }
-            }`;
+                    try {
+                      ${scriptContent.trim().split('\n').map(line => '      ' + line).join('\n')}
+                    } catch (error) {
+                      console.error(\`Error in workflow execution: \${error.message}\`);
+                      // Optionally create a simpler issue with error details
+                      try {
+                        const { data: errorIssue } = await github.rest.issues.create({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          title: \`Error in workflow execution\`,
+                          body: \`The workflow encountered an error: \${error.message}\`,
+                          labels: ["automation", "bug"]
+                        });
+                        console.log(\`Created error issue: \${errorIssue.html_url}\`);
+                      } catch (issueError) {
+                        console.error(\`Failed to create error issue: \${issueError.message}\`);
+                      }
+                    }`;
                   
                   content = content.replace(scriptBlock, updatedScriptBlock);
                 }
