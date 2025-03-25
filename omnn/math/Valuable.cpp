@@ -2419,6 +2419,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         if (exp)
             return exp->Same(value);
+        if (Is<Valuable>())
+            return {};
+        
         return Hash() == value.Hash()
             && OfSameType(value)
             && operator==(value);
