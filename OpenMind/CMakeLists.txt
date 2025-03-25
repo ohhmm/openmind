@@ -18,6 +18,7 @@ SET(${this_target}_HEADER_FILES
 	GoalGenerator.h
 	GoalGeneratorBase.h
 	IdleTimeGoalGenerator.h
+    LogicOffloadFacility.h
     Mind.h
 	Named.h
 	ReachGoal.h
@@ -84,6 +85,8 @@ SOURCE_GROUP("Facilities" FILES
 	Facility.h
 	FunctorFacility.cpp
 	FunctorFacility.h
+	LogicOffloadFacility.cpp
+	LogicOffloadFacility.h
 	ReachGoal.cpp
 	ReachGoal.h
 	RunProcess.cpp
