@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 import unittest
-import variable
+import sys
 
+try:
+    import variable
+    VARIABLE_MODULE_AVAILABLE = True
+except ImportError:
+    VARIABLE_MODULE_AVAILABLE = False
+
+@unittest.skipIf(not VARIABLE_MODULE_AVAILABLE, "Python bindings not available")
 class Testvariable(unittest.TestCase):
     def test_variable_creation(self):
         x = variable.Variable()
