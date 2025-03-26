@@ -177,10 +177,6 @@ BOOST_PYTHON_MODULE(variable)
         "    result = lambda_func([3, 4])  # 3 + 2*4 = 11")
         
         .def("compi_lambda", +[](const Valuable& v, const boost::python::list& variables) {
-            if (len(variables) > 3) {
-                throw std::runtime_error("Currently only supports up to 3 variables due to C++ template limitations");
-            }
-            
             std::vector<Variable> vars;
             for (int i = 0; i < len(variables); ++i) {
                 vars.push_back(extract<Variable>(variables[i]));
@@ -197,29 +193,27 @@ BOOST_PYTHON_MODULE(variable)
                         values.push_back(extract<Valuable>(args[i]));
                     }
                     
-                    auto lambda = [&]() {
-                        switch (vars.size()) {
-                            case 1:
-                                return v.CompiLambda(vars[0]);
-                            case 2:
-                                return v.CompiLambda(vars[0], vars[1]);
-                            case 3:
-                                return v.CompiLambda(vars[0], vars[1], vars[2]);
-                            default:
-                                throw std::runtime_error("Unsupported number of variables");
-                        }
-                    }();
+                    auto callCompiLambda = [&v](auto&&... vars) {
+                        return v.CompiLambda(std::forward<decltype(vars)>(vars)...);
+                    };
                     
-                    switch (values.size()) {
-                        case 1:
-                            return lambda(values[0]);
-                        case 2:
-                            return lambda(values[0], values[1]);
-                        case 3:
-                            return lambda(values[0], values[1], values[2]);
-                        default:
-                            throw std::runtime_error("Unsupported number of arguments");
+                    auto callLambda = [](auto&& lambda, auto&&... args) {
+                        return lambda(std::forward<decltype(args)>(args)...);
+                    };
+                    
+                    if (vars.size() > 10) {
+                        throw std::runtime_error("Currently only supports up to 10 variables due to implementation constraints");
                     }
+                    
+                    auto invokeLambda = [&]() -> Valuable {
+                        return [&]<size_t... I>(std::index_sequence<I...>) {
+                            auto lambda = callCompiLambda(vars[I]...);
+                            
+                            return callLambda(lambda, values[I]...);
+                        }(std::make_index_sequence<vars.size()>{});
+                    };
+                    
+                    return invokeLambda();
                 }
             );
         },
