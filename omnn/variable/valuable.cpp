@@ -1,16 +1,21 @@
 #include <sstream>
+#ifdef OPENMIND_BUILD_PYTHON_BINDINGS
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#endif
 #include "omnn/math/Variable.h"
 #include "omnn/math/System.h"
 #include <sstream>
 #include <map>
 
+#ifdef OPENMIND_BUILD_PYTHON_BINDINGS
 using namespace boost::python;
+#endif
 using namespace omnn::math;
 using namespace std::string_literals;
 
 namespace {
+#ifdef OPENMIND_BUILD_PYTHON_BINDINGS
     // Converter for solutions_t (std::unordered_set<Valuable>)
     boost::python::list solutions_to_list(const omnn::math::Valuable::solutions_t& solutions) {
         boost::python::list result;
@@ -51,8 +56,10 @@ namespace {
             data->convertible = storage;
         }
     };
+#endif
 }
 
+#ifdef OPENMIND_BUILD_PYTHON_BINDINGS
 BOOST_PYTHON_MODULE(variable)
 {
     dict_to_map_converter();  // Register the converter
@@ -276,3 +283,4 @@ BOOST_PYTHON_MODULE(variable)
         }, return_internal_reference<>())
         ;
 }
+#endif // OPENMIND_BUILD_PYTHON_BINDINGS
