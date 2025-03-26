@@ -88,7 +88,7 @@ result2 = lambda_func([2, 5])  # 2*5 + 2 = 12
 
 [NOTE]
 ====
-The `compi_lambda` method currently supports up to 3 variables due to C++ template limitations. For expressions with more variables, use `compile_into_lambda` instead.
+The `compi_lambda` method supports up to 10 variables. For expressions with more variables, use `compile_into_lambda` instead, which has no limit on the number of variables.
 ====
 
 == Implementation Details
