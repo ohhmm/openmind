@@ -1929,12 +1929,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     bool Valuable::operator==(const Valuable& v) const
     {
-        if(exp)
-            return
-// NO:                   Hash()==v.Hash() &&     // example: empty sum hash differs;  product 1*x*y == x*y ; etc
-                    exp->operator==(v);
+        if (exp)
+            return exp->operator==(v);
         else
-            IMPLEMENT
+            LOG_AND_IMPLEMENT(*this << " == " << v);
     }
 
     bool Valuable::IsConstant() const { return exp && exp->IsConstant(); }
