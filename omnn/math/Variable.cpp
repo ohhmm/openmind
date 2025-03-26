@@ -210,6 +210,19 @@ namespace math {
             || (Hash() == value.Hash() && value.operator==(*this));
     }
 
+    bool Variable::Same(const Variable& variable) const
+    {
+        return hash == variable.Hash()
+            && varSetHost == variable.varSetHost
+            && varSetHost->CompareIdsEqual(varId, variable.varId);
+    }
+
+    bool Variable::Same(const Valuable& value) const
+    {
+        return value.IsVa()
+            && Same(value.as<Variable>());
+    }
+
     bool Variable::operator==(const Variable& v) const
     {
         if (varSetHost != v.varSetHost) {

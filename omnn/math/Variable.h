@@ -59,6 +59,9 @@ public:
     bool operator<(const Valuable&) const override;
     bool operator==(const Valuable&) const override;
     bool operator==(const Variable&) const;
+    bool Same(const Variable&) const;
+    bool Same(const Valuable&) const override;
+
     Valuable calcFreeMember() const override { return constants::zero; }
 //    void optimize() override;
 //    Valuable sqrt() const override;
