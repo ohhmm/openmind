@@ -49,6 +49,22 @@ class TestCompilambda(unittest.TestCase):
         
         result = lambda_func([4])
         self.assertEqual(float(result), 17.0)  # 4*4 + 1 = 17
+    
+    def test_multiple_variables_lambda(self):
+        x = variable.Variable()
+        y = variable.Variable()
+        z = variable.Variable()
+        w = variable.Variable()
+        
+        expr = x + y * z + w
+        
+        lambda_func = expr.compi_lambda([x, y, z, w])
+        
+        result = lambda_func([2, 3, 4, 5])
+        self.assertEqual(float(result), 19.0)  # 2 + 3*4 + 5 = 19
+        
+        result = lambda_func([1, 2, 3, 4])
+        self.assertEqual(float(result), 11.0)  # 1 + 2*3 + 4 = 11
 
 if __name__ == "__main__":
     unittest.main()
