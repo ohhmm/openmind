@@ -40,7 +40,61 @@ print(f"Result: {result}")  # Output: Result: 25
 * Neural network components
 * Extrapolator functionality
 * Goal management system
+* Lambda function generation from expressions
+
+== Lambda Function Generation
+
+The Python bindings provide two methods for generating lambda functions from mathematical expressions:
+
+=== compile_into_lambda
+
+Creates a lambda function from an expression using the `CompileIntoLambda` method:
+
+[source,python]
+----
+import variable
+
+x = variable.Variable()
+y = variable.Variable()
+expr = x + 2 * y
+
+# Create lambda function
+lambda_func = expr.compile_into_lambda([x, y])
+
+# Use lambda function with different values
+result1 = lambda_func([3, 4])  # 3 + 2*4 = 11
+result2 = lambda_func([5, 2])  # 5 + 2*2 = 9
+----
+
+=== compi_lambda
+
+Creates an optimized lambda function using the `CompiLambda` template method:
+
+[source,python]
+----
+import variable
+
+x = variable.Variable()
+y = variable.Variable()
+expr = x * y + x
+
+# Create lambda function
+lambda_func = expr.compi_lambda([x, y])
+
+# Use lambda function with different values
+result1 = lambda_func([3, 4])  # 3*4 + 3 = 15
+result2 = lambda_func([2, 5])  # 2*5 + 2 = 12
+----
+
+[NOTE]
+====
+The `compi_lambda` method currently supports up to 3 variables due to C++ template limitations. For expressions with more variables, use `compile_into_lambda` instead.
+====
 
 == Implementation Details
 
 The Python bindings are implemented using Boost.Python and are built when the `OPENMIND_BUILD_PYTHON_BINDINGS` CMake option is enabled. The bindings are defined in the `omnn/variable` directory.
+
+=== Conditional Compilation
+
+Python bindings are wrapped with `#ifdef OPENMIND_BUILD_PYTHON_BINDINGS` directives to ensure they are only compiled when Python development headers are available. This allows the codebase to build successfully even in environments without Python support.
