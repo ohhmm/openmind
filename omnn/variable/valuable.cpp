@@ -150,6 +150,10 @@ BOOST_PYTHON_MODULE(variable)
             
             return boost::python::make_function(
                 [v, vars](const boost::python::list& args) -> Valuable {
+                    if (len(args) != vars.size()) {
+                        throw std::runtime_error("Number of arguments must match number of variables");
+                    }
+                    
                     std::vector<Valuable> values;
                     for (int i = 0; i < len(args); ++i) {
                         values.push_back(extract<Valuable>(args[i]));
@@ -159,9 +163,24 @@ BOOST_PYTHON_MODULE(variable)
                     return lambda({values.begin(), values.end()});
                 }
             );
-        })
+        }, 
+        "Create a lambda function from an expression using CompileIntoLambda.\n\n"
+        "Args:\n"
+        "    variables: List of Variable objects used in the expression\n\n"
+        "Returns:\n"
+        "    A callable function that takes a list of values corresponding to the variables\n\n"
+        "Raises:\n"
+        "    RuntimeError: If the number of arguments doesn't match the number of variables\n\n"
+        "Example:\n"
+        "    expr = x + 2 * y\n"
+        "    lambda_func = expr.compile_into_lambda([x, y])\n"
+        "    result = lambda_func([3, 4])  # 3 + 2*4 = 11")
         
         .def("compi_lambda", +[](const Valuable& v, const boost::python::list& variables) {
+            if (len(variables) > 3) {
+                throw std::runtime_error("Currently only supports up to 3 variables due to C++ template limitations");
+            }
+            
             std::vector<Variable> vars;
             for (int i = 0; i < len(variables); ++i) {
                 vars.push_back(extract<Variable>(variables[i]));
@@ -169,35 +188,56 @@ BOOST_PYTHON_MODULE(variable)
             
             return boost::python::make_function(
                 [v, vars](const boost::python::list& args) -> Valuable {
+                    if (len(args) != vars.size()) {
+                        throw std::runtime_error("Number of arguments must match number of variables");
+                    }
+                    
                     std::vector<Valuable> values;
                     for (int i = 0; i < len(args); ++i) {
                         values.push_back(extract<Valuable>(args[i]));
                     }
                     
                     auto lambda = [&]() {
-                        if (vars.size() == 1) {
-                            return v.CompiLambda(vars[0]);
-                        } else if (vars.size() == 2) {
-                            return v.CompiLambda(vars[0], vars[1]);
-                        } else if (vars.size() == 3) {
-                            return v.CompiLambda(vars[0], vars[1], vars[2]);
-                        } else {
-                            throw std::runtime_error("Unsupported number of variables");
+                        switch (vars.size()) {
+                            case 1:
+                                return v.CompiLambda(vars[0]);
+                            case 2:
+                                return v.CompiLambda(vars[0], vars[1]);
+                            case 3:
+                                return v.CompiLambda(vars[0], vars[1], vars[2]);
+                            default:
+                                throw std::runtime_error("Unsupported number of variables");
                         }
                     }();
                     
-                    if (values.size() == 1) {
-                        return lambda(values[0]);
-                    } else if (values.size() == 2) {
-                        return lambda(values[0], values[1]);
-                    } else if (values.size() == 3) {
-                        return lambda(values[0], values[1], values[2]);
-                    } else {
-                        throw std::runtime_error("Unsupported number of arguments");
+                    switch (values.size()) {
+                        case 1:
+                            return lambda(values[0]);
+                        case 2:
+                            return lambda(values[0], values[1]);
+                        case 3:
+                            return lambda(values[0], values[1], values[2]);
+                        default:
+                            throw std::runtime_error("Unsupported number of arguments");
                     }
                 }
             );
-        })
+        },
+        "Create an optimized lambda function from an expression using CompiLambda.\n\n"
+        "Args:\n"
+        "    variables: List of Variable objects used in the expression (max 3 variables)\n\n"
+        "Returns:\n"
+        "    A callable function that takes a list of values corresponding to the variables\n\n"
+        "Raises:\n"
+        "    RuntimeError: If more than 3 variables are provided (C++ template limitation)\n"
+        "    RuntimeError: If the number of arguments doesn't match the number of variables\n\n"
+        "Note:\n"
+        "    This method currently supports up to 3 variables due to C++ template limitations.\n"
+        "    For expressions with more variables, use compile_into_lambda() instead.\n\n"
+        "Example:\n"
+        "    expr = x * y + x\n"
+        "    lambda_func = expr.compi_lambda([x, y])\n"
+        "    result = lambda_func([3, 4])  # 3*4 + 3 = 15")
         ;
 
     class_<Variable, bases<Valuable>>("Variable")
