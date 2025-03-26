@@ -1,6 +1,13 @@
 import unittest
-import variable
+import sys
 
+try:
+    import variable
+    VARIABLE_MODULE_AVAILABLE = True
+except ImportError:
+    VARIABLE_MODULE_AVAILABLE = False
+
+@unittest.skipIf(not VARIABLE_MODULE_AVAILABLE, "Python bindings not available")
 class TestCompilambda(unittest.TestCase):
     def test_compile_into_lambda(self):
         x = variable.Variable()
