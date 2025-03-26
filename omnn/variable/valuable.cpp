@@ -134,6 +134,63 @@ BOOST_PYTHON_MODULE(variable)
 
         // String conversion
         .def("__str__", &Valuable::str)
+        
+        .def("compile_into_lambda", +[](const Valuable& v, const boost::python::list& variables) {
+            std::vector<const Variable*> vars;
+            for (int i = 0; i < len(variables); ++i) {
+                vars.push_back(&extract<const Variable&>(variables[i]));
+            }
+            
+            return boost::python::make_function(
+                [v, vars](const boost::python::list& args) -> Valuable {
+                    std::vector<Valuable> values;
+                    for (int i = 0; i < len(args); ++i) {
+                        values.push_back(extract<Valuable>(args[i]));
+                    }
+                    
+                    auto lambda = v.CompileIntoLambda({vars.begin(), vars.end()});
+                    return lambda({values.begin(), values.end()});
+                }
+            );
+        })
+        
+        .def("compi_lambda", +[](const Valuable& v, const boost::python::list& variables) {
+            std::vector<Variable> vars;
+            for (int i = 0; i < len(variables); ++i) {
+                vars.push_back(extract<Variable>(variables[i]));
+            }
+            
+            return boost::python::make_function(
+                [v, vars](const boost::python::list& args) -> Valuable {
+                    std::vector<Valuable> values;
+                    for (int i = 0; i < len(args); ++i) {
+                        values.push_back(extract<Valuable>(args[i]));
+                    }
+                    
+                    auto lambda = [&]() {
+                        if (vars.size() == 1) {
+                            return v.CompiLambda(vars[0]);
+                        } else if (vars.size() == 2) {
+                            return v.CompiLambda(vars[0], vars[1]);
+                        } else if (vars.size() == 3) {
+                            return v.CompiLambda(vars[0], vars[1], vars[2]);
+                        } else {
+                            throw std::runtime_error("Unsupported number of variables");
+                        }
+                    }();
+                    
+                    if (values.size() == 1) {
+                        return lambda(values[0]);
+                    } else if (values.size() == 2) {
+                        return lambda(values[0], values[1]);
+                    } else if (values.size() == 3) {
+                        return lambda(values[0], values[1], values[2]);
+                    } else {
+                        throw std::runtime_error("Unsupported number of arguments");
+                    }
+                }
+            );
+        })
         ;
 
     class_<Variable, bases<Valuable>>("Variable")
