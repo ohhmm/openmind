@@ -20,7 +20,7 @@ namespace math {
         for(auto& v : vars)
             s.push_back(v);
     }
-    
+
     Formula::Formula(const Variable& va, const Valuable& ex, const std::list<Variable>* sequence)
     : v(va), e(ex)
     {
@@ -30,13 +30,13 @@ namespace math {
             CollectVarSequence();
         }
     }
-    
+
     Formula Formula::DeduceFormula(const Valuable& e, const Variable& v)
     {
         //todo : once iterator ready
         throw "Implement!";
     }
-    
+
     Formula Formula::DeclareFormula(const Variable& v, const Valuable& e)
     {
         return Formula(v,e);
@@ -49,21 +49,27 @@ namespace math {
         bool is = {};
         if (_.IsExponentiation()) {
             auto& e = _.as<Exponentiation>();
-            bool isSum = e.getBase().IsSum();
-            Valuable sum = Sum{e.getBase(), constants::zero};
-            auto& s = (isSum ? e.getBase() : sum).as<Sum>();
+            bool isSum = e.ebase().IsSum();
+            Valuable sum = Sum{e.ebase(), constants::zero};
+            auto& s = (isSum ? e.ebase() : sum).as<Sum>();
             if (s) {
                 if (s.size() > 2) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Formula::coordMatch not implemented for sum size > 2");
                 }
-                auto va = s.template GetFirstOccurence<Variable>();
+                auto va = s.GetFirstOccurence<Variable>();
                 if (va != s.end())
                 {
-                    auto it = vaVals.find(va->as<Variable>());
+                    // Check if we have a Variable in the sum
+                    if (!va->IsVa()) {
+                        LOG_AND_IMPLEMENT("Formula::coordMatch not implemented for non-variable value");
+                        return false;
+                    }
+                    auto& var = va->as<Variable>();
+                    auto it = vaVals.find(var);
                     auto isValue = it == vaVals.end();
                     is = isValue;
                     auto isCoord = !isValue;
-                    
+
                     if (va == s.begin())
                         ++va;
                     else --va;
@@ -77,16 +83,16 @@ namespace math {
                     }
                 }
                 else
-                    IMPLEMENT
-                    }
+                    LOG_AND_IMPLEMENT("Formula::coordMatch not implemented for non-variable sum");
+            }
             else
-                IMPLEMENT
-                }
+                LOG_AND_IMPLEMENT("Formula::coordMatch not implemented for non-sum");
+        }
         else
-            IMPLEMENT;
+            LOG_AND_IMPLEMENT("Formula::coordMatch not implemented for non-exponentiation");
         return is;
     }
-    
+
     bool Formula::InCoordFactorization(const VaValMap& vaVals) const
     {
         bool is = {};
@@ -99,7 +105,7 @@ namespace math {
             is = std::all_of(std::begin(vaVals), std::end(vaVals), [](auto& _){
                 return *_.second >= 0;
             });
-            
+
             if(is)
             {
                 // check right gauge
@@ -108,7 +114,7 @@ namespace math {
                     ++it;
                 auto& l = *it;
                 if (!l.IsSum()) {
-                    IMPLEMENT
+                    LOG_AND_IMPLEMENT("Formula::InCoordFactorization not implemented for non-sum");
                 }
                 auto& s = l.as<Sum>();
                 is = std::all_of(std::begin(s), std::end(s),
@@ -122,7 +128,7 @@ namespace math {
         }
         return is;
     }
-    
+
     Valuable Formula::GetProductRootByCoordinates(const VaValMap& vaVals) const
     {
         Valuable root;
@@ -147,7 +153,7 @@ namespace math {
                                       );
                 if(is) {
                     if (!value)
-                        IMPLEMENT
+                        LOG_AND_IMPLEMENT("Formula::GetProductRootByCoordinates value not found");
                     root = -*value;
                     return root; // found
                 }
@@ -155,22 +161,22 @@ namespace math {
             else if (m==1)
                 continue;
             else
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Formula::GetProductRootByCoordinates not implemented for non-sum/non-one");
         }
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("Formula::GetProductRootByCoordinates root not found");
     }
-    
+
     std::ostream& Formula::print(std::ostream& out) const
     {
         return out << "f(" << v << ")=" << e;
     }
-    
+
     Valuable Formula::Solve(Valuable& v) const
     {
-        IMPLEMENT
+        LOG_AND_IMPLEMENT("Formula::Solve not implemented");
         v.optimize();
         return v;
     }
 
-    
+
 }}
