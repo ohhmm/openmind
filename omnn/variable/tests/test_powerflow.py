@@ -2,7 +2,7 @@ import unittest
 import sys
 
 try:
-    import variable
+    from variable import Variable, Valuable
     VARIABLE_MODULE_AVAILABLE = True
 except ImportError:
     VARIABLE_MODULE_AVAILABLE = False
@@ -10,13 +10,13 @@ except ImportError:
 @unittest.skipIf(not VARIABLE_MODULE_AVAILABLE, "Python bindings not available")
 class TestPowerFlow(unittest.TestCase):
     def test_powerflow_calculations(self):
-        V1 = variable.Variable()
-        V2 = variable.Variable()
-        V3 = variable.Variable()
+        V1 = Variable()
+        V2 = Variable()
+        V3 = Variable()
         
-        y12 = variable.Valuable(0.1)
-        y13 = variable.Valuable(0.2)
-        y23 = variable.Valuable(0.15)
+        y12 = Valuable(0.1)
+        y13 = Valuable(0.2)
+        y23 = Valuable(0.15)
         
         Y11 = y12 + y13
         Y22 = y12 + y23
@@ -29,9 +29,9 @@ class TestPowerFlow(unittest.TestCase):
         
         self.assertEqual(Y12, Y21)
         
-        V1_val = variable.Valuable(1.0)
-        V2_val = variable.Valuable(0.95)
-        V3_val = variable.Valuable(1.05)
+        V1_val = Valuable(1.0)
+        V2_val = Valuable(0.95)
+        V3_val = Valuable(1.05)
         
         I1 = V1_val * Y11 + Y12 * V2_val + Y13 * V3_val
         
