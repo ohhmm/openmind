@@ -10,7 +10,7 @@
 using namespace omnn::math;
 using namespace boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(PowerFlow_tests, *disabled())
+BOOST_AUTO_TEST_CASE(PowerFlow_tests)
 {
     
     Variable V1, V2, V3;
@@ -26,6 +26,7 @@ BOOST_AUTO_TEST_CASE(PowerFlow_tests, *disabled())
     auto Y12 = -y12;
     auto Y13 = -y13;
     auto Y23 = -y23;
+    auto Y21 = -y12; // Y21 = Y12 by symmetry
     
     BOOST_TEST(Y12 == Y21); // Symmetry property
     
