@@ -37,8 +37,6 @@ target_link_libraries(cache_base
     Boost::filesystem
     Boost::system
     ${CMAKE_DL_LIBS}
-    -lboost_filesystem
-    -lboost_system
 )
 
 target_include_directories(cache_base
