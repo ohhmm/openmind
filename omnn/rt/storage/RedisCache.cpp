@@ -129,7 +129,6 @@ std::string RedisCache::ExecuteCommand(const std::string& command) {
                 std::string bulk_string;
                 bulk_string.resize(length);
                 
-                boost::asio::streambuf buffer;
                 size_t bytes_read = boost::asio::read(*socket_, 
                     boost::asio::buffer(&bulk_string[0], length), ec);
                 
@@ -137,12 +136,9 @@ std::string RedisCache::ExecuteCommand(const std::string& command) {
                     return "";
                 }
                 
-                boost::asio::read_until(*socket_, buffer, "\r\n", ec);
-                if (ec) {
-                    return "";
-                }
-                
-                boost::asio::read_until(*socket_, response, "\r\n", ec);
+                // Read the trailing \r\n
+                boost::asio::streambuf trailing;
+                boost::asio::read_until(*socket_, trailing, "\r\n", ec);
                 if (ec) {
                     return "";
                 }

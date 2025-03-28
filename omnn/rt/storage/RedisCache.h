@@ -15,6 +15,7 @@ namespace rt {
 namespace storage {
 
 namespace fs = boost::filesystem;
+namespace asio = boost::asio;
 
 class RedisCache : public omnn::rt::storage::CacheBase {
 public:
@@ -40,8 +41,8 @@ private:
     std::string ExecuteCommand(const std::string& command);
     
     // Redis connection using boost::asio
-    boost::asio::io_context io_context_;
-    std::unique_ptr<boost::asio::ip::tcp::socket> socket_;
+    asio::io_context io_context_;
+    std::unique_ptr<asio::ip::tcp::socket> socket_;
     
     std::string host_;
     int port_;
