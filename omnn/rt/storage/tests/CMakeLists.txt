@@ -12,6 +12,8 @@ target_link_libraries(redis_cache_test
     Boost::unit_test_framework
     Threads::Threads
     ${CMAKE_DL_LIBS}
+    -lboost_filesystem
+    -lboost_system
 )
 
 target_include_directories(redis_cache_test
