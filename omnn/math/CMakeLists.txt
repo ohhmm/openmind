@@ -15,6 +15,15 @@ endif()
 # Create library with dependencies
 lib(${DEPENDENCIES})
 
+# Add Pattern class
+target_sources(
+    math PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Pattern.h>"
+    
+    PRIVATE 
+    "Pattern.cpp"
+)
+
 if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
     if(OPENMIND_MATH_USE_LEVELDB_CACHE)
         target_compile_definitions(${this_target} PUBLIC OPENMIND_MATH_USE_LEVELDB_CACHE)
