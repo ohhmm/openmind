@@ -25,6 +25,27 @@ if(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE
 
 endif(OPENMIND_STORAGE_LEVELDB OR OPENMIND_STORAGE_FOUNDATIONDB OR OPENMIND_STORAGE_REDIS)
 
+# Add cache_base library
+add_library(cache_base
+    CacheBase.cpp
+    CacheBase.h
+)
+
+target_link_libraries(cache_base
+    PUBLIC
+    ${DEPENDENCIES}
+    Boost::filesystem
+    Boost::system
+    ${CMAKE_DL_LIBS}
+    -lboost_filesystem
+    -lboost_system
+)
+
+target_include_directories(cache_base
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 lib(${DEPENDENCIES})
 
 if(OPENMIND_STORAGE_LEVELDB)
