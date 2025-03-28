@@ -1,8 +1,6 @@
 include(pytect)
 
-if(Python_FOUND
-    AND OPENMIND_USE_VCPKG # FIXME : remove this line to enable Python bindings for non-VCPKG builds as well
-)
+if(Python_FOUND)
     set(DEFAULT_OPENMIND_BUILD_PYTHON_BINDINGS ON)
 endif()
 
