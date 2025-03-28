@@ -17,6 +17,7 @@
 
 using namespace omnn::math;
 using namespace omnn::rt;
+using namespace omnn::storage;
 using namespace std::chrono_literals;
 
 
@@ -42,7 +43,7 @@ void Cache::DbOpen() {
 # endif
   leveldb::Status status;
   auto strPath = path.string();
-  const auto& options = omnn::rt::storage::LevelDbCache::GetDbConnectionOptions();
+  const auto& options = LevelDbCache::GetDbConnectionOptions();
   while (!((status = leveldb::DB::Open(options, strPath, &db)).ok())) {
     auto err = strPath + " DB connection error";
     std::cerr << err << status.ToString() << std::endl;
