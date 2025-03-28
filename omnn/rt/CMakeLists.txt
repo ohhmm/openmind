@@ -21,3 +21,6 @@ if(OPENMIND_USE_OPENCL)
 endif()
 
 lib(${DEPENDENCIES})
+
+# Add storage subdirectory
+add_subdirectory(storage)
