@@ -17,10 +17,10 @@
 #include "VarHost.h"
 #include "Cache.h"
 
-#include <omnn/rt/antiloop.hpp>
-#include <rt/cl.h>
-#include <rt/each.hpp>
-#include <rt/Divisors.hpp>
+#include "omnn/rt/antiloop.hpp"
+#include "omnn/rt/cl.h"
+#include "omnn/rt/each.hpp"
+#include "omnn/rt/Divisors.hpp"
 
 //TODO:
 //import std;
