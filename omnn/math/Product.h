@@ -108,6 +108,7 @@ public:
     Valuable Sqrt() const override;
     Valuable& sq() override;
     Valuable abs() const override;
+    bool MultiplyIfSimplifiable(const Valuable& v) override;
     Valuable& reciprocal() override;
     const PrincipalSurd* PrincipalSurdFactor() const override;
 
