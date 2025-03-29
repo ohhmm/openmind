@@ -149,6 +149,10 @@ namespace omnn::math {
         }
 
     void Valuable::clone_on_write() {
+        //auto expOrSharedFromThis = SharedFromThis();
+        //if (expOrSharedFromThis && expOrSharedFromThis.use_count() > 1) {
+        //    expOrSharedFromThis.reset(Clone());
+        //}
         if (exp && exp.use_count() > 1) {
             exp.reset(exp->Clone());
         }
@@ -327,14 +331,13 @@ namespace omnn::math {
         if (inst)
             exp = inst;
         else {
-            exp.reset(v.Clone());
-            //auto weak = v.weak_from_this();
-            //if (weak.expired()) {
-            //    Become(Valuable(v.Clone()));
-            //} else {
-            //    auto locked = weak.lock();
-            //    exp = std::const_pointer_cast<Valuable>(locked);
-            //}
+            auto weak = v.weak_from_this();
+            if (weak.expired()) {
+                Become(Valuable(v.Clone()));
+            } else {
+                auto locked = weak.lock();
+                exp = std::const_pointer_cast<Valuable>(locked);
+            }
         }
         return *this;
     }
