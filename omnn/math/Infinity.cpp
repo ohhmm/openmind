@@ -7,7 +7,7 @@ using namespace math;
 
 // INFINITY
 
-constinit std::string_view Infinity::SerializationName = "∞";
+constinit std::string_view Infinity::SerializationName = "inf";
 
 Valuable Infinity::operator -() const {
     return MInfinity();
@@ -108,7 +108,7 @@ Valuable& Infinity::d(const Variable& x)
 
 // MINFINITY
 
-constinit std::string_view MInfinity::SerializationName = "-∞";
+constinit std::string_view MInfinity::SerializationName = "-inf";
 
 Valuable MInfinity::operator -() const {
     return Infinity();
