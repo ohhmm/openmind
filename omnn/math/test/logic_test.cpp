@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(Delta_function_optimized_expression_test, *disabled()) {
     BOOST_TEST(xIsPresent);
     nz = !delta.IsZero();
     BOOST_TEST(nz);
-    BOOST_TEST_MESSAGE("δ (X)= : " << delta);
+    BOOST_TEST_MESSAGE("delta (X)= : " << delta);
 }
 
 BOOST_AUTO_TEST_CASE(Sign_operator_test

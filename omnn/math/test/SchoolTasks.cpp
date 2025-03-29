@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(N456)
 {
 	std::cout
 		<< std::endl
-		<< "№456"
+		<< "No.456"
 		<< std::endl;
 
 	DECL_VA(all);
