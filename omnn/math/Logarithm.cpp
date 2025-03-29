@@ -6,7 +6,7 @@
 #include "NaN.h"
 #include "PrincipalSurd.h"
 
-#include "rt/strhash.hpp"
+#include "omnn/rt/strhash.hpp"
 
 #include <cmath>
 

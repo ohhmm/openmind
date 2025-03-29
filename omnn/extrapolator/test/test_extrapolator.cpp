@@ -4,7 +4,7 @@
 #define BOOST_TEST_MODULE Extrapolator test
 #include <boost/test/unit_test.hpp>
 #include "Extrapolator.h"
-#include "math/Sum.h"
+#include "omnn/math/Sum.h"
 
 using namespace omnn::math;
 using namespace boost::unit_test;
