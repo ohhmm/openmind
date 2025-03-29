@@ -5,7 +5,7 @@
 
 #include <omnn/rt/exit.h>
 
-#include <storage/LevelDbCache.h>
+#include <omnn/storage/LevelDbCache.h>
 
 #include <boost/tokenizer.hpp>
 
