@@ -115,6 +115,25 @@ BOOST_AUTO_TEST_CASE(Product_optimize_off_comparision_test)
     EqualOrderCheck(_1, _2);
 }
 
+BOOST_AUTO_TEST_CASE(Product_coefficient_handling_test)
+{
+    DECL_VA(x);
+
+    // Test direct multiplication with negative coefficients
+    auto _1 = -1_v * x;
+    auto _2 = x * -1_v;
+    BOOST_TEST(_1 == _2);  // Order independence
+
+    // Test coefficient normalization
+    auto _3 = (-1_v * x) * (-1_v * x);
+    BOOST_TEST(_3 == (x ^ 2));  // Double negation
+
+    // Test polynomial coefficient handling
+    auto _4 = -1_v * x + x * x;
+    auto _5 = (x ^ 2) - x;
+    BOOST_TEST(_4 == _5);  // Equivalent polynomial forms
+}
+
 BOOST_AUTO_TEST_CASE(Product_tests)
 {
 	auto f = 1_v / 2;
