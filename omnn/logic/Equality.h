@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "math/ValuableDescendantContract.h"
+#include <omnn/math/ValuableDescendantContract.h>
 
 namespace omnn{
 namespace logic {

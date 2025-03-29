@@ -4,8 +4,8 @@
 
 #include "Extrapolator.h"
 
-#include "math/Integer.h"
-#include "math/Sum.h"
+#include "omnn/math/Integer.h"
+#include "omnn/math/Sum.h"
 
 using namespace omnn;
 using namespace math;

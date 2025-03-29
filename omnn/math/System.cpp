@@ -10,8 +10,8 @@
 #include <numeric>
 #include <set>
 
-#include <rt/antiloop.hpp>
-#include <rt/each.hpp>
+#include "omnn/rt/antiloop.hpp"
+#include "omnn/rt/each.hpp"
 
 
 using namespace omnn;
