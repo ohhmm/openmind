@@ -149,6 +149,11 @@ namespace math {
             setAllocSize(allocated);
             return exp;
         }
+
+        static constexpr Valuable NewDefaultValuable() {
+            auto obj = ptrs::make_shared<Chld>();
+            return Valuable(std::static_pointer_cast<Valuable>(obj));
+        }
     };
 }
 }
