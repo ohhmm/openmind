@@ -584,6 +584,40 @@ using namespace omnn::math;
         return grade;
     }
 
+    bool Product::MultiplyIfSimplifiable(const Valuable& v) {
+        if (v.IsProduct()) {
+            const auto& p = v.as<Product>();
+            if (p.size() == 2) {
+                auto it = p.begin();
+                if (it->IsInt()) {
+                    auto next = std::next(it);
+                    if (next->IsVa() || (next->IsExponentiation() && next->as<Exponentiation>().getBase().IsVa())) {
+                        operator*=(v);
+                        optimize();
+                        return true;
+                    }
+                }
+            }
+        }
+        if (v.IsVa()) {
+            const auto& va = v.as<Variable>();
+            for (auto it = members.begin(); it != members.end(); ++it) {
+                if (it->Same(v)) {
+                    Update(it, Exponentiation(va, 2));
+                    optimize();
+                    return true;
+                }
+                if (it->IsExponentiation() && it->as<Exponentiation>().getBase() == va) {
+                    const auto& e = it->as<Exponentiation>();
+                    Update(it, va ^ (e.getExponentiation() + 1));
+                    optimize();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     Valuable Product::InCommonWith(const Valuable& v) const
     {
         auto _ = 1_v;
