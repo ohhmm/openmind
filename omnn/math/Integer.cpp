@@ -375,7 +375,7 @@ namespace math {
     }
     Valuable Integer::And(const Valuable& n, const Valuable& v) const
     {
-        if (v.IsInt()) {
+        if (v.IsInt() && n.IsInt()) {
             auto mask = std::move(--((vo<2>() ^ n).a()));
             if (arbitrary < v.ca()) {
                 mask &= arbitrary;
