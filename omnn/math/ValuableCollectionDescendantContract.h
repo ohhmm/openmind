@@ -17,6 +17,7 @@ namespace omnn::math {
     class ValuableCollectionDescendantContract : public ValuableDescendantContract<ChildT>
     {
         using base = ValuableDescendantContract<ChildT>;
+        using base::DefaultAllocSize;  // Make DefaultAllocSize visible
 
     protected:
         using cont = ContT;
@@ -39,10 +40,10 @@ namespace omnn::math {
         using const_reference = typename ContT::const_reference;
 
         using base::base;
-        ValuableCollectionDescendantContract(ValuableCollectionDescendantContract&&)=default;
-        ValuableCollectionDescendantContract(const ValuableCollectionDescendantContract&)=default;
-        ValuableCollectionDescendantContract& operator=(ValuableCollectionDescendantContract&&)=default;
-        ValuableCollectionDescendantContract& operator=(const ValuableCollectionDescendantContract&)=default;
+        ValuableCollectionDescendantContract(ValuableCollectionDescendantContract&&) noexcept = default;
+        ValuableCollectionDescendantContract(const ValuableCollectionDescendantContract&) = default;
+        ValuableCollectionDescendantContract& operator=(ValuableCollectionDescendantContract&&) noexcept = default;
+        ValuableCollectionDescendantContract& operator=(const ValuableCollectionDescendantContract&) = default;
 
         virtual const cont& GetConstCont() const = 0;
 
@@ -436,16 +437,16 @@ namespace omnn::math {
         [[nodiscard]]
         Valuable::universal_lambda_t CompileIntoLambda(Valuable::variables_for_lambda_t vars) const override {
             auto range = GetConstCont()
-                | std::ranges::views::transform([&](auto& value){return value.CompileIntoLambda(vars);});
-            static Valuable::universal_lambda_t getInitialValue = [](Valuable::universal_lambda_params_t) {
+                | std::views::transform([&](const auto& value) { return value.CompileIntoLambda(vars); });
+            static const Valuable::universal_lambda_t getInitialValue = [](Valuable::universal_lambda_params_t) {
                 return Valuable(ChildT());
             };
-            return std::reduce(PAR
+            return std::reduce(
                 range.begin(), range.end(), getInitialValue,
-                [&]<typename LambdaFwd1, typename LambdaFwd2>(LambdaFwd1&& item1, LambdaFwd2&& item2) {
+                [&](auto&& item1, auto&& item2) {
                     return [
-                        lambda1 = std::forward<LambdaFwd1>(item1),
-                        lambda2 = std::forward<LambdaFwd2>(item2)
+                        lambda1 = std::forward<decltype(item1)>(item1),
+                        lambda2 = std::forward<decltype(item2)>(item2)
                     ]
                     (auto params) -> Valuable
                     {
