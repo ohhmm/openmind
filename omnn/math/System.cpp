@@ -17,6 +17,15 @@
 using namespace omnn;
 using namespace math;
 
+std::ostream& operator<<(std::ostream& os, const System& sys) {
+    for (const auto& eq : sys) {
+        os << eq;
+        if (std::next(sys.find(eq)) != sys.end()) {
+            os << ", ";
+        }
+    }
+    return os;
+}
 
 bool is_subset(const auto& smaller_set, const auto& larger_set) {
     return std::includes(larger_set.begin(), larger_set.end(), smaller_set.begin(), smaller_set.end());
