@@ -58,16 +58,15 @@ std::ostream& operator<<(std::ostream& out, const vars_cont_t& vars);
 } // namespace omnn
 
 namespace std {
-omnn::math::Valuable abs(const omnn::math::Valuable&);
-omnn::math::Valuable log(const omnn::math::Valuable&);
-omnn::math::Valuable pow(const omnn::math::Valuable&, const omnn::math::Valuable&);
+omnn::math::Valuable abs(const omnn::math::Valuable& valuable);
+omnn::math::Valuable log(const omnn::math::Valuable& valuable);
+omnn::math::Valuable pow(const omnn::math::Valuable& valuable1, const omnn::math::Valuable& valuable2);
 omnn::math::Valuable&& move(omnn::math::Valuable&&);
-omnn::math::Valuable sqrt(const omnn::math::Valuable&);
-omnn::math::Valuable tanh(const omnn::math::Valuable&);
+omnn::math::Valuable sqrt(const omnn::math::Valuable& valuable);
+omnn::math::Valuable tanh(const omnn::math::Valuable& valuable);
 
 template <>
 struct hash<omnn::math::Valuable> {
-    [[nodiscard]]
     size_t operator()(const omnn::math::Valuable& valuable) const { return hash_value(valuable); }
 };
 
@@ -339,20 +338,20 @@ public:
 	virtual ~Valuable()//{}
         ;
     virtual Valuable operator -() const;
-    virtual Valuable& operator +=(const Valuable&);
-    virtual Valuable& operator +=(int);
-    virtual Valuable& operator *=(const Valuable&);
-    virtual bool MultiplyIfSimplifiable(const Valuable&);
+    virtual Valuable& operator +=(const Valuable& v);
+    virtual Valuable& operator +=(int i);
+    virtual Valuable& operator *=(const Valuable& v);
+    virtual bool MultiplyIfSimplifiable(const Valuable& v);
     virtual bool MultiplyIfSimplifiable(const Integer& i);
-    virtual std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable&) const;
-    virtual bool SumIfSimplifiable(const Valuable&);
-    virtual std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable&) const;
-    virtual std::pair<bool,Valuable> IsModSimplifiable(const Valuable&) const;
-    virtual Valuable& operator /=(const Valuable&);
-    virtual Valuable& operator %=(const Valuable&);
+    virtual std::pair<bool,Valuable> IsMultiplicationSimplifiable(const Valuable& v) const;
+    virtual bool SumIfSimplifiable(const Valuable& v);
+    virtual std::pair<bool,Valuable> IsSummationSimplifiable(const Valuable& v) const;
+    virtual std::pair<bool,Valuable> IsModSimplifiable(const Valuable& v) const;
+    virtual Valuable& operator /=(const Valuable& v);
+    virtual Valuable& operator %=(const Valuable& v);
     virtual Valuable& operator--();
     virtual Valuable& operator++();
-    virtual Valuable& operator^=(const Valuable&);
+    virtual Valuable& operator^=(const Valuable& v);
 
     // returns the greatest common divisor (GCD) with the given object
     virtual Valuable GCD(const Valuable&) const;
@@ -597,8 +596,8 @@ public:
 //        SetView(View::Equation);  // FIXME: see ifz test
         return operator -=(std::forward<Fwd>(valuable));
     }
-    Valuable Equals(const Valuable&) const;
-    Valuable NotEquals(const Valuable&) const;
+    Valuable Equals(const Valuable& valuable) const;
+    Valuable NotEquals(const Valuable& valuable) const;
 //    Valuable NE(const Valuable& to, const Valuable& abet) const; // not equals
 //    Valuable NE(const Variable& x, const Valuable& to, std::initializer_list<Valuable> abet) const; // not equals
     Valuable LogicAnd(const Valuable& valuable) const;
@@ -862,7 +861,6 @@ namespace std {
 template <class T>
     requires std::derived_from<T, ::omnn::math::Valuable>
 struct hash<T> {
-    [[nodiscard]]
     constexpr size_t operator()(const T& valuable) const { return static_cast<const omnn::math::Valuable&>(valuable).Hash(); }
 };
 

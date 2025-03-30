@@ -321,9 +321,9 @@ namespace math {
             c = v.InCommonWith(*this);
         } else if (v.IsExponentiation()) {
             auto& e = v.as<Exponentiation>();
-            if (e.getBase() == *this) {
-                if (e.getExponentiation().IsInt()) {
-                    if (e.getExponentiation() > 0) {
+            if (e.ebase() == *this) {
+                if (e.eexp().IsInt()) {
+                    if (e.eexp() > 0) {
                         c = *this;
                     }
                 } else if (e.IsMultival()==YesNoMaybe::Yes) {

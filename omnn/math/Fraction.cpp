@@ -206,7 +206,7 @@ using namespace omnn::math;
 			}
 
             while (denominator().IsFraction()) {
-                auto& fdn = denominator().as<Fraction>();
+                auto& fdn = denominator().template as<Fraction>();
                 numerator() *= fdn.denominator();
                 denominator() = std::move(fdn.numerator());
             }
@@ -244,14 +244,14 @@ using namespace omnn::math;
             }
 
             if (numerator().IsExponentiation()) {
-                auto& e = numerator().as<Exponentiation>();
-                auto& exp = e.getExponentiation();
+                auto& e = numerator().template as<Exponentiation>();
+                auto& exp = e.eexp();
                 if (exp.IsInt() && exp < 0) {
-                    denominator() *= e.getBase() ^ (-exp);
+                    denominator() *= e.ebase() ^ (-exp);
                     numerator() = constants::one;
                 } else if (exp.IsFraction()) {
-                    auto& f = exp.as<Fraction>();
-                    auto in = e.getBase() / (denominator() ^ f.Reciprocal());
+                    auto& f = exp.template as<Fraction>();
+                    auto in = e.ebase() / (denominator() ^ f.Reciprocal());
                     if (in.IsInt()) {
                         e.setBase(std::move(in));
                         Become(std::move(e));
@@ -298,7 +298,7 @@ using namespace omnn::math;
                     }
                 } else if (denom.IsSimple()) {
                     if (denom.IsPrincipalSurd()) {
-                        auto& ps = denom.as<PrincipalSurd>();
+                        auto& ps = denom.template as<PrincipalSurd>();
                         auto& e = ps.Index();
                         numerator() *= ps ^ (e + constants::minus_1);
                         setDenominator(std::move(ps.Radicand()));
@@ -312,7 +312,7 @@ using namespace omnn::math;
             }
 
             if (denominator().IsProduct()) {
-                auto& dn = denominator().as<Product>();
+                auto& dn = denominator().template as<Product>();
                 if (dn.Has(numerator())) {
                     denominator() /= numerator();
                     numerator() = constants::one;
@@ -334,8 +334,8 @@ using namespace omnn::math;
                             if (m.IsVa()) {
                                 numerator() *= m ^ -1;
                             } else if (m.IsExponentiation()) {
-                                auto& e = m.as<Exponentiation>();
-                                numerator() *= e.getBase() ^ -e.getExponentiation();
+                                auto& e = m.template as<Exponentiation>();
+                                numerator() *= e.ebase() ^ -e.eexp();
                             } else
                                 numerator() /= m;
                         }
@@ -344,7 +344,7 @@ using namespace omnn::math;
                     }
                 }
             } else if (denominator().IsSum()) {
-                auto& s = denominator().as<Sum>();
+                auto& s = denominator().template as<Sum>();
                 auto lcm = s.LCMofMemberFractionDenominators();
                 if (lcm != constants::one) {
                     numerator() *= lcm;
@@ -352,7 +352,7 @@ using namespace omnn::math;
                     reoptimize_the_fraction = true;
                     continue;
                 } else if (denominator().IsSum()) {
-                    auto& s = denominator().as<Sum>();
+                    auto& s = denominator().template as<Sum>();
                     auto lcm = s.LCMofMemberFractionDenominators();
                     if (lcm != constants::one) {
                         numerator() *= lcm;
@@ -367,7 +367,7 @@ using namespace omnn::math;
             } else // no products
             {
                 // TODO :
-                // IMPLEMENT // uncomment to cover scenarios
+
 
                 // sum
                 //                auto s = Sum::cast(numerator());

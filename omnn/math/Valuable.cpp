@@ -1114,7 +1114,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         id = str.substr(i, to - i);
                         if (str[to] == '(') { // functions
                             if (to == 0) {
-                                IMPLEMENT
+                                LOG_AND_IMPLEMENT("Function call at position 0 in " << str)
                             }
                             auto cb = bracketsmap[to];
                             if (id == "sqrt"sv) {
@@ -1872,7 +1872,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             else if (val == 0) {
                 some.insert(e);
             } else {
-                IMPLEMENT
+                LOG_AND_IMPLEMENT("Unexpected case in get_zeros_zones for " << *this)
             }
             prev = to;
             valPrevious = val;
@@ -2419,7 +2419,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             return exp->Same(value);
         if (Is<Valuable>())
             return {};
-        
+
         return Hash() == value.Hash()
             && OfSameType(value)
             && operator==(value);
