@@ -403,6 +403,53 @@ BOOST_AUTO_TEST_CASE(LessOrEqual_operator_test) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(Less_operator_expression_test) {
+    auto LessOperatorExpression = X.Less(Y);
+    std::cout << "X<Y : " << LessOperatorExpression << std::endl;
+    for (auto x = -1.; x<1.; x+=.1) {
+        for (auto y = -1.; y<1.; y+=.1) {
+            auto isLess = x < y;
+            auto lessOperatorInstantiation = LessOperatorExpression;
+            Valuable::vars_cont_t evalMap = {{X, x}, {Y, y}};
+            std::cout << '\n' << x << "<" << y << " = ";
+            lessOperatorInstantiation.eval(evalMap);
+            std::cout << " expression that must be equal to zero when true: " << lessOperatorInstantiation
+                      << std::endl;
+
+            lessOperatorInstantiation.optimize();
+            std::cout << std::endl << "Is " << x << "<" << y << " : " << lessOperatorInstantiation << std::endl;
+            bool b = {};
+            auto boolLessOp = lessOperatorInstantiation.ToBool();
+            BOOST_TEST(boolLessOp == isLess);
+            boolLessOp.eval(evalMap);
+            BOOST_TEST(boolLessOp == isLess);
+            if (boolLessOp == true) {
+                BOOST_TEST(boolLessOp.IsInt());
+                BOOST_TEST(lessOperatorInstantiation.IsInt());
+                b = lessOperatorInstantiation.IsInt() && lessOperatorInstantiation.ca() == 0;
+                std::cout << std::endl << x << "<" << y << " : " << b << std::endl;
+            } else if (boolLessOp == false) {
+                BOOST_TEST(boolLessOp.IsInt());
+                b = lessOperatorInstantiation == 0;
+                std::cout << std::endl
+                          << x << "<" << y << " : " << (b ? "true; " : "false; ")
+                          << lessOperatorInstantiation << " != 0" << std::endl;
+            } else {
+            	std::cout << std::endl << x << "<" << y << " : " << boolLessOp << std::endl;
+                BOOST_TEST(!"boolLessOp must have boolean value");
+            }
+            BOOST_TEST(boolLessOp == b);
+
+            auto ok = b == isLess;
+            if (!ok) {
+                std::cout << "X=" << x << " Y=" << y << ' ' << ok << " bool: " << b << std::endl;
+                BOOST_TEST(ok);
+            }
+        }
+    }
+}
+
+
 BOOST_AUTO_TEST_CASE(Delta_function_test
 	, *disabled() // FIXME:
 ) { // https://en.wikipedia.org/wiki/Dirac_delta_function
@@ -484,10 +531,10 @@ BOOST_AUTO_TEST_CASE(Less_operator_test) {
                 std::cout << std::endl << x << "<" << y << " : " << b << std::endl;
             } else if (boolLessOp == false) {
                 BOOST_TEST(boolLessOp.IsInt());
-                b = lessOperatorInstantiation == 0;
+                b = lessOperatorInstantiation.IsZero();
                 std::cout << std::endl
-                          << x << "<" << y << " : " << b << ' ' << lessOperatorInstantiation << " != 0"
-                          << std::endl;
+                          << x << "<" << y << " : " << (b ? "true; " : "false; ")
+                          << lessOperatorInstantiation << " != 0" << std::endl;
             } else {
                 std::cout << std::endl << x << "<" << y << " : " << boolLessOp << std::endl;
                 BOOST_TEST(!"boolLessOp must have boolean value");
