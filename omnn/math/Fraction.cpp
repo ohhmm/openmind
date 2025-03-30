@@ -78,9 +78,16 @@ using namespace omnn::math;
                     auto bothAreRational = (IsRational() && fraction.IsRational()) == YesNoMaybe::Yes;
                     if (bothAreRational) {
                         equal = operator a_rational() == static_cast<a_rational>(fraction);
-                    } else { // TODO: FIXME: both irrationals hangs on macos
-                        //OptimizeOn on;
-                        //equal = numerator() * fraction.denominator() == fraction.numerator() * denominator();
+                    } else {
+                        if (optimized1) {
+                            equal = operator==(fraction.Optimized(fraction.GetView()));
+                        } else if (optimized2) {
+                            equal = Optimized(GetView()) == fraction;
+                        } else {
+                            auto _1 = Optimized(GetView());
+                            auto _2 = fraction.Optimized(fraction.GetView());
+                            equal = _1 == _2;
+                        }
                     }
                 }
             }
