@@ -91,7 +91,7 @@ jobs:
       with:
         timeout_minutes: 10
         max_attempts: 3
-        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -Dprotected=public
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
