@@ -447,11 +447,12 @@ macro(lib)
 		FOLDER "libs"
 		PUBLIC_HEADER "${headers}"
 		)
-    #add_dependencies(${this_target} prerequisites)
 	message("add_library(${this_target} ${src})")
 	link_boost_libs()
-	#message("target_link_libraries(${this_target} PUBLIC ${deps})")
-    deps(${TEST_DEPS} ${deps})
+    deps(${deps})
+	if(OPENMIND_USE_TBB)
+		target_link_libraries(${this_target} ${visibility} tbb)
+	endif()
 
     set(INSTALL_PARAMS TARGETS ${this_target})
 	if(LIBRARY_DESTINATION)
