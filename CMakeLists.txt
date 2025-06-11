@@ -392,6 +392,7 @@ endif()
 set(BOOST_LINK_LIBS
     Boost::chrono
     Boost::filesystem
+    Boost::process
     Boost::serialization
     Boost::system
     )
