@@ -16,6 +16,16 @@ if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
 	set_property(GLOBAL PROPERTY CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 endif()
 
+# Windows path length handling for CMAKE_OBJECT_PATH_MAX
+if(WIN32)
+	# Set object path max for Windows builds to prevent path length issues
+	# 260 for traditional Windows compatibility, 32767 for Windows 10+ with long path support
+	if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.4")
+		set(CMAKE_OBJECT_PATH_MAX 260)
+		message(STATUS "CMAKE_OBJECT_PATH_MAX set to 260 for Windows compatibility")
+	endif()
+endif()
+
 message("BIN_DIR=${CMAKE_BINARY_DIR}")
 message("SRC_DIR=${CMAKE_SOURCE_DIR}")
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
