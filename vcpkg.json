@@ -13,6 +13,7 @@
     "boost-iostreams",
     "boost-locale",
     "boost-multiprecision",
+    "boost-process",
     "boost-python",
     "boost-redis",
     "boost-serialization",
