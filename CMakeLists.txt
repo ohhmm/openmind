@@ -178,6 +178,7 @@ set(_BOOST_USED_COMPONENTS
 	filesystem
 	iostreams
 	locale
+	process
 	python
 	serialization
 	system
