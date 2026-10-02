@@ -2,7 +2,13 @@
 #include "git-fetch.h"
 #include "git-stash.h"
 
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = boost::process::v1;
+#else
 #include <boost/process.hpp>
+namespace bp = boost::process;
+#endif
 
 
 using namespace git;
@@ -19,6 +25,6 @@ int main(int argc, char* argv[]) {
 
     rebase("main");
 
-    boost::process::child("\"" GIT_EXECUTABLE_PATH "\" gc");
+    bp::child("\"" GIT_EXECUTABLE_PATH "\" gc");
     return 0;
 }

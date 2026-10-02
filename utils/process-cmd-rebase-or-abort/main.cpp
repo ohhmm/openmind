@@ -1,6 +1,14 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = bp::v1;
+#else
 #include <boost/process.hpp>
+namespace bp = bp;
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -30,13 +38,13 @@ int main(int argc, char* argv[]) {
 
     std::string line;
     while (std::getline(infile, line)) {
-        boost::process::child rebase(line);
+        bp::child rebase(line);
         rebase.join();
         auto code = rebase.exit_code();
         std::cout << "exit code: " << code << ' ' << line << std::endl;
 
         if (code != 0) {
-            boost::process::child abort(GIT_REBASE_ABORT);
+            bp::child abort(GIT_REBASE_ABORT);
             abort.join();
             code = abort.exit_code();
             std::cout << "exit code: " << code << ' ' << GIT_REBASE_ABORT << std::endl;

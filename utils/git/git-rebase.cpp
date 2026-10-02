@@ -7,7 +7,13 @@
 
 #include "build.h"
 
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = boost::process::v1;
+#else
 #include <boost/process.hpp>
+namespace bp = boost::process;
+#endif
 
 #include <iostream>
 #include <sstream>
@@ -32,7 +38,7 @@ bool rebase(std::string_view branch, std::string_view onto) {
     cmd << GIT_REBASE_PREFIX << onto << ' ' << branch;
     auto line = cmd.str();
 
-    boost::process::child rebase(line);
+    bp::child rebase(line);
     std::cout << "Rebasing " << branch << " onto " << onto << std::endl;
     rebase.join();
     auto code = rebase.exit_code();
@@ -46,8 +52,8 @@ bool rebase(std::string_view branch, std::string_view onto) {
             std::cout << "Build isn't successful" << std::endl;
         std::cout << "Would you like to resolve?" << std::endl;
         std::string line;
-        boost::process::child status(GIT_STATUS);
-        boost::process::child show(GIT_SHOW);
+        bp::child status(GIT_STATUS);
+        bp::child show(GIT_SHOW);
         if (std::getline(std::cin, line)) {
             std::for_each(line.begin(), line.end(), [](auto ch) { return std::tolower(ch); });
             std::string_view response = line;
@@ -56,7 +62,7 @@ bool rebase(std::string_view branch, std::string_view onto) {
                                    ::std::min(response.find_last_not_of(" \t\r\v\n"), response.size() - 1));
             if (response != "n" && response != "no" && response != "skip") {
                 if(!resolved) {
-                    boost::process::child continius(GIT_REBASE_CONTINUE);
+                    bp::child continius(GIT_REBASE_CONTINUE);
                     std::cout << "Continue rebasing " << branch << " onto " << onto << std::endl;
                     continius.join();
                     code = continius.exit_code();
@@ -76,7 +82,7 @@ bool rebase(std::string_view branch, std::string_view onto) {
     }
 
     if (!resolved) {
-        boost::process::child abort(GIT_REBASE_ABORT);
+        bp::child abort(GIT_REBASE_ABORT);
         abort.join();
         code = abort.exit_code();
         std::cout << "exit code: " << code << ' ' << GIT_REBASE_ABORT << std::endl;
