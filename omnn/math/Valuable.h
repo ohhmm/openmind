@@ -31,12 +31,12 @@
 #define LINE_NUMBER_STR NUM2STR(__LINE__)
 
 #define IMPLEMENT {                                                                                                    \
-        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                                   \
+        ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                     \
         throw;                                                                                                         \
     }
 #define LOG_AND_IMPLEMENT(Param) { \
     ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
-        throw;                                                                                                          \
+    throw; \
     }
 
 
@@ -868,9 +868,9 @@ struct hash<T> {
 
 } // namespace std
 
-::omnn::math::Valuable operator"" _v(const char*, std::size_t);
-const ::omnn::math::Variable& operator"" _va(const char*, std::size_t);
+::omnn::math::Valuable operator""_v(const char*, std::size_t);
+const ::omnn::math::Variable& operator""_va(const char*, std::size_t);
 //constexpr
-::omnn::math::Valuable operator"" _v(unsigned long long);
+::omnn::math::Valuable operator""_v(unsigned long long);
 //constexpr const ::omnn::math::Valuable& operator"" _const(unsigned long long);
-::omnn::math::Valuable operator"" _v(long double);
+::omnn::math::Valuable operator""_v(long double);

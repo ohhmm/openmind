@@ -70,7 +70,7 @@ public:
         return out;
     }
 
-    friend SymmetricDouble operator "" _sd(value_type d)
+    friend SymmetricDouble operator""_sd(value_type d)
     {
         return SymmetricDouble(d);
     }

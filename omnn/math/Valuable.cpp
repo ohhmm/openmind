@@ -3453,7 +3453,7 @@ namespace std
 
 } // namespace std
 
-::omnn::math::Valuable operator"" _v(const char* v, std::size_t l)
+::omnn::math::Valuable operator""_v(const char* v, std::size_t l)
 {
     using namespace ::omnn::math;
     static auto StrVaHost = VarHost::Global<std::string>().shared_from_this();
@@ -3461,7 +3461,7 @@ namespace std
     return {{v, l}, StrVaHost, {}};
 }
 
-const ::omnn::math::Variable& operator"" _va(const char* v, std::size_t l)
+const ::omnn::math::Variable& operator""_va(const char* v, std::size_t l)
 {
     return ::omnn::math::VarHost::Global<std::string>().Host(std::string_view(v, l));
 }
@@ -3471,7 +3471,7 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
     return v;
 }
 
-::omnn::math::Valuable operator"" _v(unsigned long long v)
+::omnn::math::Valuable operator""_v(unsigned long long v)
 {
     using namespace ::omnn::math;
     const auto va = ull2cppint(v);
@@ -3483,7 +3483,7 @@ const boost::multiprecision::cpp_int ull2cppint(unsigned long long v) {
 //    return ::omnn::math::vo<v>();
 //}
 
-::omnn::math::Valuable operator"" _v(long double v)
+::omnn::math::Valuable operator""_v(long double v)
 {
     return ::omnn::math::Fraction(boost::multiprecision::cpp_dec_float_100(v));
 }
