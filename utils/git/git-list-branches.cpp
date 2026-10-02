@@ -1,6 +1,12 @@
 #include "git-list-branches.h"
 
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = boost::process::v1;
+#else
 #include <boost/process.hpp>
+namespace bp = boost::process;
+#endif
 #include <iostream>
 #include <string>
 
@@ -13,8 +19,8 @@
 namespace git {
 
 std::generator<std::string_view> list_local_branches() {
-    boost::process::ipstream pipe; // Create a pipe for stdout
-    boost::process::child branches(CMD_LIST_LOCAL_BRANCHES, boost::process::std_out > pipe);
+    bp::ipstream pipe; // Create a pipe for stdout
+    bp::child branches(CMD_LIST_LOCAL_BRANCHES, bp::std_out > pipe);
     std::string line;
     while (std::getline(pipe, line)) {
         co_yield line;
@@ -24,8 +30,8 @@ std::generator<std::string_view> list_local_branches() {
 }
 
 std::generator<std::string_view> list_origin_branches() {
-    boost::process::ipstream pipe; // Create a pipe for stdout
-    boost::process::child branches(CMD_LIST_ORIGIN_BRANCHES, boost::process::std_out > pipe);
+    bp::ipstream pipe; // Create a pipe for stdout
+    bp::child branches(CMD_LIST_ORIGIN_BRANCHES, bp::std_out > pipe);
     std::string line;
     while (std::getline(pipe, line)) {
         if (line != "origin" && line != "origin/main") {

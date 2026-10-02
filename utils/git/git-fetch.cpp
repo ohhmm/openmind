@@ -7,7 +7,7 @@
 namespace git {
 
 void fetch_start() {
-	boost::process::child fetch(GIT_FETCH_ALL);
+	bp::child fetch(GIT_FETCH_ALL);
 }
 
 void fetch() {
@@ -16,7 +16,7 @@ void fetch() {
 
 
 GitFetchScope::GitFetchScope()
-	: boost::process::child(GIT_FETCH_ALL)
+	: bp::child(GIT_FETCH_ALL)
 {}
 
 GitFetchScope::~GitFetchScope() {

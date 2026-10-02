@@ -1,18 +1,48 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "builtin-baseline": "c82f74667287d3dc386bce81e44964370c91a289",
+  "builtin-baseline": "62159a45e18f3a9ac0548628dcaf74fcb60c6ff9",
   "name": "openmind",
   "version": "1.0.0",
   "description": "OpenMind",
   "dependencies": [
-    "boost",
+    {
+      "name": "vcpkg-boost",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    {
+      "name": "vcpkg-tool-ninja",
+      "host": true
+    },
+    {
+      "name": "pkgconf",
+      "host": true
+    },
     "boost-chrono",
     "boost-compute",
     "boost-date-time",
     "boost-filesystem",
-    "boost-iostreams",
+    {
+      "name": "boost-iostreams",
+      "default-features": false,
+      "features": [
+        "lzma",
+        "zlib",
+        "zstd"
+      ]
+    },
+    "boost",
+    "boost-gil",
     "boost-locale",
     "boost-multiprecision",
+    "boost-process",
     "boost-python",
     "boost-redis",
     "boost-serialization",
@@ -21,15 +51,17 @@
     "boost-thread",
     "boost-ublas",
     "boost-uuid",
-    "leveldb",
     "liblzma",
-    {
-      "name": "vcpkg-cmake",
-      "host": true
-    },
-    {
-      "name": "vcpkg-cmake-config",
-      "host": true
-    }
+    "leveldb"
+  ],
+  "overrides": [
+      {
+          "name": "libbacktrace",
+          "version": "2024-11-30"
+      },
+      {
+          "name": "liblzma",
+          "version": "5.8.1"
+      }
   ]
 }

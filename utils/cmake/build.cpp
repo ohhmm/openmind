@@ -1,6 +1,13 @@
 #include "build.h"
 
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = boost::process::v1;
+#else
 #include <boost/process.hpp>
+namespace bp = boost::process;
+#endif
+
 #include <iostream>
 #include <string>
 
@@ -12,9 +19,9 @@ namespace cmake {
 
 
 bool build() {
-    boost::process::child build(CMAKE_BUILD_COMMAND);
+    bp::child build(CMAKE_BUILD_COMMAND);
     std::cout << "Building" << std::endl;
-    build.join();
+    build.wait();
     return build.exit_code() == 0;
 }
 

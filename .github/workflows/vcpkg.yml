@@ -63,7 +63,7 @@ jobs:
         command: |
           echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
           brew update || brew update || brew update || brew update || brew update
-          brew install cmake ninja autoconf automake autoconf-archive
+          brew install cmake ninja autoconf automake autoconf-archive libtool
           cmake --version
           ninja --version
           clang --version
@@ -83,7 +83,7 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: 'c82f74667287d3dc386bce81e44964370c91a289'
+        vcpkgGitCommitId: '62159a45e18f3a9ac0548628dcaf74fcb60c6ff9'
         vcpkgJsonGlob: '**/vcpkg.json'
 
     - name: Configure CMake
