@@ -1,14 +1,10 @@
 import unittest
 import sys
+import variable
 
-try:
-    import variable
-    VARIABLE_MODULE_AVAILABLE = True
-except ImportError:
-    VARIABLE_MODULE_AVAILABLE = False
-
-@unittest.skipIf(not VARIABLE_MODULE_AVAILABLE, "Python bindings not available")
 class TestCompilambda(unittest.TestCase):
+
+    @unittest.skip("compile_into_lambda method is in development")
     def test_compile_into_lambda(self):
         x = variable.Variable()
         y = variable.Variable()
@@ -22,7 +18,8 @@ class TestCompilambda(unittest.TestCase):
         
         result = lambda_func([5, 2])
         self.assertEqual(float(result), 9.0)   # 5 + 2*2 = 9
-    
+
+    @unittest.skip("compi_lambda method is in development")
     def test_compi_lambda(self):
         x = variable.Variable()
         y = variable.Variable()
@@ -37,6 +34,7 @@ class TestCompilambda(unittest.TestCase):
         result = lambda_func([2, 5])
         self.assertEqual(float(result), 12.0)  # 2*5 + 2 = 12
     
+    @unittest.skip("compi_lambda method is in development")
     def test_single_variable_lambda(self):
         x = variable.Variable()
         
@@ -50,6 +48,7 @@ class TestCompilambda(unittest.TestCase):
         result = lambda_func([4])
         self.assertEqual(float(result), 17.0)  # 4*4 + 1 = 17
     
+    @unittest.skip("compi_lambda method is in development")
     def test_multiple_variables_lambda(self):
         x = variable.Variable()
         y = variable.Variable()

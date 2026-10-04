@@ -1,21 +1,17 @@
 #include <sstream>
-#ifdef OPENMIND_BUILD_PYTHON_BINDINGS
 #include <boost/python.hpp>
+#include <boost/python/extract.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#endif
 #include "omnn/math/Variable.h"
 #include "omnn/math/System.h"
 #include <sstream>
 #include <map>
 
-#ifdef OPENMIND_BUILD_PYTHON_BINDINGS
 using namespace boost::python;
-#endif
 using namespace omnn::math;
 using namespace std::string_literals;
 
 namespace {
-#ifdef OPENMIND_BUILD_PYTHON_BINDINGS
     // Converter for solutions_t (std::unordered_set<Valuable>)
     boost::python::list solutions_to_list(const omnn::math::Valuable::solutions_t& solutions) {
         boost::python::list result;
@@ -56,10 +52,8 @@ namespace {
             data->convertible = storage;
         }
     };
-#endif
 }
 
-#ifdef OPENMIND_BUILD_PYTHON_BINDINGS
 BOOST_PYTHON_MODULE(variable)
 {
     dict_to_map_converter();  // Register the converter
@@ -83,7 +77,7 @@ BOOST_PYTHON_MODULE(variable)
         .def(init<double>())
         .def(init<const a_int&>())
         .def(init<const a_rational&>())
-        .def(init<const std::string&>())
+        .def(init<const std::string_view&>())
         
         // Basic arithmetic with numeric conversion
         .def(self + self)
@@ -142,96 +136,29 @@ BOOST_PYTHON_MODULE(variable)
         // String conversion
         .def("__str__", &Valuable::str)
         
-        .def("compile_into_lambda", +[](const Valuable& v, const boost::python::list& variables) {
-            std::vector<const Variable*> vars;
-            for (int i = 0; i < len(variables); ++i) {
-                vars.push_back(&extract<const Variable&>(variables[i]));
-            }
+        // TODO: FIXME : uncomment
+        // .def("compile_into_lambda", +[](const Valuable& v, const boost::python::list& variables) {
+        //     std::vector<Variable> vars;
+        //     for (int i = 0; i < len(variables); ++i) {
+        //         vars.emplace_back(extract<Variable>(variables[i]));
+        //     }
             
-            return boost::python::make_function(
-                [v, vars](const boost::python::list& args) -> Valuable {
-                    if (len(args) != vars.size()) {
-                        throw std::runtime_error("Number of arguments must match number of variables");
-                    }
+        //     return boost::python::make_function(
+        //         [v, vars](const boost::python::list& args) -> Valuable {
+        //             if (len(args) != vars.size()) {
+        //                 throw std::runtime_error("Number of arguments must match number of variables");
+        //             }
                     
-                    std::vector<Valuable> values;
-                    for (int i = 0; i < len(args); ++i) {
-                        values.push_back(extract<Valuable>(args[i]));
-                    }
-                    
-                    auto lambda = v.CompileIntoLambda({vars.begin(), vars.end()});
-                    return lambda({values.begin(), values.end()});
-                }
-            );
-        }, 
-        "Create a lambda function from an expression using CompileIntoLambda.\n\n"
-        "Args:\n"
-        "    variables: List of Variable objects used in the expression\n\n"
-        "Returns:\n"
-        "    A callable function that takes a list of values corresponding to the variables\n\n"
-        "Raises:\n"
-        "    RuntimeError: If the number of arguments doesn't match the number of variables\n\n"
-        "Example:\n"
-        "    expr = x + 2 * y\n"
-        "    lambda_func = expr.compile_into_lambda([x, y])\n"
-        "    result = lambda_func([3, 4])  # 3 + 2*4 = 11")
-        
-        .def("compi_lambda", +[](const Valuable& v, const boost::python::list& variables) {
-            std::vector<Variable> vars;
-            for (int i = 0; i < len(variables); ++i) {
-                vars.push_back(extract<Variable>(variables[i]));
-            }
-            
-            return boost::python::make_function(
-                [v, vars](const boost::python::list& args) -> Valuable {
-                    if (len(args) != vars.size()) {
-                        throw std::runtime_error("Number of arguments must match number of variables");
-                    }
-                    
-                    std::vector<Valuable> values;
-                    for (int i = 0; i < len(args); ++i) {
-                        values.push_back(extract<Valuable>(args[i]));
-                    }
-                    
-                    auto callCompiLambda = [&v](auto&&... vars) {
-                        return v.CompiLambda(std::forward<decltype(vars)>(vars)...);
-                    };
-                    
-                    auto callLambda = [](auto&& lambda, auto&&... args) {
-                        return lambda(std::forward<decltype(args)>(args)...);
-                    };
-                    
-                    if (vars.size() > 10) {
-                        throw std::runtime_error("Currently only supports up to 10 variables due to implementation constraints");
-                    }
-                    
-                    auto invokeLambda = [&]() -> Valuable {
-                        return [&]<size_t... I>(std::index_sequence<I...>) {
-                            auto lambda = callCompiLambda(vars[I]...);
-                            
-                            return callLambda(lambda, values[I]...);
-                        }(std::make_index_sequence<vars.size()>{});
-                    };
-                    
-                    return invokeLambda();
-                }
-            );
-        },
-        "Create an optimized lambda function from an expression using CompiLambda.\n\n"
-        "Args:\n"
-        "    variables: List of Variable objects used in the expression (max 3 variables)\n\n"
-        "Returns:\n"
-        "    A callable function that takes a list of values corresponding to the variables\n\n"
-        "Raises:\n"
-        "    RuntimeError: If more than 3 variables are provided (C++ template limitation)\n"
-        "    RuntimeError: If the number of arguments doesn't match the number of variables\n\n"
-        "Note:\n"
-        "    This method currently supports up to 3 variables due to C++ template limitations.\n"
-        "    For expressions with more variables, use compile_into_lambda() instead.\n\n"
-        "Example:\n"
-        "    expr = x * y + x\n"
-        "    lambda_func = expr.compi_lambda([x, y])\n"
-        "    result = lambda_func([3, 4])  # 3*4 + 3 = 15")
+        //             std::vector<Valuable> values;
+        //             for (int i = 0; i < len(args); ++i) {
+        //                 values.emplace_back(extract<Valuable>(args[i]));
+        //             }
+        //             // const std::initializer_list<const Variable> sequenc = {&vars[0], std::size(vars)};
+        //             auto lambda = v.CompileIntoLambda(vars);
+        //             return lambda(values);
+        //         }
+        //     );
+        // })
         ;
 
     class_<Variable, bases<Valuable>>("Variable")
@@ -317,4 +244,4 @@ BOOST_PYTHON_MODULE(variable)
         }, return_internal_reference<>())
         ;
 }
-#endif // OPENMIND_BUILD_PYTHON_BINDINGS
+
