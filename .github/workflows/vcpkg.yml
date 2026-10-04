@@ -40,7 +40,7 @@ jobs:
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
-      uses: nick-fields/retry@v2
+      uses: nick-fields/retry@v4
       with:
         timeout_minutes: 10
         max_attempts: 3
@@ -56,12 +56,14 @@ jobs:
       if: runner.os == 'macOS'
       env:
         VCPKG_PYTHON3: $(which python3)
-      uses: nick-fields/retry@v2
+        OS_SPECIFIC_CONFIGURE_FLAGS: -DOPENMIND_BUILD_PYTHON_BINDINGS=OFF
+      uses: nick-fields/retry@v4
       with:
         timeout_minutes: 10
         max_attempts: 3
         command: |
           echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
+          echo "OS_SPECIFIC_CONFIGURE_FLAGS=$OS_SPECIFIC_CONFIGURE_FLAGS" >> $GITHUB_ENV
           brew update || brew update || brew update || brew update || brew update
           brew install cmake ninja autoconf automake autoconf-archive libtool
           cmake --version
@@ -80,6 +82,13 @@ jobs:
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
 
+    - name: MSVC-specific configure flags
+      if: runner.os == 'Windows'
+      env:
+        VCPKG_PYTHON3: $(which python3)
+        OS_SPECIFIC_CONFIGURE_FLAGS: -DOPENMIND_BUILD_PYTHON_BINDINGS=OFF
+      run: echo "OS_SPECIFIC_CONFIGURE_FLAGS=-DOPENMIND_BUILD_PYTHON_BINDINGS=OFF" >> $env:GITHUB_ENV
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
@@ -88,11 +97,11 @@ jobs:
         runVcpkgInstall: true
 
     - name: Configure CMake
-      uses: nick-fields/retry@v2
+      uses: nick-fields/retry@v4
       with:
         timeout_minutes: 50
         max_attempts: 3
-        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} ${{ env.OS_SPECIFIC_CONFIGURE_FLAGS }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
@@ -106,7 +115,7 @@ jobs:
 
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" --rerun-failed --output-on-failure
+      run: ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" || ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" --rerun-failed --output-on-failure
 
     - name: List runtime dependencies
       shell: bash

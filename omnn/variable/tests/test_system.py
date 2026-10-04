@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
 import unittest
 import sys
+import variable
 
-try:
-    import variable  # Import the variable module
-    VARIABLE_MODULE_AVAILABLE = True
-except ImportError:
-    VARIABLE_MODULE_AVAILABLE = False
-
-@unittest.skipIf(not VARIABLE_MODULE_AVAILABLE, "Python bindings not available")
 class TestSystem(unittest.TestCase):
     def test_system_creation(self):
         # Create a simple system

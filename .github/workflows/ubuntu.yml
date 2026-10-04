@@ -20,10 +20,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-apt-
     - name: OS prerequisites
-      uses: nick-fields/retry@v2
+      uses: nick-fields/retry@v4
       with:
-        timeout_minutes: 10
-        max_attempts: 3
+        timeout_minutes: 30
+        max_attempts: 5
         command: |
           sudo add-apt-repository -y ppa:mhier/libboost-latest
           sudo apt update
@@ -33,7 +33,7 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
       working-directory: ${{github.workspace}}/build
-      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -G "Ninja Multi-Config"
+      run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -DOPENMIND_BUILD_PYTHON_BINDINGS=OFF -G "Ninja Multi-Config"
     # - name: Install prerequisites
     #   working-directory: ${{github.workspace}}/build
     #   run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`

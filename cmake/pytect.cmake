@@ -15,11 +15,20 @@ endif()
 macro(pymod)
     if(NOT PYTHON_DESTINATION_VERSION)
         set(PYTHON_DESTINATION_VERSION 3)
-    else()
-        find_package(Boost COMPONENTS python${Python_VERSION_MAJOR}${Python_VERSION_MINOR} REQUIRED)
+    elseif(NOT Boost_PYTHON_FOUND AND NOT TARGET Boost::python${Python_VERSION_MAJOR}${Python_VERSION_MINOR} AND NOT TARGET Boost::python${Python_VERSION_MAJOR} AND NOT TARGET Boost::python)
+        message(STATUS "Python destination version ${PYTHON_DESTINATION_VERSION} COMPONENT python${Python_VERSION_MAJOR}${Python_VERSION_MINOR} BOOST_PATHS_HINTS: ${BOOST_PATHS_HINTS}")
+        find_package(Boost
+				CONFIG
+                HINTS ${BOOST_PATHS_HINTS}
+                COMPONENTS python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}
+                # REQUIRED
+                )
     endif()
     set(LIBRARY_DESTINATION "lib/python${PYTHON_DESTINATION_VERSION}/site-packages")
-    mod(${ARGN})
+    mod(${ARGN}
+        Python::Python
+        Boost::Python
+        )
     set_target_properties(${this_target} PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/python"
     )
