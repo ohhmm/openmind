@@ -704,10 +704,6 @@ using namespace omnn::math;
     Valuable& Product::gcd(const Product& product)
     {
         VarHost::NonZeroLogOffScope off;
-        auto it1 = begin();
-        auto it2 = product.begin();
-        auto end1 = end();
-        auto end2 = product.end();
         auto gcd = InCommonWith(product);
         if (gcd == constants::one) {
             Become(base::GCD(product));
@@ -1497,7 +1493,7 @@ using namespace omnn::math;
             const Exponentiation* e = {};
             while (it != end()
                     && !(it->IsExponentiation()
-                     && (found = it->as<Exponentiation>().getBase() == va)
+                     && (found = (e = &it->as<Exponentiation>())->getBase() == va)
                      ) ) {
                 ++it;
             }
