@@ -34,9 +34,3 @@ jobs:
     - name: Check
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 3200 -C Release -j `sysctl -n hw.ncpu` -E ts --output-on-failure
-    - name: Diagnose Logarithm_test (temporary)
-      if: failure()
-      working-directory: ${{github.workspace}}/build/bin/Release
-      run: |
-        ./Logarithm_test --log_level=all --catch_system_errors=no 2>&1 || true
-        lldb --batch -o run -o "bt all" -k "bt" -k "quit 1" -- ./Logarithm_test --log_level=all --catch_system_errors=no || true
