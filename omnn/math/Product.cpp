@@ -1190,9 +1190,17 @@ using namespace omnn::math;
         return *this;
     }
 
-    Valuable& Product::operator %=(const Valuable& v)
-    {
-        return base::operator %=(v);
+    Valuable& Product::operator%=(const Valuable& v) {
+        Product p({});
+        for (auto i = size(); i-- > 0;) {
+            auto member = Extract();
+            auto mod = member % v;
+            mod.optimize();
+            if (!mod.IsZero()) {
+                p.Add(std::move(member));
+            }
+        }
+        return p.size() ? Become(Modulo(std::move(p), v)) : Become(0);
     }
 
     Valuable Product::Sign() const {
