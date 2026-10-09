@@ -38,9 +38,10 @@
 #include <boost/core/demangle.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#ifndef __APPLE__
-#include <boost/stacktrace.hpp>
+#ifdef __APPLE__
+#define BOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED
 #endif
+#include <boost/stacktrace.hpp>
 
 using namespace ::omnn::rt;
 using namespace ::std::string_view_literals;
@@ -66,7 +67,7 @@ namespace omnn::math {
         return out;
     }
 
-    const a_int Valuable::a_int_cz = 0;
+    constinit const a_int Valuable::a_int_cz = 0;
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
     namespace constants {
@@ -102,10 +103,15 @@ namespace omnn::math {
     thread_local bool Valuable::bit_operation_optimizations = {};
     thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
 
+    void log_implement_message(const char* str)
+    {
+        std::cerr << str << std::endl;
+    }
+
 //    [[noreturn]] 'return' statement is useful for debugging purposes here
     Valuable implement(const char* str)
     {
-        std::cerr << str << std::endl;
+        log_implement_message(str);
         throw std::string(str) + " Implement!";
         return {};
     }
@@ -217,11 +223,7 @@ namespace omnn::math {
     {
     	if (exp)
     		return exp->Type();
-#ifdef __APPLE__
-        LOG_AND_IMPLEMENT(" Implement Type() ");
-#else
         LOG_AND_IMPLEMENT(" Implement Type() " << boost::stacktrace::stacktrace());
-#endif
     }
 
     void Valuable::DispatchDispose(encapsulated_instance&& e) {
@@ -280,9 +282,11 @@ namespace omnn::math {
                 assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
                 char buf[DefaultAllocSize];
                 i.New(buf, std::move(i));
-                Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
+                auto pBufV = reinterpret_cast<Valuable*>(buf);
+                Valuable& bufv = *pBufV;
                 this->~Valuable();
                 bufv.New(this, std::move(bufv));
+                pBufV->~Valuable();
                 setAllocSize(sizeWas);
                 if (Hash() != h) {
                     LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
@@ -323,11 +327,14 @@ namespace omnn::math {
     {
         auto& inst = v.getInst();
         if (exp && exp.get() != inst.get())
+        {
             DispatchDispose(std::move(exp));
+        }
         if (inst)
             exp = inst;
         else {
-            exp.reset(v.Clone());
+            Become(Valuable(v.Clone()));
+            
             //auto weak = v.weak_from_this();
             //if (weak.expired()) {
             //    Become(Valuable(v.Clone()));
@@ -1401,7 +1408,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         }
         return *this;
     }
-
+    
     a_int Valuable::Complexity() const
     {
         if(exp)
@@ -1970,8 +1977,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     YesNoMaybe Valuable::IsMultival() const {
         if(exp)
             return exp->IsMultival();
-        else
-            LOG_AND_IMPLEMENT("IsMultival for " << *this)
+        else {
+            LOG_IMPLEMENT_MESSAGE_ONCE("IsMultival() for " << *this);
+            return YesNoMaybe::Maybe;
+        }
     }
 
     void Valuable::Values(const std::function<bool(const Valuable&)>& f) const {
