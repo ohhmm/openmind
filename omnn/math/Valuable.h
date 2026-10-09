@@ -34,11 +34,24 @@
         ::omnn::math::implement(__FILE__ ":" LINE_NUMBER_STR " ");                                                     \
         throw;                                                                                                         \
     }
+
+#define LOG_IMPLEMENT_MESSAGE(Param) \
+    ::omnn::math::log_implement_message(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str());
+
+#define LOG_IMPLEMENT_MESSAGE_ONCE(Param)                                                                              \
+    {                                                                                                                  \
+        static volatile bool once = {};                                                                                         \
+        if (!once) {                                                                                                   \
+            once = true;                                                                                               \
+            LOG_IMPLEMENT_MESSAGE(Param);                                                                              \
+        }                                                                                                              \
+    }
+
+
 #define LOG_AND_IMPLEMENT(Param) { \
     ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
     throw; \
     }
-
 
 namespace omnn {
 namespace math {
@@ -112,6 +125,7 @@ extern const Variable& integration_result_constant;
     class VarHost;
     struct ValuableDescendantMarker {};
 
+    void log_implement_message(const char*);
     Valuable implement(const char* str = "");
 
 
