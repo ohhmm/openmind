@@ -599,7 +599,10 @@ namespace
                                 }
                                 else if (ee.IsFraction()) {
                                     auto& f = ee.as<Fraction>();
-                                    Become((e.getBase() ^ f.getNumerator()) - ((-(*this - member)) ^ f.getDenominator()));
+                                    auto baseExpNum = e.getBase() ^ f.getNumerator();
+                                    auto memMinThis = member - *this;
+                                    auto balancedNewValue = baseExpNum - (memMinThis ^ f.getDenominator());
+                                    Become(std::move(balancedNewValue));
                                     scan = true;
                                     break;
                                 }
