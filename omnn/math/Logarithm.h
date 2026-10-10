@@ -45,8 +45,10 @@ public:
     constexpr bool IsLogarithm() const override { return true; }
     void optimize() override;
 
-    const Valuable& getBase() const { return _1; }
-    const Valuable& lbase() const { return _1; }
+    [[nodiscard]]
+    constexpr const Valuable& getBase() const noexcept { return _1; }
+    [[nodiscard]]
+    constexpr const Valuable& lbase() const noexcept { return _1; }
     template <class T>
     void setBase(T&& b) {
         set1(::std::forward<T>(b));
@@ -56,7 +58,8 @@ public:
         update1(std::forward<T>(b));
     }
 
-    const Valuable& getTarget() const { return _2; }
+    [[nodiscard]]
+    constexpr const Valuable& getTarget() const noexcept { return _2; }
     template <class T>
     void setTarget(T&& target) {
         set2(std::forward<T>(target));

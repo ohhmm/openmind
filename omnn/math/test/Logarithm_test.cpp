@@ -4,9 +4,6 @@
 #include "Exponentiation.h"
 #include "Euler.h"
 
-#include <cassert>
-#include <iostream>
-
 using namespace omnn::math;
 
 
@@ -66,13 +63,13 @@ BOOST_AUTO_TEST_CASE(Natural_Logarithm_test) {
 
     // Test derivative of ln(x)
     Variable x;
-    auto ln_x = Logarithm(constant::e, x);
+    Valuable ln_x = Logarithm(constant::e, x);
     auto d_ln_x = ln_x;
     d_ln_x.d(x);
     BOOST_TEST(d_ln_x == (x ^ -1));
     BOOST_TEST(d_ln_x == (1 / x));
 }
 
-BOOST_AUTO_TEST_CASE(Logarithm_equation_test, *boost::unit_test::disabled()) {
+BOOST_AUTO_TEST_CASE(Logarithm_equation_test) {
     auto equation = "(10^(log(2, x)))+(10^(log(2, (x^2)))) = 10^(log(2, (x^3)))"_v;
 }
