@@ -338,6 +338,9 @@ public:
     //constexpr
 	virtual ~Valuable()//{}
         ;
+    // Become() reconstructs objects of other types in place, so the dynamic type
+    // at deletion may differ from the allocated one; avoid sized deallocation.
+    static void operator delete(void* ptr) noexcept { ::operator delete(ptr); }
     virtual Valuable operator -() const;
     virtual Valuable& operator +=(const Valuable&);
     virtual Valuable& operator +=(int);
