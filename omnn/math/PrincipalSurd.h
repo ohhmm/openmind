@@ -27,10 +27,15 @@ public:
     {
     }
 
+    [[nodiscard]]
     constexpr bool IsPrincipalSurd() const override { return true; }
+    [[nodiscard]]
     constexpr const PrincipalSurd* PrincipalSurdFactor() const override { return this; }
+    [[nodiscard]]
     constexpr bool IsRadical() const override { return true; }
+    [[nodiscard]]
     bool IsSurd() const override { return is_optimized(); }
+    [[nodiscard]]
     YesNoMaybe IsRational() const override {
         return base::IsRational() && (IsSurd() ? YesNoMaybe::No : YesNoMaybe::Maybe); // FIXME: no Yes scenarios
     }
@@ -75,7 +80,7 @@ public:
     static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2);
     bool operator <(const Valuable&) const override;
     Valuable& operator^=(const Valuable&) override;
-    bool IsComesBefore(const PrincipalSurd&) const;
+    bool IsComesBefore(const PrincipalSurd&) const override;
     bool IsComesBefore(const Valuable&) const override;
     Valuable InCommonWith(const PrincipalSurd&) const;
     Valuable InCommonWith(const Valuable&) const override;

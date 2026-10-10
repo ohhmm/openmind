@@ -21,9 +21,9 @@ namespace math {
         mutable vars_cont_t vars;
 
     protected:
-        constexpr Valuable& numerator() { return _1; }
-        constexpr Valuable& denominator() { return _2; }
-        std::ostream& print_sign(std::ostream& out) const override;
+        constexpr Valuable& numerator() noexcept { return _1; }
+        constexpr Valuable& denominator() noexcept { return _2; }
+        std::ostream& print_sign(std::ostream&) const override;
 
     public:
         std::ostream& code(std::ostream& out) const override;
@@ -31,13 +31,13 @@ namespace math {
             return [](const auto& numerator, const auto& denominator) { return numerator / denominator; };
         }
 
-        constexpr const Valuable& numerator() const { return _1; }
+        constexpr const Valuable& numerator() const noexcept { return _1; }
         template<class T>
         void setNumerator(T&& n)
         { set1(std::forward<T>(n)); }
         void updateNumerator(std::function<void(decltype(_1)&)>& f) { update1(f); }
 
-        constexpr const Valuable& denominator() const { return _2; }
+        constexpr const Valuable& denominator() const noexcept { return _2; }
         template<class T>
         void setDenominator(T&& n)
         { set2(std::forward<T>(n)); }
@@ -70,7 +70,9 @@ namespace math {
         vars_cont_t GetVaExps() const override;
         Valuable InCommonWith(const Fraction&) const;
         Valuable InCommonWith(const Valuable&) const override;
-        bool IsComesBefore(const Fraction&) const;
+        [[nodiscard]]
+        bool IsComesBefore(const Fraction&) const override;
+        [[nodiscard]]
         bool IsComesBefore(const Valuable& v) const override;
         constexpr bool IsFraction() const override { return true; }
         bool IsSimpleFraction() const override { return _1.IsInt() && _2.IsInt(); }

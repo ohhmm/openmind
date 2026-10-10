@@ -49,11 +49,14 @@ public:
     [[nodiscard]]
     bool IsZero() const override { return _1.IsZero() && !_2.IsZero(); }
 
+    [[nodiscard]]
     Valuable Sign() const override;
+    [[nodiscard]]
     bool IsMultiSign() const;
     YesNoMaybe IsMultival() const override;
     [[nodiscard]]
     YesNoMaybe IsRational() const override;
+
     void Values(const std::function<bool(const Valuable&)>&) const override;
     [[nodiscard]]
     constexpr const Valuable& getBase() const { return _1; }
@@ -122,7 +125,7 @@ public:
     const vars_cont_t& getCommonVars() const override;
     vars_cont_t GetVaExps() const override;
     Valuable InCommonWith(const Valuable&) const override;
-    bool IsComesBefore(const Exponentiation&) const;
+    bool IsComesBefore(const Exponentiation&) const override;
     bool IsComesBefore(const Valuable&) const override;
     Valuable calcFreeMember() const override;
 

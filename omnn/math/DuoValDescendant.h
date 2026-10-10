@@ -74,7 +74,8 @@ namespace omnn::math {
             return {};
         }
 
-        constexpr const Valuable& get1() const { return _1; }
+        [[nodiscard]]
+        constexpr const Valuable& get1() const noexcept { return _1; }
         template<class T>
         void set1(T&& p) {
             _1 = std::forward<T>(p);
@@ -94,8 +95,12 @@ namespace omnn::math {
             Valuable::hash ^= _1.Hash();
             Valuable::optimized = {};
         }
+        constexpr auto extract1() noexcept { return std::move(_1); }
 
-        const Valuable& get2() const { return _2; }
+        [[nodiscard]]
+        constexpr const Valuable& get2() const noexcept {
+            return _2;
+        }
         template<class T>
         void set2(T&& p) {
             _2 = std::forward<T>(p);
@@ -115,7 +120,6 @@ namespace omnn::math {
             Valuable::hash ^= _2.Hash();
             Valuable::optimized = {};
         }
-        constexpr auto extract1() { return std::move(_1); }
         constexpr auto extract2() { return std::move(_2); }
 
         using base::base;
@@ -203,23 +207,28 @@ namespace omnn::math {
             return static_cast<a_rational>(Chld::GetBinaryOperationLambdaTemplate()(_1, _2));
         }
 
+        [[nodiscard]]
         max_exp_t getMaxVaExp() const override {
             return Chld::getMaxVaExp(_1, _2);
         }
 
+        [[nodiscard]]
         bool IsSimple() const override {
             return IsMultival() == YesNoMaybe::No
                 && _1.IsSimple() && _2.IsSimple();
         }
 
+        [[nodiscard]]
         YesNoMaybe IsRational() const override {
             return _1.IsRational() && _2.IsRational();
         }
 
+        [[nodiscard]]
         bool IsNaN() const override {
             return _1.IsNaN() || _2.IsNaN();
         }
 
+        [[nodiscard]]
         YesNoMaybe IsMultival() const override {
             return _1.IsMultival() || _2.IsMultival();
         }
@@ -255,11 +264,12 @@ namespace omnn::math {
             }
         }
 
+        [[nodiscard]]
         a_int Complexity() const override {
             return _1.Complexity() + _2.Complexity();
         }
 
-
+        [[nodiscard]]
         Valuable::solutions_t Distinct() const override {
             Valuable::solutions_t branches;
             for (auto&& f : _1.Distinct()) {
@@ -273,6 +283,45 @@ namespace omnn::math {
         [[nodiscard]]
         Valuable varless() const override {
             return Chld::GetBinaryOperationLambdaTemplate()(_1.varless(), _2.varless());
+        }
+
+        [[nodiscard]]
+        virtual bool IsComesBefore(const Chld& other) const
+        {
+            auto& other1st = other.get1();
+            auto& other2nd = other.get2();
+            auto equal1sts = get1() == other1st;
+            if (equal1sts) {
+                return get2().IsComesBefore(other2nd);
+            }
+            auto equal2nds = get2() == other2nd;
+            if (equal2nds) {
+                return get1().IsComesBefore(other1st);
+            }
+            auto is = _1.IsComesBefore(other1st);
+            if (!is) {
+                is = _1 == other1st && other2nd.IsComesBefore(_2);
+            }
+            return is;
+        }
+
+        [[nodiscard]]
+        bool IsComesBefore(const Valuable& v) const override {
+            auto is = v.Is<Chld>();
+            if (is) {
+                is = IsComesBefore(v.as<Chld>());
+            }
+            return is;
+        }
+
+        [[nodiscard]]
+        const PrincipalSurd* PrincipalSurdFactor() const override {
+            auto f1 = _1.PrincipalSurdFactor();
+            auto f2 = _2.PrincipalSurdFactor();
+            if (f1 != nullptr || f2 != nullptr) {
+                IMPLEMENT
+            }
+            return {};
         }
     };
 }

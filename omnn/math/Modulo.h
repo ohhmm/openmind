@@ -21,8 +21,8 @@ public:
     using base::base;
 
 	constexpr bool IsModulo() const override { return true; }
-    auto& getDividend() const { return get1(); }
-    auto& getDevisor() const { return get2(); }
+    constexpr auto& getDividend() const noexcept { return get1(); }
+    constexpr auto& getDevisor() const noexcept { return get2(); }
 
     bool operator==(const Modulo&) const;
 
@@ -50,7 +50,7 @@ public:
     Valuable InCommonWith(const Valuable& v) const override { return 1; }
     const vars_cont_t& getCommonVars() const override { return VarsForCommoning; }
 
-	bool IsComesBefore(const Modulo&) const;
+	bool IsComesBefore(const Modulo&) const override;
     bool IsComesBefore(const Valuable&) const override;
     omnn::math::Valuable::vars_cont_t GetVaExps() const override;
 };
