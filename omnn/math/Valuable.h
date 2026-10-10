@@ -127,6 +127,8 @@ class Valuable
     typedef Valuable& (Valuable::*method_t)(const Valuable&);
     self& call_polymorphic_method(method_t, const self& arg);
 
+    void Replace(Valuable&&);
+
 protected:
     using encapsulated_instance = ptrs::shared_ptr<Valuable>;
     encapsulated_instance exp = nullptr;
@@ -156,6 +158,8 @@ protected:
     virtual std::ostream& print(std::ostream& out) const;
     virtual std::wostream& print(std::wostream& out) const;
 
+    Valuable& Become(int);
+    void Become(encapsulated_instance&&);
     Valuable& Become(Valuable&&);
 
     size_t hash = 0;

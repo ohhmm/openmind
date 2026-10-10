@@ -149,8 +149,13 @@ namespace omnn::math {
         }
 
     void Valuable::clone_on_write() {
-        if (exp && exp.use_count() > 1) {
-            exp.reset(exp->Clone());
+        if (exp) {
+            while (exp->exp) {
+                exp = exp->exp;
+            }
+            if (exp.use_count() > 1) {
+                exp.reset(exp->Clone());
+            }
         }
     }
 
@@ -194,6 +199,27 @@ namespace omnn::math {
         LOG_AND_IMPLEMENT("New for " << *this)
     }
 
+    void Valuable::Replace(Valuable&& obj) {
+        clone_on_write();
+        auto sizeWas = getAllocSize();
+        auto newSize = obj.getTypeSize();
+        auto hashWas = obj.Hash();
+        auto newWasView = this->GetView();
+        assert(sizeWas >= newSize);
+        assert(DefaultAllocSize >= newSize && "Increase DefaultAllocSize");
+        char buf[DefaultAllocSize];
+        obj.New(buf, std::move(obj));
+        Valuable& bufv = *reinterpret_cast<Valuable*>(buf);
+        this->~Valuable();
+        bufv.New(this, std::move(bufv));
+        setAllocSize(sizeWas);
+        if (Hash() != hashWas) {
+            LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
+        }
+        SetView(newWasView);
+        optimize();
+    }
+
     Valuable::encapsulated_instance Valuable::SharedFromThis() {
         if (exp)
             return exp;
@@ -232,47 +258,59 @@ namespace omnn::math {
 #endif
     }
 
+    Valuable& Valuable::Become(int integer) {
+        Become(std::static_pointer_cast<Valuable>(std::make_shared<Integer>(integer)));
+        return *this;
+    }
+
+    void Valuable::Become(encapsulated_instance&& impl) {
+        while (impl->exp) {
+            impl = std::move(impl->exp);
+        }
+        auto h = impl->Hash();
+        clone_on_write();
+        auto isEncapsulatedInstance = Is<Valuable>();
+        if (exp
+            || isEncapsulatedInstance
+            || impl->getTypeSize() > getAllocSize()
+            )
+        {
+            if (isEncapsulatedInstance) {
+                DispatchDispose(std::move(exp));
+                exp = std::move(impl);
+            } else {
+                auto allocSize = getAllocSize();
+                this->~Valuable();
+                new (this) Valuable(std::move(impl));
+                setAllocSize(allocSize);
+            }
+            if (Hash() != h) {
+                LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
+            }
+        }
+        else if (impl->getTypeSize() <= getAllocSize())
+        {
+            Replace(std::move(*impl));
+        }
+        else {
+            IMPLEMENT
+        }
+    }
+
     Valuable& Valuable::Become(Valuable&& i)
     {
         if (Same(i))
             return *this;
-        clone_on_write();
         auto newWasView = this->GetView();
         i.SetView(newWasView);
         auto h = i.Hash();
         if (i.exp)
         {
-            auto impl = std::move(i.exp);
-            while (impl->exp) {
-                impl = std::move(impl->exp);
-            }
-
-            auto isEncapsulatedInstance = Is<Valuable>();
-            if (exp
-                || isEncapsulatedInstance
-                || impl->getTypeSize() > getAllocSize()
-                )
-            {
-                if (isEncapsulatedInstance) {
-                    DispatchDispose(std::move(exp));
-                    exp = std::move(impl);
-                } else {
-                    auto allocSize = getAllocSize();
-                    this->~Valuable();
-                    new (this) Valuable(std::move(impl));
-                    setAllocSize(allocSize);
-                }
-                if (Hash() != h) {
-                    LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
-                }
-            }
-            else
-            {
-                Become(std::move(*impl));
-            }
+            Become(std::move(i.exp));
         }
         else
         {
+            clone_on_write();
             auto sizeWas = getAllocSize();
             auto newSize = i.getTypeSize();
 
@@ -2146,9 +2184,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
     {
         if (optimizations && !is_optimized()) {
             if (exp) {
-                while (exp->exp) {
-                    exp = exp->exp;
-                }
                 clone_on_write();
                 exp->optimize();
                 while (exp->exp) {
