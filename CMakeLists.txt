@@ -11,6 +11,8 @@ set(CMAKE_CXX_EXTENSIONS NO)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_EXPORT_BITCODE ON)
+set(CMAKE_OPTIMIZE_BITCODE ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
 	set_property(GLOBAL PROPERTY CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
@@ -34,10 +36,13 @@ endif()
 message("PRODUCT_NAME=${PRODUCT_NAME}")
 message("CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
 message("CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
-if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
-	EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
-	set(CMAKE_OSX_ARCHITECTURES ${ARCHITECTURE} CACHE PATH "May be used for cross-compilation" FORCE)
-	message("CMAKE_OSX_ARCHITECTURES=${ARCHITECTURE}")
+if(APPLE)
+	set(CMAKE_FIND_FRAMEWORK FIRST CACHE PATH "Preferred framework search order" FORCE)
+  	if(NOT CMAKE_OSX_ARCHITECTURES)
+		EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
+		message("CMAKE_OSX_ARCHITECTURES=${ARCHITECTURE}")
+		set(CMAKE_OSX_ARCHITECTURES ${ARCHITECTURE})
+	endif()
 endif()
 
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -138,7 +143,7 @@ if(NOT WIN32)
 		add_definitions(-DOPENMIND_USE_TBB)
 	endif()
 endif()
-set(OPENMIND_PREFERRED_BOOST_VERSION 1.87.0 CACHE STRING "Boost library version to use")
+set(OPENMIND_PREFERRED_BOOST_VERSION 1.92.0 CACHE STRING "Boost library version to use")
 set(OPENMIND_REQUIRED_BOOST_VERSION 1.81.0 CACHE STRING "Boost library minimum compatible version to use")
 set_property(CACHE OPENMIND_PRIME_TABLE PROPERTY STRINGS ${OPENMIND_PRIME_TABLE_OPTIONS})
 
@@ -171,7 +176,7 @@ set(_BOOST_USED_COMPONENTS
 	locale
 	python
 	serialization
-	system
+#	system no system in 1.91.0
 	thread
 	CACHE STRING "Components" FORCE)
 if(OPENMIND_USE_VCPKG)
@@ -233,8 +238,10 @@ if (NOT Boost_FOUND)
 		unset(Boost_INCLUDE_DIR CACHE)
 		find_package(Boost CONFIG COMPONENTS ${BOOST_USED_COMPONENTS} REQUIRED)
 	else()
+		include(pytect)
 		set(BOOST_PATHS_HINTS
 				C:/Boost
+				/usr/local/lib/cmake/boost_python-*
 				/usr/local/lib/cmake/Boost-*
 				/usr/lib/x86_64-linux-gnu/cmake/Boost-*
 				/usr/local/share/boost-*
@@ -294,51 +301,56 @@ find_package(OpenMP)
 #   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 #endif()
 
+message("Required boost components ${BOOST_USED_COMPONENTS}")
+foreach(_module ${BOOST_USED_COMPONENTS})
+	if(_module STREQUAL "unit_test_framework"
+		OR _module STREQUAL "unit_test"
+		OR _module STREQUAL "test_exec_monitor")
+		string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
+	else()
+		string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
+	endif()
+
+	string(TOUPPER ${_module} BOOST_MODULE_NAME_UPCASE)
+	add_definitions(-DBOOST_${BOOST_MODULE_NAME_UPCASE}_STATIC_LIB)
+endforeach()
+string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
+message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
+
+set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared --disable-icu ${BOOST_BUILD_PARAMS}")
+if(WIN32)
+	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat clang")
+		separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} toolset=clang install")
+	elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "MinGW")
+		separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat gcc")
+		separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} toolset=gcc install")
+	else()
+		set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
+		separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
+		separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} install")
+	endif()
+else()
+	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		set(BOOST_TOOLSET clang)
+	endif()
+	if(APPLE)
+		set(BOOST_BUILD_APPLE_ARGS "address-model=64 architecture=arm+x86 -s NO_LZMA=1 -s NO_ZSTD=1")
+	endif()
+	separate_arguments(BOOST_EXT_CONFIGURE UNIX_COMMAND "./bootstrap.sh ${BOOST_TOOLSET}")
+	separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} --cxx=${CMAKE_CXX_COMPILER}")
+	separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
+endif()
+message("BOOST_EXT_CONFIGURE: ${BOOST_EXT_CONFIGURE}")
+string(REGEX REPLACE ";" " " BOOST_BUILD_COMMAND "${BOOST_BUILD_COMMAND}")
+message("BOOST_BUILD_COMMAND: ${BOOST_BUILD_COMMAND}")
+message("BOOST_INSTALL_COMMAND: ${BOOST_INSTALL_COMMAND}")
+
 if (Boost_FOUND OR OPENMIND_USE_CONAN OR OPENMIND_USE_VCPKG)
 	if(NOT TARGET boost)
 		add_custom_target(boost)
 	endif()
 elseif(OPENMIND_BUILD_BOOST)
-    message("Required boost components ${BOOST_USED_COMPONENTS}")
-    foreach(_module ${BOOST_USED_COMPONENTS})
-        if(_module STREQUAL "unit_test_framework"
-            OR _module STREQUAL "test_exec_monitor")
-            string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
-        else()
-            string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-${_module}")
-        endif()
-
-        string(TOUPPER ${_module} BOOST_MODULE_NAME_UPCASE)
-        add_definitions(-DBOOST_${BOOST_MODULE_NAME_UPCASE}_STATIC_LIB)
-    endforeach()
-    string(CONCAT BOOST_BUILD_PARAMS "${BOOST_BUILD_PARAMS}" " --with-test")
-    message("BOOST_BUILD_PARAMS: ${BOOST_BUILD_PARAMS}")
-
-    set(BOOST_BUILD_COMMAND "b2 address-model=${address_model} runtime-link=static,shared link=static,shared --disable-icu ${BOOST_BUILD_PARAMS}")
-    if(WIN32)
-    	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-			separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat clang")
-			separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} toolset=clang install")
-    	elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "MinGW")
-        	separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat gcc")
-	        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} toolset=gcc install")
-		else()
-	        set(ENV{VS150COMNTOOLS} "C:/Program Files/Microsoft Visual Studio/Preview/Community/Common7/Tools")
-	        separate_arguments(BOOST_EXT_CONFIGURE WINDOWS_COMMAND "bootstrap.bat msvc")
-	        separate_arguments(BOOST_BUILD_COMMAND WINDOWS_COMMAND "${BOOST_BUILD_COMMAND} install")
-		endif()
-    else()
-		if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-			set(BOOST_TOOLSET clang)
-		endif()
-		if(APPLE)
-			set(BOOST_BUILD_APPLE_ARGS "-address-model=64 architecture=arm+x86 -s NO_LZMA=1 -s NO_ZSTD=1")
-		endif()
-		separate_arguments(BOOST_EXT_CONFIGURE UNIX_COMMAND "./bootstrap.sh ${BOOST_TOOLSET}")
-        separate_arguments(BOOST_BUILD_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} --cxx=${CMAKE_CXX_COMPILER}")
-        separate_arguments(BOOST_INSTALL_COMMAND UNIX_COMMAND "./${BOOST_BUILD_COMMAND} install ${BOOST_BUILD_APPLE_ARGS} --prefix='${CMAKE_BINARY_DIR}'")
-    endif()
-
     message("ExternalProject_Add: ${BOOST_EXT_CONFIGURE} && ${BOOST_BUILD_COMMAND}")
     ExternalProject_Add(boost GIT_REPOSITORY https://github.com/boostorg/boost.git
         GIT_TAG boost-${OPENMIND_PREFERRED_BOOST_VERSION}
@@ -383,7 +395,6 @@ set(BOOST_LINK_LIBS
     Boost::chrono
     Boost::filesystem
     Boost::serialization
-    Boost::system
     )
 if(NOT MSVC
 	OR Boost_VERSION VERSION_LESS 1.80.0
@@ -391,6 +402,12 @@ if(NOT MSVC
 )
     set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
         Boost::thread)
+endif()
+if(NOT MSVC
+	OR Boost_VERSION VERSION_LESS 1.91.0
+)
+    set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS}
+        Boost::system)
 endif()
 
 set(BOOST_TEST_LINK_LIBS
@@ -403,7 +420,10 @@ if(OPENMIND_USE_VCPKG)
     )
 endif()
 if(NOT MSVC AND NOT OPENMIND_USE_VCPKG AND NOT OPENMIND_USE_CONAN)
-	list(APPEND BOOST_TEST_LINK_LIBS Boost::test_exec_monitor)
+	list(APPEND BOOST_TEST_LINK_LIBS
+		Boost::test_exec_monitor
+		Boost::test
+		)
 endif()
 set(BOOST_LINK_LIBS ${BOOST_LINK_LIBS} CACHE STRING "Boost libraries" FORCE)
 set(BOOST_TEST_LINK_LIBS ${BOOST_TEST_LINK_LIBS} CACHE STRING "Boost test libraries" FORCE)
