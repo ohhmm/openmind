@@ -29,11 +29,16 @@ void ohashes(const Valuable& v)
 
 BOOST_AUTO_TEST_CASE(SumBalancingTest) {
     DECL_VARS(x);
-    auto _1 = 2*x + constants::plus_minus_1 - 3;
-    _1.SetView(Valuable::View::Solving);
-    _1.optimize();
-
-    _1 = 2 * x + (x ^ 2);
+    {
+        auto _1 = 2*x + constants::plus_minus_1 - 3;
+        _1.SetView(Valuable::View::Solving);
+        _1.optimize();
+        auto _2 = "((x^2) + -3*x + 2)"_v;
+        BOOST_TEST(_1 == _2);
+    }
+    auto _1 = 2 * x;
+    auto _2 = x ^ 2;
+    _1 = _1 + _2;
     _1.SetView(Valuable::View::Solving);
     _1.optimize();
     auto _ = _1.Solutions();
