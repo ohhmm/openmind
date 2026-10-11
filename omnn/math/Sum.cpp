@@ -307,8 +307,8 @@ namespace
 
         Optimizing o(*this);
 
-        auto s = str();
-        auto doCheckCache = s.length() > 10;
+        auto initial = str();
+        auto doCheckCache = initial.length() > 10;
         auto isBalancing = IsEquation();
         auto& db = view == View::SupersetOfRoots
             ? DbSumOptimizationSupersetOfRootsCache
@@ -317,13 +317,15 @@ namespace
             : DbSumOptimizationCache);
         auto cached = doCheckCache ? db.AsyncFetch(*this, true) : Cache::TaskNoCache;
 
-        Valuable w;
+        auto was = initial;
+        auto changed = [&](){
+            auto text = str();
+            auto changed = text != was;
+            std::swap(text, was);
+            return changed;
+        };
         do
         {
-            CHECK_OPTIMIZATION_CACHE
-
-            w = *this;
-
             CHECK_OPTIMIZATION_CACHE
 
             if (members.size() == 0) {
@@ -331,7 +333,7 @@ namespace
                 return;
             }
             if (members.size() == 1) {
-                Become(Extract(members.begin()));
+                Become(Extract());
                 return;
             }
 
@@ -397,17 +399,6 @@ namespace
                 };
 
                 up();
-
-                auto comVaEq = [&]() {
-                    auto& ccv = c.getCommonVars();
-                    auto ccvsz = ccv.size();
-                    auto& itcv = it2->getCommonVars();
-                    auto itcvsz = itcv.size();
-                    return ccvsz
-                        && ccvsz == itcvsz
-                        && std::equal(//TODO:std::execution::par,
-                            ccv.cbegin(), ccv.cend(), itcv.cbegin());
-                };
 
                 for (; it2 != members.end();)
                 {
@@ -502,13 +493,7 @@ namespace
                 else
                     ++it;
             }
-            
-#if !defined(NDEBUG) && !defined(NOOMDEBUG)
-//            if (w!=*this) {
-//                std::cout << "Sum optimized from \n\t" << w << "\n \t to " << *this << std::endl;
-//            }
-#endif
-        } while (w != *this);
+        } while (changed());
 
         if (IsSum()) {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
@@ -521,7 +506,7 @@ namespace
         }
 
         if (doCheckCache && cached.NotInCache()) {
-            db.AsyncSet(std::move(s), str());
+            db.AsyncSet(std::move(initial), str());
         }
     }
 
@@ -546,8 +531,9 @@ namespace
                     scan = {};
                     if (IsSum())
                     {
-                        for (auto& member : members)
+                        for (auto it = begin(); it != end(); ++it)
                         {
+                            auto& member = *it;
                             if (member.IsProduct()) {
                                 auto& p = member.as<Product>();
                                 for (auto& m : p) {
@@ -598,8 +584,12 @@ namespace
                                     break;
                                 }
                                 else if (ee.IsFraction()) {
-                                    auto& f = ee.as<Fraction>();
-                                    Become((e.getBase() ^ f.getNumerator()) - ((-(*this - member)) ^ f.getDenominator()));
+                                    auto multival = Extract(it);
+                                    auto& multivalExp = multival.as<Exponentiation>();
+                                    auto multivalFracExp = multivalExp.extractExponentiation();
+                                    auto& f = multivalFracExp.as<Fraction>();
+                                    auto& powerWholeEquation = f.getDenominator();
+                                    Become(((*this) ^ powerWholeEquation) - ((-(multivalExp.getBase() ^ f.getNumerator())) ^ powerWholeEquation));
                                     scan = true;
                                     break;
                                 }
@@ -2119,8 +2109,9 @@ namespace
                                 lcm.lcm(dn);
                             }
                         } else {
-                            LOG_AND_IMPLEMENT("Solving " << va << " in " << *this << std::endl
-        								<< "need to normalize coefficient: " << c << std::endl);
+                            LOG_AND_IMPLEMENT("Solving " << va
+                                              << (isNormalizedPolynomial ? " in normalized " : " in ") << *this
+                                              << "\nneed to normalize coefficient: " << c << std::endl);
                         }
                     }
 				}
