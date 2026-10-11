@@ -3,7 +3,8 @@
 
 #include "pi.h"
 #include "Variable.h"
-#include "Sum.h"
+#include "Product.h"
+#include "Fraction.h"
 #include "generic.hpp"
 
 using namespace omnn::math;

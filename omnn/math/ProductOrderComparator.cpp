@@ -1,5 +1,7 @@
 #include "ProductOrderComparator.h"
 
+#include "Product.h"
+#include "Fraction.h"
 #include "Valuable.h"
 #include "Variable.h"
 #include "Integer.h"

@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(Quadratic_coefficient_test) {
     System sys;
 
     // Test equation: 9l^2 - 2 = 16
-    auto term = 9_v * l;     // Should normalize with MultiplyIfSimplifiable
+    auto term = 9 * l;       // Should normalize with MultiplyIfSimplifiable
     auto squared = term * l; // Will normalize properly with fix
 
     // Verify coefficient normalization

@@ -52,18 +52,9 @@ using namespace omnn::math;
     
     max_exp_t Product::findMaxVaExp()
     {
-        vaExpsSum = 0;
+        vaExpsSum = decltype(vaExpsSum){};
         for (auto& i:vars) {
-            auto& e = i.second;
-            if (e.IsInt()) {
-                vaExpsSum += e.as<Integer>().ca();
-            } else if (e.IsSimpleFraction()) {
-                auto& f = e.as<Fraction>();
-				vaExpsSum += f.getNumerator().ca() / f.getDenominator().ca();
-            }
-            else {
-                IMPLEMENT;
-            }
+            vaExpsSum += i.second;
         }
         auto it = std::max_element(vars.begin(), vars.end(), [](auto& x, auto& y){
             return x.second < y.second;
@@ -76,20 +67,7 @@ using namespace omnn::math;
 
     void Product::AddToVars(const Variable & va, const Valuable & exponentiation)
     {
-        if (exponentiation.IsZero())
-            return;
-
-        if (exponentiation.IsInt()) {
-            vaExpsSum += exponentiation.as<Integer>().ca();
-        } else if (exponentiation.IsSimpleFraction()) {
-            vaExpsSum += static_cast<decltype(vaExpsSum)>(exponentiation);
-        } else if (!exponentiation.is_optimized()) {
-            AddToVars(va, exponentiation.Optimized());
-            return;
-        } else {
-            LOG_AND_IMPLEMENT("estimate in to be greater for those which you want to see first in product sequence:"
-                              << va.str() << " ^ " << exponentiation.str());
-        }
+        vaExpsSum += exponentiation;
         
         auto& e = vars[va];
         auto re = static_cast<a_rational>(e);
@@ -106,7 +84,6 @@ using namespace omnn::math;
         }
         
         if (!isMax && wasMax) {
-            assert(exponentiation < 0);
             maxVaExp = findMaxVaExp();
         }
     }

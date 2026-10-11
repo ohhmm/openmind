@@ -1,5 +1,6 @@
 #pragma once
 #include <omnn/rt/tasq.h>
+#include <omnn/math/Product.h>
 #include <omnn/math/System.h>
 #include <omnn/math/VarHost.h>
 
