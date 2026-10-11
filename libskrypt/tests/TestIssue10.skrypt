@@ -1,0 +1,12 @@
+took-25
+sc-5
+gaveEuroBack-10
+gaveToKatty-25
+kattyPremium-20
+return-10
+
+kattyNYpresent-(gaveToKatty-kattyPremium)
+gave-(gaveToKatty+gaveEuroBack)
+pending-(gave-took)
+
+pending
