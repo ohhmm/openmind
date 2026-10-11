@@ -3,6 +3,7 @@
 
 #include "Variable.h"
 #include "Sum.h"
+#include "Fraction.h"
 #include "generic.hpp"
 
 

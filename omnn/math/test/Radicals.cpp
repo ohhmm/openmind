@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE PrincipalSurd test
 #include <boost/test/unit_test.hpp>
 
+#include "Fraction.h"
 #include "PrincipalSurd.h"
 
 #include "generic.hpp"

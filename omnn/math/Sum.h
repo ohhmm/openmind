@@ -3,13 +3,13 @@
 //
 
 #pragma once
-#include <list>
-#include <unordered_set>
-#include "ValuableCollectionDescendantContract.h"
-#include "Formula.h"
-#include "SumOrderComparator.h"
+#include <omnn/math/ValuableCollectionDescendantContract.h>
+#include <omnn/math/Formula.h>
+#include <omnn/math/SumOrderComparator.h>
 //#include <boost/container/set.hpp>
 //#include <boost/unordered_set.hpp>
+#include <list>
+#include <unordered_set>
 
 namespace omnn::math {
 

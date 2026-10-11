@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE Sum test
 #include <boost/test/unit_test.hpp>
 #include "Sum.h"
+#include "Fraction.h"
 #include "Infinity.h"
 #include "Variable.h"
 #include "generic.hpp"
