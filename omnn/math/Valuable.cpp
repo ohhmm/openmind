@@ -522,11 +522,12 @@ namespace omnn::math {
                     ++it;
                 }
             }
+            auto nPairs = pairs.size();
             if (s.size() == 0) {
                 s = std::move(pairs);
+                nPairs = 0;
             }
-
-            if (pairs.size()) {
+            if (nPairs) {
                 operator=(MergeOr(Valuable(std::move(pairs)), Valuable(std::move(s))));
             } else {
                 while(s.size() > 1){
