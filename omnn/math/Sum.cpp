@@ -498,7 +498,7 @@ namespace
         if (IsSum()) {
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
             if (size() == 1) {
-                LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << s << " to " << *this);
+                LOG_AND_IMPLEMENT("Sum has single member after being optimized from " << initial << " to " << *this);
             }
 #endif
             if (isBalancing)

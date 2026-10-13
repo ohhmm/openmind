@@ -787,14 +787,14 @@ using namespace omnn::math;
             return Become(v + *this);
         }
         else{
-        auto& cv = getCommonVars();
-        if (!cv.empty() && cv == v.getCommonVars())
-        {
-            auto valuable = varless() + v.varless();
-            if(!valuable.IsSum())
-                valuable *= getVaVal();
-            return Become(std::move(valuable));
-        }
+            auto& cv = getCommonVars();
+            if (!cv.empty() && cv == v.getCommonVars())
+            {
+                auto valuable = varless() + v.varless();
+                if(!valuable.IsSum())
+                    valuable *= getVaVal();
+                return Become(std::move(valuable));
+            }
         }
         return Become(Sum { *this, v });
     }

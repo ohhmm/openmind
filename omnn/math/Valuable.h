@@ -135,7 +135,7 @@ class Valuable
 {
     using self = Valuable;
 
-    static const a_int a_int_cz;
+    static constinit const a_int a_int_cz;
     static const max_exp_t max_exp_cz;
 
     typedef Valuable& (Valuable::*method_t)(const Valuable&);
@@ -208,6 +208,22 @@ public:
         SupersetOfRoots = 64 | Solving
     };
 
+    /// <summary>
+    /// Allow infinite number of roots
+    /// Distinct on reasons for empty roots set returned
+    /// etc
+    /// </summary>
+    enum class Solved : uint8_t {
+        WasNotInitialized = 0,
+        NoRootsPossible = 1,
+        RootsNotFound = 2,
+        SingleRootFound = 4,
+        MultipleRootsFound = 8,
+        MultivalueRootsFound = 16,  // x^(1/2) is split into [-1, 1], but some finite multivalue expressions are harder to split
+        RootFilterFound = 32,       // Infinite roots expression is useful in systems to add generic constraints like x known to be integer or devidable by n
+        Partial = 64                // Some of roots found but it is known to be incomplete solutions set. It may be efficient to devide expression by (x-r) to continue solving resulting expression
+    };
+
     friend std::ostream& operator<<(std::ostream& os, View v) {
 	return os << static_cast<uint8_t>(v);
     }
@@ -229,9 +245,13 @@ public:
     }
 
     template<class T>
+    [[nodiscard]]
+    constexpr 
     const T& as() const;
 
     template<class T>
+    [[nodiscard]]
+    constexpr 
     T& as() {
         clone_on_write();
         auto& the = get();
@@ -244,6 +264,8 @@ public:
     }
 
     template <class T>
+    [[nodiscard]]
+    constexpr 
     const T* As() const {
         return Is<T>() ? &as<T>() : nullptr;
     }
@@ -435,6 +457,8 @@ public:
     virtual bool is(const std::type_index&) const;
 
     template<class T>
+    [[nodiscard]]
+    constexpr 
     bool Is() const {
         return get().is(typeid(T));
     }
@@ -829,6 +853,7 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(Valuable)
 
 template<class T>
+constexpr
 const T& Valuable::as() const {
     auto& the = get();
 #if !defined(NDEBUG) && !defined(NOOMDEBUG)
