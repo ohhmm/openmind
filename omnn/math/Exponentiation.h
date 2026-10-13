@@ -18,8 +18,8 @@ class Exponentiation
 
 protected:
     friend Logarithm;
-    constexpr Valuable& ebase() { return base::_1; }
-    constexpr Valuable& eexp() { return base::_2; }
+    constexpr Valuable& ebase() noexcept { return base::_1; }
+    constexpr Valuable& eexp() noexcept { return base::_2; }
     std::ostream& print_sign(std::ostream& out) const override;
 public:
     std::ostream& code(std::ostream& out) const override;

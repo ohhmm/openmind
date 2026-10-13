@@ -67,7 +67,7 @@ namespace omnn::math {
         return out;
     }
 
-    const a_int Valuable::a_int_cz = 0;
+    constinit const a_int Valuable::a_int_cz = 0;
     const max_exp_t Valuable::max_exp_cz(a_int_cz);
 
     namespace constants {
@@ -292,7 +292,7 @@ namespace omnn::math {
                     LOG_AND_IMPLEMENT("Hash mismatch in Become for " << *this)
                 }
                 SetView(newWasView);
-                optimize();
+                this->optimize();
             }
             else if(exp && exp->getAllocSize() >= newSize)
             {
@@ -366,7 +366,9 @@ namespace omnn::math {
 
     Valuable::Valuable(a_rational&& r)
     : exp(std::move(std::make_shared<Fraction>(std::move(r))))
-    { exp->optimize(); }
+    {
+        optimize();
+    }
 
     namespace{
         template<typename T>
@@ -768,6 +770,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 
     namespace {
         constexpr char SupportedOps[] = " */%+-^()!";
+
+        constexpr auto is_num_start(auto c) {
+            return (c >= '0' && c <= '9') || c == '.';
+        }
     }
     Valuable::Valuable(const std::string_view& str
         , std::shared_ptr<VarHost> host // = nullptr
@@ -862,7 +868,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 )
             {
                 auto it = constants::Constants.find(s);
-                if (it != constants::Constants.end()) {
+                if (host->Has(s)) {
+                    Become(Valuable(host->Host(s)));
+                } else if (it != constants::Constants.end()) {
                     Valuable v(it->second);
                     if (itIsOptimized)
                         v.MarkAsOptimized();
@@ -883,14 +891,17 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             Valuable v;
             auto mulByNeg = false;
             using op_t = std::function<void(Valuable &&)>;
-            op_t o_mov = [&](Valuable&& val) {
+            op_t o_sum, o_mul, o_div, o_exp;
+            op_t o_mov;
+            auto o = std::ref(o_mov);
+            o_mov = [&](Valuable&& val) {
 				v = std::move(val);
                 if (mulByNeg) {
                     v *= -1;
                     mulByNeg = {};
                 }
-			};
-            op_t o_sum, o_mul, o_div, o_exp;
+                o = o_sum;
+            };
             op_t o_mod;
             op_t o_pSurd;
             if (itIsOptimized) {
@@ -1013,7 +1024,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 };
             }
 
-            auto o = std::ref(o_mov);
             //std::stack<char> op;
             for (index_t i = str.find_first_not_of(" \t\n\r"); i < l; ++i)
             {
@@ -2018,12 +2028,8 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if(exp)
             return exp->print(out);
         else {
-#ifdef __APPLE__
-            LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n');
-#else
             LOG_AND_IMPLEMENT("Implement print(std::ostream&) for " << boost::core::demangle(Type().name()) << '\n'
                                                                     << boost::stacktrace::stacktrace());
-#endif
         }
     }
 
@@ -3000,7 +3006,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         else {
 			using namespace constants;
 			return
-				//one.Equals(*this % one);
+				*this % 1; // Equation x%1==0 for integer x only
 				//or
 				(e ^ (*this * 2 * i * pi)) - 1;   // FIXME: check if all required optimizations ready to make this to be useful https://math.stackexchange.com/a/1598552/118612
 		}

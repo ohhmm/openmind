@@ -74,7 +74,7 @@ void TestBooleanOperator(const Valuable& expressionXY, auto function, bool compi
     }
 }
 
-void TestXpression(const Valuable& expressionX, auto function, bool compilambda = {}) {
+void TestXpression(const Valuable& expressionX, auto function, bool compilambda = {}, bool optimizationsWithinCompilambda = {}) {
     std::cout << "Checking expression: " << expressionX << std::endl;
     auto lambda = expressionX.CompiLambda(X);
     for (auto x = 10; x --> -10 ;)
@@ -108,7 +108,15 @@ void TestXpression(const Valuable& expressionX, auto function, bool compilambda 
         auto etalon = function(x);
         BOOST_TEST(copy == etalon, "f(X=" << x << ")=" << copy);
 
-        copy = lambda(x);
+        {
+            std::any optimizOnOff;
+            if (optimizationsWithinCompilambda) {
+                optimizOnOff = Valuable::OptimizeOn();
+            } else {
+                optimizOnOff = Valuable::OptimizeOff();
+            }
+            copy = lambda(x);
+        }
         // FIXME: should be always on
         if (compilambda) {
             BOOST_TEST(copy == etalon);

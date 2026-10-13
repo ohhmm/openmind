@@ -28,7 +28,7 @@ namespace omnn::math {
     class Product;
     class Sum;
 
-    class Integer
+class Integer
     : public ValuableDescendantContract<Integer>
 {
     using base = ValuableDescendantContract<Integer>;
