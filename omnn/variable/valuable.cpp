@@ -1,6 +1,9 @@
 #include <sstream>
 #include <boost/python.hpp>
 #include <boost/python/extract.hpp>
+#include <boost/python/signature.hpp>
+#include <boost/python/object/function_handle.hpp>
+#include <boost/python/make_function.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include "omnn/math/Variable.h"
 #include "omnn/math/System.h"
@@ -20,7 +23,7 @@ namespace {
         }
         return result;
     }
-    
+
     // Converter function
     std::map<omnn::math::Variable, omnn::math::Valuable> dict_to_map(const dict& py_dict) {
         std::map<omnn::math::Variable, omnn::math::Valuable> cpp_map;
@@ -52,6 +55,19 @@ namespace {
             data->convertible = storage;
         }
     };
+
+    // Helper for __str__
+    std::string valuable_str(const Valuable& v) {
+        std::ostringstream ss;
+        ss << v; // Use operator<< instead of protected print()
+        return ss.str();
+    }
+
+    std::string variable_str(const Variable& v) {
+        std::ostringstream ss;
+        ss << v; // Use operator<< instead of protected print()
+        return ss.str();
+    }
 }
 
 BOOST_PYTHON_MODULE(variable)
@@ -114,6 +130,9 @@ BOOST_PYTHON_MODULE(variable)
 
         // Comparison
         .def(self < self)
+        .def("__le__", +[](const Valuable& a, const Valuable& b) -> bool { return a <= b; })
+        .def("__gt__", +[](const Valuable& a, const Valuable& b) -> bool { return a > b; })
+        .def("__ge__", +[](const Valuable& a, const Valuable& b) -> bool { return a >= b; })
         .def(self == self)
         .def(self != self)
 
@@ -121,6 +140,10 @@ BOOST_PYTHON_MODULE(variable)
         .def("shl", +[](const Valuable& v, int shift) { return v.Shl(shift); })
         .def("shr", +[](const Valuable& v, int shift) { return v.Shr(shift); })
         .def("bit", +[](const Valuable& v, int bit) { return v.bit(bit); })
+        .def("and_", +[](const Valuable& v, const Valuable& other) { return v.And(v, other); })
+        .def("or_", +[](const Valuable& v, const Valuable& other) { return v.Or(v, other); })
+        .def("xor_", +[](const Valuable& v, const Valuable& other) { return v.Xor(v, other); })
+        .def("not_", +[](const Valuable& v) { return v.Not(v); })
 
         // Mathematical functions
         .def("abs", &Valuable::Abs)
@@ -129,61 +152,170 @@ BOOST_PYTHON_MODULE(variable)
         .def("optimize", &Valuable::optimize)
         .def("eval", &Valuable::eval)
 
-        // Type conversion
-        .def("__int__", +[](const Valuable& v) { return static_cast<int>(v); })
-        .def("__float__", +[](const Valuable& v) { return static_cast<double>(v); })
+        // Type identification
+        .def("is_constant", &Valuable::IsConstant)
+        .def("is_int", &Valuable::IsInt)
+        .def("is_fraction", &Valuable::IsFraction)
+        .def("is_zero", &Valuable::IsZero)
+        .def("is_rational", &Valuable::IsRational)
+
+        // View system
+        .def("get_view", &Valuable::GetView)
+        .def("set_view", &Valuable::SetView)
 
         // String conversion
         .def("__str__", &Valuable::str)
-        
-        // TODO: FIXME : uncomment
-        // .def("compile_into_lambda", +[](const Valuable& v, const boost::python::list& variables) {
+
+        // Type conversion
+        .def("__int__", +[](const Valuable& v) { return static_cast<int>(v); })
+        .def("__float__", +[](const Valuable& v) {
+            return static_cast<double>(v);
+        })
+        // .def("__bool__", +[](const Valuable& v) { return static_cast<bool>(v); })
+
+        .def("compile_into_lambda", +[](const Valuable& v, const boost::python::list& variables) {
+            std::vector<Variable> vars;
+            for (int i = 0; i < len(variables); ++i) {
+                vars.push_back(extract<Variable>(variables[i]));
+            }
+
+            return //boost::python::make_function(
+                [v,
+                    sz=vars.size(),
+                    lambda = v.CompileIntoLambda({vars.begin(), vars.end()})
+                ](const boost::python::list& args) {
+                    auto lenargs = len(args);
+                    if (lenargs != sz) {
+                        throw std::runtime_error("Number of arguments must match number of variables");
+                    }
+
+                    std::vector<Valuable> values;
+                    for (int i = 0; i < lenargs; ++i) {
+                        values.push_back(extract<Valuable>(args[i]));
+                    }
+
+                    return lambda({values.begin(), values.end()});
+                }
+            //)
+            ;
+        },
+
+        "Create a lambda function from an expression using CompileIntoLambda.\n\n"
+        "Args:\n"
+        "    variables: List of Variable objects used in the expression\n\n"
+        "Returns:\n"
+        "    A callable function that takes a list of values corresponding to the variables\n\n"
+        "Raises:\n"
+        "    RuntimeError: If the number of arguments doesn't match the number of variables\n\n"
+        "Example:\n"
+        "    expr = x + 2 * y\n"
+        "    lambda_func = expr.compile_into_lambda([x, y])\n"
+        "    result = lambda_func([3, 4])  # 3 + 2*4 = 11")
+        // .def("compi_lambda", +[](const Valuable& v, const boost::python::list& variables) {
         //     std::vector<Variable> vars;
         //     for (int i = 0; i < len(variables); ++i) {
-        //         vars.emplace_back(extract<Variable>(variables[i]));
+        //         vars.push_back(extract<Variable>(variables[i]));
         //     }
-            
+
         //     return boost::python::make_function(
         //         [v, vars](const boost::python::list& args) -> Valuable {
         //             if (len(args) != vars.size()) {
         //                 throw std::runtime_error("Number of arguments must match number of variables");
         //             }
-                    
+
         //             std::vector<Valuable> values;
         //             for (int i = 0; i < len(args); ++i) {
-        //                 values.emplace_back(extract<Valuable>(args[i]));
+        //                 values.push_back(extract<Valuable>(args[i]));
         //             }
-        //             // const std::initializer_list<const Variable> sequenc = {&vars[0], std::size(vars)};
-        //             auto lambda = v.CompileIntoLambda(vars);
-        //             return lambda(values);
+
+        //             auto callCompiLambda = [&v](auto&&... vars) {
+        //                 return v.CompiLambda(std::forward<decltype(vars)>(vars)...);
+        //             };
+
+        //             auto callLambda = [](auto&& lambda, auto&&... args) {
+        //                 return lambda(std::forward<decltype(args)>(args)...);
+        //             };
+
+        //             if (vars.size() > 10) {
+        //                 throw std::runtime_error("Currently only supports up to 10 variables due to implementation constraints");
+        //             }
+
+        //             auto invokeLambda = [&]() -> Valuable {
+        //                 return [&]<size_t... I>(std::index_sequence<I...>) {
+        //                     auto lambda = callCompiLambda(vars[I]...);
+
+        //                     return callLambda(lambda, values[I]...);
+        //                 }(std::make_index_sequence<vars.size()>{});
+        //             };
+
+        //             return invokeLambda();
         //         }
         //     );
-        // })
+        // },
+        // "Create an optimized lambda function from an expression using CompiLambda.\n\n"
+        // "Args:\n"
+        // "    variables: List of Variable objects used in the expression (max 3 variables)\n\n"
+        // "Returns:\n"
+        // "    A callable function that takes a list of values corresponding to the variables\n\n"
+        // "Raises:\n"
+        // "    RuntimeError: If more than 3 variables are provided (C++ template limitation)\n"
+        // "    RuntimeError: If the number of arguments doesn't match the number of variables\n\n"
+        // "Note:\n"
+        // "    This method currently supports up to 3 variables due to C++ template limitations.\n"
+        // "    For expressions with more variables, use compile_into_lambda() instead.\n\n"
+        // "Example:\n"
+        // "    expr = x * y + x\n"
+        // "    lambda_func = expr.compi_lambda([x, y])\n"
+        // "    result = lambda_func([3, 4])  # 3*4 + 3 = 15")
         ;
 
+    // Expose Variable
     class_<Variable, bases<Valuable>>("Variable")
         // Constructors
         .def(init<>())
         .def(init<const std::string&>())
 
-        // Basic arithmetic with numeric conversion
+        // Basic arithmetic (inherited from Valuable)
         .def(self + self)
-        .def("__add__", +[](const Variable& v, int i) { return v + i; })
-        .def("__radd__", +[](const Variable& v, int i) { return i + v; })
-        .def("__add__", +[](const Variable& v, double d) { return v + d; })
-        .def("__radd__", +[](const Variable& v, double d) { return d + v; })
+        .def("__add__", +[](const Variable& v, const Valuable& other) -> Valuable {
+            return other + v;
+        })
+        .def("__add__", +[](const Variable& v, int i) -> Valuable { return v + i; })
+        .def("__radd__", +[](const Variable& v, int i) -> Valuable { return i + v; })
+        .def("__add__", +[](const Variable& v, double d) -> Valuable { return v + d; })
+        .def("__radd__", +[](const Variable& v, double d) -> Valuable { return d + v; })
         .def(self - self)
-        .def("__sub__", +[](const Variable& v, int i) { return v - i; })
-        .def("__rsub__", +[](const Variable& v, int i) { return i - v; })
-        .def("__sub__", +[](const Variable& v, double d) { return v - d; })
-        .def("__rsub__", +[](const Variable& v, double d) { return d - v; })
+        .def("__sub__", +[](const Variable& v, const Variable& other) -> Valuable {
+            auto result = v - other;
+            return result;
+        })
+        .def("__sub__", +[](const Variable& v, const Valuable& other) -> Valuable {
+            auto result = v - other;
+            return result;
+        })
+        .def("__sub__", +[](const Variable& v, int i) -> Valuable {
+            auto result = v - Valuable(i);
+            return result;
+        })
+        .def("__rsub__", +[](const Variable& v, int i) -> Valuable {
+            auto result = Valuable(i) - v;
+            return result;
+        })
+        .def("__sub__", +[](const Variable& v, double d) -> Valuable {
+            auto result = v - Valuable(d);
+            return result;
+        })
+        .def("__rsub__", +[](const Variable& v, double d) -> Valuable {
+            auto result = Valuable(d) - v;
+            return -v + Fraction(d);
+        })
         .def("__sub__", +[](const Valuable& v, const Valuable& i) { return v - i; })
         .def("__rsub__", +[](const Valuable& v, const Valuable& i) { return i - v; })
         .def(self * self)
         .def("__mul__", +[](const Variable& v, int i) { return v * i; })
-        .def("__rmul__", +[](const Variable& v, int i) { return i * v; })
+        .def("__rmul__", +[](const Variable& v, int i) { return v * i; })
         .def("__mul__", +[](const Variable& v, double d) { return v * d; })
-        .def("__rmul__", +[](const Variable& v, double d) { return d * v; })
+        .def("__rmul__", +[](const Variable& v, double d) { return v * d; })
         .def(self / self)
         .def("__truediv__", +[](const Variable& v, int i) { return v / i; })
         .def("__rtruediv__", +[](const Variable& v, int i) { return i / v; })
@@ -199,17 +331,26 @@ BOOST_PYTHON_MODULE(variable)
         .def("__rpow__", +[](const Variable& v, double d) { return d ^ v; })
         .def(-self)
 
-        // Comparison
+        // Comparison (inherited from Valuable)
         .def(self < self)
+        .def("__le__", +[](const Variable& a, const Variable& b) -> bool { return a < b || a == b; })
+        .def("__gt__", +[](const Variable& a, const Variable& b) -> bool { return !(a < b || a == b); })
+        .def("__ge__", +[](const Variable& a, const Variable& b) -> bool { return !(a < b); })
         .def(self == self)
         .def(self != self)
-        ;
-        
+
+        // String conversion
+        .def("__str__", &variable_str)
+
+        // Type identification
+        .def("is_va", &Variable::IsVa)
+    ;
+
     class_<System>("System")
         // Constructors
         .def(init<>())
         .def(init<const boost::numeric::ublas::matrix<Valuable>&>())
-        
+
         // Methods
         .def("Add", static_cast<bool (System::*)(const Valuable&)>(&System::Add))
         .def("Add", static_cast<bool (System::*)(const Variable&, const Valuable&)>(&System::Add))
@@ -232,7 +373,7 @@ BOOST_PYTHON_MODULE(variable)
         .def("MakesTotalEqu", static_cast<void (System::*)(bool)>(&System::MakesTotalEqu))
         .def("CalculateTotalExpression", &System::CalculateTotalExpression)
         .def("IsEmpty", &System::IsEmpty)
-        
+
         // Operators
         .def("__str__", +[](const System& sys) {
             std::ostringstream ss;
