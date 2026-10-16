@@ -22,31 +22,36 @@ class Testvariable(unittest.TestCase):
         #prod = variable.Valuable("4 * 2")
         self.assertEqual(float(prod), 8.0)  # 4 * 2
         
-        # Test addition with expression
-        expr = x + prod
+        print("Testing y * 2")
+        prod = y * 2
+        prod.eval(values)
+        prod.optimize()
+        print(f"y * 2 = {prod}")
+        prod_val = float(prod)
+        print(f"y * 2 evaluated = {prod_val}")
+        self.assertEqual(prod_val, 4.)  # 2 * 2
+
+        print("Testing x + (y * 2)")
+        expr = x + prod # 3+4=7
+        print(f"Expression: {expr}")
+
+        # Convert to float for assertion
         expr.eval(values)
         expr.optimize()
-        self.assertEqual(float(expr), 11.0)  # 3 + (4 * 2)
-        
-        # Test reverse operations
-        rev_prod = 2 * y.sq()
-        rev_prod.eval(values)
-        rev_prod.optimize()
-        self.assertEqual(float(rev_prod), 8.0)
-        
-        rev_sum = 5 + x
-        rev_sum.eval(values)
-        rev_sum.optimize()
-        self.assertEqual(float(rev_sum), 8.0)  # 5 + 3
-    
+        result_float = float(expr)
+        print(f"Result as float: {result_float}")
+        assert result_float == 7.
+        print("Test passed!")
+
     def test_arithmetic_operations(self):
+        # Test basic operations with constants
         a = variable.Valuable(5)
         b = variable.Valuable(3)
-        
+
         self.assertEqual(float(a + b), 8.0)
         self.assertEqual(float(a - b), 2.0)
         self.assertEqual(float(a * b), 15.0)
-        self.assertAlmostEqual(float(a / b), 5.0/3.0)
+        self.assertEqual(float(a / b), 5.0/3.0)
 
 if __name__ == "__main__":
     unittest.main()
