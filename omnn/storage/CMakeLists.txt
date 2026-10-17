@@ -1,5 +1,6 @@
 option(OPENMIND_STORAGE_FOUNDATIONDB "Use Apple FoundationDB library for one of the multistorage levels" NO)
-option(OPENMIND_STORAGE_LEVELDB "Use Google LevelDB library for one of the multistorage levels" ON)
+find_optional_pkg(leveldb)
+option(OPENMIND_STORAGE_LEVELDB "Use Google LevelDB library for one of the multistorage levels" ${OPENMIND_USE_leveldb})
 option(OPENMIND_STORAGE_REDIS "Use Redis for distributed caching" OFF)
 
 set(DEPENDENCIES rt)
