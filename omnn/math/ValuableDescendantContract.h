@@ -111,7 +111,13 @@ namespace math {
         //ValuableDescendantContract() : Valuable<>() {}
         // instead of
         constexpr ValuableDescendantContract() : ValuableDescendantBase(ValuableDescendantMarker()) {}
-        ValuableDescendantContract(ValuableDescendantContract&& c)//        =default;
+        constexpr ValuableDescendantContract(ValuableDescendantMarker, size_t hash = 0, bool optimized = {})
+            : ValuableDescendantBase(ValuableDescendantMarker())
+        {
+            this->hash = hash;
+            this->optimized = optimized;
+        }
+        ValuableDescendantContract(ValuableDescendantContract&& c) //        =default;
         : ValuableDescendantBase(std::move(c), ValuableDescendantMarker()) {}
         ValuableDescendantContract(const ValuableDescendantContract& c)//        =default;
          : ValuableDescendantBase(c, ValuableDescendantMarker()) {}

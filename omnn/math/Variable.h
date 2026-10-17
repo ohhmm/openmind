@@ -10,8 +10,7 @@
 #include <boost/preprocessor/seq/for_each.hpp>
 
 
-namespace omnn{
-namespace math {
+namespace omnn::math {
 
 
 class VarHost;
@@ -20,7 +19,8 @@ class Variable
         : public ValuableDescendantContract<Variable>
 {
     using base = ValuableDescendantContract<Variable>;
-    std::shared_ptr<VarHost> varSetHost;
+    using var_host_ptr_t = std::weak_ptr<VarHost>;
+    var_host_ptr_t varSetHost;
     std::any varId;
     mutable vars_cont_t vars;
 
@@ -42,7 +42,7 @@ public:
     Variable(std::shared_ptr<VarHost>);
     Variable(const std::string_view&, const std::shared_ptr<VarHost> host = nullptr);
 
-    std::shared_ptr<VarHost> getVaHost() const override { return varSetHost; }
+    std::shared_ptr<VarHost> getVaHost() const override;
     const auto& getId() const { return varId; }
 
     Valuable operator -() const override;
@@ -108,9 +108,9 @@ public:
     Valuable varless() const override { return constants::one; }
 };
 
-}}
-
 // Named variable with the same name text
 #define DECL_VA(x) const ::omnn::math::Variable& x = #x##_va;
 #define DECL_VA_MACRO(r, data, x) DECL_VA(x)
 #define DECL_VARS(...) BOOST_PP_SEQ_FOR_EACH(DECL_VA_MACRO, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+
+}

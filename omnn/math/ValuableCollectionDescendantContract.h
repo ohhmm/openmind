@@ -393,15 +393,17 @@ namespace omnn::math {
             auto findNewMaxVaExp = it->getMaxVaExp() == this->getMaxVaExp();
             c.erase(it++);
             Valuable::optimized &= c.size() > 1;
-            if (findNewMaxVaExp)
+            if (findNewMaxVaExp) {
                 Valuable::maxVaExp = this->Ptr()->findMaxVaExp(); // TODO: consider heap structure
+            }
         }
 
         void Delete(const Valuable& value) {
             auto& c = GetCont();
             auto delIt = std::find(c.begin(), c.end(), value);
-            if (delIt != c.end())
+            if (delIt != c.end()) {
                 Delete(delIt);
+            }
         }
 
         template<class PredFnT>
@@ -418,8 +420,9 @@ namespace omnn::math {
             auto& c = GetCont();
             Valuable::optimized &= c.size() > 2;
             auto extracted = std::move(c.extract(it).value());
-            if (findNewMaxVaExp)
+            if (findNewMaxVaExp) {
                 Valuable::maxVaExp = this->Ptr()->findMaxVaExp();
+            }
             return extracted;
         }
 
