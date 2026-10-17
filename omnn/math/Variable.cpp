@@ -13,23 +13,23 @@ namespace omnn{
 namespace math {
 
     Variable::Variable()
-    : varSetHost(&VarHost::Global<>(), [](auto){})
+    : varSetHost(VarHost::Global<>().shared_from_this())
     , varId(VarHost::Global<>().NewVarId())
     {
-        hash = varSetHost->Hash(varId);
+        hash = getVaHost()->Hash(varId);
         maxVaExp=1;
     }
     
     Variable::Variable(const Variable& v)
     : varSetHost(v.varSetHost)
-    , varId(v.varSetHost->CloneId(v.varId))
+    , varId(v.getVaHost()->CloneId(v.varId))
     {
         hash = v.Hash();
         maxVaExp=1;
     }
 
     void Variable::SetId(::std::any id) {
-        hash = varSetHost->Hash(id);
+        hash = getVaHost()->Hash(id);
         varId = std::move(id);
     }
 
@@ -49,9 +49,15 @@ namespace math {
     Variable::Variable(const std::string_view& str, std::shared_ptr<VarHost> host)
     {
         varSetHost = host ? host : VarHost::Global<std::string>().shared_from_this();
-        varId = varSetHost->IsIntegerId() ? varSetHost->Host(Valuable(a_int(str))) : varSetHost->Host(str);
-        hash = varSetHost->Hash(varId);
+        const auto& storageHostedVariable = getVaHost()->IsIntegerId() ? getVaHost()->Host(Valuable(a_int(str))) : getVaHost()->Host(str);
+        varId = storageHostedVariable.GetId();
+        hash = storageHostedVariable.Hash();
         maxVaExp=1;
+    }
+
+    std::shared_ptr<VarHost> Variable::getVaHost() const
+    {
+        return varSetHost.lock();
     }
 
     Valuable Variable::operator -() const
@@ -194,10 +200,11 @@ namespace math {
         if (v.IsVa())
         {
             auto& i = v.as<Variable>();
-            if (varSetHost != i.varSetHost) {
+            auto host = getVaHost();
+            if (host != i.getVaHost()) {
                 throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
             }
-            return varSetHost->CompareIdsLess(varId, i.varId);
+            return host->CompareIdsLess(varId, i.varId);
         }
         
         // not implemented comparison to this Valuable descent
@@ -212,9 +219,15 @@ namespace math {
 
     bool Variable::Same(const Variable& variable) const
     {
-        return hash == variable.Hash()
-            && varSetHost == variable.varSetHost
-            && varSetHost->CompareIdsEqual(varId, variable.varId);
+        auto same = hash == variable.Hash();
+        if (same) {
+            auto host = getVaHost();
+            same = host == variable.getVaHost();
+            if (same) {
+                same = host->CompareIdsEqual(varId, variable.varId);
+            }
+        }
+        return same;
     }
 
     bool Variable::Same(const Valuable& value) const
@@ -225,16 +238,17 @@ namespace math {
 
     bool Variable::operator==(const Variable& v) const
     {
-        if (varSetHost != v.varSetHost) {
+        auto host = getVaHost();
+        if (host != v.getVaHost()) {
             throw "Unable to compare variable sequence numbers from different var hosts. Do you need a lambda for delayed comparision during evaluation? implement then.";
         }
         return hash == v.Hash()
-            && varSetHost->CompareIdsEqual(varId, v.varId);
+            && host->CompareIdsEqual(varId, v.varId);
     }
     
     std::ostream& Variable::print(std::ostream& out) const
     {
-        return varSetHost->print(out, varId);
+        return getVaHost()->print(out, varId);
     }
 
     Valuable::universal_lambda_t Variable::CompileIntoLambda(variables_for_lambda_t variables) const
@@ -243,7 +257,7 @@ namespace math {
         auto end = std::end(variables);
         auto it = std::find(beg, end, *this);
         if(it == end) {
-            return [ref=std::cref(varSetHost->Host(varId))](universal_lambda_params_t) {
+            return [ref=std::cref(getVaHost()->Host(varId))](universal_lambda_params_t) {
                 return ref.get();
             };
         } else {
@@ -271,7 +285,7 @@ namespace math {
     }
 
     void Variable::CollectVaNames(Valuable::va_names_t&  s) const{
-        s.emplace(varSetHost->GetName(varId), *this);
+        s.emplace(getVaHost()->GetName(varId), *this);
     }
 
     bool Variable::eval(const std::map<Variable, Valuable>& with) {
