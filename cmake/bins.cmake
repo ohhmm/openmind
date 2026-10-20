@@ -107,6 +107,7 @@ endmacro(glob_source_files)
 function(apply_target_commons this_target)
 	string(REPLACE "-" "" dashless ${this_target})
 	string(TOUPPER ${dashless} this_target_up)
+	set(lopts)
 	set(defs 
 		HAS_BOOST
 		BOOST_SYSTEM_NO_DEPRECATED
@@ -250,6 +251,7 @@ function(apply_target_commons this_target)
     target_link_directories(${this_target} INTERFACE ${ldirs})
 	get_target_property(target_type ${this_target} TYPE)
 	if(target_type STREQUAL "INTERFACE_LIBRARY")
+		set(visibility INTERFACE)
 		set(visibility INTERFACE PARENT_SCOPE)
 		message(STATUS "${this_target} is INTERFACE")
 		set(defs INTERFACE ${defs})
@@ -261,6 +263,7 @@ function(apply_target_commons this_target)
 			$<INSTALL_INTERFACE:include>
         )
 	else()
+		set(visibility PUBLIC)
 		set(visibility PUBLIC PARENT_SCOPE)
 		set(defs INTERFACE ${defs} PUBLIC ${defs})
 		set(opts INTERFACE ${opts} PUBLIC ${opts})
