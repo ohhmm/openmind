@@ -327,14 +327,26 @@ function(apply_test_commons this_target)
 		if(EXISTS ${dir})
 			target_link_directories(${this_target} ${visibility} ${dir})
 		endif()
-	endforeach()	
-	if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
-		target_compile_definitions(${this_target} ${visibility}
-			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
-			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
-		)
-	endif()
-	if(Boost_FOUND)
+	endforeach()
+
+    set_target_properties(${this_target} PROPERTIES
+            FOLDER "test"
+    )
+    if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+        target_compile_definitions(${this_target} ${visibility}
+            -DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+            -DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
+        )
+    endif()
+    target_link_options(${this_target} ${visibility}
+            $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>,$<PLATFORM_ID:Windows>>:-mconsole>
+    )
+    if(ENABLE_ASAN)
+        message("Enabling AddressSanitizer for ${this_target}")
+        target_enable_asan(${this_target})
+    endif()
+
+    if(Boost_FOUND)
 		message("Boost_FOUND: ${Boost_FOUND}")
 		if(NOT MSVC OR OPENMIND_USE_CONAN)
 			message("NOT MSVC OR OPENMIND_USE_CONAN, using deps ${BOOST_TEST_LINK_LIBS}")
@@ -391,22 +403,6 @@ function(test)
 
 		message("using deps ${libs}")
 		deps(${libs})
-
-		set_target_properties(${TEST_NAME} PROPERTIES
-			FOLDER "test"
-		)
-		target_link_options(${TEST_NAME} PUBLIC
-			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>,$<PLATFORM_ID:Windows>>:-mconsole>
-			)
-		add_dependencies(${TEST_NAME} ${parent_target})
-		#add_dependencies(${TEST_NAME} prerequisites)
-
-        target_link_libraries(${TEST_NAME} PUBLIC ${parent_target})
-
-        if(ENABLE_ASAN)
-            message("Enabling AddressSanitizer for ${TEST_NAME}")
-            target_enable_asan(${TEST_NAME})
-        endif()
 
         file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.db)
         add_test(NAME ${TEST_NAME}
