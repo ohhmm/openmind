@@ -371,17 +371,8 @@ namespace omnn::math {
         }
         if (inst)
             exp = inst;
-        else {
+        else
             Become(Valuable(v.Clone()));
-            
-            //auto weak = v.weak_from_this();
-            //if (weak.expired()) {
-            //    Become(Valuable(v.Clone()));
-            //} else {
-            //    auto locked = weak.lock();
-            //    exp = std::const_pointer_cast<Valuable>(locked);
-            //}
-        }
         return *this;
     }
 

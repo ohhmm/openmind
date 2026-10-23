@@ -249,8 +249,12 @@ jobs:
 - This helps resolve conflicts and ensure a clean commit history
 - When rebasing pull requests, always update the existing branches directly rather than creating new branches
 - When resolving merge conflicts in pull requests, squash commits to remove the conflict resolution history before merging
-- When making changes, do not create new commits until the existing commit is amended and successfully builds on CI
+- When making changes, do not create new commits, the existing commit is amended and reached successfully built on CI
 - Each PR must contain exactly one commit, even when working with multiple related commits
+- Keep each PR to one commit; amend that commit and push with `--force-with-lease` for follow-up fixes rather than adding commits
+- After opening or updating a PR, inspect CI checks for the latest commit and continue iterating until all required checks pass
+- For code or test failures, inspect the logs, accomplish RCA, resolve by the root cause proven during RCA, implement and/or run relevant local tests, amend the existing commit, and push again to trigger CI, monitoring results, and continue iterating until the PR CI checks passed
+- Before reporting completion, verify that the latest PR revision still has exactly one commit and all required CI checks pass
 - When creating PRs from existing commits in a branch, verify that each PR contains only its target commit
 - Test changes must be isolated in their own dedicated commits and pull requests
 - Create pull requests directly from existing commits first, without making any local code changes or running tests
