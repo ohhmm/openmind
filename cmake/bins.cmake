@@ -323,6 +323,12 @@ function(apply_test_commons this_target)
 			target_link_directories(${this_target} ${visibility} ${dir})
 		endif()
 	endforeach()	
+	if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+		target_compile_definitions(${this_target} ${visibility}
+			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
+		)
+	endif()
 	if(Boost_FOUND)
 		message("Boost_FOUND: ${Boost_FOUND}")
 		if(NOT MSVC OR OPENMIND_USE_CONAN)
@@ -384,10 +390,6 @@ function(test)
 		set_target_properties(${TEST_NAME} PROPERTIES
 			FOLDER "test"
 		)
-		target_compile_definitions(${TEST_NAME} PUBLIC
-			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
-			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
-			)
 		target_link_options(${TEST_NAME} PUBLIC
 			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>,$<PLATFORM_ID:Windows>>:-mconsole>
 			)
