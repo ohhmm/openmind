@@ -1,6 +1,8 @@
 #define BOOST_TEST_MODULE Valuable COW test
 #include <boost/test/unit_test.hpp>
 
+#include <omnn/math/Variable.h>
+#include <omnn/math/Integer.h>
 #include <omnn/math/Valuable.h>
 
 using namespace omnn::math;
@@ -188,6 +190,27 @@ BOOST_AUTO_TEST_CASE(TestCopyOnWriteMove)
     BOOST_CHECK(nullptr == v2.getInst());
     BOOST_CHECK(v1.getInst() == moved.getInst());
     BOOST_CHECK(v1.getInst().get() == moved.getInst().get());
+}
+
+BOOST_AUTO_TEST_CASE(TestSharedFromThisOnManagedDescendant)
+{
+    auto source = std::make_shared<Integer>(42);
+
+    Valuable copy;
+    copy = *source;
+
+    BOOST_CHECK_EQUAL(copy, 42_v);
+    BOOST_CHECK(copy.getInst().get() != source.get());
+    BOOST_CHECK(!source->getInst());
+
+    copy = 43_v;
+    BOOST_CHECK_EQUAL(copy, 43_v);
+    BOOST_CHECK_EQUAL(*source, 42_v);
+
+    auto shared = source->SharedFromThis();
+    BOOST_CHECK(shared.get() == source.get());
+    BOOST_CHECK(!source->getInst());
+    BOOST_CHECK_EQUAL(*source, 42_v);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

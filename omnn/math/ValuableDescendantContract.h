@@ -147,6 +147,9 @@ namespace math {
         Valuable::encapsulated_instance SharedFromThis() override {
             auto allocated = getAllocSize();
             auto ptr = Valuable::SharedFromThis();
+            if (ptr.get() == static_cast<Valuable*>(this)) {
+                return ptr;
+            }
             if (!ptr) {
                 ptr = std::make_shared<Chld>(std::move(Ref()));
             }
