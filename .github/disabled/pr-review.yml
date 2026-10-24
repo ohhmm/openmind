@@ -128,6 +128,16 @@ jobs:
           # Check for errors in the response
           ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error // .detail // empty')
           if [ -n "$ERROR_MSG" ]; then
+            if [[ "$ERROR_MSG" == *"daily session limit"* ]]; then
+              echo "::warning::Devin review skipped because the daily session limit was reached: $ERROR_MSG"
+              {
+                echo "## Automated PR review skipped"
+                echo
+                echo "Devin did not start a review because its daily session limit was reached. No review feedback was produced."
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+
             echo "Error creating Devin session: $ERROR_MSG"
             exit 1
           fi
