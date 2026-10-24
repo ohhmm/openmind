@@ -107,7 +107,6 @@ endmacro(glob_source_files)
 function(apply_target_commons this_target)
 	string(REPLACE "-" "" dashless ${this_target})
 	string(TOUPPER ${dashless} this_target_up)
-	set(incls)
 	set(lopts)
 	set(defs 
 		HAS_BOOST
