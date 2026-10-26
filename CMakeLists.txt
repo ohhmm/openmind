@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
+if(NOT FETCHCONTENT_SOURCE_DIR_OPENMIND)
+    set(FETCHCONTENT_SOURCE_DIR_OPENMIND ${CMAKE_CURRENT_SOURCE_DIR} CACHE PATH "OpenMind directory path")
+endif()
+
 get_filename_component(PRODUCT_NAME ${CMAKE_SOURCE_DIR} NAME_WE)
 string(REGEX REPLACE "/" "\\\\" PRODUCT_NAME ${PRODUCT_NAME})
 project(${PRODUCT_NAME} CXX)
