@@ -26,7 +26,7 @@ jobs:
         max_attempts: 5
         command: |
           sudo apt update
-          sudo apt install -y libboost-all-dev libboost-python-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-21-dev libtbb-dev ninja-build
+          sudo apt install -y libboost-all-dev libboost-python-dev libfann-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-21-dev libtbb-dev ninja-build
     - name: Create Build Dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: Configure
