@@ -806,7 +806,7 @@ BOOST_AUTO_TEST_CASE(VirtualIterationTest
     DECL_VA(n);
     DECL_VA(i);
 
-//    auto sum = (i.MustBeInt() && i.Less(1000) && constants::zero.Less(i)).SumOfRoots();
+//    auto sum = (i.MustBeInt() && i.Less(1000) && constants::zero.Less(i)).SumOfRoots(i);
     auto e = i ^ n;
     for (auto i = 1000; i-->0 ;)
     {

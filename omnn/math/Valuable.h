@@ -213,20 +213,25 @@ public:
         SupersetOfRoots = 64 | Solving
     };
 
+    using SolvedBaseType = uint16_t;
     /// <summary>
     /// Allow infinite number of roots
     /// Distinct on reasons for empty roots set returned
     /// etc
     /// </summary>
-    enum class Solved : uint8_t {
+    enum class Solved : SolvedBaseType {
         WasNotInitialized = 0,
-        NoRootsPossible = 1,
-        RootsNotFound = 2,
+        RootsNotFound = 1,
+        NoRootsPossible = 3,        // 1 & 2
         SingleRootFound = 4,
         MultipleRootsFound = 8,
         MultivalueRootsFound = 16,  // x^(1/2) is split into [-1, 1], but some finite multivalue expressions are harder to split
         RootFilterFound = 32,       // Infinite roots expression is useful in systems to add generic constraints like x known to be integer or devidable by n
-        Partial = 64                // Some of roots found but it is known to be incomplete solutions set. It may be efficient to devide expression by (x-r) to continue solving resulting expression
+        Partial = 64,               // Some of roots found but it is known to be incomplete solutions set. It may be efficient to devide expression by (x-r) to continue solving resulting expression
+        SolutionSetReduced = 128,   // Provided existing solutions set was reduced during searching for new rots
+        VariableDependantRoot = 256,// Root that uses another variable
+        SolutionSetPreserved = 512, // Same roots found that already exist in solutions set given to fulfill
+        AllAreRoots = 1024
     };
 
     friend std::ostream& operator<<(std::ostream& os, View v) {
@@ -514,13 +519,15 @@ public:
     static Valuable MergeOr(const Valuable&, const Valuable&); /// disjunctive merge algorithm deduced from square equation solutions formula, works for integers
     static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&); /// algorithm is to be deduced from cubic equation solutions formula
     static Valuable MergeOr(const Valuable&, const Valuable&, const Valuable&, const Valuable&); /// double merge
+    static Solved SolutionsSpace(const solutions_t&) noexcept;
+    static Solved TraitsForSolved(const Valuable&) noexcept;
     explicit Valuable(solutions_t&&);
     virtual Valuable operator()(const Variable&) const;
     virtual Valuable operator()(const Variable&, const Valuable& augmentation) const;
     [[nodiscard]]
     bool IsUnivariable() const;
 
-    virtual void solve(const Variable& va, solutions_t&) const;
+    virtual Solved solve(const Variable& va, solutions_t&) const;
     solutions_t solve(const Variable&) const;
     virtual solutions_t Distinct() const;
     virtual Valuable Univariate() const;
@@ -544,9 +551,11 @@ public:
     //    else
     //        IMPLEMENT
     //}
+
+    /// 
     virtual const PrincipalSurd* PrincipalSurdFactor() const;
 
-    virtual Valuable SumOfRoots() const;
+    virtual Valuable SumOfRoots(const Variable&) const;
     virtual Valuable ProductOfRoots() const;
 
     using extrenum_t = std::pair<Valuable, // extrema: value = x for f'(x) == 0, points where function is changing direction

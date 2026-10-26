@@ -91,8 +91,10 @@ public:
 
     bool Test(const Valuable::vars_cont_t&) const;
 
-    void MakesTotalEqu(bool makeTotalEqu) { this->makeTotalEqu = makeTotalEqu; }
-    constexpr auto MakesTotalEqu() const { return makeTotalEqu; }
+    constexpr void MakesTotalEqu(bool makeTotalEqu) noexcept {
+        this->makeTotalEqu = makeTotalEqu;
+    }
+    [[nodiscard]] constexpr auto MakesTotalEqu() const noexcept { return makeTotalEqu; }
 
     constexpr const Valuable& Total() const {
         if (makeTotalEqu)

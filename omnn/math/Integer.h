@@ -196,7 +196,11 @@ public:
 
     static const ranges_t empty_zero_zone;
 
-    void solve(const Variable&, solutions_t&) const override {}
+    constexpr Valuable::Solved solve(const Variable&, solutions_t&) const override {
+        return arbitrary.is_zero() ? static_cast<Solved>((static_cast<uint8_t>(Solved::RootFilterFound) |
+                           static_cast<uint8_t>(Solved::AllAreRoots)))
+            : Valuable::Solved::NoRootsPossible;
+    }
     Valuable::solutions_t GetIntegerSolution(const Variable& va) const override;
 
     /// <summary>

@@ -60,7 +60,7 @@ namespace math {
         bool operator ==(const Valuable& v) const override;
         bool operator <(const Valuable& v) const override;
         explicit operator double() const override;
-        void solve(const Variable& va, solutions_t&) const override;
+        Valuable::Solved solve(const Variable&, solutions_t&) const override;
         Valuable::solutions_t Distinct() const override;
 
         void optimize() override;

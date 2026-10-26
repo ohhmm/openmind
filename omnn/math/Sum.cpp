@@ -1983,8 +1983,9 @@ namespace
 
     }
 
-    void Sum::solve(const Variable& va, solutions_t& solutions) const
+    Valuable::Solved Sum::solve(const Variable& va, solutions_t& solutions) const
     {
+        auto solved = Solved::WasNotInitialized;
         std::vector<Valuable> coefficients;
         auto isNormalizedPolynomial = IsPolynomial(va);
         if (isNormalizedPolynomial) {
@@ -2007,73 +2008,95 @@ namespace
 //            }
 //        }
 //        else
-            solve(va, solutions, coefficients, grade);
+            solved = solve(va, solutions, coefficients, grade);
         } else if (GetView() != View::SupersetOfRoots) {
             auto rootSupersetOptimization = Optimized(View::SupersetOfRoots);
             if (operator==(rootSupersetOptimization)) {
                 LOG_AND_IMPLEMENT("Solving " << rootSupersetOptimization);
             }
             auto potentialSolutionCandidates = rootSupersetOptimization.solve(va);
+            SolvedBaseType obtainedSolutionsTraits = 0;
             for (auto& candidate : potentialSolutionCandidates) {
                 if (Test(va, candidate)) {
-                    solutions.insert(candidate);
+                    auto [item, inserted] = solutions.insert(candidate);
+                    if (inserted) {
+                        obtainedSolutionsTraits =
+                            obtainedSolutionsTraits | static_cast<SolvedBaseType>(Valuable::TraitsForSolved(*item));
+                        if (solved == Solved::WasNotInitialized) {
+                            solved = Solved::SingleRootFound;
+                        } else if (solved == Solved::SingleRootFound) {
+                            solved = Solved::MultipleRootsFound;
+                        }
+                    }
                 }
             }
+            solved = static_cast<Solved>(obtainedSolutionsTraits | static_cast<SolvedBaseType>(solved));
         }
+        return solved;
     }
     
-    void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients) const {
-        solve(va, solutions, coefficients, coefficients.size() - 1);
+    Valuable::Solved Sum::solve(const Variable& va, solutions_t& solutions,
+                                const std::vector<Valuable>& coefficients) const {
+        return solve(va, solutions, coefficients, coefficients.size() - 1);
     }
 
-    void Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients, size_t grade) const
+    Valuable::Solved Sum::solve(const Variable& va, solutions_t& solutions, const std::vector<Valuable>& coefficients,
+                        size_t grade) const
     {
         if(coefficients.size() == grade && grade == 0)
 		{
-			return;
+			return Solved::AllAreRoots;
 		}
+        auto solutionScopeAffected = Valuable::Solved::WasNotInitialized;
         if(coefficients.size() != grade + 1) {
             std::cout << "Solving grade " << grade << " equation: " << str() << std::endl;
             IMPLEMENT
         }
-        switch (grade) {
-            case 1: {
+        auto nKnownRoots = solutions.size();
+        if (grade == 1) {
                 //x=-(b/a)
                 auto& b = coefficients[0];
                 auto& a = coefficients[1];
-                solutions.insert(-b / a);
-                break;
-            }
-            case 2: {
-                if(!enforce_solve_using_rational_root_test_only){
-                    // square equation x=(-b+√(b*b-4*a*c))/(2*a)
-                    auto& a = coefficients[2];
-                    auto& b = coefficients[1];
-                    auto& c = coefficients[0];
-                    auto d = (b ^ 2) - 4_v * a * c;
-                    auto a2 = a * 2;
-                    if (d == 0) {
-                        solutions.insert(-b / a2);
-                    } else {
-                        auto dsq = d.Sqrt();
-                        solutions.insert((-dsq-b)/a2);
-                        solutions.insert((dsq-b)/a2);
-                    }
-                    break;
+                auto [item, inserted] = solutions.insert(-b / a);
+                solutionScopeAffected =
+                    inserted ? Solved::SingleRootFound : Solved::SolutionSetPreserved;
+        } else if (grade == 2
+            && !enforce_solve_using_rational_root_test_only
+            )
+        {
+                // square equation x=(-b+√(b*b-4*a*c))/(2*a)
+                auto& a = coefficients[2];
+                auto& b = coefficients[1];
+                auto& c = coefficients[0];
+                auto d = (b ^ 2) - 4_v * a * c;
+                auto a2 = a * 2;
+                if (d == 0) {
+                    solutions.insert(-b / a2);
+                } else {
+                    auto dsq = d.Sqrt();
+                    solutions.insert((-dsq-b)/a2);
+                    solutions.insert((dsq-b)/a2);
                 }
-                [[fallthrough]];
-            }
-            default: {
-                // RATIONAL ROOT TEST
+                auto nNewRoots = solutions.size() - nKnownRoots;
+                if (nNewRoots == 0) {
+                    solutionScopeAffected = Solved::SolutionSetPreserved;
+                } else if (nNewRoots == 1) {
+                    solutionScopeAffected = Solved::SingleRootFound;
+                } else if (nNewRoots == 2) {
+                    solutionScopeAffected = Solved::MultipleRootsFound;
+                }
+        }
+        else // RATIONAL ROOT TEST
+        {
                 auto asyncCheckAllRootsCached = DbSumSolutionsAllRootsCache.AsyncFetchSet(*this);
                 if(asyncCheckAllRootsCached){
                     solutions = asyncCheckAllRootsCached;
-                    return;
+                    return Valuable::SolutionsSpace(solutions);
                 }
                 auto asyncCheckAnyRootCached = DbSumSolutionsARootCache.AsyncFetch(*this, true);
                 if(asyncCheckAllRootsCached){
                     solutions = asyncCheckAllRootsCached;
-                    return;
+                    return Valuable::SolutionsSpace(solutions);
                 }
                 auto SolveTheRest = [&](Valuable&& oneRoot){
                     if(asyncCheckAnyRootCached.NotInCache())
@@ -2085,16 +2108,16 @@ namespace
                     }
                     if(asyncCheckAllRootsCached){
                         solutions = asyncCheckAllRootsCached;
-                        return;
+                        return Valuable::SolutionsSpace(solutions);
                     }
                     restToSolve.solve(va, solutions);
                     solutions.emplace(std::move(oneRoot));
                     if(asyncCheckAllRootsCached.NotInCache())
                         DbSumSolutionsAllRootsCache.AsyncSetSet(*this, solutions);
+                    return Valuable::SolutionsSpace(solutions);
                 };
                 if (asyncCheckAnyRootCached) {
-                    SolveTheRest(std::move(static_cast<Valuable&>(asyncCheckAnyRootCached)));
-                    return;
+                    return SolveTheRest(std::move(static_cast<Valuable&>(asyncCheckAnyRootCached)));
                 }
 
                 auto isNormalizedPolynomial = true;
@@ -2145,14 +2168,14 @@ namespace
 
                     if(asyncCheckAllRootsCached){
                         solutions = asyncCheckAllRootsCached;
-                        return;
+                        return Valuable::SolutionsSpace(solutions);
                     }
 
                     auto& kFactors = omnn::rt::DivisorsLookupTable::Divisors(k.ca());
 
                     if(asyncCheckAllRootsCached){
                         solutions = asyncCheckAllRootsCached;
-                        return;
+                        return Valuable::SolutionsSpace(solutions);
                     }
 
                     bool found = {};
@@ -2169,7 +2192,7 @@ namespace
                             }
                             if(asyncCheckAllRootsCached){
                                 solutions = asyncCheckAllRootsCached;
-                                return;
+                                return Valuable::SolutionsSpace(solutions);
                             }
                         }
                         if (found) {
@@ -2179,12 +2202,12 @@ namespace
 
                     if(asyncCheckAllRootsCached){
                         solutions = asyncCheckAllRootsCached;
-                        return;
+                        return Valuable::SolutionsSpace(solutions);
                     }
                     if(found) {
                         solutions.insert(test);
                         SolveTheRest(std::move(test));
-                        return;
+                        return Valuable::SolutionsSpace(solutions);
                     }
                 } else {
                     LOG_AND_IMPLEMENT("Solving " << va << " in " << *this << std::endl
@@ -2192,11 +2215,12 @@ namespace
                         << "first member coefficient: " << a << std::endl
                         << "IsPowerX: " << IsPowerX(coefficients) << std::endl);
                 }
-            }
         }
-        if(solutions.size())
-            return;
-        
+
+        if (solutions.size()) {
+            return Valuable::SolutionsSpace(solutions);
+        }
+
         // no rational roots
         
         switch (grade) {
@@ -2444,7 +2468,7 @@ namespace
                 
                 auto devices = system::devices();
                 if(devices.size() == 0)
-                	return;
+                	return Valuable::SolutionsSpace(solutions);
                 auto& cuwinner = ::omnn::rt::GetComputeUnitsWinnerDevice();
                 auto wgsz = cuwinner.max_work_group_size();
                 context context(cuwinner);
@@ -2484,18 +2508,21 @@ namespace
                     }
                 
                 if(solutions.size() == grade)
-                    return;
+                    return Valuable::SolutionsSpace(solutions);
                 
                 auto simpleSolve = [&](){
                     solutions_t news;
+                    auto solved = Solved::WasNotInitialized;
                     do {
                         news.clear();
-                        simple.solve(va, news);
+                        solved = static_cast<Solved>(static_cast<SolvedBaseType>(simple.solve(va, news)) |
+                                                     static_cast<SolvedBaseType>(solved));
                         for(auto& s : news)
                         {
                             addSolution(s);
                         }
                     } while(news.size());
+                    return solved;
                 };
                 
                 auto addSolution2 = [&](auto& _) -> bool {
@@ -2505,20 +2532,20 @@ namespace
                     return solutions.size() == grade;
                 };
                 
-                
-#define IS(_) if(addSolution2(_))return;
-                
                 if (solutions.size()) {
                     simpleSolve();
                 }
                 
                 if(solutions.size() == grade)
-                    return;
+                    return Valuable::SolutionsSpace(solutions);
                 
                 
                 for(auto i : simple.GetIntegerSolution(va))
                 {
-                    IS(i);
+                    if (addSolution2(i)) {
+                        return static_cast<Solved>(static_cast<uint16_t>(Solved::SingleRootFound) |
+                                                   static_cast<uint16_t>(Solved::Partial));
+                    }
                 }
                 
                 // decomposition
@@ -2587,15 +2614,11 @@ namespace
             }
         }
 #endif
+        return Valuable::SolutionsSpace(solutions); // TODO : better track solution space and traits while solving
     }
     
-    Valuable Sum::SumOfRoots() const
+    Valuable Sum::SumOfRoots(const Variable& va) const
     {   // See Viet's basic formulas: https://en.m.wikipedia.org/wiki/Vieta%27s_formulas#Basic_formulas
-        auto vars = Vars();
-        if (vars.size() != 1) {
-                IMPLEMENT
-        }
-        auto& va = *vars.cbegin();
         std::vector<Valuable> coefficients;
         auto grade = FillPolynomialCoefficients(coefficients, va);
         if (coefficients.size() < 2) {

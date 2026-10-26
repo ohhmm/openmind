@@ -1,7 +1,6 @@
 //
 // Created by Сергей Кривонос on 25.09.17.
 //
-
 #pragma once
 
 #include <omnn/math/ValuableCollectionDescendantContract.h>
@@ -119,7 +118,7 @@ public:
   
     Valuable operator()(const Variable& va) const override;
     Valuable operator()(const Variable&, const Valuable& augmentation) const override;
-    void solve(const Variable& va, solutions_t& solutions) const override;
+    Valuable::Solved solve(const Variable& va, solutions_t& solutions) const override;
     Valuable::solutions_t Distinct() const override;
     
     std::ostream& code(std::ostream& out) const override;

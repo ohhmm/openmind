@@ -1365,15 +1365,18 @@ using namespace omnn::math;
         return 0;
     }
 
-    void Exponentiation::solve(const Variable& va, solutions_t& s) const {
+    Valuable::Solved Exponentiation::solve(const Variable& va, solutions_t& s) const {
+        auto summary = Valuable::Solved::WasNotInitialized;
         if (_1 == va
 			&& !_2.FindVa()
-			&& _2 != constants::zero)
+			&& !_2.IsZero())
 		{
             s.emplace(constants::zero);
+            summary = Valuable::Solved::SingleRootFound;
         } else {
 			IMPLEMENT
         }
+        return summary;
     }
 
     Valuable Exponentiation::Sign() const {
