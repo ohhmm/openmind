@@ -9,13 +9,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(NonLinearSystem)
 
-# if(LINUX)
-#     FetchContent_Declare(
-#       overheat
-#       GIT_REPOSITORY https://github.com/ohhmm/overheat.git
-#       GIT_TAG main
-#     )
-#     FetchContent_MakeAvailable(overheat)
-# endif(LINUX)
-
-# TODO: https://github.com/ohhmm/generator
+if(LINUX)
+    FetchContent_Declare(
+      overheat
+      GIT_REPOSITORY https://github.com/ohhmm/overheat.git
+      GIT_TAG main
+    )
+    FetchContent_MakeAvailable(overheat)
+endif()
