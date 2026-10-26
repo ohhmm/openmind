@@ -3,6 +3,7 @@
 ## One Commit per PR (mandatory)
 
 - Every pull request must contain exactly one commit.
+- A branch must have exactly one commit on top of `origin/HEAD` (the freshest `origin/main`); after `git fetch`, `git rev-list --count origin/HEAD..HEAD` must be `1`.
 - To change an open PR, amend its commit and force-push (`git commit --amend` then `git push --force-with-lease`); do not add follow-up commits.
 - Before any pushing, always mandatorily run `git pull --rebase --autostash origin HEAD`
 - Related changes still go in separate PRs, one commit each, based on origin/HEAD
