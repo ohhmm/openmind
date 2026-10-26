@@ -1490,12 +1490,14 @@ using namespace omnn::math;
         return s;
     }
     
-    void Product::solve(const Variable& va, solutions_t& solutions) const
+    Valuable::Solved Product::solve(const Variable& va, solutions_t& solutions) const
     {
+        auto solved = Solved::WasNotInitialized;
         auto it = std::find(members.begin(), members.end(), va);
-        if(it != members.end())
+        if(it != members.end()) {
             solutions.insert(0_v);
-        else {
+            return Solved::SingleRootFound;
+        } else {
             it = begin();
             bool found = {};
             const Exponentiation* e = {};
@@ -1510,12 +1512,15 @@ using namespace omnn::math;
                     IMPLEMENT
                 }
                 solutions.insert(0_v);
+                solved = Solved::SingleRootFound;
             }
             else {
                 for (auto& member : members) {
-                    member.solve(va, solutions);
+                    solved = static_cast<Solved>(static_cast<SolvedBaseType>(member.solve(va, solutions)) |
+                                                 static_cast<SolvedBaseType>(solved));
                 }
             }
+            return solved;
         }
     }
 

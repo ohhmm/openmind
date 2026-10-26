@@ -103,6 +103,34 @@ namespace omnn::math {
     thread_local bool Valuable::bit_operation_optimizations = {};
     thread_local bool Valuable::enforce_solve_using_rational_root_test_only = {};
 
+    Valuable::Solved Valuable::TraitsForSolved(const Valuable& solution) noexcept { // FIXME : polimorphic call
+        auto traits = Solved::WasNotInitialized;
+        if (solution.FindVa() != nullptr) {
+            traits = Solved::VariableDependantRoot;
+        }
+        if (solution.IsMultival() == YesNoMaybe::Yes) {
+            traits = static_cast<Solved>(static_cast<SolvedBaseType>(Solved::MultivalueRootsFound) |
+                                         static_cast<SolvedBaseType>(traits));
+        }
+        return traits;
+    }
+
+    Valuable::Solved Valuable::SolutionsSpace(const Valuable::solutions_t& solutions) noexcept {
+        auto solved = Solved::WasNotInitialized;
+        if (solutions.size() == 0) {
+            solved = Solved::RootsNotFound;
+        } else if (solutions.size() == 1) {
+            solved = Solved::SingleRootFound;
+        } else {
+            solved = Solved::MultipleRootsFound;
+        }
+        for (auto& solution : solutions) {
+            solved = static_cast<Solved>(static_cast<SolvedBaseType>(TraitsForSolved(solution)) |
+                                         static_cast<SolvedBaseType>(solved));
+        }
+        return solved;
+    }
+
     void log_implement_message(const char* str)
     {
         std::cerr << str << std::endl;
@@ -309,7 +337,12 @@ namespace omnn::math {
         auto h = i.Hash();
         if (i.exp)
         {
-            Become(std::move(i.exp));
+            // Keep the instance alive in a local before the current object may be
+            // destroyed/reallocated in place; do not move out of i's member and
+            // leave it dangling across this->~Valuable().
+            auto impl = i.exp;
+            i.exp = nullptr;
+            Become(std::move(impl));
         }
         else
         {
@@ -1673,10 +1706,10 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             IMPLEMENT
     }
 
-    void Valuable::solve(const Variable& va, solutions_t& solutions) const
+    Valuable::Solved Valuable::solve(const Variable& va, solutions_t& solutions) const
     {
         if(exp) {
-            exp->solve(va, solutions);
+            return exp->solve(va, solutions);
         }
         else
             IMPLEMENT
@@ -1861,9 +1894,9 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             && va.getVaHost()->TestRootConsistencyWithNonZeroLog(va, v);
     }
 
-    Valuable Valuable::SumOfRoots() const {
+    Valuable Valuable::SumOfRoots(const Variable& variable) const {
         if (exp) {
-            return exp->SumOfRoots();
+            return exp->SumOfRoots(variable);
         } else
             LOG_AND_IMPLEMENT("SumOfRoots for " << *this)
     }
@@ -3038,7 +3071,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 			return
 				*this % 1; // Equation x%1==0 for integer x only
 				//or
-				(e ^ (*this * 2 * i * pi)) - 1;   // FIXME: check if all required optimizations ready to make this to be useful https://math.stackexchange.com/a/1598552/118612
+				// (e ^ (*this * 2 * i * pi)) - 1;   // FIXME: check if all required optimizations ready to make this to be useful https://math.stackexchange.com/a/1598552/118612
 		}
     }
 

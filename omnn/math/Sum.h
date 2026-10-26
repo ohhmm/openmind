@@ -91,6 +91,7 @@ public:
     Valuable LCMofMemberFractionDenominators() const;
     Valuable GCD(const Valuable& v) const override;
 
+    [[nodiscard]]
     bool operator ==(const Valuable& v) const override;
 
     void optimize() override;
@@ -105,16 +106,16 @@ public:
     Valuable& sq() override;
     Valuable calcFreeMember() const override;
     solutions_t GetIntegerSolution(const Variable& va) const override;
-    void solve(const Variable&, solutions_t&) const override;
-    void solve(const Variable&, solutions_t&, const std::vector<Valuable>& coefficients) const;
-    void solve(const Variable&, solutions_t&, const std::vector<Valuable>& coefficients, size_t grade) const;
-    Valuable SumOfRoots() const override;
+    Valuable::Solved solve(const Variable&, solutions_t&) const override;
+    Valuable::Solved solve(const Variable&, solutions_t&, const std::vector<Valuable>& coefficients) const;
+    Valuable::Solved solve(const Variable&, solutions_t&, const std::vector<Valuable>& coefficients, size_t grade) const;
+    Valuable SumOfRoots(const Variable&) const override;
     Valuable ProductOfRoots() const override;
     solutions_t Distinct() const override;
 
     static bool IsPowerX(const std::vector<Valuable>& coefficients);
-    Valuable operator()(const Variable& va) const override;
-    Valuable operator()(const Variable& va, const Valuable& augmentation) const override;
+    Valuable operator()(const Variable& variableToExpress) const override;
+    Valuable operator()(const Variable& variableToExpress, const Valuable& augmentation) const override;
     
     using base::base;
     using base::operator =;

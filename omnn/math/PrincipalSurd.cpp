@@ -296,6 +296,6 @@ Valuable PrincipalSurd::varless() const {
     return variablesless;
 }
 
-void PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
-    Radicand().solve(va, solutions);
+Valuable::Solved PrincipalSurd::solve(const Variable& va, solutions_t& solutions) const {
+    return Radicand().solve(va, solutions);
 }

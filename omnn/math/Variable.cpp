@@ -307,10 +307,17 @@ namespace math {
         }
     }
     
-    void Variable::solve(const Variable& va, solutions_t& solutions) const
+    Valuable::Solved Variable::solve(const Variable& va, solutions_t& solutions) const
 	{
+        Valuable::Solved result = Valuable::Solved::WasNotInitialized;
 		if (operator==(va))
+        {
 			solutions.emplace(constants::zero);
+            result = Valuable::Solved::SingleRootFound;
+        } else {
+            result = Valuable::Solved::NoRootsPossible;
+        }
+        return result;
     }
     
     const Valuable::vars_cont_t& Variable::getCommonVars() const

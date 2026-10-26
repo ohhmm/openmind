@@ -112,12 +112,49 @@ using namespace omnn::math;
         return eq;
     }
 
-    void Fraction::solve(const Variable& va, solutions_t& s) const {
-        numerator().solve(va, s);
-        solutions_t exclude;
-        denominator().solve(va, exclude);
-        for(auto& so:exclude)
-            s.erase(so);
+    Valuable::Solved Fraction::solve(const Variable& va, solutions_t& solutions) const {
+        auto solutionSpaceAffected = Solved::WasNotInitialized;
+
+        solutions_t fractionNumeratorSolutions;
+        auto numeratorSolutionSpace = numerator().solve(va, fractionNumeratorSolutions);
+        auto numeratorSolutionsPartial =
+            (static_cast<SolvedBaseType>(numeratorSolutionSpace) | static_cast<SolvedBaseType>(Solved::Partial)) != 0;
+
+        bool numeratorSolutionsReduced = {};
+        auto fractionExcludingSolutions = denominator().Solutions(va);
+        //auto excludingSolutionsPartial = FIXME
+        //if (excludingSolutionsPartial) {
+        //    IMPLEMENT
+        //}
+        for (auto& excluded : fractionExcludingSolutions) {
+            getVaHost()->LogNotZero(excluded);
+            if (solutions.erase(excluded) > 0) {
+                solutionSpaceAffected = Solved::SolutionSetReduced;
+            }
+            numeratorSolutionsReduced = fractionNumeratorSolutions.erase(excluded) > 0
+                || numeratorSolutionsReduced; // after erase call to make sure that erase call happens
+        }
+        if (numeratorSolutionsReduced) {
+            numeratorSolutionSpace = Valuable::SolutionsSpace(fractionNumeratorSolutions);
+            if (numeratorSolutionsPartial) {
+                numeratorSolutionSpace = static_cast<Solved>(static_cast<SolvedBaseType>(Solved::Partial) |
+                                                             static_cast<SolvedBaseType>(numeratorSolutionSpace));
+            }
+        }
+
+        auto nReducedSolutions = solutions.size();
+        solutions.merge(std::move(fractionNumeratorSolutions));
+        auto nSolutionsAdded = solutions.size() - nReducedSolutions;
+
+        if (nSolutionsAdded == 0) {
+            if (solutionSpaceAffected == Solved::WasNotInitialized) {
+                solutionSpaceAffected = Solved::RootsNotFound;
+            }
+        } else {
+            solutionSpaceAffected = static_cast<Solved>(static_cast<SolvedBaseType>(solutionSpaceAffected) |
+                                                        static_cast<SolvedBaseType>(numeratorSolutionSpace));
+        }
+        return solutionSpaceAffected;
     }
     
     Valuable::solutions_t Fraction::Distinct() const {

@@ -94,7 +94,7 @@ public:
     const Valuable::vars_cont_t& getCommonVars() const override;
     Valuable varless() const override;
 
-    void solve(const Variable&, solutions_t&) const override;
+    Valuable::Solved solve(const Variable&, solutions_t&) const override;
 };
 
 }
