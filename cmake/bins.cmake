@@ -104,9 +104,10 @@ macro(glob_source_files)
     SET_SOURCE_FILES_PROPERTIES(${headers} PROPERTIES HEADER_FILE_ONLY ON)
 endmacro(glob_source_files)
 
-macro(apply_target_commons this_target)
+function(apply_target_commons this_target)
 	string(REPLACE "-" "" dashless ${this_target})
 	string(TOUPPER ${dashless} this_target_up)
+	set(lopts)
 	set(defs 
 		HAS_BOOST
 		BOOST_SYSTEM_NO_DEPRECATED
@@ -249,6 +250,7 @@ macro(apply_target_commons this_target)
 	get_target_property(target_type ${this_target} TYPE)
 	if(target_type STREQUAL "INTERFACE_LIBRARY")
 		set(visibility INTERFACE)
+		set(visibility INTERFACE PARENT_SCOPE)
 		message(STATUS "${this_target} is INTERFACE")
 		set(defs INTERFACE ${defs})
 		set(opts INTERFACE ${opts})
@@ -260,6 +262,7 @@ macro(apply_target_commons this_target)
         )
 	else()
 		set(visibility PUBLIC)
+		set(visibility PUBLIC PARENT_SCOPE)
 		set(defs INTERFACE ${defs} PUBLIC ${defs})
 		set(opts INTERFACE ${opts} PUBLIC ${opts})
 		target_compile_features(${this_target} INTERFACE cxx_std_23 PUBLIC cxx_std_23)
@@ -274,7 +277,7 @@ macro(apply_target_commons this_target)
 	if (target_type STREQUAL "EXECUTABLE")
 
 	endif ()
-endmacro(apply_target_commons)
+endfunction(apply_target_commons)
 
 macro(link_boost_libs)
 	if(Boost_FOUND)
@@ -327,10 +330,12 @@ function(apply_test_commons this_target)
     set_target_properties(${this_target} PROPERTIES
             FOLDER "test"
     )
-    target_compile_definitions(${this_target} ${visibility}
+    if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+        target_compile_definitions(${this_target} ${visibility}
             -DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
             -DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
-    )
+        )
+    endif()
     target_link_options(${this_target} ${visibility}
             $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>,$<PLATFORM_ID:Windows>>:-mconsole>
     )
