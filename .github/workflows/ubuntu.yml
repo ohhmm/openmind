@@ -32,12 +32,12 @@ jobs:
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_USE_OPENCL=OFF -DOPENMIND_BUILD_PYTHON_BINDINGS=OFF -G "Ninja Multi-Config"
-    # - name: Install prerequisites
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`
-    # - name: ReConfigure to detect fetched prerequisites
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake ${{github.workspace}}
+    - name: Install prerequisites
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build ${{github.workspace}}/build --target prerequisites -j `nproc`
+    - name: ReConfigure to detect fetched prerequisites
+      working-directory: ${{github.workspace}}/build
+      run: cmake ${{github.workspace}}
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build -j `nproc` --config Debug
