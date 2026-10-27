@@ -107,6 +107,6 @@ jobs:
           gh issue comment "${{ github.event.issue.number }}" --body "Created Devin session: $SESSION_URL"
 
           # check with claude
-          CLAUDE_RESPONSE=$(ollama launch claude --model beam:cloud -- -p "Push new branch with fix for this issue $ESCAPED_PROMPT")
+          CLAUDE_RESPONSE=$(ollama launch --yes claude --model beam:cloud -- -p "Resolve & Push new branch with fix for this issue: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence --allowed-tools "*")
           gh issue comment "${{ github.event.issue.number }}" --body "$CLAUDE_RESPONSE"
 
