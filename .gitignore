@@ -68,3 +68,4 @@ CMakeLists.txt.user.*
 /*/Makefile
 /*/cmake_install.cmake
 /out/
+.claude/pre-push-checklist.md
