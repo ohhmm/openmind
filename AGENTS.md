@@ -25,6 +25,7 @@ See the full [Git Workflow](docs/knowledge_base/consolidated_knowledge_base.md#g
 
 ## CI feedback loop
 
+- Before pushing, generate the post-push todo/checklist of PR and CI checks to run immediately after push; keep it updated until all required checks pass and failures are resolved.
 - Do not stop after opening a PR or seeing its first CI result; inspect checks for the latest PR commit.
 - For code or test failures, inspect logs, fix the cause, run relevant local tests when available, amend the existing commit, and push with `--force-with-lease`. Repeat until required CI checks pass.
 - Preserve full test output and attribute failures/leaks/crashes to the responsible test; fail unattributed signals instead of discarding them.
