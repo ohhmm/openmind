@@ -209,6 +209,7 @@ jobs:
 - Tests should not be excluded from CI or disabled to work around failures
 - Before pushing changes that enable or modify tests, verify that the tests pass successfully in a local environment first
 - When fixing issues in mathematical operations, use Test-Driven Development (TDD) to implement the fix before enabling any disabled tests that depend on it
+- On failure, CI must attribute known signals such as sanitizer errors, assertion failures, crashes, and `Detected memory leaks!` to the responsible test.
 
 ## Implementation Details
 
