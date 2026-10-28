@@ -1466,7 +1466,7 @@ namespace
                 {
                     auto mco = m;
                     mco.optimize();
-                    auto& coVa = m.getCommonVars();
+                    auto& coVa = mco.getCommonVars();
                     it = coVa.find(v);
                     noVa = it == coVa.end();
                     if(noVa){
