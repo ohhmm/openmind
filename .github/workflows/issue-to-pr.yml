@@ -12,6 +12,8 @@ permissions:
 jobs:
   create-devin-session:
     runs-on: ubuntu-latest
+    env:
+      OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
     # Only run on issues that are either newly created by humans
     # or labeled with "devin" (including those created by automation)
     if: >
@@ -70,8 +72,6 @@ jobs:
         uses: ai-action/setup-ollama@v2
 
       - name: Sign in to Ollama
-        env:
-          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: ollama signin
 
       - name: Create Devin Session
