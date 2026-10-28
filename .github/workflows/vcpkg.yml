@@ -25,7 +25,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Cache vcpkg
+    - name: Cache
       uses: actions/cache@v6
       with:
         path: |
@@ -95,6 +95,7 @@ jobs:
         vcpkgGitCommitId: '62159a45e18f3a9ac0548628dcaf74fcb60c6ff9'
         vcpkgJsonGlob: '**/vcpkg.json'
         runVcpkgInstall: true
+        doNotCache: false
 
     - name: Configure CMake
       uses: nick-fields/retry@v4
