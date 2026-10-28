@@ -21,6 +21,9 @@ jobs:
             name: Windows Build
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    env:
+      VCPKG_BINARY_SOURCES: default,rw
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
 
     steps:
     - uses: actions/checkout@v4
@@ -37,6 +40,14 @@ jobs:
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-
+
+    - name: Cache vcpkg binary packages
+      uses: actions/cache@v6
+      with:
+        path: ${{ github.workspace }}/vcpkg_cache
+        key: ${{ runner.os }}-vcpkg-binary-${{ hashFiles('**/vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-binary-
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
@@ -91,18 +102,20 @@ jobs:
 
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
+      env:
+        VCPKG_BINARY_SOURCES: default,rw
+        VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
       with:
         vcpkgGitCommitId: '62159a45e18f3a9ac0548628dcaf74fcb60c6ff9'
         vcpkgJsonGlob: '**/vcpkg.json'
         runVcpkgInstall: true
         doNotCache: false
-
     - name: Configure CMake
       uses: nick-fields/retry@v4
       with:
         timeout_minutes: 50
         max_attempts: 3
-        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} ${{ env.OS_SPECIFIC_CONFIGURE_FLAGS }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_MANIFEST_INSTALL=OFF ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} ${{ env.OS_SPECIFIC_CONFIGURE_FLAGS }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
