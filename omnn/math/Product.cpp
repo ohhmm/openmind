@@ -1522,6 +1522,7 @@ using namespace omnn::math;
             }
             return solved;
         }
+        return Valuable::Solved::MultipleRootsFound;
     }
 
     Valuable::solutions_t Product::Distinct() const {
