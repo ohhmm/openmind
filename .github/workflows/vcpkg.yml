@@ -151,6 +151,11 @@ jobs:
                 current = m.group(1).strip()
                 continue
             if 'detected memory leaks' in line.lower():
+<<<<<<< HEAD
+=======
+                if not current:
+                    current = "Unknown test"
+>>>>>>> 4f04ea4 (Add MSVC CI leak collection summary step)
                 if current and current not in seen:
                     seen.add(current)
                     leaking.append(current)
