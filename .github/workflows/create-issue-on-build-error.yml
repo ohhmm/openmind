@@ -28,8 +28,13 @@ jobs:
             console.log(`Created issue: ${issue.html_url}`);
             core.setOutput('issue_number', issue.number);
       - name: Install MLX
-        run: python3 -m pip install mlx
+        continue-on-error: true
+        uses: parafoxia/pip-install@v1
+        with:
+          packages: mlx
+          break-system-packages: true
       - name: Print MLX info
+        continue-on-error: true
         run: |
           python3 -c 'import mlx; print("mlx", mlx.__version__)' || echo "mlx not available"
           sysctl -n machdep.cpu.brand_string
@@ -45,7 +50,10 @@ jobs:
       - name: Set up Ollama
         uses: ai-action/setup-ollama@v2
       - name: Pull offline model
-        run: ollama pull qwen2.5-coder:7b
+        run: |
+          ollama pull qwen2.5-coder:7b
+          ollama run qwen2.5-coder:7b hi
+          ollama ps
       - name: Post Claude RCA comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
