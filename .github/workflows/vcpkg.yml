@@ -115,8 +115,51 @@ jobs:
 
     - name: Check
       working-directory: ${{github.workspace}}/build
-      run: ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" || ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" --rerun-failed --output-on-failure
+      shell: bash
+      run: |
+        set +e
+        ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" 2>&1 | tee "${{github.workspace}}/test-output.log"
+        status=${PIPESTATUS[0]}
+        if [ $status -ne 0 ]; then
+          ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" --rerun-failed --output-on-failure 2>&1 | tee -a "${{github.workspace}}/test-output.log"
+          status=${PIPESTATUS[0]}
+        fi
+        exit $status
 
+    - name: Summarize tests with leaks
+      if: runner.os == 'Windows' && always()
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      run: |
+        log="${{github.workspace}}/test-output.log"
+        python - <<'PY'
+        import re
+        path = r"${{github.workspace}}/test-output.log"
+        try:
+            lines = open(path, encoding='utf-8', errors='replace').read().splitlines()
+        except FileNotFoundError:
+            print("No test output log found.")
+            raise SystemExit(0)
+        current = None
+        leaking = []
+        seen = set()
+        test_re = re.compile(r'^\s*\d+/\d+\s+Test\s+#\d+:\s+(.+?)\s+\.{3,}')
+        for line in lines:
+            m = test_re.match(line)
+            if m:
+                current = m.group(1).strip()
+                continue
+            if 'detected memory leaks' in line.lower():
+                if current and current not in seen:
+                    seen.add(current)
+                    leaking.append(current)
+        print("=== Tests with leaks ===")
+        if leaking:
+            for name in leaking:
+                print(name)
+            raise SystemExit(1)
+        print("No leaks found in test output.")
+        PY
     - name: List runtime dependencies
       shell: bash
       run: |
