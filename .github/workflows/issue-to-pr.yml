@@ -69,6 +69,11 @@ jobs:
       - name: Set up Ollama
         uses: ai-action/setup-ollama@v2
 
+      - name: Sign in to Ollama
+        env:
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+        run: ollama signin
+
       - name: Create Devin Session
         id: devin-session
         if: steps.check-session.outputs.skip != 'true'
