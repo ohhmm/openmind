@@ -1,12 +1,11 @@
 #!/bin/bash
-
-DIR="${1:-.}"
-
+SCRIPT_DIR=$(dirname "$0")
 INPUT="Hi"
+
 if [ "$#" -ne 0 ]; then
     INPUT=$@
 fi
-
 echo "$INPUT" > task.md
-
-$DIR/act.sh
+echo $INPUT
+echo $SCRIPT_DIR/act.sh
+$SCRIPT_DIR/act.sh
