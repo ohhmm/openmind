@@ -24,6 +24,7 @@ using namespace std;
 using namespace omnn::math;
 using namespace boost::unit_test;
 
+
 /**
  * Tests for the BaseInt class.
  *
@@ -56,7 +57,7 @@ BOOST_AUTO_TEST_CASE(BaseInt_tests)
     i = Integer::base_int(s);
     BOOST_TEST(i == 12); // fixed sice boost version 1.77.0
 
-    i = Integer::base_int("000144");
+    i = Integer::base_int("000144"); // NOTE : OCT
     // FIXME : BOOST_TEST(i == 144); // BUG in boost::multiprecision::cpp_int, consider reporting
 }
 
@@ -491,17 +492,23 @@ BOOST_AUTO_TEST_CASE(Integer_IsModSimplifiable_test)
     BOOST_TEST(result.second == 10);  // 10 % 15 = 10
 }
 
-BOOST_AUTO_TEST_CASE(Complex_Expression_Test
-    , *disabled()
-) {
+BOOST_AUTO_TEST_CASE(Expression_Priority_Test, *disabled()) {
     auto numerator = "sqrt(16) + 25/5"_v;
     auto denominator = "5!/4! + 2^2"_v;
     auto expression = numerator / denominator;
     expression.optimize();
     BOOST_TEST(expression == 1);
+}
+
+BOOST_AUTO_TEST_CASE(Complex_Expression_Test) {
+    auto numerator = "sqrt(16) + 25/5"_v;
+    auto denominator = "5!/(4!) + (2^2)"_v;
+    auto expression = numerator / denominator;
+    expression.optimize();
+    BOOST_TEST(expression == 1);
     
     auto sqrt16 = "sqrt(16)"_v;
-    BOOST_TEST(sqrt16 == 4);
+    BOOST_TEST(sqrt16.Optimized() == 4);
     
     auto div25_5 = "25/5"_v;
     BOOST_TEST(div25_5 == 5);
