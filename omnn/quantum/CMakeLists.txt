@@ -1,1 +1,1 @@
-lib(math)
+lib(math OpenSSL::SSL OpenSSL::Crypto)
