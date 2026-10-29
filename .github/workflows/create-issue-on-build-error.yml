@@ -11,7 +11,7 @@ jobs:
     env:
       OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Create GitHub Issue
         id: create_issue
@@ -23,14 +23,29 @@ jobs:
               repo: context.repo.repo,
               title: `Workflow Failure: ${context.payload.workflow_run.name}`,
               body: `The workflow **${context.payload.workflow_run.name}** failed. Please investigate.\n\n[View the failed workflow run](${context.payload.workflow_run.html_url})`,
-              labels: ["automation", "claude", "workflow-failure"]
+              labels: ["automation", "devin", "claude", "workflow-failure"]
             });
             console.log(`Created issue: ${issue.html_url}`);
             core.setOutput('issue_number', issue.number);
+      - name: Install MLX
+        run: python3 -m pip install mlx
+      - name: Print MLX info
+        run: |
+          python3 -c 'import mlx; print("mlx", mlx.__version__)' || echo "mlx not available"
+          sysctl -n machdep.cpu.brand_string
+          sysctl -n hw.memsize
+      - name: Pre-Install Boost, LevelDB
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            brew install boost-python3 snappy leveldb
       - name: Set up Ollama
         uses: ai-action/setup-ollama@v2
-      - name: Sign in to Ollama
-        run: ollama signin
+      - name: Pull offline model
+        run: ollama pull qwen2.5-coder:7b
       - name: Post Claude RCA comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,5 +60,37 @@ jobs:
 
           [View the failed workflow run](${WORKFLOW_URL})"
           ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | jq -Rs .)
-          CLAUDE_RESPONSE=$(ollama launch --yes claude --model beam:cloud -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence --allowed-tools "*")
-          gh issue comment "$ISSUE_NUMBER" --body "$CLAUDE_RESPONSE"
+          rm -f /tmp/claude-response-part-*
+          ollama launch --yes claude --model qwen2.5-coder:7b -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence --allowed-tools "*" |
+          awk -v max=50000 -v prefix=/tmp/claude-response-part- -v issue="$ISSUE_NUMBER" '
+            function flush() {
+              if (have) {
+                close(file)
+                system("gh issue comment " issue " --body-file " file)
+                idx++
+                file=prefix idx
+                len=0
+                have=0
+                blank=0
+              }
+            }
+            BEGIN { idx=0; file=prefix idx; len=0; have=0; blank=0 }
+            {
+              if ($0 == "") {
+                if (blank) { flush(); blank=0; next }
+                blank=1
+                if (have) { print "" >> file; len += 1 }
+                next
+              }
+              blank=0
+              if ($0 ~ /^#+ / || $0 ~ /^---+$/) { flush() }
+              if (tolower($0) ~ /check(ing)? in ~/) { flush() }
+              if (tolower($0) ~ /waiting for completion/) { flush() }
+              if (tolower($0) ~ /onitoring continue/) { flush() }
+              if (tolower($0) ~ /ontinuing to monitor/) { flush() }
+              if (have && len + length($0) + 1 > max) { flush() }
+              if (!have) { file=prefix idx; print $0 > file; have=1; len=length($0) }
+              else { print $0 >> file; len += length($0)+1 }
+            }
+            END { flush() }
+          '
