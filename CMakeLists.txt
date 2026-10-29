@@ -36,6 +36,27 @@ endif()
 message("PRODUCT_NAME=${PRODUCT_NAME}")
 message("CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
 message("CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
+
+# Run nvidia-smi during configure to record GPU/driver state.
+find_program(OPENMIND_NVIDIA_SMI_EXECUTABLE nvidia-smi)
+if(OPENMIND_NVIDIA_SMI_EXECUTABLE)
+    message(STATUS "Running nvidia-smi: ${OPENMIND_NVIDIA_SMI_EXECUTABLE}")
+    execute_process(
+        COMMAND ${OPENMIND_NVIDIA_SMI_EXECUTABLE}
+        RESULT_VARIABLE OPENMIND_NVIDIA_SMI_RESULT
+        OUTPUT_VARIABLE OPENMIND_NVIDIA_SMI_OUTPUT
+        ERROR_VARIABLE OPENMIND_NVIDIA_SMI_ERROR
+    )
+    message(STATUS "nvidia-smi exit code: ${OPENMIND_NVIDIA_SMI_RESULT}")
+    if(OPENMIND_NVIDIA_SMI_OUTPUT)
+        message(STATUS "nvidia-smi output:\n${OPENMIND_NVIDIA_SMI_OUTPUT}")
+    endif()
+    if(OPENMIND_NVIDIA_SMI_ERROR)
+        message(STATUS "nvidia-smi diagnostics:\n${OPENMIND_NVIDIA_SMI_ERROR}")
+    endif()
+else()
+    message(STATUS "nvidia-smi not found; skipping GPU diagnostics during configure")
+endif()
 if(APPLE)
 	set(CMAKE_FIND_FRAMEWORK FIRST CACHE PATH "Preferred framework search order" FORCE)
   	if(NOT CMAKE_OSX_ARCHITECTURES)
