@@ -1,13 +1,17 @@
 # Agent Instructions
 
+## Documentation quallity requirements
+- Write only truth, consolidated and correct, in positive-only form
+
 ## Code quality requirements
 - Keep edits minimal and terse
 - preserve existing functionality and settings.
 - Do not make changes that reduce code quality, maintainability, readability, testability, test coverage, performance, portability, or safety or any other aspect of quality; if a tradeoff is unavoidable, call it out before proceeding.
-- No precision losses
+- No precision losses, keep precision arbitrary to ensure bugless extensible compatibility
 - Prefer more general, reusable approaches/rules over narrowly specific ones when both are available.
 - Prefer automation over manual work when it preserves correctness and quality.
 - Avoid `dynamic_cast`; prefer compile-time type checks and `static_cast` or explicit polymorphic interfaces.
+- Represent behavior, capabilities, truthfully, consolidated, correct, in positive-only form and completely in code, tests, examples, comments, documentation, and output.
 
 ## One Commit per PR (mandatory)
 
