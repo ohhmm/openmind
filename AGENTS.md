@@ -7,6 +7,7 @@
 - No precision losses
 - Prefer more general, reusable approaches/rules over narrowly specific ones when both are available.
 - Prefer automation over manual work when it preserves correctness and quality.
+- Avoid `dynamic_cast`; prefer compile-time type checks and `static_cast` or explicit polymorphic interfaces.
 
 ## One Commit per PR (mandatory)
 
