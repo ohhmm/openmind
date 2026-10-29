@@ -4,6 +4,7 @@
 #include <omnn/math/Product.h>
 #include <omnn/math/Sum.h>
 #include <omnn/math/Variable.h>
+#include "leak_off.hpp"
 
 #include <omnn/rt/diag.hpp>
 

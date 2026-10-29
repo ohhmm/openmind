@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Exponentiation test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "Variable.h"
 #include "Sum.h"

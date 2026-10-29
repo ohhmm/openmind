@@ -1,6 +1,7 @@
 // VarSwap_test.cpp
 #define BOOST_TEST_MODULE VarSwap test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include <iostream>
 #include <string>

@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Fraction test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "Fraction.h"
 #include "Variable.h"

@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Product test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "Product.h"
 #include "Sum.h"

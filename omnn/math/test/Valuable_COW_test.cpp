@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Valuable COW test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include <omnn/math/Variable.h>
 #include <omnn/math/Integer.h>

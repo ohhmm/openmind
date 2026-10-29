@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Limit test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "Limit.h"
 #include "Fraction.h"

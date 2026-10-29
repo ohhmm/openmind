@@ -3,6 +3,7 @@
 /// </summary>
 #define BOOST_TEST_MODULE Multivalues test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "Variable.h"
 

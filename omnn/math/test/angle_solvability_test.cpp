@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE deduce_missing_angle test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "Variable.h"
 

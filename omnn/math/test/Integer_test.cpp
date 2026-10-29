@@ -3,6 +3,7 @@
 //
 #define BOOST_TEST_MODULE Integer test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "Integer.h"
 #include "Fraction.h"

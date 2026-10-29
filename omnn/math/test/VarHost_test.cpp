@@ -8,6 +8,7 @@
 #include "VarHost.h"
 
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 #include "SymmetricDouble.h"
 #include "Variable.h"
 

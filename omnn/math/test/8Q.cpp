@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE 8Queens test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "System.h"
 #include "VarHost.h"

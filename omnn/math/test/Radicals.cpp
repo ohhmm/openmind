@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE PrincipalSurd test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "PrincipalSurd.h"
 

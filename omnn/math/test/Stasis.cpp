@@ -3,6 +3,7 @@
 //
 #define BOOST_TEST_MODULE Stasis test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "System.h"
 

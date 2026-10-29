@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Pi test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "pi.h"
 #include "Variable.h"

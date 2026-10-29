@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Logarithm test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "Exponentiation.h"
 #include "Euler.h"

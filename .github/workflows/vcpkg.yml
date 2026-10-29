@@ -151,6 +151,8 @@ jobs:
                 current = m.group(1).strip()
                 continue
             if 'detected memory leaks' in line.lower():
+                if not current:
+                    current = "Unknown test"
                 if current and current not in seen:
                     seen.add(current)
                     leaking.append(current)

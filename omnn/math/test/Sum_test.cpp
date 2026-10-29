@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE Sum test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 #include "Sum.h"
 #include "Infinity.h"
 #include "Variable.h"

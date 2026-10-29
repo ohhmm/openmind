@@ -6,6 +6,7 @@
  */
 #define BOOST_TEST_MODULE Polyfit test
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "pi.h"
 #include "SymmetricDouble.h"

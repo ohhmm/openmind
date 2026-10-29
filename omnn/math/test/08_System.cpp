@@ -6,6 +6,7 @@
 #define BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
 #define BOOST_THREAD_USES_MOVE
 #include <boost/test/unit_test.hpp>
+#include "leak_off.hpp"
 
 #include "System.h"
 #include "VarHost.h"

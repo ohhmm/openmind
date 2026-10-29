@@ -178,6 +178,7 @@ set(_BOOST_USED_COMPONENTS
 	serialization
 #	system no system in 1.91.0
 	thread
+	test
 	CACHE STRING "Components" FORCE)
 if(OPENMIND_USE_VCPKG)
 #	set(Boost_USE_STATIC_LIBS        ON)
@@ -199,6 +200,8 @@ if(BUILD_TESTS OR OPENMIND_BUILD_TESTS OR _IS_DEBUG OR NOT CMAKE_BUILD_TYPE)
 	if(NOT OPENMIND_USE_VCPKG)
 		set(_BOOST_USED_COMPONENTS ${_BOOST_USED_COMPONENTS}
 			test_exec_monitor
+			iostreams
+			log
 			CACHE STRING "Components" FORCE)
 	endif()
 endif()
