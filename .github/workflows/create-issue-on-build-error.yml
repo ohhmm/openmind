@@ -8,11 +8,14 @@ on:
 
 jobs:
   create-issue:
+    env:
+      OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub Issue
-        uses: actions/github-script@v6
+        id: create_issue
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: issue } = await github.rest.issues.create({
@@ -20,6 +23,27 @@ jobs:
               repo: context.repo.repo,
               title: `Workflow Failure: ${context.payload.workflow_run.name}`,
               body: `The workflow **${context.payload.workflow_run.name}** failed. Please investigate.\n\n[View the failed workflow run](${context.payload.workflow_run.html_url})`,
-              labels: ["automation", "devin"]
+              labels: ["automation", "claude", "workflow-failure"]
             });
             console.log(`Created issue: ${issue.html_url}`);
+            core.setOutput('issue_number', issue.number);
+      - name: Set up Ollama
+        uses: ai-action/setup-ollama@v2
+      - name: Sign in to Ollama
+        run: ollama signin
+      - name: Post Claude RCA comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+        run: |
+          ISSUE_NUMBER="${{ steps.create_issue.outputs.issue_number }}"
+          WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+          WORKFLOW_URL="${{ github.event.workflow_run.html_url }}"
+          PROMPT="Resolve & PR (with link to original issue) fix, autoconfirming your plan, Issue ${ISSUE_NUMBER}: Workflow Failure: ${WORKFLOW_NAME}
+
+          The workflow **${WORKFLOW_NAME}** failed. Please investigate.
+
+          [View the failed workflow run](${WORKFLOW_URL})"
+          ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | jq -Rs .)
+          CLAUDE_RESPONSE=$(ollama launch --yes claude --model beam:cloud -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence --allowed-tools "*")
+          gh issue comment "$ISSUE_NUMBER" --body "$CLAUDE_RESPONSE"

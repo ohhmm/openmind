@@ -22,7 +22,7 @@ jobs:
       - name: OS prerequisites
         uses: nick-fields/retry@v4
         with:
-          timeout_minutes: 40
+          timeout_minutes: 60
           max_attempts: 5
           command: |
             sudo apt update
