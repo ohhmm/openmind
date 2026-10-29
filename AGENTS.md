@@ -29,6 +29,7 @@ See the full [Git Workflow](docs/knowledge_base/consolidated_knowledge_base.md#g
 - For code or test failures, inspect logs, fix the cause, run relevant local tests when available, amend the existing commit, and push with `--force-with-lease`. Repeat until required CI checks pass.
 - Preserve full test output and attribute failures/leaks/crashes to the responsible test; fail unattributed signals instead of discarding them.
 - For infrastructure failures, do not change product code or disable tests to hide them; rerun or retry the affected check and report a blocker if it cannot be made to run.
+- Obtain full logs and evidence before RCA; do not speculate about causes without observed output.
 - Before reporting completion, verify that the latest PR revision has exactly one commit and all required CI checks pass.
 
 ## Crossplatform

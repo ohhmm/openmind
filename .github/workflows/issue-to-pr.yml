@@ -26,7 +26,7 @@ jobs:
           max_attempts: 5
           command: |
             sudo apt update
-            sudo apt install -y snap libboost-all-dev libboost-python-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang-21-dev libtbb-dev ninja-build
+            sudo apt install -y snap libboost-all-dev libboost-python-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang*-dev libtbb-dev ninja-build
             sudo snap install gh --classic
       - name: Checkout code
         uses: actions/checkout@v4
@@ -71,15 +71,17 @@ jobs:
       - name: Set up Ollama
         uses: ai-action/setup-ollama@v2
 
-      - name: Sign in to Ollama
-        run: ollama signin
-
+      - uses: actions/cache@v6
+        with:
+          path: ~/.ollama
+          key: ${{ runner.os }}-ollama
       - name: Create Devin Session
         id: devin-session
         if: steps.check-session.outputs.skip != 'true'
         env:
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |
           # Convert multiline string to JSON-safe format
           ESCAPED_PROMPT=$(echo "${{ steps.issue-content.outputs.prompt }}" | jq -Rs .)
