@@ -27,33 +27,32 @@ jobs:
             });
             console.log(`Created issue: ${issue.html_url}`);
             core.setOutput('issue_number', issue.number);
-      - name: Install MLX
-        continue-on-error: true
-        uses: parafoxia/pip-install@v1
-        with:
-          packages: mlx
-          break-system-packages: true
-      - name: Print MLX info
-        continue-on-error: true
-        run: |
-          python3 -c 'import mlx; print("mlx", mlx.__version__)' || echo "mlx not available"
-          sysctl -n machdep.cpu.brand_string
-          sysctl -n hw.memsize
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Pre-Install Boost, LevelDB
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 10
           max_attempts: 3
           command: |
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
             brew install boost-python3 snappy leveldb
+
       - name: Set up Ollama
         uses: ai-action/setup-ollama@v2
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.ollama
+          key: ${{ runner.os }}-ollama
+
       - name: Pull offline model
         run: |
-          ollama pull qwen2.5-coder:7b
-          ollama run qwen2.5-coder:7b hi
+          ollama pull qwen3.8-flash-next:125b-mlx
+          ollama run qwen3.8-flash-next:125b-mlx hi
           ollama ps
+
       - name: Post Claude RCA comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +68,7 @@ jobs:
           [View the failed workflow run](${WORKFLOW_URL})"
           ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | jq -Rs .)
           rm -f /tmp/claude-response-part-*
-          ollama launch --yes claude --model qwen2.5-coder:7b -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence --allowed-tools "*" |
+          ollama launch --yes claude --model qwen3.8-flash-next:125b-mlx -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence --allowed-tools "*" |
           awk -v max=50000 -v prefix=/tmp/claude-response-part- -v issue="$ISSUE_NUMBER" '
             function flush() {
               if (have) {
