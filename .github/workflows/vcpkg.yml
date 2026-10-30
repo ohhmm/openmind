@@ -76,7 +76,7 @@ jobs:
           echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
           echo "OS_SPECIFIC_CONFIGURE_FLAGS=$OS_SPECIFIC_CONFIGURE_FLAGS" >> $GITHUB_ENV
           brew update || brew update || brew update || brew update || brew update
-          brew install cmake ninja autoconf automake autoconf-archive libtool
+          brew install cmake ninja autoconf automake autoconf-archive libtool libomp
           cmake --version
           ninja --version
           clang --version
@@ -116,7 +116,7 @@ jobs:
       with:
         timeout_minutes: 50
         max_attempts: 3
-        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} ${{ env.OS_SPECIFIC_CONFIGURE_FLAGS }} -DOPENMIND_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} ${{ env.OS_SPECIFIC_CONFIGURE_FLAGS }} -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_BUILD_3RD_PARTY_TESTS=NO -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
