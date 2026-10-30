@@ -5,7 +5,8 @@ INPUT="Hi"
 if [ "$#" -ne 0 ]; then
     INPUT=$@
 fi
-echo "$INPUT" > task.md
-echo "$INPUT" > thinking.log
+cd $SCRIPT_DIR
+echo "$INPUT" > $SCRIPT_DIR/task.md
+echo "$INPUT" > $SCRIPT_DIR/thinking.log
 echo $SCRIPT_DIR/act.sh
 $SCRIPT_DIR/act.sh
