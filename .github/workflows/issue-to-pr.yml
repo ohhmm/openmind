@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   create-devin-session:
-    runs-on: xcode-27-xlarge
+    runs-on: xcode-27
     env:
       OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
       OLLAMA_MODEL: qwen3.5:9b
@@ -27,7 +27,7 @@ jobs:
           timeout_minutes: 60
           max_attempts: 5
           command: |
-            brew install boost boost-python3 snappy leveldb rocksdb fmt lz4 tbb ninja gh
+            brew install boost boost-python3 snappy leveldb rocksdb fmt lz4 ninja gh
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Get issue content

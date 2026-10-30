@@ -18,12 +18,20 @@ jobs:
         max_attempts: 3
         command: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install boost boost-python3 snappy leveldb rocksdb fmt lz4
+          brew install \
+            boost \
+            boost-python3 \
+            fann \
+            fmt \
+            snappy \
+            leveldb \
+            lz4 \
+            rocksdb
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: |
         nvidia-smi || true
-        cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
+        cmake ${{github.workspace}} -GXcode -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_BUILD_3RD_PARTY_TESTS=NO -Dleveldb_TAG:STRING="1.23" -DOPENMIND_MATH_USE_LEVELDB_CACHE=OFF -DOPENMIND_STORAGE_LEVELDB=OFF
     - name: Install prerequisites
       working-directory: ${{github.workspace}}/build
       run: cmake --build ${{github.workspace}}/build --target prerequisites -j `sysctl -n hw.ncpu` --config Release

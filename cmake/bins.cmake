@@ -454,7 +454,7 @@ macro(lib)
 	message("add_library(${this_target} ${src})")
 	link_boost_libs()
     deps(${deps})
-	if(OPENMIND_USE_TBB)
+	if(OPENMIND_USE_TBB AND TBB_FOUND AND NOT APPLE)
 		target_link_libraries(${this_target} ${visibility} tbb)
 	endif()
 

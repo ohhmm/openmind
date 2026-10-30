@@ -53,7 +53,8 @@
     "boost-uuid",
     "fann",
     "liblzma",
-    "leveldb"
+    "leveldb",
+    "fann"
   ],
   "overrides": [
       {
