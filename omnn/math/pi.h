@@ -3,13 +3,13 @@
 //
 
 #pragma once
-#include "Constant.h"
+#include "PositiveConstant.h"
 
 namespace omnn::math {
 
-    class Pi : public Constant<Pi>
+    class Pi : public PositiveConstant<Pi>
     {
-        using base = Constant<Pi>;
+        using base = PositiveConstant<Pi>;
 
     public:
         using base::base;
@@ -22,6 +22,10 @@ namespace omnn::math {
         [[nodiscard]]
         bool operator<(const Valuable&) const override;
 
+        [[nodiscard]]
+        Valuable MustBeInt() const override {
+            return Valuable(std::static_pointer_cast<Valuable>(std::make_shared<Integer>(-1)));
+        }
         Valuable IsPositive() const override { return {}; }
         Valuable Sign() const override;
         

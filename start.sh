@@ -6,6 +6,6 @@ if [ "$#" -ne 0 ]; then
     INPUT=$@
 fi
 echo "$INPUT" > task.md
-echo $INPUT
+echo "$INPUT" > thinking.log
 echo $SCRIPT_DIR/act.sh
 $SCRIPT_DIR/act.sh
