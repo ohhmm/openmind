@@ -9,4 +9,4 @@ else()
 	set(deplist ${deplist} boost)
 endif()
 
-lib(${deplist})
+lib("${deplist}")
