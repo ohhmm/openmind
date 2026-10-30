@@ -10,6 +10,7 @@ jobs:
   create-issue:
     env:
       OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+      OLLAMA_MODEL: qwen3.5:9b
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: macos-latest
     steps:
@@ -49,14 +50,15 @@ jobs:
 
       - name: Pull offline model
         run: |
-          ollama pull qwen3.8-flash-next:125b-mlx
-          ollama run qwen3.8-flash-next:125b-mlx hi
+          ollama pull ${{ env.OLLAMA_MODEL }}
+          ollama run ${{ env.OLLAMA_MODEL }} hi
           ollama ps
 
       - name: Post Claude RCA comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          OLLAMA_MODEL: ${{ env.OLLAMA_MODEL }}
         run: |
           ISSUE_NUMBER="${{ steps.create_issue.outputs.issue_number }}"
           WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
@@ -68,7 +70,7 @@ jobs:
           [View the failed workflow run](${WORKFLOW_URL})"
           ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | jq -Rs .)
           rm -f /tmp/claude-response-part-*
-          ollama launch --yes claude --model qwen3.8-flash-next:125b-mlx -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence --allowed-tools "*" |
+          ollama launch --yes claude --model ${{ env.OLLAMA_MODEL }} -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence |
           awk -v max=50000 -v prefix=/tmp/claude-response-part- -v issue="$ISSUE_NUMBER" '
             function flush() {
               if (have) {
