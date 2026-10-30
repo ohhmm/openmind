@@ -124,6 +124,7 @@ function(apply_target_commons this_target)
 	set(opts
 		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CXX_COMPILER_ID:Clang>>>:-fcoroutines>
 		$<$<CXX_COMPILER_ID:GNU>:-fmodules-ts>
+		$<$<CXX_COMPILER_ID:Clang>:-fembed-bitcode>
 	)
 	if(OPENMIND_USE_OPENCL)
 		set(defs ${defs}
