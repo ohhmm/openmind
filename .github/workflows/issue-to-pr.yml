@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   create-devin-session:
-    runs-on: ubuntu-latest
+    runs-on: xcode-27-xlarge
     env:
       OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
       OLLAMA_MODEL: qwen3.5:9b
@@ -27,9 +27,7 @@ jobs:
           timeout_minutes: 60
           max_attempts: 5
           command: |
-            sudo apt update
-            sudo apt install -y snap git libboost-all-dev libboost-python-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang*-dev libtbb-dev ninja-build
-            sudo snap install gh --classic
+            brew install boost boost-python3 snappy leveldb rocksdb fmt lz4 tbb ninja gh
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Get issue content
@@ -75,7 +73,9 @@ jobs:
 
       - uses: actions/cache@v6
         with:
-          path: ~/.ollama
+          path: |
+            ~/.ollama
+            ~/.local
           key: ${{ runner.os }}-ollama
 
       - name: Pull offline model
