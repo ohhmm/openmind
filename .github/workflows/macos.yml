@@ -18,7 +18,7 @@ jobs:
         max_attempts: 3
         command: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install boost boost-python3 snappy leveldb rocksdb fmt lz4 tbb
+          brew install boost boost-python3 snappy leveldb rocksdb fmt lz4
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: |
@@ -32,7 +32,15 @@ jobs:
       run: cmake .
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release
+      run: |
+        set +e
+        cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release 2>&1 | tee "${{github.workspace}}/build.log"
+        status=${PIPESTATUS[0]}
+        echo "=== First error ==="
+        grep -m1 -iE "error[: ]" "${{github.workspace}}/build.log" || echo "(none)"
+        echo "=== First warning ==="
+        grep -m1 -iE "warning[: ]" "${{github.workspace}}/build.log" || echo "(none)"
+        exit $status
     - name: Check
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 3200 -C Release -j `sysctl -n hw.ncpu` -E ts --output-on-failure
