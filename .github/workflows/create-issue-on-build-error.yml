@@ -11,6 +11,7 @@ jobs:
     env:
       OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
       OLLAMA_MODEL: qwen3.5:9b
+      OLLAMA_FALLBACK_MODEL: qwen3.5:4b
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: macos-latest
     steps:
@@ -50,8 +51,15 @@ jobs:
 
       - name: Pull offline model
         run: |
-          ollama pull ${{ env.OLLAMA_MODEL }}
-          ollama run ${{ env.OLLAMA_MODEL }} hi
+          if ollama pull "${{ env.OLLAMA_MODEL }}" && ollama run "${{ env.OLLAMA_MODEL }}" hi; then
+            echo "OLLAMA_MODEL=${{ env.OLLAMA_MODEL }}" >> $GITHUB_ENV
+            echo "Using primary model: ${{ env.OLLAMA_MODEL }}"
+          else
+            echo "Primary model unavailable; falling back to ${{ env.OLLAMA_FALLBACK_MODEL }}"
+            ollama pull ${{ env.OLLAMA_FALLBACK_MODEL }}
+            ollama run ${{ env.OLLAMA_FALLBACK_MODEL }} hi
+            echo "OLLAMA_MODEL=${{ env.OLLAMA_FALLBACK_MODEL }}" >> $GITHUB_ENV
+          fi
           ollama ps
 
       - name: Post Claude RCA comment
@@ -70,7 +78,11 @@ jobs:
           [View the failed workflow run](${WORKFLOW_URL})"
           ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | jq -Rs .)
           rm -f /tmp/claude-response-part-*
-          ollama launch --yes claude --model ${{ env.OLLAMA_MODEL }} -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence |
+          ollama launch --yes claude --model "${{ env.OLLAMA_MODEL }}" \
+            -- -p "RCA: $ESCAPED_PROMPT" \
+            --allow-dangerously-skip-permissions \
+            --dangerously-skip-permissions \
+            --effort max --no-session-persistence |
           awk -v max=50000 -v prefix=/tmp/claude-response-part- -v issue="$ISSUE_NUMBER" '
             function flush() {
               if (have) {
