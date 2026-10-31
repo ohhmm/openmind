@@ -13,7 +13,7 @@ jobs:
       OLLAMA_MODEL: qwen3.5:9b
       OLLAMA_FALLBACK_MODEL: qwen3.5:4b
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    runs-on: xcode-27-xlarge
+    runs-on: xcode-27
     steps:
       - name: Create GitHub Issue
         id: create_issue
@@ -46,7 +46,9 @@ jobs:
 
       - uses: actions/cache@v6
         with:
-          path: ~/.ollama
+          path: |
+            ~/.ollama
+            ~/.local
           key: ${{ runner.os }}-ollama
 
       - name: Pull offline model
