@@ -210,7 +210,7 @@ namespace math {
         auto freeMember = sum.begin()->IsExponentiation() ? *sum.rbegin() : _.calcFreeMember();
         if (freeMember.IsFraction()) {
             // Convert fraction to integer by multiplying both sides
-            const auto& fraction = dynamic_cast<const Fraction&>(freeMember);
+            auto& fraction = freeMember.as<Fraction>();
             auto denom = fraction.getDenominator();
             _ *= denom;
             _.optimize();
