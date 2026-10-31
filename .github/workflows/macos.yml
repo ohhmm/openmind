@@ -2,11 +2,15 @@ name: C/C++ CI macOS
 
 on: [push]
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   build-in-macos:
 
     runs-on: macos-latest
-    
+
     steps:
     - uses: actions/checkout@v4
     - name: Create Build Dir
@@ -39,16 +43,91 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cmake .
     - name: Build
+      id: build
+      continue-on-error: true
       working-directory: ${{github.workspace}}/build
       run: |
         set +e
         cmake --build ${{github.workspace}}/build -j `sysctl -n hw.ncpu` --config Release 2>&1 | tee "${{github.workspace}}/build.log"
         status=${PIPESTATUS[0]}
-        echo "=== First error ==="
-        grep -m1 -iE "error[: ]" "${{github.workspace}}/build.log" || echo "(none)"
-        echo "=== First warning ==="
-        grep -m1 -iE "warning[: ]" "${{github.workspace}}/build.log" || echo "(none)"
-        exit $status
+        FIRST_ERROR=$(grep -m1 -iE "error[: ]" "${{github.workspace}}/build.log" || true)
+        FIRST_WARNING=$(grep -m1 -iE "warning[: ]" "${{github.workspace}}/build.log" || true)
+        printf '%s\n' "$FIRST_ERROR" > "${{github.workspace}}/first_error.txt"
+        printf '%s\n' "$FIRST_WARNING" > "${{github.workspace}}/first_warning.txt"
+        {
+          echo "FIRST_ERROR<<EOF"
+          printf '%s\n' "$FIRST_ERROR"
+          echo "EOF"
+          echo "FIRST_WARNING<<EOF"
+          printf '%s\n' "$FIRST_WARNING"
+          echo "EOF"
+          echo "BUILD_STATUS=$status"
+        } >> "$GITHUB_OUTPUT"
+        exit "$status"
+    - name: Ensure next issue for first build finding
+      if: always()
+      uses: actions/github-script@v9
+      env:
+        FIRST_ERROR: ${{ steps.build.outputs.FIRST_ERROR }}
+        FIRST_WARNING: ${{ steps.build.outputs.FIRST_WARNING }}
+      with:
+        script: |
+          const err = (process.env.FIRST_ERROR || '').trim();
+          const warn = (process.env.FIRST_WARNING || '').trim();
+          const finding = err || warn;
+          if (!finding) {
+            return;
+          }
+          const kind = err ? 'error' : 'warning';
+          const label = 'next';
+          const title = 'macOS build ' + kind + ': ' + finding;
+          let labelExists = true;
+          try {
+            await github.rest.issues.getLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: label
+            });
+          } catch (error) {
+            labelExists = false;
+          }
+          if (!labelExists) {
+            await github.rest.issues.createLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: label,
+              color: '0075ca',
+              description: 'Next item to resolve'
+            });
+          }
+          const openIssues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: label,
+            state: 'open',
+            per_page: 100
+          });
+          const duplicate = openIssues.data.some(function (issue) {
+            return issue.title === title;
+          });
+          if (duplicate) {
+            return;
+          }
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: 'First ' + kind + ' from macOS build:\n\n```\n' + finding + '\n```\n',
+            labels: [label, 'automation']
+          });
+    - name: Fail job on build error
+      if: always()
+      run: |
+        status="${{ steps.build.outputs.BUILD_STATUS }}"
+        if [ -n "$status" ] && [ "$status" != "0" ]; then
+          exit "$status"
+        fi
     - name: Check
+      if: success()
       working-directory: ${{github.workspace}}/build
       run: ctest --timeout 3200 -C Release -j `sysctl -n hw.ncpu` -E ts --output-on-failure
