@@ -656,11 +656,14 @@ macro(exe)
 	
 	link_boost_libs()
 
-    if(NOT MSVC)
+    if(NOT MSVC AND OPENMIND_USE_TBB)
         deps(
             pthread
 			tbb
             )
+    elseif(NOT MSVC AND NOT OPENMIND_USE_TBB)
+        # TBB not available - still link pthread but skip TBB
+        deps(pthread)
     endif()
 
     if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
