@@ -1,4 +1,4 @@
-name: C/C++ CI macOS
+name: C/C++ CI macOS ARM
 
 on: [push]
 
@@ -9,7 +9,7 @@ permissions:
 jobs:
   build-in-macos:
 
-    runs-on: macos-latest
+    runs-on: xcode-27
 
     steps:
     - uses: actions/checkout@v4
@@ -21,6 +21,10 @@ jobs:
         timeout_minutes: 10
         max_attempts: 3
         command: |
+          df -h
+          vm_stat
+          sysctl -n machdep.cpu.brand_string
+          sysctl -n hw.memsize
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           brew install \
             boost \
@@ -31,6 +35,10 @@ jobs:
             leveldb \
             lz4 \
             rocksdb
+          df -h
+          vm_stat
+          sysctl -n machdep.cpu.brand_string
+          sysctl -n hw.memsize
     - name: Configure
       working-directory: ${{github.workspace}}/build
       run: |
