@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+      OLLAMA_MODEL: qwen3.5:9b
+      OLLAMA_FALLBACK_MODEL: qwen3.5:4b
     # Only run on issues that are either newly created by humans
     # or labeled with "devin" (including those created by automation)
     if: >
@@ -26,7 +28,7 @@ jobs:
           max_attempts: 5
           command: |
             sudo apt update
-            sudo apt install -y snap libboost-all-dev libboost-python-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang*-dev libtbb-dev ninja-build
+            sudo apt install -y snap git libboost-all-dev libboost-python-dev libxss-dev libx11-dev libxcb-screensaver0-dev ocl-icd-opencl-dev libopengl-dev freeglut3-dev libleveldb-dev libsnappy-dev libvulkan-dev liblz4-dev libfmt-dev librocksdb-dev libpython3-all-dev libopencl-clang*-dev libtbb-dev ninja-build
             sudo snap install gh --classic
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,6 +77,20 @@ jobs:
         with:
           path: ~/.ollama
           key: ${{ runner.os }}-ollama
+
+      - name: Pull offline model
+        run: |
+          if ollama pull "${{ env.OLLAMA_MODEL }}" && ollama run "${{ env.OLLAMA_MODEL }}" hi; then
+            echo "OLLAMA_MODEL=${{ env.OLLAMA_MODEL }}" >> $GITHUB_ENV
+            echo "Using primary model: ${{ env.OLLAMA_MODEL }}"
+          else
+            echo "Primary model unavailable; falling back to ${{ env.OLLAMA_FALLBACK_MODEL }}"
+            ollama pull ${{ env.OLLAMA_FALLBACK_MODEL }}
+            ollama run ${{ env.OLLAMA_FALLBACK_MODEL }} hi
+            echo "OLLAMA_MODEL=${{ env.OLLAMA_FALLBACK_MODEL }}" >> $GITHUB_ENV
+          fi
+          ollama ps
+
       - name: Create Devin Session
         id: devin-session
         if: steps.check-session.outputs.skip != 'true'
@@ -107,13 +123,24 @@ jobs:
             exit 1
           fi
 
-          # Add label to indicate issue is being processed
-          gh issue edit "${{ github.event.issue.number }}" --add-label "in-progress"
+          # Add label upon successful start
+          gh issue edit "${{ github.event.issue.number }}" --add-label "devin"
           
           # Add comment to issue with session link
           gh issue comment "${{ github.event.issue.number }}" --body "Created Devin session: $SESSION_URL"
 
-          # check with claude
-          CLAUDE_RESPONSE=$(ollama launch --yes claude --model beam:cloud -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence --allowed-tools "*")
+      - name: Run Claude RCA
+        id: claude-rca
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          OLLAMA_MODEL: ${{ env.OLLAMA_MODEL }}
+        run: |
+          ESCAPED_PROMPT=$(echo "${{ steps.issue-content.outputs.prompt }}" | jq -Rs .)
+          CLAUDE_RESPONSE=$(ollama launch --yes claude --model "${{ env.OLLAMA_MODEL }}" \
+            -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions \
+            --dangerously-skip-permissions --effort max --no-session-persistence)
+          # Add label upon successful start
+          gh issue edit "${{ github.event.issue.number }}" --add-label "claude"
           gh issue comment "${{ github.event.issue.number }}" --body "$CLAUDE_RESPONSE"
 
