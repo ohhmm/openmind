@@ -76,7 +76,7 @@ jobs:
           echo "VCPKG_PYTHON3=$VCPKG_PYTHON3" >> $GITHUB_ENV
           echo "OS_SPECIFIC_CONFIGURE_FLAGS=$OS_SPECIFIC_CONFIGURE_FLAGS" >> $GITHUB_ENV
           brew update || brew update || brew update || brew update || brew update
-          brew install cmake ninja autoconf automake autoconf-archive libtool
+          brew install cmake ninja autoconf automake autoconf-archive libtool boost boost-python3 snappy leveldb rocksdb fmt lz4 tbb gh
           cmake --version
           ninja --version
           clang --version
