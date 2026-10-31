@@ -454,8 +454,12 @@ macro(lib)
 	message("add_library(${this_target} ${src})")
 	link_boost_libs()
     deps(${deps})
-	if(OPENMIND_USE_TBB)
-		target_link_libraries(${this_target} ${visibility} tbb)
+	if(OPENMIND_TBB_LINK_AVAILABLE)
+		if(TARGET TBB::tbb)
+			target_link_libraries(${this_target} ${visibility} TBB::tbb)
+		else()
+			target_link_libraries(${this_target} ${visibility} tbb)
+		endif()
 	endif()
 
     set(INSTALL_PARAMS TARGETS ${this_target})
@@ -657,10 +661,14 @@ macro(exe)
 	link_boost_libs()
 
     if(NOT MSVC)
-        deps(
-            pthread
-			tbb
-            )
+        deps(pthread)
+        if(OPENMIND_TBB_LINK_AVAILABLE)
+            if(TARGET TBB::tbb)
+                target_link_libraries(${this_target} ${visibility} TBB::tbb)
+            else()
+                target_link_libraries(${this_target} ${visibility} tbb)
+            endif()
+        endif()
     endif()
 
     if (OPENMIND_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
