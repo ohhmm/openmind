@@ -25,6 +25,7 @@
       "name": "pkgconf",
       "host": true
     },
+    "tbb"
     "boost-chrono",
     "boost-compute",
     "boost-date-time",
