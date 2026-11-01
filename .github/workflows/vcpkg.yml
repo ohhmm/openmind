@@ -36,7 +36,7 @@ jobs:
           !${{github.workspace}}/vcpkg/buildtrees
           !${{github.workspace}}/vcpkg/packages
           !${{github.workspace}}/vcpkg/downloads
-          ${{ github.workspace }}/build/bin/Db*.solutions
+          ${{ runner.home }}/.cache/Db*.solutions
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-
@@ -148,10 +148,10 @@ jobs:
       shell: bash
       run: |
         set +e
-        ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" 2>&1 | tee "${{github.workspace}}/test-output.log"
+        ctest . -C ${{ matrix.config }} -j 1 -E "ts" 2>&1 | tee "${{github.workspace}}/test-output.log"
         status=${PIPESTATUS[0]}
         if [ $status -ne 0 ]; then
-          ctest . -C ${{ matrix.config }} -j ${{steps.cpu-cores.outputs.count}} -E "ts" --rerun-failed --output-on-failure 2>&1 | tee -a "${{github.workspace}}/test-output.log"
+          ctest . -C ${{ matrix.config }} -j 1 -E "ts" --rerun-failed --output-on-failure 2>&1 | tee -a "${{github.workspace}}/test-output.log"
           status=${PIPESTATUS[0]}
         fi
         exit $status
