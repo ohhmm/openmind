@@ -28,21 +28,47 @@ jobs:
           max_attempts: 5
           command: |
             brew install boost boost-python3 snappy leveldb rocksdb fmt lz4 ninja gh
+
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Select issue to resolve
+        id: select-issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Prioritize open issues labeled "next" (oldest first).
+          NEXT_CANDIDATE=$(gh issue list \
+            --label next --state open --limit 50 \
+            --json number,labels,createdAt \
+            | jq -r 'sort_by(.createdAt) \
+              | map(select((.labels | map(.name) | index("in-progress")) == null)) \
+              | .[0].number // empty')
+          if [ -n "$NEXT_CANDIDATE" ]; then
+            echo "Selected prioritized 'next' issue: #$NEXT_CANDIDATE"
+            ISSUE_NUMBER="$NEXT_CANDIDATE"
+          else
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+          fi
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+
       - name: Get issue content
         id: issue-content
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ISSUE_BODY="${{ github.event.issue.body }}"
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          
-          # Combine title and body into prompt
-          PROMPT="Resolve & PR (with link to original issue) fix, autoconfirming your plan, Issue ${{ github.event.issue.number }}: $ISSUE_TITLE
+          ISSUE_NUMBER="${{ steps.select-issue.outputs.issue_number }}"
+          ISSUE_JSON=$(gh issue view "$ISSUE_NUMBER" --json title,body)
+          ISSUE_TITLE=$(echo "$ISSUE_JSON" | jq -r '.title')
+          ISSUE_BODY=$(echo "$ISSUE_JSON" | jq -r '.body // ""')
 
-          $ISSUE_BODY"
-          
+          PROMPT="Resolve & PR (with link to original issue) fix, autoconfirming your plan, Issue ${ISSUE_NUMBER}: ${ISSUE_TITLE}
+
+          ${ISSUE_BODY}"
+
           echo "prompt<<EOF" >> $GITHUB_OUTPUT
-          echo "$PROMPT" >> $GITHUB_OUTPUT
+          printf '%s\n' "$PROMPT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Check for existing Devin session
@@ -50,22 +76,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Check if issue already has in-progress label or Devin session comment
-          LABELS=$(gh issue view "${{ github.event.issue.number }}" --json labels -q '.labels[].name')
+          ISSUE_NUMBER="${{ steps.select-issue.outputs.issue_number }}"
+          LABELS=$(gh issue view "$ISSUE_NUMBER" --json labels -q '.labels[].name')
           if echo "$LABELS" | grep -q "in-progress"; then
             echo "Issue already has in-progress label, skipping"
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
-          # Check comments for existing Devin session
-          COMMENTS=$(gh issue view "${{ github.event.issue.number }}" --json comments -q '.comments[].body')
+
+          COMMENTS=$(gh issue view "$ISSUE_NUMBER" --json comments -q '.comments[].body')
           if echo "$COMMENTS" | grep -q "Created Devin session:"; then
             echo "Issue already has a Devin session comment, skipping"
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           echo "skip=false" >> $GITHUB_OUTPUT
 
       - name: Set up Ollama
@@ -99,16 +124,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |
-          # Convert multiline string to JSON-safe format
+          ISSUE_NUMBER="${{ steps.select-issue.outputs.issue_number }}"
           ESCAPED_PROMPT=$(echo "${{ steps.issue-content.outputs.prompt }}" | jq -Rs .)
-          
+
           RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer $DEVIN_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"prompt\": $ESCAPED_PROMPT}" \
             "https://api.devin.ai/v1/sessions")
 
-          # Check for errors in the response
           ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error // .detail // empty')
           if [ -n "$ERROR_MSG" ]; then
             echo "Error creating Devin session: $ERROR_MSG"
@@ -124,10 +148,10 @@ jobs:
           fi
 
           # Add label upon successful start
-          gh issue edit "${{ github.event.issue.number }}" --add-label "devin"
-          
+          gh issue edit "$ISSUE_NUMBER" --add-label "devin"
+
           # Add comment to issue with session link
-          gh issue comment "${{ github.event.issue.number }}" --body "Created Devin session: $SESSION_URL"
+          gh issue comment "$ISSUE_NUMBER" --body "Created Devin session: $SESSION_URL"
 
       - name: Run Claude RCA
         id: claude-rca
@@ -136,11 +160,11 @@ jobs:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
           OLLAMA_MODEL: ${{ env.OLLAMA_MODEL }}
         run: |
+          ISSUE_NUMBER="${{ steps.select-issue.outputs.issue_number }}"
           ESCAPED_PROMPT=$(echo "${{ steps.issue-content.outputs.prompt }}" | jq -Rs .)
           CLAUDE_RESPONSE=$(ollama launch --yes claude --model "${{ env.OLLAMA_MODEL }}" \
             -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions \
             --dangerously-skip-permissions --effort max --no-session-persistence)
           # Add label upon successful start
-          gh issue edit "${{ github.event.issue.number }}" --add-label "claude"
-          gh issue comment "${{ github.event.issue.number }}" --body "$CLAUDE_RESPONSE"
-
+          gh issue edit "$ISSUE_NUMBER" --add-label "claude"
+          gh issue comment "$ISSUE_NUMBER" --body "$CLAUDE_RESPONSE"
