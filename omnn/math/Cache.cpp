@@ -38,6 +38,8 @@ Cache::CachedSet Cache::TaskCachedSetNoCache;
 
 void Cache::DbOpen() {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
+  if (!fs::exists(path.parent_path()))
+    fs::create_directories(path.parent_path());
 # if OPENMIND_MATH_CACHE_VOLATILE
   DeleteDB(path);
 # endif
@@ -59,6 +61,18 @@ void Cache::DbOpen() {
     }
   }
 #endif
+}
+
+Cache::path_str_t Cache::ConventionalCacheDir() {
+#ifdef _WIN32
+  const char* home = std::getenv("USERPROFILE");
+  if (!home)
+    home = std::getenv("HOMEDRIVE");
+#else
+  const char* home = std::getenv("HOME");
+#endif
+  fs::path root = home ? fs::path(home) : fs::path(".");
+  return root / ".cache";
 }
 
 Cache::Cache(const Cache::path_str_t &path) {

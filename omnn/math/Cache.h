@@ -7,6 +7,7 @@ namespace leveldb{
 class DB;
 }
 #endif
+#include <cstdlib>
 #include <future>
 #include <memory>
 #include <string>
@@ -107,6 +108,7 @@ namespace fs = boost::filesystem;
         std::string Value(const std::string& key);
         
     public:
+        static path_str_t ConventionalCacheDir();
         Cache(const path_str_t& path);
         ~Cache();
 
@@ -124,8 +126,7 @@ namespace fs = boost::filesystem;
 }
 
 #define CACHE(name) \
-    auto cachename##name = std::string(#name) + ".solutions"; \
-    Cache name(cachename##name);
+    Cache name(Cache::ConventionalCacheDir() / (std::string(#name) + ".solutions"));
 
 #define USE_CACHE(name) auto& cache = name ; \
     auto cached = doCheckCache ? cache.AsyncFetch(*this, true) : Cache::TaskNoCache; \
