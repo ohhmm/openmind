@@ -38,6 +38,8 @@ Cache::CachedSet Cache::TaskCachedSetNoCache;
 
 void Cache::DbOpen() {
 #ifdef OPENMIND_MATH_USE_LEVELDB_CACHE
+  if (!fs::exists(path.parent_path()))
+    fs::create_directories(path.parent_path());
 # if OPENMIND_MATH_CACHE_VOLATILE
   DeleteDB(path);
 # endif

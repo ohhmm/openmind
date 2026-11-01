@@ -124,7 +124,7 @@ namespace fs = boost::filesystem;
 }
 
 #define CACHE(name) \
-    auto cachename##name = std::string(#name) + ".solutions"; \
+    auto cachename##name = std::string(".cache/") + std::string(#name) + ".solutions"; \
     Cache name(cachename##name);
 
 #define USE_CACHE(name) auto& cache = name ; \
