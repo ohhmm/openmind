@@ -1,0 +1,80 @@
+name: Rebase Stale Branch at 4am
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  rebase-stale-branch:
+    runs-on: xcode-27
+    env:
+      OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+      OLLAMA_MODEL: qwen3.5:9b
+      OLLAMA_FALLBACK_MODEL: qwen3.5:4b
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Ollama
+        uses: ai-action/setup-ollama@v2
+
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.ollama
+            ~/.local
+          key: ${{ runner.os }}-ollama
+
+      - name: Pull offline model
+        run: |
+          if ollama pull "${{ env.OLLAMA_MODEL }}" && ollama run "${{ env.OLLAMA_MODEL }}" hi; then
+            echo "OLLAMA_MODEL=${{ env.OLLAMA_MODEL }}" >> $GITHUB_ENV
+            echo "Using primary model: ${{ env.OLLAMA_MODEL }}"
+          else
+            echo "Primary model unavailable; falling back to ${{ env.OLLAMA_FALLBACK_MODEL }}"
+            ollama pull "${{ env.OLLAMA_FALLBACK_MODEL }}"
+            ollama run "${{ env.OLLAMA_FALLBACK_MODEL }}" hi
+            echo "OLLAMA_MODEL=${{ env.OLLAMA_FALLBACK_MODEL }}" >> $GITHUB_ENV
+          fi
+          ollama ps
+
+      - name: Select newest stale branch
+        id: select-branch
+        run: |
+          set -euo pipefail
+          git fetch --all --prune
+          cutoff=$(date -v-2m +%s)
+          branch=$(
+            git for-each-ref --sort=-committerdate \
+              --format='%(committerdate:unix) %(refname:short)' refs/remotes |
+              awk -v cutoff="$cutoff" '
+                $2 == "origin/HEAD" { next }
+                $2 == "origin/main" { next }
+                $1 + 0 <= cutoff + 0 { print $2; exit }
+              '
+          )
+          if [ -z "${branch:-}" ]; then
+            echo "No branch is stale for more than two months"
+            echo "branch=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          branch=${branch#origin/}
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+          git checkout "$branch"
+
+      - name: Rebase stale branch with start.sh
+        if: steps.select-branch.outputs.branch != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OLLAMA_MODEL: ${{ env.OLLAMA_MODEL }}
+        run: |
+          BRANCH="${{ steps.select-branch.outputs.branch }}"
+          ./start.sh "Rebase stale branch ${BRANCH} onto origin/main and open a one-commit PR"
