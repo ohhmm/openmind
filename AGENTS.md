@@ -2,6 +2,7 @@
 
 ## Documentation quallity requirements
 - Write only truth, consolidated and correct, in positive-only form
+- Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
 
 ## Code quality requirements
 - Keep edits minimal and terse
@@ -12,6 +13,7 @@
 - Prefer automation over manual work when it preserves correctness and quality.
 - Avoid `dynamic_cast`; prefer compile-time type checks and `static_cast` or explicit polymorphic interfaces.
 - Represent behavior, capabilities, truthfully, consolidated, correct, in positive-only form and completely in code, tests, examples, comments, documentation, and output.
+- Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
 
 ## One Commit per PR (mandatory)
 

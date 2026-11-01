@@ -1,10 +1,12 @@
 #!/bin/bash
-SCRIPT_DIR=$(dirname "$0")
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INPUT="Hi"
 MODEL="${OLLAMA_MODEL:-beam:cloud}"
 
 if [ "$#" -ne 0 ]; then
-    INPUT=$@
+    INPUT="$*"
 fi
 
 CAFFEINATE=()

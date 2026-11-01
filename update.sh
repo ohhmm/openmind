@@ -1,5 +1,7 @@
 #!/bin/bash
-SCRIPT_DIR=$(dirname "$0")
+set -euo pipefail
 
-cd $SCRIPT_DIR &&
-	git pull --rebase --autostash origin main
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+cd "$SCRIPT_DIR"
+git pull --rebase --autostash origin main
