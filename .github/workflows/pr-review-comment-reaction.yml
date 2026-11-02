@@ -11,7 +11,6 @@ permissions:
 jobs:
   process-workflow-review-comment:
     runs-on: ubuntu-latest
-    if: contains(github.event.comment.path, '.github/workflows/')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
