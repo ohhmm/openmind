@@ -1,5 +1,8 @@
 # Agent Instructions
 
+## Terminology
+- "ensure X" means make X happen: install, build, fetch, create, and configure it automatically until X holds. It never means only detecting X's absence and raising an error. Positive-only.
+
 ## Documentation quallity requirements
 - Write only truth, consolidated and correct, in positive-only form
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
