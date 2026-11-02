@@ -501,6 +501,9 @@ fold(
 	cmake
     omnn
     OpenMind
+    libskrypt
+    libgen
+    skrypt
 )
 
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL _openmind_hook_end_of_configure())

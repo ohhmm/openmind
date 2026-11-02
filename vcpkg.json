@@ -44,6 +44,7 @@
     "boost-locale",
     "boost-multiprecision",
     "boost-process",
+    "boost-program-options",
     "boost-python",
     "boost-redis",
     "boost-serialization",
@@ -55,16 +56,18 @@
     "fann",
     "liblzma",
     "leveldb",
-    "fann"
+    "libpng",
+    "libjpeg-turbo",
+    "tbb"
   ],
   "overrides": [
-      {
-          "name": "libbacktrace",
-          "version": "2024-11-30"
-      },
-      {
-          "name": "liblzma",
-          "version": "5.8.1"
-      }
+    {
+      "name": "libbacktrace",
+      "version": "2024-11-30"
+    },
+    {
+      "name": "liblzma",
+      "version": "5.8.1"
+    }
   ]
 }

@@ -1,0 +1,4 @@
+seconds/minutes=60
+minutes/hours=60
+hours/days=24
+astronomical_days_per_year_approx=365.25

@@ -1,0 +1,8 @@
+w-512
+h-2
+
+xLessY-(x+y-sqrt((x-y)^2))/2
+
+r-( xLessY*255 )
+g-r
+b-r
