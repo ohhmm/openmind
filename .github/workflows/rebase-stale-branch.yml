@@ -66,9 +66,10 @@ jobs:
             echo "branch=" >> $GITHUB_OUTPUT
             exit 0
           fi
+          origin_branch=$branch
           branch=${branch#origin/}
           echo "branch=$branch" >> $GITHUB_OUTPUT
-          git checkout "$branch"
+          ( git rebase --autostash origin/main $origin_branch && push origin $origin_branch --force-with-lease && exit 0 ) || git rebase --abort
 
       - name: Rebase stale branch with start.sh
         if: steps.select-branch.outputs.branch != ''
@@ -77,4 +78,4 @@ jobs:
           OLLAMA_MODEL: ${{ env.OLLAMA_MODEL }}
         run: |
           BRANCH="${{ steps.select-branch.outputs.branch }}"
-          ./start.sh "Rebase stale branch ${BRANCH} onto origin/main and open a one-commit PR"
+          ./start.sh "accurately rebase stale branch ${BRANCH}"
