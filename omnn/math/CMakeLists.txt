@@ -15,6 +15,8 @@ endif()
 # Create library with dependencies
 lib(${DEPENDENCIES})
 
+target_sources(${this_target} PRIVATE debug/OpenMind.natvis)
+
 if(OPENMIND_MATH_USE_LEVELDB_CACHE OR OPENMIND_MATH_USE_FOUNDATIONDB_CACHE)
     if(OPENMIND_MATH_USE_LEVELDB_CACHE)
         target_compile_definitions(${this_target} PUBLIC OPENMIND_MATH_USE_LEVELDB_CACHE)
