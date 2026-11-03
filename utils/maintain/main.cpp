@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     GitStashScope stash;
     {
         GitFetchScope fetch;
-        silent = argc > 1;
+        silent = argc > 1 && std::string_view(argv[1]) == "--non-interactive";
     }
 
     rebase_remote_branches();
