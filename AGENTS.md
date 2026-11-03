@@ -9,6 +9,7 @@
 
 ## Code quality requirements
 - Keep edits minimal and terse
+- Prefer preserving existing style, syntax, and formatting over changes that do not alter functionality yet add verbosity.
 - preserve existing functionality and settings.
 - Do not make changes that reduce code quality, maintainability, readability, testability, test coverage, performance, portability, or safety or any other aspect of quality; if a tradeoff is unavoidable, call it out before proceeding.
 - No precision losses, keep precision arbitrary to ensure bugless extensible compatibility
