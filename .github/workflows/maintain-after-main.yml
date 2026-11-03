@@ -1,11 +1,9 @@
 name: Build Maintain Target After Main
 
 on:
-  workflow_run:
-    workflows: ["ubuntu.yml", "windows.yml", "macos.yml", "vcpkg.yml"]
-    branches: [main]
-    types:
-      - completed
+  schedule:
+    - cron: '0 15 * * 6'
+  workflow_dispatch:
 
 jobs:
   build-maintain:
