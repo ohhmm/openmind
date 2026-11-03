@@ -20,8 +20,4 @@ if(OPENMIND_USE_OPENCL)
     endif()
 endif()
 
-if(NOT OPENMIND_BUILD_GC)
-    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/GC.cpp" PROPERTIES HEADER_FILE_ONLY ON)
-endif()
-
 lib(${DEPENDENCIES})
