@@ -24,4 +24,6 @@ if(NOT OPENMIND_BUILD_GC)
     set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/GC.cpp" PROPERTIES HEADER_FILE_ONLY ON)
 endif()
 
+set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/tasq.cpp" PROPERTIES HEADER_FILE_ONLY ON)
+
 lib(${DEPENDENCIES})
