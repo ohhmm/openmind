@@ -38,5 +38,7 @@ See [Getting Started](../docs/modules/ROOT/pages/getting-started.adoc).
 
 ## Development
 
+- [FPS Graphics Onboarding](FPS-Graphics-Onboarding.md) — fork-to-standalone Vulkan/OpenCL/interop examples and agent requests
+
 - [Python Wrapper](../docs/modules/ROOT/pages/development/python_wrapper.adoc)
 - [AGENTS.md](../AGENTS.md) — agent instructions
