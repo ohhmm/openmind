@@ -51,6 +51,8 @@ ensure_ollama() {
     fi
 
     for candidate in \
+        "/Applications/Ollama.app/Contents//Resources/ollama" \
+        "/Applications/Ollama.app/Contents/Resources/ollama" \
         "${LOCALAPPDATA:-}/Programs/Ollama/ollama.exe" \
         "${USERPROFILE:-}/AppData/Local/Programs/Ollama/ollama.exe" \
         "/c/Program Files/Ollama/ollama.exe" \
