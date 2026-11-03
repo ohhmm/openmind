@@ -22,6 +22,16 @@ ensure_ollama() {
         return 0
     fi
 
+    # Predetect already-installed app bundle locations before attempting install.
+    for candidate in \
+        "/Applications/Ollama.app/Contents//Resources/ollama" \
+        "/Applications/Ollama.app/Contents/Resources/ollama"; do
+        if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+            OLLAMA_CMD="$candidate"
+            return 0
+        fi
+    done
+
     case "$(uname -s 2>/dev/null || printf 'Unknown')" in
         Linux|Darwin)
             curl -fsSL https://ollama.com/install.sh | sh
