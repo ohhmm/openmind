@@ -10,23 +10,18 @@ if [ "$#" -ne 0 ]; then
     INPUT="$*"
 fi
 
-CAFFEINATE=()
-if command -v caffeinate >/dev/null 2>&1; then
-    CAFFEINATE=(caffeinate -i)
-fi
-
 OLLAMA_CMD=ollama
 ensure_ollama() {
-    if command -v ollama >/dev/null 2>&1; then
-        OLLAMA_CMD=ollama
-        return 0
-    fi
-
-    # Predetect already-installed app bundle locations before attempting install.
-    for candidate in \
+    for candidate in ollama \
         "/Applications/Ollama.app/Contents//Resources/ollama" \
-        "/Applications/Ollama.app/Contents/Resources/ollama"; do
-        if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+        "/Applications/Ollama.app/Contents/Resources/ollama" \
+        "${LOCALAPPDATA:-}/Programs/Ollama/ollama.exe" \
+        "${USERPROFILE:-}/AppData/Local/Programs/Ollama/ollama.exe" \
+        "/c/Program Files/Ollama/ollama.exe" \
+        "/c/Program Files (x86)/Ollama/ollama.exe"
+    do
+        if [ -n "$candidate" ] &&
+           [ -x "$candidate" ] && command -v $candidate >/dev/null 2>&1; then
             OLLAMA_CMD="$candidate"
             return 0
         fi
@@ -88,4 +83,4 @@ if ! ollama run "$MODEL" hi >/dev/null 2>&1; then
 fi
 
 cd "$SCRIPT_DIR" &&
-    "${CAFFEINATE[@]}" ollama launch --yes claude --model "$MODEL" -- --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence -p "${INPUT}"
+    ./caffeinate.sh "$OLLAMA_CMD" launch --yes claude --model "$MODEL" -- --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence -p "${INPUT}"
