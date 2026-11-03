@@ -74,4 +74,6 @@ void GC::Routine() {
 
 
 } // namespace omnn::rt
+#else
+extern "C" void omnn_rt_gc_translation_unit_anchor() {}
 #endif
