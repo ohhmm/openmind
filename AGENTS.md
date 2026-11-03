@@ -20,6 +20,11 @@
 - Represent behavior, capabilities, truthfully, consolidated, correct, in positive-only form and completely in code, tests, examples, comments, documentation, and output.
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
 
+## Refactoring
+- Equivalent extraction only: move existing code verbatim; preserve names, order, conditions, paths, and behavior; minimal diff.
+- Do not restructure, rename, reorder, reformat, or otherwise "improve" code while extracting; separate improvements into their own PRs.
+- Prefer sourcing/importing or calling the extracted unit over changing call sites beyond the moved symbol.
+
 ## One Commit per PR (mandatory)
 
 - Every pull request must contain exactly one commit.
