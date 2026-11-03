@@ -13,6 +13,7 @@
 - preserve existing functionality and settings.
 - Do not make changes that reduce code quality, maintainability, readability, testability, test coverage, performance, portability, or safety or any other aspect of quality; if a tradeoff is unavoidable, call it out before proceeding.
 - No precision losses, keep precision arbitrary to ensure bugless extensible compatibility
+- Avoid empty translation units: when a `.cpp` would otherwise be empty, keep a non-empty anchor symbol in it rather than excluding it from the build, so later additions are not silently dropped.
 - Prefer more general, reusable approaches/rules over narrowly specific ones when both are available.
 - Prefer automation over manual work when it preserves correctness and quality.
 - Avoid `dynamic_cast`; prefer compile-time type checks and `static_cast` or explicit polymorphic interfaces.
