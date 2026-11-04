@@ -15,7 +15,7 @@ class Lookup
 protected:
     using value_t = ValueT;
     using base_container_t = base_t;
-    using size_type = base_container_t::size_type;
+    using size_type = typename base_container_t::size_type;
 
     virtual void Generate(size_type index) = 0;
 
