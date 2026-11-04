@@ -15,4 +15,4 @@ fi
 
 
 cd "$SCRIPT_DIR"
-git push origin --force-with-lease origin $PARAMS
+git push origin --force-with-lease $PARAMS
