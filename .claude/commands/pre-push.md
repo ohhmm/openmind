@@ -15,7 +15,7 @@ Then use `Read` to load `.claude/pre-push-checklist.md`.
 
 1. If the checklist has no bullets, stop and tell the user that no QA sources were found. Ask whether to create `AGENTS.md` or `CLAUDE.md` first.
 
-2. Assess **every bullet** in `.claude/pre-push-checklist.md`, including bullets from recursively referenced Markdown files. For each bullet, use the current/decision model to determine a strict boolean:
+2. Assess **every bullet** in `.claude/pre-push-checklist.md`, including bullets from recursively referenced Markdown files and collected PR comments. For each bullet, use the current/decision model to determine a strict boolean:
    - `true`: the repository currently satisfies the bullet.
    - `false`: it does not.
 
