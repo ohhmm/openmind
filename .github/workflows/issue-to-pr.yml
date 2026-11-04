@@ -42,9 +42,7 @@ jobs:
           NEXT_CANDIDATE=$(gh issue list \
             --label next --state open --limit 50 \
             --json number,labels,createdAt \
-            | jq -r 'sort_by(.createdAt) \
-              | map(select((.labels | map(.name) | index("in-progress")) == null)) \
-              | .[0].number // empty')
+            | jq -r 'sort_by(.createdAt) | map(select((.labels | map(.name) | index("in-progress")) == null)) | .[0].number // empty'
           if [ -n "$NEXT_CANDIDATE" ]; then
             echo "Selected prioritized 'next' issue: #$NEXT_CANDIDATE"
             ISSUE_NUMBER="$NEXT_CANDIDATE"
