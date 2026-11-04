@@ -5,7 +5,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if (( $# > 0 )); then
    echo "Arguments were provided:"
    printf '  %s\n' "$@"
-   PARAMS=origin/$@
+   if [[ "$@" == -* ]]; then
+      PARAMS=$@
+   else
+      PARAMS=origin/$@
+   fi
 else
    echo "No arguments were provided, rebasing onto origin/main"
 fi
