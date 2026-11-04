@@ -8,7 +8,9 @@ permissions:
 
 jobs:
   build-in-macos:
-
+    env:
+        QCI_TOKEN: ${{ secrets.QCI_TOKEN }}
+        QCI_API_URL: ${{ secrets.QCI_API_URL }}
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
@@ -33,7 +35,8 @@ jobs:
             snappy \
             leveldb \
             lz4 \
-            rocksdb
+            rocksdb \
+            openssl@3
           df -h
           vm_stat
           sysctl -n machdep.cpu.brand_string
@@ -137,4 +140,8 @@ jobs:
     - name: Check
       if: success()
       working-directory: ${{github.workspace}}/build
-      run: ctest --timeout 3200 -C Release -j `sysctl -n hw.ncpu` -E ts --output-on-failure
+      run: ctest --timeout 3200 -C Release -j `sysctl -n hw.ncpu` -E "ts|Dirac" --output-on-failure
+    - name: Dirac tests (if secrets provided)
+      if: ${{ env.QCI_TOKEN != '' && env.QCI_API_URL != '' }}
+      working-directory: ${{github.workspace}}/build
+      run: ctest --timeout 3200 -C Release -j `sysctl -n hw.ncpu` -R "Dirac" --output-on-failure
