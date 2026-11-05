@@ -10,7 +10,7 @@
         #include <OpenGL/glext.h>
         #if __has_include(<GLUT/glut.h>)
             #include <GLUT/glut.h>
-        #endi
+        #endif
 
     #elif defined(MSVC)
 
@@ -31,7 +31,7 @@
         #include <GL/glext.h>
         #if __has_include(<GLUT/glut.h>)
             #include <GLUT/glut.h>
-        #endi
+        #endif
     #else
 
         #include <GL/gl.h>
@@ -39,7 +39,7 @@
         #include <GL/glext.h>
         #if __has_include(<GL/glut.h>)
             #include <GL/glut.h>
-        #endi
+        #endif
 
     #endif
 

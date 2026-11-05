@@ -1,1 +1,11 @@
 exe(libgen)
+
+if(OPENMIND_USE_OPENGL)
+    if(APPLE)
+        target_link_libraries(draw-pattern-relations PRIVATE "-framework OpenGL" "-framework GLUT")
+    elseif(WIN32)
+        target_link_libraries(draw-pattern-relations PRIVATE opengl32)
+    else()
+        target_link_libraries(draw-pattern-relations PRIVATE GL GLU glut)
+    endif()
+endif()
