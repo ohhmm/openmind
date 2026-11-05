@@ -329,7 +329,7 @@ function(apply_test_commons this_target)
 		endif()
 	endforeach()	
 	if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
-		target_compile_definitions(${this_target} ${visibility}
+		target_compile_definitions(${this_target} PRIVATE
 			-DTEST_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
 			-DTEST_BIN_DIR="${CMAKE_CURRENT_BINARY_DIR}/"
 		)
