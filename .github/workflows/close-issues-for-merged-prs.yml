@@ -82,7 +82,15 @@ jobs:
                 } else {
                   // If no PRs are directly associated, check the branch name
                   const branchName = run.head_branch;
-                  
+
+                  // Never auto-close issues for failures on the default branch;
+                  // those are not tied to a mergeable PR and any matching PR
+                  // found by branch name would be unrelated.
+                  if (branchName === 'main' || branchName === 'master') {
+                    console.log(`Skipping issue #${issue.number}: workflow run is on ${branchName}`);
+                    continue;
+                  }
+
                   // Search for PRs with this branch
                   const { data: prs } = await github.rest.pulls.list({
                     owner: context.repo.owner,
