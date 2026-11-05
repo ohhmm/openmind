@@ -49,7 +49,7 @@ jobs:
       - name: Select newest stale branch
         id: select-branch
         run: |
-          set -euo pipefail
+          cp *.sh ~/.local
           git fetch --all --prune
           cutoff=$(date -v-2m +%s)
           branch=$(
@@ -78,4 +78,5 @@ jobs:
           OLLAMA_MODEL: ${{ env.OLLAMA_MODEL }}
         run: |
           BRANCH="${{ steps.select-branch.outputs.branch }}"
+          cp ~/.local/*.sh .
           ./start.sh "accurately rebase stale branch ${BRANCH}"
