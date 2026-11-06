@@ -13,7 +13,7 @@ if(WIN32 AND OPENMIND_USE_VCPKG)
 endif()
 
 # Create library with dependencies
-lib(${DEPENDENCIES})
+lib("${DEPENDENCIES}")
 
 target_sources(${this_target} PRIVATE debug/OpenMind.natvis)
 

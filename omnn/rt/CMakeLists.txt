@@ -20,4 +20,4 @@ if(OPENMIND_USE_OPENCL)
     endif()
 endif()
 
-lib(${DEPENDENCIES})
+lib("${DEPENDENCIES}")
