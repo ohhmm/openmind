@@ -1,5 +1,3 @@
-find_package(Boost REQUIRED COMPONENTS program_options)
-
 
 if(MSVC)
 	option(PNG_SHARED "Build shared lib" OFF)
