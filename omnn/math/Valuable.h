@@ -837,6 +837,10 @@ public:
     }
 
     virtual std::ostream& code(std::ostream& out) const;
+    virtual std::ostream& Asm(std::ostream& out) const;
+    std::string Asm() const;
+    static std::ostream& Asm(const Valuable& v, std::ostream& out);
+    static std::string Asm(const Valuable& v);
     std::string OpenCL(const std::string_view& TypeName = "float") const;
     std::string OpenCLuint() const;
     va_names_t OpenCLparamVarNames() const;
