@@ -1121,7 +1121,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         o(Valuable(host->Host(id)));
                         i = next - 1;
                     }
-                } else if (is_num_start(c) || c == '-' && is_num_start(str[i+1])) {
+                } else if (is_num_start(c) || (c == '-' && is_num_start(str[i+1]))) {
                     auto next = str.find_first_not_of(" 0123456789.", i+1);
                     auto ss = str.substr(i, next - i);
                     Trim(ss);
