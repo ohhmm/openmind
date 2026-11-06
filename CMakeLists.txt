@@ -204,6 +204,7 @@ set(_BOOST_USED_COMPONENTS
 	filesystem
 	iostreams
 	locale
+	program_options
 	python
 	serialization
 #	system no system in 1.91.0
@@ -270,6 +271,7 @@ if (NOT Boost_FOUND)
 	else()
 		include(pytect)
 		set(BOOST_PATHS_HINTS
+				C:/Boost/stage
 				C:/Boost
 				/usr/local/lib/cmake/boost_python-*
 				/usr/local/lib/cmake/Boost-*
