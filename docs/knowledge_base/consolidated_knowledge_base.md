@@ -118,6 +118,9 @@ The ohhmm/openmind repository is organized into the following main directories:
 - Structural changes can unexpectedly affect code logic
 - Each refactoring change must be validated through the test suite
 
+### Code Style
+- In `if` conditions, order checks sorted by likelihood of happening within its context (more likely first).
+
 ### Multiple Related Changes
 - Split changes involving multiple components into separate, incremental PRs
 - Follow an incremental approach:
