@@ -6,6 +6,7 @@
 ## Documentation quallity requirements
 - Write only truth, consolidated and correct, in positive-only form
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
+- In `if` conditions, order checks sorted by likelihood of happening within its context (more likely first).
 
 ## Code quality requirements
 - Keep edits minimal and terse
