@@ -23,6 +23,7 @@
 #include <omnn/rt/tasq.h>
 
 #include <algorithm>
+#include <cctype>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -835,7 +836,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         constexpr char SupportedOps[] = " */%+-^()!";
 
         constexpr auto is_num_start(auto c) {
-            return (c >= '0' && c <= '9') || c == '.';
+            return std::isdigit(c) || c == '.';
         }
     }
     Valuable::Valuable(const std::string_view& str
@@ -1126,7 +1127,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     v = 0;
                     o = o_mov;
                     mulByNeg ^= true;
-                } else if ((c >= '0' && c <= '9') || c =='.') {
+                } else if (is_num_start(c)) {
                     auto next = str.find_first_not_of(" 0123456789.", i+1);
                     auto ss = str.substr(i, next - i);
                     Trim(ss);
