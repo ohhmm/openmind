@@ -261,6 +261,7 @@ jobs:
 - Create pull requests directly from existing commits first, without making any local code changes or running tests
 - When creating multiple PRs from a series of commits, prefer creating independent PRs based directly off the main branch
 - Only rebase and push pull requests that were created by yourself
+- Before creating a PR, check for existing open PRs with the same fix; do not create duplicate PRs. If a fix already exists, amend existing one.
 - Always create pull requests targeting the main branch
 - Each individual commit should be submitted as a separate pull request, even when multiple commits are related to the same feature
 
