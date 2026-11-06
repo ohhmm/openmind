@@ -30,7 +30,9 @@ macro(pymod)
         Boost::Python
         )
     set_target_properties(${this_target} PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/python"
+        PREFIX ""
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     )
     if(WIN32)
         set_target_properties(${this_target} PROPERTIES
@@ -57,6 +59,7 @@ macro(pytest)
                 COMMAND ${Python_EXECUTABLE} $<TARGET_FILE_DIR:${parent_target}>/${TEST_NAME}.py
                 WORKING_DIRECTORY $<TARGET_FILE_DIR:${parent_target}>
             )
+            set_property(TEST ${TEST_NAME} PROPERTY ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:${parent_target}>")
             set_property(TEST ${TEST_NAME} PROPERTY FOLDER "test/pytest")
             if(OPENMIND_USE_VCPKG)
                 set_property(TEST ${TEST_NAME} PROPERTY DISABLED $<$<CONFIG:DEBUG>:ON>)
