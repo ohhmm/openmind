@@ -2124,6 +2124,29 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             LOG_AND_IMPLEMENT("code(std::ostream&) for " << *this)
     }
 
+    std::ostream& Valuable::Asm(std::ostream& out) const {
+        if (exp)
+            return exp->Asm(out);
+        std::stringstream code;
+        code << *this;
+        out << "\t; " << code.str() << "\\n";
+        return out;
+    }
+
+    std::string Valuable::Asm() const {
+        std::stringstream out;
+        Asm(out);
+        return out.str();
+    }
+
+    std::ostream& Valuable::Asm(const Valuable& v, std::ostream& out) {
+        return v.Asm(out);
+    }
+
+    std::string Valuable::Asm(const Valuable& v) {
+        return v.Asm();
+    }
+
     Valuable::universal_lambda_t Valuable::CompileIntoLambda(variables_for_lambda_t variablesOfParams) const {
         if (exp)
             return exp->CompileIntoLambda(variablesOfParams);
