@@ -1121,18 +1121,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         o(Valuable(host->Host(id)));
                         i = next - 1;
                     }
-                } else if (is_num_start(c) || (c == '-' && is_num_start(str[i+1]))) {
-                    if (c == '-') {
-                        size_t prev = i;
-                        while (prev > 0 && (str[prev-1] == ' ' || str[prev-1] == '\t')) --prev;
-                        bool binary = (prev > 0) && (std::isalnum((unsigned char)str[prev-1]) || str[prev-1] == ')');
-                        if (binary) {
-                            o_sum(std::move(v));
-                            v = 0;
-                            o = o_mov;
-                            mulByNeg = false;
-                        }
-                    }
+                } else if (c == '-') {
+                    o_sum(std::move(v));
+                    v = 0;
+                    o = o_mov;
+                    mulByNeg ^= true;
+                } else if ((c >= '0' && c <= '9') || c =='.') {
                     auto next = str.find_first_not_of(" 0123456789.", i+1);
                     auto ss = str.substr(i, next - i);
                     Trim(ss);
@@ -1148,10 +1142,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         }
                         auto beforedot = ss.substr(0, dot);
                         auto afterdot = ss.substr(dot + 1);
-                        auto precision = 10_v ^ afterdot.length();
-                        auto integer = Integer(beforedot);
-                        auto f = (integer * precision + Integer(afterdot) * integer.Sign()) / precision;
-                        f.optimize();
+                        auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
                         o(std::move(f));
                     } else {
                         Valuable integer = hasSpace
@@ -1163,11 +1154,6 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                             o(std::move(integer));
                         }
                     }
-                } else if (c == '-') {
-                    o_sum(std::move(v));
-                    v = 0;
-                    o = o_mov;
-                    mulByNeg ^= true;
                 }
                 else if (c == '+') {
                     o_sum(std::move(v));
