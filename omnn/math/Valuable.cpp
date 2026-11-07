@@ -957,13 +957,24 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
             op_t o_sum, o_mul, o_div, o_exp;
             op_t o_mov;
             auto o = std::ref(o_mov);
+            enum class ParseNextOp // sort by priority
+            { mov, sum=1, mul=2, div=8, mod=16, psurd, exp=4 };
+            auto curNextOp = ParseNextOp::mov;
+            auto setNextOp = [&](ParseNextOp kind, op_t& fn) {
+                curNextOp = kind;
+                o = fn;
+            };
+            auto completePrimary = [&]() {
+                if (curNextOp == ParseNextOp::exp)
+                    curNextOp = ParseNextOp::sum;
+            };
             o_mov = [&](Valuable&& val) {
 				v = std::move(val);
                 if (mulByNeg) {
                     v *= -1;
                     mulByNeg = {};
                 }
-                o = o_sum;
+                setNextOp(ParseNextOp::sum, o_sum);
             };
             op_t o_mod;
             op_t o_pSurd;
@@ -1095,8 +1106,21 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                 {
                     auto cb = bracketsmap[i];
                     auto next = i + 1;
-                    o(Valuable(str.substr(next, cb - next), host, itIsOptimized));
-                    i = cb;
+                    Valuable value(str.substr(next, cb - next), host, itIsOptimized);
+                    size_t after = cb + 1;
+                    while (after < l && (str[after] == ' ' || str[after] == '\t' || str[after] == '\n' || str[after] == '\r')) ++after;
+                    while (after < l && str[after] == '!') {
+                        value.factorial();
+                        if (mulByNeg) {
+                            value *= -1;
+                            mulByNeg = {};
+                        }
+                        ++after;
+                        while (after < l && (str[after] == ' ' || str[after] == '\t' || str[after] == '\n' || str[after] == '\r')) ++after;
+                    }
+                    o(std::move(value));
+                    i = after > 0 ? (after - 1) : cb;
+                    completePrimary();
                 }
                 else if (c == 'v') {
                     auto idStart = i + 1;
@@ -1106,9 +1130,11 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         auto to = str.find_first_of(SupportedOps, idStart);
                         auto id = to == std::string::npos ? str.substr(i) : str.substr(i, to - i);
                         o(Valuable(host->Host(id)));
+                        completePrimary();
                         i = to - 1;
                     } else if (host->IsIntegerId()){
                         o(Valuable(host->Host(Valuable(a_int(id)))));
+                        completePrimary();
                         i = next - 1;
                     } else {
                         next = str.find_first_of(SupportedOps, idStart);
@@ -1121,18 +1147,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         o(Valuable(host->Host(id)));
                         i = next - 1;
                     }
-                } else if (is_num_start(c) || (c == '-' && is_num_start(str[i+1]))) {
-                    if (c == '-') {
-                        size_t prev = i;
-                        while (prev > 0 && (str[prev-1] == ' ' || str[prev-1] == '\t')) --prev;
-                        bool binary = (prev > 0) && (std::isalnum((unsigned char)str[prev-1]) || str[prev-1] == ')');
-                        if (binary) {
-                            o_sum(std::move(v));
-                            v = 0;
-                            o = o_mov;
-                            mulByNeg = false;
-                        }
-                    }
+                } else if (is_num_start(c)) {
                     auto next = str.find_first_not_of(" 0123456789.", i+1);
                     auto ss = str.substr(i, next - i);
                     Trim(ss);
@@ -1152,46 +1167,76 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         auto integer = Integer(beforedot);
                         auto f = (integer * precision + Integer(afterdot) * integer.Sign()) / precision;
                         f.optimize();
+                        size_t fnext = next;
+                        while (fnext < l && (str[fnext] == ' ' || str[fnext] == '\t' || str[fnext] == '\n' || str[fnext] == '\r')) ++fnext;
+                        while (fnext < l && str[fnext] == '!') {
+                            f.factorial();
+                            if (mulByNeg) {
+                                f *= -1;
+                                mulByNeg = {};
+                            }
+                            ++fnext;
+                            while (fnext < l && (str[fnext] == ' ' || str[fnext] == '\t' || str[fnext] == '\n' || str[fnext] == '\r')) ++fnext;
+                        }
                         o(std::move(f));
+                        i = fnext > 0 ? (fnext - 1) : i;
+                        completePrimary();
                     } else {
                         Valuable integer = hasSpace
                             ? Integer(Solid(std::string(ss)))
                             : Integer(ss);
                         if (i < str.length() && str[next] == 'r') {
-                            o = o_pSurd;
+                            setNextOp(ParseNextOp::psurd, o_pSurd);
                         } else {
+                            size_t inext = next;
+                            while (inext < l && (str[inext] == ' ' || str[inext] == '\t' || str[inext] == '\n' || str[inext] == '\r')) ++inext;
+                            while (inext < l && str[inext] == '!') {
+                                integer.factorial();
+                                if (mulByNeg) {
+                                    integer *= -1;
+                                    mulByNeg = {};
+                                }
+                                ++inext;
+                                while (inext < l && (str[inext] == ' ' || str[inext] == '\t' || str[inext] == '\n' || str[inext] == '\r')) ++inext;
+                            }
                             o(std::move(integer));
+                            i = inext > 0 ? (inext - 1) : i;
+                    completePrimary();
                         }
                     }
                 } else if (c == '-') {
-                    o_sum(std::move(v));
-                    v = 0;
-                    o = o_mov;
+                    size_t prev = i;
+                    while (prev > 0 && (str[prev-1] == ' ' || str[prev-1] == '\t')) --prev;
+                    bool binary = (prev > 0) && (std::isalnum((unsigned char)str[prev-1]) || str[prev-1] == ')');
+                    if (binary) {
+                        o_sum(std::move(v));
+                        v = 0;
+                        setNextOp(ParseNextOp::mov, o_mov);
+                    }
                     mulByNeg ^= true;
                 }
                 else if (c == '+') {
                     o_sum(std::move(v));
                     v = 0;
-                    o = o_mov;
+                    setNextOp(ParseNextOp::mov, o_mov);
                 }
                 else if (c == '*') {
-                    o = o_mul;
+                    setNextOp(ParseNextOp::mul, o_mul);
                     while (str[i + 1] == ' ')
                         ++i;
-                    mulByNeg ^= str[i + 1] == '-';
                 }
                 else if (c == '/') {
-                    o = o_div;
+                    setNextOp(ParseNextOp::div, o_div);
                     while (str[i + 1] == ' ')
                         ++i;
                 }
                 else if (c == '%') {
-                    o = o_mod;
+                    setNextOp(ParseNextOp::mod, o_mod);
                     while (str[i + 1] == ' ')
                         ++i;
                 }
                 else if (c == '^') {
-                    o = o_exp;
+                    setNextOp(ParseNextOp::exp, o_exp);
                 }
                 else if (c == '!') {
                     v.factorial();
@@ -1199,6 +1244,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         v *= -1;
                         mulByNeg = {};
                     }
+                    completePrimary();
                 }
                 else if (c == ' ') {
                 }
@@ -1221,6 +1267,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                     mulByNeg = {};
                                 }
                                 o(std::move(value));
+                                completePrimary();
                             } else if (id == "factorial"sv) {
                                 auto next = to + 1;
                                 auto arg = Valuable(str.substr(next, cb - next), host, itIsOptimized);
@@ -1230,6 +1277,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                     mulByNeg = {};
                                 }
                                 o(std::move(arg));
+                                completePrimary();
                             } else if (id == "gamma"sv) {
                                 auto next = to + 1;
                                 auto arg = Valuable(str.substr(next, cb - next), host, itIsOptimized);
@@ -1243,14 +1291,17 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                                 auto next = to + 1;
                                 auto args = str.substr(next, cb - next);
                                 o(Logarithm(args, host, itIsOptimized));
+                                completePrimary();
                             } else if (id == "ln"sv) {
                                 auto next = to + 1;
                                 auto arg = str.substr(next, cb - next);
                                 o(Logarithm(Euler(), Valuable(arg, host, itIsOptimized)));
+                                completePrimary();
                             } else if (id == "lim"sv || id == "limit"sv) {
                                 auto next = to + 1;
                                 auto args = str.substr(next, cb - next);
                                 o(Limit(args, host, itIsOptimized));
+                                completePrimary();
                             }
 							i = cb;
                             continue;
@@ -1262,6 +1313,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         mulByNeg = {};
                     }
                     o(std::move(val));
+                    completePrimary();
                     i = to - 1;
                 } else {
                     LOG_AND_IMPLEMENT("Unexpected char " << c << " in " << str << " position " << i);

@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "Variable.h"
+#include <chrono>
 #include "Sum.h"
 #include "generic.hpp"
 
@@ -315,4 +316,19 @@ BOOST_AUTO_TEST_CASE(FillPolynomialCoefficients_test, *disabled())
     coefficients.clear();
     auto exp4 = x ^ (Valuable(1)/Valuable(2));
     BOOST_CHECK_THROW(exp4.FillPolynomialCoefficients(coefficients, x), std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE(Performance_Deserialization_tests) {
+    DECL_VA(x);
+    const auto expr = "(x ^ 4) - 4 * x * (x ^ 2) + 324"_v.str();
+    auto host = x.getVaHost();
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 100; ++i) {
+        Valuable v(expr, host, false);
+        (void)v.str();
+    }
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::high_resolution_clock::now() - start).count();
+    std::cout << "Deserialization perf: 100 round trips in " << ms << " ms" << std::endl;
+    BOOST_TEST(true);
 }
