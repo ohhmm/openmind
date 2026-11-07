@@ -79,4 +79,4 @@ jobs:
         run: |
           BRANCH="${{ steps.select-branch.outputs.branch }}"
           cp ~/.local/*.sh .
-          ./start.sh "accurately rebase stale branch ${BRANCH}"
+          ./do.sh accurately rebase stale branch ${BRANCH}
