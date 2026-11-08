@@ -130,6 +130,19 @@ extern const Variable& integration_result_constant;
     Valuable implement(const char* str = "");
 
 
+struct HamiltonianTerm {
+    size_t i = {};
+    size_t j = {};
+    double value = 0.0;
+};
+
+struct HamiltonianFile {
+    std::string file_name;
+    size_t num_variables = 0;
+    std::vector<HamiltonianTerm> terms;
+    double constant = 0.0;
+};
+
 class Valuable
     : public OpenOps<Valuable>
     , public std::enable_shared_from_this<Valuable>
@@ -843,6 +856,9 @@ public:
     static std::string Asm(const Valuable& v);
     std::string OpenCL(const std::string_view& TypeName = "float") const;
     std::string OpenCLuint() const;
+
+    std::vector<HamiltonianTerm> HamiltonianTerms() const;
+    HamiltonianFile ToHamiltonianFile(const std::string& file_name = "hamiltonian.json") const;
     va_names_t OpenCLparamVarNames() const;
 
     [[nodiscard]] virtual bool is_optimized() const;

@@ -2177,6 +2177,76 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
 		return {{"i", {}}, {"n", {}}, {"Result", {}}};
 	}
 
+	std::vector<HamiltonianTerm> Valuable::HamiltonianTerms() const {
+		auto vars = Vars();
+		std::vector<HamiltonianTerm> terms;
+		if (vars.empty()) return terms;
+
+		std::vector<Variable> variables(vars.begin(), vars.end());
+		const size_t n = variables.size();
+
+		Valuable::vars_cont_t zero;
+		for (const auto& v : variables) zero[v] = Valuable(0.0);
+
+		Valuable f0 = Eval(zero);
+
+		std::vector<Valuable> linear(n);
+		std::vector<Valuable> diagonal(n);
+		std::vector<std::vector<Valuable>> mixed(n, std::vector<Valuable>(n));
+
+		for (size_t i = 0; i < n; ++i) {
+			Valuable::vars_cont_t point = zero;
+			point[variables[i]] = Valuable(1.0);
+			Valuable f1 = Eval(point);
+
+			point[variables[i]] = Valuable(2.0);
+			Valuable f2 = Eval(point);
+
+			const Valuable sq = (f2 - f1 * Valuable(2.0) + f0) / Valuable(2.0);
+			const Valuable lin = f1 - f0 - sq;
+
+			terms.push_back({i, i, static_cast<double>(lin)});
+			terms.push_back({i, i, static_cast<double>(sq)});
+
+		}
+
+		(void)diagonal;
+		(void)mixed;
+		(void)linear;
+
+		for (size_t i = 0; i < n; ++i) {
+			for (size_t j = i + 1; j < n; ++j) {
+				Valuable::vars_cont_t point = zero;
+				point[variables[i]] = Valuable(1.0);
+				point[variables[j]] = Valuable(1.0);
+				Valuable fij = Eval(point);
+
+				Valuable::vars_cont_t pi = zero;
+				pi[variables[i]] = Valuable(1.0);
+				Valuable::vars_cont_t pj = zero;
+				pj[variables[j]] = Valuable(1.0);
+
+				Valuable fi = Eval(pi);
+				Valuable fj = Eval(pj);
+
+				const Valuable cross = fij - fi - fj + f0;
+				terms.push_back({i, j, static_cast<double>(cross)});
+				terms.push_back({j, i, static_cast<double>(cross)});
+			}
+		}
+
+		return terms;
+	}
+
+	HamiltonianFile Valuable::ToHamiltonianFile(const std::string& file_name) const {
+		HamiltonianFile file;
+		file.file_name = file_name;
+		auto vars = Vars();
+		file.num_variables = vars.size();
+		file.terms = HamiltonianTerms();
+		return file;
+	}
+
     std::ostream& operator<<(std::ostream& out, const Valuable& obj)
     {
         return obj.print(out);

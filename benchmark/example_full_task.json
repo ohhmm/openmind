@@ -1,0 +1,35 @@
+{
+  "file_name": "full_task.json",
+  "file_config": {
+    "hamiltonian": {
+      "num_variables": 5,
+      "data": [
+        {
+          "i": 0,
+          "j": 0,
+          "val": 1.0
+        },
+        {
+          "i": 1,
+          "j": 1,
+          "val": 1.0
+        },
+        {
+          "i": 2,
+          "j": 2,
+          "val": 1.0
+        },
+        {
+          "i": 3,
+          "j": 3,
+          "val": 1.0
+        },
+        {
+          "i": 4,
+          "j": 4,
+          "val": 1.0
+        }
+      ]
+    }
+  }
+}
