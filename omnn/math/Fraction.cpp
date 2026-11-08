@@ -32,7 +32,8 @@ using namespace omnn::math;
     {
         auto s = boost::lexical_cast<std::string>(f);
         if (s=="nan") {
-            throw s;
+            Become(NaN());
+            return;
         }
         auto doti = s.find_first_of('.');
         if (doti == -1)
@@ -65,6 +66,13 @@ using namespace omnn::math;
         return Valuable(std::move(frac));
     }
 
+    bool Fraction::operator==(const Integer& integer) const {
+        auto equal = getDenominator() == constants::one
+            ? getNumerator() == integer
+            : operator==(Fraction{integer, constants::one});
+        return equal;
+    }
+
     bool Fraction::operator==(const Fraction& fraction) const {
         auto equal = base::operator==(fraction);
         if (!equal) {
@@ -89,22 +97,22 @@ using namespace omnn::math;
     }
 
     bool Fraction::operator==(const Valuable& v) const {
-        auto eq = v.IsFraction();
-        if (eq) {
+        bool eq = {};
+        if (IsNaN() || v.IsNaN()) {
+        } else if (v.IsFraction()) {
             eq = operator==(v.as<Fraction>());
         } else if (v.IsExponentiation() || v.IsSum() || v.IsProduct()) {
             eq = v.operator==(*this);
         } else if (v.IsInt()) {
-            eq = getNumerator() == v && getDenominator() == constants::one;
+            eq = operator==(v.as<Integer>());
         } else if (!is_optimized()) {
             eq = denominator() == constants::one && numerator() == v;
-        } else if (v.IsVa()) {
-        } else if (v.IsPrincipalSurd()) {
-        } else if (v.IsConstant()) {
-        } else if (v.IsLogarithm()) {
-        } else if (v.IsInfinity()) {
-        } else if (v.IsNaN()) {
-        } else if (v.IsModulo()) {
+        } else if (v.IsVa()) {            // FIXME : can be equal
+        } else if (v.IsPrincipalSurd()) { // FIXME : can be equal
+        } else if (v.IsConstant()) {      // FIXME : can be equal
+        } else if (v.IsLogarithm()) {     // FIXME : can be equal
+        } else if (v.IsInfinity()) {      // FIXME : can be equal
+        } else if (v.IsModulo()) {        // FIXME : can be equal
         } else {
             LOG_AND_IMPLEMENT(*this << " =?= " << v);
         }
@@ -821,6 +829,9 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
             auto degreeDiff = base::getMaxVaExp() - v.getMaxVaExp();
             if (!degreeDiff.is_zero()) {
                 is = degreeDiff.sign() >= 0;
+            } else {
+                LOG_AND_IMPLEMENT("Please, define order between " << *this << " and " << v);
+                is = {};
             }
         }
 
