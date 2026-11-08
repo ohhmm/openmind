@@ -16,7 +16,7 @@ jobs:
         path: |
           ${{ github.workspace }}/build/CMakeFiles
           C:/Boost
-          ${{ runner.home }}/.cache/Db*.solutions
+          ${{ runner.home }}/.cache/openmind/solutions/Db*.solutions
         key: ${{ runner.os }}-boost-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-boost-

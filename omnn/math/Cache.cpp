@@ -72,7 +72,7 @@ Cache::path_str_t Cache::ConventionalCacheDir() {
   const char* home = std::getenv("HOME");
 #endif
   fs::path root = home ? fs::path(home) : fs::path(".");
-  return root / ".cache";
+  return root / ".cache" / "openmind";
 }
 
 Cache::Cache(const Cache::path_str_t &path) {

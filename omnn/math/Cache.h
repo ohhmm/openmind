@@ -126,7 +126,7 @@ namespace fs = boost::filesystem;
 }
 
 #define CACHE(name) \
-    Cache name(Cache::ConventionalCacheDir() / (std::string(#name) + ".solutions"));
+    Cache name(Cache::ConventionalCacheDir() / "solutions" / (std::string(#name) + ".solutions"));
 
 #define USE_CACHE(name) auto& cache = name ; \
     auto cached = doCheckCache ? cache.AsyncFetch(*this, true) : Cache::TaskNoCache; \
