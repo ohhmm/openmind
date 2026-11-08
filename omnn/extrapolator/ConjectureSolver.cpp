@@ -4,6 +4,8 @@
 
 #include "ConjectureSolver.h"
 
+#include <boost/multiprecision/cpp_int.hpp>
+
 #include <algorithm>
 #include <cctype>
 #include <functional>
@@ -15,6 +17,8 @@
 
 namespace omnn::math {
 namespace {
+
+using boost::multiprecision::cpp_int;
 
 struct Node {
     std::map<std::string, std::int64_t> assigns;
@@ -333,8 +337,8 @@ bool Matches(const std::vector<Term>& num, const std::vector<Term>& den, const s
         if (d == 0)
             return false;
         auto x = rows[r].at(target);
-        __int128 left = n;
-        __int128 right = static_cast<__int128>(x) * d;
+        cpp_int left = n;
+        cpp_int right = cpp_int(x) * d;
         if (shape == Shape::Times) {
             left *= rows[r].at(var);
         } else if (shape == Shape::Over) {
@@ -409,20 +413,20 @@ std::optional<std::string> RationalFallback(const std::string& target, const std
         std::int64_t d0 = 0;
         bool inverse = true;
         bool haveProduct = false;
-        __int128 product = 0;
+        cpp_int product = 0;
         for (auto& row : rows) {
             auto x = row.at(target);
             auto v = row.at(var);
-            if (v == 0 || (d0 != 0 && static_cast<__int128>(x) * d0 != static_cast<__int128>(n0) * v))
+            if (v == 0 || (d0 != 0 && cpp_int(x) * d0 != cpp_int(n0) * v))
                 proportional = false;
             else if (d0 == 0) {
                 n0 = x;
                 d0 = v;
             }
-            if (v == 0 || (haveProduct && static_cast<__int128>(x) * v != product))
+            if (v == 0 || (haveProduct && cpp_int(x) * v != product))
                 inverse = false;
             else if (!haveProduct) {
-                product = static_cast<__int128>(x) * v;
+                product = cpp_int(x) * v;
                 haveProduct = true;
             }
         }
@@ -497,10 +501,10 @@ std::string ConjectureSolver::Solve(std::string_view targetView) const {
                     // Collect all numerator term combinations keyed by their
                     // row-evaluation vector, so denominators can be matched
                     // directly instead of testing every pair.
-                    std::map<std::vector<__int128>, std::vector<std::vector<Term>>> numByEval;
+                    std::map<std::vector<cpp_int>, std::vector<std::vector<Term>>> numByEval;
                     {
-                        std::function<void(int, int, std::vector<Term>&, std::vector<__int128>)> genNum =
-                            [&](int from, int need, std::vector<Term>& chosen, std::vector<__int128> eval) {
+                        std::function<void(int, int, std::vector<Term>&, std::vector<cpp_int>)> genNum =
+                            [&](int from, int need, std::vector<Term>& chosen, std::vector<cpp_int> eval) {
                                 if (need == 0) {
                                     numByEval[eval].push_back(chosen);
                                     return;
@@ -509,21 +513,21 @@ std::string ConjectureSolver::Solve(std::string_view targetView) const {
                                 for (int mono = from; mono < static_cast<int>(monos.size()); ++mono) {
                                     for (int coeff : coeffs) {
                                         chosen.push_back(Term{coeff, mono});
-                                        std::vector<__int128> next = eval;
+                                        std::vector<cpp_int> next = eval;
                                         for (std::size_t r = 0; r < rowCount; ++r)
-                                            next[r] += static_cast<__int128>(coeff) * monos[mono].at[r];
+                                            next[r] += coeff * monos[mono].at[r];
                                         genNum(mono + 1, need - 1, chosen, next);
                                         chosen.pop_back();
                                     }
                                 }
                             };
                         std::vector<Term> chosen;
-                        std::vector<__int128> zeros(rowCount, 0);
+                        std::vector<cpp_int> zeros(rowCount, 0);
                         genNum(0, numN, chosen, zeros);
                     }
 
-                    std::function<void(int, int, std::vector<Term>&, std::vector<__int128>)> genDen =
-                        [&](int from, int need, std::vector<Term>& chosen, std::vector<__int128> eval) {
+                    std::function<void(int, int, std::vector<Term>&, std::vector<cpp_int>)> genDen =
+                        [&](int from, int need, std::vector<Term>& chosen, std::vector<cpp_int> eval) {
                             if (best)
                                 return;
                             if (need == 0) {
@@ -531,20 +535,20 @@ std::string ConjectureSolver::Solve(std::string_view targetView) const {
                                 if (cost != complexity)
                                     return;
                                 for (auto shape : {Shape::Times, Shape::Over, Shape::Identity}) {
-                                    std::vector<__int128> targetEval(rowCount, 0);
+                                    std::vector<cpp_int> targetEval(rowCount, 0);
                                     bool feasible = true;
                                     for (std::size_t r = 0; r < rowCount; ++r) {
                                         auto x = rows[r].at(target);
                                         auto v = rows[r].at(var);
                                         switch (shape) {
                                         case Shape::Identity:
-                                            targetEval[r] = static_cast<__int128>(x) * eval[r];
+                                            targetEval[r] = cpp_int(x) * eval[r];
                                             break;
                                         case Shape::Times:
                                             if (v == 0) {
                                                 feasible = false;
                                             } else {
-                                                __int128 product = static_cast<__int128>(x) * eval[r];
+                                                cpp_int product = cpp_int(x) * eval[r];
                                                 if (product % v != 0) {
                                                     feasible = false;
                                                 } else {
@@ -553,7 +557,7 @@ std::string ConjectureSolver::Solve(std::string_view targetView) const {
                                             }
                                             break;
                                         case Shape::Over:
-                                            targetEval[r] = static_cast<__int128>(x) * eval[r] * v;
+                                            targetEval[r] = cpp_int(x) * eval[r] * v;
                                             break;
                                         }
                                         if (!feasible)
@@ -578,9 +582,9 @@ std::string ConjectureSolver::Solve(std::string_view targetView) const {
                             for (int mono = from; mono < static_cast<int>(monos.size()); ++mono) {
                                 for (int coeff : coeffs) {
                                     chosen.push_back(Term{coeff, mono});
-                                    std::vector<__int128> next = eval;
+                                    std::vector<cpp_int> next = eval;
                                     for (std::size_t r = 0; r < rowCount; ++r)
-                                        next[r] += static_cast<__int128>(coeff) * monos[mono].at[r];
+                                        next[r] += coeff * monos[mono].at[r];
                                     genDen(mono + 1, need - 1, chosen, next);
                                     chosen.pop_back();
                                     if (best)
@@ -590,7 +594,7 @@ std::string ConjectureSolver::Solve(std::string_view targetView) const {
                         };
 
                         std::vector<Term> denEmpty;
-                        std::vector<__int128> zeros(rowCount, 0);
+                        std::vector<cpp_int> zeros(rowCount, 0);
                         genDen(0, denN, denEmpty, zeros);
                 }
             }

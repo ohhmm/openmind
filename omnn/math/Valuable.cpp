@@ -835,7 +835,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         constexpr char SupportedOps[] = " */%+-^()!";
 
         constexpr auto is_num_start(auto c) {
-            return std::isdigit(c) || c == '.';
+            return (c >= '0' && c <= '9') || c == '.';
         }
     }
     Valuable::Valuable(const std::string_view& str
@@ -1121,13 +1121,19 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                         o(Valuable(host->Host(id)));
                         i = next - 1;
                     }
-                } else if (c == '-') {
-                    o_sum(std::move(v));
-                    v = 0;
-                    o = o_mov;
-                    mulByNeg ^= true;
-                } else if (is_num_start(c)) {
-                    auto next = str.find_first_not_of(" 0123456789.", i+1);
+                } else if (is_num_start(c) || (c == '-' && i + 1 < str.size() && is_num_start(str[i + 1]))) {
+                    if (c == '-') {
+                        size_t prev = i;
+                        while (prev > 0 && (str[prev - 1] == ' ' || str[prev - 1] == '\t')) --prev;
+                        bool binary = (prev > 0) && (std::isalnum((unsigned char)str[prev - 1]) || str[prev - 1] == ')');
+                        if (binary) {
+                            o_sum(std::move(v));
+                            v = 0;
+                            o = o_mov;
+                            mulByNeg = false;
+                        }
+                    }
+                    auto next = str.find_first_not_of(" 0123456789.", i + 1);
                     auto ss = str.substr(i, next - i);
                     Trim(ss);
                     auto hasSpace = ss.find(' ') != std::string::npos;
@@ -1135,14 +1141,21 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                     i = next - 1;
                     if (dot != std::string::npos) {
                         std::string s;
-                        if(hasSpace){
+                        if (hasSpace) {
                             s = ss;
                             s = Solid(s);
                             ss = s;
                         }
                         auto beforedot = ss.substr(0, dot);
                         auto afterdot = ss.substr(dot + 1);
-                        auto f = Integer(beforedot) + Integer(afterdot) / (10_v ^ afterdot.length());
+                        auto precision = 10_v ^ afterdot.length();
+                        auto before = beforedot.empty() || beforedot == "-" || beforedot == "+"
+                            ? std::string("0")
+                            : std::string(beforedot);
+                        auto integer = Integer(before);
+                        auto sign = beforedot.empty() || beforedot.front() != '-' ? 1 : -1;
+                        auto f = (integer * precision + Integer(afterdot) * sign) / precision;
+                        f.optimize();
                         o(std::move(f));
                     } else {
                         Valuable integer = hasSpace
@@ -1154,6 +1167,12 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
                             o(std::move(integer));
                         }
                     }
+                }
+                else if (c == '-') {
+                    o_sum(std::move(v));
+                    v = 0;
+                    o = o_mov;
+                    mulByNeg ^= true;
                 }
                 else if (c == '+') {
                     o_sum(std::move(v));
