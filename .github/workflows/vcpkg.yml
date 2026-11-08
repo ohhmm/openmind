@@ -36,7 +36,7 @@ jobs:
           !${{github.workspace}}/vcpkg/buildtrees
           !${{github.workspace}}/vcpkg/packages
           !${{github.workspace}}/vcpkg/downloads
-          ${{ runner.home }}/.cache/Db*.solutions
+          ${{ runner.home }}/.cache/openmind/solutions/Db*.solutions
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-
