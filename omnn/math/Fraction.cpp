@@ -830,7 +830,6 @@ std::pair<bool,Valuable> Fraction::IsSummationSimplifiable(const Valuable& value
             if (!degreeDiff.is_zero()) {
                 is = degreeDiff.sign() >= 0;
             } else {
-                LOG_AND_IMPLEMENT("Please, define order between " << *this << " and " << v);
                 is = {};
             }
         }
