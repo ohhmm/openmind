@@ -3,6 +3,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/beast/ssl.hpp>
+#include <boost/json.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
@@ -125,6 +126,7 @@ std::string DiracClient::performRequest(const std::string& endpoint,
     req.version(11);
     if (method == "POST") req.method(http::verb::post);
     else if (method == "PUT") req.method(http::verb::put);
+    else if (method == "PATCH") req.method(http::verb::patch);
     else if (method == "DELETE") req.method(http::verb::delete_);
     else req.method(http::verb::get);
 
@@ -150,7 +152,7 @@ std::string DiracClient::performRequest(const std::string& endpoint,
     beast::error_code ec;
     stream.shutdown(ec);
 
-    if (res.result() != http::status::ok) {
+    if (res.result() < http::status::ok || res.result() >= http::status::multiple_choices) {
         throw std::runtime_error("API request failed with status " + std::to_string(static_cast<int>(res.result())) + ": " + res.body());
     }
 
@@ -158,13 +160,58 @@ std::string DiracClient::performRequest(const std::string& endpoint,
 }
 
 std::string DiracClient::UploadProblem(const std::string& jsonProblem) {
-    return performRequest("/optimization/v1/files", "POST", jsonProblem);
+    namespace json = boost::json;
+    json::value parsed = json::parse(jsonProblem);
+    const json::object& root = parsed.as_object();
+
+    std::string fileName = "file.json";
+    if (root.contains("file_name") && root.at("file_name").is_string()) {
+        fileName = std::string(root.at("file_name").as_string());
+    }
+
+    const json::object& fileConfig = root.at("file_config").as_object();
+    if (fileConfig.empty()) throw std::runtime_error("file_config must contain exactly one file type");
+    auto it = fileConfig.begin();
+    std::string fileType = std::string(it->key());
+    const json::object& typeConfig = it->value().as_object();
+
+    int64_t numVars = 0;
+    if (typeConfig.contains("num_variables") && typeConfig.at("num_variables").is_int64()) {
+        numVars = typeConfig.at("num_variables").as_int64();
+    } else if (typeConfig.contains("num_variables") && typeConfig.at("num_variables").is_uint64()) {
+        numVars = static_cast<int64_t>(typeConfig.at("num_variables").as_uint64());
+    } else if (typeConfig.contains("num_variables") && typeConfig.at("num_variables").is_double()) {
+        numVars = static_cast<int64_t>(typeConfig.at("num_variables").as_double());
+    } else {
+        throw std::runtime_error("file_config.<type>.num_variables is required");
+    }
+
+    json::object metaTypeConfig;
+    metaTypeConfig["num_variables"] = numVars;
+    json::object metaFileConfig;
+    metaFileConfig[fileType] = metaTypeConfig;
+    json::object metadata;
+    metadata["file_name"] = fileName;
+    metadata["file_config"] = metaFileConfig;
+
+    std::string uploadResponse = performRequest("/optimization/v1/files", "POST", json::serialize(metadata));
+    std::string fileId = extractJsonValue(uploadResponse, "file_id");
+    if (fileId.empty()) throw std::runtime_error("file upload response missing file_id: " + uploadResponse);
+
+    json::object patchTypeConfig;
+    if (typeConfig.contains("data")) patchTypeConfig["data"] = typeConfig.at("data");
+    json::object patchFileConfig;
+    patchFileConfig[fileType] = patchTypeConfig;
+    json::object patch;
+    patch["file_config"] = patchFileConfig;
+
+    performRequest("/optimization/v1/files/" + fileId + "/contents/1", "PATCH", json::serialize(patch));
+return"{\"file_id\":\""+fileId+"\"}";
 }
 
 std::string DiracClient::CreateJob(const std::string& problemId, const std::string& device) {
-    std::string payload = "{\"job_submission\":{\"problem_config\":{},\"device_config\":{\""
-                          + device + "\":{}}},\"file_id\":\"" + problemId + "\"}";
-    return performRequest("/optimization/v1/jobs", "POST", payload);
+    std::string payload = "{\"job_submission\":{\"problem_config\":{\"normalized_qudit_hamiltonian_optimization_continuous\":{\"hamiltonian_file_id\":\"" + problemId + "\"}},\"device_config\":{\"" + device + "\":{}}}}";
+return performRequest("/optimization/v1/jobs", "POST", payload);
 }
 
 std::string DiracClient::PollJobStatus(const std::string& jobId) {
