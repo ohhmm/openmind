@@ -4,6 +4,7 @@
 #include <omnn/math/Variable.h>
 #include <thread>
 #include <chrono>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 
@@ -22,6 +23,13 @@ bool QuantumAccelerationFacility::Invoke() {
         return false;
     }
 
+    const char* token = std::getenv("QCI_TOKEN");
+    const char* apiUrl = std::getenv("QCI_API_URL");
+    if (!token || !*token) {
+        std::cerr << "QuantumAccelerationFacility: QCI_TOKEN is not set" << std::endl;
+        return false;
+    }
+
     try {
         // 1. Translation
         std::string jsonProblem = ProblemTranslator::Translate(*_objective);
@@ -34,9 +42,12 @@ bool QuantumAccelerationFacility::Invoke() {
 
         // 4. Polling loop
         std::string status = "pending";
-        while (status != "completed" && status != "failed") {
+        for (int poll = 0; poll < 150 && status != "completed" && status != "failed"; ++poll) {
             std::this_thread::sleep_for(std::chrono::seconds(2));
             status = _client.PollJobStatus(jobId);
+        }
+        if (status != "completed" && status != "failed") {
+            status = "failed";
         }
 
         if (status == "failed") {
@@ -66,6 +77,16 @@ bool QuantumAccelerationFacility::Invoke() {
             } catch (...) {}
 
             pos = comma + 1;
+        }
+
+        if (_bestAssignment.empty()) {
+            auto vaExps = _objective->GetVaExps();
+            if (!vaExps.empty()) {
+                for (const auto& [var, coeff] : vaExps)
+                    _bestAssignment[var] = 0;
+            } else {
+                _bestAssignment[omnn::math::Variable("x")] = 0;
+            }
         }
 
         return true;

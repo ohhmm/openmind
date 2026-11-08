@@ -28,6 +28,7 @@ private:
 
     std::string getAccessToken();
     static std::string extractJsonValue(const std::string& json, const std::string& key);
+    static std::string extractId(const std::string& json);
 
     // Internal helper for HTTPS requests
     std::string performRequest(const std::string& endpoint,
