@@ -1,6 +1,7 @@
 
 #include "Valuable.h"
 #include <skrypt.h>
+#include "MiniZinc.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -12,6 +13,8 @@
 #include <boost/dll/shared_library.hpp>
 
 #include <fstream>
+#include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <string>
 
@@ -371,10 +374,19 @@ const Valuable::va_names_t& Skrypt::Load(std::istream& in)
 
 const Valuable::va_names_t& Skrypt::Load(const boost::filesystem::path & path)
 {
-	std::cout << "Loading " << path << '\n' << std::endl;
     auto filepath = boost::filesystem::exists(path)
         ? path
         : FindModulePath({path.string()});
+
+    std::string extension = filepath.extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    if (extension == ".mzn" || extension == ".dzn") {
+        std::cout << "Loading " << filepath << '\n' << std::endl;
+        skrypt::MiniZincLoader::Load(filepath);
+        return vars;
+    }
+
+	std::cout << "Loading " << filepath << '\n' << std::endl;
     boost::filesystem::ifstream stream(filepath);
 	return Load(stream);
 }
