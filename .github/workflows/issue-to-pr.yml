@@ -37,7 +37,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
           # Prioritize open issues labeled "next" (oldest first).
           NEXT_CANDIDATE=$(gh issue list \
             --label next --state open --limit 50 \

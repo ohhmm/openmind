@@ -52,8 +52,6 @@ jobs:
           COMMENT_ID: ${{ github.event.comment.id }}
           REPOSITORY: ${{ github.repository }}
         run: |
-          set -euo pipefail
-          chmod +x ./claude.sh
           PROMPT="PR review comment ${COMMENT_ID} on PR #${PR_NUMBER} in ${REPOSITORY}: "
           PROMPT+="fetch its body via gh, then use the decision model to decide "
           PROMPT+="whether a new GitHub issue should be created from this comment "
