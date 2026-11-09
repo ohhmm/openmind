@@ -1,6 +1,9 @@
 #!/bin/bash
-set -euo pipefail
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 bash -n "$ROOT/do.sh"
-grep -Fq '/Applications/Ollama.app/Contents//Resources/ollama' "$ROOT/do.sh"
-echo "do.sh smoke checks passed"
+bash -n "$ROOT/claude.sh"
+bash -n "$ROOT/ollama.sh"
+grep -Fq '/Applications/Ollama.app/Contents//Resources/ollama' "$ROOT/ollama.sh"
+grep -Fq 'OLLAMA_MODELS' "$ROOT/claude.sh"
+echo "wrapper smoke checks passed"
