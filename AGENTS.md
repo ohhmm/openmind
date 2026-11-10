@@ -18,6 +18,7 @@
 - Prefer more general, reusable approaches/rules over narrowly specific ones when both are available.
 - Prefer automation over manual work when it preserves correctness and quality.
 - Avoid `dynamic_cast`; prefer compile-time type checks and `static_cast` or explicit polymorphic interfaces.
+- Consider existing helpers for repeated semantic checks; reuse or extend them when doing so improves consistency, readability, and maintainability.
 - Represent behavior, capabilities, truthfully, consolidated, correct, in positive-only form and completely in code, tests, examples, comments, documentation, and output.
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
 - Disabling tests (e.g. *disabled(), commenting out test cases, or excluding tests from the build) is strictly forbidden. Fix the underlying issue or report it as a blocker instead.
