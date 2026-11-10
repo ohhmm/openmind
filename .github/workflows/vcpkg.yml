@@ -36,7 +36,7 @@ jobs:
           !${{github.workspace}}/vcpkg/buildtrees
           !${{github.workspace}}/vcpkg/packages
           !${{github.workspace}}/vcpkg/downloads
-          ${{ runner.home }}/.cache/openmind/solutions/Db*.solutions
+          ${{ runner.home }}/.cache
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-
@@ -121,7 +121,7 @@ jobs:
         VCPKG_BINARY_SOURCES: default,readwrite
         VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
       with:
-        vcpkgGitCommitId: '62159a45e18f3a9ac0548628dcaf74fcb60c6ff9'
+        vcpkgGitCommitId: '9eec002df1cd109f8f104cd966a763daf9751489'
         vcpkgJsonGlob: '**/vcpkg.json'
         runVcpkgInstall: true
         doNotCache: false
