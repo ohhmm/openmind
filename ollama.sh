@@ -3,8 +3,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INPUT="Hi"
-MODEL="${OLLAMA_MODEL:-beam:cloud}"
-FALLBACK_MODEL="${OLLAMA_FALLBACK_MODEL:-qwen3.5:9b}"
+# OLLAMA_MODELS="${OLLAMA_MODELS:-beam:cloud qwen3.5:9b qwen3.5:4b}"
+# OLLAMA_MODELS=beam:cloud qwen3.5:9b qwen3.5:4b
+OLLAMA_MODELS="${OLLAMA_MODELS:-beam:cloud qwen3.5:9b qwen3.5:4b}"
+MODEL="${OLLAMA_MODELS%% *}"
 
 if [ "$#" -ne 0 ]; then
     INPUT="$*"
@@ -20,10 +22,11 @@ ensure_ollama() {
         "/c/Program Files/Ollama/ollama.exe" \
         "/c/Program Files (x86)/Ollama/ollama.exe"
     do
-        if [ -n "$candidate" ] &&
-           [ -x "$candidate" ] && command -v $candidate >/dev/null 2>&1; then
-            OLLAMA_CMD="$candidate"
-            return 0
+        if [ -n "$candidate" ] && command -v "$candidate" >/dev/null 2>&1; then
+            if [ "${candidate##*/}" = "$candidate" ] || [ -x "$candidate" ]; then
+                OLLAMA_CMD="$candidate"
+                return 0
+            fi
         fi
     done
 
