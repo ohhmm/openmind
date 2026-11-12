@@ -2048,6 +2048,7 @@ namespace
 			return Solved::AllAreRoots;
 		}
         auto solutionScopeAffected = Valuable::Solved::WasNotInitialized;
+        bool multivariableCoefficients = false;
         if(coefficients.size() != grade + 1) {
             std::cout << "Solving grade " << grade << " equation: " << str() << std::endl;
             IMPLEMENT
@@ -2123,6 +2124,11 @@ namespace
                 auto isNormalizedPolynomial = true;
                 auto lcm = constants::one;
 				for(auto& c : coefficients) {
+                    Valuable::var_set_t cVars;
+                    c.CollectVa(cVars);
+                    if (!cVars.empty()) {
+                        multivariableCoefficients = true;
+                    }
                     if (!c.IsInt()) {
                         isNormalizedPolynomial = false;
                         if (c.IsFraction()) {
@@ -2132,14 +2138,14 @@ namespace
                                 lcm.lcm(dn);
                             }
                         } else {
-                            LOG_AND_IMPLEMENT("Solving " << va
-                                              << (isNormalizedPolynomial ? " in normalized " : " in ") << *this
-                                              << "\nneed to normalize coefficient: " << c << std::endl);
+                            // multivariable case: coefficient depends on other variables;
+                            // rational root test does not apply, skip it
+                            isNormalizedPolynomial = false;
                         }
                     }
 				}
 
-                if (lcm != constants::one) {
+                if (lcm != constants::one && isNormalizedPolynomial) {
                     LOG_AND_IMPLEMENT("Coefficients meant to be balanced before solving");
 				}
 
@@ -2210,14 +2216,16 @@ namespace
                         return Valuable::SolutionsSpace(solutions);
                     }
                 } else {
-                    LOG_AND_IMPLEMENT("Solving " << va << " in " << *this << std::endl
-                        << "free member: " << k << std::endl
-                        << "first member coefficient: " << a << std::endl
-                        << "IsPowerX: " << IsPowerX(coefficients) << std::endl);
+                    // multivariable/non-integer case: rational root test not applicable
                 }
         }
 
         if (solutions.size()) {
+            return Valuable::SolutionsSpace(solutions);
+        }
+
+        // multivariable case: rational root test not applicable; avoid heavy univariate search
+        if (multivariableCoefficients) {
             return Valuable::SolutionsSpace(solutions);
         }
 
