@@ -266,6 +266,7 @@ jobs:
 - Only rebase and push pull requests that were created by yourself
 - Before creating a PR, check for existing open PRs with the same fix; do not create duplicate PRs. If a fix already exists, amend existing one.
 - Always create pull requests targeting the main branch
+- When GitHub CLI is unavailable, push the branch with `git push -u origin <branch>` and open its GitHub compare URL to create the pull request.
 - Each individual commit should be submitted as a separate pull request, even when multiple commits are related to the same feature
 
 ## Cross-Session Communication
