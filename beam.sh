@@ -13,5 +13,4 @@ if ! command -v "$MIRROR_CMD" >/dev/null 2>&1; then
     MIRROR_CMD="${UV_TOOL_BIN_DIR:-$HOME/.local/bin}/mirror"
 fi
 
-cd "$SCRIPT_DIR" &&
-    exec "$MIRROR_CMD" --api reflection --model "$MODEL" "$@"
+exec "$SCRIPT_DIR"/caffeinate.sh "$MIRROR_CMD" --api reflection --model "$MODEL" "$@"
