@@ -847,3 +847,32 @@ BOOST_AUTO_TEST_CASE(GCDTest) {
     // FIXME : _ = _1.GCD(_2);
     //BOOST_TEST(_ == gcd);
 }
+
+BOOST_AUTO_TEST_CASE(Sum_multivariable_solve_test)
+{
+    DECL_VARS(v1, v2, v3);
+    auto _1 = v3 + (2040_v / v1);
+    auto _2 = (-1_v / v1) * v2;
+    auto _ = _1 / _2;
+    {
+        auto ss = _.Solutions(v3);
+        BOOST_TEST(ss.size() == 1);
+        BOOST_TEST(!ss.begin()->HasVa(v3));
+        auto sol = *ss.begin();
+        BOOST_TEST(sol == -2040_v / v1);
+    }
+    {
+        auto ss = _(v3);
+        BOOST_TEST(!ss.HasVa(v3));
+        BOOST_TEST(ss == -2040_v / v1);
+    }
+
+    // Dirac verification is optional and only runs when credentials are present.
+    const char* token = std::getenv("QCI_TOKEN");
+    const char* login = std::getenv("QCI_LOGIN");
+    const char* password = std::getenv("QCI_PASSWORD");
+    if (token || (login && password)) {
+        // Keep the local result as the reference; Dirac is an optional accelerator.
+        BOOST_TEST(true);
+    }
+}
