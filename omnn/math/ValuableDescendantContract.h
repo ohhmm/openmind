@@ -14,6 +14,8 @@ namespace math {
 
         bool IsSurd() const override { return {}; }
 
+        std::ostream& Asm(std::ostream& out) const override { return Valuable::Asm(out); }
+
         Valuable& operator^=(const Valuable& v) override;
         Valuable& operator+=(const Valuable &v) override;
         Valuable& operator*=(const Valuable &v) override;

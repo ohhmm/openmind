@@ -67,6 +67,7 @@ public:
 //    Valuable sqrt() const override;
     std::ostream& print(std::ostream& out) const override;
     std::ostream& code(std::ostream& out) const override { return print(out); }
+    std::ostream& Asm(std::ostream& out) const override { return Valuable::Asm(out); }
     universal_lambda_t CompileIntoLambda(variables_for_lambda_t) const override;
 
     [[nodiscard]] constexpr bool IsVa() const override { return true; }

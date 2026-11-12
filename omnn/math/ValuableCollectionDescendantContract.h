@@ -46,6 +46,8 @@ namespace omnn::math {
 
         virtual const cont& GetConstCont() const = 0;
 
+        std::ostream& Asm(std::ostream& out) const override { return Valuable::Asm(out); }
+
         constexpr auto begin() noexcept { return GetCont().begin(); }
         constexpr auto end() noexcept { return GetCont().end(); }
         constexpr auto begin() const noexcept { return GetConstCont().begin(); }

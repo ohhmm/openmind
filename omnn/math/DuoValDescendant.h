@@ -68,6 +68,11 @@ namespace omnn::math {
             return out;
         }
 
+        std::ostream& Asm(std::ostream& out) const override
+        {
+            return Valuable::Asm(out);
+        }
+
         static max_exp_t getMaxVaExp(const Valuable& _1, const Valuable& _2) {
             if(_1.FindVa() || _2.FindVa())
                 IMPLEMENT // in Child
