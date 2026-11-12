@@ -847,3 +847,10 @@ BOOST_AUTO_TEST_CASE(GCDTest) {
     // FIXME : _ = _1.GCD(_2);
     //BOOST_TEST(_ == gcd);
 }
+
+BOOST_AUTO_TEST_CASE(SumAsmTest) {
+    auto v = "1 + 2"_v;
+    auto asmStr = v.Asm();
+    std::cout << "ASM: " << asmStr << std::endl;
+    BOOST_TEST(!asmStr.empty());
+}
