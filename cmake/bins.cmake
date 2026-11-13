@@ -220,6 +220,9 @@ function(apply_target_commons this_target)
 			MSVC_CONSTEXPR=
             NO_MSVC_CONSTEXPR=constexpr
 			)
+		set(opts ${opts}
+			$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-invalid-specialization>
+			)
 		if(APPLE)
 			set(defs ${defs} 
 				APPLE_CONSTEXPR=constexpr

@@ -41,7 +41,6 @@
     },
     "boost",
     "boost-gil",
-    "boost-locale",
     "boost-multiprecision",
     "boost-process",
     "boost-program-options",
