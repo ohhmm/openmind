@@ -77,7 +77,6 @@ jobs:
           echo "OS_SPECIFIC_CONFIGURE_FLAGS=$OS_SPECIFIC_CONFIGURE_FLAGS" >> $GITHUB_ENV
           brew update || brew update || brew update || brew update || brew update
           brew install \
-            cmake \
             ninja \
             autoconf \
             automake \
@@ -92,6 +91,9 @@ jobs:
             lz4 \
             gh \
             libomp
+          curl -fsSL https://github.com/Kitware/CMake/releases/download/v4.2.1/cmake-4.2.1-macos-universal.tar.gz | tar -xz -C /tmp
+          echo "/tmp/cmake-4.2.1-macos-universal/CMake.app/Contents/bin" >> $GITHUB_PATH
+          export PATH="/tmp/cmake-4.2.1-macos-universal/CMake.app/Contents/bin:$PATH"
           cmake --version
           ninja --version
           clang --version
