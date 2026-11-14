@@ -6,7 +6,7 @@ option(PNG_STATIC "Build static lib" ON)
 
 set(deplist 
 	libskrypt
-
+	Boost::compute
     Boost::filesystem
     Boost::program_options
     Boost::serialization

@@ -32,25 +32,30 @@ PatternRelationSystem::PatternRelationSystem(std::istream& in)
 	Load(in);
 }
 
-void PatternRelationSystem::Ask(const omnn::math::Variable& v)
+bool PatternRelationSystem::Ask(const omnn::math::Variable& v)
 {
 	std::cout << "\nWhat would be the " << v << '?' << std::endl;
+	bool result = {};
 	std::string line;
 	do {
-	std::cin >> line;
-	if(!line.empty())
-		Add(v.Equals({ line, GetVarHost() }));
-	else {
-		std::cout << "Any other clues?" << std::endl;
 		std::cin >> line;
-		Add({ line, GetVarHost() });
-	}
-	} while (line.empty());
+		if(!line.empty()) {
+			Add(v.Equals({ line, GetVarHost() }));
+			result = true;
+		} else if (std::cin.eof()) {
+			break;
+		} else {
+			std::cout << "Any other clues?" << std::endl;
+			std::cin >> line;
+			Add({ line, GetVarHost() });
+		}
+	} while (line.empty() && !std::cin.eof());
+	return result;
 }
 
 omnn::math::Valuable PatternRelationSystem::Get(const omnn::math::Variable& v)
 {
-	for (;;)
+	do
 	{
 		auto known = Known(v);
 		if (known.size()) {
@@ -76,9 +81,12 @@ omnn::math::Valuable PatternRelationSystem::Get(const omnn::math::Variable& v)
 		catch (...)
 		{
 		}
+	} while (Ask(v));
 
-		Ask(v);
-	}
+	Fetch(v);
+	solutions_t solutions;
+	solutions = Solve(v);
+	return std::move(solutions.extract(solutions.cbegin()).value());
 }
 
 boost::gil::rgba8_image_t PatternRelationSystem::GeneratePatternImage()

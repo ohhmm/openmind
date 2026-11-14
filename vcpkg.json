@@ -40,6 +40,7 @@
       ]
     },
     "boost",
+    "boost-compute",
     "boost-gil",
     "boost-multiprecision",
     "boost-process",

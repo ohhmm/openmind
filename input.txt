@@ -1,0 +1,6 @@
+width=640
+height=640
+red=(x*4)%256
+green=(y*4)%256
+blue=64
+alpha=255
