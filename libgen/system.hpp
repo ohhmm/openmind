@@ -32,7 +32,7 @@ namespace gen {
 		PatternRelationSystem();
 		PatternRelationSystem(std::istream&);
 
-		void Ask(decltype(x));
+		bool Ask(decltype(x));
 		omnn::math::Valuable Get(decltype(x));
 
 		boost::gil::rgba8_image_t GeneratePatternImage();
