@@ -93,13 +93,6 @@ jobs:
       - name: Set up Ollama
         uses: ai-action/setup-ollama@v2
 
-      - uses: actions/cache@v6
-        with:
-          path: |
-            ~/.ollama
-            ~/.local
-          key: ${{ runner.os }}-ollama
-
       - name: Pull offline model
         run: |
           if ollama pull "${{ env.OLLAMA_MODEL }}" && ollama run "${{ env.OLLAMA_MODEL }}" hi; then
@@ -112,6 +105,13 @@ jobs:
             echo "OLLAMA_MODEL=${{ env.OLLAMA_FALLBACK_MODEL }}" >> $GITHUB_ENV
           fi
           ollama ps
+
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.ollama
+            ~/.local
+          key: ${{ runner.os }}-ollama
 
       - name: Create Devin Session
         id: devin-session
@@ -159,9 +159,7 @@ jobs:
         run: |
           ISSUE_NUMBER="${{ steps.select-issue.outputs.issue_number }}"
           ESCAPED_PROMPT=$(echo "${{ steps.issue-content.outputs.prompt }}" | jq -Rs .)
-          CLAUDE_RESPONSE=$(ollama launch --yes claude --model "${{ env.OLLAMA_MODEL }}" \
-            -- -p "RCA: $ESCAPED_PROMPT" --allow-dangerously-skip-permissions \
-            --dangerously-skip-permissions --effort max --no-session-persistence)
+          CLAUDE_RESPONSE=$(${{github.workspace}}/start.sh $ESCAPED_PROMPT)
           # Add label upon successful start
           gh issue edit "$ISSUE_NUMBER" --add-label "claude"
           gh issue comment "$ISSUE_NUMBER" --body "$CLAUDE_RESPONSE"
