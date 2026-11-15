@@ -77,18 +77,14 @@ jobs:
           ISSUE_NUMBER="${{ steps.create_issue.outputs.issue_number }}"
           WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
           WORKFLOW_URL="${{ github.event.workflow_run.html_url }}"
-          PROMPT="Resolve & PR (with link to original issue) fix, autoconfirming your plan, Issue ${ISSUE_NUMBER}: Workflow Failure: ${WORKFLOW_NAME}
+          PROMPT="RCA, Resolve & PR (with link to original issue) fix, autoconfirming your plan, Issue ${ISSUE_NUMBER}: Workflow Failure: ${WORKFLOW_NAME}
 
-          The workflow **${WORKFLOW_NAME}** failed. Please investigate.
+          CI workflow **${WORKFLOW_NAME}** issue.
 
-          [View the failed workflow run](${WORKFLOW_URL})"
-          ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | jq -Rs .)
+          [View the workflow run](${WORKFLOW_URL})"
           rm -f /tmp/claude-response-part-*
-          ollama launch --yes claude --model "${{ env.OLLAMA_MODEL }}" \
-            -- -p "RCA: $ESCAPED_PROMPT" \
-            --allow-dangerously-skip-permissions \
-            --dangerously-skip-permissions \
-            --effort max --no-session-persistence |
+          echo $PROMPT > task.md
+          ${{github.workspace}}/start.sh |
           awk -v max=50000 -v prefix=/tmp/claude-response-part- -v issue="$ISSUE_NUMBER" '
             function flush() {
               if (have) {
