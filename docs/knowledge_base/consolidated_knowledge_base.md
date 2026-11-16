@@ -109,7 +109,7 @@ The ohhmm/openmind repository is organized into the following main directories:
 - When implementing new methods, follow strict TDD workflow:
   1. First isolate the problem that necessitates the new method
   2. Create a failing test that demonstrates the issue
-  3. Submit initial PR with the disabled failing test
+  3. Introduce new test for the new method overload. The new test may be introduced in initially disabled state, for example if it requires symantically unrelated changes and bugfixes to enable.
   4. Create separate PR with the fix that enables and passes the test
 - Mathematical operations should follow the organization pattern established by the Logarithm implementation
 
@@ -207,7 +207,7 @@ jobs:
 
 ### Testing Guidelines
 - Tests should be enabled and fixed to pass successfully rather than being left in a disabled state
-- When encountering a disabled test, the priority should be to:
+- Disabling EXISTING tests is strictly forbidden. TDD requires sometimes introducing NEW tests in disabled state though.
   1. Enable the test by removing the disabled flag
   2. Fix any issues that arise to make the test pass
   3. Verify the test passes successfully in CI

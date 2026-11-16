@@ -7,6 +7,7 @@
 
 ## Documentation quallity requirements
 - Write only truth, consolidated and correct, in positive-only form
+- Resolve apparent contradictions with minimal wording clarifications while preserving all project requirements.
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
 - In `if` conditions, order checks sorted by likelihood of happening within its context (more likely first).
 
@@ -23,7 +24,7 @@
 - Consider existing helpers for repeated semantic checks; reuse or extend them when doing so improves consistency, readability, and maintainability.
 - Represent behavior, capabilities, truthfully, consolidated, correct, in positive-only form and completely in code, tests, examples, comments, documentation, and output.
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
-- Disabling tests (e.g. *disabled(), commenting out test cases, or excluding tests from the build) is strictly forbidden. Fix the underlying issue or report it as a blocker instead.
+- Disabling EXISTING tests (e.g. *disabled(), commenting out test cases, or excluding tests from the build) is strictly forbidden. Fix the underlying issue or report it as a blocker instead. TDD requires introducing some NEW tests in disabled state initially sometimes though.
 
 ## Refactoring
 - Equivalent extraction only: move existing code verbatim; preserve names, order, conditions, paths, and behavior; minimal diff.

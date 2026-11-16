@@ -100,6 +100,12 @@ This document identifies contradictions and inconsistencies found in the knowled
 
 **Resolution**: The first statement recommends local testing before pushing test changes, while the second suggests relying on CI for testing. The correct approach is to use local testing for test-specific changes to avoid unnecessary CI runs, but rely on CI for general validation of other changes.
 
+### 9. Disabled Tests exist
+
+**Clarification**: Disabling an EXISTING test is forbidden; this doesn't contradict to introducing a NEW test in disabled state initially is possible.
+
+**Resolution**: Added "existing"/"new" words to clarify distinction
+
 ## Conclusion
 
 The contradictions identified are mostly differences in emphasis or context rather than direct logical contradictions. In most cases, the more specific or conservative approach should be followed when there's any ambiguity. The key principle is to adapt the approach based on the specific task at hand, while maintaining the core values of integrity, thoroughness, and efficiency.

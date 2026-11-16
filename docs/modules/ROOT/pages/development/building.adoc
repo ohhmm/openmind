@@ -66,7 +66,7 @@ ctest --test-dir build -C RelWithDebInfo --output-on-failure --output-log test-o
 ----
 
 For a focused investigation, add `-R '<test-name-regex>'`.
-Keep tests enabled and resolve failures at their source.
+Keep existing tests enabled and resolve failures at their source; introduce new disabled tests in the initial TDD commit as required by xref:development/contributing.adoc[Contributing].
 
 == Optional Features
 

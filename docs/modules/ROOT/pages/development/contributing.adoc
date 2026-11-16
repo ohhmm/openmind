@@ -17,8 +17,9 @@ For extraction refactors, move existing code verbatim and keep behavioral improv
 
 For defects, reproduce the failure and complete root cause analysis before implementing the fix.
 Present the debugger call stack, the responsible function, and unexpected variable values; obtain maintainer approval of the analysis before creating the pull request.
-For new methods, first demonstrate the problem with a failing test, then verify the fix.
-Keep tests enabled throughout the workflow.
+For new methods, first demonstrate the problem with a failing test, then introduce it disabled in a separate commit and initial PR as required by TDD.
+A separate fix PR enables and passes the test.
+Keep existing tests enabled.
 
 == Verify
 
