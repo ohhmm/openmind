@@ -307,7 +307,7 @@ BOOST_PYTHON_MODULE(variable)
         })
         .def("__rsub__", +[](const Variable& v, double d) -> Valuable {
             auto result = Valuable(d) - v;
-            return -v + Fraction(d);
+            return result;
         })
         .def("__sub__", +[](const Valuable& v, const Valuable& i) { return v - i; })
         .def("__rsub__", +[](const Valuable& v, const Valuable& i) { return i - v; })
