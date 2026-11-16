@@ -133,6 +133,10 @@ The ohhmm/openmind repository is organized into the following main directories:
 - This saves time and allows for more efficient problem identification
 - If you have the ability to reproduce and investigate an issue directly, do so rather than waiting for detailed user descriptions
 
+### Shared Fixes
+- Fix defects in shared code, scripts, and configuration at their source; temporary machine-local workarounds are forbidden because they make every user repeat the effort.
+- Verify fixes by rerunning the original entry point on the affected platform.
+
 ## Build System & Dependencies
 
 ### Build Configuration:

@@ -54,3 +54,4 @@ See the full [Git Workflow](docs/knowledge_base/consolidated_knowledge_base.md#g
 
 ## Crossplatform
 - Target platforms: Windows, Linux, macOS. Keep changes portable and avoid platform-specific breakage.
+- Fix defects in shared code, scripts, and configuration at their source; temporary machine-local workarounds are forbidden because they make every user repeat the effort. Verify by rerunning the original entry point on the affected platform.
