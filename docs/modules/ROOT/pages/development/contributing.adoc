@@ -1,0 +1,58 @@
+= Contributing
+:description: Repository conventions, verification, and pull request workflow
+
+== Prepare
+
+Read the root `AGENTS.md` and its referenced documents recursively before starting work.
+Follow applicable directory instructions and the repository's consolidated knowledge base in `docs/knowledge_base/consolidated_knowledge_base.md`.
+Use `AGENTS.md` for the current requirements where older guidance conflicts.
+Set up the project using xref:development/building.adoc[Building from Source].
+
+== Make a Focused Change
+
+Keep edits minimal, preserve existing style and functionality, and support Windows, Linux, and macOS.
+Fix shared code, scripts, and configuration at their source.
+Preserve arbitrary precision in mathematical operations.
+For extraction refactors, move existing code verbatim and keep behavioral improvements in separate pull requests.
+
+For defects, reproduce the failure and complete root cause analysis before implementing the fix.
+Present the debugger call stack, the responsible function, and unexpected variable values; obtain maintainer approval of the analysis before creating the pull request.
+For new methods, first demonstrate the problem with a failing test, then verify the fix.
+Keep tests enabled throughout the workflow.
+
+== Verify
+
+Run relevant local tests and retain full output, including failures, crashes, sanitizer diagnostics, and memory leaks.
+Attribute each failure to its responsible test and treat unattributed failure signals as failures.
+Validate refactors through test execution and mathematical changes through numerical results, conversions, and edge cases.
+Write concise documentation that matches observed behavior.
+
+== Submit a Pull Request
+
+Check open pull requests for the same fix and update an existing matching pull request when applicable.
+Keep related changes in separate, focused pull requests targeting `main`.
+Use the account's GitHub noreply address as the commit author email.
+
+Each branch must contain exactly one commit above the freshest `origin/HEAD` (`origin/main`).
+Fetch the remote and verify the commit count:
+
+[source,shell]
+----
+git fetch origin
+git rev-list --count origin/HEAD..HEAD
+----
+
+The count must be `1`.
+Amend the existing commit when updating a pull request you created.
+Before each push, prepare a checklist of the pull request and CI checks to inspect, and run:
+
+[source,shell]
+----
+git pull --rebase --autostash origin HEAD
+----
+
+Push amended commits with `git push --force-with-lease`.
+Inspect CI for the latest pull request commit and keep the checklist current until all required checks pass.
+For code or test failures, obtain full logs, fix the proven cause, verify locally, amend, and push again.
+For infrastructure failures, retry the affected check and report any remaining blocker.
+Before reporting completion, verify that the latest revision contains exactly one commit and all required CI checks pass.

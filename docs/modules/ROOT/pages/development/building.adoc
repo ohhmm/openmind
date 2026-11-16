@@ -1,0 +1,77 @@
+= Building from Source
+:description: Configure, build, and test OpenMind on Windows, Linux, and macOS
+
+== Prerequisites
+
+Install Git, CMake, Ninja, Python 3 with pip, and a C++23 compiler.
+Use the platform's development tools:
+
+* Windows: Visual Studio C++ build tools and the Windows SDK; run commands in a developer PowerShell.
+* Linux: a C++ toolchain, pkg-config, autoconf, automake, and autoconf-archive.
+* macOS: Xcode command line tools, autoconf, automake, autoconf-archive, libtool, and pkg-config.
+
+The root `CMakeLists.txt` selects C++23 and requires Boost 1.81 or newer for its native dependency path.
+The vcpkg manifest, `vcpkg.json`, defines dependencies and their baseline for the build below.
+
+== Set Up vcpkg
+
+Run commands from the OpenMind repository root.
+For a new vcpkg installation:
+
+[source,shell]
+----
+git clone https://github.com/microsoft/vcpkg.git vcpkg
+----
+
+Bootstrap on Windows:
+
+[source,powershell]
+----
+.\vcpkg\bootstrap-vcpkg.bat
+----
+
+Bootstrap on Linux or macOS:
+
+[source,bash]
+----
+./vcpkg/bootstrap-vcpkg.sh
+----
+
+For an existing installation, use its toolchain path in the configure command.
+
+== Configure and Build
+
+This configuration enables project tests and uses CPU computation.
+CMake's vcpkg integration installs the manifest dependencies during configuration.
+
+[source,shell]
+----
+cmake -S . -B build -G "Ninja Multi-Config" "-DCMAKE_TOOLCHAIN_FILE=$PWD/vcpkg/scripts/buildsystems/vcpkg.cmake" -DOPENMIND_USE_VCPKG=ON -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_BUILD_SAMPLES=OFF -DOPENMIND_USE_OPENCL=OFF -DOPENMIND_BUILD_PYTHON_BINDINGS=OFF
+cmake --build build --target prerequisites --config RelWithDebInfo --parallel
+cmake -S . -B build
+cmake --build build --config RelWithDebInfo --parallel
+----
+
+On Windows, append `-DVCPKG_TARGET_TRIPLET=x64-windows` to the initial configure command for the triplet used by CI.
+The `prerequisites` target builds dependencies managed by the project's CMake scripts; reconfiguration discovers the resulting libraries.
+Use `--config Debug` or `--config Release` consistently in build and test commands for those configurations.
+
+== Run Tests
+
+Run the registered suite and preserve its full output:
+
+[source,shell]
+----
+ctest --test-dir build -C RelWithDebInfo --output-on-failure --output-log test-output.log
+----
+
+For a focused investigation, add `-R '<test-name-regex>'`.
+Keep tests enabled and resolve failures at their source.
+
+== Optional Features
+
+Set `OPENMIND_USE_OPENCL=ON` with an OpenCL SDK and runtime available to enable GPU computation.
+Set `OPENMIND_BUILD_SAMPLES=ON` to build examples.
+For Python bindings, configure with `OPENMIND_BUILD_PYTHON_BINDINGS=ON` and matching Python development files and Boost.Python libraries; see xref:development/python_wrapper.adoc[Python Bindings].
+
+The platform build recipes are maintained in `.github/workflows/vcpkg.yml`, `.github/workflows/ubuntu.yml`, and `.github/workflows/macos.yml`.
