@@ -7,7 +7,7 @@ if [ "$#" -ne 0 ]; then
     INPUT="$*"
 fi
 
-ensure_ollama() {
+ensure_ollama_installed() {
     for candidate in ollama \
         "/Applications/Ollama.app/Contents//Resources/ollama" \
         "/Applications/Ollama.app/Contents/Resources/ollama" \
@@ -67,5 +67,38 @@ ensure_ollama() {
     echo "Failed to install or locate ollama" >&2
     exit 1
 }
-ensure_ollama
+
+ensure_ollama_started() {
+case "${1:-}" in
+    serve|help|-h|--help|-v|--version) ;;
+    *)
+        case "${OLLAMA_HOST:-127.0.0.1:11434}" in
+            127.0.0.1|127.0.0.1:*|localhost|localhost:*|http://127.0.0.1:*|http://localhost:*|'[::1]'|'[::1]':*|'http://[::1]':*)
+                if ! "$OLLAMA_CMD" list >/dev/null 2>&1; then
+                    server_log="$(mktemp "${TMPDIR:-/tmp}/ollama-server.XXXXXX")" || exit 1
+                    nohup "$OLLAMA_CMD" serve >"$server_log" 2>&1 < /dev/null &
+                    server_pid=$!
+                    attempts=0
+                    until "$OLLAMA_CMD" list >/dev/null 2>&1; do
+                        if ! kill -0 "$server_pid" 2>/dev/null || [ "$attempts" -ge 30 ]; then
+                            cat "$server_log" >&2
+                            echo "Ollama startup failed; server log: $server_log" >&2
+                            exit 1
+                        fi
+                        sleep 1
+                        attempts=$((attempts + 1))
+                    done
+                fi
+                ;;
+        esac
+        ;;
+esac
+}
+
+ensure_ollama() {
+    ensure_ollama_installed
+    ensure_ollama_started "$@"
+}
+
+ensure_ollama "$@"
 exec "$OLLAMA_CMD" "$@"

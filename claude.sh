@@ -16,24 +16,20 @@ if [ "$#" -ne 0 ]; then
    INPUT="-- $@"
 fi
 
-SELECTED_MODEL=""
-primary_model="${OLLAMA_MODELS%% *}"
-attempts=0
-for model in $OLLAMA_MODELS; do
-    [ -n "$model" ] || continue
-    if "$SCRIPT_DIR/ollama.sh" run "$model" hi >/dev/null 2>&1; then
-        if [ "$attempts" -gt 0 ]; then echo "Primary model unavailable; falling back to $model" >&2; fi
-        SELECTED_MODEL="$model"
-        break
+if [ -z "$MODEL" ]; then
+    if [ -z "$SELECTED_MODEL" ]; then
+        for model in $OLLAMA_MODELS; do
+            echo "Checking availability of model: $model"
+            if "$SCRIPT_DIR/ollama.sh" run "$model" hi ; then
+                SELECTED_MODEL="$model"
+                break
+            else
+                echo "Model $model is not available, skipping."
+            fi
+        done
     fi
-    attempts=$((attempts + 1))
-done
-
-if [ -z "$SELECTED_MODEL" ]; then
-    SELECTED_MODEL="$primary_model"
+    MODEL="$SELECTED_MODEL"
 fi
-
-MODEL="$SELECTED_MODEL"
 
 cd "$SCRIPT_DIR" &&
    exec ./caffeinate.sh ./ollama.sh launch --yes claude --model "$MODEL" $INPUT

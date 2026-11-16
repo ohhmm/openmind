@@ -1,5 +1,7 @@
 # Agent Instructions
 
+- Read this file and all documents it references recursively before starting work.
+
 ## Terminology
 - "ensure X" means make X happen: install, build, fetch, create, and configure it automatically until X holds. It never means only detecting X's absence and raising an error. Positive-only.
 
