@@ -14,6 +14,12 @@
 #include <boost/gil.hpp>
 
 #ifdef OPENMIND_USE_OPENGL
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+#endif
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
@@ -27,6 +33,7 @@
 #include <CL/cl.h>
 #include <CL/cl_gl.h>
 #endif
+#include <boost/compute/interop/opengl/context.hpp>
 #endif // OPENMIND_USE_OPENGL
 
 namespace {

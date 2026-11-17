@@ -96,6 +96,7 @@ boost::gil::rgba8_image_t PatternRelationSystem::GeneratePatternImage()
 
     boost::gil::rgba8_image_t img(widthValue, heightValue);
 	auto view = boost::gil::view(img);
+    auto variables = Vars();
     for (auto row=heightValue; row-->0 ;)
 	{
         auto copyForRow = *this;
