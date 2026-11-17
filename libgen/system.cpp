@@ -98,11 +98,13 @@ boost::gil::rgba8_image_t PatternRelationSystem::GeneratePatternImage()
 	auto view = boost::gil::view(img);
     for (auto row=heightValue; row-->0 ;)
 	{
+        auto copyForRow = *this;
+        copyForRow.Eval(y, row);
+
         for (auto col=widthValue; col-->0 ;)
         {
-			auto copy = *this;
+            auto copy = copyForRow;
 			copy.Eval(x, col);
-			copy.Eval(y, row);
 
 			using namespace boost::gil;
 			auto& px = view(col, row);
