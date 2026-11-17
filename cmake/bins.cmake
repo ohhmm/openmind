@@ -186,7 +186,6 @@ function(apply_target_commons this_target)
 		endif()
 		set(opts ${opts}
 			$<$<CONFIG:DEBUG>:/ZI>
-			$<$<CONFIG:Release>:/MT>
 			$<$<CONFIG:RelWithDebInfo>:/ZI>
 			/bigobj
 			/constexpr:steps1000000000
