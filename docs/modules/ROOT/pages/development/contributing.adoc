@@ -28,6 +28,14 @@ Attribute each failure to its responsible test and treat unattributed failure si
 Validate refactors through test execution and mathematical changes through numerical results, conversions, and edge cases.
 Write concise documentation that matches observed behavior.
 
+== Working on someone else's branches
+
+When explicitly asked to help on A branch created by someone else, changing single-commit branch authored by someone else would be inapropriate, so here is proposed resolve:
+
+- Prefer a one-commit standalone sufficient subfix commit to new branch (and new PR if possible) targeting `main` so after it merged, rebasing of the original branch onto updated `main` would make it fixed (you can test it by local rebase)
+- If RCA pointed to a bug in introduced functionality by the external branch changes then try to pick/extract minimal subchange that should be resolved and implement it into standalone sufficient commit (and PR if possible, targiting 'main'); so after it merged, rebasing of the original branch onto updated `main` would make it fixed (you can test it by local rebase) despite conflict resolving is expected in this scenario (this will point author attention to the area that required resolving to allow the author to avoid introducing similar issues in future); direct interaction with the original author of the original commit is not required if not neccessary, except adding to reviewers of PR if created
+- If a PR to `main` is unsuitable (by some rare reason that shouldn't happen), then clone source branch to new one-commit branch `<target-branch>-fix` to work with (unless there is another specific new branch name that was explicitly mentioned to clone from source branch to work with)
+
 == Submit a Pull Request
 
 Check open pull requests for the same fix and update an existing matching pull request when applicable.
