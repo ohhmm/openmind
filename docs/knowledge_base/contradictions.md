@@ -106,6 +106,12 @@ This document identifies contradictions and inconsistencies found in the knowled
 
 **Resolution**: Added "existing"/"new" words to clarify distinction
 
+### 10. Branch Continuity Across Tasks
+
+**Clarification**: Updating an open pull request uses its existing branch; each independent task uses a fresh branch based on the latest `origin/HEAD`.
+
+**Resolution**: Preserve the prior task's worktree/session and changes, push an interrupting subtask from a separate session/worktree, then return and verify the saved branch, `HEAD`, and changes before resuming.
+
 ## Conclusion
 
 The contradictions identified are mostly differences in emphasis or context rather than direct logical contradictions. In most cases, the more specific or conservative approach should be followed when there's any ambiguity. The key principle is to adapt the approach based on the specific task at hand, while maintaining the core values of integrity, thoroughness, and efficiency.

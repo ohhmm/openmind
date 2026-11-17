@@ -254,11 +254,11 @@ jobs:
 **Policy: one commit per PR.** Every pull request must contain exactly one commit; amend and force-push instead of adding commits (also stated in the root `AGENTS.md`).
 
 - Since GitHub email privacy protection is enabled, use the account's GitHub noreply address for commit author email
-- Before pushing changes, perform `git pull --rebase --autostash origin main`
+- Before pushing changes, perform `git pull --rebase --autostash origin HEAD`
 - This helps resolve conflicts and ensure a clean commit history
-- When rebasing pull requests, always update the existing branches directly rather than creating new branches
+- When updating an open PR, push to its existing branch; start each independent PR on a fresh branch based on the latest `origin/HEAD`
 - When resolving merge conflicts in pull requests, squash commits to remove the conflict resolution history before merging
-- When making changes, do not create new commits, the existing commit is amended and reached successfully built on CI
+- For an open PR, amend its existing commit and verify it on CI before merging
 - Each PR must contain exactly one commit, even when working with multiple related commits
 - Keep each PR to one commit; amend that commit and push with `--force-with-lease` for follow-up fixes rather than adding commits
 - After opening or updating a PR, inspect CI checks for the latest commit and continue iterating until all required checks pass
@@ -273,6 +273,13 @@ jobs:
 - Always create pull requests targeting the main branch
 - When GitHub CLI is unavailable, push the branch with `git push -u origin <branch>` and open its GitHub compare URL to create the pull request.
 - Each individual commit should be submitted as a separate pull request, even when multiple commits are related to the same feature
+
+### Task and Branch Continuity
+
+- Preserve the active task's branch, commit, context, and staged, unstaged, and untracked changes in its original worktree/session.
+- Run interrupting subtasks in a separate session/worktree on a fresh branch based on the latest `origin/HEAD`.
+- After pushing a subtask, return to the saved worktree/session and verify its branch, `HEAD`, and changes before resuming the prior activity.
+- Retire a merged branch/worktree after verifying all its commits are in the target branch and its worktree is clean.
 
 ## Cross-Session Communication
 

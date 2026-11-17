@@ -38,10 +38,17 @@
 - Since GitHub email privacy protection is enabled, use the account's GitHub noreply address for commit author email
 - To change an open PR, amend its commit and force-push (`git commit --amend` then `git push --force-with-lease`); do not add follow-up commits.
 - Before any pushing, always mandatorily run `git pull --rebase --autostash origin HEAD`
-- Related changes still go in separate PRs, one commit each, based on origin/HEAD
+- Start each independent PR on a fresh branch based on the latest `origin/HEAD`; update an open PR on its existing branch and amend its commit.
 - Before creating a PR, check for existing open PRs with the same fix; do not create duplicate PRs. If a fix already exists, amend existing one.
 
 See the full [Git Workflow](docs/knowledge_base/consolidated_knowledge_base.md#git-workflow) in the knowledge base.
+
+## Task and branch continuity
+
+- Preserve the active task's branch, commit, context, and staged, unstaged, and untracked changes in its original worktree/session.
+- Run interrupting subtasks in a separate session/worktree on a fresh branch based on the latest `origin/HEAD`.
+- After pushing a subtask, return to the saved worktree/session and verify its branch, `HEAD`, and changes before resuming the prior activity.
+- Retire a merged branch/worktree after verifying all its commits are in the target branch and its worktree is clean.
 
 ## CI feedback loop
 

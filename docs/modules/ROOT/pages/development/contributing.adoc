@@ -33,6 +33,12 @@ Write concise documentation that matches observed behavior.
 Check open pull requests for the same fix and update an existing matching pull request when applicable.
 Keep related changes in separate, focused pull requests targeting `main`.
 Use the account's GitHub noreply address as the commit author email.
+Start each independent pull request on a fresh branch based on the latest `origin/HEAD`; updates to an open pull request stay on its branch and amend its commit.
+
+Preserve the active task's branch, commit, context, and staged, unstaged, and untracked changes in its original worktree/session.
+Run interrupting subtasks in a separate session/worktree on a fresh branch.
+After pushing a subtask, return to the saved worktree/session and verify its branch, `HEAD`, and changes before resuming the prior activity.
+Retire a merged branch/worktree after verifying all its commits are in the target branch and its worktree is clean.
 
 Each branch must contain exactly one commit above the freshest `origin/HEAD` (`origin/main`).
 Fetch the remote and verify the commit count:
