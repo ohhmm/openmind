@@ -32,6 +32,7 @@ Write concise documentation that matches observed behavior.
 
 Check open pull requests for the same fix and update an existing matching pull request when applicable.
 Keep related changes in separate, focused pull requests targeting `main`.
+Introduce each new policy in its own dedicated commit and pull request; do not combine independent policies in one commit or pull request.
 Use the account's GitHub noreply address as the commit author email.
 
 Each branch must contain exactly one commit above the freshest `origin/HEAD` (`origin/main`).

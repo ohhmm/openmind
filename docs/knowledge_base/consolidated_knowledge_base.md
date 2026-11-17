@@ -253,6 +253,7 @@ jobs:
 
 **Policy: one commit per PR.** Every pull request must contain exactly one commit; amend and force-push instead of adding commits (also stated in the root `AGENTS.md`).
 
+- Introduce each new policy in its own dedicated commit and pull request; do not combine independent policies in one commit or pull request.
 - Since GitHub email privacy protection is enabled, use the account's GitHub noreply address for commit author email
 - Before pushing changes, perform `git pull --rebase --autostash origin main`
 - This helps resolve conflicts and ensure a clean commit history
