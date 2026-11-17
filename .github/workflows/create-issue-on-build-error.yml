@@ -88,6 +88,7 @@ jobs:
           awk -v max=50000 -v prefix=/tmp/claude-response-part- -v issue="$ISSUE_NUMBER" '
             function flush() {
               if (have) {
+                if (diff) { print "```\n\n</details>" >> file }
                 close(file)
                 system("gh issue comment " issue " --body-file " file)
                 idx++
@@ -99,20 +100,29 @@ jobs:
             }
             BEGIN { idx=0; file=prefix idx; len=0; have=0; blank=0 }
             {
+              if ($0 ~ /^diff --git / && !diff) { flush(); diff=1 }
+              if (diff && $0 ~ /^(On branch |HEAD detached |Not currently on any branch)/) { flush(); diff=0 }
               if ($0 == "") {
-                if (blank) { flush(); blank=0; next }
+                if (blank && !diff) { flush(); blank=0; next }
                 blank=1
                 if (have) { print "" >> file; len += 1 }
                 next
               }
               blank=0
-              if ($0 ~ /^#+ / || $0 ~ /^---+$/) { flush() }
-              if (tolower($0) ~ /check(ing)? in ~/) { flush() }
-              if (tolower($0) ~ /waiting for completion/) { flush() }
-              if (tolower($0) ~ /onitoring continue/) { flush() }
-              if (tolower($0) ~ /ontinuing to monitor/) { flush() }
+              if (!diff) {
+                if ($0 ~ /^#+ / || $0 ~ /^---+$/) { flush() }
+                if (tolower($0) ~ /check(ing)? in ~/) { flush() }
+                if (tolower($0) ~ /waiting for completion/) { flush() }
+                if (tolower($0) ~ /onitoring continue/) { flush() }
+                if (tolower($0) ~ /ontinuing to monitor/) { flush() }
+              }
               if (have && len + length($0) + 1 > max) { flush() }
-              if (!have) { file=prefix idx; print $0 > file; have=1; len=length($0) }
+              if (!have) {
+                file=prefix idx
+                if (diff) { print "<details>\n<summary>Source diff</summary>\n\n```diff" > file; print $0 >> file }
+                else { print $0 > file }
+                have=1; len=length($0)
+              }
               else { print $0 >> file; len += length($0)+1 }
             }
             END { flush() }
