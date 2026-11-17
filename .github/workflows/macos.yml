@@ -11,14 +11,7 @@ jobs:
     env:
         QCI_TOKEN: ${{ secrets.QCI_TOKEN }}
         QCI_API_URL: ${{ secrets.QCI_API_URL }}
-    runs-on: [
-      macos-latest,
-      xcode-27,
-      macos-26,
-      macos-26-intel,
-      macos-15,
-      macos-15-intel
-      ]
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: Create Build Dir
