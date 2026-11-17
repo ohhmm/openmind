@@ -1,11 +1,16 @@
-exe(libgen)
+set(deps
+    libgen
+    OpenGL
+)
 
 if(OPENMIND_USE_OPENGL)
-    if(APPLE)
-        target_link_libraries(draw-pattern-relations PRIVATE "-framework OpenGL" "-framework GLUT")
-    elseif(WIN32)
-        target_link_libraries(draw-pattern-relations PRIVATE opengl32)
+    if(WIN32)
+        set(deps ${deps} freeglut)
+    elseif(APPLE)
+        set(deps ${deps} GLUT)
     else()
-        target_link_libraries(draw-pattern-relations PRIVATE GL GLU glut)
+        set(deps ${deps} GLUT GL GLU)
     endif()
 endif()
+
+exe(${deps})
