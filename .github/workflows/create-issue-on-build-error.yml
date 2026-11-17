@@ -79,7 +79,13 @@ jobs:
           WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
           WORKFLOW_URL="${{ github.event.workflow_run.html_url }}"
           FIX_BRANCH="ci-workflow-fix/${WORKFLOW_FAILED_BRANCH}"
-          PROMPT="read & allways follow AGENTS.md recusively; Do complete RCA, complete Resolve and complete PR of the new $FIX_BRANCH branch that you create, autoconfirming your plan, to resolve Issue ${ISSUE_NUMBER} of Workflow Failure: ${WORKFLOW_NAME} (${WORKFLOW_URL})"
+          PROMPT="RCA, Resolve & PR (with link to original issue) fix, autoconfirming your plan, Issue ${ISSUE_NUMBER}: Workflow Failure: ${WORKFLOW_NAME}
+
+          CI workflow **${WORKFLOW_NAME}** issue.
+
+          Create and switch to branch ${FIX_BRANCH} from the freshest origin/main before editing files. Make the code changes that fix the workflow failure. Stage only files needed for this fix and create exactly one Git commit on ${FIX_BRANCH}. Push that branch and open a PR targeting main with a link to issue #${ISSUE_NUMBER}. For further fixes, amend that commit and push with --force-with-lease. Keep exactly one commit above origin/main. Follow AGENTS.md recursively.
+
+          [View the workflow run](${WORKFLOW_URL})"
           rm -f /tmp/claude-response-part-*
           printf '%s\n' "$PROMPT" > task.md
           ${{github.workspace}}/start.sh |
