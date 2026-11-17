@@ -44,6 +44,7 @@
     #endif
 
     #include <omnn/rt/cl.h>
+    #include <boost/compute/interop/opengl/context.hpp>
     #include <boost/compute/interop/opengl/gl.hpp>
 
 #endif
