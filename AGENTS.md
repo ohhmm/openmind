@@ -34,6 +34,7 @@
 ## One Commit per PR (mandatory)
 
 - Every pull request must contain exactly one commit.
+- Introduce each new policy in its own dedicated commit and pull request; do not combine independent policies in one commit or pull request.
 - A branch must have exactly one commit on top of `origin/HEAD` (the freshest `origin/main`); after `git fetch`, `git rev-list --count origin/HEAD..HEAD` must be `1`.
 - Since GitHub email privacy protection is enabled, use the account's GitHub noreply address for commit author email
 - To change an open PR, amend its commit and force-push (`git commit --amend` then `git push --force-with-lease`); do not add follow-up commits.
