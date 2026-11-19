@@ -99,11 +99,13 @@ boost::gil::rgba8_image_t PatternRelationSystem::GeneratePatternImage()
     for (auto row=heightValue; row-->0 ;)
 	{
         auto copyForRow = *this;
+        copyForRow.CloneYarns();
         copyForRow.Eval(y, row);
 
         for (auto col=widthValue; col-->0 ;)
         {
             auto copy = copyForRow;
+			copy.CloneYarns();
 			copy.Eval(x, col);
 
 			using namespace boost::gil;
