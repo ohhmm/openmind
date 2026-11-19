@@ -2,6 +2,7 @@
 
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HARNESS="${HARNESS:-claude}"
 
 # OLLAMA_MODELS is a space- or comma-separated list of models in order of
 # preference. Legacy OLLAMA_MODEL / OLLAMA_FALLBACK_MODEL inputs are still
@@ -32,4 +33,4 @@ if [ -z "$MODEL" ]; then
 fi
 
 cd "$SCRIPT_DIR" &&
-   exec ./caffeinate.sh ./ollama.sh launch --yes claude --model "$MODEL" $INPUT
+   exec ./caffeinate.sh ./ollama.sh launch --yes "$HARNESS" --model "$MODEL" $INPUT

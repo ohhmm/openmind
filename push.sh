@@ -8,7 +8,7 @@ if (( $# > 0 )); then
    PARAMS=HEAD:$@
 else
    echo "No arguments were provided, not force-pushing. Would you like:"
-   echo ./claude.sh /pre-push
+   echo ./harness.sh /pre-push
    echo git push origin --force-with-lease origin $PARAMS
    exit 1
 fi

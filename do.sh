@@ -8,4 +8,4 @@ else
 fi
 
 cd "$SCRIPT_DIR" &&
-   exec ./claude.sh --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence -p "${INPUT}"
+   exec ./harness.sh --allow-dangerously-skip-permissions --dangerously-skip-permissions --effort max --no-session-persistence -p "${INPUT}"
