@@ -2,7 +2,8 @@
 
 #ifdef OPENMIND_USE_OPENCL
 
-#include <boost/compute.hpp>
+#include <boost/compute/core.hpp>
+#include <iostream>
 
 namespace {
 

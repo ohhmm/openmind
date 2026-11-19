@@ -14,4 +14,8 @@ fi
 
 "$SCRIPT_DIR/cmake.sh" --build "$BUILD_DIR" --config "$CONFIGURATION" --target "$TARGET"
 
-exec "$BUILD_DIR/bin/$CONFIGURATION/$TARGET" < "$INPUT_FILE"
+EXE="$BUILD_DIR/bin/$CONFIGURATION/$TARGET"
+if [ ! -x "$EXE" ]; then
+    EXE="$BUILD_DIR/bin/$TARGET"
+fi
+exec "$EXE" < "$INPUT_FILE"
