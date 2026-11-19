@@ -65,6 +65,13 @@ public:
 
     System() : vEs(ptrs::make_shared<v_es_t>()) {}
     System(v_es_ptr_t yarns) : vEs(std::move(yarns)) {}
+    void CloneYarns() {
+        auto newVes = ptrs::make_shared<v_es_t>();
+        for (const auto& kv : *vEs) {
+            newVes->emplace(kv.first, ptrs::make_shared<es_t>(*kv.second));
+        }
+        vEs = newVes;
+    }
     
     /**
      * Construct a system from a matrix where columns represent variables
