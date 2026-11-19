@@ -60,7 +60,7 @@ jobs:
           PROMPT+="create, referencing the PR and comment, with labels automation "
           PROMPT+="and triage. If no, take no issue action and explain why. "
           PROMPT+="Do not modify repository code."
-          ./claude.sh \
+          ./harness.sh \
             --allow-dangerously-skip-permissions \
             --dangerously-skip-permissions \
             --effort max \
