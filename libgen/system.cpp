@@ -96,6 +96,7 @@ boost::gil::rgba8_image_t PatternRelationSystem::GeneratePatternImage()
 
     boost::gil::rgba8_image_t img(widthValue, heightValue);
 	auto view = boost::gil::view(img);
+    auto variables = Vars();
     for (auto row=heightValue; row-->0 ;)
 	{
         auto copyForRow = *this;
@@ -103,7 +104,27 @@ boost::gil::rgba8_image_t PatternRelationSystem::GeneratePatternImage()
 
         for (auto col=widthValue; col-->0 ;)
         {
+			struct PixelCache {
+				omnn::math::System::v_es_ptr_t yarns = std::make_shared<omnn::math::System::v_es_t>();
+				~PixelCache() { yarns->clear(); }
+			} cache;
+			for (const auto& variable : variables) {
+				auto& yarns = (*cache.yarns)[variable];
+				yarns = std::make_shared<omnn::math::System::es_t>();
+				for (const auto& [parameters, expressions] : Yarns(variable)) {
+					omnn::math::System subsystem(cache.yarns);
+					subsystem.insert(expressions.begin(), expressions.end());
+					yarns->emplace(parameters, std::move(subsystem));
+				}
+			}
             auto copy = copyForRow;
+			auto& pixelSystem = static_cast<omnn::math::System&>(copy);
+			pixelSystem = omnn::math::System(cache.yarns);
+			pixelSystem.MakesTotalEqu(MakesTotalEqu());
+			if (!MakesTotalEqu())
+				pixelSystem.insert(begin(), end());
+			else for (const auto& expression : Expressions())
+				pixelSystem.Add(expression);
 			copy.Eval(x, col);
 
 			using namespace boost::gil;
