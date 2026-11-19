@@ -36,9 +36,6 @@ namespace std {
 }
 #endif
 #endif
-#ifdef OPENMIND_USE_OPENCL
-#include <boost/compute.hpp>
-#endif
 #include <boost/filesystem.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/math/special_functions/prime.hpp>

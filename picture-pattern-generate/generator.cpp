@@ -8,7 +8,6 @@ using namespace omnn::math;
 
 #include <boost/archive/binary_oarchive.hpp>
 #ifdef OPENMIND_USE_OPENCL
-#include <boost/compute.hpp>
 #include <boost/compute/core.hpp>
 #endif
 #include <boost/filesystem.hpp>
