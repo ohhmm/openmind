@@ -41,4 +41,4 @@ if ! command -v "$CODEX_CMD" >/dev/null 2>&1; then
 fi
 
 cd "$SCRIPT_DIR" &&
-    exec "$CODEX_CMD" --no-daemon "read & allways follow AGENTS.md recusively" "$@"
+    exec "$CODEX_CMD" --no-daemon "read & allways follow AGENTS.md, ../AGENTS.md or https://github.com/ohhmm/openmind/blob/main/AGENTS.md recusively" "$@"
