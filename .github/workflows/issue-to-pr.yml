@@ -64,9 +64,8 @@ jobs:
 
           ${ISSUE_BODY}"
 
-          echo "prompt<<EOF" >> $GITHUB_OUTPUT
-          printf '%s\n' "$PROMPT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          PAYLOAD=$(jq -cn --arg prompt "$PROMPT" '{prompt: $prompt}')
+          printf 'payload=%s\n' "$PAYLOAD" >> "$GITHUB_OUTPUT"
 
       - name: Check for existing Devin session
         id: check-session
@@ -117,17 +116,17 @@ jobs:
         id: devin-session
         if: steps.check-session.outputs.skip != 'true'
         env:
+          ISSUE_PAYLOAD: ${{ steps.issue-content.outputs.payload }}
           DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |
           ISSUE_NUMBER="${{ steps.select-issue.outputs.issue_number }}"
-          ESCAPED_PROMPT=$(echo "${{ steps.issue-content.outputs.prompt }}" | jq -Rs .)
 
           RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer $DEVIN_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\"prompt\": $ESCAPED_PROMPT}" \
+            -d "$ISSUE_PAYLOAD" \
             "https://api.devin.ai/v1/sessions")
 
           ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error // .detail // empty')
@@ -153,13 +152,14 @@ jobs:
       - name: Run Claude RCA
         id: claude-rca
         env:
+          ISSUE_PAYLOAD: ${{ steps.issue-content.outputs.payload }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
           OLLAMA_MODEL: ${{ env.OLLAMA_MODEL }}
         run: |
           ISSUE_NUMBER="${{ steps.select-issue.outputs.issue_number }}"
-          ESCAPED_PROMPT=$(echo "${{ steps.issue-content.outputs.prompt }}" | jq -Rs .)
-          CLAUDE_RESPONSE=$(${{github.workspace}}/start.sh $ESCAPED_PROMPT)
+          PROMPT=$(jq -r '.prompt' <<< "$ISSUE_PAYLOAD")
+          CLAUDE_RESPONSE=$("$GITHUB_WORKSPACE/start.sh" "$PROMPT")
           # Add label upon successful start
           gh issue edit "$ISSUE_NUMBER" --add-label "claude"
           gh issue comment "$ISSUE_NUMBER" --body "$CLAUDE_RESPONSE"
