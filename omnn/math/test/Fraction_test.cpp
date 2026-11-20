@@ -22,6 +22,19 @@ BOOST_AUTO_TEST_CASE(Fraction_cmp_tests) {
     BOOST_TEST(equal);
 }
 
+BOOST_AUTO_TEST_CASE(Fraction_cmp_zero_denominator_test, *disabled()) {
+    Valuable::OptimizeOff off;
+    const Fraction undefined{0, 0};
+    const Fraction divisionByZero{1, 0};
+    const Fraction fractionZero{0, 1};
+    BOOST_TEST(undefined != constants::zero);
+    BOOST_TEST(undefined != fractionZero);
+    BOOST_TEST(fractionZero != undefined);
+    BOOST_TEST(divisionByZero != constants::zero);
+    BOOST_TEST(divisionByZero != fractionZero);
+    BOOST_TEST(fractionZero != divisionByZero);
+}
+
 BOOST_AUTO_TEST_CASE(Fraction_ordering_tests) {
     auto _1 = "((-16/25)*(1r5) + (16/5))^(1/2)"_v;
     auto _2 = "(3/5)*sqrt(5)"_v;
