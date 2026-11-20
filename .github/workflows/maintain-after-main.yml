@@ -33,7 +33,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
         nvidia-smi || true
-        cmake ${{github.workspace}} -DOPENMIND_BUILD_SAMPLES=NO -DOPENMIND_BUILD_TESTS=NO -DOPENMIND_USE_OPENCL=NO -DOPENMIND_BUILD_UTIILS=ON -G "Ninja Multi-Config"
+        cmake ${{github.workspace}} -DOPENMIND_USE_VCPKG=OFF -DOPENMIND_BUILD_SAMPLES=NO -DOPENMIND_BUILD_TESTS=NO -DOPENMIND_USE_OPENCL=NO -DOPENMIND_BUILD_UTIILS=ON -G "Ninja Multi-Config"
     
     - name: Build maintain target
       working-directory: ${{github.workspace}}/build
