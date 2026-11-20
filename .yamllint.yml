@@ -17,5 +17,3 @@ rules:
   comments-indentation: disable
 
 # Ignore patterns for files with complex JavaScript template literals
-ignore: |
-  .github/workflows/pr-review-comment-reaction.yml
