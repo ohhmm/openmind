@@ -26,8 +26,9 @@ namespace math {
         std::ostream& print_sign(std::ostream&) const override;
 
     public:
-        std::ostream& code(std::ostream& out) const override;
-        static constexpr auto GetBinaryOperationLambdaTemplate() {
+        std::ostream& code(std::ostream&) const override;
+        [[nodiscard]]
+        static constexpr auto GetBinaryOperationLambdaTemplate() noexcept {
             return [](const auto& numerator, const auto& denominator) { return numerator / denominator; };
         }
 
@@ -56,9 +57,10 @@ namespace math {
         Valuable& operator %=(const Valuable& v) override;
         Valuable& operator^=(const Valuable&) override;
         Valuable& d(const Variable& x) override;
+        bool operator==(const Integer&) const;
         bool operator==(const Fraction&) const;
-        bool operator ==(const Valuable& v) const override;
-        bool operator <(const Valuable& v) const override;
+        bool operator==(const Valuable&) const override;
+        bool operator <(const Valuable&) const override;
         explicit operator double() const override;
         Valuable::Solved solve(const Variable&, solutions_t&) const override;
         Valuable::solutions_t Distinct() const override;
