@@ -22,16 +22,15 @@ jobs:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     env:
-      VCPKG_BINARY_SOURCES: default,readwrite
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
+      VCPKG_BINARY_SOURCES: clear
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Create build and vcpkg cache directories
+    - name: Create build directory
       shell: bash
       run: |
-        mkdir -p build vcpkg_cache
+        mkdir -p build
         echo "$PWD/build"
 
     - name: Cache
@@ -46,14 +45,6 @@ jobs:
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-
-
-    - name: Cache vcpkg binary packages
-      uses: actions/cache@v6
-      with:
-        path: ${{ github.workspace }}/vcpkg_cache
-        key: ${{ runner.os }}-vcpkg-binary-${{ hashFiles('**/vcpkg.json') }}
-        restore-keys: |
-          ${{ runner.os }}-vcpkg-binary-
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
@@ -137,15 +128,11 @@ jobs:
 
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
-      env:
-        VCPKG_BINARY_SOURCES: default,readwrite
-        VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
       with:
         vcpkgGitCommitId: ${{ env.VCPKG_BASELINE }}
         vcpkgJsonGlob: '**/vcpkg.json'
         runVcpkgInstall: false
         doNotCache: false
-        binaryCachePath: ${{ github.workspace }}/vcpkg_cache
 
     - name: Configure CMake
       id: configure
