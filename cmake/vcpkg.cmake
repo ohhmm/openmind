@@ -87,6 +87,16 @@ macro(fetch_vcpkg)
     endif()
 endmacro()
 
+function(default_vcpkg_if_boost_missing)
+    find_optional_pkg(Boost)
+    if(NOT DEFINED OPENMIND_USE_VCPKG AND NOT Boost_FOUND)
+        set(OPENMIND_USE_VCPKG ON CACHE BOOL "Use vcpkg")
+    endif()
+    option(OPENMIND_USE_VCPKG "Use vcpkg" OFF)
+endfunction()
+
+default_vcpkg_if_boost_missing()
+
 if(OPENMIND_USE_VCPKG OR NOT DEFINED OPENMIND_USE_VCPKG)
     if(NOT DEFINED OPENMIND_USE_VCPKG)
         message("NOT DEFINED OPENMIND_USE_VCPKG")
