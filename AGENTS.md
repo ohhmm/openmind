@@ -25,6 +25,7 @@
 - Represent behavior, capabilities, truthfully, consolidated, correct, in positive-only form and completely in code, tests, examples, comments, documentation, and output.
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
 - Disabling EXISTING tests (e.g. *disabled(), commenting out test cases, or excluding tests from the build) is strictly forbidden. Fix the underlying issue or report it as a blocker instead. TDD requires introducing some NEW tests in disabled state initially sometimes though.
+- workarounds are strictly prohibited.
 
 ## Refactoring
 - Equivalent extraction only: move existing code verbatim; preserve names, order, conditions, paths, and behavior; minimal diff.
@@ -56,4 +57,3 @@ See the full [Git Workflow](docs/knowledge_base/consolidated_knowledge_base.md#g
 
 ## Crossplatform
 - Target platforms: Windows, Linux, macOS. Keep changes portable and avoid platform-specific breakage.
-- Fix defects in shared code, scripts, and configuration at their source; temporary machine-local workarounds are forbidden because they make every user repeat the effort. Verify by rerunning the original entry point on the affected platform.
