@@ -2,6 +2,8 @@
 #include "fs_io.hpp"
 #include "system.hpp"
 
+#include <omnn/rt/clgl.h>
+
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -67,23 +69,18 @@ namespace {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		cl_int err;
-#ifdef __APPLE__
-		CGLContextObj cglContext = CGLGetCurrentContext();
-		CGLShareGroupObj shareGroup = CGLGetShareGroup(cglContext);
-		cl_context_properties properties[] = {
-			CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
-			(cl_context_properties)shareGroup, 0
-		};
-		gContext = clCreateContext(properties, 0, nullptr, nullptr, nullptr, &err);
-#else
-		gContext = clCreateContextFromType(nullptr, CL_DEVICE_TYPE_GPU, nullptr, nullptr, &err);
-#endif
-		if (err != CL_SUCCESS) fatal("clCreateContext", err);
+		boost::compute::context sharedContext;
+		try {
+			sharedContext = boost::compute::opengl_create_shared_context();
+		} catch (const std::exception& e) {
+			std::cerr << "clCreateContext: " << e.what() << "\n";
+			std::exit(1);
+		}
+		gContext = sharedContext.get();
+		cl_int err = clRetainContext(gContext);
+		if (err != CL_SUCCESS) fatal("clRetainContext", err);
 
-		cl_device_id device;
-		size_t deviceCount;
-		clGetContextInfo(gContext, CL_CONTEXT_DEVICES, sizeof(device), &device, &deviceCount);
+		cl_device_id device = sharedContext.get_device().id();
 		gQueue = clCreateCommandQueue(gContext, device, 0, &err);
 		if (err != CL_SUCCESS) fatal("clCreateCommandQueue", err);
 
