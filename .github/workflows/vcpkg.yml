@@ -148,11 +148,21 @@ jobs:
         binaryCachePath: ${{ github.workspace }}/vcpkg_cache
 
     - name: Configure CMake
+      id: configure
       uses: nick-fields/retry@v4
       with:
         timeout_minutes: 50
         max_attempts: 3
         command: cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake ${{ env.VCPKG_TARGET_TRIPLET_CMAKE_PARAM }} ${{ env.OS_SPECIFIC_CONFIGURE_FLAGS }} -DOPENMIND_USE_VCPKG=ON -DOPENMIND_BUILD_TESTS=ON -DOPENMIND_BUILD_3RD_PARTY_TESTS=NO -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+
+    - name: Show vcpkg manifest install log
+      if: failure() && steps.configure.outcome == 'failure'
+      shell: bash
+      run: |
+        log=build/vcpkg-manifest-install.log
+        if [[ -f "$log" ]]; then
+          cat "$log"
+        fi
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
