@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODEL=Beam-1.0-501B-A23B
 MIRROR_CMD=mirror

@@ -28,6 +28,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Create build directory
+      shell: bash
+      run: mkdir -p build
+
     - name: Cache
       uses: actions/cache@v6
       with:
@@ -117,13 +121,19 @@ jobs:
         OS_SPECIFIC_CONFIGURE_FLAGS: -DOPENMIND_BUILD_PYTHON_BINDINGS=OFF
       run: echo "OS_SPECIFIC_CONFIGURE_FLAGS=-DOPENMIND_BUILD_PYTHON_BINDINGS=OFF" >> $env:GITHUB_ENV
 
+    - name: Show vcpkg baseline
+      shell: bash
+      run: |
+        baseline=$(./baseline.sh)
+        echo "VCPKG_BASELINE=$baseline" | tee -a "$GITHUB_ENV"
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       env:
         VCPKG_BINARY_SOURCES: default,readwrite
         VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
       with:
-        vcpkgGitCommitId: '9eec002df1cd109f8f104cd966a763daf9751489'
+        vcpkgGitCommitId: ${{ env.VCPKG_BASELINE }}
         vcpkgJsonGlob: '**/vcpkg.json'
         runVcpkgInstall: true
         doNotCache: false
