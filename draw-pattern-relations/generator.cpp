@@ -2,7 +2,7 @@
 #include "fs_io.hpp"
 #include "system.hpp"
 
-#include <omnn/rt/clgl.hpp>
+#include <omnn/rt/clgl.h>
 
 #include <chrono>
 #include <cstdint>
