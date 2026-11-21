@@ -97,10 +97,6 @@ jobs:
             lz4 \
             gh \
             libomp
-          curl -fsSL https://github.com/Kitware/CMake/releases/download/v4.2.1/cmake-4.2.1-macos-universal.tar.gz | tar -xz -C /tmp
-          echo "/tmp/cmake-4.2.1-macos-universal/CMake.app/Contents/bin" >> $GITHUB_PATH
-          export PATH="/tmp/cmake-4.2.1-macos-universal/CMake.app/Contents/bin:$PATH"
-          cmake --version
           ninja --version
           clang --version
 
@@ -115,6 +111,16 @@ jobs:
     - name: Setup MSVC
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Set up CMake 4.2.1
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '4.2.1'
+
+    - name: Use PATH tools for vcpkg (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: 'echo "VCPKG_FORCE_SYSTEM_BINARIES=1" >> $env:GITHUB_ENV'
 
     - name: MSVC-specific configure flags
       if: runner.os == 'Windows'
