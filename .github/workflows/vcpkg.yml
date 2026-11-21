@@ -28,9 +28,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Create build directory
+    - name: Create build and vcpkg cache directories
       shell: bash
-      run: mkdir -p build
+      run: |
+        mkdir -p build vcpkg_cache
+        echo "$PWD/build"
 
     - name: Cache
       uses: actions/cache@v6
@@ -135,8 +137,9 @@ jobs:
       with:
         vcpkgGitCommitId: ${{ env.VCPKG_BASELINE }}
         vcpkgJsonGlob: '**/vcpkg.json'
-        runVcpkgInstall: true
+        runVcpkgInstall: false
         doNotCache: false
+        binaryCachePath: ${{ github.workspace }}/vcpkg_cache
 
     - name: Configure CMake
       uses: nick-fields/retry@v4
