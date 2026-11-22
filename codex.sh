@@ -57,5 +57,11 @@ if ! command -v "$CODEX_CMD" >/dev/null 2>&1; then
     exit 1
 fi
 
-cd "$SCRIPT_DIR" &&
-    exec "$CODEX_CMD" --no-daemon "${TRUST_ARGS[@]}" "read & allways follow AGENTS.md, ../AGENTS.md or https://github.com/ohhmm/openmind/blob/main/AGENTS.md recusively" "$@"
+INSTRUCTIONS="read & allways follow AGENTS.md, ../AGENTS.md or https://github.com/ohhmm/openmind/blob/main/AGENTS.md recusively"
+cd "$SCRIPT_DIR" || exit 1
+if [ "${1:-}" = --exec ]; then
+    PROMPT="${2?--exec requires a prompt}"
+    shift 2
+    exec "$CODEX_CMD" --no-daemon "${TRUST_ARGS[@]}" exec "$@" -- "$INSTRUCTIONS"$'\n\n'"$PROMPT"
+fi
+exec "$CODEX_CMD" --no-daemon "${TRUST_ARGS[@]}" "$INSTRUCTIONS" "$@"
