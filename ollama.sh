@@ -23,7 +23,26 @@ ensure_ollama_installed() {
     done
 
     case "$(uname -s 2>/dev/null || printf 'Unknown')" in
-        Linux|Darwin)
+        Linux)
+            if ! command -v zstd >/dev/null 2>&1; then
+                local -a elevate=()
+                if [ "$(id -u)" -ne 0 ]; then
+                    elevate=(sudo)
+                fi
+                if command -v apt-get >/dev/null 2>&1; then
+                    "${elevate[@]}" apt-get install -y zstd || exit 1
+                elif command -v dnf >/dev/null 2>&1; then
+                    "${elevate[@]}" dnf install -y zstd || exit 1
+                elif command -v pacman >/dev/null 2>&1; then
+                    "${elevate[@]}" pacman -S --needed --noconfirm zstd || exit 1
+                else
+                    echo "Installing zstd requires apt-get, dnf, or pacman" >&2
+                    exit 1
+                fi
+            fi
+            curl -fsSL https://ollama.com/install.sh | sh
+            ;;
+        Darwin)
             curl -fsSL https://ollama.com/install.sh | sh
             ;;
         MINGW*|MSYS*|CYGWIN*)
