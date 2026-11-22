@@ -8,8 +8,8 @@
 ## Documentation quallity requirements
 - Write only truth, consolidated and correct, in positive-only form
 - Resolve apparent contradictions with minimal wording clarifications while preserving all project requirements.
+- Any changes to AGENTS.md or recursively referenced files must be incremental (adding lines/files, no deleting lines/files) and mandatorily reviewed/made/rewritten by the top owner/maintainer human
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
-- In `if` conditions, order checks sorted by likelihood of happening within its context (more likely first).
 
 ## Code quality requirements
 - Keep edits minimal and terse
@@ -17,6 +17,7 @@
 - preserve existing functionality and settings.
 - Do not make changes that reduce code quality, maintainability, readability, testability, test coverage, performance, portability, or safety or any other aspect of quality; if a tradeoff is unavoidable, call it out before proceeding.
 - No precision losses, keep precision arbitrary to ensure bugless extensible compatibility
+- In `if` conditions, order checks sorted by likelihood of happening within its context (more likely first).
 - Avoid empty translation units: when a `.cpp` would otherwise be empty, keep a non-empty anchor symbol in it rather than excluding it from the build, so later additions are not silently dropped.
 - Prefer more general, reusable approaches/rules over narrowly specific ones when both are available.
 - Prefer automation over manual work when it preserves correctness and quality.
@@ -26,6 +27,7 @@
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
 - Disabling EXISTING tests (e.g. *disabled(), commenting out test cases, or excluding tests from the build) is strictly forbidden. Fix the underlying issue or report it as a blocker instead. TDD requires introducing some NEW tests in disabled state initially sometimes though.
 - workarounds are strictly prohibited.
+- right after any changes made, review the change made, asking yourself if it possible to do it better; if it is possible (the answer is yes or likely yes, or even maybe) then ask yourself how; once you get how to do it better, ask yourself is it worth doing and are there any alternatives to do it better that worth doing
 
 ## Refactoring
 - Equivalent extraction only: move existing code verbatim; preserve names, order, conditions, paths, and behavior; minimal diff.
