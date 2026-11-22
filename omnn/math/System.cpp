@@ -52,7 +52,7 @@ bool System::Inquire(const Variable& va, const Valuable& expression)
         auto vars = expression.Vars();
         auto it = es.find(vars);
         if (it == es.end()) {
-            auto emplaced = es.emplace(vars, expressions_t(vEs));
+            auto emplaced = es.emplace(vars, vEs);
             it = emplaced.first;
         } 
         auto& expressions = it->second;

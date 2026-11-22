@@ -1079,4 +1079,24 @@ BOOST_AUTO_TEST_CASE(kaggle_test, *disabled())
     tp.join();
 }
 
+BOOST_AUTO_TEST_CASE(System_deep_copy_test) {
+    DECL_VARS(x, y);
+    System original;
+    original << x + y - 3;
+    System copied = original;
+    original << x - y + 1;
+    BOOST_TEST(original.size() == 2);
+    BOOST_TEST(copied.size() == 1);
+
+    System assigned;
+    assigned = copied;
+    copied << x * y - 2;
+    BOOST_TEST(assigned.size() == 1);
+    BOOST_TEST(copied.size() == 2);
+
+    System self = original;
+    self = self;
+    BOOST_TEST(self.size() == original.size());
+}
+
 BOOST_AUTO_TEST_CASE(System_empty_test) {}
