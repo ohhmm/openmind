@@ -26,6 +26,7 @@
 - Love laconism! Save people time of life. Also improves overall productivity across people/agents/etc
 - Disabling EXISTING tests (e.g. *disabled(), commenting out test cases, or excluding tests from the build) is strictly forbidden. Fix the underlying issue or report it as a blocker instead. TDD requires introducing some NEW tests in disabled state initially sometimes though.
 - workarounds are strictly prohibited.
+- Fix defects at their source in shared code, scripts, or configuration. When a repository script invokes an upstream installer, make the script install any missing prerequisites before invoking it. Apply and verify the fix on the affected machine by running the corrected repository entry point.
 
 ## Refactoring
 - Equivalent extraction only: move existing code verbatim; preserve names, order, conditions, paths, and behavior; minimal diff.
