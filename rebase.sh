@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if (( $# > 0 )); then
@@ -15,6 +14,7 @@ else
 fi
 
 
-cd "$SCRIPT_DIR"
-git fetch --prune --tags
-git rebase --autostash -i origin/main $PARAMS
+cd "$SCRIPT_DIR" &&
+   fetch --prune --tags
+cd "$SCRIPT_DIR" &&
+   exec git rebase --autostash -i origin/main $PARAMS

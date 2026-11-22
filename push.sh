@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if (( $# > 0 )); then
@@ -13,6 +12,5 @@ else
    exit 1
 fi
 
-
-cd "$SCRIPT_DIR"
-git push origin --force-with-lease $PARAMS
+exec git -C "$SCRIPT_DIR" push origin --force-with-lease $PARAMS
+   
