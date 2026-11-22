@@ -2,6 +2,23 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+TRUST_ARGS=()
+case "${1:-}" in
+    -y|--yes)
+        PROJECT_PATH="$(cd "$SCRIPT_DIR" && pwd -P)" || exit 1
+        case "$(uname -s)" in
+            MINGW*|MSYS*|CYGWIN*)
+                PROJECT_PATH="$(cygpath -aw "$PROJECT_PATH")" || exit 1
+                PROJECT_PATH="$(printf '%s' "$PROJECT_PATH" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
+                ;;
+        esac
+        PROJECT_PATH="${PROJECT_PATH//\\/\\\\}"
+        PROJECT_PATH="${PROJECT_PATH//\"/\\\"}"
+        TRUST_ARGS=(-c "projects={\"$PROJECT_PATH\"={trust_level=\"trusted\"}}")
+        shift
+        ;;
+esac
+
 CODEX_CMD=codex
 
 if ! command -v "$CODEX_CMD" >/dev/null 2>&1; then
@@ -41,4 +58,4 @@ if ! command -v "$CODEX_CMD" >/dev/null 2>&1; then
 fi
 
 cd "$SCRIPT_DIR" &&
-    exec "$CODEX_CMD" --no-daemon "read & allways follow AGENTS.md, ../AGENTS.md or https://github.com/ohhmm/openmind/blob/main/AGENTS.md recusively" "$@"
+    exec "$CODEX_CMD" --no-daemon "${TRUST_ARGS[@]}" "read & allways follow AGENTS.md, ../AGENTS.md or https://github.com/ohhmm/openmind/blob/main/AGENTS.md recusively" "$@"
