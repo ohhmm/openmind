@@ -12,9 +12,10 @@ permissions:
 
 jobs:
   rebase-stale-branch:
-    runs-on: xcode-27
+    runs-on: macos
     env:
       OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+      REFLECTION_API_KEY: ${{ secrets.REFLECTION_API_KEY }}
       OLLAMA_MODEL: qwen3.5:9b
       OLLAMA_FALLBACK_MODEL: qwen3.5:4b
     steps:
