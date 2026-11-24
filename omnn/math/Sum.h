@@ -68,6 +68,8 @@ protected:
 
 public:
     std::ostream& code(std::ostream& out) const override;
+    std::ostream& Asm(std::ostream& out) const override;
+    using Valuable::Asm;
 
     static constexpr auto GetBinaryOperationLambdaTemplate() {
         return [](const auto& _1st, const auto& _2nd) { return _1st + _2nd; };

@@ -5,6 +5,21 @@
 #include "Variable.h"
 #include "generic.hpp"
 
+#include <boost/multiprecision/cpp_int.hpp>
+#include <cstdint>
+#include <cstdlib>
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <vector>
 
 using namespace omnn::math;
 using namespace boost::unit_test;
@@ -846,6 +861,106 @@ BOOST_AUTO_TEST_CASE(GCDTest) {
     gcd = x - 2;
     // FIXME : _ = _1.GCD(_2);
     //BOOST_TEST(_ == gcd);
+}
+
+BOOST_AUTO_TEST_CASE(SumAsmTest) {
+    using boost::multiprecision::cpp_int;
+
+    struct Case { cpp_int a; cpp_int b; };
+    std::vector<Case> cases = {
+        {cpp_int("340282366920938463463374607431768211455"), 1},          // 2^128 - 1 + 1
+        {cpp_int("18446744073709551615"), 1},                               // 2^64 - 1 + 1
+        {0, 0},
+        {cpp_int("123456789012345678901234567890"), cpp_int("987654321098765432109876543210")},
+        {cpp_int("340282366920938463463374607431768211455") * cpp_int("340282366920938463463374607431768211455"), 1},
+    };
+
+    Sum s;
+    auto& base = static_cast<ValuableCollectionDescendantContract<Sum, sum_cont>&>(s);
+    base.Add(Integer(1));
+    base.Add(Integer(1));
+
+    std::string asmStr = s.Asm();
+    std::cout << "ASM: " << asmStr << std::endl;
+    BOOST_TEST(!asmStr.empty());
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || defined(_M_ARM64)
+    namespace fs = std::filesystem;
+    auto dir = fs::temp_directory_path() / "om3_sum_asm_test";
+    fs::create_directories(dir);
+    auto src = dir / "sum.s";
+#if defined(_WIN32)
+    auto lib = dir / "sum.dll";
+#elif defined(__APPLE__)
+    auto lib = dir / "libsum.dylib";
+#else
+    auto lib = dir / "libsum.so";
+#endif
+
+    {
+        std::ofstream out(src);
+        out << asmStr;
+    }
+
+#ifdef _WIN32
+    std::string cmd = "clang -shared -nostdlib -Xlinker /noentry -Xlinker /export:openmind_sum -o \"" +
+        lib.string() + "\" \"" + src.string() + "\"";
+    BOOST_REQUIRE_EQUAL(std::system(cmd.c_str()), 0);
+
+    auto handle = LoadLibraryW(lib.c_str());
+    BOOST_REQUIRE_MESSAGE(handle != nullptr, "LoadLibraryW failed: " << GetLastError());
+    auto sym = GetProcAddress(handle, "openmind_sum");
+#else
+    std::string cmd = "cc -shared -fPIC -o \"" + lib.string() + "\" \"" + src.string() + "\"";
+    BOOST_REQUIRE_EQUAL(std::system(cmd.c_str()), 0);
+
+    void* handle = dlopen(lib.c_str(), RTLD_NOW);
+    BOOST_REQUIRE(handle != nullptr);
+    void* sym = dlsym(handle, "openmind_sum");
+    if (!sym) sym = dlsym(handle, "_openmind_sum");
+#endif
+    BOOST_REQUIRE(sym != nullptr);
+
+    auto fn = reinterpret_cast<std::uint64_t (*)(const std::uint64_t*, const std::uint64_t*, std::uint64_t*, std::size_t)>(sym);
+
+    auto wordCount = [](const cpp_int& x) {
+        std::size_t n = 0;
+        cpp_int t = x < 0 ? -x : x;
+        do {
+            ++n;
+            t >>= 64;
+        } while (t != 0);
+        return n;
+    };
+
+    for (const auto& c : cases) {
+        cpp_int a = c.a;
+        cpp_int b = c.b;
+        cpp_int expected = a + b;
+
+        std::size_t n = std::max(wordCount(a), wordCount(b));
+        std::vector<std::uint64_t> lhs(n, 0), rhs(n, 0), result(n, 0);
+        for (std::size_t i = 0; i < n; ++i) {
+            lhs[i] = static_cast<std::uint64_t>((a >> (64 * i)) & ((cpp_int(1) << 64) - 1));
+            rhs[i] = static_cast<std::uint64_t>((b >> (64 * i)) & ((cpp_int(1) << 64) - 1));
+        }
+
+        std::uint64_t carry = fn(lhs.data(), rhs.data(), result.data(), n);
+
+        cpp_int got = 0;
+        for (std::size_t i = 0; i < n; ++i) {
+            got += cpp_int(result[i]) << (64 * i);
+        }
+        got += cpp_int(carry) << (64 * n);
+
+        BOOST_TEST(got == expected);
+    }
+#ifdef _WIN32
+    FreeLibrary(handle);
+#else
+    dlclose(handle);
+#endif
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(Sum_multivariable_solve_test)
