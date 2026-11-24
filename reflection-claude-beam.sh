@@ -35,8 +35,9 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 YAML
 
-port=${REFLECTION_PROXY_PORT:-4000}
-export ANTHROPIC_BASE_URL="http://127.0.0.1:$port"
+# Let Uvicorn bind an available port atomically for each session.
+port=${REFLECTION_PROXY_PORT:-0}
+unset ANTHROPIC_BASE_URL
 export ANTHROPIC_AUTH_TOKEN="sk-$(openssl rand -hex 32)"
 export ANTHROPIC_API_KEY=
 export NO_PROXY="127.0.0.1${NO_PROXY:+,$NO_PROXY}"
@@ -54,7 +55,10 @@ for ((attempt = 0; attempt < 180; ++attempt)); do
       cat "$proxy_dir/proxy.log" >&2
       exit 1
    fi
-   if curl -fs --max-time 1 -o /dev/null -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN" "$ANTHROPIC_BASE_URL/v1/models"; then
+   # Use the bound address reported by this session's proxy.
+   proxy_url=$(sed -nE 's/.*Uvicorn running on (http:\/\/127\.0\.0\.1:[0-9]+) .*/\1/p' "$proxy_dir/proxy.log")
+   if [[ -n $proxy_url ]] && curl -fs --max-time 1 -o /dev/null -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN" "$proxy_url/v1/models"; then
+      export ANTHROPIC_BASE_URL="$proxy_url"
       export CLAUDE_CODE_MAX_CONTEXT_TOKENS=1048576
       export ANTHROPIC_DEFAULT_OPUS_MODEL=$MODEL ANTHROPIC_DEFAULT_SONNET_MODEL=$MODEL ANTHROPIC_DEFAULT_HAIKU_MODEL=$MODEL
       export API_TIMEOUT_MS=1800000
