@@ -1297,6 +1297,90 @@ namespace
         return out;
     }
 
+    std::ostream& Sum::Asm(std::ostream& out) const
+    {
+        bool allInt = !members.empty();
+        for (auto& m : members) {
+            if (!m.IsInt()) {
+                allInt = false;
+                break;
+            }
+        }
+        if (!allInt) {
+            return Valuable::Asm(out);
+        }
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+        out << R"asm(
+.text
+.globl openmind_sum
+.globl _openmind_sum
+openmind_sum:
+_openmind_sum:
+    ands xzr, xzr, xzr
+    cbz x3, .Lopenmind_sum_done
+.Lopenmind_sum_loop:
+    ldr x5, [x0], #8
+    ldr x6, [x1], #8
+    adcs x5, x5, x6
+    str x5, [x2], #8
+    sub x3, x3, #1
+    cbnz x3, .Lopenmind_sum_loop
+.Lopenmind_sum_done:
+    cset x0, cs
+    ret
+)asm";
+#elif defined(_WIN32) && (defined(__x86_64__) || defined(_M_X64))
+        out << R"asm(
+.text
+.globl openmind_sum
+openmind_sum:
+    testq %r9, %r9
+    je .Lopenmind_sum_done
+.Lopenmind_sum_loop:
+    movq (%rcx), %r10
+    adcq (%rdx), %r10
+    movq %r10, (%r8)
+    leaq 8(%rcx), %rcx
+    leaq 8(%rdx), %rdx
+    leaq 8(%r8), %r8
+    decq %r9
+    jne .Lopenmind_sum_loop
+.Lopenmind_sum_done:
+    setc %al
+    movzbl %al, %eax
+    ret
+)asm";
+#elif defined(__x86_64__) || defined(_M_X64)
+        out << R"asm(
+.text
+.globl openmind_sum
+.globl _openmind_sum
+openmind_sum:
+_openmind_sum:
+    clc
+    testq %rcx, %rcx
+    je .Lopenmind_sum_done
+.Lopenmind_sum_loop:
+    movq (%rdi), %r8
+    adcq (%rsi), %r8
+    movq %r8, (%rdx)
+    leaq 8(%rdi), %rdi
+    leaq 8(%rsi), %rsi
+    leaq 8(%rdx), %rdx
+    decq %rcx
+    jne .Lopenmind_sum_loop
+.Lopenmind_sum_done:
+    setc %al
+    movzbl %al, %eax
+    ret
+)asm";
+#else
+        return Valuable::Asm(out);
+#endif
+        return out;
+    }
+
     // FIXME: It is wrong to deside on sum square root sign before evaluating variables due to their sign ambiguity
     Valuable Sum::Sqrt() const
     {
