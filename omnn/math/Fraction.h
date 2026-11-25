@@ -26,8 +26,9 @@ namespace math {
         std::ostream& print_sign(std::ostream&) const override;
 
     public:
-        std::ostream& code(std::ostream& out) const override;
-        static constexpr auto GetBinaryOperationLambdaTemplate() {
+        std::ostream& code(std::ostream&) const override;
+        [[nodiscard]]
+        static constexpr auto GetBinaryOperationLambdaTemplate() noexcept {
             return [](const auto& numerator, const auto& denominator) { return numerator / denominator; };
         }
 
@@ -56,9 +57,10 @@ namespace math {
         Valuable& operator %=(const Valuable& v) override;
         Valuable& operator^=(const Valuable&) override;
         Valuable& d(const Variable& x) override;
+        bool operator==(const Integer&) const;
         bool operator==(const Fraction&) const;
-        bool operator ==(const Valuable& v) const override;
-        bool operator <(const Valuable& v) const override;
+        bool operator==(const Valuable&) const override;
+        bool operator <(const Valuable&) const override;
         explicit operator double() const override;
         Valuable::Solved solve(const Variable&, solutions_t&) const override;
         Valuable::solutions_t Distinct() const override;
@@ -74,11 +76,20 @@ namespace math {
         bool IsComesBefore(const Fraction&) const override;
         [[nodiscard]]
         bool IsComesBefore(const Valuable& v) const override;
+        [[nodiscard]]
         constexpr bool IsFraction() const override { return true; }
+        [[nodiscard]]
         bool IsSimpleFraction() const override { return _1.IsInt() && _2.IsInt(); }
         //bool IsSimpleRatio() const override { return _1.IsInt() && _2.IsInt(); }
+        [[nodiscard]]
         bool IsZero() const override { return _1.IsZero() && !_2.IsZero() && !_2.IsInfinity(); }
+        [[nodiscard]] bool IsNaN() const override { return _2.IsZero() || _1.IsNaN() || _2.IsNaN(); }
+
+
+        [[nodiscard]]
         YesNoMaybe IsMultival() const override { return _1.IsMultival() || _2.IsMultival(); }
+
+        [[nodiscard]]
         bool IsPolynomial(const Variable& x) const override {
             return _1.IsPolynomial(x) && _2.IsSimple();
         }
