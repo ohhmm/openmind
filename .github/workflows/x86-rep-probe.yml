@@ -1,0 +1,92 @@
+name: x86 REP instruction probe
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/x86-rep-probe.yml
+      - script/tests/x86_rep_inc_probe.c
+      - script/tests/x86_inc_loop_benchmark.c
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run instruction bytes on the x86 runner
+        shell: bash
+        run: |
+          test "$(uname -m)" = x86_64
+          lscpu
+          cat > probe.c <<'C'
+          #include <limits.h>
+          #include <stdio.h>
+
+          #define PROBE(label, bytes, initial_count, low, next) do {               \
+              unsigned long a = 10, count = (initial_count);                     \
+              unsigned long source[] = {11, 12, 13, 14, 15};                    \
+              unsigned long dest[] = {low, next, 30, 40, 50};                      \
+              unsigned long *si = source, *di = dest;                           \
+              unsigned char carry;                                             \
+              __asm__ volatile ("stc\n\t.byte " bytes "\n\tsetc %0"            \
+                                : "=qm"(carry), "+a"(a), "+c"(count),           \
+                                  "+S"(si), "+D"(di)                           \
+                                : "b"(3UL) : "cc", "memory");                  \
+              printf("%s [%s]: RAX=%lu RCX=%lu->%lu CF=%u "                      \
+                     "RSI words=%td RDI words=%td dst=%lu,%lu,%lu,%lu,%lu\n",    \
+                     label, bytes, a, (unsigned long)(initial_count), count,   \
+                     (unsigned)carry, si - source, di - dest,                  \
+                     dest[0], dest[1], dest[2], dest[3], dest[4]);              \
+          } while (0)
+
+          int main(void)
+          {
+              for (unsigned long requested = 0; requested <= 5; requested += 5) {
+                  PROBE("F3 INC rax",       "0xf3,0x48,0xff,0xc0", requested, 10, 20);
+                  PROBE("F3 ADD rax,rbx",   "0xf3,0x48,0x01,0xd8", requested, 10, 20);
+                  PROBE("F3 ADC rax,rbx",   "0xf3,0x48,0x11,0xd8", requested, 10, 20);
+                  PROBE("F3 INC [rdi]",     "0xf3,0x48,0xff,0x07", requested, 10, 20);
+                  PROBE("F3 ADD [rdi],rbx", "0xf3,0x48,0x01,0x1f", requested, 10, 20);
+                  PROBE("F3 ADC [rdi],rbx", "0xf3,0x48,0x11,0x1f", requested, 10, 20);
+                  PROBE("F3 INC overflow, CF cleared", "0xf8,0xf3,0x48,0xff,0x07",
+                        requested, ULONG_MAX, ULONG_MAX);
+                  PROBE("F3 ADD overflow", "0xf3,0x48,0x83,0x07,0x01",
+                        requested, ULONG_MAX, ULONG_MAX);
+                  PROBE("ADD/ADC chain", "0x48,0x83,0x07,0x01,"
+                        "0x48,0x83,0x57,0x08,0x00,0x48,0x83,0x57,0x10,0x00",
+                        requested, ULONG_MAX, ULONG_MAX);
+                  PROBE("REP MOVSQ",        "0xf3,0x48,0xa5", requested, 10, 20);
+              }
+          }
+          C
+          cc -std=c17 -O2 -Wall -Wextra -Wshadow -Werror probe.c -o probe
+          {
+            echo '~~~text'
+            lscpu | awk '/^Architecture:|^Vendor ID:|^Model name:/'
+            ./probe
+            echo '~~~'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Probe assembled REP INC variants
+        shell: bash
+        run: |
+          clang -std=c17 -O2 -Wall -Wextra -Werror -masm=intel \
+            script/tests/x86_rep_inc_probe.c -o rep-inc
+          ./rep-inc | tee rep-inc.log
+          {
+            echo '~~~text'
+            lscpu | awk '/^Architecture:|^Vendor ID:|^Model name:/'
+            cat rep-inc.log
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Compare INC and ADC carry loops
+        shell: bash
+        run: |
+          clang -std=c17 -O3 -Wall -Wextra -Werror \
+            script/tests/x86_inc_loop_benchmark.c -o inc-loop-benchmark
+          ./inc-loop-benchmark | tee inc-loop-benchmark.csv
+          {
+            echo '~~~text'
+            lscpu | awk '/^Architecture:|^Vendor ID:|^Model name:/'
+            cat inc-loop-benchmark.csv
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
