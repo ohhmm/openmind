@@ -30,6 +30,11 @@
 - workarounds are strictly prohibited.
 - right after any changes made, review the change made, asking yourself if it possible to do it better; if it is possible (the answer is yes or likely yes, or even maybe) then ask yourself how; once you get how to do it better, ask yourself is it worth doing and are there any alternatives to do it better that worth doing
 
+## Bash policies
+- Keep scripts short and readable. Bash is the choice not for performance. It is for readable IPC programs.
+- Keep transient data in memory. Don't create temporary files
+- Use Bash for short command wrappers, passthrough params through. Each wrapper has object-like RAII behaviour: 'constructor' is the code preceeding params passthrough into inner command, and 'destructor' is after its execution, processing its result and output
+
 ## Refactoring
 - Equivalent extraction only: move existing code verbatim; preserve names, order, conditions, paths, and behavior; minimal diff.
 - Do not restructure, rename, reorder, reformat, or otherwise "improve" code while extracting; separate improvements into their own PRs.

@@ -15,6 +15,6 @@ fi
 
 
 cd "$SCRIPT_DIR" &&
-   fetch --prune --tags
+   git fetch --prune --tags
 cd "$SCRIPT_DIR" &&
    exec git rebase --autostash -i origin/main $PARAMS
