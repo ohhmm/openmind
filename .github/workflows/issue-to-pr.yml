@@ -11,8 +11,9 @@ permissions:
 
 jobs:
   create-devin-session:
-    runs-on: xcode-27
+    runs-on: macos
     env:
+      REFLECTION_API_KEY: ${{ secrets.REFLECTION_API_KEY }}
       OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
       OLLAMA_MODEL: qwen3.5:9b
       OLLAMA_FALLBACK_MODEL: qwen3.5:4b
@@ -91,19 +92,6 @@ jobs:
 
       - name: Set up Ollama
         uses: ai-action/setup-ollama@v2
-
-      - name: Pull offline model
-        run: |
-          if ollama pull "${{ env.OLLAMA_MODEL }}" && ollama run "${{ env.OLLAMA_MODEL }}" hi; then
-            echo "OLLAMA_MODEL=${{ env.OLLAMA_MODEL }}" >> $GITHUB_ENV
-            echo "Using primary model: ${{ env.OLLAMA_MODEL }}"
-          else
-            echo "Primary model unavailable; falling back to ${{ env.OLLAMA_FALLBACK_MODEL }}"
-            ollama pull ${{ env.OLLAMA_FALLBACK_MODEL }}
-            ollama run ${{ env.OLLAMA_FALLBACK_MODEL }} hi
-            echo "OLLAMA_MODEL=${{ env.OLLAMA_FALLBACK_MODEL }}" >> $GITHUB_ENV
-          fi
-          ollama ps
 
       - uses: actions/cache@v6
         with:
