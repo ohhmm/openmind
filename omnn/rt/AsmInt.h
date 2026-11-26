@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/multiprecision/cpp_int.hpp>
 #include <cstdint>
 #include <vector>
 
@@ -13,6 +14,7 @@ public:
     using std::vector<Word>::vector;
 
     AsmInt& operator++();
+    explicit operator boost::multiprecision::cpp_int() const;
 };
 
 } // namespace omnn::rt
