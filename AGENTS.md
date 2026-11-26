@@ -1,6 +1,7 @@
 # Agent Instructions
 
 - Read this file and all documents it references recursively before starting work.
+- Apply Occam's razor wherever possible. Start with the simplest plausible explanation and verify it against evidence. When choosing an approach, first minimize the effort required of users, then choose the simplest implementation that satisfies current and likely future requirements.
 
 ## Terminology
 - "ensure X" means make X happen: install, build, fetch, create, and configure it automatically until X holds. It never means only detecting X's absence and raising an error. Positive-only.
