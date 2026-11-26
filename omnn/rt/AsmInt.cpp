@@ -46,4 +46,14 @@ AsmInt& AsmInt::operator++()
     return *this;
 }
 
+AsmInt::operator boost::multiprecision::cpp_int() const
+{
+    boost::multiprecision::cpp_int result = 0;
+    for (auto it = rbegin(); it != rend(); ++it) {
+        result <<= std::numeric_limits<Word>::digits;
+        result += *it;
+    }
+    return result;
+}
+
 } // namespace omnn::rt
