@@ -14,7 +14,13 @@ public:
     using std::vector<Word>::vector;
 
     AsmInt& operator++();
+    AsmInt operator+(const AsmInt& other) const;
+    AsmInt& operator+=(const AsmInt& other);
+    AsmInt operator+(Word other) const;
+    AsmInt& operator+=(Word other);
     explicit operator boost::multiprecision::cpp_int() const;
 };
+
+inline AsmInt operator+(Word lhs, const AsmInt& rhs) { return rhs + lhs; }
 
 } // namespace omnn::rt
