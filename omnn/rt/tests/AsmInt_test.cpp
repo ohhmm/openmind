@@ -43,3 +43,62 @@ BOOST_AUTO_TEST_CASE(PrefixIncrement)
         }
     }
 }
+
+BOOST_AUTO_TEST_CASE(AddAsmInt)
+{
+    constexpr auto max = std::numeric_limits<Word>::max();
+    struct Case {
+        AsmInt lhs;
+        AsmInt rhs;
+    };
+    const Case cases[] = {
+        {{}, {}},
+        {{}, {7, 42}},
+        {{7, 42}, {}},
+        {{7, 42}, {5, 3}},
+        {{max, max, 7}, {2}},
+        {{2}, {max, max, 7}},
+        {{max, max}, {2, max}},
+    };
+
+    for (const auto& [lhs, rhs] : cases) {
+        const cpp_int expected = static_cast<cpp_int>(lhs) + static_cast<cpp_int>(rhs);
+        BOOST_TEST_CONTEXT("lhs size " << lhs.size() << ", rhs size " << rhs.size()) {
+            BOOST_TEST(static_cast<cpp_int>(lhs + rhs) == expected);
+            auto value = lhs;
+            BOOST_CHECK(&(value += rhs) == &value);
+            BOOST_TEST(static_cast<cpp_int>(value) == expected);
+        }
+    }
+
+    AsmInt value{max, max};
+    const cpp_int expected = static_cast<cpp_int>(value) * 2;
+    value += value;
+    BOOST_TEST(static_cast<cpp_int>(value) == expected);
+}
+
+BOOST_AUTO_TEST_CASE(AddWord)
+{
+    constexpr auto max = std::numeric_limits<Word>::max();
+    struct Case {
+        AsmInt lhs;
+        Word rhs;
+    };
+    const Case cases[] = {
+        {{}, 7},
+        {{7, 42}, 0},
+        {{7, 42}, 5},
+        {{max, max}, 2},
+    };
+
+    for (const auto& [lhs, rhs] : cases) {
+        const cpp_int expected = static_cast<cpp_int>(lhs) + rhs;
+        BOOST_TEST_CONTEXT("lhs size " << lhs.size() << ", rhs " << rhs) {
+            BOOST_TEST(static_cast<cpp_int>(lhs + rhs) == expected);
+            BOOST_TEST(static_cast<cpp_int>(rhs + lhs) == expected);
+            auto value = lhs;
+            BOOST_CHECK(&(value += rhs) == &value);
+            BOOST_TEST(static_cast<cpp_int>(value) == expected);
+        }
+    }
+}
