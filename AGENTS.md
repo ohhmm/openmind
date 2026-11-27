@@ -34,6 +34,8 @@
 - Keep scripts short and readable. Bash is the choice not for performance. It is for readable IPC programs.
 - Keep transient data in memory. Don't create temporary files
 - Use Bash for short command wrappers, passthrough params through. Each wrapper has object-like RAII behaviour: 'constructor' is the code preceeding params passthrough into inner command, and 'destructor' is after its execution, processing its result and output
+- prefere echo over printf for bash readability
+- prefere positive IF over early exits
 
 ## Refactoring
 - Equivalent extraction only: move existing code verbatim; preserve names, order, conditions, paths, and behavior; minimal diff.
