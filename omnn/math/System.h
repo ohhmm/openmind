@@ -65,10 +65,92 @@ public:
 
     System() : vEs(ptrs::make_shared<v_es_t>()) {}
     System(v_es_ptr_t yarns) : vEs(std::move(yarns)) {}
+    System(const System& other, v_es_ptr_t yarns)
+        : system_base_t(other),
+          vEs(std::move(yarns)),
+          sqs(other.sqs),
+          makeTotalEqu(other.makeTotalEqu),
+          doEarlyFetch(other.doEarlyFetch),
+          solving(other.solving),
+          fetched(other.fetched)
+    {
+        if (!vEs) {
+            vEs = ptrs::make_shared<v_es_t>();
+        }
+    }
+    System(const System& other)
+        : system_base_t(other),
+          vEs(ptrs::make_shared<v_es_t>()),
+          sqs(other.sqs),
+          makeTotalEqu(other.makeTotalEqu),
+          doEarlyFetch(other.doEarlyFetch),
+          solving(other.solving),
+          fetched(other.fetched)
+    {
+        for (const auto& kv : *other.vEs) {
+            auto es = ptrs::make_shared<es_t>();
+            for (const auto& kv2 : *kv.second) {
+                es->emplace(kv2.first, System(kv2.second, vEs));
+            }
+            vEs->emplace(kv.first, es);
+        }
+    }
+    System(System&& other)
+        : system_base_t(std::move(other)),
+          vEs(std::move(other.vEs)),
+          sqs(std::move(other.sqs)),
+          makeTotalEqu(other.makeTotalEqu),
+          doEarlyFetch(other.doEarlyFetch),
+          solving(std::move(other.solving)),
+          fetched(std::move(other.fetched))
+    {
+        if (!vEs) {
+            vEs = ptrs::make_shared<v_es_t>();
+        }
+    }
+    System& operator=(const System& other) {
+        if (this != &other) {
+            system_base_t::operator=(other);
+            auto newVes = ptrs::make_shared<v_es_t>();
+            for (const auto& kv : *other.vEs) {
+                auto es = ptrs::make_shared<es_t>();
+                for (const auto& kv2 : *kv.second) {
+                    es->emplace(kv2.first, System(kv2.second, newVes));
+                }
+                newVes->emplace(kv.first, es);
+            }
+            vEs = newVes;
+            sqs = other.sqs;
+            makeTotalEqu = other.makeTotalEqu;
+            doEarlyFetch = other.doEarlyFetch;
+            solving = other.solving;
+            fetched = other.fetched;
+        }
+        return *this;
+    }
+    System& operator=(System&& other) {
+        if (this != &other) {
+            system_base_t::operator=(std::move(other));
+            vEs = std::move(other.vEs);
+            sqs = std::move(other.sqs);
+            makeTotalEqu = other.makeTotalEqu;
+            doEarlyFetch = other.doEarlyFetch;
+            solving = std::move(other.solving);
+            fetched = std::move(other.fetched);
+            if (!vEs) {
+                vEs = ptrs::make_shared<v_es_t>();
+            }
+        }
+        return *this;
+    }
     void CloneYarns() {
         auto newVes = ptrs::make_shared<v_es_t>();
         for (const auto& kv : *vEs) {
-            newVes->emplace(kv.first, ptrs::make_shared<es_t>(*kv.second));
+            auto es = ptrs::make_shared<es_t>();
+            for (const auto& kv2 : *kv.second) {
+                es->emplace(kv2.first, System(kv2.second, newVes));
+            }
+            newVes->emplace(kv.first, es);
         }
         vEs = newVes;
     }
