@@ -32,6 +32,18 @@ namespace {
 	static double gMinFps = 1e9;
 	static double gMaxFps = 0.0;
 
+#if defined(__APPLE__)
+	static CGLContextObj gGLContext = nullptr;
+#elif defined(_WIN32)
+	static HWND gHwnd = nullptr;
+	static HDC gHdc = nullptr;
+	static HGLRC gHglrc = nullptr;
+#else
+	static Display* gDisplay = nullptr;
+	static Window gWindow = 0;
+	static GLXContext gGlx = nullptr;
+#endif
+
 	static void fatal(const char* what, cl_int err) {
 		std::cerr << what << ": " << err << "\n";
 		std::exit(1);
@@ -43,10 +55,142 @@ namespace {
 		std::stringstream ss; ss << f.rdbuf(); return ss.str();
 	}
 
+#if defined(_WIN32)
+	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+		if (msg == WM_CLOSE || msg == WM_DESTROY) { PostQuitMessage(0); return 0; }
+		return DefWindowProc(hwnd, msg, wp, lp);
+	}
+#endif
+
+	static bool createGLContext() {
+#if defined(__APPLE__)
+		CGDisplayCapture(CGMainDisplayID());
+		CGLPixelFormatAttribute attrs[] = {
+			kCGLPFAFullScreen,
+			kCGLPFADoubleBuffer,
+			kCGLPFAColorSize, (CGLPixelFormatAttribute)24,
+			kCGLPFAAlphaSize, (CGLPixelFormatAttribute)8,
+			kCGLPFADepthSize, (CGLPixelFormatAttribute)16,
+			kCGLPFADisplayMask, (CGLPixelFormatAttribute)CGDisplayIDToOpenGLDisplayMask(CGMainDisplayID()),
+			(CGLPixelFormatAttribute)0
+		};
+		CGLPixelFormatObj pix = nullptr;
+		GLint npix = 0;
+		if (CGLChoosePixelFormat(attrs, &pix, &npix) != kCGLNoError || npix == 0) return false;
+		CGLError err = CGLCreateContext(pix, nullptr, &gGLContext);
+		CGLDestroyPixelFormat(pix);
+		if (err != kCGLNoError) return false;
+		err = CGLSetFullScreenOnDisplay(gGLContext, CGDisplayIDToOpenGLDisplayMask(CGMainDisplayID()));
+		if (err != kCGLNoError) return false;
+		CGLSetCurrentContext(gGLContext);
+		std::atexit([]() { CGDisplayRelease(CGMainDisplayID()); });
+		return true;
+#elif defined(_WIN32)
+		HINSTANCE hinst = GetModuleHandle(nullptr);
+		WNDCLASSA wc{};
+		wc.style = CS_OWNDC;
+		wc.lpfnWndProc = WndProc;
+		wc.hInstance = hinst;
+		wc.lpszClassName = "OM3GLFullscreen";
+		RegisterClassA(&wc);
+		int sw = GetSystemMetrics(SM_CXSCREEN);
+		int sh = GetSystemMetrics(SM_CYSCREEN);
+		gHwnd = CreateWindowExA(WS_EX_APPWINDOW, "OM3GLFullscreen", "OpenCL/OpenGL Interop Pattern Relations",
+			WS_POPUP | WS_VISIBLE, 0, 0, sw, sh, nullptr, nullptr, hinst, nullptr);
+		if (!gHwnd) return false;
+		gHdc = GetDC(gHwnd);
+		PIXELFORMATDESCRIPTOR pfd{};
+		pfd.nSize = sizeof(pfd);
+		pfd.nVersion = 1;
+		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		pfd.iPixelType = PFD_TYPE_RGBA;
+		pfd.cColorBits = 24;
+		pfd.cDepthBits = 16;
+		pfd.iLayerType = PFD_MAIN_PLANE;
+		int pf = ChoosePixelFormat(gHdc, &pfd);
+		if (pf == 0) return false;
+		if (!SetPixelFormat(gHdc, pf, &pfd)) return false;
+		gHglrc = wglCreateContext(gHdc);
+		if (!gHglrc) return false;
+		if (!wglMakeCurrent(gHdc, gHglrc)) return false;
+		ShowWindow(gHwnd, SW_SHOW);
+		SetForegroundWindow(gHwnd);
+		SetFocus(gHwnd);
+		return true;
+#else
+		gDisplay = XOpenDisplay(nullptr);
+		if (!gDisplay) return false;
+		int screen = DefaultScreen(gDisplay);
+		int w = DisplayWidth(gDisplay, screen);
+		int h = DisplayHeight(gDisplay, screen);
+		GLint att[] = { GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 16, None };
+		XVisualInfo* vi = glXChooseVisual(gDisplay, screen, att);
+		if (!vi) return false;
+		Colormap cmap = XCreateColormap(gDisplay, RootWindow(gDisplay, screen), vi->visual, AllocNone);
+		XSetWindowAttributes swa{};
+		swa.colormap = cmap;
+		swa.override_redirect = True;
+		swa.event_mask = ExposureMask | KeyPressMask | StructureNotifyMask;
+		gWindow = XCreateWindow(gDisplay, RootWindow(gDisplay, screen), 0, 0, (unsigned)w, (unsigned)h, 0,
+			vi->depth, InputOutput, vi->visual,
+			CWColormap | CWOverrideRedirect | CWEventMask, &swa);
+		XMapWindow(gDisplay, gWindow);
+		XStoreName(gDisplay, gWindow, "OpenCL/OpenGL Interop Pattern Relations");
+		gGlx = glXCreateContext(gDisplay, vi, nullptr, GL_TRUE);
+		if (!gGlx) return false;
+		if (!glXMakeCurrent(gDisplay, gWindow, gGlx)) return false;
+		return true;
+#endif
+	}
+
+	static void swapBuffers() {
+#if defined(__APPLE__)
+		CGLFlushDrawable(gGLContext);
+#elif defined(_WIN32)
+		SwapBuffers(gHdc);
+#else
+		if (gDisplay && gWindow) glXSwapBuffers(gDisplay, gWindow);
+#endif
+	}
+
+	static void pollEvents() {
+#if defined(_WIN32)
+		MSG msg;
+		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			if (msg.message == WM_QUIT) std::exit(0);
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+#elif !defined(__APPLE__)
+		if (gDisplay) {
+			while (XPending(gDisplay)) {
+				XEvent e;
+				XNextEvent(gDisplay, &e);
+				if (e.type == KeyPress) std::exit(0);
+			}
+		}
+#endif
+	}
+
 	static void init() {
-		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-		glutInitWindowSize(gWidth, gHeight);
-		glutCreateWindow("OpenCL/OpenGL Interop Pattern Relations");
+		if (!createGLContext()) {
+			std::cerr << "cannot create OpenGL context\n";
+			std::exit(1);
+		}
+
+#if defined(__APPLE__)
+		{
+			CGRect b = CGDisplayBounds(CGMainDisplayID());
+			glViewport(0, 0, (GLsizei)b.size.width, (GLsizei)b.size.height);
+		}
+#elif defined(_WIN32)
+		glViewport(0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+#else
+		if (gDisplay) {
+			int s = DefaultScreen(gDisplay);
+			glViewport(0, 0, DisplayWidth(gDisplay, s), DisplayHeight(gDisplay, s));
+		}
+#endif
 
 		glGenTextures(1, &gTexture);
 		glBindTexture(GL_TEXTURE_2D, gTexture);
@@ -113,6 +257,8 @@ namespace {
 	}
 
 	static void display() {
+		pollEvents();
+
 		size_t global[2] = { static_cast<size_t>((gWidth + 7) / 8 * 8), static_cast<size_t>((gHeight + 7) / 8 * 8) };
 		size_t local[2] = { 8, 8 };
 		if (static_cast<size_t>(gWidth) < 8) local[0] = static_cast<size_t>(gWidth);
@@ -137,7 +283,7 @@ namespace {
 		glTexCoord2f(0, 0); glVertex2f(-1,  1);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
-		glutSwapBuffers();
+		swapBuffers();
 
 		auto now = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> frameDt = now - gLastFrame;
@@ -157,7 +303,6 @@ namespace {
 			std::cout << "max_fps=" << gMaxFps << "\n";
 			std::exit(0);
 		}
-		glutPostRedisplay();
 	}
 #endif // OPENMIND_USE_OPENGL
 } // namespace
@@ -187,10 +332,10 @@ int main(int argc, char** argv)
 	}
 	gPixels = reinterpret_cast<std::uint32_t*>(v.begin().x());
 
-	glutInit(&argc, argv);
 	init();
-	glutDisplayFunc(display);
-	glutMainLoop();
+	while (true) {
+		display();
+	}
 #endif
 
 	return 0;
