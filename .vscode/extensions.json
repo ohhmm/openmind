@@ -14,6 +14,7 @@
   "ms-iot.msiot-vscode-openenclave",
   "ms-toolsai.jupyter",
   "ms-vscode.cpptools",
+  "ms-vscode.cpp-devtools",
   "ms-vscode.cmake-tools",
   "ms-vsliveshare.vsliveshare-pack",
   "redhat.vscode-yaml",

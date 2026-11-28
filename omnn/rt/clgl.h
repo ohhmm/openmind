@@ -11,6 +11,11 @@
         #if __has_include(<GLUT/glut.h>)
             #include <GLUT/glut.h>
         #endif
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wnullability-completeness-on-arrays"
+        #pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion"
+        #include <CoreGraphics/CoreGraphics.h>
+        #pragma clang diagnostic pop
 
     #elif defined(MSVC)
 
@@ -32,14 +37,19 @@
         #if __has_include(<GLUT/glut.h>)
             #include <GLUT/glut.h>
         #endif
+
+
     #else
 
         #include <GL/gl.h>
         #include <GL/glu.h>
+        #include <GL/glx.h>
         #include <GL/glext.h>
         #if __has_include(<GL/glut.h>)
             #include <GL/glut.h>
         #endif
+        #include <X11/Xlib.h>
+        #include <X11/Xutil.h>
 
     #endif
 
