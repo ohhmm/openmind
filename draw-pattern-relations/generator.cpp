@@ -13,21 +13,6 @@
 
 #include <boost/gil.hpp>
 
-#ifdef OPENMIND_USE_OPENGL
-#ifdef __APPLE__
-#define GL_SILENCE_DEPRECATION
-#include <OpenGL/gl.h>
-#include <GLUT/glut.h>
-#include <OpenCL/opencl.h>
-#include <OpenCL/cl_gl_ext.h>
-#include <OpenGL/CGLCurrent.h>
-#else
-#include <GL/gl.h>
-#include <GL/glut.h>
-#include <CL/cl.h>
-#include <CL/cl_gl.h>
-#endif
-#endif // OPENMIND_USE_OPENGL
 
 namespace {
 #ifdef OPENMIND_USE_OPENGL
