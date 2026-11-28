@@ -134,7 +134,11 @@ namespace omnn::math {
 
     void log_implement_message(const char* str)
     {
-        std::cerr << str << std::endl;
+        std::cerr << str
+#ifndef NDEBUG
+            << boost::stacktrace::stacktrace()
+#endif
+            << std::endl;
     }
 
 //    [[noreturn]] 'return' statement is useful for debugging purposes here
@@ -2678,7 +2682,7 @@ bool Valuable::SerializedStrEqual(const std::string_view& s) const {
         if (exp)
             return exp->ca();
         else
-            LOG_AND_IMPLEMENT("Implement " << boost::core::demangle(Type().name()) << "::ca() for " << *this);
+            TRACE_AND_IMPLEMENT("Implement " << boost::core::demangle(Type().name()) << "::ca() for " << *this);
     }
 
     Valuable::operator uint64_t() const

@@ -41,13 +41,22 @@
 
 #define LOG_IMPLEMENT_MESSAGE_ONCE(Param)                                                                              \
     {                                                                                                                  \
-        static volatile bool once = {};                                                                                         \
+        static volatile bool once = {};                                                                                \
         if (!once) {                                                                                                   \
             once = true;                                                                                               \
             LOG_IMPLEMENT_MESSAGE(Param);                                                                              \
         }                                                                                                              \
     }
 
+#define TRACE_AND_IMPLEMENT(Param)                                              \
+    {                                                                           \
+        ::omnn::math::implement(((::std::stringstream&)(::std::stringstream()   \
+            << __FILE__ ":" LINE_NUMBER_STR " "                                 \
+            << Param << std::endl                                               \
+            << boost::stacktrace::stacktrace()                                  \
+        )).str().c_str());                                                      \
+        throw;                                                                  \
+    }
 
 #define LOG_AND_IMPLEMENT(Param) { \
     ::omnn::math::implement(((::std::stringstream&)(::std::stringstream() << __FILE__ ":" LINE_NUMBER_STR " " << Param)).str().c_str()); \
