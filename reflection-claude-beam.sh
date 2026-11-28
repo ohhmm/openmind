@@ -43,7 +43,7 @@ export ANTHROPIC_API_KEY=
 export NO_PROXY="127.0.0.1${NO_PROXY:+,$NO_PROXY}"
 export no_proxy="127.0.0.1${no_proxy:+,$no_proxy}"
 
-REFLECTION_API_KEY="$reflection_key" LITELLM_MASTER_KEY="$ANTHROPIC_AUTH_TOKEN" \
+PYTHONIOENCODING=utf-8 REFLECTION_API_KEY="$reflection_key" LITELLM_MASTER_KEY="$ANTHROPIC_AUTH_TOKEN" \
    uvx --python 3.12 --from 'litellm[proxy]==1.108.0' litellm \
       --host 127.0.0.1 --port "$port" --config "$proxy_dir/config.yaml" \
       > "$proxy_dir/proxy.log" 2>&1 &
