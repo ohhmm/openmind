@@ -35,6 +35,16 @@ BOOST_AUTO_TEST_CASE(Fraction_cmp_zero_denominator_test, *disabled()) {
     BOOST_TEST(fractionZero != divisionByZero);
 }
 
+BOOST_AUTO_TEST_CASE(Fraction_nan_scope_exit_test) {
+    Fraction f(1, 0);
+    BOOST_CHECK(f.IsNaN());
+}
+
+BOOST_AUTO_TEST_CASE(Fraction_decimal_nan_scope_exit_test, *disabled()) {
+    Fraction f{boost::multiprecision::cpp_dec_float_100("nan")};
+    BOOST_CHECK(f.IsNaN());
+}
+
 BOOST_AUTO_TEST_CASE(Fraction_ordering_tests) {
     auto _1 = "((-16/25)*(1r5) + (16/5))^(1/2)"_v;
     auto _2 = "(3/5)*sqrt(5)"_v;
