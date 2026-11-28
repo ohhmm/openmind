@@ -80,6 +80,7 @@ jobs:
       env:
         FIRST_ERROR: ${{ steps.build.outputs.FIRST_ERROR }}
         FIRST_WARNING: ${{ steps.build.outputs.FIRST_WARNING }}
+        GITHUB_REF_NAME: ${{ github.ref_name }}
       with:
         script: |
           const err = (process.env.FIRST_ERROR || '').trim();
@@ -123,11 +124,12 @@ jobs:
           if (duplicate) {
             return;
           }
+          const refLabel = process.env.GITHUB_REF_TYPE === 'tag' ? 'Tag: ' : 'Branch: ';
           await github.rest.issues.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
             title: title,
-            body: 'First ' + kind + ' from macOS build:\n\n```\n' + finding + '\n```\n',
+            body: refLabel + process.env.GITHUB_REF_NAME + '\n\nFirst ' + kind + ' from macOS build:\n\n```\n' + finding + '\n```\n',
             labels: [label, 'automation']
           });
     - name: Fail job on build error
