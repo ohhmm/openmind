@@ -32,7 +32,8 @@ using namespace omnn::math;
     {
         auto s = boost::lexical_cast<std::string>(f);
         if (s=="nan") {
-            throw s;
+            exp = std::make_shared<NaN>();
+            return;
         }
         auto doti = s.find_first_of('.');
         if (doti == -1)
@@ -65,6 +66,13 @@ using namespace omnn::math;
         return Valuable(std::move(frac));
     }
 
+    bool Fraction::operator==(const Integer& integer) const {
+        auto equal = getDenominator() == constants::one
+            ? getNumerator() == integer
+            : operator==(Fraction{integer, constants::one});
+        return equal;
+    }
+
     bool Fraction::operator==(const Fraction& fraction) const {
         auto equal = base::operator==(fraction);
         if (!equal) {
@@ -95,7 +103,7 @@ using namespace omnn::math;
         } else if (v.IsExponentiation() || v.IsSum() || v.IsProduct()) {
             eq = v.operator==(*this);
         } else if (v.IsInt()) {
-            eq = getNumerator() == v && getDenominator() == constants::one;
+            eq = operator==(v.as<Integer>());
         } else if (!is_optimized()) {
             eq = denominator() == constants::one && numerator() == v;
         } else if (v.IsVa()) {
