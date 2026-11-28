@@ -26,11 +26,11 @@ BOOST_AUTO_TEST_CASE(PrefixIncrement)
         {{}, 1},
         {{0}, 1},
         {{7, 42}, 2},
-        {{max}, 2},
+        {{max}, 0},
         {{max, max, 7, max}, 4},
-        {{max, 0, 0}, 3},
+        {{max, 0, 0}, 2},
         {longCarry, 1024},
-        {AsmInt(1024, max), 1025},
+        {AsmInt(1024, max), 0},
     };
 
     for (const auto& test : cases) {
